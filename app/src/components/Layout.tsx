@@ -7,6 +7,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
 
   const navigation = [
+    { name: 'Portfolio', href: '/portfolio', icon: '🏠' },
     { name: 'Dashboard', href: '/dashboard', icon: '📊' },
     { name: 'Accounts', href: '/accounts', icon: '🏦' },
     { name: 'Transactions', href: '/transactions', icon: '💰' },
@@ -27,7 +28,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/dashboard" className="text-2xl font-bold text-blue-600">
+              <Link to="/portfolio" className="text-2xl font-bold text-blue-600">
                 Ezana Finance
               </Link>
             </div>
