@@ -978,7 +978,7 @@ function getHomeDashboardContent() {
             <div class="portfolio-grid">
                 <!-- Total Portfolio Value Expandable Card -->
                 <div class="dashboard-card expandable-portfolio" data-type="portfolio-value">
-                    <div class="dashboard-card-header" onclick="togglePortfolioExpansion()">
+                    <div class="dashboard-card-header" onclick="togglePortfolioExpansion(event)">
                         <h3 class="dashboard-card-title">Total Portfolio Value</h3>
                         <div class="dashboard-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                             <i class="bi bi-wallet2 text-xl"></i>
@@ -1066,7 +1066,7 @@ function getHomeDashboardContent() {
 
                 <!-- Asset Allocation Card -->
                 <div class="dashboard-card expandable-asset-allocation" data-type="asset-allocation">
-                    <div class="dashboard-card-header" onclick="toggleAssetAllocationExpansion()">
+                    <div class="dashboard-card-header" onclick="toggleAssetAllocationExpansion(event)">
                         <h3 class="dashboard-card-title">Asset Allocation</h3>
                         <div class="dashboard-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                             <i class="bi bi-pie-chart text-xl"></i>
@@ -1683,21 +1683,42 @@ function initializePortfolioPage() {
 }
 
 // Portfolio functionality
-function togglePortfolioExpansion() {
+function togglePortfolioExpansion(event) {
+    if (event) event.stopPropagation();
+    
     const card = document.querySelector('.dashboard-card.expandable-portfolio');
     const content = document.getElementById('portfolio-chart-content');
     
-    if (!card || !content) return;
+    if (!card || !content) {
+        console.warn('Portfolio card or content not found');
+        return;
+    }
     
     const isExpanded = card.classList.contains('expanded');
     
+    // Close other expanded cards first
+    document.querySelectorAll('.dashboard-card.expanded').forEach(otherCard => {
+        if (otherCard !== card) {
+            otherCard.classList.remove('expanded');
+            const otherContent = otherCard.querySelector('.portfolio-chart-content, .asset-allocation-chart-content');
+            if (otherContent) {
+                otherContent.classList.remove('expanded');
+                otherContent.classList.add('hidden');
+            }
+        }
+    });
+    
     if (isExpanded) {
+        // Collapse the card
         card.classList.remove('expanded');
         content.classList.remove('expanded');
         content.classList.add('hidden');
     } else {
+        // Expand the card
         card.classList.add('expanded');
         content.classList.remove('hidden');
+        
+        // Animate the expansion
         setTimeout(() => {
             content.classList.add('expanded');
             initializePortfolioChart();
@@ -1782,21 +1803,42 @@ function updatePortfolioChart() {
     }
 }
 
-function toggleAssetAllocationExpansion() {
+function toggleAssetAllocationExpansion(event) {
+    if (event) event.stopPropagation();
+    
     const card = document.querySelector('.dashboard-card.expandable-asset-allocation');
     const content = document.getElementById('asset-allocation-chart-content');
     
-    if (!card || !content) return;
+    if (!card || !content) {
+        console.warn('Asset allocation card or content not found');
+        return;
+    }
     
     const isExpanded = card.classList.contains('expanded');
     
+    // Close other expanded cards first
+    document.querySelectorAll('.dashboard-card.expanded').forEach(otherCard => {
+        if (otherCard !== card) {
+            otherCard.classList.remove('expanded');
+            const otherContent = otherCard.querySelector('.portfolio-chart-content, .asset-allocation-chart-content');
+            if (otherContent) {
+                otherContent.classList.remove('expanded');
+                otherContent.classList.add('hidden');
+            }
+        }
+    });
+    
     if (isExpanded) {
+        // Collapse the card
         card.classList.remove('expanded');
         content.classList.remove('expanded');
         content.classList.add('hidden');
     } else {
+        // Expand the card
         card.classList.add('expanded');
         content.classList.remove('hidden');
+        
+        // Animate the expansion
         setTimeout(() => {
             content.classList.add('expanded');
             initializeAssetAllocationChart();

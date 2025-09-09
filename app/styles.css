@@ -598,6 +598,66 @@ body {
     }
 }
 
+/* Expandable Portfolio Card Styles */
+.dashboard-card.expandable-portfolio {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card.expandable-portfolio:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card.expandable-portfolio.expanded {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-2xl);
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px;
+}
+
+.dashboard-card-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--muted-foreground);
+    transition: transform 0.2s ease;
+}
+
+.dashboard-card.expandable-portfolio.expanded .dashboard-card-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Expandable Asset Allocation Card Styles */
+.dashboard-card.expandable-asset-allocation {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card.expandable-asset-allocation:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card.expandable-asset-allocation.expanded {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-2xl);
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px;
+}
+
+.dashboard-card.expandable-asset-allocation.expanded .dashboard-card-toggle i {
+    transform: rotate(180deg);
+}
+
 /* Page-specific enhancements */
 .portfolio-chart-content {
     margin-top: 20px;
