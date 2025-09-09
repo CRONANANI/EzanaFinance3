@@ -12,13 +12,19 @@ class PageLoader {
                 return this.cache.get(pageName);
             }
 
-            // Load page from file
-            const response = await fetch(`pages/${pageName}.html`);
-            if (!response.ok) {
-                throw new Error(`Failed to load page: ${pageName}`);
+            // Try to load page from file
+            let content;
+            try {
+                const response = await fetch(`pages/${pageName}.html`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                content = await response.text();
+            } catch (fetchError) {
+                console.warn(`Could not fetch page file for ${pageName}:`, fetchError);
+                // Fallback to inline content
+                content = this.getInlinePageContent(pageName);
             }
-
-            const content = await response.text();
             
             // Cache the content
             this.cache.set(pageName, content);
@@ -27,6 +33,28 @@ class PageLoader {
         } catch (error) {
             console.error(`Error loading page ${pageName}:`, error);
             return this.getErrorPage(pageName);
+        }
+    }
+
+    getInlinePageContent(pageName) {
+        // Fallback content for when page files can't be loaded
+        switch (pageName) {
+            case 'home-dashboard':
+                return this.getHomeDashboardContent();
+            case 'inside-the-capitol':
+                return this.getInsideTheCapitolContent();
+            case 'market-analysis':
+                return this.getMarketAnalysisContent();
+            case 'company-research':
+                return this.getCompanyResearchContent();
+            case 'economic-indicators':
+                return this.getEconomicIndicatorsContent();
+            case 'watchlist':
+                return this.getWatchlistContent();
+            case 'community':
+                return this.getCommunityContent();
+            default:
+                return this.getErrorPage(pageName);
         }
     }
 
@@ -200,6 +228,205 @@ class PageLoader {
             console.log('Loading community data...');
         } catch (error) {
             console.error('Error loading community data:', error);
+        }
+    }
+
+    // Fallback content methods
+    getHomeDashboardContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Portfolio Dashboard</h1>
+                <div class="portfolio-grid">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3 class="dashboard-card-title">Total Portfolio Value</h3>
+                            <div class="dashboard-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <i class="bi bi-wallet2 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="dashboard-card-value">$127,843.52</div>
+                        <div class="dashboard-card-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +$2,847.31 (+2.28%)
+                        </div>
+                        <div class="dashboard-card-description">Updated 2 minutes ago</div>
+                    </div>
+                    <!-- Add more cards here -->
+                </div>
+            </div>
+        `;
+    }
+
+    getInsideTheCapitolContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Inside the Capitol</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">Real-time insights into congressional trading and government activities</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div class="bg-emerald-50 dark:bg-emerald-950 rounded-xl shadow-md p-6 border-2 border-emerald-500">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Congressional Trading</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Total Trades:</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100">1,247</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Total Volume:</span>
+                                <span class="font-semibold text-gray-900 dark:text-gray-100">$45.2M</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getMarketAnalysisContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-4">Market Analysis</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">Advanced market analysis tools and insights</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">S&P 500</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">4,567.89</p>
+                                <p class="text-sm text-emerald-600 dark:text-emerald-400">+1.24%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                <i class="bi bi-graph-up text-blue-600 dark:text-blue-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getCompanyResearchContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Company Research</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">Comprehensive company analysis and research tools</p>
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Company Search</h3>
+                    <div class="flex gap-4">
+                        <input type="text" id="company-search" placeholder="Search by company name or ticker symbol" 
+                               class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white">
+                        <button onclick="searchCompany()" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                            <i class="bi bi-search mr-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getEconomicIndicatorsContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-4">Economic Indicators</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">Key economic data and market indicators</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Inflation Rate</h3>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">3.2%</div>
+                        <div class="text-sm text-red-600 dark:text-red-400">+0.1% from last month</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Unemployment</h3>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">3.7%</div>
+                        <div class="text-sm text-emerald-600 dark:text-emerald-400">-0.2% from last month</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">GDP Growth</h3>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">2.8%</div>
+                        <div class="text-sm text-emerald-600 dark:text-emerald-400">+0.3% quarterly</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getWatchlistContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Watchlists</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">Track your favorite congress people and investments</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">People I'm Following</h3>
+                        <div id="following-section">
+                            ${this.renderFollowingSection()}
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Stock Watchlists</h3>
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <i class="bi bi-graph-up text-4xl mb-4"></i>
+                            <p>Stock watchlist functionality coming soon!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getCommunityContent() {
+        return `
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Community Hub</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8">Connect, share, and grow with fellow investors</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Find Users</h3>
+                        <input type="text" placeholder="Search users..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">My Friends</h3>
+                        <div class="text-center py-4">
+                            <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">47</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Total Friends</div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Leaderboard</h3>
+                        <div class="text-center py-4">
+                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">#127</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Your Rank</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderFollowingSection() {
+        if (!window.followedCongressPeople || followedCongressPeople.size === 0) {
+            return `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="bi bi-star text-4xl mb-4"></i>
+                    <p>You're not following anyone yet.</p>
+                    <p class="text-sm">Click the star icon next to congress people's names to follow them.</p>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="space-y-3">
+                    ${Array.from(followedCongressPeople).map(name => `
+                        <div class="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                            <div class="flex items-center space-x-3">
+                                <i class="bi bi-star-fill text-emerald-500"></i>
+                                <span class="font-medium text-gray-900 dark:text-gray-100">${name}</span>
+                            </div>
+                            <button onclick="toggleFollowCongressPerson('${name}', event)" class="text-emerald-600 hover:text-emerald-700 transition-colors">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         }
     }
 

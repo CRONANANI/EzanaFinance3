@@ -35,8 +35,11 @@ app.add_middleware(
 # Mount static files from the app directory
 try:
     app.mount("/static", StaticFiles(directory="../app/dist"), name="static")
-except:
-    # Fallback if dist directory doesn't exist
+    app.mount("/pages", StaticFiles(directory="../app/pages"), name="pages")
+    app.mount("/css", StaticFiles(directory="../app"), name="css")
+    app.mount("/js", StaticFiles(directory="../app"), name="js")
+except Exception as e:
+    print(f"Warning: Could not mount static files: {e}")
     pass
 
 # Security
