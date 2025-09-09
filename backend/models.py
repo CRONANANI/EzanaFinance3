@@ -22,6 +22,9 @@ class User(Base):
     budgets = relationship("Budget", back_populates="user")
     watchlists = relationship("Watchlist", back_populates="user")
     followed_congress_people = relationship("FollowedCongressPerson", back_populates="user")
+    bank_connections = relationship("BankConnection", back_populates="user")
+    health_scores = relationship("FinancialHealthScore", back_populates="user")
+    investment_recommendations = relationship("InvestmentRecommendation", back_populates="user")
 
 class Account(Base):
     __tablename__ = "accounts"
@@ -32,6 +35,8 @@ class Account(Base):
     balance = Column(Float, default=0.0)
     currency = Column(String, default="USD")
     description = Column(Text, nullable=True)
+    external_account_id = Column(String)  # Bank's account ID
+    bank_connection_id = Column(Integer, ForeignKey("bank_connections.id"))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -42,6 +47,7 @@ class Account(Base):
     # Relationships
     owner = relationship("User", back_populates="accounts")
     transactions = relationship("Transaction", back_populates="account")
+    bank_connection = relationship("BankConnection", back_populates="accounts")
 
 class Transaction(Base):
     __tablename__ = "transactions"
@@ -52,6 +58,8 @@ class Transaction(Base):
     category = Column(String)
     transaction_type = Column(String)  # income, expense, transfer
     date = Column(DateTime(timezone=True))
+    external_transaction_id = Column(String)  # Bank's transaction ID
+    merchant_name = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -163,3 +171,54 @@ class LobbyingActivityData(Base):
     quarter = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class BankConnection(Base):
+    __tablename__ = "bank_connections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    institution_name = Column(String, nullable=False)
+    bank_token = Column(String, nullable=False)  # Encrypted in production
+    external_connection_id = Column(String)  # Bank's connection ID
+    is_active = Column(Boolean, default=True)
+    last_sync = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    user = relationship("User", back_populates="bank_connections")
+    accounts = relationship("Account", back_populates="bank_connection")
+
+class FinancialHealthScore(Base):
+    __tablename__ = "financial_health_scores"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    overall_score = Column(Float, nullable=False)
+    savings_score = Column(Float, nullable=False)
+    emergency_fund_score = Column(Float, nullable=False)
+    balance_score = Column(Float, nullable=False)
+    health_level = Column(String, nullable=False)  # Excellent, Good, Fair, Needs Improvement
+    calculated_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="health_scores")
+
+class InvestmentRecommendation(Base):
+    __tablename__ = "investment_recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    symbol = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    recommendation_type = Column(String, nullable=False)  # ETF, Stock, Bond, etc.
+    allocation_percentage = Column(Float, nullable=False)
+    risk_level = Column(String, nullable=False)
+    expected_return = Column(String)
+    reason = Column(Text)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="investment_recommendations")

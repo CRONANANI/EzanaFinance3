@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from database import get_db, engine
 from models import Base
-from routers import auth, transactions, accounts, budgets, quiver, market_research
+from routers import auth, transactions, accounts, budgets, quiver, market_research, bank_integration
 
 # Load environment variables
 load_dotenv()
@@ -52,6 +52,7 @@ app.include_router(transactions.router, prefix="/api/transactions", tags=["trans
 app.include_router(budgets.router, prefix="/api/budgets", tags=["budgets"])
 app.include_router(quiver.router, prefix="/api/quiver", tags=["quiver"])
 app.include_router(market_research.router, prefix="/MarketResearch/API", tags=["market_research"])
+app.include_router(bank_integration.router, prefix="/api/bank", tags=["bank_integration"])
 
 # Serve the main HTML file
 @app.get("/", response_class=HTMLResponse)

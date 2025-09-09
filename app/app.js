@@ -11,7 +11,8 @@ async function loadPageContent(pageName) {
         'company-research': getCompanyResearchContent,
         'economic-indicators': getEconomicIndicatorsContent,
         'watchlist': getWatchlistContent,
-        'community': getCommunityContent
+        'community': getCommunityContent,
+        'financial-analytics': getFinancialAnalyticsContent
     };
 
     const contentFunction = pageMap[pageName];
@@ -214,6 +215,9 @@ function switchTab(tabName) {
             break;
         case 'community':
             showCommunity();
+            break;
+        case 'financial-analytics':
+            showFinancialAnalytics();
             break;
     }
 }
@@ -812,6 +816,25 @@ async function showCommunity() {
     
     const content = await loadPageContent('community');
     dynamicContent.innerHTML = content;
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function showFinancialAnalytics() {
+    hideAllContent();
+    
+    // Show sidebar
+    document.getElementById('sidebar').style.display = 'block';
+    document.getElementById('main-content').style.marginLeft = '280px';
+    
+    const dynamicContent = document.getElementById('dynamic-content');
+    dynamicContent.style.display = 'block';
+    
+    const content = await loadPageContent('financial-analytics');
+    dynamicContent.innerHTML = content;
+    
+    // Load financial health data
+    await loadFinancialHealthData();
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1783,4 +1806,363 @@ function refreshPortfolioData() {
             lastUpdatedEl.textContent = timestamp;
         }
     }, 1000);
+}
+
+function getFinancialAnalyticsContent() {
+    return \`
+        <div class="container mx-auto px-4 py-8">
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Financial Analytics</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400">Comprehensive analysis of your financial health and spending patterns</p>
+            </div>
+
+            <!-- Financial Health Score -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">Financial Health Score</h3>
+                    <button onclick="refreshFinancialHealth()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                        <i class="bi bi-arrow-clockwise mr-2"></i>Refresh
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Health Score Display -->
+                    <div class="text-center">
+                        <div class="relative w-32 h-32 mx-auto mb-4">
+                            <div class="w-32 h-32 rounded-full border-8 border-gray-200 dark:border-gray-700"></div>
+                            <div class="absolute inset-2 rounded-full border-8 border-emerald-500 border-r-transparent border-t-transparent" style="transform: rotate(135deg);"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center">
+                                    <div id="health-score-value" class="text-3xl font-bold text-gray-900 dark:text-white">8.7</div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">/ 10</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="health-level" class="text-xl font-semibold text-emerald-600 dark:text-emerald-400">Excellent</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Financial Health Level</div>
+                    </div>
+                    
+                    <!-- Health Components -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                                    <i class="bi bi-piggy-bank text-emerald-600 dark:text-emerald-400"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 dark:text-white">Savings Rate</div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">Monthly savings percentage</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div id="savings-rate" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">23.5%</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Score: <span id="savings-score">94/100</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                    <i class="bi bi-shield-check text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 dark:text-white">Emergency Fund</div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">Months of expenses covered</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div id="emergency-fund" class="text-xl font-bold text-blue-600 dark:text-blue-400">5.2 months</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Score: <span id="emergency-score">87/100</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                                    <i class="bi bi-wallet2 text-purple-600 dark:text-purple-400"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900 dark:text-white">Total Balance</div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">Across all accounts</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div id="total-balance" class="text-xl font-bold text-purple-600 dark:text-purple-400">$58,830</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Score: <span id="balance-score">85/100</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Connections -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Connected Bank Accounts</h3>
+                    <button onclick="connectBankAccount()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                        <i class="bi bi-plus mr-2"></i>Connect Account
+                    </button>
+                </div>
+                
+                <div id="bank-connections" class="space-y-4">
+                    <!-- Sample bank connection -->
+                    <div class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <i class="bi bi-bank text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-900 dark:text-gray-100">Chase Bank</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">3 accounts connected • Last sync: 2 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                            <span class="text-sm text-emerald-600 dark:text-emerald-400">Connected</span>
+                            <button onclick="importTransactions(1)" class="ml-4 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors">
+                                Import Transactions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Recommendations -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Investment Recommendations</h3>
+                    <div class="flex items-center space-x-2">
+                        <select id="risk-tolerance" onchange="updateInvestmentRecommendations()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
+                            <option value="conservative">Conservative</option>
+                            <option value="moderate" selected>Moderate</option>
+                            <option value="aggressive">Aggressive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="investment-recommendations">
+                    <!-- Investment recommendations will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Connection Modal -->
+        <div id="bank-connection-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Connect Bank Account</h2>
+                            <button onclick="closeBankConnectionModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                <i class="bi bi-x-lg text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <form onsubmit="submitBankConnection(event)">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bank Name</label>
+                                    <select id="bank-name" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-gray-200" required>
+                                        <option value="">Select your bank</option>
+                                        <option value="Chase Bank">Chase Bank</option>
+                                        <option value="Bank of America">Bank of America</option>
+                                        <option value="Wells Fargo">Wells Fargo</option>
+                                        <option value="Citibank">Citibank</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Connection Token</label>
+                                    <input type="text" id="bank-token" placeholder="Enter your bank connection token" 
+                                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white" required>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">For demo purposes, enter any value</p>
+                                </div>
+                                
+                                <div class="flex space-x-3 pt-4">
+                                    <button type="button" onclick="closeBankConnectionModal()" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="flex-1 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                                        Connect
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    \`;
+}
+
+// Financial Analytics Functions
+async function loadFinancialHealthData() {
+    try {
+        const mockHealthData = {
+            overall_score: 87,
+            health_level: "Excellent",
+            components: {
+                savings_rate: { score: 94, value: 23.5 },
+                emergency_fund: { score: 87, value: 5.2 },
+                total_balance: { score: 85, value: 58830 }
+            }
+        };
+        
+        updateFinancialHealthDisplay(mockHealthData);
+        loadInvestmentRecommendations();
+    } catch (error) {
+        console.error('Error loading financial health data:', error);
+    }
+}
+
+function updateFinancialHealthDisplay(data) {
+    const scoreEl = document.getElementById('health-score-value');
+    const levelEl = document.getElementById('health-level');
+    const savingsRateEl = document.getElementById('savings-rate');
+    const savingsScoreEl = document.getElementById('savings-score');
+    const emergencyFundEl = document.getElementById('emergency-fund');
+    const emergencyScoreEl = document.getElementById('emergency-score');
+    const totalBalanceEl = document.getElementById('total-balance');
+    const balanceScoreEl = document.getElementById('balance-score');
+    
+    if (scoreEl) scoreEl.textContent = (data.overall_score / 10).toFixed(1);
+    if (levelEl) levelEl.textContent = data.health_level;
+    if (savingsRateEl) savingsRateEl.textContent = data.components.savings_rate.value + '%';
+    if (savingsScoreEl) savingsScoreEl.textContent = data.components.savings_rate.score + '/100';
+    if (emergencyFundEl) emergencyFundEl.textContent = data.components.emergency_fund.value + ' months';
+    if (emergencyScoreEl) emergencyScoreEl.textContent = data.components.emergency_fund.score + '/100';
+    if (totalBalanceEl) totalBalanceEl.textContent = '$' + data.components.total_balance.value.toLocaleString();
+    if (balanceScoreEl) balanceScoreEl.textContent = data.components.total_balance.score + '/100';
+}
+
+async function loadInvestmentRecommendations() {
+    const riskTolerance = document.getElementById('risk-tolerance')?.value || 'moderate';
+    
+    const recommendations = {
+        conservative: [
+            { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', allocation: 30, risk: 'Low', return: '6-8%' },
+            { symbol: 'BND', name: 'Vanguard Total Bond Market ETF', allocation: 50, risk: 'Very Low', return: '3-5%' },
+            { symbol: 'VMOT', name: 'Vanguard Ultra-Short-Term Bond ETF', allocation: 20, risk: 'Very Low', return: '2-4%' }
+        ],
+        moderate: [
+            { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', allocation: 40, risk: 'Medium', return: '7-10%' },
+            { symbol: 'BND', name: 'Vanguard Total Bond Market ETF', allocation: 30, risk: 'Low', return: '3-6%' },
+            { symbol: 'VXUS', name: 'Vanguard Total International Stock ETF', allocation: 20, risk: 'Medium', return: '6-9%' },
+            { symbol: 'VNQ', name: 'Vanguard Real Estate Investment Trust ETF', allocation: 10, risk: 'Medium', return: '5-8%' }
+        ],
+        aggressive: [
+            { symbol: 'QQQ', name: 'Invesco QQQ Trust ETF', allocation: 40, risk: 'High', return: '10-15%' },
+            { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', allocation: 35, risk: 'Medium', return: '8-12%' },
+            { symbol: 'VXUS', name: 'Vanguard Total International Stock ETF', allocation: 25, risk: 'Medium-High', return: '7-11%' }
+        ]
+    };
+    
+    const currentRecommendations = recommendations[riskTolerance];
+    const container = document.getElementById('investment-recommendations');
+    
+    if (container) {
+        container.innerHTML = currentRecommendations.map(rec => \`
+            <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-emerald-500 transition-colors">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="font-semibold text-gray-900 dark:text-white">\${rec.symbol}</div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">\${rec.allocation}%</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">Allocation</div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">\${rec.name}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">Expected Return: \${rec.return}</div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">ETF</span>
+                    <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs rounded">\${rec.risk} Risk</span>
+                </div>
+            </div>
+        \`).join('');
+    }
+}
+
+function connectBankAccount() {
+    const modal = document.getElementById('bank-connection-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeBankConnectionModal() {
+    const modal = document.getElementById('bank-connection-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function submitBankConnection(event) {
+    event.preventDefault();
+    
+    const bankName = document.getElementById('bank-name').value;
+    const bankToken = document.getElementById('bank-token').value;
+    
+    if (!bankName || !bankToken) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
+    try {
+        showNotification(\`Successfully connected to \${bankName}!\`, 'success');
+        closeBankConnectionModal();
+        
+        setTimeout(() => {
+            showFinancialAnalytics();
+        }, 1000);
+    } catch (error) {
+        showNotification('Failed to connect bank account', 'error');
+    }
+}
+
+async function importTransactions(connectionId) {
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    button.textContent = 'Importing...';
+    button.disabled = true;
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        showNotification('Transactions imported successfully!', 'success');
+    } catch (error) {
+        showNotification('Failed to import transactions', 'error');
+    } finally {
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+
+async function refreshFinancialHealth() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="bi bi-arrow-clockwise animate-spin mr-2"></i>Refreshing...';
+    button.disabled = true;
+    
+    try {
+        await loadFinancialHealthData();
+        showNotification('Financial health data refreshed!', 'success');
+    } finally {
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }, 1000);
+    }
+}
+
+function updateInvestmentRecommendations() {
+    loadInvestmentRecommendations();
+}
+
+function refreshRecommendations() {
+    loadInvestmentRecommendations();
+    showNotification('Investment recommendations updated!', 'success');
 }

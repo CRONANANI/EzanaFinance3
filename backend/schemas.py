@@ -124,3 +124,69 @@ class TokenData(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+# Bank Integration schemas
+class BankConnectionCreate(BaseModel):
+    institution_name: str
+    bank_token: str  # In production, this would be handled more securely
+    
+class BankConnectionResponse(BaseModel):
+    id: int
+    institution_name: str
+    connected_accounts: int
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class TransactionImport(BaseModel):
+    external_transaction_id: str
+    amount: float
+    description: str
+    category: str
+    date: datetime
+    merchant_name: Optional[str] = None
+
+class SpendingAnalysis(BaseModel):
+    period_days: int
+    total_spending: float
+    daily_average: float
+    category_breakdown: dict
+    top_categories: List[dict]
+    daily_spending: dict
+
+class FinancialHealthComponent(BaseModel):
+    score: float
+    value: float
+    label: str
+
+class FinancialHealthRecommendation(BaseModel):
+    type: str
+    title: str
+    description: str
+    priority: str
+
+class FinancialHealthResponse(BaseModel):
+    overall_score: float
+    health_level: str
+    color: str
+    components: dict
+    recommendations: List[FinancialHealthRecommendation]
+    summary: dict
+
+class InvestmentRecommendationItem(BaseModel):
+    symbol: str
+    name: str
+    type: str
+    allocation_percentage: float
+    risk_level: str
+    expected_return: str
+    reason: str
+
+class InvestmentRecommendationsResponse(BaseModel):
+    risk_tolerance: str
+    financial_health_score: float
+    recommendations: List[InvestmentRecommendationItem]
+    total_recommended_allocation: float
+    notes: List[str]
