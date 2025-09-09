@@ -226,13 +226,18 @@ function showLandingPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function showHomeDashboard() {
+async function showHomeDashboard() {
     hideAllContent();
-    document.getElementById('portfolio-dashboard').style.display = 'block';
     
     // Show sidebar for dashboard
     document.getElementById('sidebar').style.display = 'block';
     document.getElementById('main-content').style.marginLeft = '280px';
+    
+    // Load home dashboard page
+    const dynamicContent = document.getElementById('dynamic-content');
+    dynamicContent.style.display = 'block';
+    
+    await pageLoader.renderPage('home-dashboard');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -247,141 +252,7 @@ async function showInsideTheCapitol() {
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
     
-    dynamicContent.innerHTML = `
-        <div class="container mx-auto px-4 py-8">
-            <div class="mb-8">
-                <h1 class="text-4xl font-bold text-amber-600 dark:text-amber-400 mb-4">Inside the Capitol</h1>
-                <p class="text-lg text-gray-600 dark:text-gray-400">Real-time insights into congressional trading, government contracts, lobbying activities, and more.</p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <!-- Historical Congress Trading Card -->
-                <div id="historicalCongressTradingCard" class="bg-amber-50 dark:bg-amber-50 rounded-xl shadow-md p-6 border-2 border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-lg" onclick="toggleCongressTradingExpansion()">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-900">Historical Congress Trading</h3>
-                        <div class="flex items-center space-x-3">
-                            <div class="flex items-center space-x-2">
-                                <button id="refreshCongressData" onclick="refreshCongressData(event)" class="p-1 text-amber-600 hover:text-amber-700 transition-colors" title="Refresh data">
-                                    <i class="bi bi-arrow-clockwise text-sm"></i>
-                                </button>
-                            </div>
-                            <div id="congressApiStatus" class="w-2 h-2 bg-green-500 rounded-full" title="API Connected"></div>
-                            <div class="congress-toggle-icon text-amber-600 dark:text-amber-400 transition-transform duration-200">
-                                <i class="bi bi-chevron-down text-lg"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Total Trades:</span>
-                            <span id="congressTotalTrades" class="font-semibold text-gray-900 dark:text-gray-900">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Total Volume:</span>
-                            <span id="congressTotalVolume" class="font-semibold text-gray-900 dark:text-gray-900">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Active Traders:</span>
-                            <span id="congressActiveTraders" class="font-semibold text-gray-900 dark:text-gray-900">-</span>
-                        </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                            Last updated: <span id="congressLastUpdated">-</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Expandable Content -->
-                    <div id="congressTradingExpandedContent" class="congress-expanded-content hidden mt-6 pt-6 border-t border-amber-200 dark:border-amber-700" onclick="event.stopPropagation()">
-                        <div class="mb-4">
-                            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-900 mb-3">Congressional Trading History</h4>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                <button id="filter-all" class="px-3 py-1 text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded-full border border-amber-300 dark:border-amber-600" onclick="filterCongressTrades(event, 'all')">All Trades</button>
-                                <button id="filter-buy" class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full border border-gray-300 dark:border-gray-600" onclick="filterCongressTrades(event, 'buy')">Buy</button>
-                                <button id="filter-sell" class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full border border-gray-300 dark:border-gray-600" onclick="filterCongressTrades(event, 'sell')">Sell</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Trading History Table -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="border-b border-amber-200 dark:border-amber-700">
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Date</th>
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Follow</th>
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Congress Person</th>
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Party</th>
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Company</th>
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Ticker</th>
-                                        <th class="text-left py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Trade Type</th>
-                                        <th class="text-right py-2 px-3 text-amber-700 dark:text-amber-300 font-semibold">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="congressTradingTableBody">
-                                    <!-- Table rows will be populated dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <div class="flex justify-between items-center mt-4 pt-4 border-t border-amber-200 dark:border-amber-700">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">
-                                Showing <span id="congressTradesStart">1</span> to <span id="congressTradesEnd">10</span> of <span id="congressTradesTotal">0</span> trades
-                            </div>
-                            <div class="flex space-x-2">
-                                <button id="congressPrevPage" class="px-3 py-1 text-sm bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded border border-amber-300 dark:border-amber-600 disabled:opacity-50" onclick="changeCongressPage(event, -1)">Previous</button>
-                                <button id="congressNextPage" class="px-3 py-1 text-sm bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded border border-amber-300 dark:border-amber-600 disabled:opacity-50" onclick="changeCongressPage(event, 1)">Next</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Other cards can be added here -->
-                <div class="bg-amber-50 dark:bg-amber-50 rounded-xl shadow-md p-6 border-2 border-amber-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-900">Government Contracts</h3>
-                        <div class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Total Contracts:</span>
-                            <span class="font-semibold text-gray-900 dark:text-gray-900">567</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Total Value:</span>
-                            <span class="font-semibold text-gray-900 dark:text-gray-900">$1.2B</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Active Companies:</span>
-                            <span class="font-semibold text-gray-900 dark:text-gray-900">234</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-amber-50 dark:bg-amber-50 rounded-xl shadow-md p-6 border-2 border-amber-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-900">House Trading</h3>
-                        <div class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Total Trades:</span>
-                            <span class="font-semibold text-gray-900 dark:text-gray-900">890</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Total Volume:</span>
-                            <span class="font-semibold text-gray-900 dark:text-gray-900">$32M</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600 dark:text-gray-600">Active Traders:</span>
-                            <span class="font-semibold text-gray-900 dark:text-gray-900">67</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Initialize congress trading data
-    await initializeCongressTradingData();
+    await pageLoader.renderPage('inside-the-capitol');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -749,7 +620,7 @@ function formatCurrency(amount) {
 }
 
 // Other tab functions
-function showMarketAnalysis() {
+async function showMarketAnalysis() {
     hideAllContent();
     
     // Show sidebar
@@ -758,20 +629,13 @@ function showMarketAnalysis() {
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
-    dynamicContent.innerHTML = `
-        <div class="text-center py-16">
-            <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Market Analysis</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-8">Advanced market analysis tools and insights</p>
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 max-w-md mx-auto">
-                <i class="bi bi-graph-up text-4xl text-blue-600 dark:text-blue-400 mb-4"></i>
-                <p class="text-blue-800 dark:text-blue-200">Market analysis features coming soon!</p>
-            </div>
-        </div>
-    `;
+    
+    await pageLoader.renderPage('market-analysis');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function showCompanyResearch() {
+async function showCompanyResearch() {
     hideAllContent();
     
     // Show sidebar
@@ -780,20 +644,13 @@ function showCompanyResearch() {
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
-    dynamicContent.innerHTML = `
-        <div class="text-center py-16">
-            <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Company Research</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-8">Comprehensive company analysis and research tools</p>
-            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 max-w-md mx-auto">
-                <i class="bi bi-briefcase text-4xl text-green-600 dark:text-green-400 mb-4"></i>
-                <p class="text-green-800 dark:text-green-200">Company research features coming soon!</p>
-            </div>
-        </div>
-    `;
+    
+    await pageLoader.renderPage('company-research');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function showEconomicIndicators() {
+async function showEconomicIndicators() {
     hideAllContent();
     
     // Show sidebar
@@ -802,20 +659,13 @@ function showEconomicIndicators() {
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
-    dynamicContent.innerHTML = `
-        <div class="text-center py-16">
-            <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Economic Indicators</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-8">Key economic data and market indicators</p>
-            <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 max-w-md mx-auto">
-                <i class="bi bi-activity text-4xl text-purple-600 dark:text-purple-400 mb-4"></i>
-                <p class="text-purple-800 dark:text-purple-200">Economic indicators coming soon!</p>
-            </div>
-        </div>
-    `;
+    
+    await pageLoader.renderPage('economic-indicators');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function showWatchlists() {
+async function showWatchlists() {
     hideAllContent();
     
     // Show sidebar
@@ -824,39 +674,9 @@ function showWatchlists() {
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
-    dynamicContent.innerHTML = `
-        <div class="max-w-7xl mx-auto px-4 py-8">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Watchlists</h1>
-                <p class="text-lg text-gray-600 dark:text-gray-400">Track your favorite congress people and investments</p>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- People I'm Following Card -->
-                <div class="bg-amber-50 dark:bg-amber-900/20 rounded-xl shadow-md p-6 border-2 border-amber-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-900">People I'm Following</h3>
-                        <div class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-                    </div>
-                    <div id="following-section">
-                        ${renderFollowingSection()}
-                    </div>
-                </div>
-                
-                <!-- Coming Soon Card -->
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-md p-6 border-2 border-gray-300 dark:border-gray-600">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Stock Watchlist</h3>
-                        <div class="w-3 h-3 bg-gray-500 rounded-full animate-pulse"></div>
-                    </div>
-                    <div class="text-center py-8 text-gray-500 dark:text-gray-400">
-                        <i class="bi bi-graph-up text-4xl mb-4"></i>
-                        <p>Stock watchlist functionality coming soon!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    
+    await pageLoader.renderPage('watchlist');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -888,7 +708,7 @@ function renderFollowingSection() {
     }
 }
 
-function showCommunity() {
+async function showCommunity() {
     hideAllContent();
     
     // Show sidebar
@@ -897,15 +717,8 @@ function showCommunity() {
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
-    dynamicContent.innerHTML = `
-        <div class="text-center py-16">
-            <h1 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Community Hub</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-8">Connect, share, and grow with fellow investors</p>
-            <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-6 max-w-md mx-auto">
-                <i class="bi bi-people text-4xl text-indigo-600 dark:text-indigo-400 mb-4"></i>
-                <p class="text-indigo-800 dark:text-indigo-200">Community features coming soon!</p>
-            </div>
-        </div>
-    `;
+    
+    await pageLoader.renderPage('community');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }

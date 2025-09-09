@@ -1,0 +1,337 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Company Research</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400">Comprehensive company analysis and research tools</p>
+    </div>
+
+    <!-- Company Search -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Company Search & Analysis</h3>
+        
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <input type="text" id="company-search" placeholder="Search by company name or ticker symbol (e.g., AAPL, Tesla)" 
+                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
+            </div>
+            <button onclick="searchCompany()" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors font-medium">
+                <i class="bi bi-search mr-2"></i>Analyze Company
+            </button>
+        </div>
+    </div>
+
+    <!-- Company Analysis Results -->
+    <div id="company-analysis-results" class="hidden">
+        <!-- Company Overview -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-6">
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                        <span id="company-ticker" class="font-bold text-emerald-600 dark:text-emerald-400">AAPL</span>
+                    </div>
+                    <div>
+                        <h2 id="company-name" class="text-2xl font-bold text-gray-900 dark:text-white">Apple Inc.</h2>
+                        <p id="company-sector" class="text-gray-600 dark:text-gray-400">Technology • Consumer Electronics</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div id="company-price" class="text-3xl font-bold text-gray-900 dark:text-white">$175.43</div>
+                    <div id="company-change" class="text-emerald-600 dark:text-emerald-400 font-semibold">+$2.34 (+1.35%)</div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900 dark:text-white" id="market-cap">$2.8T</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Market Cap</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900 dark:text-white" id="pe-ratio">28.5</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">P/E Ratio</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900 dark:text-white" id="dividend-yield">0.52%</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Div Yield</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900 dark:text-white" id="beta">1.2</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Beta</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Analysis Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Financial Metrics -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Metrics</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 dark:text-gray-400">Revenue (TTM)</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">$394.3B</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 dark:text-gray-400">Net Income (TTM)</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">$97.0B</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 dark:text-gray-400">Total Cash</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">$166.5B</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 dark:text-gray-400">Total Debt</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">$123.9B</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 dark:text-gray-400">ROE</span>
+                        <span class="font-semibold text-emerald-600 dark:text-emerald-400">147.4%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 dark:text-gray-400">ROA</span>
+                        <span class="font-semibold text-emerald-600 dark:text-emerald-400">27.1%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analyst Ratings -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Analyst Ratings</h3>
+                
+                <div class="space-y-4">
+                    <!-- Overall Rating -->
+                    <div class="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                        <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">BUY</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Overall Rating</div>
+                    </div>
+                    
+                    <!-- Rating Breakdown -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600 dark:text-gray-400 text-sm">Strong Buy</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                                    <div class="w-16 h-2 bg-emerald-500 rounded-full"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">12</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600 dark:text-gray-400 text-sm">Buy</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                                    <div class="w-12 h-2 bg-emerald-400 rounded-full"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">8</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600 dark:text-gray-400 text-sm">Hold</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                                    <div class="w-6 h-2 bg-yellow-400 rounded-full"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">3</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600 dark:text-gray-400 text-sm">Sell</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                                    <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Targets -->
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600 dark:text-gray-400 text-sm">Price Target</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">$195.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 dark:text-gray-400 text-sm">Upside Potential</span>
+                            <span class="font-semibold text-emerald-600 dark:text-emerald-400">+11.2%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Research Reports -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Recent Research Reports</h3>
+        
+        <div class="space-y-4">
+            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-file-earmark-text text-emerald-600 dark:text-emerald-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Q4 2024 Technology Sector Outlook</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Comprehensive analysis of technology sector performance and future prospects including AI, cloud computing, and semiconductor trends.</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                            <span>Goldman Sachs</span>
+                            <span>3 hours ago</span>
+                            <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded">BUY</span>
+                        </div>
+                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Read Report</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-graph-up text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Healthcare Innovation Report</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Analysis of breakthrough medical technologies and pharmaceutical developments driving sector growth.</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                            <span>Morgan Stanley</span>
+                            <span>1 day ago</span>
+                            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">OVERWEIGHT</span>
+                        </div>
+                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Read Report</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-bank text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Financial Services Outlook</h4>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Interest rate environment impact on banking sector and fintech disruption analysis.</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                            <span>JPMorgan</span>
+                            <span>2 days ago</span>
+                            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded">NEUTRAL</span>
+                        </div>
+                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Read Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Comparison Tool -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Company Comparison</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm text-gray-600 dark:text-gray-400">Compare Companies</label>
+                    <div class="flex space-x-2 mt-1">
+                        <input type="text" placeholder="Company 1 (e.g., AAPL)" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                        <span class="text-gray-400 self-center">vs</span>
+                        <input type="text" placeholder="Company 2 (e.g., MSFT)" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                    </div>
+                </div>
+                
+                <button class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
+                    Compare Companies
+                </button>
+                
+                <!-- Comparison Results Placeholder -->
+                <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center text-gray-500 dark:text-gray-400 text-sm">
+                    Enter two companies to see detailed comparison
+                </div>
+            </div>
+        </div>
+
+        <!-- Industry Analysis -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Industry Analysis</h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">Technology</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Software & Services</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-emerald-600 dark:text-emerald-400 font-semibold">+2.34%</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-500">Today</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">Healthcare</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Pharmaceuticals</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-emerald-600 dark:text-emerald-400 font-semibold">+1.89%</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-500">Today</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">Financial</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Banking Services</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-emerald-600 dark:text-emerald-400 font-semibold">+1.45%</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-500">Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Tools -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-emerald-500 transition-all duration-200 cursor-pointer group">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-500 transition-colors">
+                    <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Stock Screener</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Filter stocks by criteria</p>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition-all duration-200 cursor-pointer group">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-500 transition-colors">
+                    <i class="bi bi-calculator text-blue-600 dark:text-blue-400 group-hover:text-white text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Valuation Models</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">DCF & comparable analysis</p>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-purple-500 transition-all duration-200 cursor-pointer group">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-500 transition-colors">
+                    <i class="bi bi-bar-chart text-purple-600 dark:text-purple-400 group-hover:text-white text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Peer Analysis</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Compare with competitors</p>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-orange-500 transition-all duration-200 cursor-pointer group">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-500 transition-colors">
+                    <i class="bi bi-file-earmark-bar-graph text-orange-600 dark:text-orange-400 group-hover:text-white text-xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Earnings Analysis</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Historical & projected earnings</p>
+            </div>
+        </div>
+    </div>
+</div>

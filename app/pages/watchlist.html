@@ -1,0 +1,436 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Watchlists</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400">Track your favorite congress people, stocks, and investment opportunities</p>
+    </div>
+
+    <!-- Watchlist Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Following</p>
+                    <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400" id="following-count">24</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-star text-emerald-600 dark:text-emerald-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Stock Lists</p>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">5</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-list text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Alerts</p>
+                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">12</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-bell text-orange-600 dark:text-orange-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">This Week</p>
+                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">8</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-graph-up text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- People I'm Following -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">People I'm Following</h3>
+                <button onclick="switchTab('inside-the-capitol')" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm">
+                    Add More
+                </button>
+            </div>
+            
+            <div id="following-section">
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">NP</span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Nancy Pelosi</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">House • Democrat • CA</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">3 trades this week</span>
+                            <button onclick="toggleFollowCongressPerson('Nancy Pelosi', event)" class="text-emerald-600 hover:text-emerald-700 transition-colors">
+                                <i class="bi bi-star-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">CS</span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Chuck Schumer</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Senate • Democrat • NY</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">1 trade this week</span>
+                            <button onclick="toggleFollowCongressPerson('Chuck Schumer', event)" class="text-blue-600 hover:text-blue-700 transition-colors">
+                                <i class="bi bi-star-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">MM</span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">Mitch McConnell</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Senate • Republican • KY</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">No recent trades</span>
+                            <button onclick="toggleFollowCongressPerson('Mitch McConnell', event)" class="text-purple-600 hover:text-purple-700 transition-colors">
+                                <i class="bi bi-star-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Watchlists -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Stock Watchlists</h3>
+                <button onclick="createNewWatchlist()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm">
+                    <i class="bi bi-plus mr-1"></i>New List
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Tech Stocks Watchlist -->
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                <i class="bi bi-cpu text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Tech Stocks</h4>
+                        </div>
+                        <span class="text-sm text-gray-500 dark:text-gray-500">8 stocks</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">AAPL</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+1.2%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">MSFT</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.8%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">GOOGL</div>
+                            <div class="text-xs text-red-600 dark:text-red-400">-0.3%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">NVDA</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+2.1%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Growth Stocks Watchlist -->
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
+                                <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Growth Stocks</h4>
+                        </div>
+                        <span class="text-sm text-gray-500 dark:text-gray-500">6 stocks</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">TSLA</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+3.4%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">AMZN</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+1.7%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">META</div>
+                            <div class="text-xs text-red-600 dark:text-red-400">-0.9%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dividend Stocks Watchlist -->
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
+                                <i class="bi bi-cash-coin text-yellow-600 dark:text-yellow-400"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 dark:text-white">Dividend Stocks</h4>
+                        </div>
+                        <span class="text-sm text-gray-500 dark:text-gray-500">10 stocks</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">JNJ</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.5%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">PG</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.3%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">KO</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.7%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">PEP</div>
+                            <div class="text-xs text-red-600 dark:text-red-400">-0.2%</div>
+                        </div>
+                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">T</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.1%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
+        
+        <div class="space-y-4">
+            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Nancy Pelosi bought NVIDIA</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Purchased $50,000 - $100,000 worth of NVDA shares</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500 dark:text-gray-500">2 hours ago</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+2.1% since trade</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-bell text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Price Alert Triggered</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">AAPL reached your target price of $175.00</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500 dark:text-gray-500">1 day ago</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">Target reached</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-graph-down text-red-600 dark:text-red-400"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Chuck Schumer sold Microsoft</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Sold $25,000 - $50,000 worth of MSFT shares</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500 dark:text-gray-500">2 days ago</div>
+                            <div class="text-xs text-red-600 dark:text-red-400">-0.5% since trade</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Settings -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Alert Settings</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-medium text-gray-900 dark:text-white mb-4">Price Alerts</h4>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white text-sm">AAPL > $180.00</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Price target alert</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                            <span class="text-xs text-gray-500 dark:text-gray-500">Active</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white text-sm">TSLA < $200.00</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Stop loss alert</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                            <span class="text-xs text-gray-500 dark:text-gray-500">Active</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="w-full mt-4 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <i class="bi bi-plus mr-2"></i>Add Price Alert
+                </button>
+            </div>
+            
+            <div>
+                <h4 class="font-medium text-gray-900 dark:text-white mb-4">Trading Alerts</h4>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white text-sm">Congressional Trades</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Notify when followed people trade</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white text-sm">Large Transactions</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Trades over $100,000</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white text-sm">Sector Movements</div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Major sector changes</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Summary -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Watchlist Performance</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">+12.4%</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Average Performance</div>
+                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Last 30 days</div>
+            </div>
+            
+            <div class="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">78%</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Winning Trades</div>
+                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Success rate</div>
+            </div>
+            
+            <div class="text-center p-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">$8,456</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Total Gains</div>
+                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">This quarter</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button onclick="createNewWatchlist()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-emerald-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                    <i class="bi bi-plus text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">New Watchlist</span>
+            </div>
+        </button>
+        
+        <button class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                    <i class="bi bi-bell text-blue-600 dark:text-blue-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">Set Alert</span>
+            </div>
+        </button>
+        
+        <button class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                    <i class="bi bi-download text-purple-600 dark:text-purple-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">Export Data</span>
+            </div>
+        </button>
+        
+        <button class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-orange-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors">
+                    <i class="bi bi-share text-orange-600 dark:text-orange-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">Share List</span>
+            </div>
+        </button>
+    </div>
+</div>

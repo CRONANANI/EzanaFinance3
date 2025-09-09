@@ -1,0 +1,484 @@
+<div class="container mx-auto px-4 py-8">
+    <!-- Header with Trophy Room -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">Community Hub</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Connect, share, and grow with fellow investors</p>
+        </div>
+        <button onclick="showTrophyRoom()" class="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-6 py-3 rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all duration-200 shadow-lg">
+            <i class="bi bi-trophy-fill text-xl"></i>
+            <span>Trophy Room</span>
+        </button>
+    </div>
+
+    <!-- Community Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">12,456</p>
+                </div>
+                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-people text-indigo-600 dark:text-indigo-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Active Discussions</p>
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">89</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-chat-dots text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Your Friends</p>
+                    <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">47</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-person-hearts text-emerald-600 dark:text-emerald-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
+                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">#127</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-trophy text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Community Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        <!-- User Search Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-search text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Find Users</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">Search for other investors on the platform to connect with</p>
+            <div class="space-y-3">
+                <div class="relative">
+                    <input type="text" id="user-search" placeholder="Search by username, name, or interests..." 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                    <button onclick="searchUsers()" class="absolute right-2 top-2 bg-emerald-600 text-white px-3 py-1 rounded-md hover:bg-emerald-700 transition-colors">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+                <div id="search-results" class="space-y-2 max-h-48 overflow-y-auto">
+                    <!-- Search results will appear here -->
+                    <div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                        Enter a search term to find users
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Friends List Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-people-fill text-emerald-600 dark:text-emerald-400 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">My Friends</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">View and manage your current connections</p>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Total Friends:</span>
+                    <span class="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-1 rounded-full text-sm font-medium">47</span>
+                </div>
+                <div id="friends-list" class="space-y-2 max-h-48 overflow-y-auto">
+                    <!-- Sample friends -->
+                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs font-bold">AJ</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm text-gray-900 dark:text-white font-medium">Alex Johnson</div>
+                            <div class="text-xs text-emerald-600 dark:text-emerald-400">Online • +15.2% this month</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs font-bold">SC</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm text-gray-900 dark:text-white font-medium">Sarah Chen</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">2h ago • +8.7% this month</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-xs font-bold">MB</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm text-gray-900 dark:text-white font-medium">Mike Brown</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">1d ago • +22.1% this month</div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="viewAllFriends()" class="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 transition-colors text-sm">
+                    View All Friends
+                </button>
+            </div>
+        </div>
+
+        <!-- Activity Feed Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-activity text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Friends Activity</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">Track your friends' investment activities and engagement</p>
+            <div id="activity-feed" class="space-y-3 max-h-48 overflow-y-auto">
+                <!-- Sample activities -->
+                <div class="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Alex Johnson</span> made a new investment in <span class="text-emerald-600 dark:text-emerald-400 font-medium">TSLA</span></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-heart text-blue-600 dark:text-blue-400 text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Sarah Chen</span> liked your post about <span class="text-blue-600 dark:text-blue-400 font-medium">market analysis</span></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">4 hours ago</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-chat text-purple-600 dark:text-purple-400 text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Mike Brown</span> commented on <span class="text-purple-600 dark:text-purple-400 font-medium">tech sector trends</span></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">1 day ago</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="viewAllActivity()" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm mt-3">
+                View Full Activity
+            </button>
+        </div>
+    </div>
+
+    <!-- Discussion Threads -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Active Discussions -->
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Active Discussions</h3>
+                <button onclick="createThread()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm">
+                    <i class="bi bi-plus-circle mr-1"></i>New Thread
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xs font-bold">AJ</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Q1 2024 Tech Stock Predictions</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">by Alex Johnson • 2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-500">
+                            <i class="bi bi-chat"></i>
+                            <span>23</span>
+                            <i class="bi bi-heart"></i>
+                            <span>45</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                        What are everyone's thoughts on the tech sector for Q1? I'm seeing some interesting patterns in congressional trading...
+                    </p>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">Technology</span>
+                        <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs rounded">Predictions</span>
+                        <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs rounded">Hot</span>
+                    </div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xs font-bold">SC</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Best Dividend Stocks for 2024</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">by Sarah Chen • 5 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-500">
+                            <i class="bi bi-chat"></i>
+                            <span>18</span>
+                            <i class="bi bi-heart"></i>
+                            <span>32</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                        Looking for stable dividend-paying stocks. What's everyone's favorite picks for consistent income?
+                    </p>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs rounded">Dividends</span>
+                        <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs rounded">Income</span>
+                    </div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xs font-bold">MB</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">Congressional Trading Alert System</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">by Mike Brown • 1 day ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-500">
+                            <i class="bi bi-chat"></i>
+                            <span>56</span>
+                            <i class="bi bi-heart"></i>
+                            <span>89</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                        Has anyone set up automated alerts for congressional trading? I'd love to get notified when certain members make trades...
+                    </p>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs rounded">Congress</span>
+                        <span class="px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 text-xs rounded">Alerts</span>
+                        <span class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs rounded">Trending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Leaderboard -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+                    <i class="bi bi-trophy text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Leaderboard</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-4 text-sm">Top performers this month</p>
+            
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <i class="bi bi-trophy-fill text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-gray-900 dark:text-white">Emma Wilson</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">+34.5% return</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-yellow-600 dark:text-yellow-400">#1</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">2</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">David Kim</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">+28.2% return</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="w-8 h-8 bg-orange-300 dark:bg-orange-700 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">3</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">Lisa Park</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">+25.7% return</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                    <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">127</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">You</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">+12.4% return</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button onclick="createThread()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
+                    <i class="bi bi-chat-dots text-indigo-600 dark:text-indigo-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">Start Discussion</span>
+            </div>
+        </button>
+        
+        <button onclick="viewThreads()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-emerald-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                    <i class="bi bi-list-ul text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">Browse Threads</span>
+            </div>
+        </button>
+        
+        <button onclick="manageCommunities()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                    <i class="bi bi-building text-purple-600 dark:text-purple-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">My Communities</span>
+            </div>
+        </button>
+        
+        <button onclick="viewAllAwards()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-yellow-500 hover:shadow-lg transition-all duration-200 group">
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
+                    <i class="bi bi-award text-yellow-600 dark:text-yellow-400 group-hover:text-white text-xl"></i>
+                </div>
+                <span class="font-medium text-gray-900 dark:text-white">View Awards</span>
+            </div>
+        </button>
+    </div>
+
+    <!-- Community Insights -->
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Community Insights</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400 text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Most Discussed Stock</h4>
+                <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">NVDA</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">89 mentions this week</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="bi bi-trending-up text-blue-600 dark:text-blue-400 text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Trending Topic</h4>
+                <div class="text-lg font-bold text-blue-600 dark:text-blue-400">AI Stocks</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">156 discussions</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="bi bi-people text-purple-600 dark:text-purple-400 text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Most Active User</h4>
+                <div class="text-lg font-bold text-purple-600 dark:text-purple-400">InvestorPro</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">45 posts this week</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trophy Room Modal -->
+<div id="trophy-room-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">🏆 Trophy Room</h2>
+                    <button onclick="hideTrophyRoom()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Investment Trophies -->
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Investment Mastery</h3>
+                        <div class="space-y-3">
+                            <div class="p-4 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl">
+                                <i class="bi bi-trophy-fill text-4xl text-white mb-2"></i>
+                                <p class="text-white font-semibold">Portfolio Pioneer</p>
+                                <p class="text-yellow-100 text-sm">First $10K portfolio</p>
+                            </div>
+                            <div class="p-4 bg-gradient-to-br from-gray-400 to-gray-600 rounded-xl opacity-50">
+                                <i class="bi bi-trophy text-4xl text-white mb-2"></i>
+                                <p class="text-white font-semibold">Millionaire Maker</p>
+                                <p class="text-gray-100 text-sm">$1M portfolio value</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Community Trophies -->
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Community Leader</h3>
+                        <div class="space-y-3">
+                            <div class="p-4 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl">
+                                <i class="bi bi-people-fill text-4xl text-white mb-2"></i>
+                                <p class="text-white font-semibold">Social Butterfly</p>
+                                <p class="text-emerald-100 text-sm">50+ friends</p>
+                            </div>
+                            <div class="p-4 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl">
+                                <i class="bi bi-chat-dots text-4xl text-white mb-2"></i>
+                                <p class="text-white font-semibold">Discussion Master</p>
+                                <p class="text-blue-100 text-sm">25+ helpful posts</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Learning Trophies -->
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Knowledge Seeker</h3>
+                        <div class="space-y-3">
+                            <div class="p-4 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl">
+                                <i class="bi bi-book text-4xl text-white mb-2"></i>
+                                <p class="text-white font-semibold">Scholar</p>
+                                <p class="text-purple-100 text-sm">Completed 5 courses</p>
+                            </div>
+                            <div class="p-4 bg-gradient-to-br from-red-400 to-red-600 rounded-xl">
+                                <i class="bi bi-lightning text-4xl text-white mb-2"></i>
+                                <p class="text-white font-semibold">Speed Learner</p>
+                                <p class="text-red-100 text-sm">3 courses in 1 week</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
