@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ezana Finance - Professional Investment Analytics Platform</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
+    
+    <!-- Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+        <i class="bi bi-moon-fill" id="theme-icon"></i>
+    </button>
+
+    <!-- Navigation Header -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50">
+        <div class="container mx-auto px-4 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-graph-up text-white text-lg font-bold"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">Ezana Finance</span>
+                </div>
+
+                <!-- Navigation Links - Only Get Started Button -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="goToApp()" class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden pt-16">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2310b981" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute top-20 left-10 w-20 h-20 bg-emerald-500/20 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute top-40 right-20 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div class="absolute bottom-40 left-20 w-24 h-24 bg-emerald-600/15 rounded-full blur-xl animate-pulse delay-2000"></div>
+
+        <div class="relative z-10 flex items-center min-h-screen">
+            <div class="container mx-auto px-4 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <!-- Left Content -->
+                    <div class="space-y-8">
+                        <!-- Badge -->
+                        <div class="inline-flex items-center px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium">
+                            <span class="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></span>
+                            Professional Investment Analytics
+                        </div>
+
+                        <!-- Main Headline -->
+                        <div class="space-y-4">
+                            <h1 class="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
+                                Begin your Financial
+                                <br>
+                                <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">
+                                    Journey like a Pro.
+                                </span>
+                            </h1>
+                        </div>
+
+                        <!-- Description -->
+                        <p class="text-xl text-slate-300 leading-relaxed max-w-lg">
+                            Professional investment analytics platform with real-time congressional trading data, 
+                            portfolio management, and market intelligence. Built for serious investors who want 
+                            to make informed decisions.
+                        </p>
+
+                        <!-- CTA Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button onclick="goToApp()" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/25">
+                                Get Started Now
+                            </button>
+                            <button onclick="scrollToFeatures()" class="px-8 py-4 border-2 border-slate-600 hover:border-emerald-500 text-slate-300 hover:text-emerald-400 font-semibold rounded-xl transition-all duration-300">
+                                Learn More
+                            </button>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-cols-3 gap-6 pt-8 border-t border-slate-700">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-white">50K+</div>
+                                <div class="text-sm text-slate-400">Active Users</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-white">$2.5B+</div>
+                                <div class="text-sm text-slate-400">Assets Managed</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-white">99.9%</div>
+                                <div class="text-sm text-slate-400">Uptime</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Content - Dashboard Preview -->
+                    <div class="relative lg:scale-110">
+                        <!-- Dashboard Container -->
+                        <div class="relative mx-auto w-96 h-[640px] bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl p-4 shadow-2xl">
+                            <!-- Dashboard Screen -->
+                            <div class="w-full h-full bg-slate-900 rounded-xl overflow-hidden relative">
+                                <!-- Header -->
+                                <div class="flex justify-between items-center px-6 py-4 border-b border-slate-700">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-6 h-6 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded flex items-center justify-center">
+                                            <i class="bi bi-graph-up text-white text-sm"></i>
+                                        </div>
+                                        <span class="text-white font-semibold">Ezana Finance</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                                        <span class="text-slate-400 text-sm">Live</span>
+                                    </div>
+                                </div>
+
+                                <!-- Dashboard Content -->
+                                <div class="px-6 py-4 space-y-6">
+                                    <!-- Portfolio Summary -->
+                                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 rounded-xl">
+                                        <div class="text-emerald-100 text-sm">Total Portfolio Value</div>
+                                        <div class="text-white text-3xl font-bold">$127,896</div>
+                                        <div class="text-emerald-100 text-sm">+12.5% this month</div>
+                                    </div>
+
+                                    <!-- Quick Stats -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-slate-800 p-4 rounded-xl">
+                                            <div class="text-slate-400 text-sm">Congressional Trades</div>
+                                            <div class="text-white text-xl font-bold">247</div>
+                                            <div class="text-emerald-400 text-sm">+23 today</div>
+                                        </div>
+                                        <div class="bg-slate-800 p-4 rounded-xl">
+                                            <div class="text-slate-400 text-sm">Watchlist Items</div>
+                                            <div class="text-white text-xl font-bold">18</div>
+                                            <div class="text-emerald-400 text-sm">3 alerts</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recent Activity -->
+                                    <div class="space-y-3">
+                                        <div class="text-white text-sm font-semibold">Recent Congressional Activity</div>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                                                        <i class="bi bi-person text-white text-sm"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-white text-sm font-medium">Sen. Johnson</div>
+                                                        <div class="text-slate-400 text-xs">Bought AAPL</div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-emerald-400 text-sm font-semibold">+$50K</div>
+                                            </div>
+                                            <div class="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <i class="bi bi-person text-white text-sm"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-white text-sm font-medium">Rep. Smith</div>
+                                                        <div class="text-slate-400 text-xs">Sold TSLA</div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-red-400 text-sm font-semibold">-$25K</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Market Indicators -->
+                                    <div class="space-y-3">
+                                        <div class="text-white text-sm font-semibold">Market Indicators</div>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <div class="bg-slate-800 p-3 rounded-lg text-center">
+                                                <div class="text-emerald-400 text-lg font-bold">+2.3%</div>
+                                                <div class="text-slate-400 text-xs">S&P 500</div>
+                                            </div>
+                                            <div class="bg-slate-800 p-3 rounded-lg text-center">
+                                                <div class="text-red-400 text-lg font-bold">-1.2%</div>
+                                                <div class="text-slate-400 text-xs">NASDAQ</div>
+                                            </div>
+                                            <div class="bg-slate-800 p-3 rounded-lg text-center">
+                                                <div class="text-emerald-400 text-lg font-bold">+0.8%</div>
+                                                <div class="text-slate-400 text-xs">DOW</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Floating Elements around Dashboard -->
+                        <div class="absolute -top-4 -right-4 w-8 h-8 bg-emerald-500 rounded-full animate-bounce"></div>
+                        <div class="absolute top-1/2 -left-6 w-12 h-12 bg-emerald-500/20 rounded-full blur-sm animate-pulse"></div>
+                        <div class="absolute -bottom-6 right-1/3 w-6 h-6 bg-emerald-400 rounded-full animate-ping"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-slate-900">
+        <div class="container mx-auto px-4">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6">
+                    Professional <span class="text-emerald-400">Investment Tools</span>
+                </h2>
+                <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+                    Access powerful analytics and real-time data to make informed investment decisions
+                </p>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Congressional Trading -->
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="bi bi-building text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Congressional Trading</h3>
+                    <p class="text-slate-300 mb-6">Track real-time congressional trading activity and follow the smart money in Washington.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-medium">
+                        <span>Real-time data</span>
+                        <i class="bi bi-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Portfolio Management -->
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="bi bi-graph-up text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Portfolio Analytics</h3>
+                    <p class="text-slate-300 mb-6">Comprehensive portfolio tracking with advanced analytics and risk assessment.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-medium">
+                        <span>Advanced metrics</span>
+                        <i class="bi bi-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Market Research -->
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="bi bi-search text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Market Research</h3>
+                    <p class="text-slate-300 mb-6">Deep dive into company research and economic indicators for better decisions.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-medium">
+                        <span>Comprehensive data</span>
+                        <i class="bi bi-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Watchlists -->
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="bi bi-star text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Smart Watchlists</h3>
+                    <p class="text-slate-300 mb-6">Create and manage watchlists with real-time alerts and notifications.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-medium">
+                        <span>Custom alerts</span>
+                        <i class="bi bi-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Community -->
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="bi bi-people text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Investment Community</h3>
+                    <p class="text-slate-300 mb-6">Connect with other investors and share insights in our community.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-medium">
+                        <span>Network & learn</span>
+                        <i class="bi bi-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <!-- Financial Analytics -->
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                    <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="bi bi-calculator text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Financial Analytics</h3>
+                    <p class="text-slate-300 mb-6">Advanced financial modeling and analysis tools for professional investors.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-medium">
+                        <span>Professional tools</span>
+                        <i class="bi bi-arrow-right ml-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-emerald-500 to-emerald-600">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6">
+                Ready to Start Your Investment Journey?
+            </h2>
+            <p class="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
+                Join thousands of investors who trust Ezana Finance for their investment decisions.
+            </p>
+            <button onclick="goToApp()" class="px-8 py-4 bg-white text-emerald-600 font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
+                Get Started Now
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-graph-up text-white text-lg font-bold"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">Ezana Finance</span>
+                </div>
+                <div class="text-slate-400 text-sm">
+                    © 2024 Ezana Finance. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const icon = document.getElementById('theme-icon');
+            icon.classList.toggle('bi-moon-fill');
+            icon.classList.toggle('bi-sun-fill');
+        }
+
+        // Navigation functions
+        function goToApp() {
+            window.location.href = 'index.html';
+        }
+
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for saved theme preference or default to dark
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.remove('dark');
+                document.getElementById('theme-icon').classList.remove('bi-moon-fill');
+                document.getElementById('theme-icon').classList.add('bi-sun-fill');
+            }
+        });
+    </script>
+</body>
+</html>
