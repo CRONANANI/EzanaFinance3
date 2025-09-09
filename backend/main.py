@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 
 from database import get_db, engine
 from models import Base
-from routers import auth, transactions, accounts, budgets
+from routers import auth, transactions, accounts, budgets, quiver, market_research
 
 # Load environment variables
 load_dotenv()
@@ -24,11 +26,18 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Add your frontend URLs
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files from the app directory
+try:
+    app.mount("/static", StaticFiles(directory="../app/dist"), name="static")
+except:
+    # Fallback if dist directory doesn't exist
+    pass
 
 # Security
 security = HTTPBearer()
@@ -38,9 +47,20 @@ app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(accounts.router, prefix="/api/accounts", tags=["accounts"])
 app.include_router(transactions.router, prefix="/api/transactions", tags=["transactions"])
 app.include_router(budgets.router, prefix="/api/budgets", tags=["budgets"])
+app.include_router(quiver.router, prefix="/api/quiver", tags=["quiver"])
+app.include_router(market_research.router, prefix="/MarketResearch/API", tags=["market_research"])
 
-@app.get("/")
-async def root():
+# Serve the main HTML file
+@app.get("/", response_class=HTMLResponse)
+async def serve_main_page():
+    try:
+        with open("../app/index.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return {"message": "Welcome to Ezana Finance API - Frontend not found"}
+
+@app.get("/api")
+async def api_root():
     return {"message": "Welcome to Ezana Finance API"}
 
 @app.get("/health")

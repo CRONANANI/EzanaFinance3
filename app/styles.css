@@ -1,0 +1,599 @@
+/* TweakCN Theme CSS Variables */
+:root {
+    --background: #faf9f6;
+    --foreground: #262626;
+    --card: #faf9f6;
+    --card-foreground: #262626;
+    --popover: #faf9f6;
+    --popover-foreground: #262626;
+    --primary: #f59e0b;
+    --primary-foreground: #000000;
+    --secondary: #f3f4f6;
+    --secondary-foreground: #4b5563;
+    --muted: #f9fafb;
+    --muted-foreground: #6b7280;
+    --accent: #fffbeb;
+    --accent-foreground: #92400e;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #f59e0b;
+    --chart-1: #f59e0b;
+    --chart-2: #d97706;
+    --chart-3: #b45309;
+    --chart-4: #92400e;
+    --chart-5: #78350f;
+    --sidebar: #f9fafb;
+    --sidebar-foreground: #262626;
+    --sidebar-primary: #f59e0b;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #fffbeb;
+    --sidebar-accent-foreground: #92400e;
+    --sidebar-border: #e5e7eb;
+    --sidebar-ring: #f59e0b;
+    --font-sans: Inter, sans-serif;
+    --font-serif: Source Serif 4, serif;
+    --font-mono: JetBrains Mono, monospace;
+    --radius: 0.375rem;
+    --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
+    --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
+    --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
+    --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
+    --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
+    --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
+}
+
+.dark {
+    --background: #171717;
+    --foreground: #e5e5e5;
+    --card: #262626;
+    --card-foreground: #e5e5e5;
+    --popover: #262626;
+    --popover-foreground: #e5e5e5;
+    --primary: #f59e0b;
+    --primary-foreground: #000000;
+    --secondary: #262626;
+    --secondary-foreground: #e5e5e5;
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+    --accent: #92400e;
+    --accent-foreground: #fde68a;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #404040;
+    --input: #404040;
+    --ring: #f59e0b;
+    --chart-1: #fbbf24;
+    --chart-2: #d97706;
+    --chart-3: #92400e;
+    --chart-4: #b45309;
+    --chart-5: #92400e;
+    --sidebar: #0f0f0f;
+    --sidebar-foreground: #e5e5e5;
+    --sidebar-primary: #f59e0b;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #92400e;
+    --sidebar-accent-foreground: #fde68a;
+    --sidebar-border: #404040;
+    --sidebar-ring: #f59e0b;
+}
+
+body {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle:hover {
+    background: var(--accent);
+    border-color: var(--ring);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+}
+
+.theme-toggle i {
+    font-size: 1.2rem;
+    color: var(--foreground);
+}
+
+/* Loading indicator */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Dashboard Card Styles */
+.dashboard-card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--ring);
+}
+
+.dashboard-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.dashboard-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--card-foreground);
+    margin: 0;
+}
+
+.dashboard-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.dashboard-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--card-foreground);
+    margin: 8px 0;
+}
+
+.dashboard-card-change {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.dashboard-card-change.positive {
+    color: #059669;
+}
+
+.dashboard-card-change.negative {
+    color: var(--destructive);
+}
+
+.dashboard-card-description {
+    color: var(--muted-foreground);
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+    width: 100%;
+}
+
+/* Sidebar responsive styles */
+@media (max-width: 768px) {
+    #sidebar {
+        width: 100% !important;
+        max-width: 320px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    #sidebar.sidebar-open {
+        transform: translateX(0);
+    }
+    
+    #main-content {
+        margin-left: 0 !important;
+    }
+    
+    #sidebar-toggle-collapsed {
+        display: block !important;
+    }
+    
+    #sidebar-toggle {
+        display: none !important;
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 30;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@media (max-width: 640px) {
+    .portfolio-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Sidebar enhancements */
+#sidebar {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#sidebar .nav button {
+    position: relative;
+    overflow: hidden;
+}
+
+#sidebar .nav button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+#sidebar .nav button:hover::before {
+    left: 100%;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* Enhanced hover effects for navigation tabs */
+#sidebar .nav button:hover {
+    transform: translateX(4px);
+}
+
+#sidebar .nav button:active {
+    transform: translateX(2px) scale(0.98);
+}
+
+/* Active tab indicator */
+#sidebar .nav button.active {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+/* Sidebar toggle button enhancements */
+#sidebar-toggle, #sidebar-toggle-collapsed {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#sidebar-toggle:hover, #sidebar-toggle-collapsed:hover {
+    transform: scale(1.1);
+}
+
+#sidebar-toggle:active, #sidebar-toggle-collapsed:active {
+    transform: scale(0.95);
+}
+
+/* Quiver API Cards Styling */
+.quiver-api-section {
+    margin-top: 48px;
+    padding: 32px;
+    background: #faf9f6;
+    border-radius: var(--radius-xl);
+    color: #2d3748;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid #e2e8f0;
+}
+
+.quiver-api-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: center;
+    color: #1f2937;
+}
+
+.quiver-api-description {
+    text-align: center;
+    margin-bottom: 32px;
+    color: #4a5568;
+}
+
+.quiver-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.quiver-card {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 25%, #fcd34d 50%, #fbbf24 75%, #f59e0b 100%);
+    border: 1px solid #d97706;
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.quiver-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.quiver-card:hover::before {
+    left: 100%;
+}
+
+.quiver-card:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 25%, #fde68a 50%, #fcd34d 75%, #fbbf24 100%);
+    transform: translateY(-4px);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+}
+
+.quiver-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.quiver-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #1f2937;
+}
+
+.quiver-card-value {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #1f2937;
+}
+
+.quiver-card-description {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.4;
+}
+
+/* Congress Trading Expandable Card */
+#historicalCongressTradingCard.expanded {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px;
+    box-shadow: var(--shadow-2xl);
+    transform: translateY(-4px);
+}
+
+#historicalCongressTradingCard.expanded .congress-toggle-icon i {
+    transform: rotate(180deg);
+}
+
+.congress-expanded-content {
+    transition: all 0.3s ease;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.congress-expanded-content.expanded {
+    max-height: 2000px;
+    opacity: 1;
+}
+
+.congress-expanded-content table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.congress-expanded-content tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.congress-expanded-content tbody tr:hover {
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+.congress-expanded-content th,
+.congress-expanded-content td {
+    padding: 12px 8px;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.congress-expanded-content th {
+    background-color: rgba(245, 158, 11, 0.05);
+    font-weight: 600;
+    color: #92400e;
+}
+
+.congress-expanded-content td {
+    color: #374151;
+}
+
+.congress-expanded-content .trade-type-buy {
+    color: #059669;
+    font-weight: 600;
+}
+
+.congress-expanded-content .trade-type-sell {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.congress-expanded-content .trade-type-option {
+    color: #7c3aed;
+    font-weight: 600;
+}
+
+.congress-expanded-content .party-democrat {
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.congress-expanded-content .party-republican {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.congress-expanded-content .party-independent {
+    color: #7c2d12;
+    font-weight: 600;
+}
+
+/* Follow star styling */
+.follow-star-btn {
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.follow-star-btn:hover {
+    background-color: var(--accent);
+}
+
+.follow-star-btn:active {
+    transform: scale(0.95);
+}
+
+/* Notification styling */
+.follow-notification {
+    transform: translateX(100%);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Star Icon Styles */
+.follow-star {
+    transition: all 0.2s ease-in-out;
+}
+
+.follow-star:hover {
+    transform: scale(1.2);
+}
+
+.follow-star.followed {
+    color: #f59e0b;
+}
+
+.follow-star.not-followed {
+    color: #fbbf24;
+}
+
+/* Notification Styles */
+.notification {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* Amber Gold Popup Styles */
+.amber-popup {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+    border: 2px solid #b45309;
+}
+
+/* Thinner notification styling */
+.notification-thin {
+    padding: 0.5rem 1rem;
+    min-height: auto;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
