@@ -910,7 +910,7 @@ function getHomeDashboardContent() {
                     <p class="text-gray-600 dark:text-gray-400 mt-2">Track your investments and financial performance</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="refreshPortfolioData()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                    <button onclick="refreshPortfolioData()" class="btn btn-primary">
                         <i class="bi bi-arrow-clockwise mr-2"></i>Refresh
                     </button>
                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -921,7 +921,7 @@ function getHomeDashboardContent() {
 
             <!-- Portfolio Overview Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+                <div class="card card-content">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Total Value</p>
@@ -934,7 +934,7 @@ function getHomeDashboardContent() {
                     </div>
                 </div>
                 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+                <div class="card card-content">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Today's P&L</p>
@@ -947,7 +947,7 @@ function getHomeDashboardContent() {
                     </div>
                 </div>
                 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+                <div class="card card-content">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Monthly Dividends</p>
@@ -960,7 +960,7 @@ function getHomeDashboardContent() {
                     </div>
                 </div>
                 
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
+                <div class="card card-content">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Risk Score</p>
@@ -1730,34 +1730,103 @@ function initializePortfolioChart() {
     const canvas = document.getElementById('portfolio-chart');
     if (!canvas) return;
     
+    // Set canvas to full container size
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth - 48; // Account for padding
+    canvas.height = 500;
+    
     const ctx = canvas.getContext('2d');
     drawPortfolioLineChart(ctx, canvas.width, canvas.height);
+    
+    // Add mouse event listeners for tooltips
+    addChartTooltips(canvas, ctx);
 }
 
 function drawPortfolioLineChart(ctx, width, height) {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Sample portfolio data
+    // Enhanced portfolio data with more points for smoother line
     const data = [
-        { month: 'Jan', value: 120000 },
-        { month: 'Feb', value: 122000 },
-        { month: 'Mar', value: 118000 },
-        { month: 'Apr', value: 125000 },
-        { month: 'May', value: 127843 }
+        { month: 'Jan', date: '2024-01-01', value: 120000 },
+        { month: 'Jan', date: '2024-01-15', value: 121200 },
+        { month: 'Feb', date: '2024-02-01', value: 122000 },
+        { month: 'Feb', date: '2024-02-15', value: 120800 },
+        { month: 'Mar', date: '2024-03-01', value: 118000 },
+        { month: 'Mar', date: '2024-03-15', value: 119500 },
+        { month: 'Apr', date: '2024-04-01', value: 125000 },
+        { month: 'Apr', date: '2024-04-15', value: 126200 },
+        { month: 'May', date: '2024-05-01', value: 127843 },
+        { month: 'May', date: '2024-05-15', value: 127843 }
     ];
     
-    const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+    // Store data globally for tooltip access
+    window.portfolioChartData = data;
+    
+    const margin = { top: 40, right: 40, bottom: 60, left: 80 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
     
     const maxValue = Math.max(...data.map(d => d.value));
     const minValue = Math.min(...data.map(d => d.value));
-    const range = maxValue - minValue;
+    const range = maxValue - minValue || 1;
     
-    // Draw line
+    // Draw grid lines
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    
+    // Horizontal grid lines
+    for (let i = 0; i <= 5; i++) {
+        const y = margin.top + (i * chartHeight / 5);
+        ctx.beginPath();
+        ctx.moveTo(margin.left, y);
+        ctx.lineTo(width - margin.right, y);
+        ctx.stroke();
+        
+        // Y-axis labels
+        const value = maxValue - (i * range / 5);
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText('$' + Math.round(value).toLocaleString(), margin.left - 10, y + 5);
+    }
+    
+    // Vertical grid lines
+    for (let i = 0; i < data.length; i += 2) {
+        const x = margin.left + (i * (chartWidth / (data.length - 1)));
+        ctx.beginPath();
+        ctx.moveTo(x, margin.top);
+        ctx.lineTo(x, height - margin.bottom);
+        ctx.stroke();
+    }
+    
+    // Draw gradient fill under the line
+    const gradient = ctx.createLinearGradient(0, margin.top, 0, height - margin.bottom);
+    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+    gradient.addColorStop(1, 'rgba(16, 185, 129, 0.02)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    
+    data.forEach((point, index) => {
+        const x = margin.left + (index * (chartWidth / (data.length - 1)));
+        const y = margin.top + chartHeight - ((point.value - minValue) / range) * chartHeight;
+        
+        if (index === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    
+    ctx.lineTo(width - margin.right, height - margin.bottom);
+    ctx.lineTo(margin.left, height - margin.bottom);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw main line
     ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.beginPath();
     
     data.forEach((point, index) => {
@@ -1773,34 +1842,176 @@ function drawPortfolioLineChart(ctx, width, height) {
     
     ctx.stroke();
     
-    // Draw points
+    // Draw data points
     ctx.fillStyle = '#10b981';
     data.forEach((point, index) => {
         const x = margin.left + (index * (chartWidth / (data.length - 1)));
         const y = margin.top + chartHeight - ((point.value - minValue) / range) * chartHeight;
         
         ctx.beginPath();
-        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.arc(x, y, 6, 0, 2 * Math.PI);
         ctx.fill();
+        
+        // White center
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#10b981';
     });
     
-    // Draw labels
+    // Draw month labels
     ctx.fillStyle = '#374151';
-    ctx.font = '12px Arial';
+    ctx.font = '14px Arial';
     ctx.textAlign = 'center';
     
-    data.forEach((point, index) => {
-        const x = margin.left + (index * (chartWidth / (data.length - 1)));
-        ctx.fillText(point.month, x, height - margin.bottom + 20);
+    const uniqueMonths = [...new Set(data.map(d => d.month))];
+    uniqueMonths.forEach((month, index) => {
+        const dataIndex = data.findIndex(d => d.month === month);
+        const x = margin.left + (dataIndex * (chartWidth / (data.length - 1)));
+        ctx.fillText(month, x, height - margin.bottom + 25);
     });
+    
+    // Chart title
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Portfolio Performance Over Time', width / 2, 25);
 }
 
 function updatePortfolioChart() {
     const canvas = document.getElementById('portfolio-chart');
     if (canvas) {
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth - 48;
+        canvas.height = 500;
+        
         const ctx = canvas.getContext('2d');
         drawPortfolioLineChart(ctx, canvas.width, canvas.height);
+        addChartTooltips(canvas, ctx);
     }
+}
+
+function addChartTooltips(canvas, ctx) {
+    const tooltip = createTooltipElement();
+    
+    canvas.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        
+        const data = window.portfolioChartData;
+        if (!data) return;
+        
+        const margin = { top: 40, right: 40, bottom: 60, left: 80 };
+        const chartWidth = canvas.width - margin.left - margin.right;
+        const chartHeight = canvas.height - margin.top - margin.bottom;
+        
+        const maxValue = Math.max(...data.map(d => d.value));
+        const minValue = Math.min(...data.map(d => d.value));
+        const range = maxValue - minValue || 1;
+        
+        // Find closest data point
+        let closestIndex = -1;
+        let minDistance = Infinity;
+        
+        data.forEach((point, index) => {
+            const x = margin.left + (index * (chartWidth / (data.length - 1)));
+            const y = margin.top + chartHeight - ((point.value - minValue) / range) * chartHeight;
+            
+            const distance = Math.sqrt((mouseX - x) ** 2 + (mouseY - y) ** 2);
+            if (distance < minDistance && distance < 30) {
+                minDistance = distance;
+                closestIndex = index;
+            }
+        });
+        
+        if (closestIndex !== -1) {
+            const point = data[closestIndex];
+            const x = margin.left + (closestIndex * (chartWidth / (data.length - 1)));
+            const y = margin.top + chartHeight - ((point.value - minValue) / range) * chartHeight;
+            
+            // Show tooltip
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.clientX + 10) + 'px';
+            tooltip.style.top = (event.clientY - 10) + 'px';
+            tooltip.innerHTML = `
+                <div class="bg-gray-900 text-white p-3 rounded-lg shadow-lg border border-gray-700">
+                    <div class="font-semibold">$${point.value.toLocaleString()}</div>
+                    <div class="text-sm text-gray-300">${formatDate(point.date)}</div>
+                </div>
+            `;
+            
+            // Highlight the point
+            redrawChartWithHighlight(canvas, ctx, closestIndex);
+        } else {
+            tooltip.style.display = 'none';
+            drawPortfolioLineChart(ctx, canvas.width, canvas.height);
+        }
+    });
+    
+    canvas.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+        drawPortfolioLineChart(ctx, canvas.width, canvas.height);
+    });
+}
+
+function createTooltipElement() {
+    let tooltip = document.getElementById('chart-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'chart-tooltip';
+        tooltip.style.position = 'absolute';
+        tooltip.style.display = 'none';
+        tooltip.style.zIndex = '1000';
+        tooltip.style.pointerEvents = 'none';
+        document.body.appendChild(tooltip);
+    }
+    return tooltip;
+}
+
+function redrawChartWithHighlight(canvas, ctx, highlightIndex) {
+    drawPortfolioLineChart(ctx, canvas.width, canvas.height);
+    
+    const data = window.portfolioChartData;
+    if (!data || highlightIndex < 0) return;
+    
+    const margin = { top: 40, right: 40, bottom: 60, left: 80 };
+    const chartWidth = canvas.width - margin.left - margin.right;
+    const chartHeight = canvas.height - margin.top - margin.bottom;
+    
+    const maxValue = Math.max(...data.map(d => d.value));
+    const minValue = Math.min(...data.map(d => d.value));
+    const range = maxValue - minValue || 1;
+    
+    const point = data[highlightIndex];
+    const x = margin.left + (highlightIndex * (chartWidth / (data.length - 1)));
+    const y = margin.top + chartHeight - ((point.value - minValue) / range) * chartHeight;
+    
+    // Draw highlighted point
+    ctx.fillStyle = '#059669';
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fill();
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
 }
 
 function toggleAssetAllocationExpansion(event) {
@@ -1850,8 +2061,16 @@ function initializeAssetAllocationChart() {
     const canvas = document.getElementById('asset-allocation-chart');
     if (!canvas) return;
     
+    // Set canvas to full container size
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth - 80; // Account for padding
+    canvas.height = 600;
+    
     const ctx = canvas.getContext('2d');
-    drawSimplePieChart(ctx, canvas.width, canvas.height);
+    drawEnhancedPieChart(ctx, canvas.width, canvas.height);
+    
+    // Add mouse event listeners for tooltips
+    addPieChartTooltips(canvas, ctx);
 }
 
 function drawSimplePieChart(ctx, width, height) {
@@ -2268,4 +2487,204 @@ function updateInvestmentRecommendations() {
 function refreshRecommendations() {
     loadInvestmentRecommendations();
     showNotification('Investment recommendations updated!', 'success');
+}
+
+function drawEnhancedPieChart(ctx, width, height) {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(centerX, centerY) * 0.6;
+    
+    const data = [
+        { label: 'Stocks', value: 65, color: '#10b981', amount: '$83,099' },
+        { label: 'Bonds', value: 20, color: '#3b82f6', amount: '$25,569' },
+        { label: 'Cash', value: 15, color: '#f59e0b', amount: '$19,175' }
+    ];
+    
+    // Store data globally for tooltip access
+    window.pieChartData = data;
+    
+    let currentAngle = -Math.PI / 2; // Start from top
+    
+    // Draw chart title
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Asset Allocation Breakdown', centerX, 40);
+    
+    data.forEach((item, index) => {
+        const sliceAngle = (item.value / 100) * 2 * Math.PI;
+        
+        // Draw slice with shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+        ctx.closePath();
+        ctx.fillStyle = item.color;
+        ctx.fill();
+        
+        // Add border
+        ctx.shadowColor = 'transparent';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Add labels outside the pie
+        const labelAngle = currentAngle + sliceAngle / 2;
+        const labelRadius = radius + 60;
+        const labelX = centerX + Math.cos(labelAngle) * labelRadius;
+        const labelY = centerY + Math.sin(labelAngle) * labelRadius;
+        
+        ctx.fillStyle = '#374151';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(item.label, labelX, labelY);
+        ctx.fillText(item.value + '%', labelX, labelY + 20);
+        ctx.fillText(item.amount, labelX, labelY + 40);
+        
+        currentAngle += sliceAngle;
+    });
+    
+    // Draw center circle for donut effect
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.4, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Center text
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('$127,843', centerX, centerY - 10);
+    ctx.font = '14px Arial';
+    ctx.fillText('Total Value', centerX, centerY + 15);
+}
+
+function addPieChartTooltips(canvas, ctx) {
+    const tooltip = createTooltipElement();
+    
+    canvas.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        
+        const data = window.pieChartData;
+        if (!data) return;
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) * 0.6;
+        
+        // Calculate angle and distance from center
+        const dx = mouseX - centerX;
+        const dy = mouseY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) + Math.PI / 2; // Adjust for starting position
+        const normalizedAngle = angle < 0 ? angle + 2 * Math.PI : angle;
+        
+        if (distance <= radius && distance >= radius * 0.4) {
+            // Find which slice we're hovering over
+            let currentAngle = 0;
+            let hoveredSlice = -1;
+            
+            for (let i = 0; i < data.length; i++) {
+                const sliceAngle = (data[i].value / 100) * 2 * Math.PI;
+                if (normalizedAngle >= currentAngle && normalizedAngle <= currentAngle + sliceAngle) {
+                    hoveredSlice = i;
+                    break;
+                }
+                currentAngle += sliceAngle;
+            }
+            
+            if (hoveredSlice !== -1) {
+                const slice = data[hoveredSlice];
+                
+                // Show tooltip
+                tooltip.style.display = 'block';
+                tooltip.style.left = (event.clientX + 15) + 'px';
+                tooltip.style.top = (event.clientY - 15) + 'px';
+                tooltip.innerHTML = `
+                    <div class="bg-gray-900 text-white p-3 rounded-lg shadow-lg border border-gray-700">
+                        <div class="font-semibold text-lg">${slice.label}</div>
+                        <div class="text-emerald-300">${slice.value}% • ${slice.amount}</div>
+                        <div class="text-sm text-gray-300 mt-1">Click to view details</div>
+                    </div>
+                `;
+                
+                // Highlight the slice
+                redrawPieChartWithHighlight(canvas, ctx, hoveredSlice);
+            } else {
+                tooltip.style.display = 'none';
+                drawEnhancedPieChart(ctx, canvas.width, canvas.height);
+            }
+        } else {
+            tooltip.style.display = 'none';
+            drawEnhancedPieChart(ctx, canvas.width, canvas.height);
+        }
+    });
+    
+    canvas.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+        drawEnhancedPieChart(ctx, canvas.width, canvas.height);
+    });
+}
+
+function redrawPieChartWithHighlight(canvas, ctx, highlightIndex) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) * 0.6;
+    
+    const data = window.pieChartData;
+    if (!data) return;
+    
+    let currentAngle = -Math.PI / 2;
+    
+    // Clear and redraw chart title
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Asset Allocation Breakdown', centerX, 40);
+    
+    // Redraw all slices with highlight effect
+    data.forEach((item, index) => {
+        const sliceAngle = (item.value / 100) * 2 * Math.PI;
+        const isHighlighted = index === highlightIndex;
+        const sliceRadius = isHighlighted ? radius + 15 : radius;
+        const opacity = isHighlighted ? 1 : 0.7;
+        
+        ctx.globalAlpha = opacity;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, sliceRadius, currentAngle, currentAngle + sliceAngle);
+        ctx.closePath();
+        ctx.fillStyle = item.color;
+        ctx.fill();
+        
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        currentAngle += sliceAngle;
+    });
+    
+    ctx.globalAlpha = 1;
+    
+    // Redraw center circle
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.4, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Center text
+    ctx.fillStyle = '#1f2937';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('$127,843', centerX, centerY - 10);
+    ctx.font = '14px Arial';
+    ctx.fillText('Total Value', centerX, centerY + 15);
 }

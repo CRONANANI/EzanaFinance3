@@ -1,86 +1,170 @@
-/* TweakCN Theme CSS Variables */
+/* TweakCN Theme CSS Variables - Enhanced Emerald Professional Theme */
 :root {
-    --background: #faf9f6;
-    --foreground: #262626;
-    --card: #faf9f6;
-    --card-foreground: #262626;
-    --popover: #faf9f6;
-    --popover-foreground: #262626;
-    --primary: #f59e0b;
-    --primary-foreground: #000000;
-    --secondary: #f3f4f6;
-    --secondary-foreground: #4b5563;
-    --muted: #f9fafb;
-    --muted-foreground: #6b7280;
-    --accent: #fffbeb;
-    --accent-foreground: #92400e;
+    /* Base Colors */
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    
+    /* Primary Theme - Emerald */
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+    --primary-hover: #059669;
+    --primary-light: #d1fae5;
+    --primary-dark: #064e3b;
+    
+    /* Secondary Colors */
+    --secondary: #f8fafc;
+    --secondary-foreground: #475569;
+    --secondary-hover: #e2e8f0;
+    
+    /* Muted Colors */
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --muted-hover: #e2e8f0;
+    
+    /* Accent Colors */
+    --accent: #ecfdf5;
+    --accent-foreground: #065f46;
+    --accent-hover: #d1fae5;
+    
+    /* Status Colors */
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #e5e7eb;
-    --input: #e5e7eb;
-    --ring: #f59e0b;
-    --chart-1: #f59e0b;
-    --chart-2: #d97706;
-    --chart-3: #b45309;
-    --chart-4: #92400e;
-    --chart-5: #78350f;
-    --sidebar: #f9fafb;
-    --sidebar-foreground: #262626;
-    --sidebar-primary: #f59e0b;
+    --success: #10b981;
+    --success-foreground: #ffffff;
+    --warning: #f59e0b;
+    --warning-foreground: #ffffff;
+    --info: #3b82f6;
+    --info-foreground: #ffffff;
+    
+    /* Border & Input */
+    --border: #e2e8f0;
+    --border-hover: #cbd5e1;
+    --input: #f8fafc;
+    --input-border: #e2e8f0;
+    --ring: #10b981;
+    
+    /* Chart Colors */
+    --chart-1: #10b981;
+    --chart-2: #3b82f6;
+    --chart-3: #f59e0b;
+    --chart-4: #8b5cf6;
+    --chart-5: #ef4444;
+    
+    /* Sidebar */
+    --sidebar: #ffffff;
+    --sidebar-foreground: #0f172a;
+    --sidebar-primary: #10b981;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #fffbeb;
-    --sidebar-accent-foreground: #92400e;
-    --sidebar-border: #e5e7eb;
-    --sidebar-ring: #f59e0b;
-    --font-sans: Inter, sans-serif;
-    --font-serif: Source Serif 4, serif;
-    --font-mono: JetBrains Mono, monospace;
-    --radius: 0.375rem;
-    --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-    --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-    --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
-    --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
-    --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
-    --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
-    --tracking-normal: 0em;
-    --spacing: 0.25rem;
+    --sidebar-accent: #ecfdf5;
+    --sidebar-accent-foreground: #065f46;
+    --sidebar-border: #e2e8f0;
+    --sidebar-ring: #10b981;
+    
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-serif: 'Source Serif 4', Georgia, serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
+    
+    /* Shadows */
+    --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.1), 0px 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.1), 0px 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.1), 0px 8px 10px -6px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.25);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition: 200ms ease;
+    --transition-slow: 300ms ease;
 }
 
 .dark {
-    --background: #171717;
-    --foreground: #e5e5e5;
-    --card: #262626;
-    --card-foreground: #e5e5e5;
-    --popover: #262626;
-    --popover-foreground: #e5e5e5;
-    --primary: #f59e0b;
-    --primary-foreground: #000000;
-    --secondary: #262626;
-    --secondary-foreground: #e5e5e5;
-    --muted: #262626;
-    --muted-foreground: #a3a3a3;
-    --accent: #92400e;
-    --accent-foreground: #fde68a;
+    /* Base Colors - Dark Mode */
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --card: #1e293b;
+    --card-foreground: #f8fafc;
+    --popover: #1e293b;
+    --popover-foreground: #f8fafc;
+    
+    /* Primary Theme - Emerald Dark */
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+    --primary-hover: #34d399;
+    --primary-light: #065f46;
+    --primary-dark: #ecfdf5;
+    
+    /* Secondary Colors - Dark */
+    --secondary: #334155;
+    --secondary-foreground: #f1f5f9;
+    --secondary-hover: #475569;
+    
+    /* Muted Colors - Dark */
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --muted-hover: #334155;
+    
+    /* Accent Colors - Dark */
+    --accent: #065f46;
+    --accent-foreground: #d1fae5;
+    --accent-hover: #047857;
+    
+    /* Status Colors - Dark */
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #404040;
-    --input: #404040;
-    --ring: #f59e0b;
-    --chart-1: #fbbf24;
-    --chart-2: #d97706;
-    --chart-3: #92400e;
-    --chart-4: #b45309;
-    --chart-5: #92400e;
-    --sidebar: #0f0f0f;
-    --sidebar-foreground: #e5e5e5;
-    --sidebar-primary: #f59e0b;
+    --success: #10b981;
+    --success-foreground: #ffffff;
+    --warning: #f59e0b;
+    --warning-foreground: #000000;
+    --info: #3b82f6;
+    --info-foreground: #ffffff;
+    
+    /* Border & Input - Dark */
+    --border: #334155;
+    --border-hover: #475569;
+    --input: #1e293b;
+    --input-border: #334155;
+    --ring: #10b981;
+    
+    /* Chart Colors - Dark */
+    --chart-1: #34d399;
+    --chart-2: #60a5fa;
+    --chart-3: #fbbf24;
+    --chart-4: #a78bfa;
+    --chart-5: #f87171;
+    
+    /* Sidebar - Dark */
+    --sidebar: #0f172a;
+    --sidebar-foreground: #f8fafc;
+    --sidebar-primary: #10b981;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #92400e;
-    --sidebar-accent-foreground: #fde68a;
-    --sidebar-border: #404040;
-    --sidebar-ring: #f59e0b;
+    --sidebar-accent: #065f46;
+    --sidebar-accent-foreground: #d1fae5;
+    --sidebar-border: #334155;
+    --sidebar-ring: #10b981;
 }
 
 body {
@@ -303,10 +387,226 @@ body {
     left: 100%;
 }
 
-/* Smooth transitions for all interactive elements */
+/* Universal Component Styles - TweakCN Theme */
 * {
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    transition: background-color var(--transition), border-color var(--transition), color var(--transition), transform var(--transition);
 }
+
+/* Button Components */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all var(--transition);
+    cursor: pointer;
+    border: none;
+    outline: none;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+}
+
+.btn-secondary:hover {
+    background: var(--secondary-hover);
+    border-color: var(--border-hover);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--foreground);
+    padding: 0.5rem 1rem;
+}
+
+.btn-ghost:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+/* Input Components */
+.input {
+    display: flex;
+    width: 100%;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--input-border);
+    background: var(--input);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all var(--transition);
+    color: var(--foreground);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.input::placeholder {
+    color: var(--muted-foreground);
+}
+
+/* Card Components */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--card-foreground);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-hover);
+}
+
+.card-header {
+    padding: 1.5rem 1.5rem 0;
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    padding: 0 1.5rem 1.5rem;
+}
+
+/* Badge Components */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all var(--transition);
+}
+
+.badge-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.badge-secondary {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+}
+
+.badge-success {
+    background: var(--success);
+    color: var(--success-foreground);
+}
+
+.badge-warning {
+    background: var(--warning);
+    color: var(--warning-foreground);
+}
+
+.badge-destructive {
+    background: var(--destructive);
+    color: var(--destructive-foreground);
+}
+
+/* Alert Components */
+.alert {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.alert-success {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+
+.alert-warning {
+    background: #fef3c7;
+    border-color: var(--warning);
+    color: #92400e;
+}
+
+.alert-destructive {
+    background: #fee2e2;
+    border-color: var(--destructive);
+    color: #991b1b;
+}
+
+.alert-info {
+    background: #dbeafe;
+    border-color: var(--info);
+    color: #1e40af;
+}
+
+/* Table Components */
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+}
+
+.table tbody tr:hover {
+    background: var(--accent);
+}
+
+/* Select Components */
+.select {
+    display: flex;
+    align-items: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--input-border);
+    background: var(--input);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all var(--transition);
+    color: var(--foreground);
+    cursor: pointer;
+}
+
+.select:focus {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Smooth transitions for all interactive elements */
 
 /* Enhanced hover effects for navigation tabs */
 #sidebar .nav button:hover {
@@ -688,11 +988,18 @@ body {
 .portfolio-chart-container {
     background: var(--card);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 24px;
     border: 1px solid var(--border);
-    min-height: 250px;
+    min-height: 500px;
     position: relative;
     width: 100%;
+    margin: 0 auto;
+}
+
+.portfolio-chart-container canvas {
+    width: 100% !important;
+    height: 500px !important;
+    max-width: none !important;
 }
 
 .top-holdings-section {
@@ -829,9 +1136,16 @@ body {
     border-radius: var(--radius-md);
     padding: 40px;
     border: 1px solid var(--border);
-    min-height: 400px;
+    min-height: 600px;
     position: relative;
     width: 100%;
+    margin: 0 auto;
+}
+
+.asset-allocation-chart-container canvas {
+    width: 100% !important;
+    height: 600px !important;
+    max-width: none !important;
 }
 
 .chart-and-insights-container {

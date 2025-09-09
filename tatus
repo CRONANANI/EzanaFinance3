@@ -3,3 +3,8 @@
 [33m31be033[m ci: add Azure Static Web Apps workflow file on-behalf-of: @Azure opensource@microsoft.com
 [33m2458104[m docs: frontend tech stack
 [33m40f7404[m feat: react query
+[33md93a9ca[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix expandable portfolio cards - cards now properly expand to full width with improved functionality and animations
+[33m0897bd6[m Fix navigation system to properly load HTML pages and initialize page-specific functionality
+[33mcec5356[m Integrate EzanaEzana features: Add bank account integration, financial health score, investment recommendations, and comprehensive financial analytics
+[33m6ba3247[m Complete codebase cleanup: Remove React components, fix navigation system, restore all portfolio cards with expandable functionality
+[33m60c065c[m Save current state before cleanup
