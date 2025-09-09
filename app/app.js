@@ -4,22 +4,36 @@ let followedCongressPeople = new Set(JSON.parse(localStorage.getItem('followedCo
 
 // Page loader functionality
 async function loadPageContent(pageName) {
-    const pageMap = {
-        'home-dashboard': getHomeDashboardContent,
-        'inside-the-capitol': getInsideTheCapitolContent,
-        'market-analysis': getMarketAnalysisContent,
-        'company-research': getCompanyResearchContent,
-        'economic-indicators': getEconomicIndicatorsContent,
-        'watchlist': getWatchlistContent,
-        'community': getCommunityContent,
-        'financial-analytics': getFinancialAnalyticsContent
-    };
+    try {
+        // First try to load from HTML file
+        const response = await fetch(`pages/${pageName}.html`);
+        if (response.ok) {
+            const content = await response.text();
+            return content;
+        } else {
+            throw new Error(`Failed to load ${pageName}.html`);
+        }
+    } catch (error) {
+        console.warn(`Could not load ${pageName}.html, using fallback content:`, error);
+        
+        // Fallback to inline content
+        const pageMap = {
+            'home-dashboard': getHomeDashboardContent,
+            'inside-the-capitol': getInsideTheCapitolContent,
+            'market-analysis': getMarketAnalysisContent,
+            'company-research': getCompanyResearchContent,
+            'economic-indicators': getEconomicIndicatorsContent,
+            'watchlist': getWatchlistContent,
+            'community': getCommunityContent,
+            'financial-analytics': getFinancialAnalyticsContent
+        };
 
-    const contentFunction = pageMap[pageName];
-    if (contentFunction) {
-        return contentFunction();
-    } else {
-        return `<div class="text-center py-16"><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Page not found</h1></div>`;
+        const contentFunction = pageMap[pageName];
+        if (contentFunction) {
+            return contentFunction();
+        } else {
+            return `<div class="text-center py-16"><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Page not found</h1></div>`;
+        }
     }
 }
 
@@ -264,8 +278,8 @@ async function showHomeDashboard() {
     const content = await loadPageContent('home-dashboard');
     dynamicContent.innerHTML = content;
     
-    // Initialize portfolio functionality
-    initializePortfolioPage();
+    // Initialize page-specific functionality
+    await initializePageFunctionality('home-dashboard');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -283,8 +297,8 @@ async function showInsideTheCapitol() {
     const content = await loadPageContent('inside-the-capitol');
     dynamicContent.innerHTML = content;
     
-    // Initialize congressional trading data
-    await initializeCongressTradingData();
+    // Initialize page-specific functionality
+    await initializePageFunctionality('inside-the-capitol');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -753,6 +767,9 @@ async function showMarketAnalysis() {
     const content = await loadPageContent('market-analysis');
     dynamicContent.innerHTML = content;
     
+    // Initialize page-specific functionality
+    await initializePageFunctionality('market-analysis');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -768,6 +785,9 @@ async function showCompanyResearch() {
     
     const content = await loadPageContent('company-research');
     dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('company-research');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -785,6 +805,9 @@ async function showEconomicIndicators() {
     const content = await loadPageContent('economic-indicators');
     dynamicContent.innerHTML = content;
     
+    // Initialize page-specific functionality
+    await initializePageFunctionality('economic-indicators');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -800,6 +823,9 @@ async function showWatchlists() {
     
     const content = await loadPageContent('watchlist');
     dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('watchlist');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -817,6 +843,9 @@ async function showCommunity() {
     const content = await loadPageContent('community');
     dynamicContent.innerHTML = content;
     
+    // Initialize page-specific functionality
+    await initializePageFunctionality('community');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -833,15 +862,47 @@ async function showFinancialAnalytics() {
     const content = await loadPageContent('financial-analytics');
     dynamicContent.innerHTML = content;
     
-    // Load financial health data
-    await loadFinancialHealthData();
+    // Initialize page-specific functionality
+    await initializePageFunctionality('financial-analytics');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Page initialization function
+async function initializePageFunctionality(pageName) {
+    switch (pageName) {
+        case 'home-dashboard':
+            initializePortfolioPage();
+            break;
+        case 'inside-the-capitol':
+            await initializeCongressTradingData();
+            break;
+        case 'financial-analytics':
+            await loadFinancialHealthData();
+            break;
+        case 'market-analysis':
+            console.log('Market analysis page initialized');
+            break;
+        case 'company-research':
+            console.log('Company research page initialized');
+            break;
+        case 'economic-indicators':
+            console.log('Economic indicators page initialized');
+            break;
+        case 'watchlist':
+            console.log('Watchlist page initialized');
+            break;
+        case 'community':
+            console.log('Community page initialized');
+            break;
+        default:
+            console.log(`No initialization needed for ${pageName}`);
+    }
+}
+
 // Page content functions
 function getHomeDashboardContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="flex items-center justify-between mb-8">
                 <div>
@@ -1226,11 +1287,11 @@ function getHomeDashboardContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 function getInsideTheCapitolContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Inside the Capitol</h1>
@@ -1355,11 +1416,11 @@ function getInsideTheCapitolContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 function getMarketAnalysisContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-4">Market Analysis</h1>
@@ -1420,11 +1481,11 @@ function getMarketAnalysisContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 function getCompanyResearchContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Company Research</h1>
@@ -1487,11 +1548,11 @@ function getCompanyResearchContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 function getEconomicIndicatorsContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-4">Economic Indicators</h1>
@@ -1533,11 +1594,11 @@ function getEconomicIndicatorsContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 function getWatchlistContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Watchlists</h1>
@@ -1554,7 +1615,7 @@ function getWatchlistContent() {
                     </div>
                     
                     <div id="following-section">
-                        \${renderFollowingSection()}
+                        ${renderFollowingSection()}
                     </div>
                 </div>
                 
@@ -1567,11 +1628,11 @@ function getWatchlistContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 function getCommunityContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">Community Hub</h1>
@@ -1606,7 +1667,7 @@ function getCommunityContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 // Portfolio page initialization
@@ -1809,7 +1870,7 @@ function refreshPortfolioData() {
 }
 
 function getFinancialAnalyticsContent() {
-    return \`
+    return `
         <div class="container mx-auto px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4">Financial Analytics</h1>
@@ -1994,7 +2055,7 @@ function getFinancialAnalyticsContent() {
                 </div>
             </div>
         </div>
-    \`;
+    `;
 }
 
 // Financial Analytics Functions
@@ -2063,25 +2124,25 @@ async function loadInvestmentRecommendations() {
     const container = document.getElementById('investment-recommendations');
     
     if (container) {
-        container.innerHTML = currentRecommendations.map(rec => \`
+        container.innerHTML = currentRecommendations.map(rec => `
             <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-emerald-500 transition-colors">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="font-semibold text-gray-900 dark:text-white">\${rec.symbol}</div>
+                    <div class="font-semibold text-gray-900 dark:text-white">${rec.symbol}</div>
                     <div class="text-right">
-                        <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">\${rec.allocation}%</div>
+                        <div class="text-lg font-bold text-emerald-600 dark:text-emerald-400">${rec.allocation}%</div>
                         <div class="text-xs text-gray-600 dark:text-gray-400">Allocation</div>
                     </div>
                 </div>
                 <div class="mb-2">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">\${rec.name}</div>
-                    <div class="text-xs text-gray-600 dark:text-gray-400">Expected Return: \${rec.return}</div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">${rec.name}</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">Expected Return: ${rec.return}</div>
                 </div>
                 <div class="flex items-center space-x-2">
                     <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded">ETF</span>
-                    <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs rounded">\${rec.risk} Risk</span>
+                    <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs rounded">${rec.risk} Risk</span>
                 </div>
             </div>
-        \`).join('');
+        `).join('');
     }
 }
 
@@ -2111,7 +2172,7 @@ async function submitBankConnection(event) {
     }
     
     try {
-        showNotification(\`Successfully connected to \${bankName}!\`, 'success');
+        showNotification(`Successfully connected to ${bankName}!`, 'success');
         closeBankConnectionModal();
         
         setTimeout(() => {
