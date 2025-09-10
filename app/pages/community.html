@@ -1,89 +1,89 @@
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-6 py-12">
     <!-- Header with Trophy Room -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
         <div>
-            <h1 class="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">Community Hub</h1>
-            <p class="text-lg text-gray-600 dark:text-gray-400">Connect, share, and grow with fellow investors</p>
+            <h1 class="text-4xl font-light text-foreground tracking-tight mb-3">Community Hub</h1>
+            <p class="text-lg text-muted-foreground">Connect, share, and grow with fellow investors</p>
         </div>
-        <button onclick="showTrophyRoom()" class="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-6 py-3 rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all duration-200 shadow-lg">
+        <button onclick="showTrophyRoom()" class="flex items-center space-x-3 bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
             <i class="bi bi-trophy-fill text-xl"></i>
             <span>Trophy Room</span>
         </button>
     </div>
 
     <!-- Community Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">12,456</p>
+                    <p class="text-sm text-muted-foreground mb-2">Total Members</p>
+                    <p class="text-3xl font-light text-foreground">12,456</p>
                 </div>
-                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-people text-indigo-600 dark:text-indigo-400 text-xl"></i>
+                <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-people text-primary-foreground text-xl"></i>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Active Discussions</p>
-                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">89</p>
+                    <p class="text-sm text-muted-foreground mb-2">Active Discussions</p>
+                    <p class="text-3xl font-light text-foreground">89</p>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-chat-dots text-blue-600 dark:text-blue-400 text-xl"></i>
+                <div class="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-chat-dots text-accent-foreground text-xl"></i>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Your Friends</p>
-                    <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">47</p>
+                    <p class="text-sm text-muted-foreground mb-2">Your Friends</p>
+                    <p class="text-3xl font-light text-foreground">47</p>
                 </div>
-                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-person-hearts text-emerald-600 dark:text-emerald-400 text-xl"></i>
+                <div class="w-14 h-14 bg-chart-3 rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-person-hearts text-chart-2 text-xl"></i>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
-                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">#127</p>
+                    <p class="text-sm text-muted-foreground mb-2">Your Rank</p>
+                    <p class="text-3xl font-light text-foreground">#127</p>
                 </div>
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-trophy text-purple-600 dark:text-purple-400 text-xl"></i>
+                <div class="w-14 h-14 bg-chart-5 rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-trophy text-chart-2 text-xl"></i>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Main Community Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
         <!-- User Search Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-search text-blue-600 dark:text-blue-400 text-xl"></i>
+        <div class="bg-card rounded-2xl border border-border p-8 hover:border-primary transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 bg-accent rounded-xl flex items-center justify-center">
+                    <i class="bi bi-search text-accent-foreground text-xl"></i>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Find Users</h3>
+                <h3 class="text-xl font-medium text-foreground">Find Users</h3>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">Search for other investors on the platform to connect with</p>
-            <div class="space-y-3">
+            <p class="text-muted-foreground mb-6">Search for other investors on the platform to connect with</p>
+            <div class="space-y-4">
                 <div class="relative">
                     <input type="text" id="user-search" placeholder="Search by username, name, or interests..." 
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                    <button onclick="searchUsers()" class="absolute right-2 top-2 bg-emerald-600 text-white px-3 py-1 rounded-md hover:bg-emerald-700 transition-colors">
+                           class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-muted text-foreground">
+                    <button onclick="searchUsers()" class="absolute right-3 top-3 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
-                <div id="search-results" class="space-y-2 max-h-48 overflow-y-auto">
+                <div id="search-results" class="space-y-3 max-h-48 overflow-y-auto">
                     <!-- Search results will appear here -->
-                    <div class="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                    <div class="text-center py-6 text-muted-foreground text-sm">
                         Enter a search term to find users
                     </div>
                 </div>
@@ -91,95 +91,95 @@
         </div>
 
         <!-- Friends List Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-people-fill text-emerald-600 dark:text-emerald-400 text-xl"></i>
+        <div class="bg-card rounded-2xl border border-border p-8 hover:border-primary transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 bg-chart-3 rounded-xl flex items-center justify-center">
+                    <i class="bi bi-people-fill text-chart-2 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">My Friends</h3>
+                <h3 class="text-xl font-medium text-foreground">My Friends</h3>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">View and manage your current connections</p>
-            <div class="space-y-3">
+            <p class="text-muted-foreground mb-6">View and manage your current connections</p>
+            <div class="space-y-4">
                 <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Total Friends:</span>
-                    <span class="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-1 rounded-full text-sm font-medium">47</span>
+                    <span class="text-sm text-muted-foreground">Total Friends:</span>
+                    <span class="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">47</span>
                 </div>
-                <div id="friends-list" class="space-y-2 max-h-48 overflow-y-auto">
+                <div id="friends-list" class="space-y-3 max-h-48 overflow-y-auto">
                     <!-- Sample friends -->
-                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-xs font-bold">AJ</span>
+                    <div class="flex items-center space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
+                        <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
+                            <span class="text-accent-foreground text-sm font-bold">AJ</span>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm text-gray-900 dark:text-white font-medium">Alex Johnson</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">Online • +15.2% this month</div>
+                            <div class="text-sm text-foreground font-medium">Alex Johnson</div>
+                            <div class="text-xs text-primary">Online • +15.2% this month</div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-xs font-bold">SC</span>
+                    <div class="flex items-center space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
+                        <div class="w-10 h-10 bg-chart-3 rounded-xl flex items-center justify-center">
+                            <span class="text-chart-2 text-sm font-bold">SC</span>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm text-gray-900 dark:text-white font-medium">Sarah Chen</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">2h ago • +8.7% this month</div>
+                            <div class="text-sm text-foreground font-medium">Sarah Chen</div>
+                            <div class="text-xs text-muted-foreground">2h ago • +8.7% this month</div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-xs font-bold">MB</span>
+                    <div class="flex items-center space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
+                        <div class="w-10 h-10 bg-chart-5 rounded-xl flex items-center justify-center">
+                            <span class="text-chart-2 text-sm font-bold">MB</span>
                         </div>
                         <div class="flex-1">
-                            <div class="text-sm text-gray-900 dark:text-white font-medium">Mike Brown</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">1d ago • +22.1% this month</div>
+                            <div class="text-sm text-foreground font-medium">Mike Brown</div>
+                            <div class="text-xs text-muted-foreground">1d ago • +22.1% this month</div>
                         </div>
                     </div>
                 </div>
-                <button onclick="viewAllFriends()" class="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 transition-colors text-sm">
+                <button onclick="viewAllFriends()" class="w-full bg-primary text-primary-foreground py-3 rounded-xl hover:bg-opacity-90 transition-colors text-sm font-medium">
                     View All Friends
                 </button>
             </div>
         </div>
 
         <!-- Activity Feed Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-activity text-purple-600 dark:text-purple-400 text-xl"></i>
+        <div class="bg-card rounded-2xl border border-border p-8 hover:border-primary transition-all duration-300">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 bg-chart-5 rounded-xl flex items-center justify-center">
+                    <i class="bi bi-activity text-chart-2 text-xl"></i>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Friends Activity</h3>
+                <h3 class="text-xl font-medium text-foreground">Friends Activity</h3>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">Track your friends' investment activities and engagement</p>
-            <div id="activity-feed" class="space-y-3 max-h-48 overflow-y-auto">
+            <p class="text-muted-foreground mb-6">Track your friends' investment activities and engagement</p>
+            <div id="activity-feed" class="space-y-4 max-h-48 overflow-y-auto">
                 <!-- Sample activities -->
-                <div class="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <div class="w-6 h-6 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
+                    <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-graph-up text-primary-foreground text-sm"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Alex Johnson</span> made a new investment in <span class="text-emerald-600 dark:text-emerald-400 font-medium">TSLA</span></p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
+                        <p class="text-sm text-foreground"><span class="font-medium">Alex Johnson</span> made a new investment in <span class="text-primary font-medium">TSLA</span></p>
+                        <p class="text-xs text-muted-foreground">2 hours ago</p>
                     </div>
                 </div>
-                <div class="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="bi bi-heart text-blue-600 dark:text-blue-400 text-xs"></i>
+                <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
+                    <div class="w-8 h-8 bg-accent rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-heart text-accent-foreground text-sm"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Sarah Chen</span> liked your post about <span class="text-blue-600 dark:text-blue-400 font-medium">market analysis</span></p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">4 hours ago</p>
+                        <p class="text-sm text-foreground"><span class="font-medium">Sarah Chen</span> liked your post about <span class="text-accent font-medium">market analysis</span></p>
+                        <p class="text-xs text-muted-foreground">4 hours ago</p>
                     </div>
                 </div>
-                <div class="flex items-start space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <div class="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="bi bi-chat text-purple-600 dark:text-purple-400 text-xs"></i>
+                <div class="flex items-start space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
+                    <div class="w-8 h-8 bg-chart-3 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="bi bi-chat text-chart-2 text-sm"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm text-gray-900 dark:text-white"><span class="font-medium">Mike Brown</span> commented on <span class="text-purple-600 dark:text-purple-400 font-medium">tech sector trends</span></p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">1 day ago</p>
+                        <p class="text-sm text-foreground"><span class="font-medium">Mike Brown</span> commented on <span class="text-chart-3 font-medium">tech sector trends</span></p>
+                        <p class="text-xs text-muted-foreground">1 day ago</p>
                     </div>
                 </div>
             </div>
-            <button onclick="viewAllActivity()" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm mt-3">
+            <button onclick="viewAllActivity()" class="w-full bg-chart-5 text-chart-2 py-3 rounded-xl hover:bg-opacity-90 transition-colors text-sm font-medium mt-4">
                 View Full Activity
             </button>
         </div>
