@@ -18,38 +18,38 @@
             </div>
         </div>
         
-        <div class="card card-content">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Stock Lists</p>
-                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">5</p>
+                    <p class="text-sm text-muted-foreground mb-2">Stock Lists</p>
+                    <p class="text-3xl font-light text-foreground">5</p>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-list text-blue-600 dark:text-blue-400 text-xl"></i>
+                <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-list text-primary-foreground text-xl"></i>
                 </div>
             </div>
         </div>
         
-        <div class="card card-content">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Alerts</p>
-                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">12</p>
+                    <p class="text-sm text-muted-foreground mb-2">Alerts</p>
+                    <p class="text-3xl font-light text-foreground">12</p>
                 </div>
-                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-bell text-orange-600 dark:text-orange-400 text-xl"></i>
+                <div class="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-bell text-accent-foreground text-xl"></i>
                 </div>
             </div>
         </div>
         
-        <div class="card card-content">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">This Week</p>
-                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">8</p>
+                    <p class="text-sm text-muted-foreground mb-2">This Week</p>
+                    <p class="text-3xl font-light text-foreground">8</p>
                 </div>
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                    <i class="bi bi-graph-up text-purple-600 dark:text-purple-400 text-xl"></i>
+                <div class="w-14 h-14 bg-chart-3 rounded-2xl flex items-center justify-center">
+                    <i class="bi bi-graph-up text-chart-2 text-xl"></i>
                 </div>
             </div>
         </div>
@@ -57,10 +57,10 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- People I'm Following -->
-        <div class="card card-content">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">People I'm Following</h3>
-                <button onclick="switchTab('inside-the-capitol')" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm">
+                <h3 class="text-xl font-medium text-foreground">People I'm Following</h3>
+                <button onclick="switchTab('inside-the-capitol')" class="text-primary hover:text-primary/80 font-medium text-sm">
                     Add More
                 </button>
             </div>
@@ -125,10 +125,10 @@
         </div>
 
         <!-- Stock Watchlists -->
-        <div class="card card-content">
+        <div class="bg-card rounded-2xl p-8 border border-border">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Stock Watchlists</h3>
-                <button onclick="createNewWatchlist()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm">
+                <h3 class="text-xl font-medium text-foreground">Stock Watchlists</h3>
+                <button onclick="createNewWatchlist()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors text-sm">
                     <i class="bi bi-plus mr-1"></i>New List
                 </button>
             </div>
@@ -234,8 +234,8 @@
     </div>
 
     <!-- Recent Activity -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
+    <div class="mt-8 bg-card rounded-2xl p-8 border border-border">
+        <h3 class="text-xl font-medium text-foreground mb-6">Recent Activity</h3>
         
         <div class="space-y-4">
             <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -295,8 +295,8 @@
     </div>
 
     <!-- Alert Settings -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Alert Settings</h3>
+    <div class="mt-8 bg-card rounded-2xl p-8 border border-border">
+        <h3 class="text-xl font-medium text-foreground mb-6">Alert Settings</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -371,8 +371,8 @@
     </div>
 
     <!-- Performance Summary -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Watchlist Performance</h3>
+    <div class="mt-8 bg-card rounded-2xl p-8 border border-border">
+        <h3 class="text-xl font-medium text-foreground mb-6">Watchlist Performance</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="text-center p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
@@ -397,39 +397,39 @@
 
     <!-- Quick Actions -->
     <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button onclick="createNewWatchlist()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-emerald-500 hover:shadow-lg transition-all duration-200 group">
+        <button onclick="createNewWatchlist()" class="p-6 bg-card rounded-2xl border border-border hover:border-primary hover:shadow-lg transition-all duration-200 group">
             <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                    <i class="bi bi-plus text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>
+                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary transition-colors">
+                    <i class="bi bi-plus text-primary group-hover:text-primary-foreground text-xl"></i>
                 </div>
-                <span class="font-medium text-gray-900 dark:text-white">New Watchlist</span>
+                <span class="font-medium text-foreground">New Watchlist</span>
             </div>
         </button>
         
-        <button class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all duration-200 group">
+        <button class="p-6 bg-card rounded-2xl border border-border hover:border-accent hover:shadow-lg transition-all duration-200 group">
             <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                    <i class="bi bi-bell text-blue-600 dark:text-blue-400 group-hover:text-white text-xl"></i>
+                <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center group-hover:bg-accent transition-colors">
+                    <i class="bi bi-bell text-accent group-hover:text-accent-foreground text-xl"></i>
                 </div>
-                <span class="font-medium text-gray-900 dark:text-white">Set Alert</span>
+                <span class="font-medium text-foreground">Set Alert</span>
             </div>
         </button>
         
-        <button class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-lg transition-all duration-200 group">
+        <button class="p-6 bg-card rounded-2xl border border-border hover:border-chart-3 hover:shadow-lg transition-all duration-200 group">
             <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center group-hover:bg-purple-500 transition-colors">
-                    <i class="bi bi-download text-purple-600 dark:text-purple-400 group-hover:text-white text-xl"></i>
+                <div class="w-12 h-12 bg-chart-3/10 rounded-full flex items-center justify-center group-hover:bg-chart-3 transition-colors">
+                    <i class="bi bi-download text-chart-3 group-hover:text-chart-2 text-xl"></i>
                 </div>
-                <span class="font-medium text-gray-900 dark:text-white">Export Data</span>
+                <span class="font-medium text-foreground">Export Data</span>
             </div>
         </button>
         
-        <button class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-orange-500 hover:shadow-lg transition-all duration-200 group">
+        <button class="p-6 bg-card rounded-2xl border border-border hover:border-chart-4 hover:shadow-lg transition-all duration-200 group">
             <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center group-hover:bg-orange-500 transition-colors">
-                    <i class="bi bi-share text-orange-600 dark:text-orange-400 group-hover:text-white text-xl"></i>
+                <div class="w-12 h-12 bg-chart-4/10 rounded-full flex items-center justify-center group-hover:bg-chart-4 transition-colors">
+                    <i class="bi bi-share text-chart-4 group-hover:text-chart-2 text-xl"></i>
                 </div>
-                <span class="font-medium text-gray-900 dark:text-white">Share List</span>
+                <span class="font-medium text-foreground">Share List</span>
             </div>
         </button>
     </div>
