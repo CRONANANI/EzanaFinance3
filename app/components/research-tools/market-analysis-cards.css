@@ -12,7 +12,7 @@
 .market-overview-card {
     background: var(--card);
     border-radius: 1rem;
-    padding: 2rem;
+    padding: 1rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;
@@ -58,13 +58,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .market-overview-card .card-title {
     font-size: 0.875rem;
     color: var(--muted-foreground);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.25rem 0;
     font-weight: 500;
 }
 
@@ -79,7 +79,7 @@
 .market-overview-card .card-change {
     font-size: 0.875rem;
     color: var(--primary);
-    margin: 0.25rem 0 0 0;
+    margin: 0.125rem 0 0 0;
     font-weight: 500;
 }
 
@@ -89,9 +89,9 @@
 
 /* Card Icon */
 .market-overview-card .card-icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
