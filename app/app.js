@@ -25,7 +25,8 @@ async function loadPageContent(pageName) {
             'economic-indicators': getEconomicIndicatorsContent,
             'watchlist': getWatchlistContent,
             'community': getCommunityContent,
-            'financial-analytics': getFinancialAnalyticsContent
+            'financial-analytics': getFinancialAnalyticsContent,
+            'user-profile-settings': getUserProfileSettingsContent
         };
 
         const contentFunction = pageMap[pageName];

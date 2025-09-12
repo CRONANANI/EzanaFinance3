@@ -1,0 +1,375 @@
+<div class="container mx-auto px-6 py-12">
+    <div class="flex items-center justify-between mb-12">
+        <div>
+            <h1 class="text-4xl font-light text-foreground tracking-tight">Profile Settings</h1>
+            <p class="text-muted-foreground mt-3 text-lg">Manage your account preferences and personal information</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="saveProfileSettings()" class="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
+                <i class="bi bi-check-lg mr-2"></i>Save Changes
+            </button>
+            <button onclick="discardChanges()" class="px-6 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-opacity-90 transition-all duration-300">
+                <i class="bi bi-x-lg mr-2"></i>Discard
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Settings Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Personal Information -->
+        <div class="lg:col-span-2">
+            <div class="bg-card rounded-2xl p-8 border border-border mb-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mr-4">
+                        <i class="bi bi-person text-primary-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-light text-foreground">Personal Information</h2>
+                        <p class="text-muted-foreground">Update your personal details and contact information</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">First Name</label>
+                        <input type="text" id="firstName" value="John" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Last Name</label>
+                        <input type="text" id="lastName" value="Doe" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Email Address</label>
+                        <input type="email" id="email" value="john.doe@example.com" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                        <input type="tel" id="phone" value="+1 (555) 123-4567" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-foreground mb-2">Bio</label>
+                        <textarea id="bio" rows="3" placeholder="Tell us about yourself..." class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 resize-none">Investment analyst with 5+ years of experience in financial markets and portfolio management.</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Security -->
+            <div class="bg-card rounded-2xl p-8 border border-border mb-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center mr-4">
+                        <i class="bi bi-shield-lock text-accent-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-light text-foreground">Account Security</h2>
+                        <p class="text-muted-foreground">Manage your password and security preferences</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Current Password</label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">New Password</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password" class="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button onclick="changePassword()" class="px-6 py-3 bg-accent text-accent-foreground rounded-xl font-medium hover:bg-opacity-90 transition-all duration-300">
+                            <i class="bi bi-key mr-2"></i>Change Password
+                        </button>
+                        <button onclick="enableTwoFactor()" class="px-6 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-opacity-90 transition-all duration-300">
+                            <i class="bi bi-shield-check mr-2"></i>Enable 2FA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Preferences -->
+            <div class="bg-card rounded-2xl p-8 border border-border">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mr-4">
+                        <i class="bi bi-bell text-primary-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-light text-foreground">Notification Preferences</h2>
+                        <p class="text-muted-foreground">Choose how you want to be notified about important updates</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-foreground">Email Notifications</h3>
+                            <p class="text-sm text-muted-foreground">Receive updates via email</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="emailNotifications" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-foreground">Push Notifications</h3>
+                            <p class="text-sm text-muted-foreground">Get real-time alerts on your device</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="pushNotifications" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-foreground">Trading Alerts</h3>
+                            <p class="text-sm text-muted-foreground">Notifications for congressional trading activity</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="tradingAlerts" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-foreground">Market Updates</h3>
+                            <p class="text-sm text-muted-foreground">Daily market analysis and insights</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="marketUpdates" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-8">
+            <!-- Profile Picture -->
+            <div class="bg-card rounded-2xl p-8 border border-border">
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="bi bi-person-circle text-white text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-foreground mb-2">John Doe</h3>
+                    <p class="text-muted-foreground mb-4">Premium Member</p>
+                    <button onclick="changeProfilePicture()" class="px-4 py-2 bg-muted text-muted-foreground rounded-lg font-medium hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-camera mr-2"></i>Change Photo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Account Status -->
+            <div class="bg-card rounded-2xl p-8 border border-border">
+                <h3 class="text-xl font-medium text-foreground mb-4">Account Status</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-muted-foreground">Account Type</span>
+                        <span class="px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm font-medium">Premium</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-muted-foreground">Member Since</span>
+                        <span class="text-foreground">Jan 2023</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-muted-foreground">Last Login</span>
+                        <span class="text-foreground">2 hours ago</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-muted-foreground">Data Usage</span>
+                        <span class="text-foreground">2.4 GB / 10 GB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-card rounded-2xl p-8 border border-border">
+                <h3 class="text-xl font-medium text-foreground mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <button onclick="exportData()" class="w-full flex items-center px-4 py-3 bg-muted text-muted-foreground rounded-lg hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-download mr-3"></i>
+                        <span>Export Data</span>
+                    </button>
+                    <button onclick="downloadReport()" class="w-full flex items-center px-4 py-3 bg-muted text-muted-foreground rounded-lg hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-file-earmark-text mr-3"></i>
+                        <span>Download Report</span>
+                    </button>
+                    <button onclick="manageSubscriptions()" class="w-full flex items-center px-4 py-3 bg-muted text-muted-foreground rounded-lg hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-credit-card mr-3"></i>
+                        <span>Manage Subscription</span>
+                    </button>
+                    <button onclick="contactSupport()" class="w-full flex items-center px-4 py-3 bg-muted text-muted-foreground rounded-lg hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-headset mr-3"></i>
+                        <span>Contact Support</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="bg-card rounded-2xl p-8 border border-red-200 dark:border-red-800">
+                <h3 class="text-xl font-medium text-red-600 dark:text-red-400 mb-4">Danger Zone</h3>
+                <div class="space-y-3">
+                    <button onclick="deactivateAccount()" class="w-full flex items-center px-4 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-pause-circle mr-3"></i>
+                        <span>Deactivate Account</span>
+                    </button>
+                    <button onclick="deleteAccount()" class="w-full flex items-center px-4 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-opacity-90 transition-all duration-300">
+                        <i class="bi bi-trash mr-3"></i>
+                        <span>Delete Account</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Profile Settings JavaScript Functions
+function saveProfileSettings() {
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const bio = document.getElementById('bio').value;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+
+    // Simulate API call
+    showNotification('Profile settings saved successfully!', 'success');
+    
+    // Update the user name in the sidebar
+    const userNameElement = document.querySelector('.flex-1.min-w-0 p');
+    if (userNameElement) {
+        userNameElement.textContent = `${firstName} ${lastName}`;
+    }
+}
+
+function discardChanges() {
+    // Reset form to original values
+    document.getElementById('firstName').value = 'John';
+    document.getElementById('lastName').value = 'Doe';
+    document.getElementById('email').value = 'john.doe@example.com';
+    document.getElementById('phone').value = '+1 (555) 123-4567';
+    document.getElementById('bio').value = 'Investment analyst with 5+ years of experience in financial markets and portfolio management.';
+    
+    showNotification('Changes discarded', 'info');
+}
+
+function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showNotification('Please fill in all password fields', 'error');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        showNotification('New passwords do not match', 'error');
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        showNotification('Password must be at least 8 characters long', 'error');
+        return;
+    }
+
+    // Simulate API call
+    showNotification('Password changed successfully!', 'success');
+    
+    // Clear password fields
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+}
+
+function enableTwoFactor() {
+    showNotification('Two-factor authentication setup coming soon!', 'info');
+}
+
+function changeProfilePicture() {
+    showNotification('Profile picture upload coming soon!', 'info');
+}
+
+function exportData() {
+    showNotification('Data export started. You will receive an email when ready.', 'info');
+}
+
+function downloadReport() {
+    showNotification('Generating report...', 'info');
+}
+
+function manageSubscriptions() {
+    showNotification('Subscription management coming soon!', 'info');
+}
+
+function contactSupport() {
+    showNotification('Opening support chat...', 'info');
+}
+
+function deactivateAccount() {
+    if (confirm('Are you sure you want to deactivate your account? You can reactivate it anytime.')) {
+        showNotification('Account deactivation coming soon!', 'info');
+    }
+}
+
+function deleteAccount() {
+    if (confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
+        if (confirm('This will permanently delete all your data. Type "DELETE" to confirm.')) {
+            showNotification('Account deletion coming soon!', 'info');
+        }
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
+    
+    // Set colors based on type
+    switch(type) {
+        case 'success':
+            notification.className += ' bg-green-500 text-white';
+            break;
+        case 'error':
+            notification.className += ' bg-red-500 text-white';
+            break;
+        case 'warning':
+            notification.className += ' bg-yellow-500 text-white';
+            break;
+        default:
+            notification.className += ' bg-blue-500 text-white';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+</script>
