@@ -8,7 +8,7 @@
     margin-bottom: 3rem;
 }
 
-/* Individual Watchlist Overview Card */
+/* Individual Watchlist Overview Card - Unified Design */
 .watchlist-overview-card {
     background: var(--card);
     border-radius: 1rem;
@@ -17,10 +17,11 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .watchlist-overview-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
 }
@@ -32,13 +33,24 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .watchlist-overview-card:hover::before {
     opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* Card Header */
@@ -115,7 +127,7 @@
     background: var(--chart-5);
 }
 
-/* Following People Card */
+/* Following People Card - Unified Design */
 .following-people-card {
     background: var(--card);
     border-radius: 1rem;
@@ -123,11 +135,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .following-people-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.following-people-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.following-people-card:hover::before {
+    opacity: 1;
 }
 
 .following-people-card .card-header {
@@ -261,7 +295,7 @@
     background: var(--muted-foreground);
 }
 
-/* Stock Watchlists Card */
+/* Stock Watchlists Card - Unified Design */
 .stock-watchlists-card {
     background: var(--card);
     border-radius: 1rem;
@@ -269,11 +303,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .stock-watchlists-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.stock-watchlists-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stock-watchlists-card:hover::before {
+    opacity: 1;
 }
 
 .stock-watchlists-card .card-header {
@@ -414,7 +470,7 @@
     border-color: var(--primary);
 }
 
-/* Recent Activity Card */
+/* Recent Activity Card - Unified Design */
 .recent-activity-card {
     background: var(--card);
     border-radius: 1rem;
@@ -422,11 +478,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .recent-activity-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.recent-activity-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.recent-activity-card:hover::before {
+    opacity: 1;
 }
 
 .recent-activity-card .card-title {
@@ -506,7 +584,7 @@
     color: var(--foreground);
 }
 
-/* Alert Settings Card */
+/* Alert Settings Card - Unified Design */
 .alert-settings-card {
     background: var(--card);
     border-radius: 1rem;
@@ -514,11 +592,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .alert-settings-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.alert-settings-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.alert-settings-card:hover::before {
+    opacity: 1;
 }
 
 .alert-settings-card .card-title {
@@ -601,7 +701,7 @@
     transform: translateX(1.5rem);
 }
 
-/* Watchlist Performance Card */
+/* Watchlist Performance Card - Unified Design */
 .watchlist-performance-card {
     background: var(--card);
     border-radius: 1rem;
@@ -609,11 +709,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .watchlist-performance-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.watchlist-performance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.watchlist-performance-card:hover::before {
+    opacity: 1;
 }
 
 .watchlist-performance-card .card-title {

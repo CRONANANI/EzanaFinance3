@@ -8,7 +8,7 @@
     margin-bottom: 3rem;
 }
 
-/* Individual Community Overview Card */
+/* Individual Community Overview Card - Unified Design */
 .community-overview-card {
     background: var(--card);
     border-radius: 1rem;
@@ -17,10 +17,11 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .community-overview-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
 }
@@ -32,13 +33,24 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .community-overview-card:hover::before {
     opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* Card Header */
@@ -115,7 +127,7 @@
     background: var(--chart-5);
 }
 
-/* Featured Discussions Card */
+/* Featured Discussions Card - Unified Design */
 .featured-discussions-card {
     background: var(--card);
     border-radius: 1rem;
@@ -123,11 +135,33 @@
     padding: 2rem;
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .featured-discussions-card:hover {
-    border-color: var(--primary);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.featured-discussions-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.featured-discussions-card:hover::before {
+    opacity: 1;
 }
 
 /* Discussion Header */
@@ -271,7 +305,7 @@
     font-size: 0.875rem;
 }
 
-/* Expert Insights Card */
+/* Expert Insights Card - Unified Design */
 .expert-insights-card {
     background: var(--card);
     border-radius: 1rem;
@@ -279,11 +313,33 @@
     padding: 2rem;
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .expert-insights-card:hover {
-    border-color: var(--primary);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.expert-insights-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.expert-insights-card:hover::before {
+    opacity: 1;
 }
 
 /* Expert Header */
@@ -420,7 +476,7 @@
     font-weight: 500;
 }
 
-/* Market Sentiment Card */
+/* Market Sentiment Card - Unified Design */
 .market-sentiment-card {
     background: var(--card);
     border-radius: 1rem;
@@ -428,11 +484,33 @@
     padding: 2rem;
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .market-sentiment-card:hover {
-    border-color: var(--primary);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.market-sentiment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.market-sentiment-card:hover::before {
+    opacity: 1;
 }
 
 /* Sentiment Header */

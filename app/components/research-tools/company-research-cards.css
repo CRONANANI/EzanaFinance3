@@ -1,6 +1,6 @@
 /* Company Research Cards Component Styles */
 
-/* Company Search Card */
+/* Company Search Card - Unified Design */
 .company-search-card {
     background: var(--card);
     border-radius: 1rem;
@@ -8,11 +8,42 @@
     border: 1px solid var(--border);
     margin-bottom: 3rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .company-search-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.company-search-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.company-search-card:hover::before {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 .company-search-card .card-title {
@@ -89,7 +120,7 @@
     display: block;
 }
 
-/* Company Overview Card */
+/* Company Overview Card - Unified Design */
 .company-overview-card {
     background: var(--card);
     border-radius: 1rem;
@@ -97,11 +128,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .company-overview-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.company-overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.company-overview-card:hover::before {
+    opacity: 1;
 }
 
 /* Company Header */
@@ -209,7 +262,7 @@
     margin: 0;
 }
 
-/* Research Reports Card */
+/* Research Reports Card - Unified Design */
 .research-reports-card {
     background: var(--card);
     border-radius: 1rem;
@@ -217,11 +270,33 @@
     border: 1px solid var(--border);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .research-reports-card:hover {
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.research-reports-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.research-reports-card:hover::before {
+    opacity: 1;
 }
 
 .research-reports-card .card-title {
@@ -361,12 +436,33 @@
     padding: 1.5rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .comparison-tool-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary);
+}
+
+.comparison-tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.comparison-tool-card:hover::before {
+    opacity: 1;
 }
 
 .comparison-tool-card .card-title {
