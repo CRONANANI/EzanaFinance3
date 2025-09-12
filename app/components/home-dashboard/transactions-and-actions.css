@@ -1,0 +1,371 @@
+/* Transactions and Quick Actions Component Styles */
+
+/* Recent Transactions Section */
+.recent-transactions-section {
+    margin-top: 4rem;
+}
+
+.transactions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.transactions-title {
+    font-size: 1.875rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.view-all-button {
+    color: var(--primary);
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-all-button:hover {
+    color: var(--primary);
+    opacity: 0.8;
+}
+
+/* Transactions Table */
+.transactions-table {
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.transaction-item:hover {
+    background: var(--muted);
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.transaction-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.transaction-icon i {
+    font-size: 1rem;
+}
+
+.transaction-icon.buy {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.transaction-icon.sell {
+    background: #ef4444;
+    color: white;
+}
+
+.transaction-icon.dividend {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.transaction-details h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin: 0 0 0.25rem 0;
+}
+
+.transaction-details p {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0;
+}
+
+.transaction-value {
+    text-align: right;
+}
+
+.transaction-amount {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 0.25rem;
+}
+
+.transaction-amount.positive {
+    color: var(--primary);
+}
+
+.transaction-time {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+/* Quick Actions Section */
+.quick-actions-section {
+    margin-top: 4rem;
+}
+
+.quick-actions-title {
+    font-size: 1.875rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0 0 2rem 0;
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.quick-action-button {
+    padding: 2rem;
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-button:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+.quick-action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quick-action-button:hover::before {
+    opacity: 1;
+}
+
+.quick-action-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quick-action-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.quick-action-button:hover .quick-action-icon {
+    transform: scale(1.1);
+}
+
+.quick-action-icon i {
+    font-size: 1.5rem;
+}
+
+.quick-action-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin: 0;
+}
+
+/* Action Button Variants */
+.quick-action-button.add-investment .quick-action-icon {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.quick-action-button.view-analytics .quick-action-icon {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.quick-action-button.settings .quick-action-icon {
+    background: var(--chart-3);
+    color: var(--chart-2);
+}
+
+.quick-action-button.capitol-insights .quick-action-icon {
+    background: var(--chart-5);
+    color: var(--chart-2);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .recent-transactions-section,
+    .quick-actions-section {
+        margin-top: 2rem;
+    }
+    
+    .transactions-title,
+    .quick-actions-title {
+        font-size: 1.5rem;
+    }
+    
+    .transaction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .transaction-info {
+        width: 100%;
+    }
+    
+    .transaction-value {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .quick-action-button {
+        padding: 1.5rem;
+    }
+    
+    .quick-action-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .quick-action-icon i {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-action-button {
+        padding: 1.25rem;
+    }
+    
+    .transaction-item {
+        padding: 1rem;
+    }
+}
+
+/* Animation Enhancements */
+.transaction-item,
+.quick-action-button {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.transaction-item:nth-child(1) { animation-delay: 0.1s; }
+.transaction-item:nth-child(2) { animation-delay: 0.2s; }
+.transaction-item:nth-child(3) { animation-delay: 0.3s; }
+
+.quick-action-button:nth-child(1) { animation-delay: 0.1s; }
+.quick-action-button:nth-child(2) { animation-delay: 0.2s; }
+.quick-action-button:nth-child(3) { animation-delay: 0.3s; }
+.quick-action-button:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading States */
+.transaction-item.loading,
+.quick-action-button.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.transaction-item.loading::after,
+.quick-action-button.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+    .transactions-table,
+    .quick-action-button {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    
+    .transaction-item:hover,
+    .quick-action-button:hover {
+        background: var(--muted);
+    }
+}

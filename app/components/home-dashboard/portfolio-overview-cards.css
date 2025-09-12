@@ -1,0 +1,207 @@
+/* Portfolio Overview Cards Component Styles */
+
+/* Main Overview Cards Grid */
+.portfolio-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Individual Overview Card */
+.portfolio-overview-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-overview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.portfolio-overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.portfolio-overview-card:hover::before {
+    opacity: 1;
+}
+
+/* Card Header */
+.portfolio-overview-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.portfolio-overview-card .card-title {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.portfolio-overview-card .card-value {
+    font-size: 1.875rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.portfolio-overview-card .card-change {
+    font-size: 0.875rem;
+    color: var(--primary);
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+}
+
+.portfolio-overview-card .card-change.negative {
+    color: #ef4444;
+}
+
+/* Card Icon */
+.portfolio-overview-card .card-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+    transition: all 0.3s ease;
+}
+
+.portfolio-overview-card:hover .card-icon {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.4);
+}
+
+.portfolio-overview-card .card-icon i {
+    color: var(--primary-foreground);
+    font-size: 1.25rem;
+}
+
+/* Specific Card Variants */
+.portfolio-overview-card.total-value .card-icon {
+    background: var(--primary);
+}
+
+.portfolio-overview-card.todays-pnl .card-icon {
+    background: var(--accent);
+}
+
+.portfolio-overview-card.monthly-dividends .card-icon {
+    background: var(--chart-3);
+}
+
+.portfolio-overview-card.risk-score .card-icon {
+    background: var(--chart-5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .portfolio-overview-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .portfolio-overview-card {
+        padding: 1.5rem;
+    }
+    
+    .portfolio-overview-card .card-value {
+        font-size: 1.5rem;
+    }
+    
+    .portfolio-overview-card .card-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .portfolio-overview-card {
+        padding: 1.25rem;
+    }
+    
+    .portfolio-overview-card .card-value {
+        font-size: 1.25rem;
+    }
+}
+
+/* Animation Enhancements */
+.portfolio-overview-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.portfolio-overview-card:nth-child(1) { animation-delay: 0.1s; }
+.portfolio-overview-card:nth-child(2) { animation-delay: 0.2s; }
+.portfolio-overview-card:nth-child(3) { animation-delay: 0.3s; }
+.portfolio-overview-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading State */
+.portfolio-overview-card.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-overview-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+    .portfolio-overview-card {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    
+    .portfolio-overview-card:hover {
+        background: var(--muted);
+    }
+}

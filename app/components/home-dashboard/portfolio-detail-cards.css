@@ -1,0 +1,419 @@
+/* Portfolio Detail Cards Component Styles */
+
+/* Main Detail Cards Grid */
+.portfolio-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Individual Detail Card */
+.portfolio-detail-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-detail-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary);
+}
+
+/* Card Header */
+.portfolio-detail-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.portfolio-detail-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.portfolio-detail-card .card-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.portfolio-detail-card:hover .card-icon {
+    transform: scale(1.1);
+}
+
+.portfolio-detail-card .card-icon i {
+    font-size: 1.125rem;
+}
+
+/* Card Content */
+.portfolio-detail-card .card-value {
+    font-size: 2.25rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.portfolio-detail-card .card-change {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin: 0 0 1rem 0;
+}
+
+.portfolio-detail-card .card-change.positive {
+    color: var(--primary);
+}
+
+.portfolio-detail-card .card-change.negative {
+    color: #ef4444;
+}
+
+.portfolio-detail-card .card-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Specific Card Variants */
+.portfolio-detail-card.total-portfolio .card-icon {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.portfolio-detail-card.todays-pnl .card-icon {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.portfolio-detail-card.top-performer .card-icon {
+    background: var(--chart-3);
+    color: var(--chart-2);
+}
+
+.portfolio-detail-card.risk-score .card-icon {
+    background: var(--chart-5);
+    color: var(--chart-2);
+}
+
+.portfolio-detail-card.dividend-income .card-icon {
+    background: var(--chart-3);
+    color: var(--chart-2);
+}
+
+.portfolio-detail-card.market-performance .card-icon {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+/* Expandable Portfolio Card */
+.portfolio-detail-card.expandable-portfolio {
+    cursor: pointer;
+    position: relative;
+}
+
+.portfolio-detail-card.expandable-portfolio::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.portfolio-detail-card.expandable-portfolio:hover::before {
+    opacity: 1;
+}
+
+.portfolio-detail-card.expandable-portfolio.expanded {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 1.5rem;
+}
+
+/* Portfolio Chart Content */
+.portfolio-chart-content {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.portfolio-chart-content.hidden {
+    display: none;
+}
+
+.portfolio-chart-content.expanded {
+    display: block;
+}
+
+/* Chart Controls */
+.portfolio-chart-controls {
+    margin-bottom: 1rem;
+}
+
+.time-period-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Chart Container */
+.portfolio-chart-container {
+    background: var(--card);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    min-height: 500px;
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    box-shadow: var(--shadow-sm);
+}
+
+.portfolio-chart-container canvas {
+    width: 100% !important;
+    height: 500px !important;
+    max-width: none !important;
+}
+
+/* Top Holdings Section */
+.top-holdings-section {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.holdings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.holding-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.holding-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: #10b981;
+}
+
+.holding-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #10b981, #059669);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.holding-card:hover::before {
+    opacity: 1;
+}
+
+.holding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.holding-symbol {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--foreground);
+}
+
+.holding-name {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.holding-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.holding-shares {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.holding-value {
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.holding-return {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.return-label {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.return-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.return-value.positive {
+    color: #10b981;
+}
+
+.return-value.negative {
+    color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .portfolio-detail-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .portfolio-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .portfolio-detail-card {
+        padding: 1.5rem;
+    }
+    
+    .portfolio-detail-card .card-value {
+        font-size: 1.875rem;
+    }
+    
+    .holdings-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .holding-card {
+        padding: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .portfolio-detail-card {
+        padding: 1.25rem;
+    }
+    
+    .portfolio-detail-card .card-value {
+        font-size: 1.5rem;
+    }
+    
+    .portfolio-detail-card .card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+/* Animation Enhancements */
+.portfolio-detail-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.portfolio-detail-card:nth-child(1) { animation-delay: 0.1s; }
+.portfolio-detail-card:nth-child(2) { animation-delay: 0.2s; }
+.portfolio-detail-card:nth-child(3) { animation-delay: 0.3s; }
+.portfolio-detail-card:nth-child(4) { animation-delay: 0.4s; }
+.portfolio-detail-card:nth-child(5) { animation-delay: 0.5s; }
+.portfolio-detail-card:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading States */
+.portfolio-detail-card.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-detail-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+    .portfolio-detail-card {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    
+    .portfolio-detail-card:hover {
+        background: var(--muted);
+    }
+    
+    .holding-card {
+        background: linear-gradient(135deg, var(--muted) 0%, var(--card) 100%);
+    }
+}

@@ -1,0 +1,646 @@
+/* Company Research Cards Component Styles */
+
+/* Company Search Card */
+.company-search-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    margin-bottom: 3rem;
+    transition: all 0.3s ease;
+}
+
+.company-search-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.company-search-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin: 0 0 1.5rem 0;
+}
+
+/* Search Form */
+.company-search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .company-search-form {
+        flex-direction: row;
+        align-items: end;
+    }
+}
+
+.search-input-container {
+    flex: 1;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--muted);
+    color: var(--foreground);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    background: var(--background);
+}
+
+.search-button {
+    padding: 0.75rem 2rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.search-button:hover {
+    background: var(--primary);
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.search-button i {
+    margin-right: 0.5rem;
+}
+
+/* Company Analysis Results */
+.company-analysis-results {
+    display: none;
+}
+
+.company-analysis-results.visible {
+    display: block;
+}
+
+/* Company Overview Card */
+.company-overview-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.company-overview-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+/* Company Header */
+.company-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.company-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.company-logo {
+    width: 5rem;
+    height: 5rem;
+    background: var(--primary);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--primary-foreground);
+    font-size: 1.25rem;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+.company-details h2 {
+    font-size: 1.875rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0 0 0.5rem 0;
+}
+
+.company-details p {
+    color: var(--muted-foreground);
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+.company-price-info {
+    text-align: right;
+}
+
+.company-price {
+    font-size: 2.25rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0 0 0.5rem 0;
+}
+
+.company-change {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--primary);
+    margin: 0;
+}
+
+.company-change.negative {
+    color: #ef4444;
+}
+
+/* Key Metrics Grid */
+.key-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: var(--muted);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 0.25rem;
+}
+
+.metric-description {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin: 0;
+}
+
+/* Research Reports Card */
+.research-reports-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.research-reports-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.research-reports-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0 0 1.5rem 0;
+}
+
+/* Reports List */
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.report-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--muted);
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.report-item:hover {
+    background: var(--accent);
+    transform: translateX(4px);
+}
+
+.report-icon {
+    width: 3rem;
+    height: 3rem;
+    background: #10b981;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.report-icon i {
+    color: white;
+    font-size: 1.125rem;
+}
+
+.report-content {
+    flex: 1;
+}
+
+.report-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0 0 0.5rem 0;
+}
+
+.report-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.report-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.report-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.report-source {
+    font-weight: 500;
+}
+
+.report-time {
+    color: var(--muted-foreground);
+}
+
+.report-rating {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.report-rating.buy {
+    background: #10b981;
+    color: white;
+}
+
+.report-rating.hold {
+    background: #f59e0b;
+    color: white;
+}
+
+.report-rating.sell {
+    background: #ef4444;
+    color: white;
+}
+
+.report-action {
+    color: #10b981;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.report-action:hover {
+    color: #059669;
+}
+
+/* Comparison Tools Grid */
+.comparison-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.comparison-tool-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.comparison-tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.comparison-tool-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0 0 1rem 0;
+}
+
+/* Company Comparison Form */
+.comparison-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.comparison-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comparison-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.comparison-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.comparison-vs {
+    color: var(--muted-foreground);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.comparison-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.comparison-button:hover {
+    background: var(--primary);
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Industry Analysis */
+.industry-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.industry-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--muted);
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.industry-item:hover {
+    background: var(--accent);
+    transform: translateX(4px);
+}
+
+.industry-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.industry-name {
+    font-weight: 500;
+    color: var(--foreground);
+    margin: 0 0 0.25rem 0;
+}
+
+.industry-category {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0;
+}
+
+.industry-performance {
+    text-align: right;
+}
+
+.industry-change {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.industry-change.positive {
+    color: #10b981;
+}
+
+.industry-change.negative {
+    color: #ef4444;
+}
+
+.industry-time {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+/* Placeholder States */
+.comparison-placeholder,
+.industry-placeholder {
+    padding: 2rem;
+    background: var(--muted);
+    border-radius: 0.75rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    border: 2px dashed var(--border);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .key-metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    
+    .comparison-tools-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .company-search-card,
+    .company-overview-card {
+        padding: 1.5rem;
+    }
+    
+    .company-header {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .company-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .company-price-info {
+        text-align: center;
+    }
+    
+    .key-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .comparison-inputs {
+        flex-direction: column;
+    }
+    
+    .comparison-vs {
+        order: -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .company-search-card,
+    .company-overview-card {
+        padding: 1.25rem;
+    }
+    
+    .key-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .company-logo {
+        width: 4rem;
+        height: 4rem;
+        font-size: 1rem;
+    }
+    
+    .company-details h2 {
+        font-size: 1.5rem;
+    }
+    
+    .company-price {
+        font-size: 1.875rem;
+    }
+}
+
+/* Animation Enhancements */
+.company-search-card,
+.company-overview-card,
+.research-reports-card,
+.comparison-tool-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading States */
+.company-overview-card.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.company-overview-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+    .company-search-card,
+    .company-overview-card,
+    .research-reports-card,
+    .comparison-tool-card {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    
+    .company-search-card:hover,
+    .company-overview-card:hover,
+    .research-reports-card:hover,
+    .comparison-tool-card:hover {
+        background: var(--muted);
+    }
+    
+    .metric-card,
+    .report-item,
+    .industry-item {
+        background: var(--muted);
+    }
+}

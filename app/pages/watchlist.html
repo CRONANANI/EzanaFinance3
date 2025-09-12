@@ -5,51 +5,51 @@
     </div>
 
     <!-- Watchlist Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-        <div class="bg-card rounded-2xl p-8 border border-border">
-            <div class="flex items-center justify-between">
+    <div class="watchlist-overview-grid">
+        <div class="watchlist-overview-card total-watchlists">
+            <div class="card-header">
                 <div>
-                    <p class="text-sm text-muted-foreground mb-2">Following</p>
-                    <p class="text-3xl font-light text-foreground" id="following-count">24</p>
+                    <p class="card-title">Following</p>
+                    <p class="card-value" id="following-count">24</p>
                 </div>
-                <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center">
-                    <i class="bi bi-star text-primary-foreground text-xl"></i>
+                <div class="card-icon">
+                    <i class="bi bi-star"></i>
                 </div>
             </div>
         </div>
         
-        <div class="bg-card rounded-2xl p-8 border border-border">
-            <div class="flex items-center justify-between">
+        <div class="watchlist-overview-card active-alerts">
+            <div class="card-header">
                 <div>
-                    <p class="text-sm text-muted-foreground mb-2">Stock Lists</p>
-                    <p class="text-3xl font-light text-foreground">5</p>
+                    <p class="card-title">Stock Lists</p>
+                    <p class="card-value">5</p>
                 </div>
-                <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center">
-                    <i class="bi bi-list text-primary-foreground text-xl"></i>
+                <div class="card-icon">
+                    <i class="bi bi-list"></i>
                 </div>
             </div>
         </div>
         
-        <div class="bg-card rounded-2xl p-8 border border-border">
-            <div class="flex items-center justify-between">
+        <div class="watchlist-overview-card tracked-stocks">
+            <div class="card-header">
                 <div>
-                    <p class="text-sm text-muted-foreground mb-2">Alerts</p>
-                    <p class="text-3xl font-light text-foreground">12</p>
+                    <p class="card-title">Alerts</p>
+                    <p class="card-value">12</p>
                 </div>
-                <div class="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center">
-                    <i class="bi bi-bell text-accent-foreground text-xl"></i>
+                <div class="card-icon">
+                    <i class="bi bi-bell"></i>
                 </div>
             </div>
         </div>
         
-        <div class="bg-card rounded-2xl p-8 border border-border">
-            <div class="flex items-center justify-between">
+        <div class="watchlist-overview-card portfolio-value">
+            <div class="card-header">
                 <div>
-                    <p class="text-sm text-muted-foreground mb-2">This Week</p>
-                    <p class="text-3xl font-light text-foreground">8</p>
+                    <p class="card-title">This Week</p>
+                    <p class="card-value">8</p>
                 </div>
-                <div class="w-14 h-14 bg-chart-3 rounded-2xl flex items-center justify-center">
-                    <i class="bi bi-graph-up text-chart-2 text-xl"></i>
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
                 </div>
             </div>
         </div>
