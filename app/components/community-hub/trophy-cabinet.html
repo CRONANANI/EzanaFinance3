@@ -1,0 +1,206 @@
+<!-- Trophy Cabinet Component -->
+<div id="trophy-cabinet" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300" onclick="closeTrophyCabinet()"></div>
+    
+    <!-- Trophy Cabinet Panel -->
+    <div class="absolute right-0 top-0 h-full w-full max-w-2xl bg-gradient-to-b from-amber-50 to-yellow-100 dark:from-amber-900 dark:to-yellow-800 shadow-2xl transform translate-x-full transition-transform duration-500 ease-in-out">
+        <!-- Cabinet Header -->
+        <div class="bg-gradient-to-r from-amber-600 to-yellow-600 dark:from-amber-700 dark:to-yellow-700 p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="bi bi-trophy-fill text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold">Trophy Cabinet</h2>
+                        <p class="text-amber-100 text-sm">Your Achievement Collection</p>
+                    </div>
+                </div>
+                <button onclick="closeTrophyCabinet()" class="w-10 h-10 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cabinet Content -->
+        <div class="p-6 h-full overflow-y-auto">
+            <!-- Achievement Stats -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-6 shadow-lg">
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">12</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Trophies Earned</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">8</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Badges Unlocked</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">#127</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Global Rank</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trophy Categories -->
+            <div class="space-y-6">
+                <!-- Investment Mastery -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                            <i class="bi bi-graph-up text-white text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Investment Mastery</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Portfolio Pioneer -->
+                        <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Portfolio Pioneer</div>
+                            <div class="text-yellow-100 text-xs">First $10K portfolio</div>
+                        </div>
+                        
+                        <!-- Diversification Expert -->
+                        <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Diversification Expert</div>
+                            <div class="text-emerald-100 text-xs">5+ asset classes</div>
+                        </div>
+                        
+                        <!-- Risk Manager -->
+                        <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Risk Manager</div>
+                            <div class="text-blue-100 text-xs">Low risk score</div>
+                        </div>
+                        
+                        <!-- Millionaire Maker (Locked) -->
+                        <div class="bg-gray-300 dark:bg-gray-600 rounded-lg p-3 text-center opacity-50">
+                            <i class="bi bi-trophy text-2xl text-gray-500 mb-2"></i>
+                            <div class="text-gray-500 font-semibold text-sm">Millionaire Maker</div>
+                            <div class="text-gray-400 text-xs">$1M portfolio value</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community Leader -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
+                            <i class="bi bi-people-fill text-white text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Community Leader</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Social Butterfly -->
+                        <div class="bg-gradient-to-br from-pink-400 to-pink-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Social Butterfly</div>
+                            <div class="text-pink-100 text-xs">50+ friends</div>
+                        </div>
+                        
+                        <!-- Discussion Master -->
+                        <div class="bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Discussion Master</div>
+                            <div class="text-indigo-100 text-xs">25+ helpful posts</div>
+                        </div>
+                        
+                        <!-- Mentor -->
+                        <div class="bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Mentor</div>
+                            <div class="text-teal-100 text-xs">Helped 10+ users</div>
+                        </div>
+                        
+                        <!-- Influencer (Locked) -->
+                        <div class="bg-gray-300 dark:bg-gray-600 rounded-lg p-3 text-center opacity-50">
+                            <i class="bi bi-trophy text-2xl text-gray-500 mb-2"></i>
+                            <div class="text-gray-500 font-semibold text-sm">Influencer</div>
+                            <div class="text-gray-400 text-xs">1000+ followers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Knowledge Seeker -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-400 to-orange-500 rounded-full flex items-center justify-center">
+                            <i class="bi bi-book text-white text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Knowledge Seeker</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Scholar -->
+                        <div class="bg-gradient-to-br from-red-400 to-red-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Scholar</div>
+                            <div class="text-red-100 text-xs">Completed 5 courses</div>
+                        </div>
+                        
+                        <!-- Speed Learner -->
+                        <div class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Speed Learner</div>
+                            <div class="text-orange-100 text-xs">3 courses in 1 week</div>
+                        </div>
+                        
+                        <!-- Research Expert -->
+                        <div class="bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Research Expert</div>
+                            <div class="text-cyan-100 text-xs">100+ analyses</div>
+                        </div>
+                        
+                        <!-- Market Guru (Locked) -->
+                        <div class="bg-gray-300 dark:bg-gray-600 rounded-lg p-3 text-center opacity-50">
+                            <i class="bi bi-trophy text-2xl text-gray-500 mb-2"></i>
+                            <div class="text-gray-500 font-semibold text-sm">Market Guru</div>
+                            <div class="text-gray-400 text-xs">Perfect predictions</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Achievements -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-violet-400 to-purple-500 rounded-full flex items-center justify-center">
+                            <i class="bi bi-star-fill text-white text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Special Achievements</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Early Adopter -->
+                        <div class="bg-gradient-to-br from-violet-400 to-violet-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Early Adopter</div>
+                            <div class="text-violet-100 text-xs">Beta user</div>
+                        </div>
+                        
+                        <!-- Streak Master -->
+                        <div class="bg-gradient-to-br from-rose-400 to-rose-600 rounded-lg p-3 text-center">
+                            <i class="bi bi-trophy-fill text-2xl text-white mb-2"></i>
+                            <div class="text-white font-semibold text-sm">Streak Master</div>
+                            <div class="text-rose-100 text-xs">30 day streak</div>
+                        </div>
+                        
+                        <!-- Night Owl (Locked) -->
+                        <div class="bg-gray-300 dark:bg-gray-600 rounded-lg p-3 text-center opacity-50">
+                            <i class="bi bi-trophy text-2xl text-gray-500 mb-2"></i>
+                            <div class="text-gray-500 font-semibold text-sm">Night Owl</div>
+                            <div class="text-gray-400 text-xs">Late night trading</div>
+                        </div>
+                        
+                        <!-- Legend (Locked) -->
+                        <div class="bg-gray-300 dark:bg-gray-600 rounded-lg p-3 text-center opacity-50">
+                            <i class="bi bi-trophy text-2xl text-gray-500 mb-2"></i>
+                            <div class="text-gray-500 font-semibold text-sm">Legend</div>
+                            <div class="text-gray-400 text-xs">All achievements</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
