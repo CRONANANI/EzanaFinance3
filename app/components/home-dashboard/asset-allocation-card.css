@@ -28,22 +28,26 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    border-bottom: 2px solid #10b981;
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
 }
 
 .dashboard-card.expandable-asset-allocation .dashboard-card-title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--foreground);
     margin: 0;
+    text-decoration: underline;
+    text-decoration-color: #10b981;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
 }
 
 .dashboard-card.expandable-asset-allocation .dashboard-card-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,7 +57,7 @@
 
 .dashboard-card.expandable-asset-allocation .dashboard-card-icon i {
     color: white;
-    font-size: 1.25rem;
+    font-size: 1rem;
 }
 
 /* Toggle Button */
@@ -73,18 +77,18 @@
 
 /* Card Content */
 .dashboard-card.expandable-asset-allocation .dashboard-card-value {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--foreground);
-    margin: 12px 20px 8px;
+    margin: 8px 16px 4px;
 }
 
 .dashboard-card.expandable-asset-allocation .dashboard-card-change {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0 20px 8px;
-    font-size: 0.875rem;
+    margin: 0 16px 4px;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
@@ -94,8 +98,8 @@
 
 .dashboard-card.expandable-asset-allocation .dashboard-card-description {
     color: var(--muted-foreground);
-    font-size: 0.875rem;
-    margin: 0 20px 16px;
+    font-size: 0.75rem;
+    margin: 0 16px 8px;
     line-height: 1.4;
 }
 

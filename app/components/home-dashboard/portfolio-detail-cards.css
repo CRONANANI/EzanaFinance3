@@ -12,12 +12,13 @@
 .portfolio-detail-card {
     background: var(--card);
     border-radius: 1rem;
-    padding: 2rem;
+    padding: 1rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    min-height: 120px;
 }
 
 .portfolio-detail-card:hover {
@@ -42,19 +43,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #10b981;
 }
 
 .portfolio-detail-card .card-title {
-    font-size: 1.25rem;
-    font-weight: 500;
+    font-size: 1.125rem;
+    font-weight: 600;
     color: var(--foreground);
     margin: 0;
+    text-decoration: underline;
+    text-decoration-color: #10b981;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 2px;
 }
 
 .portfolio-detail-card .card-icon {
-    width: 3rem;
-    height: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border-radius: 0.75rem;
     display: flex;
     align-items: center;
@@ -67,15 +74,15 @@
 }
 
 .portfolio-detail-card .card-icon i {
-    font-size: 1.125rem;
+    font-size: 1rem;
 }
 
 /* Card Content */
 .portfolio-detail-card .card-value {
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     font-weight: 300;
     color: var(--foreground);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.25rem 0;
     line-height: 1.2;
 }
 
@@ -83,9 +90,9 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 1.125rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0;
 }
 
 .portfolio-detail-card .card-change.positive {
@@ -97,7 +104,7 @@
 }
 
 .portfolio-detail-card .card-description {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--muted-foreground);
     margin: 0;
     line-height: 1.4;
