@@ -4,7 +4,7 @@
 .dashboard-main-layout {
     display: flex;
     gap: 2rem;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     align-items: flex-start;
     position: relative;
 }
