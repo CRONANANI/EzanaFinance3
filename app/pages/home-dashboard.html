@@ -3,6 +3,10 @@
 <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
 <link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
 
+<!-- Import Home Dashboard Component Scripts -->
+<script src="components/home-dashboard/recent-transactions.js"></script>
+<script src="components/home-dashboard/quick-actions.js"></script>
+
 <!-- Top Navigation -->
 <nav id="topnav" class="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out">
     <div class="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
@@ -408,104 +412,13 @@
     </div>
 
     <!-- Recent Transactions Section -->
-    <div class="recent-transactions-section">
-        <div class="transactions-header">
-            <h2 class="transactions-title">Recent Transactions</h2>
-            <button class="view-all-button">View All</button>
-        </div>
-        
-        <div class="transactions-table">
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-icon buy">
-                        <i class="bi bi-arrow-up"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <h4>AAPL Purchase</h4>
-                        <p>Apple Inc. • 10 shares</p>
-                    </div>
-                </div>
-                <div class="transaction-value">
-                    <div class="transaction-amount">$1,750.00</div>
-                    <div class="transaction-time">2 hours ago</div>
-                </div>
-            </div>
-            
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-icon sell">
-                        <i class="bi bi-arrow-down"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <h4>MSFT Sale</h4>
-                        <p>Microsoft Corp. • 5 shares</p>
-                    </div>
-                </div>
-                <div class="transaction-value">
-                    <div class="transaction-amount">$1,920.00</div>
-                    <div class="transaction-time">1 day ago</div>
-                </div>
-            </div>
-            
-            <div class="transaction-item">
-                <div class="transaction-info">
-                    <div class="transaction-icon dividend">
-                        <i class="bi bi-cash"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <h4>Dividend Payment</h4>
-                        <p>Johnson & Johnson</p>
-                    </div>
-                </div>
-                <div class="transaction-value">
-                    <div class="transaction-amount positive">+$45.20</div>
-                    <div class="transaction-time">3 days ago</div>
-                </div>
-            </div>
-        </div>
+    <div id="recent-transactions-container">
+        <!-- Component will be loaded here -->
     </div>
 
     <!-- Quick Actions Section -->
-    <div class="quick-actions-section">
-        <h2 class="quick-actions-title">Quick Actions</h2>
-        
-        <div class="quick-actions-grid">
-            <button class="quick-action-button add-investment">
-                <div class="quick-action-content">
-                    <div class="quick-action-icon">
-                        <i class="bi bi-plus"></i>
-                    </div>
-                    <span class="quick-action-title">Add Investment</span>
-                </div>
-            </button>
-            
-            <button class="quick-action-button view-analytics">
-                <div class="quick-action-content">
-                    <div class="quick-action-icon">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <span class="quick-action-title">View Analytics</span>
-                </div>
-            </button>
-            
-            <button class="quick-action-button settings">
-                <div class="quick-action-content">
-                    <div class="quick-action-icon">
-                        <i class="bi bi-gear"></i>
-                    </div>
-                    <span class="quick-action-title">Settings</span>
-                </div>
-            </button>
-            
-            <button onclick="switchTab('inside-the-capitol')" class="quick-action-button capitol-insights">
-                <div class="quick-action-content">
-                    <div class="quick-action-icon">
-                        <i class="bi bi-building"></i>
-                    </div>
-                    <span class="quick-action-title">Capitol Insights</span>
-                </div>
-            </button>
-        </div>
+    <div id="quick-actions-container">
+        <!-- Component will be loaded here -->
     </div>
 </div>
 </div> <!-- Close main-content -->
@@ -527,6 +440,114 @@ document.addEventListener('DOMContentLoaded', function() {
         homeTab.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
         homeTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
     }
+    
+    // Load component HTML
+    loadComponents();
 });
+
+// Function to load component HTML
+async function loadComponents() {
+    try {
+        // Load Recent Transactions component
+        const transactionsResponse = await fetch('components/home-dashboard/recent-transactions.html');
+        if (transactionsResponse.ok) {
+            const transactionsHTML = await transactionsResponse.text();
+            const transactionsContainer = document.getElementById('recent-transactions-container');
+            if (transactionsContainer) {
+                transactionsContainer.innerHTML = transactionsHTML;
+            }
+        }
+        
+        // Load Quick Actions component
+        const actionsResponse = await fetch('components/home-dashboard/quick-actions.html');
+        if (actionsResponse.ok) {
+            const actionsHTML = await actionsResponse.text();
+            const actionsContainer = document.getElementById('quick-actions-container');
+            if (actionsContainer) {
+                actionsContainer.innerHTML = actionsHTML;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading components:', error);
+        // Fallback: show inline content if fetch fails
+        loadFallbackComponents();
+    }
+}
+
+// Fallback function to load inline components if fetch fails
+function loadFallbackComponents() {
+    const transactionsContainer = document.getElementById('recent-transactions-container');
+    const actionsContainer = document.getElementById('quick-actions-container');
+    
+    if (transactionsContainer) {
+        transactionsContainer.innerHTML = `
+            <div class="recent-transactions-section">
+                <div class="transactions-header">
+                    <h2 class="transactions-title">Recent Transactions</h2>
+                    <button class="view-all-button">View All</button>
+                </div>
+                <div class="transactions-table">
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="transaction-icon buy">
+                                <i class="bi bi-arrow-up"></i>
+                            </div>
+                            <div class="transaction-details">
+                                <h4>AAPL Purchase</h4>
+                                <p>Apple Inc. • 10 shares</p>
+                            </div>
+                        </div>
+                        <div class="transaction-value">
+                            <div class="transaction-amount">$1,750.00</div>
+                            <div class="transaction-time">2 hours ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    if (actionsContainer) {
+        actionsContainer.innerHTML = `
+            <div class="quick-actions-section">
+                <h2 class="quick-actions-title">Quick Actions</h2>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-button add-investment">
+                        <div class="quick-action-content">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-plus"></i>
+                            </div>
+                            <span class="quick-action-title">Add Investment</span>
+                        </div>
+                    </button>
+                    <button class="quick-action-button view-analytics">
+                        <div class="quick-action-content">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <span class="quick-action-title">View Analytics</span>
+                        </div>
+                    </button>
+                    <button class="quick-action-button settings">
+                        <div class="quick-action-content">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <span class="quick-action-title">Settings</span>
+                        </div>
+                    </button>
+                    <button onclick="switchTab('inside-the-capitol')" class="quick-action-button capitol-insights">
+                        <div class="quick-action-content">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <span class="quick-action-title">Capitol Insights</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
 
 </script>
