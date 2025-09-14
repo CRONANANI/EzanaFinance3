@@ -18,11 +18,11 @@
 
 /* Vertical Cards Container - Fixed width on the right, aligned to top */
 .horizontal-cards-container {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     align-items: flex-start;
-    width: 40px;
+    width: 80px;
     flex-shrink: 0;
     position: sticky;
     top: 0;
@@ -295,7 +295,8 @@
 @media (max-width: 1024px) {
     .horizontal-cards-container {
         gap: 0.5rem;
-        max-width: 40px;
+        max-width: 80px;
+        grid-template-columns: 1fr 1fr;
     }
     
     .portfolio-detail-card.square-card {
@@ -312,11 +313,13 @@
     }
     
     .horizontal-cards-container {
-        flex-direction: row;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         width: 100%;
         justify-content: center;
         gap: 0.5rem;
+        max-width: 80px;
+        margin: 0 auto;
     }
     
     .portfolio-detail-card.square-card {
@@ -339,9 +342,11 @@
 
 @media (max-width: 480px) {
     .horizontal-cards-container {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         align-items: center;
-        max-width: 100%;
+        max-width: 80px;
+        margin: 0 auto;
     }
     
     .portfolio-detail-card.square-card {
