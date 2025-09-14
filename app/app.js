@@ -50,6 +50,9 @@ function initializeApp() {
     // Initialize sidebar
     initializeSidebar();
     
+    // Update top navigation position
+    updateTopNavPosition();
+    
     // Show loading for 2 seconds, then show landing page
     setTimeout(() => {
         hideLoading();
@@ -265,6 +268,26 @@ function toggleMobileMenu() {
     }
 }
 
+// Update top navigation position based on sidebar visibility
+function updateTopNavPosition() {
+    const topnav = document.getElementById('topnav');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    
+    if (topnav && sidebar && mainContent) {
+        const sidebarVisible = sidebar.style.display !== 'none';
+        const marginLeft = mainContent.style.marginLeft;
+        
+        if (sidebarVisible && marginLeft === '280px') {
+            // Sidebar is visible, position top nav after sidebar
+            topnav.style.left = '280px';
+        } else {
+            // Sidebar is hidden, position top nav at full width
+            topnav.style.left = '0';
+        }
+    }
+}
+
 function hideAllContent() {
     const contents = ['landing-page', 'dynamic-content'];
     contents.forEach(id => {
@@ -283,6 +306,9 @@ function showLandingPage() {
     document.getElementById('sidebar').style.display = 'none';
     document.getElementById('main-content').style.marginLeft = '0';
     
+    // Update top navigation position
+    updateTopNavPosition();
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -292,6 +318,9 @@ async function showHomeDashboard() {
     // Show sidebar for dashboard
     document.getElementById('sidebar').style.display = 'block';
     document.getElementById('main-content').style.marginLeft = '280px';
+    
+    // Update top navigation position
+    updateTopNavPosition();
     
     // Load home dashboard page
     const dynamicContent = document.getElementById('dynamic-content');
@@ -751,6 +780,9 @@ async function showWatchlists() {
     // Show sidebar
     document.getElementById('sidebar').style.display = 'block';
     document.getElementById('main-content').style.marginLeft = '280px';
+    
+    // Update top navigation position
+    updateTopNavPosition();
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
