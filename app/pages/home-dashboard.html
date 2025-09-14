@@ -165,317 +165,163 @@
 
 <div class="main-content" style="margin-top: 80px;">
 <div class="container mx-auto px-6 py-12">
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h1 class="text-4xl font-light text-foreground tracking-tight page-title-shiny">Portfolio Dashboard</h1>
-            <p class="text-muted-foreground mt-2 text-lg">Track your investments and financial performance</p>
+    <div class="header">
+        <div class="title-section">
+            <h1>Portfolio Dashboard</h1>
+            <p>Track your investments and financial performance</p>
         </div>
-        <div class="flex items-center space-x-4">
-            <button onclick="refreshPortfolioData()" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
-                <i class="bi bi-arrow-clockwise mr-2"></i>Refresh
-            </button>
-            <div class="text-sm text-muted-foreground">
-                Last updated: <span id="portfolio-last-updated" class="text-foreground">Just now</span>
+        <div class="refresh-info">
+            <div onclick="refreshPortfolioData()" class="refresh-btn">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
             </div>
+            <div>Last updated: <span id="portfolio-last-updated">9/14/2025, 12:24:51 PM</span></div>
         </div>
     </div>
 
 
     <!-- Main Dashboard Layout -->
-    <div class="dashboard-main-layout">
-        <!-- Main Portfolio Card - Takes remaining space -->
-        <div class="main-portfolio-card" id="main-portfolio-card" style="flex: 1; min-width: 0; margin: 0; width: 100%;">
-            <!-- Total Portfolio Value Card - Expanded by Default -->
-            <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" data-card-type="total-portfolio" onclick="expandCard(this)" style="width: 100%; min-height: 600px; max-height: 800px; padding: 2rem;">
-                <div class="card-header">
-                    <h3 class="card-title">Total Portfolio Value</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-                </div>
-                <div class="card-value">$127,843.52</div>
-                <div class="card-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    +$2,847.31 (+2.28%)
-                </div>
-                <div class="card-description">Updated 2 minutes ago</div>
-                
-                <!-- Portfolio Chart Content - Visible by Default -->
-                <div class="portfolio-chart-content expanded" id="portfolio-chart-content" style="display: block; height: 500px; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                    <div class="portfolio-chart-controls">
-                        <div class="time-period-selector">
-                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
-                            <select id="portfolio-time-period" onchange="updatePortfolioChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
-                                <option value="1">1 Month</option>
-                                <option value="3">3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12" selected>1 Year</option>
-                                <option value="60">5 Years</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    
-                    <div class="portfolio-chart-container mt-4" style="background: var(--card); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border); min-height: 400px; max-height: 500px; position: relative; width: 100%; margin: 0 auto; box-shadow: var(--shadow-sm);">
-                        <canvas id="portfolio-chart" width="1200" height="400" style="width: 100% !important; height: 400px !important; max-width: none !important;"></canvas>
-                    </div>
-                    <script>
-                        // Force chart initialization immediately
-                        function forceInitChart() {
-                            console.log('Force initializing chart...');
-                            const canvas = document.getElementById('portfolio-chart');
-                            if (canvas && typeof updatePortfolioChart === 'function') {
-                                updatePortfolioChart();
-                                console.log('Chart initialized successfully!');
-                                return true;
-                            } else {
-                                console.log('Canvas or updatePortfolioChart function not available yet');
-                                return false;
-                            }
-                        }
-                        
-                        // Try multiple times with better timing
-                        let attempts = 0;
-                        const maxAttempts = 10;
-                        
-                        function tryInitChart() {
-                            attempts++;
-                            if (attempts <= maxAttempts) {
-                                if (!forceInitChart()) {
-                                    setTimeout(tryInitChart, 300);
-                                }
-                            } else {
-                                console.log('Max chart initialization attempts reached');
-                            }
-                        }
-                        
-                        // Start trying immediately
-                        tryInitChart();
-                        
-                        // Also try on window load
-                        window.addEventListener('load', () => {
-                            setTimeout(tryInitChart, 100);
-                        });
-                    </script>
-                </div>
-            </div>
-        </div>
-
-        <!-- Component Cards - Vertical column on the right -->
-        <div class="horizontal-cards-container">
-        <!-- Today's Gain/Loss Card -->
-        <div class="portfolio-detail-card todays-pnl square-card" data-card-type="todays-pnl" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Today's P&L</h3>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-            </div>
-            <div class="card-value">+$847.31</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +0.67%
-            </div>
-            <div class="card-description">Market hours performance</div>
-        </div>
-
-        <!-- Top Performer Card -->
-        <div class="portfolio-detail-card top-performer square-card" data-card-type="top-performer" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Top Performer</h3>
-                <div class="card-icon">
-                    <i class="bi bi-star-fill"></i>
-                </div>
-            </div>
-            <div class="card-value">TSLA</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +$156.42 (+8.45%)
-            </div>
-            <div class="card-description">Tesla Inc. - 15 shares</div>
-        </div>
-
-        <!-- Risk Score Card -->
-        <div class="portfolio-detail-card risk-score square-card" data-card-type="risk-score" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Risk Score</h3>
-                <div class="card-icon">
-                    <i class="bi bi-shield-check"></i>
-                </div>
-            </div>
-            <div class="card-value">7.2/10</div>
-            <div class="card-change negative">
-                <i class="bi bi-arrow-down"></i>
-                -0.3 from last week
-            </div>
-            <div class="card-description">Moderate risk profile</div>
-        </div>
-
-        <!-- Dividend Income Card -->
-        <div class="portfolio-detail-card dividend-income square-card" data-card-type="dividend-income" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Monthly Dividends</h3>
-                <div class="card-icon">
-                    <i class="bi bi-cash-coin"></i>
-                </div>
-            </div>
-            <div class="card-value">$342.18</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +$28.45 (+9.07%)
-            </div>
-            <div class="card-description">Next payment: March 15</div>
-        </div>
-
-        <!-- Market Performance Card -->
-        <div class="portfolio-detail-card market-performance square-card" data-card-type="market-performance" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Market Performance</h3>
-                <div class="card-icon">
+    <div class="main-content">
+        <!-- Main Portfolio Card -->
+        <div class="portfolio-card">
+            <div class="portfolio-header">
+                <div class="portfolio-title">Total Portfolio Value</div>
+                <div class="refresh-btn" onclick="refreshPortfolioData()">
                     <i class="bi bi-graph-up"></i>
                 </div>
             </div>
-            <div class="card-value">S&P 500</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +1.24% today
+            
+            <div class="portfolio-value">$127,843.52</div>
+            
+            <div class="portfolio-change">
+                <span class="change-positive">
+                    <i class="bi bi-arrow-up"></i>
+                    $2,847.31 (+2.28%)
+                </span>
             </div>
-            <div class="card-description">4,567.89 (+56.78)</div>
-        </div>
+            
+            <div class="updated-time">Updated 2 minutes ago</div>
+            
+            <div class="time-selector">
+                <label>Time Period:</label>
+                <select id="portfolio-time-period" onchange="updatePortfolioChart()">
+                    <option value="1">1 Month</option>
+                    <option value="3">3 Months</option>
+                    <option value="6">6 Months</option>
+                    <option value="12" selected>1 Year</option>
+                    <option value="60">5 Years</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
 
-        <!-- Asset Allocation Card -->
-        <div class="portfolio-detail-card asset-allocation square-card" data-card-type="asset-allocation" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Asset Allocation</h3>
-                <div class="card-icon">
-                    <i class="bi bi-pie-chart"></i>
+            <div class="chart-placeholder">
+                <div class="portfolio-chart-container">
+                    <canvas id="portfolio-chart" width="1200" height="400"></canvas>
                 </div>
             </div>
-            <div class="card-value">Diversified</div>
-            <div class="card-change positive">
-                <i class="bi bi-check-circle"></i>
-                Well balanced
-            </div>
-            <div class="card-description">Stocks: 65% | Bonds: 20% | Cash: 15%</div>
         </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+            <!-- Today's P&L Card -->
+            <div class="metric-card positive">
+                <div class="metric-header">
+                    <div class="metric-title">Today's P&L</div>
+                    <div class="metric-icon icon-positive">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+                <div class="metric-value">+$1,247</div>
+                <div class="metric-subtitle">+0.98% from yesterday</div>
+            </div>
+
+            <!-- Top Performer Card -->
+            <div class="metric-card warning">
+                <div class="metric-header">
+                    <div class="metric-title">Top Performer</div>
+                    <div class="metric-icon icon-warning">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+                <div class="metric-value">NVDA</div>
+                <div class="metric-subtitle">+12.4% this week</div>
+            </div>
+
+            <!-- Risk Score Card -->
+            <div class="metric-card warning">
+                <div class="metric-header">
+                    <div class="metric-title">Risk Score</div>
+                    <div class="metric-icon icon-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="metric-value">6.2/10</div>
+                <div class="metric-subtitle">Moderate risk level</div>
+            </div>
+
+            <!-- Monthly Dividends Card -->
+            <div class="metric-card info">
+                <div class="metric-header">
+                    <div class="metric-title">Monthly Dividends</div>
+                    <div class="metric-icon icon-info">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                </div>
+                <div class="metric-value">$847.23</div>
+                <div class="metric-subtitle">Next payout: Oct 15</div>
+            </div>
+
+            <!-- Market Performance Card -->
+            <div class="metric-card success">
+                <div class="metric-header">
+                    <div class="metric-title">Market Performance</div>
+                    <div class="metric-icon icon-success">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                </div>
+                <div class="metric-value">+8.4%</div>
+                <div class="metric-subtitle">vs S&P 500: +6.2%</div>
+            </div>
+
+            <!-- Asset Allocation Card -->
+            <div class="metric-card info">
+                <div class="metric-header">
+                    <div class="metric-title">Asset Allocation</div>
+                    <div class="metric-icon icon-info">
+                        <i class="bi bi-pie-chart"></i>
+                    </div>
+                </div>
+                <div class="metric-value">Balanced</div>
+                <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Card expansion functionality
-        function expandCard(clickedCard) {
-            const mainCard = document.getElementById('main-portfolio-card');
-            const allCards = document.querySelectorAll('.portfolio-detail-card');
-            
-            // Remove expanded class from all cards
-            allCards.forEach(card => {
-                card.classList.remove('expanded');
-                const chartContent = card.querySelector('.portfolio-chart-content');
-                if (chartContent) {
-                    chartContent.classList.remove('expanded');
-                    chartContent.classList.add('hidden');
-                }
-            });
-            
-            // Move clicked card to main position
-            const cardClone = clickedCard.cloneNode(true);
-            cardClone.classList.add('expanded');
-            cardClone.onclick = function() { expandCard(this); };
-            
-            // Add chart content if it's the portfolio card
-            if (clickedCard.dataset.cardType === 'total-portfolio') {
-                const chartContent = document.createElement('div');
-                chartContent.className = 'portfolio-chart-content expanded';
-                chartContent.innerHTML = `
-                    <div class="portfolio-chart-controls">
-                        <div class="time-period-selector">
-                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
-                            <select id="portfolio-time-period" onchange="updatePortfolioChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
-                                <option value="1">1 Month</option>
-                                <option value="3">3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12" selected>1 Year</option>
-                                <option value="60">5 Years</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="portfolio-chart-container mt-4">
-                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
-                    </div>
-                `;
-                cardClone.appendChild(chartContent);
+        // Refresh portfolio data function
+        function refreshPortfolioData() {
+            const lastUpdated = document.getElementById('portfolio-last-updated');
+            if (lastUpdated) {
+                const now = new Date();
+                lastUpdated.textContent = now.toLocaleString();
             }
             
-            // Add chart content if it's the asset allocation card
-            if (clickedCard.dataset.cardType === 'asset-allocation') {
-                const chartContent = document.createElement('div');
-                chartContent.className = 'portfolio-chart-content expanded';
-                chartContent.innerHTML = `
-                <div class="chart-controls">
-                    <div class="breakdown-selector">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Breakdown Type:</label>
-                        <select id="breakdown-type" onchange="updateAssetAllocationChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
-                            <option value="asset-class" selected>Asset Class</option>
-                            <option value="sector">Sector</option>
-                            <option value="performance">Performance</option>
-                        </select>
-                    </div>
-                </div>
-                    <div class="chart-and-insights-container mt-4">
-                    <div class="asset-allocation-chart-container">
-                            <canvas id="asset-allocation-chart" width="1200" height="400"></canvas>
-                    </div>
-                    <div class="insights-container">
-                        <h4 class="insights-title">Market Insights & Analysis</h4>
-                        <div class="insights-content">
-                            <div class="chart-summary">
-                                <h5 class="summary-title">Chart Summary</h5>
-                                <p id="chart-summary-text" class="summary-text">Your portfolio shows a balanced allocation with strong diversification across asset classes.</p>
-                            </div>
-                            <div class="market-news">
-                                <h5 class="news-title">Recent Market News</h5>
-                                <div id="market-news-content" class="news-content">
-                                    <div class="news-item">Federal Reserve maintains interest rates, supporting equity markets</div>
-                                    <div class="news-item">Tech sector shows resilience amid market volatility</div>
-                                    <div class="news-item">Energy stocks outperform as oil prices stabilize</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-                cardClone.appendChild(chartContent);
+            // Add a subtle animation to show refresh
+            const refreshBtn = document.querySelector('.refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    refreshBtn.style.transform = 'rotate(0deg)';
+                }, 500);
             }
             
-            // Replace main card content
-            mainCard.innerHTML = '';
-            mainCard.appendChild(cardClone);
-            
-            // Move previous main card to horizontal row
-            const horizontalContainer = document.querySelector('.horizontal-cards-container');
-            const previousMainCard = document.querySelector('.portfolio-detail-card.expanded');
-            if (previousMainCard && previousMainCard !== clickedCard) {
-                previousMainCard.classList.remove('expanded');
-                previousMainCard.classList.add('square-card');
-                previousMainCard.onclick = function() { expandCard(this); };
-                horizontalContainer.appendChild(previousMainCard);
-            }
-            
-            // Initialize chart if needed
-            if (clickedCard.dataset.cardType === 'total-portfolio' && typeof updatePortfolioChart === 'function') {
-                setTimeout(() => updatePortfolioChart(), 100);
-            }
-            
-            if (clickedCard.dataset.cardType === 'asset-allocation' && typeof updateAssetAllocationChart === 'function') {
-                setTimeout(() => updateAssetAllocationChart(), 100);
+            // Reinitialize chart if available
+            if (typeof initializePortfolioChart === 'function') {
+                setTimeout(() => initializePortfolioChart(), 100);
             }
         }
         
         // Initialize portfolio chart when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Wait a bit for the DOM to be fully rendered
             setTimeout(() => {
                 console.log('DOM loaded, initializing chart...');
                 initializePortfolioChart();

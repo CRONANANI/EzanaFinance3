@@ -1543,6 +1543,273 @@ body {
     z-index: 1001;
 }
 
+/* Portfolio Dashboard Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.title-section h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #10b981;
+    margin-bottom: 8px;
+}
+
+.title-section p {
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+.refresh-info {
+    text-align: right;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.refresh-info .refresh-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: #10b981;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.refresh-info .refresh-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.portfolio-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+}
+
+.portfolio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.portfolio-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #e2e8f0;
+}
+
+.refresh-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: #10b981;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.refresh-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.portfolio-value {
+    font-size: 4rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    letter-spacing: -0.025em;
+}
+
+.portfolio-change {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.change-positive {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.updated-time {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.time-selector {
+    margin-top: 24px;
+}
+
+.time-selector label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    margin-right: 12px;
+}
+
+.time-selector select {
+    background: rgba(71, 85, 105, 0.3);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: white;
+    font-size: 0.875rem;
+}
+
+.chart-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+    border-radius: 16px;
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    position: relative;
+}
+
+.portfolio-chart-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.metric-card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-color);
+    opacity: 0.6;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-color);
+}
+
+.metric-card.positive { --accent-color: #10b981; }
+.metric-card.warning { --accent-color: #f59e0b; }
+.metric-card.info { --accent-color: #3b82f6; }
+.metric-card.success { --accent-color: #10b981; }
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.metric-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metric-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.metric-subtitle {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.icon-positive { background: linear-gradient(135deg, #10b981, #059669); }
+.icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.icon-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.icon-success { background: linear-gradient(135deg, #10b981, #059669); }
+
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .portfolio-value {
+        font-size: 2.5rem;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 768px) {
     .notifications-sidebar {
         width: 100%;
