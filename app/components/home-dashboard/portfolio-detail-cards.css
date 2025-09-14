@@ -165,34 +165,34 @@
 /* Ensure all square cards have consistent sizing */
 .horizontal-cards-container .portfolio-detail-card {
     width: 190px !important;
-    height: 100px !important;
+    height: 80px !important;
     min-width: 190px !important;
-    min-height: 100px !important;
+    min-height: 80px !important;
     max-width: 190px !important;
-    max-height: 100px !important;
+    max-height: 80px !important;
     flex-shrink: 0;
     padding: 0.75rem !important;
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     justify-content: space-between !important;
-    align-items: flex-start !important;
+    align-items: center !important;
 }
 
 /* Square Cards */
 .portfolio-detail-card.square-card {
     width: 190px !important;
-    height: 100px !important;
+    height: 80px !important;
     padding: 0.75rem !important;
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
     justify-content: space-between !important;
-    align-items: flex-start !important;
+    align-items: center !important;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    min-height: 100px !important;
-    max-height: 100px !important;
+    min-height: 80px !important;
+    max-height: 80px !important;
     margin: 0;
 }
 
@@ -203,22 +203,22 @@
 }
 
 .portfolio-detail-card.square-card .card-header {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
     padding-bottom: 0;
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: flex-start;
-    width: 100%;
+    flex: 1;
 }
 
 .portfolio-detail-card.square-card .card-title {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     font-weight: 600;
     text-align: left;
     line-height: 1.2;
-    margin: 0;
+    margin: 0 0 0.25rem 0;
     color: var(--foreground);
     text-transform: uppercase;
     letter-spacing: 0.025em;
@@ -239,19 +239,20 @@
 
 .portfolio-detail-card.square-card .card-value {
     display: block;
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--foreground);
-    margin: 0.25rem 0;
+    margin: 0;
     line-height: 1.2;
 }
 
 .portfolio-detail-card.square-card .card-change {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     font-weight: 500;
     margin: 0;
     line-height: 1.2;
+    color: var(--muted-foreground);
 }
 
 .portfolio-detail-card.square-card .card-description {
@@ -330,7 +331,7 @@
     
     .portfolio-detail-card.square-card {
         width: 190px;
-        height: 100px;
+        height: 80px;
         padding: 0.75rem;
     }
 }
@@ -353,7 +354,7 @@
     
     .portfolio-detail-card.square-card {
         width: 190px;
-        height: 100px;
+        height: 80px;
         padding: 0.75rem;
     }
     
@@ -380,7 +381,7 @@
     
     .portfolio-detail-card.square-card {
         width: 190px;
-        height: 100px;
+        height: 80px;
         padding: 0.75rem;
     }
     
