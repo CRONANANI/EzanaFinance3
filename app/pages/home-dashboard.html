@@ -518,28 +518,5 @@ function toggleMobileMenu() {
     }
 }
 
-// Update top navigation position based on sidebar visibility
-function updateTopNavPosition() {
-    const topnav = document.getElementById('topnav');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('main-content');
-    
-    if (topnav && sidebar && mainContent) {
-        const sidebarVisible = sidebar.style.display !== 'none';
-        const marginLeft = mainContent.style.marginLeft;
-        
-        if (sidebarVisible && marginLeft === '280px') {
-            // Sidebar is visible, position top nav after sidebar
-            topnav.style.left = '280px';
-        } else {
-            // Sidebar is hidden, position top nav at full width
-            topnav.style.left = '0';
-        }
-    }
-}
 
-// Initialize top navigation positioning when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    updateTopNavPosition();
-});
 </script>

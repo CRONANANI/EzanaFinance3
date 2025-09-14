@@ -54,15 +54,6 @@
     --chart-4: #8b5cf6;
     --chart-5: #ef4444;
     
-    /* Sidebar */
-    --sidebar: #ffffff;
-    --sidebar-foreground: #0f172a;
-    --sidebar-primary: #10b981;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #ecfdf5;
-    --sidebar-accent-foreground: #065f46;
-    --sidebar-border: #e2e8f0;
-    --sidebar-ring: #10b981;
     
     /* Typography */
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -156,15 +147,6 @@
     --chart-4: #a78bfa;
     --chart-5: #f87171;
     
-    /* Sidebar - Dark */
-    --sidebar: #0f172a;
-    --sidebar-foreground: #f8fafc;
-    --sidebar-primary: #10b981;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #065f46;
-    --sidebar-accent-foreground: #d1fae5;
-    --sidebar-border: #334155;
-    --sidebar-ring: #10b981;
 }
 
 body {
@@ -542,50 +524,6 @@ body {
     width: 100%;
 }
 
-/* Sidebar responsive styles */
-@media (max-width: 768px) {
-    #sidebar {
-        width: 100% !important;
-        max-width: 320px;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-    }
-    
-    #sidebar.sidebar-open {
-        transform: translateX(0);
-    }
-    
-    #main-content {
-        margin-left: 0 !important;
-        margin-top: 64px !important;
-    }
-    
-    #sidebar-toggle-collapsed {
-        display: block !important;
-    }
-    
-    #sidebar-toggle {
-        display: none !important;
-    }
-    
-    .sidebar-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 30;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    .sidebar-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
-}
 
 @media (max-width: 640px) {
     .portfolio-grid {
@@ -598,31 +536,6 @@ body {
     }
 }
 
-/* Sidebar enhancements */
-#sidebar {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-#sidebar .nav button {
-    position: relative;
-    overflow: hidden;
-}
-
-#sidebar .nav button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
-}
-
-#sidebar .nav button:hover::before {
-    left: 100%;
-}
 
 /* Universal Component Styles - TweakCN Theme */
 * {
@@ -845,33 +758,6 @@ body {
 
 /* Smooth transitions for all interactive elements */
 
-/* Enhanced hover effects for navigation tabs */
-#sidebar .nav button:hover {
-    transform: translateX(4px);
-}
-
-#sidebar .nav button:active {
-    transform: translateX(2px) scale(0.98);
-}
-
-/* Active tab indicator */
-#sidebar .nav button.active {
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-/* Sidebar toggle button enhancements */
-#sidebar-toggle, #sidebar-toggle-collapsed {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-#sidebar-toggle:hover, #sidebar-toggle-collapsed:hover {
-    transform: scale(1.1);
-}
-
-#sidebar-toggle:active, #sidebar-toggle-collapsed:active {
-    transform: scale(0.95);
-}
 
 /* Quiver API Cards Styling */
 .quiver-api-section {
