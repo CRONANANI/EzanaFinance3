@@ -10,7 +10,14 @@ class NotificationsSidebar {
 
     init() {
         this.loadNotifications();
-        this.renderNotifications();
+        
+        // If no notifications exist, load sample data
+        if (this.notifications.length === 0) {
+            this.loadSampleNotifications();
+        } else {
+            this.renderNotifications();
+        }
+        
         this.updateNotificationCount();
         this.setupEventListeners();
     }
@@ -321,6 +328,7 @@ class NotificationsSidebar {
     loadSampleNotifications() {
         const sampleNotifications = [
             {
+                id: '1',
                 type: 'watchlist',
                 title: 'Nancy Pelosi Stock Trade Alert',
                 content: 'Rep. Nancy Pelosi disclosed new NVIDIA stock purchases worth $1.2M',
@@ -330,6 +338,7 @@ class NotificationsSidebar {
                 badge: 'Watchlist'
             },
             {
+                id: '2',
                 type: 'news',
                 title: 'AAPL Breaking News',
                 content: 'Apple announces record Q4 earnings, stock up 5% in after-hours trading',
@@ -339,6 +348,7 @@ class NotificationsSidebar {
                 badge: 'News'
             },
             {
+                id: '3',
                 type: 'portfolio',
                 title: 'Portfolio Alert',
                 content: 'Your portfolio gained $2,847.31 today (+2.26%)',
@@ -348,6 +358,7 @@ class NotificationsSidebar {
                 badge: 'Portfolio'
             },
             {
+                id: '4',
                 type: 'social',
                 title: 'Friend Activity',
                 content: 'Alex commented on your Tesla discussion thread',
@@ -357,6 +368,7 @@ class NotificationsSidebar {
                 badge: 'Social'
             },
             {
+                id: '5',
                 type: 'watchlist',
                 title: 'Dan Crenshaw Trade Alert',
                 content: 'Rep. Dan Crenshaw sold defense stocks before committee vote',
@@ -366,6 +378,7 @@ class NotificationsSidebar {
                 badge: 'Watchlist'
             },
             {
+                id: '6',
                 type: 'research',
                 title: 'Market Analysis',
                 content: 'New research report on your TSLA position shows strong buy signals',
@@ -375,6 +388,7 @@ class NotificationsSidebar {
                 badge: 'Research'
             },
             {
+                id: '7',
                 type: 'payment',
                 title: 'Dividend Payment',
                 content: 'Received $127.50 dividend payment from MSFT',
@@ -387,6 +401,7 @@ class NotificationsSidebar {
 
         this.notifications = sampleNotifications;
         this.saveNotifications();
+        this.renderNotifications(); // Immediately render the notifications
     }
 
     // Show toast message

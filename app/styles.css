@@ -1537,6 +1537,11 @@ body {
     margin-left: 60px;
 }
 
+/* Ensure topnav is above sidebar */
+#topnav {
+    z-index: 1001;
+}
+
 @media (max-width: 768px) {
     .notifications-sidebar {
         width: 100%;
