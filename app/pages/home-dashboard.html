@@ -21,8 +21,8 @@
 
 
     <div class="portfolio-detail-grid">
-        <!-- Total Portfolio Value Card -->
-        <div class="portfolio-detail-card total-portfolio expandable-portfolio" onclick="togglePortfolioExpansion(event)">
+        <!-- Total Portfolio Value Card - Expanded by Default -->
+        <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" onclick="togglePortfolioExpansion(event)">
             <div class="card-header">
                 <h3 class="card-title">Total Portfolio Value</h3>
                 <div class="card-icon">
@@ -36,8 +36,8 @@
             </div>
             <div class="card-description">Updated 2 minutes ago</div>
             
-            <!-- Portfolio Chart Content -->
-            <div class="portfolio-chart-content hidden" id="portfolio-chart-content">
+            <!-- Portfolio Chart Content - Visible by Default -->
+            <div class="portfolio-chart-content expanded" id="portfolio-chart-content">
                 <div class="portfolio-chart-controls">
                     <div class="time-period-selector">
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
@@ -103,71 +103,84 @@
                 <div class="portfolio-chart-container mt-6">
                     <canvas id="portfolio-chart" width="1200" height="500"></canvas>
                 </div>
+                
+                <script>
+                    // Initialize portfolio chart when page loads
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Initialize the portfolio chart
+                        if (typeof updatePortfolioChart === 'function') {
+                            updatePortfolioChart();
+                        }
+                    });
+                </script>
             </div>
         </div>
 
-        <!-- Today's Gain/Loss Card -->
-        <div class="portfolio-detail-card todays-pnl">
-            <div class="card-header">
-                <h3 class="card-title">Today's P&L</h3>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up-arrow"></i>
+        <!-- Right Side Cards Container -->
+        <div class="right-side-cards">
+            <!-- Today's Gain/Loss Card -->
+            <div class="portfolio-detail-card todays-pnl">
+                <div class="card-header">
+                    <h3 class="card-title">Today's P&L</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
                 </div>
+                <div class="card-value">+$847.31</div>
+                <div class="card-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    +0.67%
+                </div>
+                <div class="card-description">Market hours performance</div>
             </div>
-            <div class="card-value">+$847.31</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +0.67%
-            </div>
-            <div class="card-description">Market hours performance</div>
-        </div>
 
-        <!-- Top Performer Card -->
-        <div class="portfolio-detail-card top-performer">
-            <div class="card-header">
-                <h3 class="card-title">Top Performer</h3>
-                <div class="card-icon">
-                    <i class="bi bi-star-fill"></i>
+            <!-- Top Performer Card -->
+            <div class="portfolio-detail-card top-performer">
+                <div class="card-header">
+                    <h3 class="card-title">Top Performer</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
                 </div>
+                <div class="card-value">TSLA</div>
+                <div class="card-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    +$156.42 (+8.45%)
+                </div>
+                <div class="card-description">Tesla Inc. - 15 shares</div>
             </div>
-            <div class="card-value">TSLA</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +$156.42 (+8.45%)
-            </div>
-            <div class="card-description">Tesla Inc. - 15 shares</div>
-        </div>
 
-        <!-- Risk Score Card -->
-        <div class="portfolio-detail-card risk-score">
-            <div class="card-header">
-                <h3 class="card-title">Risk Score</h3>
-                <div class="card-icon">
-                    <i class="bi bi-shield-check"></i>
+            <!-- Risk Score Card -->
+            <div class="portfolio-detail-card risk-score">
+                <div class="card-header">
+                    <h3 class="card-title">Risk Score</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
                 </div>
+                <div class="card-value">7.2/10</div>
+                <div class="card-change negative">
+                    <i class="bi bi-arrow-down"></i>
+                    -0.3 from last week
+                </div>
+                <div class="card-description">Moderate risk profile</div>
             </div>
-            <div class="card-value">7.2/10</div>
-            <div class="card-change negative">
-                <i class="bi bi-arrow-down"></i>
-                -0.3 from last week
-            </div>
-            <div class="card-description">Moderate risk profile</div>
-        </div>
 
-        <!-- Dividend Income Card -->
-        <div class="portfolio-detail-card dividend-income">
-            <div class="card-header">
-                <h3 class="card-title">Monthly Dividends</h3>
-                <div class="card-icon">
-                    <i class="bi bi-cash-coin"></i>
+            <!-- Dividend Income Card -->
+            <div class="portfolio-detail-card dividend-income">
+                <div class="card-header">
+                    <h3 class="card-title">Monthly Dividends</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
                 </div>
+                <div class="card-value">$342.18</div>
+                <div class="card-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    +$28.45 (+9.07%)
+                </div>
+                <div class="card-description">Next payment: March 15</div>
             </div>
-            <div class="card-value">$342.18</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +$28.45 (+9.07%)
-            </div>
-            <div class="card-description">Next payment: March 15</div>
         </div>
 
         <!-- Asset Allocation Card -->
