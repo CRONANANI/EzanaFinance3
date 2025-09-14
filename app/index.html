@@ -27,12 +27,69 @@
     <link rel="stylesheet" href="components/community/community-cards.css">
     <link rel="stylesheet" href="components/ui/shiny-text.css">
     <link rel="stylesheet" href="components/ui/prism-background.css">
+    <link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
   </head>
   <body>
     <!-- Dark Mode Toggle -->
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
         <i class="bi bi-moon-fill" id="theme-icon"></i>
     </button>
+
+    <!-- Notifications Sidebar -->
+    <div id="notifications-sidebar" class="notifications-sidebar">
+        <!-- Sidebar Toggle Button -->
+        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+            <i class="bi bi-bell" id="notifications-icon"></i>
+            <span class="notification-count" id="notification-count">0</span>
+        </button>
+
+        <!-- Sidebar Content -->
+        <div class="notifications-content">
+            <!-- Header -->
+            <div class="notifications-header">
+                <div class="notifications-title">
+                    <i class="bi bi-bell-fill"></i>
+                    <h3>Notifications</h3>
+                </div>
+                <div class="notifications-actions">
+                    <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
+                        <i class="bi bi-check-all"></i>
+                    </button>
+                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="notifications-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
+                    All
+                </button>
+                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
+                    Congress
+                </button>
+                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
+                    Stocks
+                </button>
+                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
+                    Community
+                </button>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notifications-list">
+                <!-- Notifications will be dynamically populated here -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="notifications-empty" id="notifications-empty" style="display: none;">
+                <i class="bi bi-bell-slash"></i>
+                <p>No notifications yet</p>
+                <small>We'll notify you when something important happens</small>
+            </div>
+        </div>
+    </div>
 
 
     <!-- Top Navigation -->
@@ -245,7 +302,7 @@
                                     <button onclick="switchTab('home')" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/25">
                                         Get Started Now
                                     </button>
-                                    <button class="px-8 py-4 border-2 border-slate-600 hover:border-emerald-500 text-slate-300 hover:text-emerald-400 font-semibold rounded-xl transition-all duration-300">
+                                    <button onclick="NotificationHelpers.showDemoNotifications()" class="px-8 py-4 border-2 border-slate-600 hover:border-emerald-500 text-slate-300 hover:text-emerald-400 font-semibold rounded-xl transition-all duration-300">
                                         View Demo
                                     </button>
                                 </div>
@@ -452,5 +509,7 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="components/notifications/notifications-sidebar.js"></script>
+    <script src="components/notifications/notification-helpers.js"></script>
   </body>
 </html>

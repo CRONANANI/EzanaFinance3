@@ -1525,3 +1525,15 @@ body {
     }
     
 }
+
+/* Notifications Sidebar Integration */
+/* Adjust main content when notifications sidebar is open */
+.notifications-sidebar.open ~ #main-content {
+    margin-left: 350px;
+}
+
+@media (max-width: 768px) {
+    .notifications-sidebar.open ~ #main-content {
+        margin-left: 0;
+    }
+}
