@@ -139,6 +139,11 @@
     color: var(--primary-foreground);
 }
 
+.portfolio-detail-card.asset-allocation .card-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
 /* Square Cards */
 .portfolio-detail-card.square-card {
     width: 200px;

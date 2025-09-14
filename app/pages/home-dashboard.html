@@ -104,9 +104,9 @@
                 <div class="portfolio-chart-container mt-4">
                     <canvas id="portfolio-chart" width="1200" height="300"></canvas>
                 </div>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Horizontal Cards Row -->
     <div class="horizontal-cards-container">
@@ -188,6 +188,22 @@
                 +1.24% today
             </div>
             <div class="card-description">4,567.89 (+56.78)</div>
+        </div>
+
+        <!-- Asset Allocation Card -->
+        <div class="portfolio-detail-card asset-allocation square-card" data-card-type="asset-allocation" onclick="expandCard(this)">
+            <div class="card-header">
+                <h3 class="card-title">Asset Allocation</h3>
+                <div class="card-icon">
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+            </div>
+            <div class="card-value">Diversified</div>
+            <div class="card-change positive">
+                <i class="bi bi-check-circle"></i>
+                Well balanced
+            </div>
+            <div class="card-description">Stocks: 65% | Bonds: 20% | Cash: 15%</div>
         </div>
     </div>
 
@@ -281,54 +297,11 @@
                 cardClone.appendChild(chartContent);
             }
             
-            // Replace main card content
-            mainCard.innerHTML = '';
-            mainCard.appendChild(cardClone);
-            
-            // Move previous main card to horizontal row
-            const horizontalContainer = document.querySelector('.horizontal-cards-container');
-            const previousMainCard = document.querySelector('.portfolio-detail-card.expanded');
-            if (previousMainCard && previousMainCard !== clickedCard) {
-                previousMainCard.classList.remove('expanded');
-                previousMainCard.classList.add('square-card');
-                previousMainCard.onclick = function() { expandCard(this); };
-                horizontalContainer.appendChild(previousMainCard);
-            }
-            
-            // Initialize chart if needed
-            if (clickedCard.dataset.cardType === 'total-portfolio' && typeof updatePortfolioChart === 'function') {
-                setTimeout(() => updatePortfolioChart(), 100);
-            }
-        }
-        
-        // Initialize portfolio chart when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof updatePortfolioChart === 'function') {
-                updatePortfolioChart();
-            }
-        });
-    </script>
-
-        <!-- Asset Allocation Card -->
-        <div class="dashboard-card expandable-asset-allocation" data-type="asset-allocation">
-            <div class="dashboard-card-header" onclick="toggleAssetAllocationExpansion(event)">
-                <h3 class="dashboard-card-title">Asset Allocation</h3>
-                <div class="dashboard-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                    <i class="bi bi-pie-chart text-xl"></i>
-                </div>
-                <div class="dashboard-card-toggle">
-                    <i class="bi bi-chevron-down text-lg transition-transform duration-200"></i>
-                </div>
-            </div>
-            <div class="dashboard-card-value">Diversified</div>
-            <div class="dashboard-card-change positive">
-                <i class="bi bi-check-circle"></i>
-                Well balanced
-            </div>
-            <div class="dashboard-card-description">Stocks: 65% | Bonds: 20% | Cash: 15%</div>
-            
-            <!-- Asset Allocation Chart Content -->
-            <div class="asset-allocation-chart-content hidden" id="asset-allocation-chart-content">
+            // Add chart content if it's the asset allocation card
+            if (clickedCard.dataset.cardType === 'asset-allocation') {
+                const chartContent = document.createElement('div');
+                chartContent.className = 'portfolio-chart-content expanded';
+                chartContent.innerHTML = `
                 <div class="chart-controls">
                     <div class="breakdown-selector">
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Breakdown Type:</label>
@@ -339,9 +312,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="chart-and-insights-container mt-6">
+                    <div class="chart-and-insights-container mt-4">
                     <div class="asset-allocation-chart-container">
-                        <canvas id="asset-allocation-chart" width="1200" height="600"></canvas>
+                            <canvas id="asset-allocation-chart" width="1200" height="400"></canvas>
                     </div>
                     <div class="insights-container">
                         <h4 class="insights-title">Market Insights & Analysis</h4>
@@ -361,24 +334,43 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+                `;
+                cardClone.appendChild(chartContent);
+            }
+            
+            // Replace main card content
+            mainCard.innerHTML = '';
+            mainCard.appendChild(cardClone);
+            
+            // Move previous main card to horizontal row
+            const horizontalContainer = document.querySelector('.horizontal-cards-container');
+            const previousMainCard = document.querySelector('.portfolio-detail-card.expanded');
+            if (previousMainCard && previousMainCard !== clickedCard) {
+                previousMainCard.classList.remove('expanded');
+                previousMainCard.classList.add('square-card');
+                previousMainCard.onclick = function() { expandCard(this); };
+                horizontalContainer.appendChild(previousMainCard);
+            }
+            
+            // Initialize chart if needed
+            if (clickedCard.dataset.cardType === 'total-portfolio' && typeof updatePortfolioChart === 'function') {
+                setTimeout(() => updatePortfolioChart(), 100);
+            }
+            
+            if (clickedCard.dataset.cardType === 'asset-allocation' && typeof updateAssetAllocationChart === 'function') {
+                setTimeout(() => updateAssetAllocationChart(), 100);
+            }
+        }
+        
+        // Initialize portfolio chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof updatePortfolioChart === 'function') {
+                updatePortfolioChart();
+            }
+        });
+    </script>
 
-        <!-- Market Performance Card -->
-        <div class="portfolio-detail-card market-performance">
-            <div class="card-header">
-                <h3 class="card-title">Market Performance</h3>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-            </div>
-            <div class="card-value">S&P 500</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +1.24% today
-            </div>
-            <div class="card-description">4,567.89 (+56.78)</div>
-        </div>
+
     </div>
 
     <!-- Recent Transactions Section -->
