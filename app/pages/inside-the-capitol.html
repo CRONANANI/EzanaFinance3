@@ -57,47 +57,47 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         <!-- Historical Congress Trading Card -->
-        <div id="historicalCongressTradingCard" class="bg-card rounded-2xl p-8 border border-border cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-lg" onclick="toggleCongressTradingExpansion()">
+        <div id="historicalCongressTradingCard" class="bg-card rounded-2xl p-8 border border-border cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1" onclick="toggleCongressTradingExpansion()">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">Congressional Trading</h3>
                 <div class="flex items-center space-x-3">
                     <div class="flex items-center space-x-2">
-                        <button id="refreshCongressData" onclick="refreshCongressData(event)" class="btn btn-ghost p-1" title="Refresh data">
+                        <button id="refreshCongressData" onclick="refreshCongressData(event)" class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200" title="Refresh data">
                             <i class="bi bi-arrow-clockwise text-sm"></i>
                         </button>
                     </div>
-                    <div id="congressApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="congress-toggle-icon text-emerald-600 dark:text-emerald-400 transition-transform duration-200">
+                    <div id="congressApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="congress-toggle-icon text-primary transition-transform duration-200">
                         <i class="bi bi-chevron-down text-lg"></i>
                     </div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Trades:</span>
-                    <span id="congressTotalTrades" class="font-semibold text-gray-900 dark:text-gray-100">-</span>
+                    <span class="text-muted-foreground">Total Trades:</span>
+                    <span id="congressTotalTrades" class="font-semibold text-foreground">-</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Volume:</span>
-                    <span id="congressTotalVolume" class="font-semibold text-gray-900 dark:text-gray-100">-</span>
+                    <span class="text-muted-foreground">Total Volume:</span>
+                    <span id="congressTotalVolume" class="font-semibold text-foreground">-</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Traders:</span>
-                    <span id="congressActiveTraders" class="font-semibold text-gray-900 dark:text-gray-100">-</span>
+                    <span class="text-muted-foreground">Active Traders:</span>
+                    <span id="congressActiveTraders" class="font-semibold text-foreground">-</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="congressLastUpdated">-</span>
                 </div>
             </div>
             
             <!-- Expandable Content -->
-            <div id="congressTradingExpandedContent" class="congress-expanded-content hidden mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800" onclick="event.stopPropagation()">
+            <div id="congressTradingExpandedContent" class="congress-expanded-content hidden mt-6 pt-6 border-t border-border" onclick="event.stopPropagation()">
                 <div class="mb-4">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Congressional Trading History</h4>
+                    <h4 class="text-lg font-semibold text-foreground mb-3">Congressional Trading History</h4>
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <button id="filter-all" class="px-3 py-1 text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded-full border border-emerald-300 dark:border-emerald-600" onclick="filterCongressTrades(event, 'all')">All Trades</button>
-                        <button id="filter-buy" class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full border border-gray-300 dark:border-gray-600" onclick="filterCongressTrades(event, 'buy')">Buy</button>
-                        <button id="filter-sell" class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full border border-gray-300 dark:border-gray-600" onclick="filterCongressTrades(event, 'sell')">Sell</button>
+                        <button id="filter-all" class="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-full border border-primary" onclick="filterCongressTrades(event, 'all')">All Trades</button>
+                        <button id="filter-buy" class="px-3 py-1 text-xs bg-muted text-muted-foreground rounded-full border border-border hover:bg-accent hover:text-accent-foreground transition-all duration-200" onclick="filterCongressTrades(event, 'buy')">Buy</button>
+                        <button id="filter-sell" class="px-3 py-1 text-xs bg-muted text-muted-foreground rounded-full border border-border hover:bg-accent hover:text-accent-foreground transition-all duration-200" onclick="filterCongressTrades(event, 'sell')">Sell</button>
                     </div>
                 </div>
                 
@@ -105,15 +105,15 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b border-emerald-200 dark:border-emerald-800">
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Date</th>
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Follow</th>
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Congress Person</th>
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Party</th>
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Company</th>
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Ticker</th>
-                                <th class="text-left py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Trade Type</th>
-                                <th class="text-right py-2 px-3 text-emerald-700 dark:text-emerald-300 font-semibold">Amount</th>
+                            <tr class="border-b border-border">
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Date</th>
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Follow</th>
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Congress Person</th>
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Party</th>
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Company</th>
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Ticker</th>
+                                <th class="text-left py-2 px-3 text-muted-foreground font-semibold">Trade Type</th>
+                                <th class="text-right py-2 px-3 text-muted-foreground font-semibold">Amount</th>
                             </tr>
                         </thead>
                         <tbody id="congressTradingTableBody">
@@ -123,181 +123,181 @@
                 </div>
                 
                 <!-- Pagination -->
-                <div class="flex justify-between items-center mt-4 pt-4 border-t border-emerald-200 dark:border-emerald-800">
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex justify-between items-center mt-4 pt-4 border-t border-border">
+                    <div class="text-sm text-muted-foreground">
                         Showing <span id="congressTradesStart">1</span> to <span id="congressTradesEnd">10</span> of <span id="congressTradesTotal">0</span> trades
                     </div>
                     <div class="flex space-x-2">
-                        <button id="congressPrevPage" class="px-3 py-1 text-sm bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded border border-emerald-300 dark:border-emerald-600 disabled:opacity-50" onclick="changeCongressPage(event, -1)">Previous</button>
-                        <button id="congressNextPage" class="px-3 py-1 text-sm bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded border border-emerald-300 dark:border-emerald-600 disabled:opacity-50" onclick="changeCongressPage(event, 1)">Next</button>
+                        <button id="congressPrevPage" class="px-3 py-1 text-sm bg-primary text-primary-foreground rounded border border-primary hover:bg-opacity-90 transition-all duration-200 disabled:opacity-50" onclick="changeCongressPage(event, -1)">Previous</button>
+                        <button id="congressNextPage" class="px-3 py-1 text-sm bg-primary text-primary-foreground rounded border border-primary hover:bg-opacity-90 transition-all duration-200 disabled:opacity-50" onclick="changeCongressPage(event, 1)">Next</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Government Contracts Card -->
-        <div id="governmentContractsCard" class="bg-card rounded-2xl p-8 border border-border">
+        <div id="governmentContractsCard" class="bg-card rounded-2xl p-8 border border-border transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">Government Contracts</h3>
                 <div class="flex items-center space-x-2">
-                    <div id="contractsApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div id="contractsApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Contracts:</span>
-                    <span id="contractsTotal" class="font-semibold text-gray-900 dark:text-gray-100">567</span>
+                    <span class="text-muted-foreground">Total Contracts:</span>
+                    <span id="contractsTotal" class="font-semibold text-foreground">567</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Value:</span>
-                    <span id="contractsValue" class="font-semibold text-gray-900 dark:text-gray-100">$1.2B</span>
+                    <span class="text-muted-foreground">Total Value:</span>
+                    <span id="contractsValue" class="font-semibold text-foreground">$1.2B</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Companies:</span>
-                    <span id="contractsCompanies" class="font-semibold text-gray-900 dark:text-gray-100">234</span>
+                    <span class="text-muted-foreground">Active Companies:</span>
+                    <span id="contractsCompanies" class="font-semibold text-foreground">234</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="contractsLastUpdated">Just now</span>
                 </div>
             </div>
         </div>
 
         <!-- House Trading Card -->
-        <div id="houseTradingCard" class="bg-card rounded-2xl p-8 border border-border">
+        <div id="houseTradingCard" class="bg-card rounded-2xl p-8 border border-border transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">House Trading</h3>
                 <div class="flex items-center space-x-2">
-                    <div id="houseApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                    <div id="houseApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="w-3 h-3 bg-chart-3 rounded-full animate-pulse"></div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Trades:</span>
-                    <span id="houseTotalTrades" class="font-semibold text-gray-900 dark:text-gray-100">890</span>
+                    <span class="text-muted-foreground">Total Trades:</span>
+                    <span id="houseTotalTrades" class="font-semibold text-foreground">890</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Volume:</span>
-                    <span id="houseTotalVolume" class="font-semibold text-gray-900 dark:text-gray-100">$32M</span>
+                    <span class="text-muted-foreground">Total Volume:</span>
+                    <span id="houseTotalVolume" class="font-semibold text-foreground">$32M</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Traders:</span>
-                    <span id="houseActiveTraders" class="font-semibold text-gray-900 dark:text-gray-100">67</span>
+                    <span class="text-muted-foreground">Active Traders:</span>
+                    <span id="houseActiveTraders" class="font-semibold text-foreground">67</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="houseLastUpdated">Just now</span>
                 </div>
             </div>
         </div>
 
         <!-- Lobbying Activity Card -->
-        <div id="lobbyingActivityCard" class="bg-card rounded-2xl p-8 border border-border">
+        <div id="lobbyingActivityCard" class="bg-card rounded-2xl p-8 border border-border transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">Lobbying Activity</h3>
                 <div class="flex items-center space-x-2">
-                    <div id="lobbyingApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                    <div id="lobbyingApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="w-3 h-3 bg-chart-4 rounded-full animate-pulse"></div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Reports:</span>
-                    <span id="lobbyingReports" class="font-semibold text-gray-900 dark:text-gray-100">1,234</span>
+                    <span class="text-muted-foreground">Total Reports:</span>
+                    <span id="lobbyingReports" class="font-semibold text-foreground">1,234</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Spending:</span>
-                    <span id="lobbyingSpending" class="font-semibold text-gray-900 dark:text-gray-100">$89M</span>
+                    <span class="text-muted-foreground">Total Spending:</span>
+                    <span id="lobbyingSpending" class="font-semibold text-foreground">$89M</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Firms:</span>
-                    <span id="lobbyingFirms" class="font-semibold text-gray-900 dark:text-gray-100">89</span>
+                    <span class="text-muted-foreground">Active Firms:</span>
+                    <span id="lobbyingFirms" class="font-semibold text-foreground">89</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="lobbyingLastUpdated">Just now</span>
                 </div>
             </div>
         </div>
 
         <!-- Senator Trading Card -->
-        <div id="senatorTradingCard" class="bg-card rounded-2xl p-8 border border-border">
+        <div id="senatorTradingCard" class="bg-card rounded-2xl p-8 border border-border transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">Senator Trading</h3>
                 <div class="flex items-center space-x-2">
-                    <div id="senatorApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                    <div id="senatorApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="w-3 h-3 bg-chart-5 rounded-full animate-pulse"></div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Trades:</span>
-                    <span id="senatorTotalTrades" class="font-semibold text-gray-900 dark:text-gray-100">456</span>
+                    <span class="text-muted-foreground">Total Trades:</span>
+                    <span id="senatorTotalTrades" class="font-semibold text-foreground">456</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Volume:</span>
-                    <span id="senatorTotalVolume" class="font-semibold text-gray-900 dark:text-gray-100">$18M</span>
+                    <span class="text-muted-foreground">Total Volume:</span>
+                    <span id="senatorTotalVolume" class="font-semibold text-foreground">$18M</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Traders:</span>
-                    <span id="senatorActiveTraders" class="font-semibold text-gray-900 dark:text-gray-100">23</span>
+                    <span class="text-muted-foreground">Active Traders:</span>
+                    <span id="senatorActiveTraders" class="font-semibold text-foreground">23</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="senatorLastUpdated">Just now</span>
                 </div>
             </div>
         </div>
 
         <!-- Patent Momentum Card -->
-        <div id="patentMomentumCard" class="bg-card rounded-2xl p-8 border border-border">
+        <div id="patentMomentumCard" class="bg-card rounded-2xl p-8 border border-border transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">Patent Momentum</h3>
                 <div class="flex items-center space-x-2">
-                    <div id="patentsApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="w-3 h-3 bg-cyan-500 rounded-full animate-pulse"></div>
+                    <div id="patentsApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Total Patents:</span>
-                    <span id="patentsTotal" class="font-semibold text-gray-900 dark:text-gray-100">2,345</span>
+                    <span class="text-muted-foreground">Total Patents:</span>
+                    <span id="patentsTotal" class="font-semibold text-foreground">2,345</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Active Patents:</span>
-                    <span id="patentsActive" class="font-semibold text-gray-900 dark:text-gray-100">1,890</span>
+                    <span class="text-muted-foreground">Active Patents:</span>
+                    <span id="patentsActive" class="font-semibold text-foreground">1,890</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Pending Patents:</span>
-                    <span id="patentsPending" class="font-semibold text-gray-900 dark:text-gray-100">455</span>
+                    <span class="text-muted-foreground">Pending Patents:</span>
+                    <span id="patentsPending" class="font-semibold text-foreground">455</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="patentsLastUpdated">Just now</span>
                 </div>
             </div>
         </div>
 
         <!-- Market Sentiment Card -->
-        <div id="marketSentimentCard" class="bg-card rounded-2xl p-8 border border-border">
+        <div id="marketSentimentCard" class="bg-card rounded-2xl p-8 border border-border transition-all duration-300 hover:border-primary hover:shadow-lg hover:transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-medium text-foreground">Market Sentiment</h3>
                 <div class="flex items-center space-x-2">
-                    <div id="sentimentApiStatus" class="w-2 h-2 bg-emerald-500 rounded-full" title="API Connected"></div>
-                    <div class="w-3 h-3 bg-rose-500 rounded-full animate-pulse"></div>
+                    <div id="sentimentApiStatus" class="w-2 h-2 bg-primary rounded-full" title="API Connected"></div>
+                    <div class="w-3 h-3 bg-chart-2 rounded-full animate-pulse"></div>
                 </div>
             </div>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Overall Sentiment:</span>
-                    <span id="sentimentOverall" class="font-semibold text-emerald-600 dark:text-emerald-400">Bullish</span>
+                    <span class="text-muted-foreground">Overall Sentiment:</span>
+                    <span id="sentimentOverall" class="font-semibold text-primary">Bullish</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Sentiment Score:</span>
-                    <span id="sentimentScore" class="font-semibold text-gray-900 dark:text-gray-100">72/100</span>
+                    <span class="text-muted-foreground">Sentiment Score:</span>
+                    <span id="sentimentScore" class="font-semibold text-foreground">72/100</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Market Indicators:</span>
-                    <span id="sentimentIndicators" class="font-semibold text-gray-900 dark:text-gray-100">8</span>
+                    <span class="text-muted-foreground">Market Indicators:</span>
+                    <span id="sentimentIndicators" class="font-semibold text-foreground">8</span>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                <div class="text-xs text-muted-foreground mt-2">
                     Last updated: <span id="sentimentLastUpdated">Just now</span>
                 </div>
             </div>
@@ -305,35 +305,35 @@
     </div>
 
     <!-- Insights Section -->
-    <div class="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Market Intelligence Summary</h2>
+    <div class="mt-12 bg-card rounded-xl shadow-lg p-6 border border-border">
+        <h2 class="text-2xl font-bold text-foreground mb-6">Market Intelligence Summary</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div class="text-center">
-                <div class="text-3xl font-bold text-emerald-600" id="totalDataPoints">7,890</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Total Data Points</div>
+                <div class="text-3xl font-bold text-primary" id="totalDataPoints">7,890</div>
+                <div class="text-sm text-muted-foreground">Total Data Points</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl font-bold text-blue-600" id="complianceScore">87.5%</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Compliance Score</div>
+                <div class="text-3xl font-bold text-accent" id="complianceScore">87.5%</div>
+                <div class="text-sm text-muted-foreground">Compliance Score</div>
             </div>
             <div class="text-center">
-                <div class="text-3xl font-bold text-orange-600" id="riskLevel">Medium</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Risk Level</div>
+                <div class="text-3xl font-bold text-chart-4" id="riskLevel">Medium</div>
+                <div class="text-sm text-muted-foreground">Risk Level</div>
             </div>
         </div>
         
         <div class="space-y-4" id="insightsList">
-            <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border-l-4 border-emerald-400">
-                <div class="font-medium text-emerald-900 dark:text-emerald-100">High Trading Volume Detected</div>
-                <div class="text-sm text-emerald-700 dark:text-emerald-200">Unusual trading activity in tech sector stocks by congressional members</div>
+            <div class="p-4 bg-primary/10 rounded-lg border-l-4 border-primary">
+                <div class="font-medium text-primary">High Trading Volume Detected</div>
+                <div class="text-sm text-muted-foreground">Unusual trading activity in tech sector stocks by congressional members</div>
             </div>
-            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-blue-400">
-                <div class="font-medium text-blue-900 dark:text-blue-100">Contract Award Trends</div>
-                <div class="text-sm text-blue-700 dark:text-blue-200">Defense contractors showing increased government contract wins</div>
+            <div class="p-4 bg-accent/10 rounded-lg border-l-4 border-accent">
+                <div class="font-medium text-accent-foreground">Contract Award Trends</div>
+                <div class="text-sm text-muted-foreground">Defense contractors showing increased government contract wins</div>
             </div>
-            <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border-l-4 border-orange-400">
-                <div class="font-medium text-orange-900 dark:text-orange-100">Lobbying Spending Increase</div>
-                <div class="text-sm text-orange-700 dark:text-orange-200">Healthcare and tech industries increasing lobbying expenditures</div>
+            <div class="p-4 bg-chart-4/10 rounded-lg border-l-4 border-chart-4">
+                <div class="font-medium text-chart-4">Lobbying Spending Increase</div>
+                <div class="text-sm text-muted-foreground">Healthcare and tech industries increasing lobbying expenditures</div>
             </div>
         </div>
     </div>
