@@ -2,119 +2,128 @@
 <link rel="stylesheet" href="components/home-dashboard/portfolio-detail-cards.css">
 <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
 <link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
-<link rel="stylesheet" href="components/topnav/topnav.css">
 
 <!-- Top Navigation -->
-<nav class="topnav" id="topnav">
-    <div class="topnav-container">
+<nav id="topnav" class="fixed top-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out" style="left: 0;">
+    <div class="flex items-center justify-between px-6 py-4">
         <!-- Logo/Brand -->
-        <div class="topnav-brand">
-            <a href="home-dashboard.html" class="brand-link">
-                <i class="bi bi-graph-up-arrow brand-icon"></i>
-                <span class="brand-text">Ezana Finance</span>
-            </a>
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <i class="bi bi-graph-up text-white text-lg"></i>
+            </div>
+            <span class="text-lg font-bold text-gray-900 dark:text-white">Ezana Finance</span>
         </div>
 
         <!-- Navigation Menu -->
-        <div class="topnav-menu" id="topnav-menu">
-            <ul class="topnav-list">
-                <!-- Dashboard -->
-                <li class="topnav-item">
-                    <a href="home-dashboard.html" class="topnav-link">
-                        <i class="bi bi-house-door"></i>
-                        Dashboard
-                    </a>
-                </li>
+        <div class="hidden md:flex items-center space-x-6">
+            <!-- Dashboard -->
+            <button onclick="switchTab('home')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200" id="topnav-home">
+                <i class="bi bi-house-door"></i>
+                <span>Dashboard</span>
+            </button>
 
-                <!-- Research Tools Dropdown -->
-                <li class="topnav-item dropdown">
-                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="research-tools">
-                        <i class="bi bi-search"></i>
-                        Research Tools
-                        <i class="bi bi-chevron-down dropdown-icon"></i>
-                    </a>
-                    <div class="dropdown-menu" id="dropdown-research-tools">
-                        <a href="inside-the-capitol.html" class="dropdown-item">
-                            <i class="bi bi-building"></i>
-                            Inside the Capitol
-                        </a>
-                        <a href="market-analysis.html" class="dropdown-item">
-                            <i class="bi bi-search"></i>
-                            Market Analysis
-                        </a>
-                        <a href="company-research.html" class="dropdown-item">
-                            <i class="bi bi-building"></i>
-                            Company Research
-                        </a>
-                        <a href="economic-indicators.html" class="dropdown-item">
-                            <i class="bi bi-graph-up-arrow"></i>
-                            Economic Indicators
-                        </a>
-                        <a href="financial-analytics.html" class="dropdown-item">
-                            <i class="bi bi-graph-up"></i>
-                            Financial Analytics
-                        </a>
-                    </div>
-                </li>
-
-                <!-- Watchlist -->
-                <li class="topnav-item">
-                    <a href="watchlist.html" class="topnav-link">
-                        <i class="bi bi-bookmark-star"></i>
-                        Watchlist
-                    </a>
-                </li>
-
-                <!-- Community -->
-                <li class="topnav-item">
-                    <a href="community.html" class="topnav-link">
-                        <i class="bi bi-people"></i>
-                        Community
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- User Menu -->
-        <div class="topnav-user">
-            <div class="user-dropdown">
-                <button class="user-button" id="user-button">
-                    <div class="user-avatar">
-                        <i class="bi bi-person-circle"></i>
-                    </div>
-                    <span class="user-name">John Doe</span>
-                    <i class="bi bi-chevron-down dropdown-icon"></i>
+            <!-- Research Tools Dropdown -->
+            <div class="relative group">
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-search"></i>
+                    <span>Research Tools</span>
+                    <i class="bi bi-chevron-down text-sm"></i>
                 </button>
-                <div class="dropdown-menu user-menu" id="user-menu">
-                    <a href="user-profile-settings.html" class="dropdown-item">
-                        <i class="bi bi-person"></i>
-                        Profile Settings
-                    </a>
-                    <a href="#" class="dropdown-item">
-                        <i class="bi bi-gear"></i>
-                        Preferences
-                    </a>
-                    <a href="#" class="dropdown-item">
-                        <i class="bi bi-question-circle"></i>
-                        Help & Support
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Sign Out
-                    </a>
+                <div class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div class="py-2">
+                        <button onclick="switchTab('inside-the-capitol')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                            <i class="bi bi-building text-sm mr-2"></i>
+                            Inside the Capitol
+                        </button>
+                        <button onclick="switchTab('market-analysis')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                            <i class="bi bi-search text-sm mr-2"></i>
+                            Market Analysis
+                        </button>
+                        <button onclick="switchTab('company-research')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                            <i class="bi bi-building text-sm mr-2"></i>
+                            Company Research
+                        </button>
+                        <button onclick="switchTab('economic-indicators')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                            <i class="bi bi-graph-up-arrow text-sm mr-2"></i>
+                            Economic Indicators
+                        </button>
+                        <button onclick="switchTab('financial-analytics')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                            <i class="bi bi-graph-up text-sm mr-2"></i>
+                            Financial Analytics
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Watchlist -->
+            <button onclick="switchTab('watchlists')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200" id="topnav-watchlists">
+                <i class="bi bi-bookmark-star"></i>
+                <span>Watchlist</span>
+            </button>
+
+            <!-- Community -->
+            <button onclick="switchTab('community')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200" id="topnav-community">
+                <i class="bi bi-people"></i>
+                <span>Community</span>
+            </button>
         </div>
 
         <!-- Mobile Menu Toggle -->
-        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-            <i class="bi bi-list"></i>
+        <button class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300" onclick="toggleMobileMenu()">
+            <i class="bi bi-list text-xl"></i>
         </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 space-y-2">
+            <!-- Dashboard -->
+            <button onclick="switchTab('home')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                <i class="bi bi-house-door"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <!-- Research Tools -->
+            <div class="space-y-1">
+                <div class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">Research Tools</div>
+                <button onclick="switchTab('inside-the-capitol')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-building text-sm"></i>
+                    <span>Inside the Capitol</span>
+                </button>
+                <button onclick="switchTab('market-analysis')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-search text-sm"></i>
+                    <span>Market Analysis</span>
+                </button>
+                <button onclick="switchTab('company-research')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-building text-sm"></i>
+                    <span>Company Research</span>
+                </button>
+                <button onclick="switchTab('economic-indicators')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-graph-up-arrow text-sm"></i>
+                    <span>Economic Indicators</span>
+                </button>
+                <button onclick="switchTab('financial-analytics')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-graph-up text-sm"></i>
+                    <span>Financial Analytics</span>
+                </button>
+            </div>
+
+            <!-- Watchlist -->
+            <button onclick="switchTab('watchlists')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                <i class="bi bi-bookmark-star"></i>
+                <span>Watchlist</span>
+            </button>
+
+            <!-- Community -->
+            <button onclick="switchTab('community')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                <i class="bi bi-people"></i>
+                <span>Community</span>
+            </button>
+        </div>
     </div>
 </nav>
 
-<div class="main-content">
+<div class="main-content" style="margin-top: 80px;">
 <div class="container mx-auto px-6 py-12">
     <div class="flex items-center justify-between mb-8">
         <div>
@@ -500,4 +509,37 @@
 </div>
 </div> <!-- Close main-content -->
 
-<script src="components/topnav/topnav.js"></script>
+<script>
+// Mobile menu toggle for top navigation
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) {
+        mobileMenu.classList.toggle('hidden');
+    }
+}
+
+// Update top navigation position based on sidebar visibility
+function updateTopNavPosition() {
+    const topnav = document.getElementById('topnav');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content');
+    
+    if (topnav && sidebar && mainContent) {
+        const sidebarVisible = sidebar.style.display !== 'none';
+        const marginLeft = mainContent.style.marginLeft;
+        
+        if (sidebarVisible && marginLeft === '280px') {
+            // Sidebar is visible, position top nav after sidebar
+            topnav.style.left = '280px';
+        } else {
+            // Sidebar is hidden, position top nav at full width
+            topnav.style.left = '0';
+        }
+    }
+}
+
+// Initialize top navigation positioning when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    updateTopNavPosition();
+});
+</script>
