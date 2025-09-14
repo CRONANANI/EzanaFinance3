@@ -19,7 +19,7 @@
 /* Vertical Cards Container - Fixed width on the right, aligned to top */
 .horizontal-cards-container {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     align-items: flex-start;
     width: 400px;
@@ -164,35 +164,35 @@
 
 /* Ensure all square cards have consistent sizing */
 .horizontal-cards-container .portfolio-detail-card {
-    width: 380px !important;
-    height: 80px !important;
-    min-width: 380px !important;
-    min-height: 80px !important;
-    max-width: 380px !important;
-    max-height: 80px !important;
+    width: 190px !important;
+    height: 100px !important;
+    min-width: 190px !important;
+    min-height: 100px !important;
+    max-width: 190px !important;
+    max-height: 100px !important;
     flex-shrink: 0;
-    padding: 1rem !important;
+    padding: 0.75rem !important;
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: column !important;
     justify-content: space-between !important;
-    align-items: center !important;
+    align-items: flex-start !important;
 }
 
 /* Square Cards */
 .portfolio-detail-card.square-card {
-    width: 380px !important;
-    height: 80px !important;
-    padding: 1rem !important;
+    width: 190px !important;
+    height: 100px !important;
+    padding: 0.75rem !important;
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: column !important;
     justify-content: space-between !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    min-height: 80px !important;
-    max-height: 80px !important;
+    min-height: 100px !important;
+    max-height: 100px !important;
     margin: 0;
 }
 
@@ -203,45 +203,55 @@
 }
 
 .portfolio-detail-card.square-card .card-header {
-    margin-bottom: 0;
+    margin-bottom: 0.25rem;
     padding-bottom: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: flex-start;
-    flex: 1;
+    width: 100%;
 }
 
 .portfolio-detail-card.square-card .card-title {
     display: block;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-align: left;
     line-height: 1.2;
-    margin: 0 0 0.25rem 0;
+    margin: 0;
     color: var(--foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
 .portfolio-detail-card.square-card .card-icon {
-    width: 3rem;
-    height: 3rem;
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1rem;
     flex-shrink: 0;
 }
 
 .portfolio-detail-card.square-card .card-icon i {
-    font-size: 1.5rem;
+    font-size: 1rem;
 }
 
 .portfolio-detail-card.square-card .card-value {
-    display: none;
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--foreground);
+    margin: 0.25rem 0;
+    line-height: 1.2;
 }
 
 .portfolio-detail-card.square-card .card-change {
-    display: none;
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .portfolio-detail-card.square-card .card-description {
@@ -315,13 +325,13 @@
     .horizontal-cards-container {
         gap: 0.75rem;
         max-width: 400px;
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
     
     .portfolio-detail-card.square-card {
-        width: 380px;
-        height: 80px;
-        padding: 1rem;
+        width: 190px;
+        height: 100px;
+        padding: 0.75rem;
     }
 }
 
@@ -333,7 +343,7 @@
     
     .horizontal-cards-container {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         width: 100%;
         justify-content: center;
         gap: 0.75rem;
@@ -342,9 +352,9 @@
     }
     
     .portfolio-detail-card.square-card {
-        width: 380px;
-        height: 80px;
-        padding: 1rem;
+        width: 190px;
+        height: 100px;
+        padding: 0.75rem;
     }
     
     .portfolio-detail-card.expanded {
@@ -362,16 +372,16 @@
 @media (max-width: 480px) {
     .horizontal-cards-container {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         align-items: center;
         max-width: 400px;
         margin: 0 auto;
     }
     
     .portfolio-detail-card.square-card {
-        width: 380px;
-        height: 80px;
-        padding: 1rem;
+        width: 190px;
+        height: 100px;
+        padding: 0.75rem;
     }
     
     .portfolio-detail-card.expanded {
