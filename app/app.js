@@ -130,6 +130,9 @@ function switchTab(tabName) {
         case 'financial-analytics':
             showFinancialAnalytics();
             break;
+        case 'user-profile-settings':
+            showUserProfileSettings();
+            break;
     }
 }
 
@@ -730,6 +733,22 @@ async function showCommunity() {
     
     // Initialize page-specific functionality
     await initializePageFunctionality('community');
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function showUserProfileSettings() {
+    hideAllContent();
+    
+    
+    const dynamicContent = document.getElementById('dynamic-content');
+    dynamicContent.style.display = 'block';
+    
+    const content = await loadPageContent('user-profile-settings');
+    dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('user-profile-settings');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
