@@ -1533,10 +1533,6 @@ body {
     transition: margin-left 0.3s ease;
 }
 
-/* When sidebar is collapsed, adjust main content */
-.notifications-sidebar.collapsed ~ #main-content {
-    margin-left: 60px;
-}
 
 /* Ensure topnav is above sidebar */
 #topnav {
@@ -1544,54 +1540,7 @@ body {
 }
 
 /* Portfolio Dashboard Styles */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-}
 
-.title-section h1 {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: #10b981;
-    margin-bottom: 8px;
-}
-
-.title-section p {
-    color: #94a3b8;
-    font-size: 1rem;
-}
-
-.refresh-info {
-    text-align: right;
-    color: #64748b;
-    font-size: 0.875rem;
-}
-
-.refresh-info .refresh-btn {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    border-radius: 12px;
-    padding: 8px 12px;
-    color: #10b981;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-    display: inline-block;
-    margin-bottom: 4px;
-}
-
-.refresh-info .refresh-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
-}
-
-.main-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
-    align-items: start;
-}
 
 .portfolio-card {
     background: rgba(30, 41, 59, 0.7);
@@ -1709,7 +1658,7 @@ body {
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
 }
 
@@ -1790,11 +1739,6 @@ body {
 .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
 
 @media (max-width: 1024px) {
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
     .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
     }

@@ -9,17 +9,12 @@ class NotificationsSidebar {
     }
 
     init() {
-        this.loadNotifications();
-        
-        // If no notifications exist, load sample data
-        if (this.notifications.length === 0) {
-            this.loadSampleNotifications();
-        } else {
-            this.renderNotifications();
-        }
-        
+        console.log('Initializing notifications sidebar...');
+        // Always load sample notifications for demo
+        this.loadSampleNotifications();
         this.updateNotificationCount();
         this.setupEventListeners();
+        console.log('Notifications sidebar initialized with', this.notifications.length, 'notifications');
     }
 
     setupEventListeners() {
@@ -162,8 +157,14 @@ class NotificationsSidebar {
 
     // Render notifications list
     renderNotifications() {
+        console.log('Rendering notifications...', this.notifications.length, 'notifications');
         const container = document.getElementById('notifications-list');
         const emptyState = document.getElementById('notifications-empty');
+        
+        if (!container) {
+            console.error('Notifications list container not found');
+            return;
+        }
         
         let filteredNotifications = this.notifications;
         if (this.currentFilter !== 'all') {
@@ -326,6 +327,7 @@ class NotificationsSidebar {
 
     // Load sample notifications for demo
     loadSampleNotifications() {
+        console.log('Loading sample notifications...');
         const sampleNotifications = [
             {
                 id: '1',
@@ -433,36 +435,6 @@ class NotificationsSidebar {
 }
 
 // Global functions for HTML onclick handlers
-function toggleSidebar() {
-    const sidebar = document.getElementById('notifications-sidebar');
-    if (!sidebar) {
-        console.error('Sidebar element not found');
-        return;
-    }
-    
-    sidebar.classList.toggle('collapsed');
-    
-    // Adjust main content margin
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-        if (sidebar.classList.contains('collapsed')) {
-            mainContent.style.marginLeft = '60px';
-        } else {
-            mainContent.style.marginLeft = '350px';
-        }
-    }
-    
-    const collapseBtn = document.querySelector('.collapse-btn svg');
-    if (collapseBtn) {
-        if (sidebar.classList.contains('collapsed')) {
-            collapseBtn.innerHTML = '<path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>';
-        } else {
-            collapseBtn.innerHTML = '<path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>';
-        }
-    } else {
-        console.error('Collapse button not found');
-    }
-}
 
 function toggleNotificationsSidebar() {
     if (window.notificationsSidebar) {
@@ -489,7 +461,16 @@ function filterNotifications(filter) {
 
 // Initialize notifications sidebar when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing notifications sidebar...');
     window.notificationsSidebar = new NotificationsSidebar();
+    
+    // Force reload sample data after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        if (window.notificationsSidebar) {
+            console.log('Force reloading sample notifications...');
+            window.notificationsSidebar.forceReloadSampleNotifications();
+        }
+    }, 500);
 });
 
 // Add CSS animations

@@ -13,19 +13,14 @@
 <!-- Notifications Sidebar -->
 <div id="notifications-sidebar" class="notifications-sidebar">
     <!-- Sidebar Header -->
-    <div class="notifications-header">
-        <div class="notifications-title">
-            <svg class="bell-icon" viewBox="0 0 24 24">
-                <path d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2M12 6C14.76 6 17 8.24 17 11V18H7V11C7 8.24 9.24 6 12 6M10 21C10 22.1 10.9 23 12 23S14 22.1 14 21"/>
-            </svg>
-            <span>Notifications</span>
+        <div class="notifications-header">
+            <div class="notifications-title">
+                <svg class="bell-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2M12 6C14.76 6 17 8.24 17 11V18H7V11C7 8.24 9.24 6 12 6M10 21C10 22.1 10.9 23 12 23S14 22.1 14 21"/>
+                </svg>
+                <span>Notifications</span>
+            </div>
         </div>
-        <button class="collapse-btn" onclick="toggleSidebar()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>
-            </svg>
-        </button>
-    </div>
 
     <!-- Notifications List -->
     <div class="notifications-list" id="notifications-list">
@@ -165,133 +160,139 @@
 
 <div class="main-content" style="margin-top: 80px;">
 <div class="container mx-auto px-6 py-12">
-    <div class="header">
-        <div class="title-section">
-            <h1>Portfolio Dashboard</h1>
-            <p>Track your investments and financial performance</p>
+    <div class="flex items-center justify-between mb-12">
+        <div>
+            <h1 class="text-4xl font-light text-foreground tracking-tight page-title-shiny">Portfolio Dashboard</h1>
+            <p class="text-muted-foreground mt-3 text-lg">Track your investments and financial performance</p>
         </div>
-        <div class="refresh-info">
-            <div onclick="refreshPortfolioData()" class="refresh-btn">
-                <i class="bi bi-arrow-clockwise"></i> Refresh
+        <div class="flex items-center space-x-4">
+            <button onclick="refreshPortfolioData()" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
+                <i class="bi bi-arrow-clockwise mr-2"></i>Refresh
+            </button>
+            <div class="text-sm text-muted-foreground">
+                Last updated: <span id="portfolio-last-updated" class="text-foreground">9/14/2025, 12:24:51 PM</span>
             </div>
-            <div>Last updated: <span id="portfolio-last-updated">9/14/2025, 12:24:51 PM</span></div>
         </div>
     </div>
 
 
     <!-- Main Dashboard Layout -->
-    <div class="main-content">
-        <!-- Main Portfolio Card -->
-        <div class="portfolio-card">
-            <div class="portfolio-header">
-                <div class="portfolio-title">Total Portfolio Value</div>
-                <div class="refresh-btn" onclick="refreshPortfolioData()">
-                    <i class="bi bi-graph-up"></i>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Portfolio Card - Takes 2 columns on large screens -->
+        <div class="lg:col-span-2">
+            <div class="portfolio-card">
+                <div class="portfolio-header">
+                    <div class="portfolio-title">Total Portfolio Value</div>
+                    <div class="refresh-btn" onclick="refreshPortfolioData()">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="portfolio-value">$127,843.52</div>
-            
-            <div class="portfolio-change">
-                <span class="change-positive">
-                    <i class="bi bi-arrow-up"></i>
-                    $2,847.31 (+2.28%)
-                </span>
-            </div>
-            
-            <div class="updated-time">Updated 2 minutes ago</div>
-            
-            <div class="time-selector">
-                <label>Time Period:</label>
-                <select id="portfolio-time-period" onchange="updatePortfolioChart()">
-                    <option value="1">1 Month</option>
-                    <option value="3">3 Months</option>
-                    <option value="6">6 Months</option>
-                    <option value="12" selected>1 Year</option>
-                    <option value="60">5 Years</option>
-                    <option value="all">All Time</option>
-                </select>
-            </div>
+                
+                <div class="portfolio-value">$127,843.52</div>
+                
+                <div class="portfolio-change">
+                    <span class="change-positive">
+                        <i class="bi bi-arrow-up"></i>
+                        $2,847.31 (+2.28%)
+                    </span>
+                </div>
+                
+                <div class="updated-time">Updated 2 minutes ago</div>
+                
+                <div class="time-selector">
+                    <label>Time Period:</label>
+                    <select id="portfolio-time-period" onchange="updatePortfolioChart()">
+                        <option value="1">1 Month</option>
+                        <option value="3">3 Months</option>
+                        <option value="6">6 Months</option>
+                        <option value="12" selected>1 Year</option>
+                        <option value="60">5 Years</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
 
-            <div class="chart-placeholder">
-                <div class="portfolio-chart-container">
-                    <canvas id="portfolio-chart" width="1200" height="400"></canvas>
+                <div class="chart-placeholder">
+                    <div class="portfolio-chart-container">
+                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Metrics Grid -->
-        <div class="metrics-grid">
-            <!-- Today's P&L Card -->
-            <div class="metric-card positive">
-                <div class="metric-header">
-                    <div class="metric-title">Today's P&L</div>
-                    <div class="metric-icon icon-positive">
-                        <i class="bi bi-graph-up-arrow"></i>
+        <!-- Metrics Grid - Takes 1 column on large screens -->
+        <div class="lg:col-span-1">
+            <div class="metrics-grid">
+                <!-- Today's P&L Card -->
+                <div class="metric-card positive">
+                    <div class="metric-header">
+                        <div class="metric-title">Today's P&L</div>
+                        <div class="metric-icon icon-positive">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
                     </div>
+                    <div class="metric-value">+$1,247</div>
+                    <div class="metric-subtitle">+0.98% from yesterday</div>
                 </div>
-                <div class="metric-value">+$1,247</div>
-                <div class="metric-subtitle">+0.98% from yesterday</div>
-            </div>
 
-            <!-- Top Performer Card -->
-            <div class="metric-card warning">
-                <div class="metric-header">
-                    <div class="metric-title">Top Performer</div>
-                    <div class="metric-icon icon-warning">
-                        <i class="bi bi-star-fill"></i>
+                <!-- Top Performer Card -->
+                <div class="metric-card warning">
+                    <div class="metric-header">
+                        <div class="metric-title">Top Performer</div>
+                        <div class="metric-icon icon-warning">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
                     </div>
+                    <div class="metric-value">NVDA</div>
+                    <div class="metric-subtitle">+12.4% this week</div>
                 </div>
-                <div class="metric-value">NVDA</div>
-                <div class="metric-subtitle">+12.4% this week</div>
-            </div>
 
-            <!-- Risk Score Card -->
-            <div class="metric-card warning">
-                <div class="metric-header">
-                    <div class="metric-title">Risk Score</div>
-                    <div class="metric-icon icon-warning">
-                        <i class="bi bi-exclamation-triangle"></i>
+                <!-- Risk Score Card -->
+                <div class="metric-card warning">
+                    <div class="metric-header">
+                        <div class="metric-title">Risk Score</div>
+                        <div class="metric-icon icon-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
                     </div>
+                    <div class="metric-value">6.2/10</div>
+                    <div class="metric-subtitle">Moderate risk level</div>
                 </div>
-                <div class="metric-value">6.2/10</div>
-                <div class="metric-subtitle">Moderate risk level</div>
-            </div>
 
-            <!-- Monthly Dividends Card -->
-            <div class="metric-card info">
-                <div class="metric-header">
-                    <div class="metric-title">Monthly Dividends</div>
-                    <div class="metric-icon icon-info">
-                        <i class="bi bi-cash-coin"></i>
+                <!-- Monthly Dividends Card -->
+                <div class="metric-card info">
+                    <div class="metric-header">
+                        <div class="metric-title">Monthly Dividends</div>
+                        <div class="metric-icon icon-info">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
                     </div>
+                    <div class="metric-value">$847.23</div>
+                    <div class="metric-subtitle">Next payout: Oct 15</div>
                 </div>
-                <div class="metric-value">$847.23</div>
-                <div class="metric-subtitle">Next payout: Oct 15</div>
-            </div>
 
-            <!-- Market Performance Card -->
-            <div class="metric-card success">
-                <div class="metric-header">
-                    <div class="metric-title">Market Performance</div>
-                    <div class="metric-icon icon-success">
-                        <i class="bi bi-graph-up"></i>
+                <!-- Market Performance Card -->
+                <div class="metric-card success">
+                    <div class="metric-header">
+                        <div class="metric-title">Market Performance</div>
+                        <div class="metric-icon icon-success">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
                     </div>
+                    <div class="metric-value">+8.4%</div>
+                    <div class="metric-subtitle">vs S&P 500: +6.2%</div>
                 </div>
-                <div class="metric-value">+8.4%</div>
-                <div class="metric-subtitle">vs S&P 500: +6.2%</div>
-            </div>
 
-            <!-- Asset Allocation Card -->
-            <div class="metric-card info">
-                <div class="metric-header">
-                    <div class="metric-title">Asset Allocation</div>
-                    <div class="metric-icon icon-info">
-                        <i class="bi bi-pie-chart"></i>
+                <!-- Asset Allocation Card -->
+                <div class="metric-card info">
+                    <div class="metric-header">
+                        <div class="metric-title">Asset Allocation</div>
+                        <div class="metric-icon icon-info">
+                            <i class="bi bi-pie-chart"></i>
+                        </div>
                     </div>
+                    <div class="metric-value">Balanced</div>
+                    <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
                 </div>
-                <div class="metric-value">Balanced</div>
-                <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
             </div>
         </div>
     </div>

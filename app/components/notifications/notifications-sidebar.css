@@ -17,33 +17,6 @@
     transition: all 0.3s ease;
 }
 
-.notifications-sidebar.collapsed {
-    width: 60px;
-}
-
-.collapsed .notifications-title span,
-.collapsed .notification-text,
-.collapsed .notification-meta {
-    display: none;
-}
-
-.collapsed .notification-item {
-    padding: 12px;
-    display: flex;
-    justify-content: center;
-}
-
-.collapsed .notification-content {
-    justify-content: center;
-}
-
-.collapsed .notification-icon {
-    margin: 0;
-}
-
-.collapsed .unread-badge {
-    display: none;
-}
 
 /* Toggle Button */
 .notifications-toggle {
