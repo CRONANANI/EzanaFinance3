@@ -158,9 +158,9 @@
     <!-- Main Dashboard Layout -->
     <div class="dashboard-main-layout">
         <!-- Main Portfolio Card - Takes remaining space -->
-        <div class="main-portfolio-card" id="main-portfolio-card">
+        <div class="main-portfolio-card" id="main-portfolio-card" style="flex: 1; min-width: 0; margin: 0; width: 100%;">
             <!-- Total Portfolio Value Card - Expanded by Default -->
-            <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" data-card-type="total-portfolio" onclick="expandCard(this)">
+            <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" data-card-type="total-portfolio" onclick="expandCard(this)" style="width: 100%; min-height: 600px; max-height: 800px; padding: 2rem;">
                 <div class="card-header">
                     <h3 class="card-title">Total Portfolio Value</h3>
                     <div class="card-icon">
@@ -175,7 +175,7 @@
                 <div class="card-description">Updated 2 minutes ago</div>
                 
                 <!-- Portfolio Chart Content - Visible by Default -->
-                <div class="portfolio-chart-content expanded" id="portfolio-chart-content">
+                <div class="portfolio-chart-content expanded" id="portfolio-chart-content" style="display: block; height: 500px; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
                     <div class="portfolio-chart-controls">
                         <div class="time-period-selector">
                             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
@@ -191,9 +191,29 @@
                     </div>
                     
                     
-                    <div class="portfolio-chart-container mt-4">
-                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
+                    <div class="portfolio-chart-container mt-4" style="background: var(--card); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border); min-height: 400px; max-height: 500px; position: relative; width: 100%; margin: 0 auto; box-shadow: var(--shadow-sm);">
+                        <canvas id="portfolio-chart" width="1200" height="400" style="width: 100% !important; height: 400px !important; max-width: none !important;"></canvas>
                     </div>
+                    <script>
+                        // Force chart initialization immediately
+                        function forceInitChart() {
+                            console.log('Force initializing chart...');
+                            const canvas = document.getElementById('portfolio-chart');
+                            if (canvas && typeof updatePortfolioChart === 'function') {
+                                updatePortfolioChart();
+                                console.log('Chart initialized successfully!');
+                            } else {
+                                console.log('Canvas or updatePortfolioChart function not available yet');
+                                setTimeout(forceInitChart, 200);
+                            }
+                        }
+                        
+                        // Try multiple times
+                        setTimeout(forceInitChart, 100);
+                        setTimeout(forceInitChart, 500);
+                        setTimeout(forceInitChart, 1000);
+                        setTimeout(forceInitChart, 2000);
+                    </script>
                 </div>
             </div>
         </div>
