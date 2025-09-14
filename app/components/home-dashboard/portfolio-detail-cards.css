@@ -11,8 +11,10 @@
     display: flex;
     gap: 1.5rem;
     justify-content: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin-bottom: 3rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
 }
 
 /* Individual Detail Card - Unified Design */
@@ -144,18 +146,31 @@
     color: white;
 }
 
+/* Ensure all square cards have consistent sizing */
+.horizontal-cards-container .portfolio-detail-card {
+    width: 200px !important;
+    height: 200px !important;
+    min-width: 200px !important;
+    min-height: 200px !important;
+    max-width: 200px !important;
+    max-height: 200px !important;
+    flex-shrink: 0;
+}
+
 /* Square Cards */
 .portfolio-detail-card.square-card {
-    width: 200px;
-    height: 200px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    width: 200px !important;
+    height: 200px !important;
+    padding: 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    min-height: 200px !important;
+    max-height: 200px !important;
 }
 
 .portfolio-detail-card.square-card:hover {
