@@ -36,8 +36,8 @@
 
 
     <!-- Top Navigation -->
-    <nav id="topnav" class="fixed top-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out" style="left: 0;">
-        <div class="flex items-center justify-between px-6 py-4">
+    <nav id="topnav" class="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out">
+        <div class="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
             <!-- Logo/Brand -->
             <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -99,6 +99,9 @@
                     <span>Community</span>
                 </button>
             </div>
+
+            <!-- Spacer for centering -->
+            <div class="hidden md:block w-32"></div>
 
             <!-- Mobile Menu Toggle -->
             <button class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300" onclick="toggleMobileMenu()">
