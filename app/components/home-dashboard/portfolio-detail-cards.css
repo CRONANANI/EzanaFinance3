@@ -304,112 +304,6 @@
     max-width: none !important;
 }
 
-/* Top Holdings Section */
-.top-holdings-section {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: var(--card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-}
-
-.holdings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-}
-
-.holding-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.holding-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: #10b981;
-}
-
-.holding-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #10b981, #059669);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.holding-card:hover::before {
-    opacity: 1;
-}
-
-.holding-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.holding-symbol {
-    font-weight: 600;
-    font-size: 1.125rem;
-    color: var(--foreground);
-}
-
-.holding-name {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-}
-
-.holding-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.holding-shares {
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
-}
-
-.holding-value {
-    font-weight: 500;
-    color: var(--foreground);
-}
-
-.holding-return {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.return-label {
-    font-size: 0.75rem;
-    color: var(--muted-foreground);
-}
-
-.return-value {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.return-value.positive {
-    color: #10b981;
-}
-
-.return-value.negative {
-    color: #ef4444;
-}
 
 /* Responsive Design */
 @media (max-width: 1024px) {
@@ -454,14 +348,7 @@
         font-size: 1.875rem;
     }
     
-    .holdings-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
     
-    .holding-card {
-        padding: 0.875rem;
-    }
 }
 
 @media (max-width: 480px) {
