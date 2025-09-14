@@ -3,8 +3,8 @@
 /* Main Congressional Trading Card - Unified Design */
 .congressional-trading-card {
     background: var(--card);
-    border-radius: 1rem;
-    padding: 2rem;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
     border: 1px solid var(--border);
     cursor: pointer;
     transition: all 0.3s ease;

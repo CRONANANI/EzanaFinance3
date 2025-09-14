@@ -5,15 +5,15 @@
     </div>
 
     <!-- Company Search -->
-    <div class="bg-card rounded-2xl p-8 border border-border mb-12">
-        <h3 class="text-xl font-medium text-foreground mb-6">Company Search & Analysis</h3>
+    <div class="bg-card rounded-xl p-6 border border-border mb-8">
+        <h3 class="text-lg font-medium text-foreground mb-4">Company Search & Analysis</h3>
         
-        <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex flex-col md:flex-row gap-3">
             <div class="flex-1">
                 <input type="text" id="company-search" placeholder="Search by company name or ticker symbol (e.g., AAPL, Tesla)" 
-                       class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-ring bg-muted text-foreground">
+                       class="w-full px-4 py-2.5 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-muted text-foreground">
             </div>
-            <button onclick="searchCompany()" class="px-8 py-3 bg-primary hover:bg-opacity-90 text-primary-foreground rounded-xl transition-colors font-medium">
+            <button onclick="searchCompany()" class="px-6 py-2.5 bg-primary hover:bg-opacity-90 text-primary-foreground rounded-lg transition-colors font-medium">
                 <i class="bi bi-search mr-2"></i>Analyze Company
             </button>
         </div>
@@ -22,51 +22,51 @@
     <!-- Company Analysis Results -->
     <div id="company-analysis-results" class="hidden">
         <!-- Company Overview -->
-        <div class="bg-card rounded-2xl p-8 border border-border mb-8">
-            <div class="flex items-start justify-between mb-8">
-                <div class="flex items-center space-x-6">
-                    <div class="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center">
-                        <span id="company-ticker" class="font-bold text-primary-foreground text-xl">AAPL</span>
+        <div class="bg-card rounded-xl p-6 border border-border mb-6">
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
+                        <span id="company-ticker" class="font-bold text-primary-foreground text-lg">AAPL</span>
                     </div>
                     <div>
-                        <h2 id="company-name" class="text-3xl font-light text-foreground">Apple Inc.</h2>
-                        <p id="company-sector" class="text-muted-foreground text-lg">Technology • Consumer Electronics</p>
+                        <h2 id="company-name" class="text-2xl font-light text-foreground">Apple Inc.</h2>
+                        <p id="company-sector" class="text-muted-foreground">Technology • Consumer Electronics</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <div id="company-price" class="text-4xl font-light text-foreground">$175.43</div>
-                    <div id="company-change" class="text-primary font-medium text-lg">+$2.34 (+1.35%)</div>
+                    <div id="company-price" class="text-3xl font-light text-foreground">$175.43</div>
+                    <div id="company-change" class="text-primary font-medium">+$2.34 (+1.35%)</div>
                 </div>
             </div>
 
             <!-- Key Metrics -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="text-center p-6 bg-muted rounded-2xl">
-                    <div class="text-2xl font-light text-foreground" id="market-cap">$2.8T</div>
-                    <div class="text-sm text-muted-foreground mt-2">Market Cap</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-muted rounded-lg">
+                    <div class="text-xl font-light text-foreground" id="market-cap">$2.8T</div>
+                    <div class="text-sm text-muted-foreground mt-1">Market Cap</div>
                 </div>
-                <div class="text-center p-6 bg-muted rounded-2xl">
-                    <div class="text-2xl font-light text-foreground" id="pe-ratio">28.5</div>
-                    <div class="text-sm text-muted-foreground mt-2">P/E Ratio</div>
+                <div class="text-center p-4 bg-muted rounded-lg">
+                    <div class="text-xl font-light text-foreground" id="pe-ratio">28.5</div>
+                    <div class="text-sm text-muted-foreground mt-1">P/E Ratio</div>
                 </div>
-                <div class="text-center p-6 bg-muted rounded-2xl">
-                    <div class="text-2xl font-light text-foreground" id="dividend-yield">0.52%</div>
-                    <div class="text-sm text-muted-foreground mt-2">Div Yield</div>
+                <div class="text-center p-4 bg-muted rounded-lg">
+                    <div class="text-xl font-light text-foreground" id="dividend-yield">0.52%</div>
+                    <div class="text-sm text-muted-foreground mt-1">Div Yield</div>
                 </div>
-                <div class="text-center p-6 bg-muted rounded-2xl">
-                    <div class="text-2xl font-light text-foreground" id="beta">1.2</div>
-                    <div class="text-sm text-muted-foreground mt-2">Beta</div>
+                <div class="text-center p-4 bg-muted rounded-lg">
+                    <div class="text-xl font-light text-foreground" id="beta">1.2</div>
+                    <div class="text-sm text-muted-foreground mt-1">Beta</div>
                 </div>
             </div>
         </div>
 
         <!-- Financial Analysis Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Financial Metrics -->
-            <div class="bg-card rounded-2xl p-8 border border-border">
-                <h3 class="text-xl font-medium text-foreground mb-6">Financial Metrics</h3>
+            <div class="bg-card rounded-xl p-6 border border-border">
+                <h3 class="text-lg font-medium text-foreground mb-4">Financial Metrics</h3>
                 
-                <div class="space-y-6">
+                <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <span class="text-muted-foreground">Revenue (TTM)</span>
                         <span class="font-medium text-foreground">$394.3B</span>
@@ -95,8 +95,8 @@
             </div>
 
             <!-- Analyst Ratings -->
-            <div class="bg-card rounded-2xl p-8 border border-border">
-                <h3 class="text-xl font-medium text-foreground mb-6">Analyst Ratings</h3>
+            <div class="bg-card rounded-xl p-6 border border-border">
+                <h3 class="text-lg font-medium text-foreground mb-4">Analyst Ratings</h3>
                 
                 <div class="space-y-4">
                     <!-- Overall Rating -->
@@ -165,8 +165,8 @@
     </div>
 
     <!-- Recent Research Reports -->
-    <div class="card card-content">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Recent Research Reports</h3>
+    <div class="bg-card rounded-xl p-6 border border-border mb-6">
+        <h3 class="text-lg font-semibold text-foreground mb-4">Recent Research Reports</h3>
         
         <div class="space-y-4">
             <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -226,9 +226,9 @@
     </div>
 
     <!-- Company Comparison Tool -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div class="card card-content">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Company Comparison</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-card rounded-xl p-6 border border-border">
+            <h3 class="text-lg font-semibold text-foreground mb-4">Company Comparison</h3>
             
             <div class="space-y-4">
                 <div>
@@ -252,8 +252,8 @@
         </div>
 
         <!-- Industry Analysis -->
-        <div class="card card-content">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Industry Analysis</h3>
+        <div class="bg-card rounded-xl p-6 border border-border">
+            <h3 class="text-lg font-semibold text-foreground mb-4">Industry Analysis</h3>
             
             <div class="space-y-4">
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -294,7 +294,7 @@
 
     <!-- Research Tools -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-emerald-500 transition-all duration-200 cursor-pointer group">
+        <div class="bg-card rounded-xl p-4 border border-border hover:border-primary transition-all duration-200 cursor-pointer group">
             <div class="text-center">
                 <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-500 transition-colors">
                     <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>

@@ -4,15 +4,15 @@
 .market-overview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 /* Individual Market Overview Card - Unified Design */
 .market-overview-card {
     background: var(--card);
-    border-radius: 1rem;
-    padding: 1rem;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;
@@ -130,8 +130,8 @@
 /* Analysis Cards - Unified Design */
 .analysis-card {
     background: var(--card);
-    border-radius: 1rem;
-    padding: 2rem;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;
@@ -379,14 +379,14 @@
 .tools-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
 }
 
 .tool-card {
     background: var(--card);
-    border-radius: 1rem;
-    padding: 1.5rem;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;

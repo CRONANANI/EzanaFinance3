@@ -4,15 +4,15 @@
 .summary-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 /* Individual Summary Stats Card - Unified Design */
 .summary-stats-card {
     background: var(--card);
-    border-radius: 1rem;
-    padding: 2rem;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
     border: 1px solid var(--border);
     transition: all 0.3s ease;
     position: relative;
