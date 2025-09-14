@@ -1064,10 +1064,24 @@ body {
     left: 0;
     right: 0;
     height: 64px;
-    background: #000000;
-    border-bottom: 1px solid #374151;
+    background: linear-gradient(135deg, #10b981 0%, #059669 25%, #10b981 50%, #059669 75%, #10b981 100%);
+    background-size: 400% 400%;
+    animation: topnavShimmer 4s ease-in-out infinite;
+    border-bottom: 1px solid #059669;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     z-index: 1000;
+}
+
+@keyframes topnavShimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .topnav-container {
