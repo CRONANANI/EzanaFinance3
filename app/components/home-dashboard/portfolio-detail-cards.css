@@ -241,20 +241,6 @@
     margin: 0;
 }
 
-.portfolio-detail-card.expanded::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    opacity: 1;
-}
-
-.portfolio-detail-card.expanded:hover::before {
-    opacity: 1;
-}
 
 /* Portfolio Chart Content */
 .portfolio-chart-content {
