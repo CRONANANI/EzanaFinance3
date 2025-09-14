@@ -9,7 +9,7 @@
         <!-- Logo/Brand -->
         <div class="flex items-center space-x-3">
             <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <i class="bi bi-graph-up text-white text-lg"></i>
+                <i class="bi bi-tree text-white text-lg"></i>
             </div>
             <span class="text-lg font-bold text-gray-900 dark:text-white">Ezana Finance</span>
         </div>
@@ -521,5 +521,14 @@ function toggleMobileMenu() {
     }
 }
 
+// Initialize top navigation positioning when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Highlight the home tab as active when on home-dashboard page
+    const homeTab = document.getElementById('topnav-home');
+    if (homeTab) {
+        homeTab.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+        homeTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
+    }
+});
 
 </script>
