@@ -11,7 +11,7 @@
             <h1 class="text-4xl font-light text-foreground tracking-tight mb-3 page-title-shiny">Community Hub</h1>
             <p class="text-lg text-muted-foreground">Connect, share, and grow with fellow investors</p>
         </div>
-        <button onclick="showTrophyCabinet()" class="flex items-center space-x-3 bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
+        <button onclick="console.log('Button clicked'); showTrophyCabinet();" class="flex items-center space-x-3 bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
             <i class="bi bi-trophy-fill text-xl"></i>
             <span>Trophy Cabinet</span>
         </button>
@@ -625,3 +625,21 @@
         </div>
     </div>
 </div>
+
+<script>
+// Fallback trophy cabinet functions
+function showTrophyCabinetFallback() {
+    console.log('Fallback showTrophyCabinet called');
+    const cabinet = document.getElementById('trophy-cabinet');
+    if (cabinet) {
+        cabinet.classList.remove('hidden');
+        cabinet.classList.add('show');
+        console.log('Trophy cabinet should now be visible');
+    } else {
+        console.error('Trophy cabinet element not found in fallback');
+    }
+}
+
+// Make sure the function is available
+window.showTrophyCabinet = window.showTrophyCabinet || showTrophyCabinetFallback;
+</script>

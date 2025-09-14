@@ -16,8 +16,12 @@ function initializeTrophyCabinet() {
 
 // Show Trophy Cabinet
 function showTrophyCabinet() {
+    console.log('showTrophyCabinet called');
     const cabinet = document.getElementById('trophy-cabinet');
+    console.log('Cabinet element:', cabinet);
+    
     if (cabinet) {
+        console.log('Removing hidden class, adding show class');
         cabinet.classList.remove('hidden');
         cabinet.classList.add('show');
         trophyCabinetOpen = true;
@@ -30,7 +34,9 @@ function showTrophyCabinet() {
             animateTrophyCards();
         }, 300);
         
-        console.log('Trophy Cabinet opened');
+        console.log('Trophy Cabinet opened successfully');
+    } else {
+        console.error('Trophy cabinet element not found!');
     }
 }
 
