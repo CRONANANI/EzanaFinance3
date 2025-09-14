@@ -220,17 +220,11 @@ class NotificationHelpers {
 
     // Demo function to show sample notifications
     static showDemoNotifications() {
-        const demos = [
-            () => this.notifyCongressTrade('Rep. Nancy Pelosi', 'NVDA', '$1.2M', 'buy'),
-            () => this.notifyStockPriceAlert('AAPL', '$180.50', '$180.00', 'reached'),
-            () => this.notifyNewComment('Market Analysis Q4 2024', 'John Doe', 'Great analysis! I agree with your assessment.'),
-            () => this.notifyWatchlistAddition('TSLA', 'Jane Smith'),
-            () => this.notifyBreakingNews('Federal Reserve raises interest rates by 0.25%', 'Reuters')
-        ];
-
-        demos.forEach((demo, index) => {
-            setTimeout(() => demo(), index * 2000);
-        });
+        // Force reload sample notifications
+        if (window.notificationsSidebar) {
+            window.notificationsSidebar.forceReloadSampleNotifications();
+            window.notificationsSidebar.showToast('Demo notifications loaded!', 'success');
+        }
     }
 }
 

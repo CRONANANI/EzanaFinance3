@@ -404,6 +404,12 @@ class NotificationsSidebar {
         this.renderNotifications(); // Immediately render the notifications
     }
 
+    // Force reload sample notifications (clears localStorage first)
+    forceReloadSampleNotifications() {
+        localStorage.removeItem('ezana-notifications');
+        this.loadSampleNotifications();
+    }
+
     // Show toast message
     showToast(message, type = 'info') {
         const toast = document.createElement('div');
