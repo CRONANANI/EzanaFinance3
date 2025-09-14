@@ -192,7 +192,7 @@
                     
                     
                     <div class="portfolio-chart-container mt-4">
-                        <canvas id="portfolio-chart" width="1200" height="250"></canvas>
+                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
                     </div>
                 </div>
             </div>
@@ -338,7 +338,7 @@
                         </div>
                     </div>
                     <div class="portfolio-chart-container mt-4">
-                        <canvas id="portfolio-chart" width="1200" height="250"></canvas>
+                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
                     </div>
                 `;
                 cardClone.appendChild(chartContent);
@@ -413,20 +413,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Wait a bit for the DOM to be fully rendered
             setTimeout(() => {
-                const canvas = document.getElementById('portfolio-chart');
-                if (canvas && typeof updatePortfolioChart === 'function') {
-                    updatePortfolioChart();
-                }
+                console.log('DOM loaded, initializing chart...');
+                initializePortfolioChart();
             }, 200);
         });
         
         // Also try to initialize when the window loads completely
         window.addEventListener('load', function() {
             setTimeout(() => {
-                const canvas = document.getElementById('portfolio-chart');
-                if (canvas && typeof updatePortfolioChart === 'function') {
-                    updatePortfolioChart();
-                }
+                console.log('Window loaded, initializing chart...');
+                initializePortfolioChart();
             }, 100);
         });
     </script>
@@ -469,10 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize portfolio chart after components are loaded
     setTimeout(() => {
-        const canvas = document.getElementById('portfolio-chart');
-        if (canvas && typeof updatePortfolioChart === 'function') {
-            updatePortfolioChart();
-        }
+        initializePortfolioChart();
     }, 300);
 });
 
@@ -581,32 +574,47 @@ function loadFallbackComponents() {
     }
 }
 
-// Additional chart initialization for when the page is fully visible
+// Enhanced chart initialization function
 function initializePortfolioChart() {
     const canvas = document.getElementById('portfolio-chart');
     if (canvas && typeof updatePortfolioChart === 'function') {
-        // Check if canvas is visible
+        // Check if canvas is visible and has dimensions
         const rect = canvas.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
+            console.log('Initializing portfolio chart...');
             updatePortfolioChart();
             return true;
+        } else {
+            console.log('Canvas not ready, retrying...');
         }
+    } else {
+        console.log('Canvas or updatePortfolioChart function not found');
     }
     return false;
 }
 
-// Try multiple times to initialize the chart
+// Try multiple times to initialize the chart with exponential backoff
 let chartInitialized = false;
+let retryCount = 0;
+const maxRetries = 20;
+
 const initChart = () => {
-    if (!chartInitialized) {
+    if (!chartInitialized && retryCount < maxRetries) {
+        retryCount++;
         chartInitialized = initializePortfolioChart();
         if (!chartInitialized) {
-            setTimeout(initChart, 100);
+            const delay = Math.min(100 * retryCount, 1000); // Exponential backoff, max 1 second
+            setTimeout(initChart, delay);
         }
+    } else if (retryCount >= maxRetries) {
+        console.log('Max retries reached for chart initialization');
     }
 };
 
-// Start trying to initialize the chart
-setTimeout(initChart, 100);
+// Start trying to initialize the chart immediately and after delays
+setTimeout(initChart, 50);
+setTimeout(initChart, 200);
+setTimeout(initChart, 500);
+setTimeout(initChart, 1000);
 
 </script>

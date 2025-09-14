@@ -1785,7 +1785,7 @@ function updatePortfolioChart() {
     if (canvas) {
         const container = canvas.parentElement;
         canvas.width = container.clientWidth - 48;
-        canvas.height = 250;
+        canvas.height = 400;
         
         const ctx = canvas.getContext('2d');
         drawPortfolioLineChart(ctx, canvas.width, canvas.height);
