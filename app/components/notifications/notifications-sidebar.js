@@ -429,13 +429,32 @@ class NotificationsSidebar {
 // Global functions for HTML onclick handlers
 function toggleSidebar() {
     const sidebar = document.getElementById('notifications-sidebar');
+    if (!sidebar) {
+        console.error('Sidebar element not found');
+        return;
+    }
+    
     sidebar.classList.toggle('collapsed');
     
+    // Adjust main content margin
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+        if (sidebar.classList.contains('collapsed')) {
+            mainContent.style.marginLeft = '60px';
+        } else {
+            mainContent.style.marginLeft = '350px';
+        }
+    }
+    
     const collapseBtn = document.querySelector('.collapse-btn svg');
-    if (sidebar.classList.contains('collapsed')) {
-        collapseBtn.innerHTML = '<path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>';
+    if (collapseBtn) {
+        if (sidebar.classList.contains('collapsed')) {
+            collapseBtn.innerHTML = '<path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>';
+        } else {
+            collapseBtn.innerHTML = '<path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>';
+        }
     } else {
-        collapseBtn.innerHTML = '<path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>';
+        console.error('Collapse button not found');
     }
 }
 

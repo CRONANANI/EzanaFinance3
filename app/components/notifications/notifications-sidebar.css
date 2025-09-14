@@ -4,13 +4,13 @@
 .notifications-sidebar {
     position: fixed;
     left: 0;
-    top: 0; /* Start from very top */
+    top: 64px; /* Start below topnav */
     width: 350px;
-    height: 100vh; /* Full height */
+    height: calc(100vh - 64px); /* Full height minus topnav */
     background: rgba(30, 42, 58, 0.95);
     border-right: 1px solid rgba(52, 211, 153, 0.2);
     backdrop-filter: blur(10px);
-    z-index: 1000; /* Higher than topnav */
+    z-index: 999; /* Below topnav */
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
@@ -35,6 +35,14 @@
 
 .collapsed .notification-content {
     justify-content: center;
+}
+
+.collapsed .notification-icon {
+    margin: 0;
+}
+
+.collapsed .unread-badge {
+    display: none;
 }
 
 /* Toggle Button */
@@ -114,7 +122,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 84px; /* Account for topnav height (64px) + extra padding (20px) */
 }
 
 .notifications-title {
@@ -194,7 +201,7 @@
     flex: 1;
     overflow-y: auto;
     padding: 0;
-    height: calc(100vh - 164px); /* Account for topnav (64px) + header (100px) */
+    height: calc(100vh - 144px); /* Account for topnav (64px) + header (80px) */
 }
 
 .notifications-list::-webkit-scrollbar {

@@ -1533,6 +1533,7 @@ body {
     transition: margin-left 0.3s ease;
 }
 
+/* When sidebar is collapsed, adjust main content */
 .notifications-sidebar.collapsed ~ #main-content {
     margin-left: 60px;
 }
