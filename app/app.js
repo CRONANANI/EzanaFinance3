@@ -1,5 +1,4 @@
 // Global variables
-let sidebarCollapsed = false;
 let followedCongressPeople = new Set(JSON.parse(localStorage.getItem('followedCongressPeople') || '[]'));
 
 // Page loader functionality
@@ -47,12 +46,6 @@ function initializeApp() {
     // Initialize theme
     initializeTheme();
     
-    // Initialize sidebar
-    initializeSidebar();
-    
-    // Update top navigation position
-    updateTopNavPosition();
-    
     // Show loading for 2 seconds, then show landing page
     setTimeout(() => {
         hideLoading();
@@ -91,131 +84,18 @@ function toggleTheme() {
     }
 }
 
-function initializeSidebar() {
-    const sidebarCollapsedState = localStorage.getItem('sidebarCollapsed') === 'true';
-    
-    if (sidebarCollapsedState) {
-        collapseSidebar();
-    }
-    
-    if (window.innerWidth <= 768) {
-        setupMobileSidebar();
-    }
-}
-
-function setupMobileSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    
-    sidebar.style.transform = 'translateX(-100%)';
-    sidebar.classList.remove('sidebar-open');
-}
-
-function toggleSidebar() {
-    if (window.innerWidth <= 768) {
-        toggleMobileSidebar();
-    } else {
-        if (sidebarCollapsed) {
-            expandSidebar();
-        } else {
-            collapseSidebar();
-        }
-    }
-}
-
-function toggleMobileSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const isOpen = sidebar.classList.contains('sidebar-open');
-    
-    if (isOpen) {
-        closeSidebarMobile();
-    } else {
-        openSidebarMobile();
-    }
-}
-
-function openSidebarMobile() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    
-    sidebar.classList.add('sidebar-open');
-    sidebar.style.transform = 'translateX(0)';
-    overlay.classList.add('active');
-}
-
-function closeSidebarMobile() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    
-    sidebar.classList.remove('sidebar-open');
-    sidebar.style.transform = 'translateX(-100%)';
-    overlay.classList.remove('active');
-}
-
-function collapseSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('main-content');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    const toggleCollapsedBtn = document.getElementById('sidebar-toggle-collapsed');
-    
-    sidebar.style.width = '0px';
-    sidebar.style.overflow = 'hidden';
-    mainContent.style.marginLeft = '0px';
-    toggleBtn.style.display = 'none';
-    toggleCollapsedBtn.classList.remove('hidden');
-    
-    sidebarCollapsed = true;
-    localStorage.setItem('sidebarCollapsed', 'true');
-}
-
-function expandSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('main-content');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    const toggleCollapsedBtn = document.getElementById('sidebar-toggle-collapsed');
-    
-    sidebar.style.width = '280px';
-    sidebar.style.overflow = 'visible';
-    mainContent.style.marginLeft = '280px';
-    toggleBtn.style.display = 'block';
-    toggleCollapsedBtn.classList.add('hidden');
-    
-    sidebarCollapsed = false;
-    localStorage.setItem('sidebarCollapsed', 'false');
-}
 
 function handleResize() {
-    if (window.innerWidth <= 768) {
-        setupMobileSidebar();
-    } else {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        sidebar.style.transform = '';
-        sidebar.classList.remove('sidebar-open');
-        overlay.classList.remove('active');
-    }
+    // Handle responsive behavior if needed
 }
 
 // Tab switching functionality
 function switchTab(tabName) {
-    // Remove active state from all sidebar tabs
-    document.querySelectorAll('[id^="nav-"]').forEach(tab => {
-        tab.classList.remove('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
-        tab.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
-    });
-
     // Remove active state from all top navigation tabs
     document.querySelectorAll('[id^="topnav-"]').forEach(tab => {
         tab.classList.remove('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
         tab.classList.add('hover:bg-gray-100', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
     });
-
-    // Add active state to selected sidebar tab
-    const selectedTab = document.getElementById(`nav-${tabName}`);
-    if (selectedTab) {
-        selectedTab.classList.remove('hover:bg-gray-50', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
-        selectedTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
-    }
 
     // Add active state to selected top navigation tab
     const selectedTopTab = document.getElementById(`topnav-${tabName}`);
@@ -268,25 +148,6 @@ function toggleMobileMenu() {
     }
 }
 
-// Update top navigation position based on sidebar visibility
-function updateTopNavPosition() {
-    const topnav = document.getElementById('topnav');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('main-content');
-    
-    if (topnav && sidebar && mainContent) {
-        const sidebarVisible = sidebar.style.display !== 'none';
-        const marginLeft = mainContent.style.marginLeft;
-        
-        if (sidebarVisible && marginLeft === '280px') {
-            // Sidebar is visible, position top nav after sidebar
-            topnav.style.left = '280px';
-        } else {
-            // Sidebar is hidden, position top nav at full width
-            topnav.style.left = '0';
-        }
-    }
-}
 
 function hideAllContent() {
     const contents = ['landing-page', 'dynamic-content'];
@@ -302,25 +163,11 @@ function showLandingPage() {
     hideAllContent();
     document.getElementById('landing-page').style.display = 'block';
     
-    // Hide sidebar for landing page
-    document.getElementById('sidebar').style.display = 'none';
-    document.getElementById('main-content').style.marginLeft = '0';
-    
-    // Update top navigation position
-    updateTopNavPosition();
-    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function showHomeDashboard() {
     hideAllContent();
-    
-    // Show sidebar for dashboard
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
-    
-    // Update top navigation position
-    updateTopNavPosition();
     
     // Load home dashboard page
     const dynamicContent = document.getElementById('dynamic-content');
@@ -338,9 +185,6 @@ async function showHomeDashboard() {
 async function showInsideTheCapitol() {
     hideAllContent();
     
-    // Show sidebar for inside the capitol
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -720,9 +564,6 @@ function formatCurrency(amount) {
 async function showMarketAnalysis() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -739,9 +580,6 @@ async function showMarketAnalysis() {
 async function showCompanyResearch() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -758,9 +596,6 @@ async function showCompanyResearch() {
 async function showEconomicIndicators() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -777,12 +612,7 @@ async function showEconomicIndicators() {
 async function showWatchlists() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
-    // Update top navigation position
-    updateTopNavPosition();
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -827,9 +657,6 @@ function renderFollowingSection() {
 async function showMarketAnalysis() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -846,9 +673,6 @@ async function showMarketAnalysis() {
 async function showCompanyResearch() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -865,9 +689,6 @@ async function showCompanyResearch() {
 async function showEconomicIndicators() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -884,9 +705,6 @@ async function showEconomicIndicators() {
 async function showWatchlists() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -903,9 +721,6 @@ async function showWatchlists() {
 async function showCommunity() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
@@ -922,9 +737,6 @@ async function showCommunity() {
 async function showFinancialAnalytics() {
     hideAllContent();
     
-    // Show sidebar
-    document.getElementById('sidebar').style.display = 'block';
-    document.getElementById('main-content').style.marginLeft = '280px';
     
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
