@@ -197,10 +197,12 @@
 /* Expanded Portfolio Card */
 .portfolio-detail-card.expanded {
     width: 100%;
-    padding: 2rem;
-    min-height: 500px;
+    padding: 1.5rem;
+    min-height: 350px;
+    max-height: 400px;
     cursor: pointer;
     position: relative;
+    overflow-y: auto;
 }
 
 .portfolio-detail-card.expanded::before {
@@ -250,9 +252,10 @@
 .portfolio-chart-container {
     background: var(--card);
     border-radius: var(--radius-md);
-    padding: 1.5rem;
+    padding: 1rem;
     border: 1px solid var(--border);
-    min-height: 500px;
+    min-height: 300px;
+    max-height: 350px;
     position: relative;
     width: 100%;
     margin: 0 auto;
@@ -261,14 +264,14 @@
 
 .portfolio-chart-container canvas {
     width: 100% !important;
-    height: 500px !important;
+    height: 300px !important;
     max-width: none !important;
 }
 
 /* Top Holdings Section */
 .top-holdings-section {
-    margin-bottom: 1.5rem;
-    padding: 1.25rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
     background: var(--card);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border);
