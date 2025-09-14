@@ -698,7 +698,11 @@ async function showMarketAnalysis() {
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
     
-    await pageLoader.renderPage('market-analysis');
+    const content = await loadPageContent('market-analysis');
+    dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('market-analysis');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -713,7 +717,11 @@ async function showCompanyResearch() {
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
     
-    await pageLoader.renderPage('company-research');
+    const content = await loadPageContent('company-research');
+    dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('company-research');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -728,7 +736,11 @@ async function showEconomicIndicators() {
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
     
-    await pageLoader.renderPage('economic-indicators');
+    const content = await loadPageContent('economic-indicators');
+    dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('economic-indicators');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -743,7 +755,11 @@ async function showWatchlists() {
     const dynamicContent = document.getElementById('dynamic-content');
     dynamicContent.style.display = 'block';
     
-    await pageLoader.renderPage('watchlist');
+    const content = await loadPageContent('watchlist');
+    dynamicContent.innerHTML = content;
+    
+    // Initialize page-specific functionality
+    await initializePageFunctionality('watchlist');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
