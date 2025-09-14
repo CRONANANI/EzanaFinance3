@@ -411,9 +411,23 @@
         
         // Initialize portfolio chart when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            if (typeof updatePortfolioChart === 'function') {
-                updatePortfolioChart();
-            }
+            // Wait a bit for the DOM to be fully rendered
+            setTimeout(() => {
+                const canvas = document.getElementById('portfolio-chart');
+                if (canvas && typeof updatePortfolioChart === 'function') {
+                    updatePortfolioChart();
+                }
+            }, 200);
+        });
+        
+        // Also try to initialize when the window loads completely
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const canvas = document.getElementById('portfolio-chart');
+                if (canvas && typeof updatePortfolioChart === 'function') {
+                    updatePortfolioChart();
+                }
+            }, 100);
         });
     </script>
 
@@ -452,6 +466,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load component HTML
     loadComponents();
+    
+    // Initialize portfolio chart after components are loaded
+    setTimeout(() => {
+        const canvas = document.getElementById('portfolio-chart');
+        if (canvas && typeof updatePortfolioChart === 'function') {
+            updatePortfolioChart();
+        }
+    }, 300);
 });
 
 // Function to load component HTML
@@ -558,5 +580,33 @@ function loadFallbackComponents() {
         `;
     }
 }
+
+// Additional chart initialization for when the page is fully visible
+function initializePortfolioChart() {
+    const canvas = document.getElementById('portfolio-chart');
+    if (canvas && typeof updatePortfolioChart === 'function') {
+        // Check if canvas is visible
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            updatePortfolioChart();
+            return true;
+        }
+    }
+    return false;
+}
+
+// Try multiple times to initialize the chart
+let chartInitialized = false;
+const initChart = () => {
+    if (!chartInitialized) {
+        chartInitialized = initializePortfolioChart();
+        if (!chartInitialized) {
+            setTimeout(initChart, 100);
+        }
+    }
+};
+
+// Start trying to initialize the chart
+setTimeout(initChart, 100);
 
 </script>
