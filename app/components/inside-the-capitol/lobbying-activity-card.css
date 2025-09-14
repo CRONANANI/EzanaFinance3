@@ -1,86 +1,156 @@
 /* Lobbying Activity Card - Inside the Capitol */
 
-/* Main Lobbying Activity Card */
+/* Main Lobbying Activity Card - Unified Design */
 .lobbying-activity-card {
-    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .lobbying-activity-card:hover {
-    @apply border-primary shadow-lg transform -translate-y-1;
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.lobbying-activity-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f59e0b, var(--primary), #f59e0b);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lobbying-activity-card:hover::before {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* Card Header */
 .lobbying-activity-header {
-    @apply flex items-center justify-between mb-4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 
 .lobbying-activity-title {
-    @apply text-xl font-medium text-foreground;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
 }
 
 .lobbying-activity-controls {
-    @apply flex items-center space-x-2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* API Status Indicator */
 .lobbying-activity-api-status {
-    @apply w-2 h-2 rounded-full;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
 }
 
 .lobbying-activity-api-status.connected {
-    @apply bg-primary;
+    background: var(--primary);
 }
 
 .lobbying-activity-api-status.disconnected {
-    @apply bg-destructive;
+    background: var(--destructive);
 }
 
 .lobbying-activity-api-status.loading {
-    @apply bg-yellow-500 animate-pulse;
+    background: #f59e0b;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Pulse Indicator */
 .lobbying-activity-pulse-indicator {
-    @apply w-3 h-3 bg-chart-4 rounded-full animate-pulse;
+    width: 0.75rem;
+    height: 0.75rem;
+    background: #f59e0b;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
 }
 
 /* Stats Grid */
 .lobbying-activity-stats-grid {
-    @apply space-y-3;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .lobbying-activity-stat-row {
-    @apply flex justify-between;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .lobbying-activity-stat-label {
-    @apply text-muted-foreground;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .lobbying-activity-stat-value {
-    @apply font-semibold text-foreground;
+    font-weight: 600;
+    color: var(--foreground);
+    font-size: 0.875rem;
 }
 
 .lobbying-activity-last-updated {
-    @apply text-xs text-muted-foreground mt-2;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-top: 0.5rem;
 }
 
 /* Value Formatting */
 .lobbying-activity-value-large {
-    @apply text-lg font-bold;
+    font-size: 1.125rem;
+    font-weight: 700;
 }
 
 .lobbying-activity-value-currency {
-    @apply font-mono;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 }
 
 /* Loading States */
 .lobbying-activity-loading .lobbying-activity-stat-value {
-    @apply animate-pulse bg-muted rounded;
+    animation: pulse 1.5s ease-in-out infinite;
+    background: var(--muted);
+    border-radius: 0.25rem;
+    height: 1rem;
+    width: 4rem;
 }
 
 .lobbying-activity-loading .lobbying-activity-stat-label {
-    @apply animate-pulse bg-muted rounded;
+    animation: pulse 1.5s ease-in-out infinite;
+    background: var(--muted);
+    border-radius: 0.25rem;
+    height: 0.875rem;
+    width: 6rem;
 }
 
 /* Data Update Animation */
@@ -91,47 +161,61 @@
 @keyframes pulse {
     0%, 100% {
         transform: scale(1);
+        opacity: 1;
     }
     50% {
         transform: scale(1.05);
+        opacity: 0.7;
     }
 }
 
 /* Hover Effects */
 .lobbying-activity-card:hover .lobbying-activity-pulse-indicator {
-    @apply animate-bounce;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .lobbying-activity-card {
-        @apply p-6;
+        padding: 1.5rem;
     }
     
     .lobbying-activity-header {
-        @apply flex-col space-y-3;
+        flex-direction: column;
+        gap: 0.75rem;
     }
     
     .lobbying-activity-controls {
-        @apply w-full justify-center;
+        width: 100%;
+        justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
     .lobbying-activity-card {
-        @apply p-4;
+        padding: 1rem;
     }
     
     .lobbying-activity-stats-grid {
-        @apply space-y-2;
+        gap: 0.5rem;
     }
     
     .lobbying-activity-stat-row {
-        @apply flex-col space-y-1;
+        flex-direction: column;
+        gap: 0.25rem;
     }
     
     .lobbying-activity-stat-value {
-        @apply text-right;
+        text-align: right;
     }
 }
 
@@ -153,109 +237,125 @@
 
 /* Focus States */
 .lobbying-activity-card:focus {
-    @apply outline-none ring-2 ring-primary ring-opacity-50;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary);
+    opacity: 0.5;
 }
 
 /* Status Indicators */
 .lobbying-activity-status-indicator {
-    @apply w-2 h-2 rounded-full;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
 }
 
 .lobbying-activity-status-indicator.online {
-    @apply bg-green-500;
+    background: #10b981;
 }
 
 .lobbying-activity-status-indicator.offline {
-    @apply bg-red-500;
+    background: #ef4444;
 }
 
 .lobbying-activity-status-indicator.loading {
-    @apply bg-yellow-500 animate-pulse;
+    background: #f59e0b;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Value Change Indicators */
 .lobbying-activity-value-change-positive {
-    @apply text-green-500;
+    color: #10b981;
 }
 
 .lobbying-activity-value-change-negative {
-    @apply text-red-500;
+    color: #ef4444;
 }
 
 .lobbying-activity-value-change-neutral {
-    @apply text-muted-foreground;
+    color: var(--muted-foreground);
 }
 
 /* Card States */
 .lobbying-activity-card.success {
-    @apply border-green-500;
+    border-color: #10b981;
 }
 
 .lobbying-activity-card.warning {
-    @apply border-yellow-500;
+    border-color: #f59e0b;
 }
 
 .lobbying-activity-card.error {
-    @apply border-red-500;
+    border-color: #ef4444;
 }
 
 /* Empty State */
 .lobbying-activity-empty-state {
-    @apply text-center py-8 text-muted-foreground;
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted-foreground);
 }
 
 .lobbying-activity-empty-state-icon {
-    @apply text-4xl mb-2;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .lobbying-activity-empty-state-text {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 /* Error State */
 .lobbying-activity-error-state {
-    @apply text-center py-8 text-destructive;
+    text-align: center;
+    padding: 2rem;
+    color: var(--destructive);
 }
 
 .lobbying-activity-error-state-icon {
-    @apply text-4xl mb-2;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .lobbying-activity-error-state-text {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 /* Success State */
 .lobbying-activity-success-state {
-    @apply text-center py-8 text-green-500;
+    text-align: center;
+    padding: 2rem;
+    color: #10b981;
 }
 
 .lobbying-activity-success-state-icon {
-    @apply text-4xl mb-2;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .lobbying-activity-success-state-text {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 /* Dark Mode Adjustments */
 @media (prefers-color-scheme: dark) {
     .lobbying-activity-card {
-        @apply shadow-lg;
+        box-shadow: var(--shadow-lg);
     }
     
     .lobbying-activity-card:hover {
-        @apply shadow-xl;
+        box-shadow: var(--shadow-xl);
     }
 }
 
 /* Print Styles */
 @media print {
     .lobbying-activity-card {
-        @apply border border-gray-300 shadow-none;
+        border: 1px solid #d1d5db;
+        box-shadow: none;
     }
     
     .lobbying-activity-card:hover {
-        @apply transform-none shadow-none;
+        transform: none;
+        box-shadow: none;
     }
 }

@@ -1,60 +1,120 @@
 /* Congressional Trading Card - Inside the Capitol */
 
-/* Main Congressional Trading Card */
+/* Main Congressional Trading Card - Unified Design */
 .congressional-trading-card {
-    @apply bg-card rounded-2xl p-8 border border-border cursor-pointer transition-all duration-300;
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .congressional-trading-card:hover {
-    @apply border-primary shadow-lg transform -translate-y-1;
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
 }
 
 .congressional-trading-card.expanded {
-    @apply border-primary shadow-xl;
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-2xl);
+    border-color: var(--primary);
+}
+
+.congressional-trading-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.congressional-trading-card:hover::before {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* Card Header */
 .congressional-trading-header {
-    @apply flex items-center justify-between mb-4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 
 .congressional-trading-title {
-    @apply text-xl font-medium text-foreground;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
 }
 
 .congressional-trading-controls {
-    @apply flex items-center space-x-3;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 /* Refresh Button */
 .congressional-refresh-btn {
-    @apply p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200;
+    padding: 0.5rem;
+    color: var(--muted-foreground);
+    background: none;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .congressional-refresh-btn:hover {
-    @apply text-primary;
+    color: var(--foreground);
+    background: var(--muted);
+}
+
+.congressional-refresh-btn:hover {
+    color: var(--primary);
 }
 
 .congressional-refresh-btn.refreshing {
-    @apply text-primary;
+    color: var(--primary);
     animation: spin 1s linear infinite;
 }
 
 /* API Status Indicator */
 .congressional-api-status {
-    @apply w-2 h-2 rounded-full;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
 }
 
 .congressional-api-status.connected {
-    @apply bg-primary;
+    background: var(--primary);
 }
 
 .congressional-api-status.disconnected {
-    @apply bg-destructive;
+    background: var(--destructive);
 }
 
 .congressional-api-status.loading {
-    @apply bg-yellow-500 animate-pulse;
+    background: #f59e0b;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Toggle Icon */

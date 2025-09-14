@@ -1,107 +1,177 @@
 /* Market Sentiment Card - Inside the Capitol */
 
-/* Main Market Sentiment Card */
+/* Main Market Sentiment Card - Unified Design */
 .market-sentiment-card {
-    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .market-sentiment-card:hover {
-    @apply border-primary shadow-lg transform -translate-y-1;
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.market-sentiment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #06b6d4, var(--primary), #06b6d4);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.market-sentiment-card:hover::before {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* Card Header */
 .market-sentiment-header {
-    @apply flex items-center justify-between mb-4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 
 .market-sentiment-title {
-    @apply text-xl font-medium text-foreground;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
 }
 
 .market-sentiment-controls {
-    @apply flex items-center space-x-2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* API Status Indicator */
 .market-sentiment-api-status {
-    @apply w-2 h-2 rounded-full;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
 }
 
 .market-sentiment-api-status.connected {
-    @apply bg-primary;
+    background: var(--primary);
 }
 
 .market-sentiment-api-status.disconnected {
-    @apply bg-destructive;
+    background: var(--destructive);
 }
 
 .market-sentiment-api-status.loading {
-    @apply bg-yellow-500 animate-pulse;
+    background: #f59e0b;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Pulse Indicator */
 .market-sentiment-pulse-indicator {
-    @apply w-3 h-3 bg-chart-2 rounded-full animate-pulse;
+    width: 0.75rem;
+    height: 0.75rem;
+    background: #06b6d4;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
 }
 
 /* Stats Grid */
 .market-sentiment-stats-grid {
-    @apply space-y-3;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .market-sentiment-stat-row {
-    @apply flex justify-between;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .market-sentiment-stat-label {
-    @apply text-muted-foreground;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .market-sentiment-stat-value {
-    @apply font-semibold text-foreground;
+    font-weight: 600;
+    color: var(--foreground);
+    font-size: 0.875rem;
 }
 
 .market-sentiment-last-updated {
-    @apply text-xs text-muted-foreground mt-2;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-top: 0.5rem;
 }
 
 /* Sentiment Value Styling */
 .market-sentiment-overall {
-    @apply font-semibold;
+    font-weight: 600;
 }
 
 .market-sentiment-overall.bullish {
-    @apply text-primary;
+    color: var(--primary);
 }
 
 .market-sentiment-overall.bearish {
-    @apply text-destructive;
+    color: var(--destructive);
 }
 
 .market-sentiment-overall.neutral {
-    @apply text-muted-foreground;
+    color: var(--muted-foreground);
 }
 
 .market-sentiment-score {
-    @apply font-mono;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 }
 
 /* Value Formatting */
 .market-sentiment-value-large {
-    @apply text-lg font-bold;
+    font-size: 1.125rem;
+    font-weight: 700;
 }
 
 .market-sentiment-value-number {
-    @apply font-mono;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 }
 
 /* Loading States */
 .market-sentiment-loading .market-sentiment-stat-value {
-    @apply animate-pulse bg-muted rounded;
+    animation: pulse 1.5s ease-in-out infinite;
+    background: var(--muted);
+    border-radius: 0.25rem;
+    height: 1rem;
+    width: 4rem;
 }
 
 .market-sentiment-loading .market-sentiment-stat-label {
-    @apply animate-pulse bg-muted rounded;
+    animation: pulse 1.5s ease-in-out infinite;
+    background: var(--muted);
+    border-radius: 0.25rem;
+    height: 0.875rem;
+    width: 6rem;
 }
 
 /* Data Update Animation */
@@ -112,47 +182,61 @@
 @keyframes pulse {
     0%, 100% {
         transform: scale(1);
+        opacity: 1;
     }
     50% {
         transform: scale(1.05);
+        opacity: 0.7;
     }
 }
 
 /* Hover Effects */
 .market-sentiment-card:hover .market-sentiment-pulse-indicator {
-    @apply animate-bounce;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .market-sentiment-card {
-        @apply p-6;
+        padding: 1.5rem;
     }
     
     .market-sentiment-header {
-        @apply flex-col space-y-3;
+        flex-direction: column;
+        gap: 0.75rem;
     }
     
     .market-sentiment-controls {
-        @apply w-full justify-center;
+        width: 100%;
+        justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
     .market-sentiment-card {
-        @apply p-4;
+        padding: 1rem;
     }
     
     .market-sentiment-stats-grid {
-        @apply space-y-2;
+        gap: 0.5rem;
     }
     
     .market-sentiment-stat-row {
-        @apply flex-col space-y-1;
+        flex-direction: column;
+        gap: 0.25rem;
     }
     
     .market-sentiment-stat-value {
-        @apply text-right;
+        text-align: right;
     }
 }
 
@@ -174,138 +258,165 @@
 
 /* Focus States */
 .market-sentiment-card:focus {
-    @apply outline-none ring-2 ring-primary ring-opacity-50;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary);
+    opacity: 0.5;
 }
 
 /* Status Indicators */
 .market-sentiment-status-indicator {
-    @apply w-2 h-2 rounded-full;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
 }
 
 .market-sentiment-status-indicator.online {
-    @apply bg-green-500;
+    background: #10b981;
 }
 
 .market-sentiment-status-indicator.offline {
-    @apply bg-red-500;
+    background: #ef4444;
 }
 
 .market-sentiment-status-indicator.loading {
-    @apply bg-yellow-500 animate-pulse;
+    background: #f59e0b;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Value Change Indicators */
 .market-sentiment-value-change-positive {
-    @apply text-green-500;
+    color: #10b981;
 }
 
 .market-sentiment-value-change-negative {
-    @apply text-red-500;
+    color: #ef4444;
 }
 
 .market-sentiment-value-change-neutral {
-    @apply text-muted-foreground;
+    color: var(--muted-foreground);
 }
 
 /* Card States */
 .market-sentiment-card.success {
-    @apply border-green-500;
+    border-color: #10b981;
 }
 
 .market-sentiment-card.warning {
-    @apply border-yellow-500;
+    border-color: #f59e0b;
 }
 
 .market-sentiment-card.error {
-    @apply border-red-500;
+    border-color: #ef4444;
 }
 
 /* Sentiment Indicators */
 .sentiment-indicator {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .sentiment-indicator.bullish {
-    @apply bg-green-100 text-green-800;
+    background: #dcfce7;
+    color: #166534;
 }
 
 .sentiment-indicator.bearish {
-    @apply bg-red-100 text-red-800;
+    background: #fef2f2;
+    color: #991b1b;
 }
 
 .sentiment-indicator.neutral {
-    @apply bg-gray-100 text-gray-800;
+    background: #f3f4f6;
+    color: #374151;
 }
 
 /* Empty State */
 .market-sentiment-empty-state {
-    @apply text-center py-8 text-muted-foreground;
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted-foreground);
 }
 
 .market-sentiment-empty-state-icon {
-    @apply text-4xl mb-2;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .market-sentiment-empty-state-text {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 /* Error State */
 .market-sentiment-error-state {
-    @apply text-center py-8 text-destructive;
+    text-align: center;
+    padding: 2rem;
+    color: var(--destructive);
 }
 
 .market-sentiment-error-state-icon {
-    @apply text-4xl mb-2;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .market-sentiment-error-state-text {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 /* Success State */
 .market-sentiment-success-state {
-    @apply text-center py-8 text-green-500;
+    text-align: center;
+    padding: 2rem;
+    color: #10b981;
 }
 
 .market-sentiment-success-state-icon {
-    @apply text-4xl mb-2;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .market-sentiment-success-state-text {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 /* Dark Mode Adjustments */
 @media (prefers-color-scheme: dark) {
     .market-sentiment-card {
-        @apply shadow-lg;
+        box-shadow: var(--shadow-lg);
     }
     
     .market-sentiment-card:hover {
-        @apply shadow-xl;
+        box-shadow: var(--shadow-xl);
     }
     
     .sentiment-indicator.bullish {
-        @apply bg-green-900 text-green-200;
+        background: #064e3b;
+        color: #6ee7b7;
     }
     
     .sentiment-indicator.bearish {
-        @apply bg-red-900 text-red-200;
+        background: #7f1d1d;
+        color: #fca5a5;
     }
     
     .sentiment-indicator.neutral {
-        @apply bg-gray-900 text-gray-200;
+        background: #374151;
+        color: #d1d5db;
     }
 }
 
 /* Print Styles */
 @media print {
     .market-sentiment-card {
-        @apply border border-gray-300 shadow-none;
+        border: 1px solid #d1d5db;
+        box-shadow: none;
     }
     
     .market-sentiment-card:hover {
-        @apply transform-none shadow-none;
+        transform: none;
+        box-shadow: none;
     }
 }
