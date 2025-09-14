@@ -1,3 +1,6 @@
+<!-- Import Market Analysis Component Styles -->
+<link rel="stylesheet" href="components/research-tools/market-analysis-cards.css">
+
 <div class="container mx-auto px-6 py-12">
     <div class="mb-12">
         <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Market Analysis</h1>
@@ -7,52 +10,52 @@
     <!-- Market Overview Cards -->
     <div class="market-overview-grid">
         <div class="market-overview-card s-p-500">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">S&P 500</p>
-                    <p class="card-value">4,567.89</p>
-                    <p class="card-change">+1.24% (+56.78)</p>
+            <div class="market-overview-header">
+                <div class="market-overview-info">
+                    <p class="market-overview-title">S&P 500</p>
+                    <p class="market-overview-value">4,567.89</p>
+                    <p class="market-overview-change">+1.24% (+56.78)</p>
                 </div>
-                <div class="card-icon">
+                <div class="market-overview-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
             </div>
         </div>
         
         <div class="market-overview-card nasdaq">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">NASDAQ</p>
-                    <p class="card-value">14,234.12</p>
-                    <p class="card-change">+0.89% (+125.45)</p>
+            <div class="market-overview-header">
+                <div class="market-overview-info">
+                    <p class="market-overview-title">NASDAQ</p>
+                    <p class="market-overview-value">14,234.12</p>
+                    <p class="market-overview-change">+0.89% (+125.45)</p>
                 </div>
-                <div class="card-icon">
+                <div class="market-overview-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
             </div>
         </div>
         
         <div class="market-overview-card vix">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">VIX</p>
-                    <p class="card-value">18.45</p>
-                    <p class="card-change negative">-2.1% (-0.39)</p>
+            <div class="market-overview-header">
+                <div class="market-overview-info">
+                    <p class="market-overview-title">VIX</p>
+                    <p class="market-overview-value">18.45</p>
+                    <p class="market-overview-change negative">-2.1% (-0.39)</p>
                 </div>
-                <div class="card-icon">
+                <div class="market-overview-icon">
                     <i class="bi bi-graph-down"></i>
                 </div>
             </div>
         </div>
         
         <div class="market-overview-card treasury">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">10Y Treasury</p>
-                    <p class="card-value">4.23%</p>
-                    <p class="card-change">+0.02% (+2bps)</p>
+            <div class="market-overview-header">
+                <div class="market-overview-info">
+                    <p class="market-overview-title">10Y Treasury</p>
+                    <p class="market-overview-value">4.23%</p>
+                    <p class="market-overview-change">+0.02% (+2bps)</p>
                 </div>
-                <div class="card-icon">
+                <div class="market-overview-icon">
                     <i class="bi bi-graph-up"></i>
                 </div>
             </div>
@@ -60,11 +63,11 @@
     </div>
 
     <!-- Market Analysis Tools -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Technical Analysis -->
-        <div class="bg-card rounded-2xl p-8 border border-border">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-medium text-foreground">Technical Analysis</h3>
+        <div class="analysis-card technical-analysis-card">
+            <div class="technical-analysis-header">
+                <h3 class="text-lg font-medium text-foreground">Technical Analysis</h3>
                 <button class="text-primary hover:text-primary/80 font-medium">View Details</button>
             </div>
             
@@ -111,9 +114,9 @@
         </div>
 
         <!-- Sector Performance -->
-        <div class="bg-card rounded-2xl p-8 border border-border">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-medium text-foreground">Sector Performance</h3>
+        <div class="analysis-card sector-performance-card">
+            <div class="sector-performance-header">
+                <h3 class="text-lg font-medium text-foreground">Sector Performance</h3>
                 <select class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-gray-200">
                     <option>Today</option>
                     <option>1 Week</option>
@@ -166,10 +169,10 @@
     </div>
 
     <!-- Market News & Analysis -->
-    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Market News -->
-        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Latest Market News</h3>
+        <div class="lg:col-span-2 bg-card rounded-xl p-6 border border-border">
+            <h3 class="text-lg font-semibold text-foreground mb-4">Latest Market News</h3>
             
             <div class="space-y-4">
                 <article class="flex space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -284,9 +287,9 @@
     </div>
 
     <!-- Market Heat Map -->
-    <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Market Heat Map</h3>
+    <div class="mt-6 bg-card rounded-xl p-6 border border-border">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-foreground">Market Heat Map</h3>
             <div class="flex items-center space-x-2">
                 <button class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-md text-sm">S&P 500</button>
                 <button class="px-3 py-1 text-gray-600 dark:text-gray-400 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700">NASDAQ</button>
