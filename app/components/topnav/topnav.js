@@ -72,6 +72,18 @@ class TopNav {
             }
         });
 
+        // Handle navigation link clicks
+        const navLinks = document.querySelectorAll('.topnav-link:not(.dropdown-toggle), .dropdown-item');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#') {
+                    // Allow normal navigation
+                    window.location.href = href;
+                }
+            });
+        });
+
         // Window resize
         window.addEventListener('resize', () => this.handleResize());
 

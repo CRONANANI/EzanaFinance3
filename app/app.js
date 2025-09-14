@@ -195,17 +195,30 @@ function handleResize() {
 
 // Tab switching functionality
 function switchTab(tabName) {
-    // Remove active state from all tabs
+    // Remove active state from all sidebar tabs
     document.querySelectorAll('[id^="nav-"]').forEach(tab => {
         tab.classList.remove('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
         tab.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
     });
 
-    // Add active state to selected tab
+    // Remove active state from all top navigation tabs
+    document.querySelectorAll('[id^="topnav-"]').forEach(tab => {
+        tab.classList.remove('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
+        tab.classList.add('hover:bg-gray-100', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+    });
+
+    // Add active state to selected sidebar tab
     const selectedTab = document.getElementById(`nav-${tabName}`);
     if (selectedTab) {
         selectedTab.classList.remove('hover:bg-gray-50', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
         selectedTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
+    }
+
+    // Add active state to selected top navigation tab
+    const selectedTopTab = document.getElementById(`topnav-${tabName}`);
+    if (selectedTopTab) {
+        selectedTopTab.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
+        selectedTopTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
     }
 
     // Handle tab content switching
@@ -241,6 +254,14 @@ function hideLoading() {
     const loading = document.getElementById('loading');
     if (loading) {
         loading.style.display = 'none';
+    }
+}
+
+// Mobile menu toggle for top navigation
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) {
+        mobileMenu.classList.toggle('hidden');
     }
 }
 

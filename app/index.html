@@ -132,8 +132,128 @@
     <!-- Sidebar Overlay for Mobile -->
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebarMobile()"></div>
 
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out" style="left: 280px;">
+        <div class="flex items-center justify-between px-6 py-4">
+            <!-- Logo/Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-graph-up text-white text-lg"></i>
+                </div>
+                <span class="text-lg font-bold text-gray-900 dark:text-white">Ezana Finance</span>
+            </div>
+
+            <!-- Navigation Menu -->
+            <div class="hidden md:flex items-center space-x-6">
+                <!-- Dashboard -->
+                <button onclick="switchTab('home')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200" id="topnav-home">
+                    <i class="bi bi-house-door"></i>
+                    <span>Dashboard</span>
+                </button>
+
+                <!-- Research Tools Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                        <i class="bi bi-search"></i>
+                        <span>Research Tools</span>
+                        <i class="bi bi-chevron-down text-sm"></i>
+                    </button>
+                    <div class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="py-2">
+                            <button onclick="switchTab('inside-the-capitol')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                <i class="bi bi-building text-sm mr-2"></i>
+                                Inside the Capitol
+                            </button>
+                            <button onclick="switchTab('market-analysis')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                <i class="bi bi-search text-sm mr-2"></i>
+                                Market Analysis
+                            </button>
+                            <button onclick="switchTab('company-research')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                <i class="bi bi-building text-sm mr-2"></i>
+                                Company Research
+                            </button>
+                            <button onclick="switchTab('economic-indicators')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                <i class="bi bi-graph-up-arrow text-sm mr-2"></i>
+                                Economic Indicators
+                            </button>
+                            <button onclick="switchTab('financial-analytics')" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                                <i class="bi bi-graph-up text-sm mr-2"></i>
+                                Financial Analytics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Watchlist -->
+                <button onclick="switchTab('watchlists')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200" id="topnav-watchlists">
+                    <i class="bi bi-bookmark-star"></i>
+                    <span>Watchlist</span>
+                </button>
+
+                <!-- Community -->
+                <button onclick="switchTab('community')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200" id="topnav-community">
+                    <i class="bi bi-people"></i>
+                    <span>Community</span>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300" onclick="toggleMobileMenu()">
+                <i class="bi bi-list text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 space-y-2">
+                <!-- Dashboard -->
+                <button onclick="switchTab('home')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-house-door"></i>
+                    <span>Dashboard</span>
+                </button>
+
+                <!-- Research Tools -->
+                <div class="space-y-1">
+                    <div class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">Research Tools</div>
+                    <button onclick="switchTab('inside-the-capitol')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                        <i class="bi bi-building text-sm"></i>
+                        <span>Inside the Capitol</span>
+                    </button>
+                    <button onclick="switchTab('market-analysis')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                        <i class="bi bi-search text-sm"></i>
+                        <span>Market Analysis</span>
+                    </button>
+                    <button onclick="switchTab('company-research')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                        <i class="bi bi-building text-sm"></i>
+                        <span>Company Research</span>
+                    </button>
+                    <button onclick="switchTab('economic-indicators')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                        <i class="bi bi-graph-up-arrow text-sm"></i>
+                        <span>Economic Indicators</span>
+                    </button>
+                    <button onclick="switchTab('financial-analytics')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                        <i class="bi bi-graph-up text-sm"></i>
+                        <span>Financial Analytics</span>
+                    </button>
+                </div>
+
+                <!-- Watchlist -->
+                <button onclick="switchTab('watchlists')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-bookmark-star"></i>
+                    <span>Watchlist</span>
+                </button>
+
+                <!-- Community -->
+                <button onclick="switchTab('community')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-all duration-200">
+                    <i class="bi bi-people"></i>
+                    <span>Community</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <!-- Main Content Wrapper -->
-    <div id="main-content" class="transition-all duration-300 ease-in-out" style="margin-left: 280px;">
+    <div id="main-content" class="transition-all duration-300 ease-in-out" style="margin-left: 280px; margin-top: 80px;">
         <!-- Loading Indicator -->
         <div id="loading" class="loading">
             <div class="spinner"></div>
