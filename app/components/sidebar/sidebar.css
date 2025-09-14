@@ -207,10 +207,28 @@
     border-radius: 0.5rem;
     transition: var(--sidebar-transition);
     cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
 .sidebar-user:hover {
     background: var(--sidebar-hover);
+    text-decoration: none;
+    color: inherit;
+}
+
+.sidebar-user.active {
+    background: var(--sidebar-accent);
+    color: white;
+}
+
+.sidebar-user.active .sidebar-user-name,
+.sidebar-user.active .sidebar-user-email {
+    color: white;
+}
+
+.sidebar-user.active .sidebar-user-avatar {
+    color: white;
 }
 
 .sidebar-user-avatar {

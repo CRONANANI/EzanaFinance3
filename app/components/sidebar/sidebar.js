@@ -41,6 +41,16 @@ class Sidebar {
             }
         });
 
+        // User profile link - close sidebar on mobile when clicked
+        const userProfileLink = document.querySelector('.sidebar-user');
+        if (userProfileLink) {
+            userProfileLink.addEventListener('click', () => {
+                if (this.isMobile) {
+                    this.closeSidebar();
+                }
+            });
+        }
+
         // Window resize
         window.addEventListener('resize', () => this.handleResize());
 
@@ -103,6 +113,15 @@ class Sidebar {
                 }
             }
         });
+
+        // Handle user profile link
+        const userProfileLink = document.querySelector('.sidebar-user');
+        if (userProfileLink) {
+            const href = userProfileLink.getAttribute('href');
+            if (href && currentPath.includes(href.replace('.html', ''))) {
+                userProfileLink.classList.add('active');
+            }
+        }
     }
 
     handleResize() {
