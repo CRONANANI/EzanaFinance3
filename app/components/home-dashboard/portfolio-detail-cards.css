@@ -3,7 +3,7 @@
 /* Main Layout Container */
 .dashboard-main-layout {
     display: flex;
-    gap: 2rem;
+    gap: 3rem;
     margin-bottom: 2rem;
     align-items: flex-start;
     position: relative;
@@ -21,9 +21,9 @@
 .horizontal-cards-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.875rem;
+    gap: 0.75rem;
     align-items: flex-start;
-    width: 400px;
+    width: 320px;
     flex-shrink: 0;
     position: sticky;
     top: 0;
@@ -164,14 +164,14 @@
 
 /* Ensure all square cards have consistent sizing */
 .horizontal-cards-container .portfolio-detail-card {
-    width: 190px !important;
+    width: 150px !important;
     height: 80px !important;
-    min-width: 190px !important;
+    min-width: 150px !important;
     min-height: 80px !important;
-    max-width: 190px !important;
+    max-width: 150px !important;
     max-height: 80px !important;
     flex-shrink: 0;
-    padding: 0.875rem !important;
+    padding: 0.75rem !important;
     display: flex !important;
     flex-direction: row !important;
     justify-content: space-between !important;
@@ -184,9 +184,9 @@
 
 /* Square Cards */
 .portfolio-detail-card.square-card {
-    width: 190px !important;
+    width: 150px !important;
     height: 80px !important;
-    padding: 0.875rem !important;
+    padding: 0.75rem !important;
     display: flex !important;
     flex-direction: row !important;
     justify-content: space-between !important;
@@ -353,12 +353,12 @@
 @media (max-width: 1024px) {
     .horizontal-cards-container {
         gap: 0.75rem;
-        max-width: 400px;
+        max-width: 320px;
         grid-template-columns: 1fr 1fr;
     }
     
     .portfolio-detail-card.square-card {
-        width: 190px;
+        width: 150px;
         height: 80px;
         padding: 0.75rem;
     }
@@ -376,12 +376,12 @@
         width: 100%;
         justify-content: center;
         gap: 0.75rem;
-        max-width: 400px;
+        max-width: 320px;
         margin: 0 auto;
     }
     
     .portfolio-detail-card.square-card {
-        width: 190px;
+        width: 150px;
         height: 80px;
         padding: 0.75rem;
     }
@@ -404,12 +404,12 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         align-items: center;
-        max-width: 400px;
+        max-width: 320px;
         margin: 0 auto;
     }
     
     .portfolio-detail-card.square-card {
-        width: 190px;
+        width: 150px;
         height: 80px;
         padding: 0.75rem;
     }

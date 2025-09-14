@@ -202,17 +202,35 @@
                             if (canvas && typeof updatePortfolioChart === 'function') {
                                 updatePortfolioChart();
                                 console.log('Chart initialized successfully!');
+                                return true;
                             } else {
                                 console.log('Canvas or updatePortfolioChart function not available yet');
-                                setTimeout(forceInitChart, 200);
+                                return false;
                             }
                         }
                         
-                        // Try multiple times
-                        setTimeout(forceInitChart, 100);
-                        setTimeout(forceInitChart, 500);
-                        setTimeout(forceInitChart, 1000);
-                        setTimeout(forceInitChart, 2000);
+                        // Try multiple times with better timing
+                        let attempts = 0;
+                        const maxAttempts = 10;
+                        
+                        function tryInitChart() {
+                            attempts++;
+                            if (attempts <= maxAttempts) {
+                                if (!forceInitChart()) {
+                                    setTimeout(tryInitChart, 300);
+                                }
+                            } else {
+                                console.log('Max chart initialization attempts reached');
+                            }
+                        }
+                        
+                        // Start trying immediately
+                        tryInitChart();
+                        
+                        // Also try on window load
+                        window.addEventListener('load', () => {
+                            setTimeout(tryInitChart, 100);
+                        });
                     </script>
                 </div>
             </div>
@@ -487,6 +505,30 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         initializePortfolioChart();
     }, 300);
+    
+    // Force chart initialization with multiple attempts
+    let chartInitAttempts = 0;
+    const maxChartAttempts = 15;
+    
+    function forceChartInit() {
+        chartInitAttempts++;
+        console.log(`Chart initialization attempt ${chartInitAttempts}`);
+        
+        const canvas = document.getElementById('portfolio-chart');
+        if (canvas && typeof updatePortfolioChart === 'function') {
+            updatePortfolioChart();
+            console.log('Chart force initialized successfully!');
+        } else if (chartInitAttempts < maxChartAttempts) {
+            setTimeout(forceChartInit, 200);
+        } else {
+            console.log('Max chart initialization attempts reached');
+        }
+    }
+    
+    // Start force initialization
+    setTimeout(forceChartInit, 100);
+    setTimeout(forceChartInit, 500);
+    setTimeout(forceChartInit, 1000);
 });
 
 // Function to load component HTML
