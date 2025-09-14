@@ -291,23 +291,7 @@
     position: relative;
 }
 
-.dashboard-card.expandable-asset-allocation::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #10b981, #059669, #10b981);
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.dashboard-card.expandable-asset-allocation:hover::before {
-    opacity: 1;
-}
+/* Shimmer animation removed */
 
 @keyframes shimmer {
     0% {

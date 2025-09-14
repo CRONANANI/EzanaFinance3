@@ -26,23 +26,7 @@
     border-color: var(--primary);
 }
 
-.portfolio-detail-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.portfolio-detail-card:hover::before {
-    opacity: 1;
-}
+/* Shimmer animation removed */
 
 @keyframes shimmer {
     0% {

@@ -26,32 +26,7 @@
     border-color: var(--primary);
 }
 
-.market-overview-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.market-overview-card:hover::before {
-    opacity: 1;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
+/* Shimmer animation removed */
 
 /* Card Header */
 .market-overview-card .card-header {
@@ -145,23 +120,7 @@
     border-color: var(--primary);
 }
 
-.analysis-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.analysis-card:hover::before {
-    opacity: 1;
-}
+/* Shimmer animation removed */
 
 /* Technical Analysis Card */
 .technical-analysis-card .card-header {
@@ -400,23 +359,7 @@
     border-color: var(--primary);
 }
 
-.tool-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.tool-card:hover::before {
-    opacity: 1;
-}
+/* Shimmer animation removed */
 
 .tool-card .card-title {
     font-size: 1.125rem;

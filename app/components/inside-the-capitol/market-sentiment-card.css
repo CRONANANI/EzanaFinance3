@@ -18,32 +18,7 @@
     border-color: var(--primary);
 }
 
-.market-sentiment-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #06b6d4, var(--primary), #06b6d4);
-    background-size: 200% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.market-sentiment-card:hover::before {
-    opacity: 1;
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
+/* Shimmer animation removed */
 
 /* Card Header */
 .market-sentiment-header {
