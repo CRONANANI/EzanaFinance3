@@ -41,14 +41,14 @@
 /* Card Header */
 .portfolio-detail-card .card-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
 }
 
 .portfolio-detail-card .card-title {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--foreground);
     margin: 0;
@@ -56,6 +56,11 @@
     text-decoration-color: #10b981;
     text-underline-offset: 4px;
     text-decoration-thickness: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    text-align: left;
 }
 
 .portfolio-detail-card .card-icon {
@@ -186,6 +191,11 @@
 .portfolio-detail-card.square-card .card-title {
     font-size: 0.875rem;
     margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    text-align: left;
 }
 
 .portfolio-detail-card.square-card .card-icon {
