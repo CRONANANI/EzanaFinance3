@@ -20,9 +20,10 @@
     </div>
 
 
-    <div class="portfolio-detail-grid">
+    <!-- Main Portfolio Card - Full Width -->
+    <div class="main-portfolio-card" id="main-portfolio-card">
         <!-- Total Portfolio Value Card - Expanded by Default -->
-        <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" onclick="togglePortfolioExpansion(event)">
+        <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" data-card-type="total-portfolio" onclick="expandCard(this)">
             <div class="card-header">
                 <h3 class="card-title">Total Portfolio Value</h3>
                 <div class="card-icon">
@@ -101,87 +102,212 @@
                 </div>
                 
                 <div class="portfolio-chart-container mt-6">
-                    <canvas id="portfolio-chart" width="1200" height="500"></canvas>
+                    <canvas id="portfolio-chart" width="1200" height="400"></canvas>
                 </div>
-                
-                <script>
-                    // Initialize portfolio chart when page loads
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Initialize the portfolio chart
-                        if (typeof updatePortfolioChart === 'function') {
-                            updatePortfolioChart();
-                        }
-                    });
-                </script>
             </div>
         </div>
+    </div>
 
-        <!-- Right Side Cards Container -->
-        <div class="right-side-cards">
-            <!-- Today's Gain/Loss Card -->
-            <div class="portfolio-detail-card todays-pnl">
-                <div class="card-header">
-                    <h3 class="card-title">Today's P&L</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-graph-up-arrow"></i>
-                    </div>
+    <!-- Horizontal Cards Row -->
+    <div class="horizontal-cards-container">
+        <!-- Today's Gain/Loss Card -->
+        <div class="portfolio-detail-card todays-pnl square-card" data-card-type="todays-pnl" onclick="expandCard(this)">
+            <div class="card-header">
+                <h3 class="card-title">Today's P&L</h3>
+                <div class="card-icon">
+                    <i class="bi bi-graph-up-arrow"></i>
                 </div>
-                <div class="card-value">+$847.31</div>
-                <div class="card-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    +0.67%
-                </div>
-                <div class="card-description">Market hours performance</div>
             </div>
-
-            <!-- Top Performer Card -->
-            <div class="portfolio-detail-card top-performer">
-                <div class="card-header">
-                    <h3 class="card-title">Top Performer</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                </div>
-                <div class="card-value">TSLA</div>
-                <div class="card-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    +$156.42 (+8.45%)
-                </div>
-                <div class="card-description">Tesla Inc. - 15 shares</div>
+            <div class="card-value">+$847.31</div>
+            <div class="card-change positive">
+                <i class="bi bi-arrow-up"></i>
+                +0.67%
             </div>
-
-            <!-- Risk Score Card -->
-            <div class="portfolio-detail-card risk-score">
-                <div class="card-header">
-                    <h3 class="card-title">Risk Score</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                </div>
-                <div class="card-value">7.2/10</div>
-                <div class="card-change negative">
-                    <i class="bi bi-arrow-down"></i>
-                    -0.3 from last week
-                </div>
-                <div class="card-description">Moderate risk profile</div>
-            </div>
-
-            <!-- Dividend Income Card -->
-            <div class="portfolio-detail-card dividend-income">
-                <div class="card-header">
-                    <h3 class="card-title">Monthly Dividends</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-cash-coin"></i>
-                    </div>
-                </div>
-                <div class="card-value">$342.18</div>
-                <div class="card-change positive">
-                    <i class="bi bi-arrow-up"></i>
-                    +$28.45 (+9.07%)
-                </div>
-                <div class="card-description">Next payment: March 15</div>
-            </div>
+            <div class="card-description">Market hours performance</div>
         </div>
+
+        <!-- Top Performer Card -->
+        <div class="portfolio-detail-card top-performer square-card" data-card-type="top-performer" onclick="expandCard(this)">
+            <div class="card-header">
+                <h3 class="card-title">Top Performer</h3>
+                <div class="card-icon">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+            </div>
+            <div class="card-value">TSLA</div>
+            <div class="card-change positive">
+                <i class="bi bi-arrow-up"></i>
+                +$156.42 (+8.45%)
+            </div>
+            <div class="card-description">Tesla Inc. - 15 shares</div>
+        </div>
+
+        <!-- Risk Score Card -->
+        <div class="portfolio-detail-card risk-score square-card" data-card-type="risk-score" onclick="expandCard(this)">
+            <div class="card-header">
+                <h3 class="card-title">Risk Score</h3>
+                <div class="card-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+            </div>
+            <div class="card-value">7.2/10</div>
+            <div class="card-change negative">
+                <i class="bi bi-arrow-down"></i>
+                -0.3 from last week
+            </div>
+            <div class="card-description">Moderate risk profile</div>
+        </div>
+
+        <!-- Dividend Income Card -->
+        <div class="portfolio-detail-card dividend-income square-card" data-card-type="dividend-income" onclick="expandCard(this)">
+            <div class="card-header">
+                <h3 class="card-title">Monthly Dividends</h3>
+                <div class="card-icon">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+            <div class="card-value">$342.18</div>
+            <div class="card-change positive">
+                <i class="bi bi-arrow-up"></i>
+                +$28.45 (+9.07%)
+            </div>
+            <div class="card-description">Next payment: March 15</div>
+        </div>
+
+        <!-- Market Performance Card -->
+        <div class="portfolio-detail-card market-performance square-card" data-card-type="market-performance" onclick="expandCard(this)">
+            <div class="card-header">
+                <h3 class="card-title">Market Performance</h3>
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+            <div class="card-value">S&P 500</div>
+            <div class="card-change positive">
+                <i class="bi bi-arrow-up"></i>
+                +1.24% today
+            </div>
+            <div class="card-description">4,567.89 (+56.78)</div>
+        </div>
+    </div>
+
+    <script>
+        // Card expansion functionality
+        function expandCard(clickedCard) {
+            const mainCard = document.getElementById('main-portfolio-card');
+            const allCards = document.querySelectorAll('.portfolio-detail-card');
+            
+            // Remove expanded class from all cards
+            allCards.forEach(card => {
+                card.classList.remove('expanded');
+                const chartContent = card.querySelector('.portfolio-chart-content');
+                if (chartContent) {
+                    chartContent.classList.remove('expanded');
+                    chartContent.classList.add('hidden');
+                }
+            });
+            
+            // Move clicked card to main position
+            const cardClone = clickedCard.cloneNode(true);
+            cardClone.classList.add('expanded');
+            cardClone.onclick = function() { expandCard(this); };
+            
+            // Add chart content if it's the portfolio card
+            if (clickedCard.dataset.cardType === 'total-portfolio') {
+                const chartContent = document.createElement('div');
+                chartContent.className = 'portfolio-chart-content expanded';
+                chartContent.innerHTML = `
+                    <div class="portfolio-chart-controls">
+                        <div class="time-period-selector">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
+                            <select id="portfolio-time-period" onchange="updatePortfolioChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12" selected>12 Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="top-holdings-section mt-6">
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Top 3 Holdings</h4>
+                        <div class="holdings-grid">
+                            <div class="holding-card">
+                                <div class="holding-header">
+                                    <div class="holding-symbol">AAPL</div>
+                                    <div class="holding-name">Apple Inc.</div>
+                                </div>
+                                <div class="holding-details">
+                                    <div class="holding-shares">25 shares</div>
+                                    <div class="holding-value">$4,375.00</div>
+                                </div>
+                                <div class="holding-return">
+                                    <span class="return-label">Return:</span>
+                                    <span class="return-value positive">+$875.00 (+25.0%)</span>
+                                </div>
+                            </div>
+                            <div class="holding-card">
+                                <div class="holding-header">
+                                    <div class="holding-symbol">TSLA</div>
+                                    <div class="holding-name">Tesla Inc.</div>
+                                </div>
+                                <div class="holding-details">
+                                    <div class="holding-shares">15 shares</div>
+                                    <div class="holding-value">$3,150.00</div>
+                                </div>
+                                <div class="holding-return">
+                                    <span class="return-label">Return:</span>
+                                    <span class="return-value positive">+$630.00 (+25.0%)</span>
+                                </div>
+                            </div>
+                            <div class="holding-card">
+                                <div class="holding-header">
+                                    <div class="holding-symbol">MSFT</div>
+                                    <div class="holding-name">Microsoft Corp.</div>
+                                </div>
+                                <div class="holding-details">
+                                    <div class="holding-shares">20 shares</div>
+                                    <div class="holding-value">$7,600.00</div>
+                                </div>
+                                <div class="holding-return">
+                                    <span class="return-label">Return:</span>
+                                    <span class="return-value positive">+$1,520.00 (+25.0%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="portfolio-chart-container mt-6">
+                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
+                    </div>
+                `;
+                cardClone.appendChild(chartContent);
+            }
+            
+            // Replace main card content
+            mainCard.innerHTML = '';
+            mainCard.appendChild(cardClone);
+            
+            // Move previous main card to horizontal row
+            const horizontalContainer = document.querySelector('.horizontal-cards-container');
+            const previousMainCard = document.querySelector('.portfolio-detail-card.expanded');
+            if (previousMainCard && previousMainCard !== clickedCard) {
+                previousMainCard.classList.remove('expanded');
+                previousMainCard.classList.add('square-card');
+                previousMainCard.onclick = function() { expandCard(this); };
+                horizontalContainer.appendChild(previousMainCard);
+            }
+            
+            // Initialize chart if needed
+            if (clickedCard.dataset.cardType === 'total-portfolio' && typeof updatePortfolioChart === 'function') {
+                setTimeout(() => updatePortfolioChart(), 100);
+            }
+        }
+        
+        // Initialize portfolio chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof updatePortfolioChart === 'function') {
+                updatePortfolioChart();
+            }
+        });
+    </script>
 
         <!-- Asset Allocation Card -->
         <div class="dashboard-card expandable-asset-allocation" data-type="asset-allocation">

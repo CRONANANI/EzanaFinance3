@@ -1,12 +1,18 @@
 /* Portfolio Detail Cards Component Styles */
 
-/* Main Detail Cards Grid */
-.portfolio-detail-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
+/* Main Portfolio Card - Full Width */
+.main-portfolio-card {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+/* Horizontal Cards Container */
+.horizontal-cards-container {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
     margin-bottom: 3rem;
-    align-items: start;
 }
 
 /* Individual Detail Card - Unified Design */
@@ -142,13 +148,71 @@
     color: var(--primary-foreground);
 }
 
-/* Expandable Portfolio Card */
-.portfolio-detail-card.expandable-portfolio {
+/* Square Cards */
+.portfolio-detail-card.square-card {
+    width: 200px;
+    height: 200px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-detail-card.square-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.portfolio-detail-card.square-card .card-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+}
+
+.portfolio-detail-card.square-card .card-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.portfolio-detail-card.square-card .card-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.portfolio-detail-card.square-card .card-icon i {
+    font-size: 0.875rem;
+}
+
+.portfolio-detail-card.square-card .card-value {
+    font-size: 1.25rem;
+    margin: 0.25rem 0;
+}
+
+.portfolio-detail-card.square-card .card-change {
+    font-size: 0.75rem;
+    margin: 0.25rem 0;
+}
+
+.portfolio-detail-card.square-card .card-description {
+    font-size: 0.625rem;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Expanded Portfolio Card */
+.portfolio-detail-card.expanded {
+    width: 100%;
+    padding: 2rem;
+    min-height: 500px;
     cursor: pointer;
     position: relative;
 }
 
-.portfolio-detail-card.expandable-portfolio::before {
+.portfolio-detail-card.expanded::before {
     content: '';
     position: absolute;
     top: 0;
@@ -156,61 +220,11 @@
     right: 0;
     height: 3px;
     background: linear-gradient(90deg, var(--primary), var(--accent));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.portfolio-detail-card.expandable-portfolio:hover::before {
     opacity: 1;
 }
 
-.portfolio-detail-card.expandable-portfolio.expanded {
-    grid-column: 1;
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    padding: 1.5rem;
-    min-height: 400px;
-}
-
-/* Right Side Cards Container */
-.portfolio-detail-grid .right-side-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card {
-    padding: 0.75rem;
-    min-height: 80px;
-    transform: scale(0.75);
-    transform-origin: top left;
-    width: 133.33%; /* Compensate for scale */
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card .card-value {
-    font-size: 1.25rem;
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card .card-title {
-    font-size: 0.875rem;
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card .card-change {
-    font-size: 0.75rem;
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card .card-description {
-    font-size: 0.625rem;
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card .card-icon {
-    width: 2rem;
-    height: 2rem;
-}
-
-.portfolio-detail-grid .right-side-cards .portfolio-detail-card .card-icon i {
-    font-size: 0.875rem;
+.portfolio-detail-card.expanded:hover::before {
+    opacity: 1;
 }
 
 /* Portfolio Chart Content */
@@ -369,45 +383,46 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-    .portfolio-detail-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .portfolio-detail-grid .right-side-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .horizontal-cards-container {
         gap: 1rem;
     }
     
-    .portfolio-detail-grid .right-side-cards .portfolio-detail-card {
-        transform: none;
-        width: 100%;
+    .portfolio-detail-card.square-card {
+        width: 180px;
+        height: 180px;
+        padding: 0.875rem;
+    }
+    
+    .portfolio-detail-card.square-card .card-title {
+        font-size: 0.8rem;
+    }
+    
+    .portfolio-detail-card.square-card .card-value {
+        font-size: 1.125rem;
     }
 }
 
 @media (max-width: 768px) {
-    .portfolio-detail-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    .horizontal-cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+        justify-content: center;
     }
     
-    .portfolio-detail-card {
+    .portfolio-detail-card.square-card {
+        width: 100%;
+        height: 160px;
+        padding: 0.75rem;
+    }
+    
+    .portfolio-detail-card.expanded {
         padding: 1.5rem;
+        min-height: 400px;
     }
     
     .portfolio-detail-card .card-value {
         font-size: 1.875rem;
-    }
-    
-    .portfolio-detail-grid .right-side-cards {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-    
-    .portfolio-detail-grid .right-side-cards .portfolio-detail-card {
-        padding: 1rem;
-        min-height: 100px;
     }
     
     .holdings-grid {
@@ -417,6 +432,39 @@
     
     .holding-card {
         padding: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .horizontal-cards-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .portfolio-detail-card.square-card {
+        height: 140px;
+        padding: 0.625rem;
+    }
+    
+    .portfolio-detail-card.square-card .card-title {
+        font-size: 0.75rem;
+    }
+    
+    .portfolio-detail-card.square-card .card-value {
+        font-size: 1rem;
+    }
+    
+    .portfolio-detail-card.square-card .card-change {
+        font-size: 0.625rem;
+    }
+    
+    .portfolio-detail-card.square-card .card-description {
+        font-size: 0.5rem;
+    }
+    
+    .portfolio-detail-card.expanded {
+        padding: 1.25rem;
+        min-height: 350px;
     }
 }
 
