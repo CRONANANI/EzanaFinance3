@@ -20,96 +20,98 @@
     </div>
 
 
-    <!-- Main Portfolio Card - Full Width -->
-    <div class="main-portfolio-card" id="main-portfolio-card">
-        <!-- Total Portfolio Value Card - Expanded by Default -->
-        <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" data-card-type="total-portfolio" onclick="expandCard(this)">
-            <div class="card-header">
-                <h3 class="card-title">Total Portfolio Value</h3>
-                <div class="card-icon">
-                    <i class="bi bi-wallet2"></i>
-                </div>
-            </div>
-            <div class="card-value">$127,843.52</div>
-            <div class="card-change positive">
-                <i class="bi bi-arrow-up"></i>
-                +$2,847.31 (+2.28%)
-            </div>
-            <div class="card-description">Updated 2 minutes ago</div>
-            
-            <!-- Portfolio Chart Content - Visible by Default -->
-            <div class="portfolio-chart-content expanded" id="portfolio-chart-content">
-                <div class="portfolio-chart-controls">
-                    <div class="time-period-selector">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
-                        <select id="portfolio-time-period" onchange="updatePortfolioChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
-                            <option value="3">3 Months</option>
-                            <option value="6">6 Months</option>
-                            <option value="12" selected>12 Months</option>
-                        </select>
+    <!-- Main Dashboard Layout -->
+    <div class="dashboard-main-layout">
+        <!-- Main Portfolio Card - Takes remaining space -->
+        <div class="main-portfolio-card" id="main-portfolio-card">
+            <!-- Total Portfolio Value Card - Expanded by Default -->
+            <div class="portfolio-detail-card total-portfolio expandable-portfolio expanded" data-card-type="total-portfolio" onclick="expandCard(this)">
+                <div class="card-header">
+                    <h3 class="card-title">Total Portfolio Value</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-wallet2"></i>
                     </div>
                 </div>
+                <div class="card-value">$127,843.52</div>
+                <div class="card-change positive">
+                    <i class="bi bi-arrow-up"></i>
+                    +$2,847.31 (+2.28%)
+                </div>
+                <div class="card-description">Updated 2 minutes ago</div>
                 
-                <!-- Top 3 Holdings Section -->
-                <div class="top-holdings-section mt-6">
-                    <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Top 3 Holdings</h4>
-                    <div class="holdings-grid">
-                        <div class="holding-card" id="holding-1">
-                            <div class="holding-header">
-                                <div class="holding-symbol">AAPL</div>
-                                <div class="holding-name">Apple Inc.</div>
-                            </div>
-                            <div class="holding-details">
-                                <div class="holding-shares">25 shares</div>
-                                <div class="holding-value">$4,375.00</div>
-                            </div>
-                            <div class="holding-return">
-                                <span class="return-label">Return:</span>
-                                <span class="return-value positive">+$875.00 (+25.0%)</span>
-                            </div>
+                <!-- Portfolio Chart Content - Visible by Default -->
+                <div class="portfolio-chart-content expanded" id="portfolio-chart-content">
+                    <div class="portfolio-chart-controls">
+                        <div class="time-period-selector">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
+                            <select id="portfolio-time-period" onchange="updatePortfolioChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12" selected>12 Months</option>
+                            </select>
                         </div>
-                        
-                        <div class="holding-card" id="holding-2">
-                            <div class="holding-header">
-                                <div class="holding-symbol">TSLA</div>
-                                <div class="holding-name">Tesla Inc.</div>
+                    </div>
+                    
+                    <!-- Top 3 Holdings Section -->
+                    <div class="top-holdings-section mt-6">
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Top 3 Holdings</h4>
+                        <div class="holdings-grid">
+                            <div class="holding-card" id="holding-1">
+                                <div class="holding-header">
+                                    <div class="holding-symbol">AAPL</div>
+                                    <div class="holding-name">Apple Inc.</div>
+                                </div>
+                                <div class="holding-details">
+                                    <div class="holding-shares">25 shares</div>
+                                    <div class="holding-value">$4,375.00</div>
+                                </div>
+                                <div class="holding-return">
+                                    <span class="return-label">Return:</span>
+                                    <span class="return-value positive">+$875.00 (+25.0%)</span>
+                                </div>
                             </div>
-                            <div class="holding-details">
-                                <div class="holding-shares">15 shares</div>
-                                <div class="holding-value">$3,150.00</div>
+                            
+                            <div class="holding-card" id="holding-2">
+                                <div class="holding-header">
+                                    <div class="holding-symbol">TSLA</div>
+                                    <div class="holding-name">Tesla Inc.</div>
+                                </div>
+                                <div class="holding-details">
+                                    <div class="holding-shares">15 shares</div>
+                                    <div class="holding-value">$3,150.00</div>
+                                </div>
+                                <div class="holding-return">
+                                    <span class="return-label">Return:</span>
+                                    <span class="return-value positive">+$630.00 (+25.0%)</span>
+                                </div>
                             </div>
-                            <div class="holding-return">
-                                <span class="return-label">Return:</span>
-                                <span class="return-value positive">+$630.00 (+25.0%)</span>
-                            </div>
-                        </div>
-                        
-                        <div class="holding-card" id="holding-3">
-                            <div class="holding-header">
-                                <div class="holding-symbol">MSFT</div>
-                                <div class="holding-name">Microsoft Corp.</div>
-                            </div>
-                            <div class="holding-details">
-                                <div class="holding-shares">20 shares</div>
-                                <div class="holding-value">$7,600.00</div>
-                            </div>
-                            <div class="holding-return">
-                                <span class="return-label">Return:</span>
-                                <span class="return-value positive">+$1,520.00 (+25.0%)</span>
+                            
+                            <div class="holding-card" id="holding-3">
+                                <div class="holding-header">
+                                    <div class="holding-symbol">MSFT</div>
+                                    <div class="holding-name">Microsoft Corp.</div>
+                                </div>
+                                <div class="holding-details">
+                                    <div class="holding-shares">20 shares</div>
+                                    <div class="holding-value">$7,600.00</div>
+                                </div>
+                                <div class="holding-return">
+                                    <span class="return-label">Return:</span>
+                                    <span class="return-value positive">+$1,520.00 (+25.0%)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="portfolio-chart-container mt-4">
-                    <canvas id="portfolio-chart" width="1200" height="300"></canvas>
+                    
+                    <div class="portfolio-chart-container mt-4">
+                        <canvas id="portfolio-chart" width="1200" height="300"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Horizontal Cards Row -->
-    <div class="horizontal-cards-container">
+        <!-- Component Cards - Vertical column on the right -->
+        <div class="horizontal-cards-container">
         <!-- Today's Gain/Loss Card -->
         <div class="portfolio-detail-card todays-pnl square-card" data-card-type="todays-pnl" onclick="expandCard(this)">
             <div class="card-header">
@@ -204,6 +206,7 @@
                 Well balanced
             </div>
             <div class="card-description">Stocks: 65% | Bonds: 20% | Cash: 15%</div>
+        </div>
         </div>
     </div>
 

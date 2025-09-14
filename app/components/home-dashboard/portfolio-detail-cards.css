@@ -1,19 +1,27 @@
 /* Portfolio Detail Cards Component Styles */
 
-/* Main Portfolio Card - Full Width */
-.main-portfolio-card {
-    width: 100%;
-    margin-bottom: 2rem;
+/* Main Layout Container */
+.dashboard-main-layout {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    align-items: flex-start;
 }
 
-/* Vertical Cards Container */
+/* Main Portfolio Card - Takes remaining space */
+.main-portfolio-card {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Vertical Cards Container - Fixed width on the right */
 .horizontal-cards-container {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
-    margin-bottom: 3rem;
-    max-width: 200px;
+    width: 200px;
+    flex-shrink: 0;
 }
 
 /* Individual Detail Card - Unified Design */
@@ -426,10 +434,15 @@
 }
 
 @media (max-width: 768px) {
+    .dashboard-main-layout {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
     .horizontal-cards-container {
         flex-direction: row;
         flex-wrap: wrap;
-        max-width: 100%;
+        width: 100%;
         justify-content: center;
         gap: 0.75rem;
     }
