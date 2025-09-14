@@ -1527,13 +1527,27 @@ body {
 }
 
 /* Notifications Sidebar Integration */
-/* Adjust main content when notifications sidebar is open */
-.notifications-sidebar.open ~ #main-content {
+/* Adjust main content to account for permanent sidebar */
+#main-content {
     margin-left: 350px;
+    transition: margin-left 0.3s ease;
+}
+
+.notifications-sidebar.collapsed ~ #main-content {
+    margin-left: 60px;
 }
 
 @media (max-width: 768px) {
-    .notifications-sidebar.open ~ #main-content {
+    .notifications-sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+    }
+    
+    .notifications-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    #main-content {
         margin-left: 0;
     }
 }

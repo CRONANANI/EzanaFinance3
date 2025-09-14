@@ -174,26 +174,29 @@ class NotificationsSidebar {
         container.innerHTML = filteredNotifications.map(notification => {
             const timeAgo = this.getTimeAgo(notification.time);
             const unreadClass = notification.read ? '' : 'unread';
+            const unreadBadge = notification.read ? '' : '<div class="unread-badge"></div>';
             
             return `
                 <div class="notification-item ${unreadClass}" onclick="notificationsSidebar.markAsRead('${notification.id}')">
-                    <div class="notification-header">
+                    ${unreadBadge}
+                    <div class="notification-content">
                         <div class="notification-icon ${notification.type}">
                             <i class="bi ${notification.icon}"></i>
                         </div>
-                        <h4 class="notification-title">${notification.title}</h4>
-                        <span class="notification-time">${timeAgo}</span>
-                    </div>
-                    <div class="notification-content">${notification.content}</div>
-                    ${notification.actions.length > 0 ? `
-                        <div class="notification-actions">
-                            ${notification.actions.map(action => `
-                                <button class="notification-action-btn" onclick="event.stopPropagation(); notificationsSidebar.handleAction('${notification.id}', '${action.type}')">
-                                    ${action.label}
-                                </button>
-                            `).join('')}
+                        <div class="notification-text">
+                            <div class="notification-title">${notification.title}</div>
+                            <div class="notification-description">${notification.content}</div>
+                            <div class="notification-meta">
+                                <div class="notification-time">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M17 13H11V7H12.5V11.5H17V13Z"/>
+                                    </svg>
+                                    ${timeAgo}
+                                </div>
+                                <div class="notification-badge">${notification.badge || notification.type}</div>
+                            </div>
                         </div>
-                    ` : ''}
+                    </div>
                 </div>
             `;
         }).join('');
@@ -318,52 +321,72 @@ class NotificationsSidebar {
     loadSampleNotifications() {
         const sampleNotifications = [
             {
-                type: 'congress',
-                title: 'New Congress Trade Alert',
-                content: 'Rep. Nancy Pelosi made a new trade in NVDA worth $1.2M',
-                actions: [
-                    { type: 'view', label: 'View Trade' },
-                    { type: 'follow', label: 'Follow Rep' }
-                ]
-            },
-            {
-                type: 'stocks',
-                title: 'Stock Price Alert',
-                content: 'AAPL has reached your target price of $180.00',
-                actions: [
-                    { type: 'view', label: 'View Chart' },
-                    { type: 'dismiss', label: 'Dismiss' }
-                ]
-            },
-            {
-                type: 'community',
-                title: 'New Comment on Thread',
-                content: 'John Doe commented on "Market Analysis Q4 2024"',
-                actions: [
-                    { type: 'view', label: 'View Thread' }
-                ]
+                type: 'watchlist',
+                title: 'Nancy Pelosi Stock Trade Alert',
+                content: 'Rep. Nancy Pelosi disclosed new NVIDIA stock purchases worth $1.2M',
+                time: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
+                read: false,
+                icon: 'bi-star-fill',
+                badge: 'Watchlist'
             },
             {
                 type: 'news',
-                title: 'Breaking News',
-                content: 'Federal Reserve announces interest rate decision',
-                actions: [
-                    { type: 'view', label: 'Read More' }
-                ]
+                title: 'AAPL Breaking News',
+                content: 'Apple announces record Q4 earnings, stock up 5% in after-hours trading',
+                time: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
+                read: false,
+                icon: 'bi-newspaper',
+                badge: 'News'
+            },
+            {
+                type: 'portfolio',
+                title: 'Portfolio Alert',
+                content: 'Your portfolio gained $2,847.31 today (+2.26%)',
+                time: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+                read: true,
+                icon: 'bi-graph-up',
+                badge: 'Portfolio'
+            },
+            {
+                type: 'social',
+                title: 'Friend Activity',
+                content: 'Alex commented on your Tesla discussion thread',
+                time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+                read: false,
+                icon: 'bi-person',
+                badge: 'Social'
             },
             {
                 type: 'watchlist',
-                title: 'Watchlist Update',
-                content: 'TSLA added 3 new followers to your watchlist',
-                actions: [
-                    { type: 'view', label: 'View Watchlist' }
-                ]
+                title: 'Dan Crenshaw Trade Alert',
+                content: 'Rep. Dan Crenshaw sold defense stocks before committee vote',
+                time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+                read: true,
+                icon: 'bi-star-fill',
+                badge: 'Watchlist'
+            },
+            {
+                type: 'research',
+                title: 'Market Analysis',
+                content: 'New research report on your TSLA position shows strong buy signals',
+                time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+                read: true,
+                icon: 'bi-newspaper',
+                badge: 'Research'
+            },
+            {
+                type: 'payment',
+                title: 'Dividend Payment',
+                content: 'Received $127.50 dividend payment from MSFT',
+                time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+                read: true,
+                icon: 'bi-graph-up',
+                badge: 'Payment'
             }
         ];
 
-        sampleNotifications.forEach(notification => {
-            this.addNotification(notification);
-        });
+        this.notifications = sampleNotifications;
+        this.saveNotifications();
     }
 
     // Show toast message
@@ -389,6 +412,18 @@ class NotificationsSidebar {
 }
 
 // Global functions for HTML onclick handlers
+function toggleSidebar() {
+    const sidebar = document.getElementById('notifications-sidebar');
+    sidebar.classList.toggle('collapsed');
+    
+    const collapseBtn = document.querySelector('.collapse-btn svg');
+    if (sidebar.classList.contains('collapsed')) {
+        collapseBtn.innerHTML = '<path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>';
+    } else {
+        collapseBtn.innerHTML = '<path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>';
+    }
+}
+
 function toggleNotificationsSidebar() {
     if (window.notificationsSidebar) {
         window.notificationsSidebar.toggleSidebar();
