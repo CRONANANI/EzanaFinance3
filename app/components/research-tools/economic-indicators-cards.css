@@ -1,0 +1,402 @@
+/* Economic Indicators Cards Component Styles */
+
+/* Economic Indicators Cards Grid */
+.economic-indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Individual Economic Indicator Card - Unified Design */
+.economic-indicator-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.economic-indicator-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.economic-indicator-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.economic-indicator-card:hover::before {
+    opacity: 1;
+}
+
+/* Star Border Effect */
+.economic-indicator-card::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        var(--primary) 0%, 
+        var(--accent) 25%, 
+        var(--primary) 50%, 
+        var(--accent) 75%, 
+        var(--primary) 100%);
+    background-size: 400% 400%;
+    border-radius: calc(1rem + 2px);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: starBorderRotate 4s linear infinite;
+}
+
+.economic-indicator-card:hover::after {
+    opacity: 1;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes starBorderRotate {
+    0% {
+        background-position: 0% 50%;
+        transform: rotate(0deg);
+    }
+    25% {
+        background-position: 100% 50%;
+        transform: rotate(90deg);
+    }
+    50% {
+        background-position: 100% 50%;
+        transform: rotate(180deg);
+    }
+    75% {
+        background-position: 0% 50%;
+        transform: rotate(270deg);
+    }
+    100% {
+        background-position: 0% 50%;
+        transform: rotate(360deg);
+    }
+}
+
+/* Card Header */
+.economic-indicator-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.economic-indicator-card .card-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.economic-indicator-card .card-value {
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.economic-indicator-card .card-change {
+    font-size: 0.875rem;
+    color: var(--primary);
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+}
+
+.economic-indicator-card .card-change.negative {
+    color: #ef4444;
+}
+
+.economic-indicator-card .card-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0.5rem 0 0 0;
+    line-height: 1.4;
+}
+
+/* Card Icon */
+.economic-indicator-card .card-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+    transition: all 0.3s ease;
+}
+
+.economic-indicator-card:hover .card-icon {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.4);
+}
+
+.economic-indicator-card .card-icon i {
+    color: var(--primary-foreground);
+    font-size: 1.25rem;
+}
+
+/* Specific Card Variants */
+.economic-indicator-card.inflation .card-icon {
+    background: var(--destructive);
+}
+
+.economic-indicator-card.unemployment .card-icon {
+    background: var(--primary);
+}
+
+.economic-indicator-card.gdp .card-icon {
+    background: var(--accent);
+}
+
+.economic-indicator-card.fed-rate .card-icon {
+    background: var(--chart-1);
+}
+
+.economic-indicator-card.housing .card-icon {
+    background: var(--chart-2);
+}
+
+.economic-indicator-card.retail .card-icon {
+    background: var(--chart-3);
+}
+
+/* Economic Calendar Card - Unified Design */
+.economic-calendar-card {
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.economic-calendar-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.economic-calendar-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.economic-calendar-card:hover::before {
+    opacity: 1;
+}
+
+/* Star Border Effect for Calendar Card */
+.economic-calendar-card::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        var(--primary) 0%, 
+        var(--accent) 25%, 
+        var(--primary) 50%, 
+        var(--accent) 75%, 
+        var(--primary) 100%);
+    background-size: 400% 400%;
+    border-radius: calc(1rem + 2px);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: starBorderRotate 4s linear infinite;
+}
+
+.economic-calendar-card:hover::after {
+    opacity: 1;
+}
+
+/* Market Impact Analysis Card - Unified Design */
+.market-impact-card {
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.market-impact-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.market-impact-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.market-impact-card:hover::before {
+    opacity: 1;
+}
+
+/* Star Border Effect for Impact Card */
+.market-impact-card::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        var(--primary) 0%, 
+        var(--accent) 25%, 
+        var(--primary) 50%, 
+        var(--accent) 75%, 
+        var(--primary) 100%);
+    background-size: 400% 400%;
+    border-radius: calc(1rem + 2px);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: starBorderRotate 4s linear infinite;
+}
+
+.market-impact-card:hover::after {
+    opacity: 1;
+}
+
+/* Global Economic Overview Cards - Unified Design */
+.global-economic-card {
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.global-economic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.global-economic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.global-economic-card:hover::before {
+    opacity: 1;
+}
+
+/* Star Border Effect for Global Economic Cards */
+.global-economic-card::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        var(--primary) 0%, 
+        var(--accent) 25%, 
+        var(--primary) 50%, 
+        var(--accent) 75%, 
+        var(--primary) 100%);
+    background-size: 400% 400%;
+    border-radius: calc(1rem + 2px);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: starBorderRotate 4s linear infinite;
+}
+
+.global-economic-card:hover::after {
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .economic-indicators-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .economic-indicator-card {
+        padding: 1.25rem;
+    }
+    
+    .economic-indicator-card .card-value {
+        font-size: 1.75rem;
+    }
+    
+    .economic-indicator-card .card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}

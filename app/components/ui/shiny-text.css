@@ -1,0 +1,212 @@
+/* Shiny Text Effect Component Styles */
+
+/* Shiny Text Base */
+.shiny-text {
+    background: linear-gradient(
+        45deg,
+        var(--foreground) 0%,
+        var(--primary) 25%,
+        var(--accent) 50%,
+        var(--primary) 75%,
+        var(--foreground) 100%
+    );
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shinyTextShimmer 3s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+}
+
+/* Shiny Text Animation */
+@keyframes shinyTextShimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Shiny Text with Glow Effect */
+.shiny-text-glow {
+    background: linear-gradient(
+        45deg,
+        var(--foreground) 0%,
+        var(--primary) 25%,
+        var(--accent) 50%,
+        var(--primary) 75%,
+        var(--foreground) 100%
+    );
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shinyTextShimmer 3s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+    filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3));
+}
+
+/* Shiny Text with Enhanced Glow */
+.shiny-text-enhanced {
+    background: linear-gradient(
+        45deg,
+        var(--foreground) 0%,
+        var(--primary) 20%,
+        var(--accent) 40%,
+        var(--primary) 60%,
+        var(--accent) 80%,
+        var(--foreground) 100%
+    );
+    background-size: 400% 400%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shinyTextEnhanced 4s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+    filter: drop-shadow(0 0 12px rgba(var(--primary-rgb), 0.4));
+}
+
+/* Enhanced Shiny Text Animation */
+@keyframes shinyTextEnhanced {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3));
+    }
+    25% {
+        background-position: 50% 0%;
+        filter: drop-shadow(0 0 16px rgba(var(--primary-rgb), 0.5));
+    }
+    50% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 12px rgba(var(--primary-rgb), 0.4));
+    }
+    75% {
+        background-position: 50% 100%;
+        filter: drop-shadow(0 0 20px rgba(var(--primary-rgb), 0.6));
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3));
+    }
+}
+
+/* Shiny Text Hover Effects */
+.shiny-text:hover {
+    animation-duration: 1.5s;
+    filter: drop-shadow(0 0 16px rgba(var(--primary-rgb), 0.6));
+}
+
+.shiny-text-glow:hover {
+    animation-duration: 1.5s;
+    filter: drop-shadow(0 0 20px rgba(var(--primary-rgb), 0.8));
+}
+
+.shiny-text-enhanced:hover {
+    animation-duration: 1s;
+    filter: drop-shadow(0 0 24px rgba(var(--primary-rgb), 0.9));
+}
+
+/* Responsive Shiny Text */
+@media (max-width: 768px) {
+    .shiny-text,
+    .shiny-text-glow,
+    .shiny-text-enhanced {
+        animation-duration: 4s;
+    }
+}
+
+/* Shiny Text for Landing Page */
+.shiny-text-landing {
+    background: linear-gradient(
+        45deg,
+        var(--foreground) 0%,
+        var(--primary) 15%,
+        var(--accent) 30%,
+        var(--primary) 45%,
+        var(--accent) 60%,
+        var(--primary) 75%,
+        var(--foreground) 100%
+    );
+    background-size: 500% 500%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shinyTextLanding 5s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+    filter: drop-shadow(0 0 20px rgba(var(--primary-rgb), 0.5));
+}
+
+@keyframes shinyTextLanding {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.4));
+    }
+    20% {
+        background-position: 25% 25%;
+        filter: drop-shadow(0 0 25px rgba(var(--primary-rgb), 0.6));
+    }
+    40% {
+        background-position: 50% 0%;
+        filter: drop-shadow(0 0 20px rgba(var(--primary-rgb), 0.5));
+    }
+    60% {
+        background-position: 75% 25%;
+        filter: drop-shadow(0 0 30px rgba(var(--primary-rgb), 0.7));
+    }
+    80% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 18px rgba(var(--primary-rgb), 0.5));
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.4));
+    }
+}
+
+/* Shiny Text for Page Titles */
+.page-title-shiny {
+    background: linear-gradient(
+        45deg,
+        var(--foreground) 0%,
+        var(--primary) 30%,
+        var(--accent) 60%,
+        var(--primary) 100%
+    );
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: pageTitleShiny 3.5s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+    filter: drop-shadow(0 0 10px rgba(var(--primary-rgb), 0.4));
+}
+
+@keyframes pageTitleShiny {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3));
+    }
+    50% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.6));
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3));
+    }
+}
+
+/* Hover effect for page titles */
+.page-title-shiny:hover {
+    animation-duration: 2s;
+    filter: drop-shadow(0 0 20px rgba(var(--primary-rgb), 0.8));
+}

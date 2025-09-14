@@ -6,6 +6,8 @@
     <title>Ezana Finance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../components/ui/shiny-text.css">
+    <link rel="stylesheet" href="../components/ui/prism-background.css">
     <script>
         tailwind.config = {
             theme: {
@@ -49,16 +51,35 @@
         }
     </script>
 </head>
-<body class="bg-background text-foreground min-h-screen">
+<body class="bg-background text-foreground min-h-screen prism-background">
+    <!-- Prism Floating Elements -->
+    <div class="prism-floating-elements">
+        <div class="prism-element"></div>
+        <div class="prism-element"></div>
+        <div class="prism-element"></div>
+        <div class="prism-element"></div>
+        <div class="prism-element"></div>
+    </div>
+    
+    <!-- Prism Lines -->
+    <div class="prism-lines">
+        <div class="prism-line"></div>
+        <div class="prism-line"></div>
+        <div class="prism-line"></div>
+        <div class="prism-line"></div>
+        <div class="prism-line"></div>
+        <div class="prism-line"></div>
+    </div>
+    
     <!-- Hero Section -->
-    <div class="min-h-screen flex items-center justify-center px-4">
+    <div class="min-h-screen flex items-center justify-center px-4 prism-content">
         <div class="max-w-4xl mx-auto text-center">
             <!-- Logo -->
             <div class="mb-12">
                 <div class="w-20 h-20 mx-auto mb-6 bg-primary rounded-2xl flex items-center justify-center">
                     <i class="bi bi-graph-up text-primary-foreground text-3xl"></i>
                 </div>
-                <h1 class="text-6xl md:text-7xl font-light text-foreground mb-4 tracking-tight">
+                <h1 class="text-6xl md:text-7xl font-light text-foreground mb-4 tracking-tight shiny-text-landing">
                     Ezana Finance
                 </h1>
                 <div class="w-24 h-0.5 bg-primary mx-auto"></div>
@@ -112,7 +133,7 @@
     </div>
     
     <!-- Footer -->
-    <div class="absolute bottom-0 left-0 right-0 p-8">
+    <div class="absolute bottom-0 left-0 right-0 p-8 prism-content">
         <div class="max-w-4xl mx-auto text-center">
             <p class="text-sm text-muted-foreground">
                 © 2024 Ezana Finance. All rights reserved.

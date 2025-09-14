@@ -8,3 +8,6 @@
 [33mcec5356[m Integrate EzanaEzana features: Add bank account integration, financial health score, investment recommendations, and comprehensive financial analytics
 [33m6ba3247[m Complete codebase cleanup: Remove React components, fix navigation system, restore all portfolio cards with expandable functionality
 [33m60c065c[m Save current state before cleanup
+[33mf64b104[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m  Reduce market overview cards height by ~50%
+[33m754a341[m  Implement star border effect on all component cards
+[33m525266d[m Standardize all card components with unified design system and hover effects
