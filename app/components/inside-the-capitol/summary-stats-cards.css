@@ -1,0 +1,232 @@
+/* Summary Stats Cards - Inside the Capitol */
+
+/* Summary Stats Grid Container */
+.summary-stats-grid {
+    @apply grid grid-cols-1 md:grid-cols-4 gap-8 mb-12;
+}
+
+/* Individual Summary Stats Card */
+.summary-stats-card {
+    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+}
+
+.summary-stats-card:hover {
+    @apply border-primary shadow-lg transform -translate-y-1;
+}
+
+/* Card Content Layout */
+.summary-stats-content {
+    @apply flex items-center justify-between;
+}
+
+.summary-stats-info {
+    @apply flex-1;
+}
+
+.summary-stats-label {
+    @apply text-sm text-muted-foreground mb-2;
+}
+
+.summary-stats-value {
+    @apply text-3xl font-light text-foreground;
+}
+
+/* Icon Container */
+.summary-stats-icon {
+    @apply w-14 h-14 rounded-2xl flex items-center justify-center;
+}
+
+/* Total Trades Card */
+.total-trades-card .summary-stats-icon {
+    @apply bg-primary;
+}
+
+.total-trades-card .summary-stats-icon i {
+    @apply text-primary-foreground text-xl;
+}
+
+/* Total Volume Card */
+.total-volume-card .summary-stats-icon {
+    @apply bg-accent;
+}
+
+.total-volume-card .summary-stats-icon i {
+    @apply text-accent-foreground text-xl;
+}
+
+/* Active Traders Card */
+.active-traders-card .summary-stats-icon {
+    @apply bg-chart-3;
+}
+
+.active-traders-card .summary-stats-icon i {
+    @apply text-chart-2 text-xl;
+}
+
+/* This Week Card */
+.this-week-card .summary-stats-icon {
+    @apply bg-chart-4;
+}
+
+.this-week-card .summary-stats-icon i {
+    @apply text-chart-2 text-xl;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .summary-stats-grid {
+        @apply grid-cols-1 gap-6;
+    }
+    
+    .summary-stats-card {
+        @apply p-6;
+    }
+    
+    .summary-stats-icon {
+        @apply w-12 h-12;
+    }
+    
+    .summary-stats-value {
+        @apply text-2xl;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-stats-card {
+        @apply p-4;
+    }
+    
+    .summary-stats-content {
+        @apply flex-col space-y-4;
+    }
+    
+    .summary-stats-icon {
+        @apply w-10 h-10;
+    }
+    
+    .summary-stats-icon i {
+        @apply text-lg;
+    }
+}
+
+/* Animation Effects */
+.summary-stats-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.summary-stats-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.summary-stats-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.summary-stats-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.summary-stats-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover Effects */
+.summary-stats-card:hover .summary-stats-icon {
+    @apply transform scale-110;
+}
+
+.summary-stats-card:hover .summary-stats-value {
+    @apply text-primary;
+}
+
+/* Loading States */
+.summary-stats-loading .summary-stats-value {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.summary-stats-loading .summary-stats-label {
+    @apply animate-pulse bg-muted rounded;
+}
+
+/* Data Update Animation */
+.summary-stats-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Value Change Indicators */
+.value-change-positive {
+    @apply text-green-500;
+}
+
+.value-change-negative {
+    @apply text-red-500;
+}
+
+.value-change-neutral {
+    @apply text-muted-foreground;
+}
+
+/* Icon Animations */
+.summary-stats-icon i {
+    transition: transform 0.3s ease;
+}
+
+.summary-stats-card:hover .summary-stats-icon i {
+    transform: rotate(5deg);
+}
+
+/* Card Focus States */
+.summary-stats-card:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Accessibility */
+.summary-stats-card[role="button"] {
+    @apply cursor-pointer;
+}
+
+.summary-stats-card[role="button"]:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+    .summary-stats-card {
+        @apply shadow-lg;
+    }
+    
+    .summary-stats-card:hover {
+        @apply shadow-xl;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .summary-stats-card {
+        @apply border border-gray-300 shadow-none;
+    }
+    
+    .summary-stats-card:hover {
+        @apply transform-none shadow-none;
+    }
+}

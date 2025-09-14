@@ -1,0 +1,261 @@
+/* House Trading Card - Inside the Capitol */
+
+/* Main House Trading Card */
+.house-trading-card {
+    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+}
+
+.house-trading-card:hover {
+    @apply border-primary shadow-lg transform -translate-y-1;
+}
+
+/* Card Header */
+.house-trading-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.house-trading-title {
+    @apply text-xl font-medium text-foreground;
+}
+
+.house-trading-controls {
+    @apply flex items-center space-x-2;
+}
+
+/* API Status Indicator */
+.house-trading-api-status {
+    @apply w-2 h-2 rounded-full;
+}
+
+.house-trading-api-status.connected {
+    @apply bg-primary;
+}
+
+.house-trading-api-status.disconnected {
+    @apply bg-destructive;
+}
+
+.house-trading-api-status.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Pulse Indicator */
+.house-trading-pulse-indicator {
+    @apply w-3 h-3 bg-chart-3 rounded-full animate-pulse;
+}
+
+/* Stats Grid */
+.house-trading-stats-grid {
+    @apply space-y-3;
+}
+
+.house-trading-stat-row {
+    @apply flex justify-between;
+}
+
+.house-trading-stat-label {
+    @apply text-muted-foreground;
+}
+
+.house-trading-stat-value {
+    @apply font-semibold text-foreground;
+}
+
+.house-trading-last-updated {
+    @apply text-xs text-muted-foreground mt-2;
+}
+
+/* Value Formatting */
+.house-trading-value-large {
+    @apply text-lg font-bold;
+}
+
+.house-trading-value-currency {
+    @apply font-mono;
+}
+
+/* Loading States */
+.house-trading-loading .house-trading-stat-value {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.house-trading-loading .house-trading-stat-label {
+    @apply animate-pulse bg-muted rounded;
+}
+
+/* Data Update Animation */
+.house-trading-stat-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Hover Effects */
+.house-trading-card:hover .house-trading-pulse-indicator {
+    @apply animate-bounce;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .house-trading-card {
+        @apply p-6;
+    }
+    
+    .house-trading-header {
+        @apply flex-col space-y-3;
+    }
+    
+    .house-trading-controls {
+        @apply w-full justify-center;
+    }
+}
+
+@media (max-width: 480px) {
+    .house-trading-card {
+        @apply p-4;
+    }
+    
+    .house-trading-stats-grid {
+        @apply space-y-2;
+    }
+    
+    .house-trading-stat-row {
+        @apply flex-col space-y-1;
+    }
+    
+    .house-trading-stat-value {
+        @apply text-right;
+    }
+}
+
+/* Animation Effects */
+.house-trading-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus States */
+.house-trading-card:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Status Indicators */
+.house-trading-status-indicator {
+    @apply w-2 h-2 rounded-full;
+}
+
+.house-trading-status-indicator.online {
+    @apply bg-green-500;
+}
+
+.house-trading-status-indicator.offline {
+    @apply bg-red-500;
+}
+
+.house-trading-status-indicator.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Value Change Indicators */
+.house-trading-value-change-positive {
+    @apply text-green-500;
+}
+
+.house-trading-value-change-negative {
+    @apply text-red-500;
+}
+
+.house-trading-value-change-neutral {
+    @apply text-muted-foreground;
+}
+
+/* Card States */
+.house-trading-card.success {
+    @apply border-green-500;
+}
+
+.house-trading-card.warning {
+    @apply border-yellow-500;
+}
+
+.house-trading-card.error {
+    @apply border-red-500;
+}
+
+/* Empty State */
+.house-trading-empty-state {
+    @apply text-center py-8 text-muted-foreground;
+}
+
+.house-trading-empty-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.house-trading-empty-state-text {
+    @apply text-sm;
+}
+
+/* Error State */
+.house-trading-error-state {
+    @apply text-center py-8 text-destructive;
+}
+
+.house-trading-error-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.house-trading-error-state-text {
+    @apply text-sm;
+}
+
+/* Success State */
+.house-trading-success-state {
+    @apply text-center py-8 text-green-500;
+}
+
+.house-trading-success-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.house-trading-success-state-text {
+    @apply text-sm;
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+    .house-trading-card {
+        @apply shadow-lg;
+    }
+    
+    .house-trading-card:hover {
+        @apply shadow-xl;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .house-trading-card {
+        @apply border border-gray-300 shadow-none;
+    }
+    
+    .house-trading-card:hover {
+        @apply transform-none shadow-none;
+    }
+}

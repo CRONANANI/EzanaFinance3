@@ -1,0 +1,261 @@
+/* Patent Momentum Card - Inside the Capitol */
+
+/* Main Patent Momentum Card */
+.patent-momentum-card {
+    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+}
+
+.patent-momentum-card:hover {
+    @apply border-primary shadow-lg transform -translate-y-1;
+}
+
+/* Card Header */
+.patent-momentum-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.patent-momentum-title {
+    @apply text-xl font-medium text-foreground;
+}
+
+.patent-momentum-controls {
+    @apply flex items-center space-x-2;
+}
+
+/* API Status Indicator */
+.patent-momentum-api-status {
+    @apply w-2 h-2 rounded-full;
+}
+
+.patent-momentum-api-status.connected {
+    @apply bg-primary;
+}
+
+.patent-momentum-api-status.disconnected {
+    @apply bg-destructive;
+}
+
+.patent-momentum-api-status.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Pulse Indicator */
+.patent-momentum-pulse-indicator {
+    @apply w-3 h-3 bg-accent rounded-full animate-pulse;
+}
+
+/* Stats Grid */
+.patent-momentum-stats-grid {
+    @apply space-y-3;
+}
+
+.patent-momentum-stat-row {
+    @apply flex justify-between;
+}
+
+.patent-momentum-stat-label {
+    @apply text-muted-foreground;
+}
+
+.patent-momentum-stat-value {
+    @apply font-semibold text-foreground;
+}
+
+.patent-momentum-last-updated {
+    @apply text-xs text-muted-foreground mt-2;
+}
+
+/* Value Formatting */
+.patent-momentum-value-large {
+    @apply text-lg font-bold;
+}
+
+.patent-momentum-value-number {
+    @apply font-mono;
+}
+
+/* Loading States */
+.patent-momentum-loading .patent-momentum-stat-value {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.patent-momentum-loading .patent-momentum-stat-label {
+    @apply animate-pulse bg-muted rounded;
+}
+
+/* Data Update Animation */
+.patent-momentum-stat-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Hover Effects */
+.patent-momentum-card:hover .patent-momentum-pulse-indicator {
+    @apply animate-bounce;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .patent-momentum-card {
+        @apply p-6;
+    }
+    
+    .patent-momentum-header {
+        @apply flex-col space-y-3;
+    }
+    
+    .patent-momentum-controls {
+        @apply w-full justify-center;
+    }
+}
+
+@media (max-width: 480px) {
+    .patent-momentum-card {
+        @apply p-4;
+    }
+    
+    .patent-momentum-stats-grid {
+        @apply space-y-2;
+    }
+    
+    .patent-momentum-stat-row {
+        @apply flex-col space-y-1;
+    }
+    
+    .patent-momentum-stat-value {
+        @apply text-right;
+    }
+}
+
+/* Animation Effects */
+.patent-momentum-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus States */
+.patent-momentum-card:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Status Indicators */
+.patent-momentum-status-indicator {
+    @apply w-2 h-2 rounded-full;
+}
+
+.patent-momentum-status-indicator.online {
+    @apply bg-green-500;
+}
+
+.patent-momentum-status-indicator.offline {
+    @apply bg-red-500;
+}
+
+.patent-momentum-status-indicator.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Value Change Indicators */
+.patent-momentum-value-change-positive {
+    @apply text-green-500;
+}
+
+.patent-momentum-value-change-negative {
+    @apply text-red-500;
+}
+
+.patent-momentum-value-change-neutral {
+    @apply text-muted-foreground;
+}
+
+/* Card States */
+.patent-momentum-card.success {
+    @apply border-green-500;
+}
+
+.patent-momentum-card.warning {
+    @apply border-yellow-500;
+}
+
+.patent-momentum-card.error {
+    @apply border-red-500;
+}
+
+/* Empty State */
+.patent-momentum-empty-state {
+    @apply text-center py-8 text-muted-foreground;
+}
+
+.patent-momentum-empty-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.patent-momentum-empty-state-text {
+    @apply text-sm;
+}
+
+/* Error State */
+.patent-momentum-error-state {
+    @apply text-center py-8 text-destructive;
+}
+
+.patent-momentum-error-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.patent-momentum-error-state-text {
+    @apply text-sm;
+}
+
+/* Success State */
+.patent-momentum-success-state {
+    @apply text-center py-8 text-green-500;
+}
+
+.patent-momentum-success-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.patent-momentum-success-state-text {
+    @apply text-sm;
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+    .patent-momentum-card {
+        @apply shadow-lg;
+    }
+    
+    .patent-momentum-card:hover {
+        @apply shadow-xl;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .patent-momentum-card {
+        @apply border border-gray-300 shadow-none;
+    }
+    
+    .patent-momentum-card:hover {
+        @apply transform-none shadow-none;
+    }
+}

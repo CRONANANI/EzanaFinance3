@@ -1,0 +1,261 @@
+/* Senator Trading Card - Inside the Capitol */
+
+/* Main Senator Trading Card */
+.senator-trading-card {
+    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+}
+
+.senator-trading-card:hover {
+    @apply border-primary shadow-lg transform -translate-y-1;
+}
+
+/* Card Header */
+.senator-trading-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.senator-trading-title {
+    @apply text-xl font-medium text-foreground;
+}
+
+.senator-trading-controls {
+    @apply flex items-center space-x-2;
+}
+
+/* API Status Indicator */
+.senator-trading-api-status {
+    @apply w-2 h-2 rounded-full;
+}
+
+.senator-trading-api-status.connected {
+    @apply bg-primary;
+}
+
+.senator-trading-api-status.disconnected {
+    @apply bg-destructive;
+}
+
+.senator-trading-api-status.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Pulse Indicator */
+.senator-trading-pulse-indicator {
+    @apply w-3 h-3 bg-chart-5 rounded-full animate-pulse;
+}
+
+/* Stats Grid */
+.senator-trading-stats-grid {
+    @apply space-y-3;
+}
+
+.senator-trading-stat-row {
+    @apply flex justify-between;
+}
+
+.senator-trading-stat-label {
+    @apply text-muted-foreground;
+}
+
+.senator-trading-stat-value {
+    @apply font-semibold text-foreground;
+}
+
+.senator-trading-last-updated {
+    @apply text-xs text-muted-foreground mt-2;
+}
+
+/* Value Formatting */
+.senator-trading-value-large {
+    @apply text-lg font-bold;
+}
+
+.senator-trading-value-currency {
+    @apply font-mono;
+}
+
+/* Loading States */
+.senator-trading-loading .senator-trading-stat-value {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.senator-trading-loading .senator-trading-stat-label {
+    @apply animate-pulse bg-muted rounded;
+}
+
+/* Data Update Animation */
+.senator-trading-stat-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Hover Effects */
+.senator-trading-card:hover .senator-trading-pulse-indicator {
+    @apply animate-bounce;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .senator-trading-card {
+        @apply p-6;
+    }
+    
+    .senator-trading-header {
+        @apply flex-col space-y-3;
+    }
+    
+    .senator-trading-controls {
+        @apply w-full justify-center;
+    }
+}
+
+@media (max-width: 480px) {
+    .senator-trading-card {
+        @apply p-4;
+    }
+    
+    .senator-trading-stats-grid {
+        @apply space-y-2;
+    }
+    
+    .senator-trading-stat-row {
+        @apply flex-col space-y-1;
+    }
+    
+    .senator-trading-stat-value {
+        @apply text-right;
+    }
+}
+
+/* Animation Effects */
+.senator-trading-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus States */
+.senator-trading-card:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Status Indicators */
+.senator-trading-status-indicator {
+    @apply w-2 h-2 rounded-full;
+}
+
+.senator-trading-status-indicator.online {
+    @apply bg-green-500;
+}
+
+.senator-trading-status-indicator.offline {
+    @apply bg-red-500;
+}
+
+.senator-trading-status-indicator.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Value Change Indicators */
+.senator-trading-value-change-positive {
+    @apply text-green-500;
+}
+
+.senator-trading-value-change-negative {
+    @apply text-red-500;
+}
+
+.senator-trading-value-change-neutral {
+    @apply text-muted-foreground;
+}
+
+/* Card States */
+.senator-trading-card.success {
+    @apply border-green-500;
+}
+
+.senator-trading-card.warning {
+    @apply border-yellow-500;
+}
+
+.senator-trading-card.error {
+    @apply border-red-500;
+}
+
+/* Empty State */
+.senator-trading-empty-state {
+    @apply text-center py-8 text-muted-foreground;
+}
+
+.senator-trading-empty-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.senator-trading-empty-state-text {
+    @apply text-sm;
+}
+
+/* Error State */
+.senator-trading-error-state {
+    @apply text-center py-8 text-destructive;
+}
+
+.senator-trading-error-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.senator-trading-error-state-text {
+    @apply text-sm;
+}
+
+/* Success State */
+.senator-trading-success-state {
+    @apply text-center py-8 text-green-500;
+}
+
+.senator-trading-success-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.senator-trading-success-state-text {
+    @apply text-sm;
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+    .senator-trading-card {
+        @apply shadow-lg;
+    }
+    
+    .senator-trading-card:hover {
+        @apply shadow-xl;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .senator-trading-card {
+        @apply border border-gray-300 shadow-none;
+    }
+    
+    .senator-trading-card:hover {
+        @apply transform-none shadow-none;
+    }
+}

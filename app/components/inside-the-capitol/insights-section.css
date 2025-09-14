@@ -1,0 +1,360 @@
+/* Insights Section - Inside the Capitol */
+
+/* Main Insights Section */
+.insights-section {
+    @apply mt-12 bg-card rounded-xl shadow-lg p-6 border border-border;
+}
+
+.insights-section:hover {
+    @apply shadow-xl;
+}
+
+/* Section Title */
+.insights-title {
+    @apply text-2xl font-bold text-foreground mb-6;
+}
+
+/* Summary Grid */
+.insights-summary-grid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6 mb-6;
+}
+
+.insights-summary-item {
+    @apply text-center;
+}
+
+.insights-summary-value {
+    @apply text-3xl font-bold;
+}
+
+.insights-summary-label {
+    @apply text-sm text-muted-foreground;
+}
+
+/* Summary Value Colors */
+.insights-summary-value.primary {
+    @apply text-primary;
+}
+
+.insights-summary-value.accent {
+    @apply text-accent;
+}
+
+.insights-summary-value.chart-4 {
+    @apply text-chart-4;
+}
+
+/* Insights List */
+.insights-list {
+    @apply space-y-4;
+}
+
+.insight-item {
+    @apply p-4 rounded-lg border-l-4;
+}
+
+.insight-item.primary {
+    @apply bg-primary/10 border-primary;
+}
+
+.insight-item.accent {
+    @apply bg-accent/10 border-accent;
+}
+
+.insight-item.chart-4 {
+    @apply bg-chart-4/10 border-chart-4;
+}
+
+.insight-item.warning {
+    @apply bg-yellow-100 border-yellow-500;
+}
+
+.insight-item.error {
+    @apply bg-red-100 border-red-500;
+}
+
+.insight-item.success {
+    @apply bg-green-100 border-green-500;
+}
+
+/* Insight Content */
+.insight-title {
+    @apply font-medium;
+}
+
+.insight-title.primary {
+    @apply text-primary;
+}
+
+.insight-title.accent {
+    @apply text-accent-foreground;
+}
+
+.insight-title.chart-4 {
+    @apply text-chart-4;
+}
+
+.insight-title.warning {
+    @apply text-yellow-800;
+}
+
+.insight-title.error {
+    @apply text-red-800;
+}
+
+.insight-title.success {
+    @apply text-green-800;
+}
+
+.insight-description {
+    @apply text-sm text-muted-foreground;
+}
+
+/* Loading States */
+.insights-loading .insights-summary-value {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.insights-loading .insights-summary-label {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.insights-loading .insight-title {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.insights-loading .insight-description {
+    @apply animate-pulse bg-muted rounded;
+}
+
+/* Data Update Animation */
+.insights-summary-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Hover Effects */
+.insight-item:hover {
+    @apply transform translate-x-1 transition-transform duration-200;
+}
+
+.insights-summary-item:hover .insights-summary-value {
+    @apply transform scale-110 transition-transform duration-200;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .insights-section {
+        @apply p-4;
+    }
+    
+    .insights-summary-grid {
+        @apply grid-cols-1 gap-4;
+    }
+    
+    .insights-title {
+        @apply text-xl mb-4;
+    }
+    
+    .insights-summary-value {
+        @apply text-2xl;
+    }
+}
+
+@media (max-width: 480px) {
+    .insights-section {
+        @apply p-3;
+    }
+    
+    .insight-item {
+        @apply p-3;
+    }
+    
+    .insights-summary-value {
+        @apply text-xl;
+    }
+}
+
+/* Animation Effects */
+.insights-section {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.insight-item {
+    animation: slideInRight 0.6s ease-out;
+}
+
+.insight-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.insight-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.insight-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Focus States */
+.insights-section:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Status Indicators */
+.insights-status-indicator {
+    @apply w-2 h-2 rounded-full;
+}
+
+.insights-status-indicator.online {
+    @apply bg-green-500;
+}
+
+.insights-status-indicator.offline {
+    @apply bg-red-500;
+}
+
+.insights-status-indicator.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Value Change Indicators */
+.insights-value-change-positive {
+    @apply text-green-500;
+}
+
+.insights-value-change-negative {
+    @apply text-red-500;
+}
+
+.insights-value-change-neutral {
+    @apply text-muted-foreground;
+}
+
+/* Card States */
+.insights-section.success {
+    @apply border-green-500;
+}
+
+.insights-section.warning {
+    @apply border-yellow-500;
+}
+
+.insights-section.error {
+    @apply border-red-500;
+}
+
+/* Empty State */
+.insights-empty-state {
+    @apply text-center py-8 text-muted-foreground;
+}
+
+.insights-empty-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.insights-empty-state-text {
+    @apply text-sm;
+}
+
+/* Error State */
+.insights-error-state {
+    @apply text-center py-8 text-destructive;
+}
+
+.insights-error-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.insights-error-state-text {
+    @apply text-sm;
+}
+
+/* Success State */
+.insights-success-state {
+    @apply text-center py-8 text-green-500;
+}
+
+.insights-success-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.insights-success-state-text {
+    @apply text-sm;
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+    .insights-section {
+        @apply shadow-xl;
+    }
+    
+    .insight-item.warning {
+        @apply bg-yellow-900/20 border-yellow-400;
+    }
+    
+    .insight-item.error {
+        @apply bg-red-900/20 border-red-400;
+    }
+    
+    .insight-item.success {
+        @apply bg-green-900/20 border-green-400;
+    }
+    
+    .insight-title.warning {
+        @apply text-yellow-200;
+    }
+    
+    .insight-title.error {
+        @apply text-red-200;
+    }
+    
+    .insight-title.success {
+        @apply text-green-200;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .insights-section {
+        @apply border border-gray-300 shadow-none;
+    }
+    
+    .insights-section:hover {
+        @apply shadow-none;
+    }
+    
+    .insight-item:hover {
+        @apply transform-none;
+    }
+}

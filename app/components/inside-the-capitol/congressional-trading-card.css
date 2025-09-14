@@ -1,0 +1,394 @@
+/* Congressional Trading Card - Inside the Capitol */
+
+/* Main Congressional Trading Card */
+.congressional-trading-card {
+    @apply bg-card rounded-2xl p-8 border border-border cursor-pointer transition-all duration-300;
+}
+
+.congressional-trading-card:hover {
+    @apply border-primary shadow-lg transform -translate-y-1;
+}
+
+.congressional-trading-card.expanded {
+    @apply border-primary shadow-xl;
+}
+
+/* Card Header */
+.congressional-trading-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.congressional-trading-title {
+    @apply text-xl font-medium text-foreground;
+}
+
+.congressional-trading-controls {
+    @apply flex items-center space-x-3;
+}
+
+/* Refresh Button */
+.congressional-refresh-btn {
+    @apply p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200;
+}
+
+.congressional-refresh-btn:hover {
+    @apply text-primary;
+}
+
+.congressional-refresh-btn.refreshing {
+    @apply text-primary;
+    animation: spin 1s linear infinite;
+}
+
+/* API Status Indicator */
+.congressional-api-status {
+    @apply w-2 h-2 rounded-full;
+}
+
+.congressional-api-status.connected {
+    @apply bg-primary;
+}
+
+.congressional-api-status.disconnected {
+    @apply bg-destructive;
+}
+
+.congressional-api-status.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Toggle Icon */
+.congressional-toggle-icon {
+    @apply text-primary transition-transform duration-200;
+}
+
+.congressional-toggle-icon.rotated {
+    @apply transform rotate-180;
+}
+
+/* Stats Grid */
+.congressional-stats-grid {
+    @apply space-y-3;
+}
+
+.congressional-stat-row {
+    @apply flex justify-between;
+}
+
+.congressional-stat-label {
+    @apply text-muted-foreground;
+}
+
+.congressional-stat-value {
+    @apply font-semibold text-foreground;
+}
+
+.congressional-last-updated {
+    @apply text-xs text-muted-foreground mt-2;
+}
+
+/* Expandable Content */
+.congressional-expanded-content {
+    @apply mt-6 pt-6 border-t border-border;
+}
+
+.congressional-expanded-content.hidden {
+    @apply hidden;
+}
+
+.congressional-expanded-content.visible {
+    @apply block;
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Trading History Section */
+.congressional-trading-history {
+    @apply mb-4;
+}
+
+.congressional-trading-history-title {
+    @apply text-lg font-semibold text-foreground mb-3;
+}
+
+/* Filter Buttons */
+.congressional-filters {
+    @apply flex flex-wrap gap-2 mb-4;
+}
+
+.congressional-filter-btn {
+    @apply px-3 py-1 text-xs rounded-full border transition-all duration-200;
+}
+
+.congressional-filter-btn.active {
+    @apply bg-primary text-primary-foreground border-primary;
+}
+
+.congressional-filter-btn.inactive {
+    @apply bg-muted text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground;
+}
+
+.congressional-filter-btn:hover {
+    @apply transform scale-105;
+}
+
+/* Trading Table */
+.congressional-trading-table-container {
+    @apply overflow-x-auto;
+}
+
+.congressional-trading-table {
+    @apply w-full text-sm;
+}
+
+.congressional-table-header {
+    @apply border-b border-border;
+}
+
+.congressional-table-header th {
+    @apply text-left py-2 px-3 text-muted-foreground font-semibold;
+}
+
+.congressional-table-body tr {
+    @apply border-b border-border/50 hover:bg-muted/50 transition-colors duration-200;
+}
+
+.congressional-table-body td {
+    @apply py-2 px-3;
+}
+
+.congressional-table-body td:last-child {
+    @apply text-right;
+}
+
+/* Follow Button */
+.congressional-follow-btn {
+    @apply px-2 py-1 text-xs rounded border transition-all duration-200;
+}
+
+.congressional-follow-btn.following {
+    @apply bg-primary text-primary-foreground border-primary;
+}
+
+.congressional-follow-btn.not-following {
+    @apply bg-muted text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground;
+}
+
+.congressional-follow-btn:hover {
+    @apply transform scale-105;
+}
+
+/* Party Badge */
+.congressional-party-badge {
+    @apply px-2 py-1 text-xs rounded-full;
+}
+
+.congressional-party-badge.democrat {
+    @apply bg-blue-100 text-blue-800;
+}
+
+.congressional-party-badge.republican {
+    @apply bg-red-100 text-red-800;
+}
+
+.congressional-party-badge.independent {
+    @apply bg-gray-100 text-gray-800;
+}
+
+/* Trade Type Indicator */
+.congressional-trade-type {
+    @apply font-semibold;
+}
+
+.congressional-trade-type.buy {
+    @apply text-green-500;
+}
+
+.congressional-trade-type.sell {
+    @apply text-red-500;
+}
+
+/* Pagination */
+.congressional-pagination {
+    @apply flex justify-between items-center mt-4 pt-4 border-t border-border;
+}
+
+.congressional-pagination-info {
+    @apply text-sm text-muted-foreground;
+}
+
+.congressional-pagination-controls {
+    @apply flex space-x-2;
+}
+
+.congressional-pagination-btn {
+    @apply px-3 py-1 text-sm rounded border transition-all duration-200;
+}
+
+.congressional-pagination-btn.primary {
+    @apply bg-primary text-primary-foreground border-primary hover:bg-opacity-90;
+}
+
+.congressional-pagination-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+.congressional-pagination-btn:hover:not(:disabled) {
+    @apply transform scale-105;
+}
+
+/* Loading States */
+.congressional-loading-skeleton {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.congressional-loading-skeleton.text {
+    @apply h-4 w-3/4;
+}
+
+.congressional-loading-skeleton.number {
+    @apply h-6 w-16;
+}
+
+.congressional-loading-skeleton.button {
+    @apply h-8 w-20;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .congressional-trading-card {
+        @apply p-6;
+    }
+    
+    .congressional-trading-table {
+        @apply text-xs;
+    }
+    
+    .congressional-table-header th,
+    .congressional-table-body td {
+        @apply px-2 py-1;
+    }
+    
+    .congressional-filters {
+        @apply flex-col;
+    }
+    
+    .congressional-filter-btn {
+        @apply w-full text-center;
+    }
+    
+    .congressional-pagination {
+        @apply flex-col space-y-2;
+    }
+    
+    .congressional-pagination-controls {
+        @apply w-full justify-center;
+    }
+}
+
+@media (max-width: 480px) {
+    .congressional-trading-card {
+        @apply p-4;
+    }
+    
+    .congressional-trading-header {
+        @apply flex-col space-y-3;
+    }
+    
+    .congressional-trading-controls {
+        @apply w-full justify-between;
+    }
+}
+
+/* Animation Keyframes */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Hover Effects */
+.congressional-trading-card:hover .congressional-toggle-icon {
+    @apply transform scale-110;
+}
+
+.congressional-trading-card:hover .congressional-refresh-btn {
+    @apply text-primary;
+}
+
+/* Focus States */
+.congressional-trading-card:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+.congressional-filter-btn:focus,
+.congressional-follow-btn:focus,
+.congressional-pagination-btn:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Data Update Animation */
+.congressional-stat-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Empty State */
+.congressional-empty-state {
+    @apply text-center py-8 text-muted-foreground;
+}
+
+.congressional-empty-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.congressional-empty-state-text {
+    @apply text-sm;
+}
+
+/* Error State */
+.congressional-error-state {
+    @apply text-center py-8 text-destructive;
+}
+
+.congressional-error-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.congressional-error-state-text {
+    @apply text-sm;
+}
+
+/* Success State */
+.congressional-success-state {
+    @apply text-center py-8 text-green-500;
+}
+
+.congressional-success-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.congressional-success-state-text {
+    @apply text-sm;
+}

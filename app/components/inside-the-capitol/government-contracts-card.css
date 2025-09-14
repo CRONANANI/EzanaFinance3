@@ -1,0 +1,261 @@
+/* Government Contracts Card - Inside the Capitol */
+
+/* Main Government Contracts Card */
+.government-contracts-card {
+    @apply bg-card rounded-2xl p-8 border border-border transition-all duration-300;
+}
+
+.government-contracts-card:hover {
+    @apply border-primary shadow-lg transform -translate-y-1;
+}
+
+/* Card Header */
+.government-contracts-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.government-contracts-title {
+    @apply text-xl font-medium text-foreground;
+}
+
+.government-contracts-controls {
+    @apply flex items-center space-x-2;
+}
+
+/* API Status Indicator */
+.government-contracts-api-status {
+    @apply w-2 h-2 rounded-full;
+}
+
+.government-contracts-api-status.connected {
+    @apply bg-primary;
+}
+
+.government-contracts-api-status.disconnected {
+    @apply bg-destructive;
+}
+
+.government-contracts-api-status.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Pulse Indicator */
+.government-contracts-pulse-indicator {
+    @apply w-3 h-3 bg-accent rounded-full animate-pulse;
+}
+
+/* Stats Grid */
+.government-contracts-stats-grid {
+    @apply space-y-3;
+}
+
+.government-contracts-stat-row {
+    @apply flex justify-between;
+}
+
+.government-contracts-stat-label {
+    @apply text-muted-foreground;
+}
+
+.government-contracts-stat-value {
+    @apply font-semibold text-foreground;
+}
+
+.government-contracts-last-updated {
+    @apply text-xs text-muted-foreground mt-2;
+}
+
+/* Value Formatting */
+.government-contracts-value-large {
+    @apply text-lg font-bold;
+}
+
+.government-contracts-value-currency {
+    @apply font-mono;
+}
+
+/* Loading States */
+.government-contracts-loading .government-contracts-stat-value {
+    @apply animate-pulse bg-muted rounded;
+}
+
+.government-contracts-loading .government-contracts-stat-label {
+    @apply animate-pulse bg-muted rounded;
+}
+
+/* Data Update Animation */
+.government-contracts-stat-value.updating {
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Hover Effects */
+.government-contracts-card:hover .government-contracts-pulse-indicator {
+    @apply animate-bounce;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .government-contracts-card {
+        @apply p-6;
+    }
+    
+    .government-contracts-header {
+        @apply flex-col space-y-3;
+    }
+    
+    .government-contracts-controls {
+        @apply w-full justify-center;
+    }
+}
+
+@media (max-width: 480px) {
+    .government-contracts-card {
+        @apply p-4;
+    }
+    
+    .government-contracts-stats-grid {
+        @apply space-y-2;
+    }
+    
+    .government-contracts-stat-row {
+        @apply flex-col space-y-1;
+    }
+    
+    .government-contracts-stat-value {
+        @apply text-right;
+    }
+}
+
+/* Animation Effects */
+.government-contracts-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus States */
+.government-contracts-card:focus {
+    @apply outline-none ring-2 ring-primary ring-opacity-50;
+}
+
+/* Status Indicators */
+.government-contracts-status-indicator {
+    @apply w-2 h-2 rounded-full;
+}
+
+.government-contracts-status-indicator.online {
+    @apply bg-green-500;
+}
+
+.government-contracts-status-indicator.offline {
+    @apply bg-red-500;
+}
+
+.government-contracts-status-indicator.loading {
+    @apply bg-yellow-500 animate-pulse;
+}
+
+/* Value Change Indicators */
+.government-contracts-value-change-positive {
+    @apply text-green-500;
+}
+
+.government-contracts-value-change-negative {
+    @apply text-red-500;
+}
+
+.government-contracts-value-change-neutral {
+    @apply text-muted-foreground;
+}
+
+/* Card States */
+.government-contracts-card.success {
+    @apply border-green-500;
+}
+
+.government-contracts-card.warning {
+    @apply border-yellow-500;
+}
+
+.government-contracts-card.error {
+    @apply border-red-500;
+}
+
+/* Empty State */
+.government-contracts-empty-state {
+    @apply text-center py-8 text-muted-foreground;
+}
+
+.government-contracts-empty-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.government-contracts-empty-state-text {
+    @apply text-sm;
+}
+
+/* Error State */
+.government-contracts-error-state {
+    @apply text-center py-8 text-destructive;
+}
+
+.government-contracts-error-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.government-contracts-error-state-text {
+    @apply text-sm;
+}
+
+/* Success State */
+.government-contracts-success-state {
+    @apply text-center py-8 text-green-500;
+}
+
+.government-contracts-success-state-icon {
+    @apply text-4xl mb-2;
+}
+
+.government-contracts-success-state-text {
+    @apply text-sm;
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+    .government-contracts-card {
+        @apply shadow-lg;
+    }
+    
+    .government-contracts-card:hover {
+        @apply shadow-xl;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .government-contracts-card {
+        @apply border border-gray-300 shadow-none;
+    }
+    
+    .government-contracts-card:hover {
+        @apply transform-none shadow-none;
+    }
+}
