@@ -1,3 +1,176 @@
+<!-- Top Navigation -->
+<nav class="topnav" id="topnav">
+    <div class="topnav-container">
+        <!-- Logo/Brand -->
+        <div class="topnav-brand">
+            <a href="home-dashboard.html" class="brand-link">
+                <i class="bi bi-graph-up-arrow brand-icon"></i>
+                <span class="brand-text">Ezana Finance</span>
+            </a>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="topnav-menu" id="topnav-menu">
+            <ul class="topnav-list">
+                <!-- Home Dropdown -->
+                <li class="topnav-item dropdown">
+                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="home">
+                        Home
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-menu" id="dropdown-home">
+                        <a href="home-dashboard.html" class="dropdown-item">
+                            <i class="bi bi-house-door"></i>
+                            Dashboard
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="bi bi-graph-up"></i>
+                            Analytics
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="bi bi-speedometer2"></i>
+                            Overview
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Components Dropdown -->
+                <li class="topnav-item dropdown">
+                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="components">
+                        Components
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-menu" id="dropdown-components">
+                        <a href="portfolio.html" class="dropdown-item">
+                            <i class="bi bi-wallet2"></i>
+                            Portfolio
+                        </a>
+                        <a href="watchlist.html" class="dropdown-item">
+                            <i class="bi bi-bookmark-star"></i>
+                            Watchlist
+                        </a>
+                        <a href="financial-analytics.html" class="dropdown-item">
+                            <i class="bi bi-graph-up"></i>
+                            Analytics
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Docs (Direct Link) -->
+                <li class="topnav-item">
+                    <a href="docs.html" class="topnav-link">
+                        Docs
+                    </a>
+                </li>
+
+                <!-- List Dropdown -->
+                <li class="topnav-item dropdown">
+                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="list">
+                        List
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-menu" id="dropdown-list">
+                        <a href="watchlist.html" class="dropdown-item">
+                            <i class="bi bi-list-check"></i>
+                            Watchlist
+                        </a>
+                        <a href="portfolio.html" class="dropdown-item">
+                            <i class="bi bi-list-ul"></i>
+                            Holdings
+                        </a>
+                        <a href="transactions.html" class="dropdown-item">
+                            <i class="bi bi-list-ol"></i>
+                            Transactions
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Simple Dropdown -->
+                <li class="topnav-item dropdown">
+                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="simple">
+                        Simple
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-menu" id="dropdown-simple">
+                        <a href="market-analysis.html" class="dropdown-item">
+                            <i class="bi bi-search"></i>
+                            Market Analysis
+                        </a>
+                        <a href="company-research.html" class="dropdown-item">
+                            <i class="bi bi-building"></i>
+                            Company Research
+                        </a>
+                        <a href="economic-indicators.html" class="dropdown-item">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            Economic Indicators
+                        </a>
+                    </div>
+                </li>
+
+                <!-- With Icon Dropdown -->
+                <li class="topnav-item dropdown">
+                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="with-icon">
+                        With Icon
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-menu" id="dropdown-with-icon">
+                        <a href="inside-the-capitol.html" class="dropdown-item">
+                            <i class="bi bi-building"></i>
+                            Inside the Capitol
+                        </a>
+                        <a href="community.html" class="dropdown-item">
+                            <i class="bi bi-people"></i>
+                            Community
+                        </a>
+                        <a href="user-profile-settings.html" class="dropdown-item">
+                            <i class="bi bi-gear"></i>
+                            Settings
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- User Menu -->
+        <div class="topnav-user">
+            <div class="user-dropdown">
+                <button class="user-button" id="user-button">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <span class="user-name">John Doe</span>
+                    <i class="bi bi-chevron-down dropdown-icon"></i>
+                </button>
+                <div class="dropdown-menu user-menu" id="user-menu">
+                    <a href="user-profile-settings.html" class="dropdown-item">
+                        <i class="bi bi-person"></i>
+                        Profile Settings
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="bi bi-gear"></i>
+                        Preferences
+                    </a>
+                    <a href="#" class="dropdown-item">
+                        <i class="bi bi-question-circle"></i>
+                        Help & Support
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+</nav>
+
+<div class="main-content">
 <div class="container mx-auto px-6 py-12">
     <div class="flex items-center justify-between mb-12">
         <div>
@@ -373,3 +546,6 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 </script>
+
+<script src="components/topnav/topnav.js"></script>
+</div> <!-- Close main-content -->
