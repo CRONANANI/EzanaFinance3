@@ -14,11 +14,128 @@ class Navigation {
     }
 
     init() {
+        this.generateNavigationHTML();
         this.bindEvents();
         this.handleResize();
         this.setActiveLink();
         this.createMobileOverlay();
         this.initializeDropdowns();
+    }
+
+    generateNavigationHTML() {
+        // Only generate if navigation doesn't exist
+        if (document.getElementById('topnav')) {
+            return;
+        }
+
+        const config = window.NavigationConfig || NavigationConfig;
+        
+        // Create navigation container
+        const topnav = document.createElement('nav');
+        topnav.className = 'topnav';
+        topnav.id = 'topnav';
+
+        // Create navigation content
+        const navContent = document.createElement('div');
+        navContent.className = 'navigation-content';
+
+        // Create brand section
+        const brandSection = document.createElement('div');
+        brandSection.className = 'navigation-brand';
+        brandSection.innerHTML = `
+            <a href="${config.brand.href}" class="brand-link">
+                <i class="${config.brand.icon} brand-icon"></i>
+                <span class="brand-text">${config.brand.name}</span>
+            </a>
+        `;
+
+        // Create navigation menu
+        const navMenu = document.createElement('div');
+        navMenu.className = 'navigation-menu';
+        navMenu.id = 'topnav-menu';
+
+        const navList = document.createElement('ul');
+        navList.className = 'topnav-list';
+
+        // Generate menu items
+        config.menuItems.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'topnav-item';
+
+            if (item.dropdown) {
+                li.classList.add('dropdown');
+                li.innerHTML = `
+                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="${item.text.toLowerCase().replace(' ', '-')}">
+                        ${item.icon ? `<i class="${item.icon}"></i>` : ''}
+                        ${item.text}
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-menu" id="dropdown-${item.text.toLowerCase().replace(' ', '-')}">
+                        ${item.children.map(child => `
+                            <a href="${child.href}" class="dropdown-item">
+                                <i class="${child.icon}"></i>
+                                ${child.text}
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                li.innerHTML = `
+                    <a href="${item.href}" class="topnav-link">
+                        ${item.icon ? `<i class="${item.icon}"></i>` : ''}
+                        ${item.text}
+                    </a>
+                `;
+            }
+
+            navList.appendChild(li);
+        });
+
+        navMenu.appendChild(navList);
+
+        // Create user section
+        const userSection = document.createElement('div');
+        userSection.className = 'navigation-user';
+        userSection.innerHTML = `
+            <div class="user-dropdown">
+                <button class="user-button" id="user-button">
+                    <i class="${config.userMenu.avatar} user-avatar"></i>
+                    <span class="user-name">${config.userMenu.name}</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu user-menu" id="user-menu">
+                    ${config.userMenu.items.map(item => `
+                        <a href="${item.href}" class="dropdown-item">
+                            <i class="${item.icon}"></i>
+                            ${item.text}
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Create mobile toggle
+        const mobileToggle = document.createElement('button');
+        mobileToggle.className = 'mobile-menu-toggle';
+        mobileToggle.id = 'mobile-menu-toggle';
+        mobileToggle.innerHTML = '<i class="bi bi-list"></i>';
+
+        // Assemble navigation
+        navContent.appendChild(brandSection);
+        navContent.appendChild(navMenu);
+        navContent.appendChild(userSection);
+        navContent.appendChild(mobileToggle);
+        topnav.appendChild(navContent);
+
+        // Insert navigation at the beginning of body
+        document.body.insertBefore(topnav, document.body.firstChild);
+
+        // Update references
+        this.topnav = topnav;
+        this.menu = navMenu;
+        this.mobileToggle = mobileToggle;
+        this.userButton = document.getElementById('user-button');
+        this.userMenu = document.getElementById('user-menu');
     }
 
     bindEvents() {
@@ -64,6 +181,14 @@ class Navigation {
         // Handle dropdown navigation links
         const dropdownLinks = document.querySelectorAll('.dropdown-item');
         dropdownLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                this.handleNavigationClick(e, link);
+            });
+        });
+
+        // Handle user menu links
+        const userMenuLinks = document.querySelectorAll('.user-menu .dropdown-item');
+        userMenuLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 this.handleNavigationClick(e, link);
             });
@@ -212,6 +337,17 @@ class Navigation {
                         parentToggle.classList.add('active');
                     }
                 }
+            }
+        });
+
+        // Handle user menu active state
+        const userMenuLinks = document.querySelectorAll('.user-menu .dropdown-item');
+        userMenuLinks.forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href');
+            
+            if (href && currentPath.includes(href.replace('.html', ''))) {
+                link.classList.add('active');
             }
         });
     }

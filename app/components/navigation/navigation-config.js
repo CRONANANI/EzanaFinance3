@@ -7,80 +7,23 @@ const NavigationConfig = {
         href: 'home-dashboard.html'
     },
 
-    // Navigation menu items
+    // Navigation menu items - matches sidebar structure
     menuItems: [
         {
-            text: 'Home',
-            dropdown: true,
-            children: [
-                {
-                    text: 'Dashboard',
-                    href: 'home-dashboard.html',
-                    icon: 'bi bi-house-door'
-                },
-                {
-                    text: 'Analytics',
-                    href: 'analytics.html',
-                    icon: 'bi bi-graph-up'
-                },
-                {
-                    text: 'Overview',
-                    href: 'overview.html',
-                    icon: 'bi bi-speedometer2'
-                }
-            ]
-        },
-        {
-            text: 'Components',
-            dropdown: true,
-            children: [
-                {
-                    text: 'Portfolio',
-                    href: 'portfolio.html',
-                    icon: 'bi bi-wallet2'
-                },
-                {
-                    text: 'Watchlist',
-                    href: 'watchlist.html',
-                    icon: 'bi bi-bookmark-star'
-                },
-                {
-                    text: 'Analytics',
-                    href: 'financial-analytics.html',
-                    icon: 'bi bi-graph-up'
-                }
-            ]
-        },
-        {
-            text: 'Docs',
-            href: 'docs.html',
+            text: 'Dashboard',
+            href: 'home-dashboard.html',
+            icon: 'bi bi-house-door',
             dropdown: false
         },
         {
-            text: 'List',
+            text: 'Research Tools',
             dropdown: true,
             children: [
                 {
-                    text: 'Watchlist',
-                    href: 'watchlist.html',
-                    icon: 'bi bi-list-check'
+                    text: 'Inside the Capitol',
+                    href: 'inside-the-capitol.html',
+                    icon: 'bi bi-building'
                 },
-                {
-                    text: 'Holdings',
-                    href: 'portfolio.html',
-                    icon: 'bi bi-list-ul'
-                },
-                {
-                    text: 'Transactions',
-                    href: 'transactions.html',
-                    icon: 'bi bi-list-ol'
-                }
-            ]
-        },
-        {
-            text: 'Simple',
-            dropdown: true,
-            children: [
                 {
                     text: 'Market Analysis',
                     href: 'market-analysis.html',
@@ -95,29 +38,25 @@ const NavigationConfig = {
                     text: 'Economic Indicators',
                     href: 'economic-indicators.html',
                     icon: 'bi bi-graph-up-arrow'
+                },
+                {
+                    text: 'Financial Analytics',
+                    href: 'financial-analytics.html',
+                    icon: 'bi bi-graph-up'
                 }
             ]
         },
         {
-            text: 'With Icon',
-            dropdown: true,
-            children: [
-                {
-                    text: 'Inside the Capitol',
-                    href: 'inside-the-capitol.html',
-                    icon: 'bi bi-building'
-                },
-                {
-                    text: 'Community',
-                    href: 'community.html',
-                    icon: 'bi bi-people'
-                },
-                {
-                    text: 'Settings',
-                    href: 'user-profile-settings.html',
-                    icon: 'bi bi-gear'
-                }
-            ]
+            text: 'Watchlist',
+            href: 'watchlist.html',
+            icon: 'bi bi-bookmark-star',
+            dropdown: false
+        },
+        {
+            text: 'Community',
+            href: 'community.html',
+            icon: 'bi bi-people',
+            dropdown: false
         }
     ],
 

@@ -26,7 +26,7 @@
 }
 
 /* Navigation Container */
-.navigation-container {
+.topnav {
     position: fixed;
     top: 0;
     left: 0;
@@ -90,7 +90,7 @@
     justify-content: center;
 }
 
-.navigation-list {
+.topnav-list {
     display: flex;
     align-items: center;
     list-style: none;
@@ -99,11 +99,11 @@
     gap: 2rem;
 }
 
-.navigation-item {
+.topnav-item {
     position: relative;
 }
 
-.navigation-link {
+.topnav-link {
     display: flex;
     align-items: center;
     gap: 0.25rem;
@@ -118,18 +118,18 @@
     position: relative;
 }
 
-.navigation-link:hover {
+.topnav-link:hover {
     background: var(--nav-hover);
     color: var(--nav-text);
     text-decoration: none;
 }
 
-.navigation-link.active {
+.topnav-link.active {
     color: var(--nav-accent);
     background: var(--nav-hover);
 }
 
-.navigation-link.active::after {
+.topnav-link.active::after {
     content: '';
     position: absolute;
     bottom: -1px;
@@ -307,17 +307,17 @@
         transform: translateY(0);
     }
 
-    .navigation-list {
+    .topnav-list {
         flex-direction: column;
         gap: 0;
         padding: 1rem 0;
     }
 
-    .navigation-item {
+    .topnav-item {
         width: 100%;
     }
 
-    .navigation-link {
+    .topnav-link {
         padding: 1rem 1.5rem;
         width: 100%;
         justify-content: space-between;
@@ -415,7 +415,7 @@
 }
 
 /* Focus states for accessibility */
-.navigation-link:focus,
+.topnav-link:focus,
 .dropdown-item:focus,
 .user-button:focus,
 .mobile-menu-toggle:focus {
@@ -460,12 +460,12 @@
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-    .navigation-link,
+    .topnav-link,
     .dropdown-item {
         border: 1px solid transparent;
     }
     
-    .navigation-link:hover,
+    .topnav-link:hover,
     .dropdown-item:hover {
         border-color: var(--nav-accent);
     }
@@ -473,7 +473,7 @@
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .navigation-link,
+    .topnav-link,
     .dropdown-menu,
     .mobile-menu-toggle,
     .user-button {
