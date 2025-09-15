@@ -232,17 +232,17 @@
                             <div class="portfolio-title">Total Portfolio Value</div>
                             <div class="portfolio-icon">
                                 <i class="bi bi-graph-up"></i>
-                    </div>
-                </div>
+                            </div>
+                        </div>
                         
                         <div class="portfolio-value">$127,843.52</div>
                         
                         <div class="portfolio-change">
                             <span class="change-positive">
-                    <i class="bi bi-arrow-up"></i>
+                                <i class="bi bi-arrow-up"></i>
                                 $2,847.31 (+2.28%)
                             </span>
-                </div>
+                        </div>
                         
                         <div class="updated-time">Updated 2 minutes ago</div>
                         
@@ -263,8 +263,8 @@
                         <div class="chart-section">
                             <div class="portfolio-chart-container">
                                 <canvas id="portfolio-chart" width="1200" height="400"></canvas>
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </div>
             </div>
@@ -404,6 +404,9 @@
 
         // Load total portfolio component
         async function loadTotalPortfolioComponent() {
+            // Always show fallback first
+            showPortfolioFallback();
+            
             try {
                 const response = await fetch('components/home-dashboard/total-portfolio-card.html');
                 if (response.ok) {
@@ -419,12 +422,11 @@
                         }, 100);
                     }
                 } else {
-                    console.log('Failed to load total portfolio component, showing fallback');
-                    showPortfolioFallback();
+                    console.log('Failed to load total portfolio component, keeping fallback');
                 }
             } catch (error) {
                 console.error('Error loading total portfolio component:', error);
-                showPortfolioFallback();
+                console.log('Keeping fallback content');
             }
         }
 
@@ -501,6 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
         homeTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
     }
     
+    // Show portfolio fallback immediately
+    showPortfolioFallback();
+    
     // Load component HTML
     loadComponents();
     
@@ -575,14 +580,12 @@ async function loadComponents() {
         await loadTotalPortfolioComponent();
         console.log('Total portfolio component loaded');
         
-        // Ensure portfolio component is displayed with timeout
-        setTimeout(() => {
-            const container = document.getElementById('total-portfolio-container');
-            if (container && container.innerHTML.trim() === '') {
-                console.log('Portfolio container empty, showing fallback');
-                showPortfolioFallback();
-            }
-        }, 2000);
+        // Ensure portfolio component is displayed immediately
+        const container = document.getElementById('total-portfolio-container');
+        if (container && container.innerHTML.trim() === '') {
+            console.log('Portfolio container empty, showing fallback');
+            showPortfolioFallback();
+        }
         
         // Load Portfolio News component
         console.log('Loading portfolio news component...');
