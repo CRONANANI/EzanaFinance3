@@ -30,11 +30,24 @@
             padding: 24px;
         }
 
-        .container {
-            margin-left: 350px;
-            max-width: 1200px;
-            margin-right: auto;
+        /* Dashboard Overview Grid - Similar to community-overview-grid */
+        .dashboard-overview-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
+
+        /* Dashboard Portfolio Card - Takes more space */
+        .dashboard-portfolio-card {
+            min-width: 0; /* Prevents grid overflow */
+        }
+
+        /* Dashboard Metrics Grid - Takes less space */
+        .dashboard-metrics-grid {
+            min-width: 0; /* Prevents grid overflow */
+        }
+
 
         .portfolio-card {
             background: rgba(30, 41, 59, 0.7);
@@ -243,6 +256,11 @@
         .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
 
         @media (max-width: 1024px) {
+            .dashboard-overview-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
@@ -325,9 +343,9 @@
         </div>
 
     <!-- Main Dashboard Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Main Portfolio Card - Takes 2 columns on large screens -->
-            <div class="lg:col-span-2">
+        <div class="dashboard-overview-grid">
+            <!-- Main Portfolio Card -->
+            <div class="dashboard-portfolio-card">
                 <div class="portfolio-card">
                     <div class="portfolio-header">
                         <div class="portfolio-title">Total Portfolio Value</div>
@@ -367,8 +385,8 @@
                 </div>
                     </div>
 
-            <!-- Metrics Grid - Takes 1 column on large screens -->
-            <div class="lg:col-span-1">
+            <!-- Metrics Grid -->
+            <div class="dashboard-metrics-grid">
                 <div class="metrics-grid" id="metrics-grid">
                     <!-- Metric Cards -->
                     <div class="metric-card positive">
