@@ -368,74 +368,71 @@
             <!-- Metrics Grid - Takes 1 column on large screens -->
             <div class="lg:col-span-1">
                 <div class="metrics-grid" id="metrics-grid">
-                    <!-- Component cards will be loaded here -->
-                    <!-- Fallback content if dynamic loading fails -->
-                    <div id="metrics-fallback" style="display: none;">
-                        <div class="metric-card positive">
-                            <div class="metric-header">
-                                <div class="metric-title">Today's P&L</div>
-                                <div class="metric-icon icon-positive">
-                                    <i class="bi bi-graph-up"></i>
-                                </div>
+                    <!-- Metric Cards -->
+                    <div class="metric-card positive">
+                        <div class="metric-header">
+                            <div class="metric-title">Today's P&L</div>
+                            <div class="metric-icon icon-positive">
+                                <i class="bi bi-graph-up"></i>
                             </div>
-                            <div class="metric-value">+$1,247</div>
-                            <div class="metric-subtitle">+0.98% from yesterday</div>
                         </div>
+                        <div class="metric-value">+$1,247</div>
+                        <div class="metric-subtitle">+0.98% from yesterday</div>
+                    </div>
 
-                        <div class="metric-card warning">
-                            <div class="metric-header">
-                                <div class="metric-title">Top Performer</div>
-                                <div class="metric-icon icon-warning">
-                                    <i class="bi bi-star-fill"></i>
-                                </div>
+                    <div class="metric-card warning">
+                        <div class="metric-header">
+                            <div class="metric-title">Top Performer</div>
+                            <div class="metric-icon icon-warning">
+                                <i class="bi bi-star-fill"></i>
                             </div>
-                            <div class="metric-value">NVDA</div>
-                            <div class="metric-subtitle">+12.4% this week</div>
                         </div>
+                        <div class="metric-value">NVDA</div>
+                        <div class="metric-subtitle">+12.4% this week</div>
+                    </div>
 
-                        <div class="metric-card warning">
-                            <div class="metric-header">
-                                <div class="metric-title">Risk Score</div>
-                                <div class="metric-icon icon-warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                </div>
+                    <div class="metric-card warning">
+                        <div class="metric-header">
+                            <div class="metric-title">Risk Score</div>
+                            <div class="metric-icon icon-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
                             </div>
-                            <div class="metric-value">6.2/10</div>
-                            <div class="metric-subtitle">Moderate risk level</div>
                         </div>
+                        <div class="metric-value">6.2/10</div>
+                        <div class="metric-subtitle">Moderate risk level</div>
+                    </div>
 
-                        <div class="metric-card info">
-                            <div class="metric-header">
-                                <div class="metric-title">Monthly Dividends</div>
-                                <div class="metric-icon icon-info">
-                                    <i class="bi bi-currency-dollar"></i>
-                                </div>
+                    <div class="metric-card info">
+                        <div class="metric-header">
+                            <div class="metric-title">Monthly Dividends</div>
+                            <div class="metric-icon icon-info">
+                                <i class="bi bi-currency-dollar"></i>
                             </div>
-                            <div class="metric-value">$847.23</div>
-                            <div class="metric-subtitle">Next payout: Oct 15</div>
                         </div>
+                        <div class="metric-value">$847.23</div>
+                        <div class="metric-subtitle">Next payout: Oct 15</div>
+                    </div>
 
-                        <div class="metric-card success">
-                            <div class="metric-header">
-                                <div class="metric-title">Market Performance</div>
-                                <div class="metric-icon icon-success">
-                                    <i class="bi bi-graph-up"></i>
-                                </div>
+                    <div class="metric-card success">
+                        <div class="metric-header">
+                            <div class="metric-title">Market Performance</div>
+                            <div class="metric-icon icon-success">
+                                <i class="bi bi-graph-up"></i>
                             </div>
-                            <div class="metric-value">+8.4%</div>
-                            <div class="metric-subtitle">vs S&P 500: +6.2%</div>
                         </div>
+                        <div class="metric-value">+8.4%</div>
+                        <div class="metric-subtitle">vs S&P 500: +6.2%</div>
+                    </div>
 
-                        <div class="metric-card info">
-                            <div class="metric-header">
-                                <div class="metric-title">Asset Allocation</div>
-                                <div class="metric-icon icon-info">
-                                    <i class="bi bi-pie-chart"></i>
-                                </div>
+                    <div class="metric-card info">
+                        <div class="metric-header">
+                            <div class="metric-title">Asset Allocation</div>
+                            <div class="metric-icon icon-info">
+                                <i class="bi bi-pie-chart"></i>
                             </div>
-                            <div class="metric-value">Balanced</div>
-                            <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
                         </div>
+                        <div class="metric-value">Balanced</div>
+                        <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
                     </div>
                 </div>
             </div>
@@ -443,85 +440,16 @@
 
     <!-- Notifications Sidebar JavaScript -->
     <script src="components/notifications/notifications-sidebar.js"></script>
-    <!-- Component Cards JavaScript -->
-    <script src="components/home-dashboard/todays-pnl-card.js"></script>
-    <script src="components/home-dashboard/top-performer-card.js"></script>
-    <script src="components/home-dashboard/risk-score-card.js"></script>
-    <script src="components/home-dashboard/monthly-dividends-card.js"></script>
-    <script src="components/home-dashboard/market-performance-card.js"></script>
-    <script src="components/home-dashboard/asset-allocation-card.js"></script>
     <script>
-        // Load component cards
-        async function loadComponentCard(componentPath, containerId) {
-            try {
-                console.log('Loading component:', componentPath);
-                const response = await fetch(componentPath);
-                console.log('Response status:', response.status);
-                if (response.ok) {
-                    const html = await response.text();
-                    console.log('HTML loaded:', html.substring(0, 100) + '...');
-                    const container = document.getElementById(containerId);
-                    if (container) {
-                        container.innerHTML += html;
-                        console.log('Component added to container');
-                    } else {
-                        console.error('Container not found:', containerId);
-                    }
-                } else {
-                    console.error('Failed to load component:', componentPath, response.status);
-                }
-            } catch (error) {
-                console.error('Error loading component:', error);
-            }
-        }
-
-        // Load all metric cards
-        async function loadMetricCards() {
-            console.log('Starting to load metric cards...');
-            const cards = [
-                'components/home-dashboard/todays-pnl-card.html',
-                'components/home-dashboard/top-performer-card.html',
-                'components/home-dashboard/risk-score-card.html',
-                'components/home-dashboard/monthly-dividends-card.html',
-                'components/home-dashboard/market-performance-card.html',
-                'components/home-dashboard/asset-allocation-card.html'
-            ];
-
-            for (const card of cards) {
-                console.log('Loading card:', card);
-                await loadComponentCard(card, 'metrics-grid');
-            }
-            console.log('Finished loading all metric cards');
-        }
-
-        // Show fallback if dynamic loading fails
-        function showMetricsFallback() {
-            const fallback = document.getElementById('metrics-fallback');
-            if (fallback) {
-                fallback.style.display = 'block';
-                console.log('Showing metrics fallback');
-            }
-        }
-
         // Initialize notifications sidebar when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Initializing dashboard');
+            
             // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {
                 const sidebar = new NotificationsSidebar();
                 sidebar.init();
             }
-            
-            // Load metric cards
-            loadMetricCards();
-            
-            // Show fallback after a delay if no cards loaded
-            setTimeout(() => {
-                const container = document.getElementById('metrics-grid');
-                if (container && container.children.length <= 1) { // Only fallback div
-                    console.log('No cards loaded, showing fallback');
-                    showMetricsFallback();
-                }
-            }, 2000);
         });
     </script>
 </body>
