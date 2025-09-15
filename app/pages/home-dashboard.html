@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="components/home-dashboard/risk-score-card.css">
     <link rel="stylesheet" href="components/home-dashboard/monthly-dividends-card.css">
     <link rel="stylesheet" href="components/home-dashboard/market-performance-card.css">
-    <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
+<link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
     <style>
         * {
             margin: 0;
@@ -164,9 +164,10 @@
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
             gap: 1rem;
             height: fit-content;
-            margin-left: 3rem;
+            margin-left: 0;
             justify-content: center;
         }
 
@@ -249,8 +250,9 @@
         @media (max-width: 1024px) {
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(3, 1fr);
                 gap: 1rem;
-                margin-left: 1.5rem;
+                margin-left: 0;
             }
         }
 
@@ -261,6 +263,7 @@
             
             .metrics-grid {
                 grid-template-columns: 1fr;
+                grid-template-rows: auto;
                 gap: 1rem;
                 margin-left: 0;
             }
@@ -330,10 +333,10 @@
             <p class="text-lg text-muted-foreground">Track your investments and financial performance</p>
         </div>
 
-        <!-- Main Dashboard Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-9 gap-8">
-            <!-- Main Portfolio Card - Takes 5 columns on large screens (56% width) -->
-            <div class="lg:col-span-5">
+    <!-- Main Dashboard Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Main Portfolio Card - Takes 7 columns on large screens (58% width) -->
+            <div class="lg:col-span-7">
                 <div class="portfolio-card">
                     <div class="portfolio-header">
                         <div class="portfolio-title">Total Portfolio Value</div>
@@ -356,25 +359,25 @@
                     <div class="time-selector">
                         <label>Time Period:</label>
                         <select>
-                            <option value="1">1 Month</option>
-                            <option value="3">3 Months</option>
-                            <option value="6">6 Months</option>
-                            <option value="12" selected>1 Year</option>
+                                <option value="1">1 Month</option>
+                                <option value="3">3 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12" selected>1 Year</option>
                             <option value="36">3 Years</option>
-                            <option value="60">5 Years</option>
+                                <option value="60">5 Years</option>
                             <option value="120">10 Years</option>
-                            <option value="all">All Time</option>
-                        </select>
+                                <option value="all">All Time</option>
+                            </select>
                     </div>
 
                     <div class="chart-placeholder">
                         Portfolio Performance Chart
                     </div>
                 </div>
-            </div>
+                    </div>
 
-            <!-- Metrics Grid - Takes 4 columns on large screens (44% width) -->
-            <div class="lg:col-span-4 lg:ml-8">
+            <!-- Metrics Grid - Takes 5 columns on large screens (42% width) -->
+            <div class="lg:col-span-5">
                 <div class="metrics-grid" id="metrics-grid">
                     <!-- Metric Cards -->
                     <div class="metric-card positive">
@@ -386,7 +389,7 @@
                         </div>
                         <div class="metric-value">+$1,247</div>
                         <div class="metric-subtitle">+0.98% from yesterday</div>
-                    </div>
+                                </div>
 
                     <div class="metric-card warning">
                         <div class="metric-header">
@@ -441,7 +444,7 @@
                         </div>
                         <div class="metric-value">Balanced</div>
                         <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -459,6 +462,6 @@
                 sidebar.init();
             }
         });
-    </script>
+</script>
 </body>
 </html>
