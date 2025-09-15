@@ -405,6 +405,15 @@
                 console.log('DOM loaded, initializing chart...');
                 initializePortfolioChart();
             }, 200);
+            
+            // Also try immediate initialization
+            setTimeout(() => {
+                const canvas = document.getElementById('portfolio-chart');
+                if (canvas && typeof updatePortfolioChart === 'function') {
+                    console.log('Immediate chart initialization...');
+                    updatePortfolioChart();
+                }
+            }, 50);
         });
         
         // Also try to initialize when the window loads completely
@@ -510,6 +519,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         initializePortfolioChart();
     }, 300);
+    
+    // Force chart display immediately
+    setTimeout(() => {
+        const canvas = document.getElementById('portfolio-chart');
+        if (canvas && typeof updatePortfolioChart === 'function') {
+            console.log('Force initializing chart on page load...');
+            updatePortfolioChart();
+        }
+    }, 100);
     
     // Force chart initialization with multiple attempts
     let chartInitAttempts = 0;
