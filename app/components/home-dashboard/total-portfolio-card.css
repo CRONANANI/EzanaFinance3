@@ -1,18 +1,18 @@
 /* Total Portfolio Value Card Component Styles */
 
 .portfolio-card {
-    background: rgba(30, 41, 59, 0.7);
+    background: rgba(30, 41, 59, 0.8);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(71, 85, 105, 0.3);
-    border-radius: 24px;
-    padding: 30px 40px;
-    min-height: 585px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: 16px;
+    padding: 24px;
+    min-height: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
 }
 
 .portfolio-card::before {
@@ -30,38 +30,37 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0px;
+    margin-bottom: 16px;
 }
 
 .portfolio-title {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 500;
-    color: #e2e8f0;
+    color: #94a3b8;
+    margin: 0;
 }
 
-.refresh-btn {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #10b981;
+.portfolio-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
     padding: 8px;
     border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1rem;
-}
-
-.refresh-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Portfolio Value */
 .portfolio-value {
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: #10b981;
-    margin-top: -2px;
-    margin-bottom: 4px;
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    margin: 8px 0 12px 0;
     letter-spacing: -0.025em;
+    line-height: 1.1;
 }
 
 /* Portfolio Change */
@@ -122,31 +121,31 @@
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
-/* Chart Placeholder */
-.chart-placeholder {
-    height: 280px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
-    border-radius: 16px;
-    margin-top: 0px;
+/* Chart Section */
+.chart-section {
+    flex: 1;
+    margin-top: 20px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    border: 1px solid rgba(71, 85, 105, 0.3);
-    position: relative;
+    flex-direction: column;
 }
 
 .portfolio-chart-container {
     width: 100%;
     height: 100%;
+    min-height: 200px;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(71, 85, 105, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 
 #portfolio-chart {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
     border-radius: 8px;
 }
 
