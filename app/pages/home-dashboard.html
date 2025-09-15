@@ -2,14 +2,14 @@
 <link rel="stylesheet" href="components/home-dashboard/portfolio-detail-cards.css">
 <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
 <link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
-<link rel="stylesheet" href="components/home-dashboard/market-news-card.css">
+<link rel="stylesheet" href="components/home-dashboard/portfolio-news-list.css">
 <link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
 
 <!-- Import Home Dashboard Component Scripts -->
 <script src="app.js"></script>
 <script src="components/home-dashboard/recent-transactions.js"></script>
 <script src="components/home-dashboard/quick-actions.js"></script>
-<script src="components/home-dashboard/market-news-card.js"></script>
+<script src="components/home-dashboard/portfolio-news-list.js"></script>
 <script src="components/notifications/notifications-sidebar.js"></script>
 <script src="components/notifications/notification-helpers.js"></script>
 
@@ -247,7 +247,9 @@
                         <option value="3">3 Months</option>
                         <option value="6">6 Months</option>
                         <option value="12" selected>1 Year</option>
+                        <option value="36">3 Years</option>
                         <option value="60">5 Years</option>
+                        <option value="120">10 Years</option>
                         <option value="all">All Time</option>
                     </select>
                 </div>
@@ -338,41 +340,9 @@
         </div>
     </div>
 
-    <!-- Market News Section -->
-    <div id="market-news-container">
+    <!-- Portfolio Market News Section -->
+    <div id="portfolio-news-container">
         <!-- Component will be loaded here -->
-        <div class="market-news-section" id="fallback-news" style="display: none;">
-            <div class="market-news-card">
-                <div class="news-header">
-                    <div class="news-title">
-                        <i class="bi bi-newspaper"></i>
-                        <h3>Portfolio Market News</h3>
-                    </div>
-                    <div class="news-actions">
-                        <button class="refresh-news-btn" onclick="refreshMarketNews()" title="Refresh news">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                        <button class="news-settings-btn" onclick="openNewsSettings()" title="News settings">
-                            <i class="bi bi-gear"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="news-filters">
-                    <button class="news-filter-btn active" data-filter="all" onclick="filterNews('all')">All News</button>
-                    <button class="news-filter-btn" data-filter="stocks" onclick="filterNews('stocks')">Stocks</button>
-                    <button class="news-filter-btn" data-filter="market" onclick="filterNews('market')">Market</button>
-                    <button class="news-filter-btn" data-filter="economy" onclick="filterNews('economy')">Economy</button>
-                </div>
-                <div class="news-list" id="fallback-news-list">
-                    <!-- News items will be populated here -->
-                </div>
-                <div class="news-empty" id="fallback-news-empty" style="display: none;">
-                    <i class="bi bi-newspaper"></i>
-                    <p>No news available</p>
-                    <small>Check back later for the latest market updates</small>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -424,57 +394,27 @@
             }, 100);
         });
 
-        // Load market news component
-        async function loadMarketNewsComponent() {
+        // Load portfolio news component
+        async function loadPortfolioNewsComponent() {
             try {
-                const response = await fetch('components/home-dashboard/market-news-card.html');
+                const response = await fetch('components/home-dashboard/portfolio-news-list.html');
                 if (response.ok) {
                     const html = await response.text();
-                    const container = document.getElementById('market-news-container');
+                    const container = document.getElementById('portfolio-news-container');
                     if (container) {
                         container.innerHTML = html;
-                        // Reinitialize the market news card after HTML is loaded
+                        // Reinitialize the portfolio news list after HTML is loaded
                         setTimeout(() => {
-                            if (window.marketNewsCard) {
-                                window.marketNewsCard.renderNews();
+                            if (window.portfolioNewsList) {
+                                window.portfolioNewsList.renderNews();
                             }
                         }, 100);
                     }
                 } else {
-                    // Show fallback if fetch fails
-                    console.log('Fetch failed, showing fallback news component');
-                    const fallback = document.getElementById('fallback-news');
-                    if (fallback) {
-                        fallback.style.display = 'block';
-                        // Initialize with fallback elements
-                        setTimeout(() => {
-                            if (window.marketNewsCard) {
-                                // Update the news list IDs to use fallback IDs
-                                const newsList = document.getElementById('fallback-news-list');
-                                const emptyState = document.getElementById('fallback-news-empty');
-                                if (newsList) newsList.id = 'news-list';
-                                if (emptyState) emptyState.id = 'news-empty';
-                                window.marketNewsCard.renderNews();
-                            }
-                        }, 100);
-                    }
+                    console.log('Failed to load portfolio news component');
                 }
             } catch (error) {
-                console.error('Error loading market news component:', error);
-                // Show fallback on error
-                const fallback = document.getElementById('fallback-news');
-                if (fallback) {
-                    fallback.style.display = 'block';
-                    setTimeout(() => {
-                        if (window.marketNewsCard) {
-                            const newsList = document.getElementById('fallback-news-list');
-                            const emptyState = document.getElementById('fallback-news-empty');
-                            if (newsList) newsList.id = 'news-list';
-                            if (emptyState) emptyState.id = 'news-empty';
-                            window.marketNewsCard.renderNews();
-                        }
-                    }, 100);
-                }
+                console.error('Error loading portfolio news component:', error);
             }
         }
     </script>
@@ -526,6 +466,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (canvas && typeof updatePortfolioChart === 'function') {
             console.log('Force initializing chart on page load...');
             updatePortfolioChart();
+        } else {
+            console.log('Canvas or updatePortfolioChart function not available');
+            console.log('Canvas:', canvas);
+            console.log('updatePortfolioChart function:', typeof updatePortfolioChart);
         }
     }, 100);
     
@@ -577,10 +521,10 @@ async function loadComponents() {
             }
         }
         
-        // Load Market News component
-        console.log('Loading market news component...');
-        await loadMarketNewsComponent();
-        console.log('Market news component loaded');
+        // Load Portfolio News component
+        console.log('Loading portfolio news component...');
+        await loadPortfolioNewsComponent();
+        console.log('Portfolio news component loaded');
     } catch (error) {
         console.error('Error loading components:', error);
         // Fallback: show inline content if fetch fails
@@ -676,9 +620,16 @@ function initializePortfolioChart() {
             return true;
         } else {
             console.log('Canvas not ready, retrying...');
+            // Force canvas dimensions
+            canvas.width = 800;
+            canvas.height = 400;
+            updatePortfolioChart();
+            return true;
         }
     } else {
         console.log('Canvas or updatePortfolioChart function not found');
+        console.log('Canvas element:', canvas);
+        console.log('updatePortfolioChart function:', typeof updatePortfolioChart);
     }
     return false;
 }
