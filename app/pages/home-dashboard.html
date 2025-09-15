@@ -24,41 +24,7 @@
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
             margin-left: 350px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .title-section h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            color: #10b981;
-            margin-bottom: 8px;
-        }
-
-        .title-section p {
-            color: #94a3b8;
-            font-size: 1rem;
-        }
-
-        .refresh-info {
-            text-align: right;
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 40px;
-            align-items: start;
         }
 
         .portfolio-card {
@@ -169,8 +135,8 @@
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
         }
 
         .metric-card {
@@ -250,11 +216,6 @@
         .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
 
         @media (max-width: 1024px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 24px;
-            }
-            
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -328,20 +289,16 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="header">
-            <div class="title-section">
-                <h1>Portfolio Dashboard</h1>
-                <p>Track your investments and financial performance</p>
-            </div>
-            <div class="refresh-info">
-                <div>🔄 Refresh</div>
-                <div>Last updated: 9/14/2025, 12:24:51 PM</div>
-            </div>
+    <div class="container mx-auto px-6 py-12">
+        <div class="mb-12">
+            <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Portfolio Dashboard</h1>
+            <p class="text-lg text-muted-foreground">Track your investments and financial performance</p>
         </div>
 
-        <div class="main-content">
-            <div class="portfolio-card">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Portfolio Card - Takes 2 columns on large screens -->
+            <div class="lg:col-span-2">
+                <div class="portfolio-card">
                 <div class="portfolio-header">
                     <div class="portfolio-title">Total Portfolio Value</div>
                     <div class="refresh-btn">📊</div>
@@ -372,9 +329,11 @@
                 <div class="chart-placeholder">
                     Portfolio Performance Chart
                 </div>
+                </div>
             </div>
 
-            <div class="right-column">
+            <!-- Metrics Grid - Takes 1 column on large screens -->
+            <div class="lg:col-span-1">
                 <div class="metrics-grid">
                 <div class="metric-card positive">
                     <div class="metric-header">
@@ -428,6 +387,7 @@
                     </div>
                     <div class="metric-value">Balanced</div>
                     <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
+                </div>
                 </div>
             </div>
         </div>
