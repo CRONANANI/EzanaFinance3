@@ -1572,7 +1572,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .portfolio-title {
@@ -1600,7 +1600,7 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     color: white;
-    margin-top: 4px;
+    margin-top: 2px;
     margin-bottom: 4px;
     letter-spacing: -0.025em;
 }
@@ -1626,6 +1626,9 @@ body {
 .time-selector {
     margin-top: 12px;
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .time-selector label {
@@ -1635,12 +1638,26 @@ body {
 }
 
 .time-selector select {
-    background: rgba(71, 85, 105, 0.3);
-    border: 1px solid rgba(71, 85, 105, 0.5);
+    background: rgba(71, 85, 105, 0.5);
+    border: 1px solid rgba(71, 85, 105, 0.7);
     border-radius: 8px;
     padding: 8px 16px;
     color: white;
     font-size: 0.875rem;
+    min-width: 120px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.time-selector select:hover {
+    background: rgba(71, 85, 105, 0.7);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.time-selector select:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
 .chart-placeholder {
