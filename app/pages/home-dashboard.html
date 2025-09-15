@@ -1,727 +1,370 @@
-<!-- Import Home Dashboard Component Styles -->
-<link rel="stylesheet" href="components/home-dashboard/portfolio-detail-cards.css">
-<link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
-<link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
-<link rel="stylesheet" href="components/home-dashboard/total-portfolio-card.css">
-<link rel="stylesheet" href="components/home-dashboard/portfolio-news-list.css">
-<link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<!-- Import Home Dashboard Component Scripts -->
-<script src="app.js"></script>
-<script src="components/home-dashboard/total-portfolio-card.js"></script>
-<script src="components/home-dashboard/recent-transactions.js"></script>
-<script src="components/home-dashboard/quick-actions.js"></script>
-<script src="components/home-dashboard/portfolio-news-list.js"></script>
-<script src="components/notifications/notifications-sidebar.js"></script>
-<script src="components/notifications/notification-helpers.js"></script>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 24px;
+        }
 
-<!-- Notifications Sidebar -->
-<div id="notifications-sidebar" class="notifications-sidebar open">
-    <!-- Sidebar Toggle Button -->
-    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-        <i class="bi bi-bell" id="notifications-icon"></i>
-        <span class="notification-count" id="notification-count">0</span>
-    </button>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-    <!-- Sidebar Content -->
-    <div class="notifications-content">
-        <!-- Header -->
-        <div class="notifications-header">
-            <div class="notifications-title">
-                <i class="bi bi-bell-fill"></i>
-                <h3>Your Feed</h3>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 8px;
+        }
+
+        .title-section p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .refresh-info {
+            text-align: right;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .portfolio-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #10b981, transparent);
+        }
+
+        .portfolio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .portfolio-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+
+        .refresh-btn {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #10b981;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .portfolio-value {
+            font-size: 4rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        .portfolio-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .change-positive {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .updated-time {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .time-selector {
+            margin-top: 24px;
+        }
+
+        .time-selector label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-right: 12px;
+        }
+
+        .time-selector select {
+            background: rgba(71, 85, 105, 0.3);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+            border-radius: 16px;
+            margin-top: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-color);
+            opacity: 0.6;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-color);
+        }
+
+        .metric-card.positive { --accent-color: #10b981; }
+        .metric-card.warning { --accent-color: #f59e0b; }
+        .metric-card.info { --accent-color: #3b82f6; }
+        .metric-card.success { --accent-color: #10b981; }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .metric-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .metric-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .icon-positive { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .portfolio-value {
+                font-size: 2.5rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title-section">
+                <h1>Portfolio Dashboard</h1>
+                <p>Track your investments and financial performance</p>
             </div>
-            <div class="notifications-actions">
-                <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
-                    <i class="bi bi-check-all"></i>
-                </button>
-                <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                    <i class="bi bi-gear"></i>
-                </button>
+            <div class="refresh-info">
+                <div>🔄 Refresh</div>
+                <div>Last updated: 9/14/2025, 12:24:51 PM</div>
             </div>
         </div>
 
-        <!-- Filter Tabs -->
-        <div class="notifications-filters">
-            <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                All
-            </button>
-            <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                Congress
-            </button>
-            <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                Stocks
-            </button>
-            <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                Community
-            </button>
-        </div>
+        <div class="main-content">
+            <div class="portfolio-card">
+                <div class="portfolio-header">
+                    <div class="portfolio-title">Total Portfolio Value</div>
+                    <div class="refresh-btn">📊</div>
+                </div>
+                
+                <div class="portfolio-value">$127,843.52</div>
+                
+                <div class="portfolio-change">
+                    <span class="change-positive">▲ $2,847.31 (+2.28%)</span>
+                </div>
+                
+                <div class="updated-time">Updated 2 minutes ago</div>
+                
+                <div class="time-selector">
+                    <label>Time Period:</label>
+                    <select>
+                        <option>1 Year</option>
+                        <option>6 Months</option>
+                        <option>3 Months</option>
+                        <option>1 Month</option>
+                    </select>
+                </div>
 
-        <!-- Notifications List -->
-        <div class="notifications-list" id="notifications-list">
-            <!-- Notifications will be dynamically populated here -->
-        </div>
-
-        <!-- Empty State -->
-        <div class="notifications-empty" id="notifications-empty" style="display: none;">
-            <i class="bi bi-bell-slash"></i>
-            <p>No notifications yet</p>
-            <small>We'll notify you when something important happens</small>
-        </div>
-    </div>
-</div>
-
-<!-- Top Navigation -->
-<nav id="topnav" class="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-500 border-b border-emerald-600 shadow-lg transition-all duration-300 ease-in-out">
-    <div class="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-        <!-- Logo/Brand -->
-        <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                <i class="bi bi-graph-up text-white text-lg font-bold"></i>
-            </div>
-            <span class="text-lg font-bold text-white">Ezana Finance</span>
-        </div>
-
-        <!-- Navigation Menu -->
-        <div class="hidden md:flex items-center space-x-6">
-            <!-- Dashboard -->
-            <button onclick="switchTab('home')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-home">
-                <i class="bi bi-house-door"></i>
-                <span>Dashboard</span>
-            </button>
-
-            <!-- Research Tools Dropdown -->
-            <div class="relative group">
-                <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-search"></i>
-                    <span>Research Tools</span>
-                    <i class="bi bi-chevron-down text-sm"></i>
-                </button>
-                <div class="absolute right-0 top-full mt-1 w-48 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div class="py-2">
-                        <button onclick="switchTab('inside-the-capitol')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-white transition-colors">
-                            <i class="bi bi-building text-sm mr-2"></i>
-                            Inside the Capitol
-                        </button>
-                        <button onclick="switchTab('market-analysis')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-white transition-colors">
-                            Market Analysis
-                        </button>
-                        <button onclick="switchTab('company-research')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-white transition-colors">
-                            <i class="bi bi-building text-sm mr-2"></i>
-                            Company Research
-                        </button>
-                        <button onclick="switchTab('economic-indicators')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-white transition-colors">
-                            <i class="bi bi-graph-up-arrow text-sm mr-2"></i>
-                            Economic Indicators
-                        </button>
-                        <button onclick="switchTab('financial-analytics')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-white transition-colors">
-                            <i class="bi bi-graph-up text-sm mr-2"></i>
-                            Financial Analytics
-                        </button>
-                    </div>
+                <div class="chart-placeholder">
+                    Portfolio Performance Chart
                 </div>
             </div>
 
-            <!-- Watchlist -->
-            <button onclick="switchTab('watchlists')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-watchlists">
-                <i class="bi bi-bookmark-star"></i>
-                <span>Watchlist</span>
-            </button>
-
-            <!-- Community -->
-            <button onclick="switchTab('community')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-community">
-                <i class="bi bi-people"></i>
-                <span>Community</span>
-            </button>
-
-            <!-- User Profile -->
-            <button onclick="switchTab('user-profile-settings')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-profile">
-                <i class="bi bi-person-circle text-xl"></i>
-                <span class="hidden lg:block">Profile</span>
-            </button>
-        </div>
-
-        <!-- Mobile Menu Toggle -->
-        <button class="md:hidden p-2 rounded-lg hover:bg-emerald-700 text-white" onclick="toggleMobileMenu()">
-            <i class="bi bi-list text-xl"></i>
-        </button>
-    </div>
-
-    <!-- Mobile Menu -->
-        <div id="mobile-menu" class="md:hidden hidden bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-500 border-t border-emerald-600">
-        <div class="px-6 py-4 space-y-2">
-            <!-- Dashboard -->
-            <button onclick="switchTab('home')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-house-door"></i>
-                <span>Dashboard</span>
-            </button>
-
-            <!-- Research Tools -->
-            <div class="space-y-1">
-                <div class="px-4 py-2 text-sm font-medium text-emerald-100">Research Tools</div>
-                <button onclick="switchTab('inside-the-capitol')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-building text-sm"></i>
-                    <span>Inside the Capitol</span>
-                </button>
-                <button onclick="switchTab('market-analysis')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <span>Market Analysis</span>
-                </button>
-                <button onclick="switchTab('company-research')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-building text-sm"></i>
-                    <span>Company Research</span>
-                </button>
-                <button onclick="switchTab('economic-indicators')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-graph-up-arrow text-sm"></i>
-                    <span>Economic Indicators</span>
-                </button>
-                <button onclick="switchTab('financial-analytics')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-graph-up text-sm"></i>
-                    <span>Financial Analytics</span>
-                </button>
-            </div>
-
-            <!-- Watchlist -->
-            <button onclick="switchTab('watchlists')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-bookmark-star"></i>
-                <span>Watchlist</span>
-            </button>
-
-            <!-- Community -->
-            <button onclick="switchTab('community')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-people"></i>
-                <span>Community</span>
-            </button>
-
-            <!-- User Profile -->
-            <button onclick="switchTab('user-profile-settings')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-person-circle"></i>
-                <span>Profile</span>
-            </button>
-        </div>
-    </div>
-</nav>
-
-<div class="main-content" style="margin-top: 80px; margin-left: 350px;" id="main-content">
-<div class="container mx-auto px-6 py-12">
-    <div class="flex items-center justify-between mb-12">
-        <div>
-            <h1 class="text-4xl font-light text-foreground tracking-tight page-title-shiny">Portfolio Dashboard</h1>
-            <p class="text-muted-foreground mt-3 text-lg">Track your investments and financial performance</p>
-        </div>
-        <div class="flex items-center space-x-4">
-            <button onclick="refreshPortfolioData()" class="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg">
-                <i class="bi bi-arrow-clockwise mr-2"></i>Refresh
-            </button>
-            <div class="text-sm text-muted-foreground">
-                Last updated: <span id="portfolio-last-updated" class="text-foreground">9/14/2025, 12:24:51 PM</span>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Main Dashboard Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Portfolio Card - Takes 2 columns on large screens -->
-        <div class="lg:col-span-2">
-            <div id="total-portfolio-container">
-                <!-- Component will be loaded here -->
-                <!-- Fallback content if component fails to load -->
-                <div id="portfolio-fallback" style="display: none;">
-                    <div class="portfolio-card">
-                        <div class="portfolio-header">
-                            <div class="portfolio-title">Total Portfolio Value</div>
-                            <div class="portfolio-icon">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="portfolio-value">$127,843.52</div>
-                        
-                        <div class="portfolio-change">
-                            <span class="change-positive">
-                                <i class="bi bi-arrow-up"></i>
-                                $2,847.31 (+2.28%)
-                            </span>
-                        </div>
-                        
-                        <div class="updated-time">Updated 2 minutes ago</div>
-                        
-                        <div class="time-selector">
-                            <label>Time Period:</label>
-                            <select id="portfolio-time-period" onchange="updatePortfolioChart()">
-                                <option value="1">1 Month</option>
-                                <option value="3">3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12" selected>1 Year</option>
-                                <option value="36">3 Years</option>
-                                <option value="60">5 Years</option>
-                                <option value="120">10 Years</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-
-                        <div class="chart-section">
-                            <div class="portfolio-chart-container">
-                                <canvas id="portfolio-chart" width="1200" height="400"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Metrics Grid - Takes 1 column on large screens -->
-        <div class="lg:col-span-1">
-            <div class="metrics-grid">
-                <!-- Today's P&L Card -->
+            <div class="right-column">
+                <div class="metrics-grid">
                 <div class="metric-card positive">
                     <div class="metric-header">
                         <div class="metric-title">Today's P&L</div>
-                        <div class="metric-icon icon-positive">
-                    <i class="bi bi-graph-up-arrow"></i>
-                </div>
-            </div>
+                        <div class="metric-icon icon-positive">📈</div>
+                    </div>
                     <div class="metric-value">+$1,247</div>
                     <div class="metric-subtitle">+0.98% from yesterday</div>
-        </div>
+                </div>
 
-        <!-- Top Performer Card -->
                 <div class="metric-card warning">
                     <div class="metric-header">
                         <div class="metric-title">Top Performer</div>
-                        <div class="metric-icon icon-warning">
-                    <i class="bi bi-star-fill"></i>
-                </div>
-            </div>
+                        <div class="metric-icon icon-warning">⭐</div>
+                    </div>
                     <div class="metric-value">NVDA</div>
                     <div class="metric-subtitle">+12.4% this week</div>
-        </div>
+                </div>
 
-        <!-- Risk Score Card -->
                 <div class="metric-card warning">
                     <div class="metric-header">
                         <div class="metric-title">Risk Score</div>
-                        <div class="metric-icon icon-warning">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
+                        <div class="metric-icon icon-warning">⚠️</div>
                     </div>
                     <div class="metric-value">6.2/10</div>
                     <div class="metric-subtitle">Moderate risk level</div>
-        </div>
+                </div>
 
-                <!-- Monthly Dividends Card -->
                 <div class="metric-card info">
                     <div class="metric-header">
                         <div class="metric-title">Monthly Dividends</div>
-                        <div class="metric-icon icon-info">
-                    <i class="bi bi-cash-coin"></i>
-                </div>
-            </div>
+                        <div class="metric-icon icon-info">💰</div>
+                    </div>
                     <div class="metric-value">$847.23</div>
                     <div class="metric-subtitle">Next payout: Oct 15</div>
-        </div>
+                </div>
 
-        <!-- Market Performance Card -->
                 <div class="metric-card success">
                     <div class="metric-header">
                         <div class="metric-title">Market Performance</div>
-                        <div class="metric-icon icon-success">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-            </div>
+                        <div class="metric-icon icon-success">📊</div>
+                    </div>
                     <div class="metric-value">+8.4%</div>
                     <div class="metric-subtitle">vs S&P 500: +6.2%</div>
-        </div>
+                </div>
 
-        <!-- Asset Allocation Card -->
                 <div class="metric-card info">
                     <div class="metric-header">
                         <div class="metric-title">Asset Allocation</div>
-                        <div class="metric-icon icon-info">
-                    <i class="bi bi-pie-chart"></i>
-                        </div>
+                        <div class="metric-icon icon-info">🥧</div>
                     </div>
                     <div class="metric-value">Balanced</div>
                     <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
                 </div>
-        </div>
-        </div>
-    </div>
-
-    <!-- Portfolio Market News Section -->
-    <div id="portfolio-news-container">
-        <!-- Component will be loaded here -->
-    </div>
-
-    <script>
-        // Refresh portfolio data function
-        function refreshPortfolioData() {
-            const lastUpdated = document.getElementById('portfolio-last-updated');
-            if (lastUpdated) {
-                const now = new Date();
-                lastUpdated.textContent = now.toLocaleString();
-            }
-            
-            // Add a subtle animation to show refresh
-            const refreshBtn = document.querySelector('.refresh-btn');
-            if (refreshBtn) {
-                refreshBtn.style.transform = 'rotate(360deg)';
-                setTimeout(() => {
-                    refreshBtn.style.transform = 'rotate(0deg)';
-                }, 500);
-            }
-            
-            // Reinitialize chart if available
-            if (typeof initializePortfolioChart === 'function') {
-                setTimeout(() => initializePortfolioChart(), 100);
-            }
-        }
-        
-        // Initialize portfolio chart when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                console.log('DOM loaded, initializing chart...');
-                initializePortfolioChart();
-            }, 200);
-            
-            // Also try immediate initialization
-            setTimeout(() => {
-                const canvas = document.getElementById('portfolio-chart');
-                if (canvas && typeof updatePortfolioChart === 'function') {
-                    console.log('Immediate chart initialization...');
-                    updatePortfolioChart();
-                }
-            }, 50);
-        });
-        
-        // Also try to initialize when the window loads completely
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                console.log('Window loaded, initializing chart...');
-                initializePortfolioChart();
-            }, 100);
-        });
-
-        // Load total portfolio component
-        async function loadTotalPortfolioComponent() {
-            // Always show fallback first
-            showPortfolioFallback();
-            
-            try {
-                const response = await fetch('components/home-dashboard/total-portfolio-card.html');
-                if (response.ok) {
-                    const html = await response.text();
-                    const container = document.getElementById('total-portfolio-container');
-                    if (container) {
-                        container.innerHTML = html;
-                        // Reinitialize the total portfolio card after HTML is loaded
-                        setTimeout(() => {
-                            if (window.totalPortfolioCard) {
-                                window.totalPortfolioCard.initializeChart();
-                            }
-                        }, 100);
-                    }
-                } else {
-                    console.log('Failed to load total portfolio component, keeping fallback');
-                }
-            } catch (error) {
-                console.error('Error loading total portfolio component:', error);
-                console.log('Keeping fallback content');
-            }
-        }
-
-        // Show fallback portfolio content
-        function showPortfolioFallback() {
-            const container = document.getElementById('total-portfolio-container');
-            const fallback = document.getElementById('portfolio-fallback');
-            if (container && fallback) {
-                fallback.style.display = 'block';
-                // Initialize chart for fallback
-                setTimeout(() => {
-                    if (typeof updatePortfolioChart === 'function') {
-                        updatePortfolioChart();
-                    }
-                }, 100);
-            }
-        }
-
-        // Load portfolio news component
-        async function loadPortfolioNewsComponent() {
-            try {
-                const response = await fetch('components/home-dashboard/portfolio-news-list.html');
-                if (response.ok) {
-                    const html = await response.text();
-                    const container = document.getElementById('portfolio-news-container');
-                    if (container) {
-                        container.innerHTML = html;
-                        // Reinitialize the portfolio news list after HTML is loaded
-                        setTimeout(() => {
-                            if (window.portfolioNewsList) {
-                                window.portfolioNewsList.renderNews();
-                            }
-                        }, 100);
-                    }
-                } else {
-                    console.log('Failed to load portfolio news component');
-                }
-            } catch (error) {
-                console.error('Error loading portfolio news component:', error);
-            }
-        }
-    </script>
-
-
-    </div>
-
-    <!-- Recent Transactions Section -->
-    <div id="recent-transactions-container">
-        <!-- Component will be loaded here -->
-    </div>
-
-    <!-- Quick Actions Section -->
-    <div id="quick-actions-container">
-        <!-- Component will be loaded here -->
-    </div>
-</div>
-</div> <!-- Close main-content -->
-
-<script>
-// Mobile menu toggle for top navigation
-function toggleMobileMenu() {
-    const mobileMenu = document.getElementById('mobile-menu');
-    if (mobileMenu) {
-        mobileMenu.classList.toggle('hidden');
-    }
-}
-
-// Initialize top navigation positioning when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Highlight the home tab as active when on home-dashboard page
-    const homeTab = document.getElementById('topnav-home');
-    if (homeTab) {
-        homeTab.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-800', 'text-gray-700', 'dark:text-gray-300');
-        homeTab.classList.add('bg-amber-50', 'dark:bg-amber-900/20', 'border-amber-200', 'dark:border-amber-800', 'text-amber-700', 'dark:text-amber-300');
-    }
-    
-    // Show portfolio fallback immediately
-    showPortfolioFallback();
-    
-    // Load component HTML
-    loadComponents();
-    
-    // Initialize portfolio chart after components are loaded
-    setTimeout(() => {
-        initializePortfolioChart();
-    }, 300);
-    
-    // Force chart display immediately
-    setTimeout(() => {
-        const canvas = document.getElementById('portfolio-chart');
-        if (canvas && typeof updatePortfolioChart === 'function') {
-            console.log('Force initializing chart on page load...');
-            updatePortfolioChart();
-        } else {
-            console.log('Canvas or updatePortfolioChart function not available');
-            console.log('Canvas:', canvas);
-            console.log('updatePortfolioChart function:', typeof updatePortfolioChart);
-        }
-    }, 100);
-    
-    // Force chart initialization with multiple attempts
-    let chartInitAttempts = 0;
-    const maxChartAttempts = 15;
-    
-    function forceChartInit() {
-        chartInitAttempts++;
-        console.log(`Chart initialization attempt ${chartInitAttempts}`);
-        
-        const canvas = document.getElementById('portfolio-chart');
-        if (canvas && typeof updatePortfolioChart === 'function') {
-            updatePortfolioChart();
-            console.log('Chart force initialized successfully!');
-        } else if (chartInitAttempts < maxChartAttempts) {
-            setTimeout(forceChartInit, 200);
-        } else {
-            console.log('Max chart initialization attempts reached');
-        }
-    }
-    
-    // Start force initialization
-    setTimeout(forceChartInit, 100);
-    setTimeout(forceChartInit, 500);
-    setTimeout(forceChartInit, 1000);
-});
-
-// Function to load component HTML
-async function loadComponents() {
-    try {
-        // Load Recent Transactions component
-        const transactionsResponse = await fetch('components/home-dashboard/recent-transactions.html');
-        if (transactionsResponse.ok) {
-            const transactionsHTML = await transactionsResponse.text();
-            const transactionsContainer = document.getElementById('recent-transactions-container');
-            if (transactionsContainer) {
-                transactionsContainer.innerHTML = transactionsHTML;
-            }
-        }
-        
-        // Load Quick Actions component
-        const actionsResponse = await fetch('components/home-dashboard/quick-actions.html');
-        if (actionsResponse.ok) {
-            const actionsHTML = await actionsResponse.text();
-            const actionsContainer = document.getElementById('quick-actions-container');
-            if (actionsContainer) {
-                actionsContainer.innerHTML = actionsHTML;
-            }
-        }
-        
-        // Load Total Portfolio component
-        console.log('Loading total portfolio component...');
-        await loadTotalPortfolioComponent();
-        console.log('Total portfolio component loaded');
-        
-        // Ensure portfolio component is displayed immediately
-        const container = document.getElementById('total-portfolio-container');
-        if (container && container.innerHTML.trim() === '') {
-            console.log('Portfolio container empty, showing fallback');
-            showPortfolioFallback();
-        }
-        
-        // Load Portfolio News component
-        console.log('Loading portfolio news component...');
-        await loadPortfolioNewsComponent();
-        console.log('Portfolio news component loaded');
-    } catch (error) {
-        console.error('Error loading components:', error);
-        // Fallback: show inline content if fetch fails
-        loadFallbackComponents();
-    }
-}
-
-// Fallback function to load inline components if fetch fails
-function loadFallbackComponents() {
-    const transactionsContainer = document.getElementById('recent-transactions-container');
-    const actionsContainer = document.getElementById('quick-actions-container');
-    
-    if (transactionsContainer) {
-        transactionsContainer.innerHTML = `
-            <div class="recent-transactions-section">
-                <div class="transactions-header">
-                    <h2 class="transactions-title">Recent Transactions</h2>
-                    <button class="view-all-button">View All</button>
-                </div>
-                <div class="transactions-table">
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <div class="transaction-icon buy">
-                                <i class="bi bi-arrow-up"></i>
-                            </div>
-                            <div class="transaction-details">
-                                <h4>AAPL Purchase</h4>
-                                <p>Apple Inc. • 10 shares</p>
-                            </div>
-                        </div>
-                        <div class="transaction-value">
-                            <div class="transaction-amount">$1,750.00</div>
-                            <div class="transaction-time">2 hours ago</div>
-                        </div>
-                    </div>
-                </div>
             </div>
-        `;
-    }
-    
-    if (actionsContainer) {
-        actionsContainer.innerHTML = `
-            <div class="quick-actions-section">
-                <h2 class="quick-actions-title">Quick Actions</h2>
-                <div class="quick-actions-grid">
-                    <button class="quick-action-button add-investment">
-                        <div class="quick-action-content">
-                            <div class="quick-action-icon">
-                                <i class="bi bi-plus"></i>
-                            </div>
-                            <span class="quick-action-title">Add Investment</span>
-                        </div>
-                    </button>
-                    <button class="quick-action-button view-analytics">
-                        <div class="quick-action-content">
-                            <div class="quick-action-icon">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                            <span class="quick-action-title">View Analytics</span>
-                        </div>
-                    </button>
-                    <button class="quick-action-button settings">
-                        <div class="quick-action-content">
-                            <div class="quick-action-icon">
-                                <i class="bi bi-gear"></i>
-                            </div>
-                            <span class="quick-action-title">Settings</span>
-                        </div>
-                    </button>
-                    <button onclick="switchTab('inside-the-capitol')" class="quick-action-button capitol-insights">
-                        <div class="quick-action-content">
-                            <div class="quick-action-icon">
-                                <i class="bi bi-building"></i>
-                            </div>
-                            <span class="quick-action-title">Capitol Insights</span>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-}
-
-// Enhanced chart initialization function
-function initializePortfolioChart() {
-    const canvas = document.getElementById('portfolio-chart');
-    if (canvas && typeof updatePortfolioChart === 'function') {
-        // Check if canvas is visible and has dimensions
-        const rect = canvas.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-            console.log('Initializing portfolio chart...');
-            updatePortfolioChart();
-            return true;
-        } else {
-            console.log('Canvas not ready, retrying...');
-            // Force canvas dimensions
-            canvas.width = 800;
-            canvas.height = 400;
-            updatePortfolioChart();
-            return true;
-        }
-    } else {
-        console.log('Canvas or updatePortfolioChart function not found');
-        console.log('Canvas element:', canvas);
-        console.log('updatePortfolioChart function:', typeof updatePortfolioChart);
-    }
-    return false;
-}
-
-// Try multiple times to initialize the chart with exponential backoff
-let chartInitialized = false;
-let retryCount = 0;
-const maxRetries = 20;
-
-const initChart = () => {
-    if (!chartInitialized && retryCount < maxRetries) {
-        retryCount++;
-        chartInitialized = initializePortfolioChart();
-        if (!chartInitialized) {
-            const delay = Math.min(100 * retryCount, 1000); // Exponential backoff, max 1 second
-            setTimeout(initChart, delay);
-        }
-    } else if (retryCount >= maxRetries) {
-        console.log('Max retries reached for chart initialization');
-    }
-};
-
-// Start trying to initialize the chart immediately and after delays
-setTimeout(initChart, 50);
-setTimeout(initChart, 200);
-setTimeout(initChart, 500);
-setTimeout(initChart, 1000);
-
-</script>
+        </div>
+    </div>
+</body>
+</html>
