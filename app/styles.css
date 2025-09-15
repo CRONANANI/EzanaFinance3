@@ -1572,7 +1572,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 0px;
 }
 
 .portfolio-title {
@@ -1597,10 +1597,10 @@ body {
 }
 
 .portfolio-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: white;
-    margin-top: 2px;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #10b981;
+    margin-top: -2px;
     margin-bottom: 4px;
     letter-spacing: -0.025em;
 }
