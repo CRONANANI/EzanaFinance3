@@ -217,5 +217,18 @@ function filterNews(filter) {
 // Initialize market news card when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing market news card...');
-    window.marketNewsCard = new MarketNewsCard();
+    // Wait a bit for the HTML to be loaded
+    setTimeout(() => {
+        window.marketNewsCard = new MarketNewsCard();
+        console.log('Market news card initialized');
+    }, 500);
+});
+
+// Also try to initialize when window loads
+window.addEventListener('load', function() {
+    if (!window.marketNewsCard) {
+        console.log('Window loaded, initializing market news card...');
+        window.marketNewsCard = new MarketNewsCard();
+        console.log('Market news card initialized on window load');
+    }
 });

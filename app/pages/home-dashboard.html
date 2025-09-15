@@ -341,6 +341,38 @@
     <!-- Market News Section -->
     <div id="market-news-container">
         <!-- Component will be loaded here -->
+        <div class="market-news-section" id="fallback-news" style="display: none;">
+            <div class="market-news-card">
+                <div class="news-header">
+                    <div class="news-title">
+                        <i class="bi bi-newspaper"></i>
+                        <h3>Portfolio Market News</h3>
+                    </div>
+                    <div class="news-actions">
+                        <button class="refresh-news-btn" onclick="refreshMarketNews()" title="Refresh news">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button class="news-settings-btn" onclick="openNewsSettings()" title="News settings">
+                            <i class="bi bi-gear"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="news-filters">
+                    <button class="news-filter-btn active" data-filter="all" onclick="filterNews('all')">All News</button>
+                    <button class="news-filter-btn" data-filter="stocks" onclick="filterNews('stocks')">Stocks</button>
+                    <button class="news-filter-btn" data-filter="market" onclick="filterNews('market')">Market</button>
+                    <button class="news-filter-btn" data-filter="economy" onclick="filterNews('economy')">Economy</button>
+                </div>
+                <div class="news-list" id="fallback-news-list">
+                    <!-- News items will be populated here -->
+                </div>
+                <div class="news-empty" id="fallback-news-empty" style="display: none;">
+                    <i class="bi bi-newspaper"></i>
+                    <p>No news available</p>
+                    <small>Check back later for the latest market updates</small>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -392,10 +424,48 @@
                     const container = document.getElementById('market-news-container');
                     if (container) {
                         container.innerHTML = html;
+                        // Reinitialize the market news card after HTML is loaded
+                        setTimeout(() => {
+                            if (window.marketNewsCard) {
+                                window.marketNewsCard.renderNews();
+                            }
+                        }, 100);
+                    }
+                } else {
+                    // Show fallback if fetch fails
+                    console.log('Fetch failed, showing fallback news component');
+                    const fallback = document.getElementById('fallback-news');
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                        // Initialize with fallback elements
+                        setTimeout(() => {
+                            if (window.marketNewsCard) {
+                                // Update the news list IDs to use fallback IDs
+                                const newsList = document.getElementById('fallback-news-list');
+                                const emptyState = document.getElementById('fallback-news-empty');
+                                if (newsList) newsList.id = 'news-list';
+                                if (emptyState) emptyState.id = 'news-empty';
+                                window.marketNewsCard.renderNews();
+                            }
+                        }, 100);
                     }
                 }
             } catch (error) {
                 console.error('Error loading market news component:', error);
+                // Show fallback on error
+                const fallback = document.getElementById('fallback-news');
+                if (fallback) {
+                    fallback.style.display = 'block';
+                    setTimeout(() => {
+                        if (window.marketNewsCard) {
+                            const newsList = document.getElementById('fallback-news-list');
+                            const emptyState = document.getElementById('fallback-news-empty');
+                            if (newsList) newsList.id = 'news-list';
+                            if (emptyState) emptyState.id = 'news-empty';
+                            window.marketNewsCard.renderNews();
+                        }
+                    }, 100);
+                }
             }
         }
     </script>
@@ -490,7 +560,9 @@ async function loadComponents() {
         }
         
         // Load Market News component
+        console.log('Loading market news component...');
         await loadMarketNewsComponent();
+        console.log('Market news component loaded');
     } catch (error) {
         console.error('Error loading components:', error);
         // Fallback: show inline content if fetch fails
