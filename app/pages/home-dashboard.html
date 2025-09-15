@@ -160,8 +160,9 @@
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
+            gap: 1rem;
             height: fit-content;
+            margin-left: 1rem;
         }
 
         .metric-card {
@@ -244,6 +245,7 @@
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
+                margin-left: 0.5rem;
             }
         }
 
@@ -255,6 +257,7 @@
             .metrics-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
+                margin-left: 0;
             }
         }
     </style>
@@ -323,9 +326,9 @@
         </div>
 
         <!-- Main Dashboard Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Main Portfolio Card - Takes 2 columns on large screens -->
-            <div class="lg:col-span-2">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Main Portfolio Card - Takes 3 columns on large screens (60% width) -->
+            <div class="lg:col-span-3">
                 <div class="portfolio-card">
                     <div class="portfolio-header">
                         <div class="portfolio-title">Total Portfolio Value</div>
@@ -365,8 +368,8 @@
                 </div>
             </div>
 
-            <!-- Metrics Grid - Takes 1 column on large screens -->
-            <div class="lg:col-span-1">
+            <!-- Metrics Grid - Takes 2 columns on large screens (40% width) -->
+            <div class="lg:col-span-2 lg:ml-4">
                 <div class="metrics-grid" id="metrics-grid">
                     <!-- Metric Cards -->
                     <div class="metric-card positive">
