@@ -1,4 +1,4 @@
-/* Asset Allocation Card Component Styles */
+/* Risk Score Card Component Styles */
 
 .metric-card {
     background: rgba(30, 41, 59, 0.8);
@@ -32,7 +32,7 @@
     border-color: var(--accent-color);
 }
 
-.metric-card.info { --accent-color: #3b82f6; }
+.metric-card.warning { --accent-color: #f59e0b; }
 
 .metric-header {
     display: flex;
@@ -60,8 +60,8 @@
     color: white;
 }
 
-.icon-info { 
-    background: linear-gradient(135deg, #3b82f6, #2563eb); 
+.icon-warning { 
+    background: linear-gradient(135deg, #f59e0b, #d97706); 
 }
 
 .metric-value {
