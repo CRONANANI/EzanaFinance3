@@ -15,6 +15,12 @@
     flex-direction: column;
     box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
+    transform: translateX(-100%);
+}
+
+/* Open state */
+.notifications-sidebar.open {
+    transform: translateX(0);
 }
 
 
@@ -365,11 +371,20 @@
         height: calc(100vh - 64px);
     }
     
+    .notifications-sidebar.open {
+        transform: translateX(0);
+    }
+    
     .notifications-toggle {
         left: 15px;
         width: 45px;
         height: 45px;
         font-size: 1.1rem;
+    }
+    
+    /* Adjust main content margin on mobile */
+    #main-content {
+        margin-left: 0 !important;
     }
     
     .notifications-filters {

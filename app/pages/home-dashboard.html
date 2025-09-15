@@ -11,20 +11,58 @@
 <script src="components/notifications/notification-helpers.js"></script>
 
 <!-- Notifications Sidebar -->
-<div id="notifications-sidebar" class="notifications-sidebar">
-    <!-- Sidebar Header -->
+<div id="notifications-sidebar" class="notifications-sidebar open">
+    <!-- Sidebar Toggle Button -->
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+        <i class="bi bi-bell" id="notifications-icon"></i>
+        <span class="notification-count" id="notification-count">0</span>
+    </button>
+
+    <!-- Sidebar Content -->
+    <div class="notifications-content">
+        <!-- Header -->
         <div class="notifications-header">
             <div class="notifications-title">
-                <svg class="bell-icon" viewBox="0 0 24 24">
-                    <path d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.14 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.14 14 4.29V4C14 2.9 13.1 2 12 2M12 6C14.76 6 17 8.24 17 11V18H7V11C7 8.24 9.24 6 12 6M10 21C10 22.1 10.9 23 12 23S14 22.1 14 21"/>
-                </svg>
-                <span>Notifications</span>
+                <i class="bi bi-bell-fill"></i>
+                <h3>Your Feed</h3>
+            </div>
+            <div class="notifications-actions">
+                <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
+                    <i class="bi bi-check-all"></i>
+                </button>
+                <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+                    <i class="bi bi-gear"></i>
+                </button>
             </div>
         </div>
 
-    <!-- Notifications List -->
-    <div class="notifications-list" id="notifications-list">
-        <!-- Notifications will be dynamically populated here -->
+        <!-- Filter Tabs -->
+        <div class="notifications-filters">
+            <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
+                All
+            </button>
+            <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
+                Congress
+            </button>
+            <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
+                Stocks
+            </button>
+            <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
+                Community
+            </button>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="notifications-list" id="notifications-list">
+            <!-- Notifications will be dynamically populated here -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="notifications-empty" id="notifications-empty" style="display: none;">
+            <i class="bi bi-bell-slash"></i>
+            <p>No notifications yet</p>
+            <small>We'll notify you when something important happens</small>
+        </div>
     </div>
 </div>
 
@@ -158,7 +196,7 @@
     </div>
 </nav>
 
-<div class="main-content" style="margin-top: 80px;">
+<div class="main-content" style="margin-top: 80px; margin-left: 350px;" id="main-content">
 <div class="container mx-auto px-6 py-12">
     <div class="flex items-center justify-between mb-12">
         <div>

@@ -14,6 +14,14 @@ class NotificationsSidebar {
         this.loadSampleNotifications();
         this.updateNotificationCount();
         this.setupEventListeners();
+        
+        // Open sidebar by default on home dashboard
+        if (window.location.pathname.includes('home-dashboard') || window.location.pathname.includes('index')) {
+            setTimeout(() => {
+                this.openSidebar();
+            }, 100);
+        }
+        
         console.log('Notifications sidebar initialized with', this.notifications.length, 'notifications');
     }
 
