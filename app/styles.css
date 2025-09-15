@@ -1600,7 +1600,7 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     color: white;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     letter-spacing: -0.025em;
 }
 
@@ -1608,7 +1608,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .change-positive {
@@ -1619,10 +1619,11 @@ body {
 .updated-time {
     color: #64748b;
     font-size: 0.875rem;
+    margin-bottom: 8px;
 }
 
 .time-selector {
-    margin-top: 40px;
+    margin-top: 20px;
 }
 
 .time-selector label {
