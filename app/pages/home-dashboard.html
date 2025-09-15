@@ -2,11 +2,13 @@
 <link rel="stylesheet" href="components/home-dashboard/portfolio-detail-cards.css">
 <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
 <link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
+<link rel="stylesheet" href="components/home-dashboard/market-news-card.css">
 <link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
 
 <!-- Import Home Dashboard Component Scripts -->
 <script src="components/home-dashboard/recent-transactions.js"></script>
 <script src="components/home-dashboard/quick-actions.js"></script>
+<script src="components/home-dashboard/market-news-card.js"></script>
 <script src="components/notifications/notifications-sidebar.js"></script>
 <script src="components/notifications/notification-helpers.js"></script>
 
@@ -336,48 +338,8 @@
     </div>
 
     <!-- Market News Section -->
-    <div class="market-news-section">
-        <div class="market-news-card">
-            <div class="news-header">
-                <div class="news-title">
-                    <i class="bi bi-newspaper"></i>
-                    <h3>Portfolio Market News</h3>
-                </div>
-                <div class="news-actions">
-                    <button class="refresh-news-btn" onclick="refreshMarketNews()" title="Refresh news">
-                        <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                    <button class="news-settings-btn" onclick="openNewsSettings()" title="News settings">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="news-filters">
-                <button class="news-filter-btn active" data-filter="all" onclick="filterNews('all')">
-                    All News
-                </button>
-                <button class="news-filter-btn" data-filter="stocks" onclick="filterNews('stocks')">
-                    Stocks
-                </button>
-                <button class="news-filter-btn" data-filter="market" onclick="filterNews('market')">
-                    Market
-                </button>
-                <button class="news-filter-btn" data-filter="economy" onclick="filterNews('economy')">
-                    Economy
-                </button>
-            </div>
-
-            <div class="news-list" id="news-list">
-                <!-- News items will be dynamically populated here -->
-            </div>
-
-            <div class="news-empty" id="news-empty" style="display: none;">
-                <i class="bi bi-newspaper"></i>
-                <p>No news available</p>
-                <small>Check back later for the latest market updates</small>
-            </div>
-        </div>
+    <div id="market-news-container">
+        <!-- Component will be loaded here -->
     </div>
 
     <script>
@@ -420,176 +382,21 @@
             }, 100);
         });
 
-        // Market News Functionality
-        let currentNewsFilter = 'all';
-        let marketNews = [];
-
-        // Sample market news data
-        const sampleNews = [
-            {
-                id: 1,
-                title: "Federal Reserve Signals Potential Rate Cuts Amid Economic Uncertainty",
-                content: "The Federal Reserve hinted at possible interest rate cuts in the coming months as inflation shows signs of cooling and economic growth slows.",
-                source: "Reuters",
-                category: "economy",
-                time: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-                url: "#"
-            },
-            {
-                id: 2,
-                title: "Tech Stocks Rally as NVIDIA Reports Strong Q4 Earnings",
-                content: "NVIDIA's impressive quarterly results drove tech stocks higher, with the semiconductor sector leading gains in after-hours trading.",
-                source: "Bloomberg",
-                category: "stocks",
-                time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-                url: "#"
-            },
-            {
-                id: 3,
-                title: "S&P 500 Hits New Record High on Strong Corporate Earnings",
-                content: "The S&P 500 reached a new all-time high as better-than-expected earnings reports from major corporations boosted investor confidence.",
-                source: "CNBC",
-                category: "market",
-                time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-                url: "#"
-            },
-            {
-                id: 4,
-                title: "Energy Sector Surges on Rising Oil Prices",
-                content: "Energy stocks jumped as crude oil prices climbed above $80 per barrel amid supply concerns and increased demand.",
-                source: "MarketWatch",
-                category: "stocks",
-                time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-                url: "#"
-            },
-            {
-                id: 5,
-                title: "Inflation Data Shows Continued Cooling Trend",
-                content: "Latest inflation figures indicate a continued cooling trend, potentially paving the way for more accommodative monetary policy.",
-                source: "Wall Street Journal",
-                category: "economy",
-                time: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
-                url: "#"
-            },
-            {
-                id: 6,
-                title: "Cryptocurrency Market Shows Signs of Recovery",
-                content: "Bitcoin and other major cryptocurrencies posted gains as institutional adoption continues to grow and regulatory clarity improves.",
-                source: "CoinDesk",
-                category: "market",
-                time: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-                url: "#"
-            }
-        ];
-
-        // Initialize market news
-        function initializeMarketNews() {
-            marketNews = [...sampleNews];
-            renderNews();
-        }
-
-        // Render news list
-        function renderNews() {
-            const newsList = document.getElementById('news-list');
-            const emptyState = document.getElementById('news-empty');
-            
-            if (!newsList) return;
-
-            let filteredNews = marketNews;
-            if (currentNewsFilter !== 'all') {
-                filteredNews = marketNews.filter(news => news.category === currentNewsFilter);
-            }
-
-            if (filteredNews.length === 0) {
-                newsList.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            newsList.innerHTML = filteredNews.map(news => {
-                const timeAgo = getTimeAgo(news.time);
-                return `
-                    <div class="news-item" onclick="openNewsUrl('${news.url}')">
-                        <div class="news-item-header">
-                            <h4 class="news-item-title">${news.title}</h4>
-                            <span class="news-item-time">${timeAgo}</span>
-                        </div>
-                        <div class="news-item-content">${news.content}</div>
-                        <div class="news-item-footer">
-                            <div class="news-item-source">
-                                <i class="bi bi-link-45deg"></i>
-                                ${news.source}
-                            </div>
-                            <div class="news-item-category">${news.category}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Filter news
-        function filterNews(filter) {
-            currentNewsFilter = filter;
-            
-            // Update filter buttons
-            document.querySelectorAll('.news-filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-            
-            renderNews();
-        }
-
-        // Refresh market news
-        function refreshMarketNews() {
-            // Simulate refresh by shuffling news order
-            marketNews = marketNews.sort(() => Math.random() - 0.5);
-            renderNews();
-            
-            // Add refresh animation
-            const refreshBtn = document.querySelector('.refresh-news-btn');
-            if (refreshBtn) {
-                refreshBtn.style.transform = 'rotate(360deg)';
-                setTimeout(() => {
-                    refreshBtn.style.transform = 'rotate(0deg)';
-                }, 500);
+        // Load market news component
+        async function loadMarketNewsComponent() {
+            try {
+                const response = await fetch('components/home-dashboard/market-news-card.html');
+                if (response.ok) {
+                    const html = await response.text();
+                    const container = document.getElementById('market-news-container');
+                    if (container) {
+                        container.innerHTML = html;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading market news component:', error);
             }
         }
-
-        // Open news settings
-        function openNewsSettings() {
-            console.log('Opening news settings...');
-            // Implement news settings modal
-        }
-
-        // Open news URL
-        function openNewsUrl(url) {
-            if (url && url !== '#') {
-                window.open(url, '_blank');
-            }
-        }
-
-        // Get time ago string
-        function getTimeAgo(date) {
-            const now = new Date();
-            const diff = now - date;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-
-            if (minutes < 1) return 'Just now';
-            if (minutes < 60) return `${minutes}m ago`;
-            if (hours < 24) return `${hours}h ago`;
-            return `${days}d ago`;
-        }
-
-        // Initialize market news when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                initializeMarketNews();
-            }, 500);
-        });
     </script>
 
 
@@ -680,6 +487,9 @@ async function loadComponents() {
                 actionsContainer.innerHTML = actionsHTML;
             }
         }
+        
+        // Load Market News component
+        await loadMarketNewsComponent();
     } catch (error) {
         console.error('Error loading components:', error);
         // Fallback: show inline content if fetch fails

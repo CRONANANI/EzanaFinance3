@@ -1,0 +1,44 @@
+<!-- Market News Card Component -->
+<div class="market-news-section">
+    <div class="market-news-card">
+        <div class="news-header">
+            <div class="news-title">
+                <i class="bi bi-newspaper"></i>
+                <h3>Portfolio Market News</h3>
+            </div>
+            <div class="news-actions">
+                <button class="refresh-news-btn" onclick="refreshMarketNews()" title="Refresh news">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <button class="news-settings-btn" onclick="openNewsSettings()" title="News settings">
+                    <i class="bi bi-gear"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="news-filters">
+            <button class="news-filter-btn active" data-filter="all" onclick="filterNews('all')">
+                All News
+            </button>
+            <button class="news-filter-btn" data-filter="stocks" onclick="filterNews('stocks')">
+                Stocks
+            </button>
+            <button class="news-filter-btn" data-filter="market" onclick="filterNews('market')">
+                Market
+            </button>
+            <button class="news-filter-btn" data-filter="economy" onclick="filterNews('economy')">
+                Economy
+            </button>
+        </div>
+
+        <div class="news-list" id="news-list">
+            <!-- News items will be dynamically populated here -->
+        </div>
+
+        <div class="news-empty" id="news-empty" style="display: none;">
+            <i class="bi bi-newspaper"></i>
+            <p>No news available</p>
+            <small>Check back later for the latest market updates</small>
+        </div>
+    </div>
+</div>

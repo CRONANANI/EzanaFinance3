@@ -1,0 +1,247 @@
+/* Market News Card Component Styles */
+
+/* Market News Section */
+.market-news-section {
+    margin-top: 32px;
+}
+
+.market-news-card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.market-news-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+}
+
+.news-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.news-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.news-title i {
+    color: #10b981;
+    font-size: 1.5rem;
+}
+
+.news-title h3 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.news-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.refresh-news-btn,
+.news-settings-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #10b981;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.refresh-news-btn:hover,
+.news-settings-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    transform: translateY(-1px);
+}
+
+.news-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.news-filter-btn {
+    background: rgba(71, 85, 105, 0.3);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.news-filter-btn:hover {
+    background: rgba(71, 85, 105, 0.5);
+    color: white;
+}
+
+.news-filter-btn.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #10b981;
+}
+
+.news-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.news-item {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.news-item:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.news-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.news-item-title {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+    flex: 1;
+    margin-right: 12px;
+}
+
+.news-item-time {
+    color: #64748b;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.news-item-content {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.news-item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.news-item-source {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #10b981;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.news-item-source i {
+    font-size: 0.875rem;
+}
+
+.news-item-category {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.news-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+}
+
+.news-empty i {
+    font-size: 3rem;
+    color: #64748b;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.news-empty p {
+    font-size: 1.125rem;
+    margin-bottom: 8px;
+    color: #94a3b8;
+}
+
+.news-empty small {
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+/* Responsive Design for News */
+@media (max-width: 768px) {
+    .market-news-card {
+        padding: 24px;
+    }
+    
+    .news-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .news-filters {
+        gap: 8px;
+    }
+    
+    .news-filter-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .news-item {
+        padding: 16px;
+    }
+    
+    .news-item-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .news-item-title {
+        margin-right: 0;
+    }
+}
