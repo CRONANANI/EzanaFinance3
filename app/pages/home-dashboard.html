@@ -2,11 +2,13 @@
 <link rel="stylesheet" href="components/home-dashboard/portfolio-detail-cards.css">
 <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
 <link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
+<link rel="stylesheet" href="components/home-dashboard/total-portfolio-card.css">
 <link rel="stylesheet" href="components/home-dashboard/portfolio-news-list.css">
 <link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
 
 <!-- Import Home Dashboard Component Scripts -->
 <script src="app.js"></script>
+<script src="components/home-dashboard/total-portfolio-card.js"></script>
 <script src="components/home-dashboard/recent-transactions.js"></script>
 <script src="components/home-dashboard/quick-actions.js"></script>
 <script src="components/home-dashboard/portfolio-news-list.js"></script>
@@ -221,44 +223,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Portfolio Card - Takes 2 columns on large screens -->
         <div class="lg:col-span-2">
-            <div class="portfolio-card">
-                <div class="portfolio-header">
-                    <div class="portfolio-title">Total Portfolio Value</div>
-                    <div class="refresh-btn" onclick="refreshPortfolioData()">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                </div>
-                
-                <div class="portfolio-value">$127,843.52</div>
-                
-                <div class="portfolio-change">
-                    <span class="change-positive">
-                        <i class="bi bi-arrow-up"></i>
-                        $2,847.31 (+2.28%)
-                    </span>
-                </div>
-                
-                <div class="updated-time">Updated 2 minutes ago</div>
-                
-                <div class="time-selector">
-                    <label>Time Period:</label>
-                    <select id="portfolio-time-period" onchange="updatePortfolioChart()">
-                        <option value="1">1 Month</option>
-                        <option value="3">3 Months</option>
-                        <option value="6">6 Months</option>
-                        <option value="12" selected>1 Year</option>
-                        <option value="36">3 Years</option>
-                        <option value="60">5 Years</option>
-                        <option value="120">10 Years</option>
-                        <option value="all">All Time</option>
-                    </select>
-                </div>
-
-                <div class="chart-placeholder">
-                    <div class="portfolio-chart-container">
-                        <canvas id="portfolio-chart" width="1200" height="400"></canvas>
-                    </div>
-                </div>
+            <div id="total-portfolio-container">
+                <!-- Component will be loaded here -->
             </div>
         </div>
 
@@ -394,6 +360,30 @@
             }, 100);
         });
 
+        // Load total portfolio component
+        async function loadTotalPortfolioComponent() {
+            try {
+                const response = await fetch('components/home-dashboard/total-portfolio-card.html');
+                if (response.ok) {
+                    const html = await response.text();
+                    const container = document.getElementById('total-portfolio-container');
+                    if (container) {
+                        container.innerHTML = html;
+                        // Reinitialize the total portfolio card after HTML is loaded
+                        setTimeout(() => {
+                            if (window.totalPortfolioCard) {
+                                window.totalPortfolioCard.initializeChart();
+                            }
+                        }, 100);
+                    }
+                } else {
+                    console.log('Failed to load total portfolio component');
+                }
+            } catch (error) {
+                console.error('Error loading total portfolio component:', error);
+            }
+        }
+
         // Load portfolio news component
         async function loadPortfolioNewsComponent() {
             try {
@@ -520,6 +510,11 @@ async function loadComponents() {
                 actionsContainer.innerHTML = actionsHTML;
             }
         }
+        
+        // Load Total Portfolio component
+        console.log('Loading total portfolio component...');
+        await loadTotalPortfolioComponent();
+        console.log('Total portfolio component loaded');
         
         // Load Portfolio News component
         console.log('Loading portfolio news component...');
