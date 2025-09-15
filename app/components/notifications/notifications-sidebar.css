@@ -46,6 +46,11 @@
     position: relative;
 }
 
+/* Hide toggle button when sidebar is open */
+.notifications-sidebar.open + .notifications-toggle {
+    display: none;
+}
+
 .notifications-toggle:hover {
     transform: scale(1.1);
     box-shadow: var(--shadow-xl);
@@ -149,19 +154,22 @@
     border-bottom: 1px solid var(--border);
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 
 .filter-btn {
     background: var(--muted);
     border: 1px solid var(--border);
     color: var(--muted-foreground);
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .filter-btn:hover {
