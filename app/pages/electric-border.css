@@ -1,0 +1,203 @@
+/* ElectricBorder CSS - Vanilla JavaScript Version */
+
+.electric-border {
+    position: relative;
+    display: inline-block;
+    border-radius: inherit;
+    overflow: hidden;
+}
+
+.electric-border .eb-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.electric-border .eb-layers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.electric-border .eb-stroke {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: var(--eb-border-width, 2px) solid var(--electric-border-color, #10b981);
+    border-radius: inherit;
+    background: transparent;
+    opacity: 0.8;
+}
+
+.electric-border .eb-glow-1 {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, 
+        var(--electric-border-color, #10b981) 0%, 
+        transparent 25%, 
+        transparent 75%, 
+        var(--electric-border-color, #10b981) 100%);
+    opacity: 0.3;
+    filter: blur(1px);
+    animation: electric-glow-1 2s ease-in-out infinite alternate;
+}
+
+.electric-border .eb-glow-2 {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: inherit;
+    background: radial-gradient(circle at center, 
+        var(--electric-border-color, #10b981) 0%, 
+        transparent 70%);
+    opacity: 0.2;
+    filter: blur(2px);
+    animation: electric-glow-2 3s ease-in-out infinite alternate;
+}
+
+.electric-border .eb-background-glow {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    border-radius: inherit;
+    background: var(--electric-border-color, #10b981);
+    opacity: 0.1;
+    filter: blur(4px);
+    animation: electric-background-glow 4s ease-in-out infinite alternate;
+}
+
+.electric-border .eb-content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    background: inherit;
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Hover effects */
+.electric-border:hover .eb-stroke {
+    opacity: 1;
+    box-shadow: 
+        0 0 10px var(--electric-border-color, #10b981),
+        0 0 20px var(--electric-border-color, #10b981),
+        0 0 30px var(--electric-border-color, #10b981);
+}
+
+.electric-border:hover .eb-glow-1 {
+    opacity: 0.6;
+    animation-duration: 1s;
+}
+
+.electric-border:hover .eb-glow-2 {
+    opacity: 0.4;
+    animation-duration: 1.5s;
+}
+
+.electric-border:hover .eb-background-glow {
+    opacity: 0.2;
+    animation-duration: 2s;
+}
+
+.electric-border:hover .eb-content {
+    transform: scale(1.02);
+}
+
+/* Animations */
+@keyframes electric-glow-1 {
+    0% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0.6;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes electric-glow-2 {
+    0% {
+        opacity: 0.2;
+        transform: scale(1) rotate(0deg);
+    }
+    100% {
+        opacity: 0.4;
+        transform: scale(1.1) rotate(180deg);
+    }
+}
+
+@keyframes electric-background-glow {
+    0% {
+        opacity: 0.1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0.3;
+        transform: scale(1.15);
+    }
+}
+
+/* Pulse effect for active state */
+.electric-border:active .eb-stroke {
+    animation: electric-pulse 0.3s ease-out;
+}
+
+@keyframes electric-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .electric-border .eb-glow-1,
+    .electric-border .eb-glow-2,
+    .electric-border .eb-background-glow {
+        animation-duration: 2s;
+    }
+}
+
+/* Performance optimizations */
+.electric-border * {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+/* Ensure proper stacking context */
+.electric-border {
+    isolation: isolate;
+}
