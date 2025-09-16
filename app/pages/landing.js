@@ -112,24 +112,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add typing effect to hero title
+    // Apply SplitText animation to hero title
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
-        const text = heroTitle.innerHTML;
-        heroTitle.innerHTML = '';
-        
-        let i = 0;
-        const typeWriter = () => {
-            if (i < text.length) {
-                heroTitle.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typeWriter, 50);
+        // Apply character-by-character animation
+        applySplitText('.hero-title', {
+            splitType: 'chars',
+            delay: 50,
+            duration: 0.8,
+            from: { opacity: 0, y: 60 },
+            to: { opacity: 1, y: 0 },
+            threshold: 0.1,
+            rootMargin: '-50px',
+            onComplete: () => {
+                console.log('Hero title animation completed');
             }
-        };
-        
-        // Start typing effect after a short delay
-        setTimeout(typeWriter, 1000);
+        });
     }
+
+    // Apply SplitText animation to hero description
+    const heroDescription = document.querySelector('.hero-description');
+    if (heroDescription) {
+        applySplitText('.hero-description', {
+            splitType: 'words',
+            delay: 100,
+            duration: 0.6,
+            from: { opacity: 0, y: 30 },
+            to: { opacity: 1, y: 0 },
+            threshold: 0.2,
+            rootMargin: '-100px',
+            onComplete: () => {
+                console.log('Hero description animation completed');
+            }
+        });
+    }
+
+    // Apply SplitText animation to statistics
+    const statNumbers = document.querySelectorAll('.stat-number');
+    statNumbers.forEach((stat, index) => {
+        // Add a unique class for targeting
+        stat.classList.add(`stat-number-${index}`);
+        applySplitText(`.stat-number-${index}`, {
+            splitType: 'chars',
+            delay: 30,
+            duration: 0.5,
+            from: { opacity: 0, scale: 0.5 },
+            to: { opacity: 1, scale: 1 },
+            threshold: 0.3,
+            rootMargin: '-50px'
+        });
+    });
 
     // Add mobile menu toggle (for future mobile navigation)
     const createMobileMenu = () => {
