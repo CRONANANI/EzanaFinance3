@@ -174,7 +174,7 @@
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 1rem;
             height: fit-content;
         }
@@ -183,22 +183,17 @@
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(71, 85, 105, 0.3);
-            border-radius: 16px;
-            padding: 24px;
+            border-radius: 12px;
+            padding: 1.5rem;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-        }
-
-        .metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--accent-color);
-            opacity: 0.6;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-height: 120px;
         }
 
         .metric-card:hover {
@@ -214,9 +209,9 @@
 
         .metric-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .metric-title {
@@ -225,24 +220,26 @@
             color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-bottom: 8px;
         }
 
         .metric-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
             color: white;
+            margin-bottom: 8px;
         }
 
         .metric-value {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .metric-subtitle {
@@ -389,21 +386,21 @@
                     <!-- Metric Cards -->
                     <div class="metric-card positive">
                         <div class="metric-header">
-                            <div class="metric-title">Today's P&L</div>
                             <div class="metric-icon icon-positive">
                                 <i class="bi bi-graph-up"></i>
                             </div>
+                            <div class="metric-title">Today's P&L</div>
                         </div>
                         <div class="metric-value">+$1,247</div>
                         <div class="metric-subtitle">+0.98% from yesterday</div>
-                                </div>
+                    </div>
 
                     <div class="metric-card warning">
                         <div class="metric-header">
-                            <div class="metric-title">Top Performer</div>
                             <div class="metric-icon icon-warning">
                                 <i class="bi bi-star-fill"></i>
                             </div>
+                            <div class="metric-title">Top Performer</div>
                         </div>
                         <div class="metric-value">NVDA</div>
                         <div class="metric-subtitle">+12.4% this week</div>
@@ -411,10 +408,10 @@
 
                     <div class="metric-card warning">
                         <div class="metric-header">
-                            <div class="metric-title">Risk Score</div>
                             <div class="metric-icon icon-warning">
                                 <i class="bi bi-exclamation-triangle"></i>
                             </div>
+                            <div class="metric-title">Risk Score</div>
                         </div>
                         <div class="metric-value">6.2/10</div>
                         <div class="metric-subtitle">Moderate risk level</div>
@@ -422,10 +419,10 @@
 
                     <div class="metric-card info">
                         <div class="metric-header">
-                            <div class="metric-title">Monthly Dividends</div>
                             <div class="metric-icon icon-info">
                                 <i class="bi bi-currency-dollar"></i>
                             </div>
+                            <div class="metric-title">Monthly Dividends</div>
                         </div>
                         <div class="metric-value">$847.23</div>
                         <div class="metric-subtitle">Next payout: Oct 15</div>
@@ -433,10 +430,10 @@
 
                     <div class="metric-card success">
                         <div class="metric-header">
-                            <div class="metric-title">Market Performance</div>
                             <div class="metric-icon icon-success">
                                 <i class="bi bi-graph-up"></i>
                             </div>
+                            <div class="metric-title">Market Performance</div>
                         </div>
                         <div class="metric-value">+8.4%</div>
                         <div class="metric-subtitle">vs S&P 500: +6.2%</div>
@@ -444,14 +441,14 @@
 
                     <div class="metric-card info">
                         <div class="metric-header">
-                            <div class="metric-title">Asset Allocation</div>
                             <div class="metric-icon icon-info">
                                 <i class="bi bi-pie-chart"></i>
                             </div>
+                            <div class="metric-title">Asset Allocation</div>
                         </div>
                         <div class="metric-value">Balanced</div>
                         <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
-                        </div>
+                    </div>
                 </div>
             </div>
         </div>
