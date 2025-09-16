@@ -199,6 +199,7 @@ body {
     text-align: left;
     margin-left: 0;
     padding-left: 0;
+    align-items: flex-start;
 }
 
 .tag {
@@ -236,12 +237,16 @@ body {
     color: #94a3b8;
     line-height: 1.6;
     margin-bottom: 2rem;
+    text-align: left;
+    width: 100%;
 }
 
 .cta-buttons {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 
 .btn-primary {
