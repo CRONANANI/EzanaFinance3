@@ -196,6 +196,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
 }
 
 .tag {
@@ -215,6 +218,10 @@ body {
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 1.5rem;
+    white-space: nowrap;
+    text-align: left;
+    margin-left: 0;
+    padding-left: 0;
 }
 
 .hero-title .highlight {
@@ -593,7 +600,8 @@ body {
     }
 
     .hero-title {
-        font-size: 3rem;
+        font-size: 2.8rem;
+        white-space: nowrap;
     }
 
     .phone-container {
@@ -607,7 +615,8 @@ body {
     }
 
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+        white-space: nowrap;
     }
 
     .hero-description {
@@ -639,7 +648,8 @@ body {
     }
 
     .hero-title {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        white-space: nowrap;
     }
 
     .phone {
