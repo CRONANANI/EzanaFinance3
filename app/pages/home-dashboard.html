@@ -10,8 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
-    <!-- Top Navigation CSS -->
-    <link rel="stylesheet" href="../components/topnav/topnav.css">
+    <!-- Navigation CSS -->
+    <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Component Cards CSS -->
@@ -34,7 +34,7 @@
             color: white;
             min-height: 100vh;
             padding: 24px;
-            padding-top: 88px; /* Account for fixed topnav height */
+            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
         }
 
         /* Dashboard Overview Grid - Similar to community-overview-grid */
@@ -284,128 +284,7 @@
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <nav class="topnav" id="topnav">
-        <div class="topnav-container">
-            <!-- Logo/Brand -->
-            <div class="topnav-brand">
-                <a href="home-dashboard.html" class="brand-link">
-                    <i class="bi bi-graph-up-arrow brand-icon"></i>
-                    <span class="brand-text">Ezana Finance</span>
-                </a>
-            </div>
-
-            <!-- Navigation Menu -->
-            <div class="topnav-menu" id="topnav-menu">
-                <ul class="topnav-list">
-                    <!-- Home Dropdown -->
-                    <li class="topnav-item dropdown">
-                        <a href="#" class="topnav-link dropdown-toggle" data-dropdown="home">
-                            Home
-                            <i class="bi bi-chevron-down dropdown-icon"></i>
-                        </a>
-                        <div class="dropdown-menu" id="dropdown-home">
-                            <a href="home-dashboard.html" class="dropdown-item">
-                                <i class="bi bi-house-door"></i>
-                                Dashboard
-                            </a>
-                            <a href="#" class="dropdown-item">
-                                <i class="bi bi-graph-up"></i>
-                                Analytics
-                            </a>
-                            <a href="#" class="dropdown-item">
-                                <i class="bi bi-speedometer2"></i>
-                                Overview
-                            </a>
-                        </div>
-                    </li>
-
-                    <!-- Research Tools Dropdown -->
-                    <li class="topnav-item dropdown">
-                        <a href="#" class="topnav-link dropdown-toggle" data-dropdown="research">
-                            Research Tools
-                            <i class="bi bi-chevron-down dropdown-icon"></i>
-                        </a>
-                        <div class="dropdown-menu" id="dropdown-research">
-                            <a href="company-research.html" class="dropdown-item">
-                                <i class="bi bi-building"></i>
-                                Company Research
-                            </a>
-                            <a href="market-analysis.html" class="dropdown-item">
-                                <i class="bi bi-search"></i>
-                                Market Analysis
-                            </a>
-                            <a href="economic-indicators.html" class="dropdown-item">
-                                <i class="bi bi-graph-up-arrow"></i>
-                                Economic Indicators
-                            </a>
-                        </div>
-                    </li>
-
-                    <!-- Watchlist -->
-                    <li class="topnav-item">
-                        <a href="watchlist.html" class="topnav-link">
-                            <i class="bi bi-bookmark-star"></i>
-                            Watchlist
-                        </a>
-                    </li>
-
-                    <!-- Community -->
-                    <li class="topnav-item">
-                        <a href="community.html" class="topnav-link">
-                            <i class="bi bi-people"></i>
-                            Community
-                        </a>
-                    </li>
-
-                    <!-- Inside the Capitol -->
-                    <li class="topnav-item">
-                        <a href="inside-the-capitol.html" class="topnav-link">
-                            <i class="bi bi-building"></i>
-                            Inside the Capitol
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- User Menu -->
-            <div class="topnav-user">
-                <div class="user-dropdown">
-                    <button class="user-button" id="user-button">
-                        <div class="user-avatar">
-                            <i class="bi bi-person-circle"></i>
-                        </div>
-                        <span class="user-name">John Doe</span>
-                        <i class="bi bi-chevron-down dropdown-icon"></i>
-                    </button>
-                    <div class="dropdown-menu user-menu" id="user-menu">
-                        <a href="user-profile-settings.html" class="dropdown-item">
-                            <i class="bi bi-person"></i>
-                            Profile Settings
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="bi bi-gear"></i>
-                            Preferences
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="bi bi-question-circle"></i>
-                            Help & Support
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="bi bi-box-arrow-right"></i>
-                            Sign Out
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-                <i class="bi bi-list"></i>
-            </button>
-        </div>
-    </nav>
+    <!-- Navigation will be dynamically loaded -->
 
     <!-- Notifications Sidebar -->
     <div id="notifications-sidebar" class="notifications-sidebar open">
@@ -583,8 +462,9 @@
             </div>
         </div>
 
-    <!-- Top Navigation JavaScript -->
-    <script src="../components/topnav/topnav.js"></script>
+    <!-- Navigation JavaScript -->
+    <script src="../components/navigation/navigation-config.js"></script>
+    <script src="../components/navigation/navigation.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script>
