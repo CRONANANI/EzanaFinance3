@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Ezana Finance</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Create Account CSS -->
+    <link rel="stylesheet" href="create-account.css">
+</head>
+<body>
+    <!-- Background -->
+    <div class="create-account-background">
+        <!-- Navigation -->
+        <nav class="create-account-nav">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <div class="logo-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <span class="logo-text">Ezana Finance</span>
+                </div>
+                <div class="nav-actions">
+                    <a href="landing.html" class="nav-link">Back to Home</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="create-account-container">
+            <div class="create-account-card">
+                <!-- Header -->
+                <div class="create-account-header">
+                    <h1 class="create-account-title">Create Your Account</h1>
+                    <p class="create-account-subtitle">Join thousands of investors making smarter financial decisions</p>
+                </div>
+
+                <!-- Form -->
+                <form class="create-account-form" id="createAccountForm">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Personal Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" id="firstName" name="firstName" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" class="form-input" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <!-- Account Security -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Account Security</h3>
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="password-input-container">
+                                <input type="password" id="password" name="password" class="form-input" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                                    <i class="bi bi-eye" id="password-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <div class="password-input-container">
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                    <i class="bi bi-eye" id="confirmPassword-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Investment Profile -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">Investment Profile</h3>
+                        <div class="form-group">
+                            <label for="experience" class="form-label">Investment Experience</label>
+                            <select id="experience" name="experience" class="form-select" required>
+                                <option value="">Select your experience level</option>
+                                <option value="beginner">Beginner (0-2 years)</option>
+                                <option value="intermediate">Intermediate (2-5 years)</option>
+                                <option value="advanced">Advanced (5+ years)</option>
+                                <option value="expert">Expert (10+ years)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="riskTolerance" class="form-label">Risk Tolerance</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="riskTolerance" value="conservative" required>
+                                    <span class="radio-custom"></span>
+                                    <div class="radio-content">
+                                        <div class="radio-title">Conservative</div>
+                                        <div class="radio-description">Low risk, stable returns</div>
+                                    </div>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="riskTolerance" value="moderate" required>
+                                    <span class="radio-custom"></span>
+                                    <div class="radio-content">
+                                        <div class="radio-title">Moderate</div>
+                                        <div class="radio-description">Balanced risk and return</div>
+                                    </div>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="riskTolerance" value="aggressive" required>
+                                    <span class="radio-custom"></span>
+                                    <div class="radio-content">
+                                        <div class="radio-title">Aggressive</div>
+                                        <div class="radio-description">High risk, high potential returns</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-section">
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="terms" name="terms" required>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">
+                                    I agree to the <a href="#" class="link">Terms of Service</a> and <a href="#" class="link">Privacy Policy</a>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="newsletter" name="newsletter">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">
+                                    Subscribe to our newsletter for market insights and updates
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" class="create-account-btn">
+                            <span class="btn-text">Create Account</span>
+                            <i class="bi bi-arrow-right btn-icon"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Login Link -->
+                <div class="create-account-footer">
+                    <p class="footer-text">
+                        Already have an account? 
+                        <a href="#" class="footer-link">Sign in here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Password toggle functionality
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const eye = document.getElementById(inputId + '-eye');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eye.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'password';
+                eye.className = 'bi bi-eye';
+            }
+        }
+
+        // Form submission
+        document.getElementById('createAccountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Validate passwords match
+            if (data.password !== data.confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            // Simulate account creation
+            console.log('Creating account with data:', data);
+            
+            // Show success message
+            alert('Account created successfully! Redirecting to dashboard...');
+            
+            // Redirect to dashboard (you can change this to the actual dashboard URL)
+            window.location.href = 'home-dashboard.html';
+        });
+
+        // Form validation
+        const inputs = document.querySelectorAll('.form-input, .form-select');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.hasAttribute('required') && !this.value) {
+                    this.classList.add('error');
+                } else {
+                    this.classList.remove('error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
