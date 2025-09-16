@@ -3,16 +3,16 @@ const NavigationConfig = {
     // Brand configuration
     brand: {
         name: 'Ezana Finance',
-        icon: 'bi bi-graph-up-arrow',
+        icon: 'bi bi-graph-up',
         href: 'home-dashboard.html'
     },
 
-    // Navigation menu items - matches sidebar structure
+    // Navigation menu items - matches landing page structure
     menuItems: [
         {
             text: 'Dashboard',
             href: 'home-dashboard.html',
-            icon: 'bi bi-house-door',
+            icon: 'bi bi-house',
             dropdown: false
         },
         {
@@ -20,8 +20,8 @@ const NavigationConfig = {
             dropdown: true,
             children: [
                 {
-                    text: 'Inside the Capitol',
-                    href: 'inside-the-capitol.html',
+                    text: 'Company Research',
+                    href: 'company-research.html',
                     icon: 'bi bi-building'
                 },
                 {
@@ -30,26 +30,16 @@ const NavigationConfig = {
                     icon: 'bi bi-search'
                 },
                 {
-                    text: 'Company Research',
-                    href: 'company-research.html',
-                    icon: 'bi bi-building'
-                },
-                {
                     text: 'Economic Indicators',
                     href: 'economic-indicators.html',
                     icon: 'bi bi-graph-up-arrow'
-                },
-                {
-                    text: 'Financial Analytics',
-                    href: 'financial-analytics.html',
-                    icon: 'bi bi-graph-up'
                 }
             ]
         },
         {
             text: 'Watchlist',
             href: 'watchlist.html',
-            icon: 'bi bi-bookmark-star',
+            icon: 'bi bi-heart',
             dropdown: false
         },
         {

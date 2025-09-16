@@ -1,59 +1,78 @@
-<!-- Import Economic Indicators Component Styles -->
-<link rel="stylesheet" href="components/research-tools/economic-indicators-cards.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economic Indicators - Ezana Finance</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="../styles.css">
+    <!-- Navigation CSS -->
+    <link rel="stylesheet" href="../components/navigation/navigation.css">
+    <!-- Notifications Sidebar CSS -->
+    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <!-- Import Economic Indicators Component Styles -->
+    <link rel="stylesheet" href="../components/research-tools/economic-indicators-cards.css">
+</head>
+<body>
+    <!-- Navigation will be dynamically loaded -->
 
-<!-- Notifications Sidebar -->
-<div id="notifications-sidebar" class="notifications-sidebar open">
-    <!-- Sidebar Toggle Button -->
-    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-        <span class="notification-count" id="notification-count">0</span>
-    </button>
+    <!-- Notifications Sidebar -->
+    <div id="notifications-sidebar" class="notifications-sidebar open">
+        <!-- Sidebar Toggle Button -->
+        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+            <span class="notification-count" id="notification-count">0</span>
+        </button>
 
-    <!-- Sidebar Content -->
-    <div class="notifications-content">
-        <!-- Header -->
-        <div class="notifications-header">
-            <div class="notifications-title">
-                <h3>Your Feed</h3>
+        <!-- Sidebar Content -->
+        <div class="notifications-content">
+            <!-- Header -->
+            <div class="notifications-header">
+                <div class="notifications-title">
+                    <h3>Your Feed</h3>
+                </div>
+                <div class="notifications-actions">
+                    <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
+                        <i class="bi bi-check-all"></i>
+                    </button>
+                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
             </div>
-            <div class="notifications-actions">
-                <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
-                    <i class="bi bi-check-all"></i>
+
+            <!-- Filter Tabs -->
+            <div class="notifications-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
+                    All
                 </button>
-                <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                    <i class="bi bi-gear"></i>
+                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
+                    Congress
+                </button>
+                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
+                    Stocks
+                </button>
+                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
+                    Community
                 </button>
             </div>
-        </div>
 
-        <!-- Filter Tabs -->
-        <div class="notifications-filters">
-            <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                All
-            </button>
-            <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                Congress
-            </button>
-            <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                Stocks
-            </button>
-            <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                Community
-            </button>
-        </div>
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notifications-list">
+                <!-- Notifications will be dynamically populated here -->
+            </div>
 
-        <!-- Notifications List -->
-        <div class="notifications-list" id="notifications-list">
-            <!-- Notifications will be dynamically populated here -->
-        </div>
-
-        <!-- Empty State -->
-        <div class="notifications-empty" id="notifications-empty" style="display: none;">
-            <i class="bi bi-bell-slash"></i>
-            <p>No notifications yet</p>
-            <small>We'll notify you when something important happens</small>
+            <!-- Empty State -->
+            <div class="notifications-empty" id="notifications-empty" style="display: none;">
+                <i class="bi bi-bell-slash"></i>
+                <p>No notifications yet</p>
+                <small>We'll notify you when something important happens</small>
+            </div>
         </div>
     </div>
-</div>
 
 <div class="container mx-auto px-6 py-12">
     <div class="mb-12">
@@ -397,20 +416,22 @@
     </div>
 </div>
 
-<!-- Notifications Sidebar CSS -->
-<link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
-
-<!-- Notifications Sidebar JavaScript -->
-<script src="components/notifications/notifications-sidebar.js"></script>
-<script>
-    // Initialize notifications sidebar when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM Content Loaded - Initializing economic indicators');
-        
-        // Initialize the notifications sidebar
-        if (window.NotificationsSidebar) {
-            const sidebar = new NotificationsSidebar();
-            sidebar.init();
-        }
-    });
-</script>
+    <!-- Navigation JavaScript -->
+    <script src="../components/navigation/navigation-config.js"></script>
+    <script src="../components/navigation/navigation.js"></script>
+    <!-- Notifications Sidebar JavaScript -->
+    <script src="../components/notifications/notifications-sidebar.js"></script>
+    <script>
+        // Initialize notifications sidebar when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Initializing economic indicators');
+            
+            // Initialize the notifications sidebar
+            if (window.NotificationsSidebar) {
+                const sidebar = new NotificationsSidebar();
+                sidebar.init();
+            }
+        });
+    </script>
+</body>
+</html>

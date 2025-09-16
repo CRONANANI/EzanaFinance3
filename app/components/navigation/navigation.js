@@ -37,61 +37,55 @@ class Navigation {
 
         // Create navigation content
         const navContent = document.createElement('div');
-        navContent.className = 'navigation-content';
+        navContent.className = 'nav-container';
 
         // Create brand section
         const brandSection = document.createElement('div');
-        brandSection.className = 'navigation-brand';
+        brandSection.className = 'logo';
         brandSection.innerHTML = `
             <a href="${config.brand.href}" class="brand-link">
-                <i class="${config.brand.icon} brand-icon"></i>
-                <span class="brand-text">${config.brand.name}</span>
+                <div class="logo-icon">
+                    <i class="${config.brand.icon}"></i>
+                </div>
+                <span class="logo-text">${config.brand.name}</span>
             </a>
         `;
 
         // Create navigation menu
-        const navMenu = document.createElement('div');
-        navMenu.className = 'navigation-menu';
+        const navMenu = document.createElement('ul');
+        navMenu.className = 'nav-menu';
         navMenu.id = 'topnav-menu';
-
-        const navList = document.createElement('ul');
-        navList.className = 'topnav-list';
 
         // Generate menu items
         config.menuItems.forEach(item => {
             const li = document.createElement('li');
-            li.className = 'topnav-item';
+            li.className = 'nav-item';
 
             if (item.dropdown) {
                 li.classList.add('dropdown');
                 li.innerHTML = `
-                    <a href="#" class="topnav-link dropdown-toggle" data-dropdown="${item.text.toLowerCase().replace(' ', '-')}">
+                    <a href="#" class="nav-link">
                         ${item.icon ? `<i class="${item.icon}"></i>` : ''}
                         ${item.text}
-                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                        <i class="bi bi-chevron-down"></i>
                     </a>
-                    <div class="dropdown-menu" id="dropdown-${item.text.toLowerCase().replace(' ', '-')}">
+                    <div class="dropdown-content">
                         ${item.children.map(child => `
-                            <a href="${child.href}" class="dropdown-item">
-                                <i class="${child.icon}"></i>
-                                ${child.text}
-                            </a>
+                            <a href="${child.href}" class="dropdown-item">${child.text}</a>
                         `).join('')}
                     </div>
                 `;
             } else {
                 li.innerHTML = `
-                    <a href="${item.href}" class="topnav-link">
+                    <a href="${item.href}" class="nav-link">
                         ${item.icon ? `<i class="${item.icon}"></i>` : ''}
                         ${item.text}
                     </a>
                 `;
             }
 
-            navList.appendChild(li);
+            navMenu.appendChild(li);
         });
-
-        navMenu.appendChild(navList);
 
         // Create user section
         const userSection = document.createElement('div');
@@ -171,7 +165,7 @@ class Navigation {
 
     bindNavigationLinks() {
         // Handle direct navigation links
-        const directLinks = document.querySelectorAll('.topnav-link:not(.dropdown-toggle)');
+        const directLinks = document.querySelectorAll('.nav-link:not(.dropdown-toggle)');
         directLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 this.handleNavigationClick(e, link);
@@ -222,8 +216,8 @@ class Navigation {
     initializeDropdowns() {
         const dropdowns = document.querySelectorAll('.dropdown');
         dropdowns.forEach(dropdown => {
-            const toggle = dropdown.querySelector('.dropdown-toggle');
-            const menu = dropdown.querySelector('.dropdown-menu');
+            const toggle = dropdown.querySelector('.nav-link');
+            const menu = dropdown.querySelector('.dropdown-content');
             
             if (toggle && menu) {
                 // Desktop hover
@@ -240,14 +234,12 @@ class Navigation {
                 });
 
                 // Mobile click
-                if (toggle.dataset.dropdown) {
-                    toggle.addEventListener('click', (e) => {
-                        if (this.isMobile) {
-                            e.preventDefault();
-                            this.toggleDropdown(menu);
-                        }
-                    });
-                }
+                toggle.addEventListener('click', (e) => {
+                    if (this.isMobile) {
+                        e.preventDefault();
+                        this.toggleDropdown(menu);
+                    }
+                });
             }
         });
     }
@@ -302,7 +294,7 @@ class Navigation {
     }
 
     closeAllDropdowns() {
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        const dropdowns = document.querySelectorAll('.dropdown-content');
         dropdowns.forEach(dropdown => {
             dropdown.classList.remove('show');
         });
@@ -310,7 +302,7 @@ class Navigation {
     }
 
     hideAllDropdowns() {
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        const dropdowns = document.querySelectorAll('.dropdown-content');
         dropdowns.forEach(dropdown => {
             dropdown.classList.remove('show');
         });
@@ -319,7 +311,7 @@ class Navigation {
 
     setActiveLink() {
         const currentPath = window.location.pathname;
-        const links = document.querySelectorAll('.topnav-link, .dropdown-item');
+        const links = document.querySelectorAll('.nav-link, .dropdown-item');
         
         links.forEach(link => {
             link.classList.remove('active');
@@ -332,7 +324,7 @@ class Navigation {
                 const dropdownItem = link.closest('.dropdown-item');
                 if (dropdownItem) {
                     const parentDropdown = dropdownItem.closest('.dropdown');
-                    const parentToggle = parentDropdown.querySelector('.dropdown-toggle');
+                    const parentToggle = parentDropdown.querySelector('.nav-link');
                     if (parentToggle) {
                         parentToggle.classList.add('active');
                     }
