@@ -14,6 +14,118 @@
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 24px;
+            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .page-title-shiny {
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .text-foreground {
+            color: #f8fafc;
+        }
+
+        .text-muted-foreground {
+            color: #94a3b8;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
+        .font-light {
+            font-weight: 300;
+        }
+
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-12 {
+            margin-bottom: 3rem;
+        }
+
+        .grid {
+            display: grid;
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .lg\\:grid-cols-2 {
+            @media (min-width: 1024px) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .xl\\:grid-cols-3 {
+            @media (min-width: 1280px) {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .gap-6 {
+            gap: 1.5rem;
+        }
+
+        .gap-8 {
+            gap: 2rem;
+        }
+
+        .px-6 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        .py-12 {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation will be dynamically loaded -->
