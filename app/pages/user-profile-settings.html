@@ -10,134 +10,107 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
-    <!-- Top Navigation CSS -->
-    <link rel="stylesheet" href="../components/topnav/topnav.css">
+    <!-- Navigation CSS -->
+    <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 24px;
+            padding-top: calc(var(--nav-height, 64px) + 24px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .page-title-shiny {
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .text-foreground {
+            color: #f8fafc;
+        }
+
+        .text-muted-foreground {
+            color: #94a3b8;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+        }
+
+        .text-4xl {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+        }
+
+        .font-light {
+            font-weight: 300;
+        }
+
+        .tracking-tight {
+            letter-spacing: -0.025em;
+        }
+
+        .mb-12 {
+            margin-bottom: 3rem;
+        }
+
+        .grid {
+            display: grid;
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .lg\\:grid-cols-3 {
+            @media (min-width: 1024px) {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .gap-8 {
+            gap: 2rem;
+        }
+
+        .px-6 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        .py-12 {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+    </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <nav class="topnav" id="topnav">
-        <div class="topnav-container">
-            <!-- Logo/Brand -->
-            <div class="topnav-brand">
-                <a href="home-dashboard.html" class="brand-link">
-                    <i class="bi bi-graph-up-arrow brand-icon"></i>
-                    <span class="brand-text">Ezana Finance</span>
-                </a>
-            </div>
-
-            <!-- Navigation Menu -->
-            <div class="topnav-menu" id="topnav-menu">
-                <ul class="topnav-list">
-                    <!-- Home Dropdown -->
-                    <li class="topnav-item dropdown">
-                        <a href="#" class="topnav-link dropdown-toggle" data-dropdown="home">
-                            Home
-                            <i class="bi bi-chevron-down dropdown-icon"></i>
-                        </a>
-                        <div class="dropdown-menu" id="dropdown-home">
-                            <a href="home-dashboard.html" class="dropdown-item">
-                                <i class="bi bi-house-door"></i>
-                                Dashboard
-                            </a>
-                            <a href="#" class="dropdown-item">
-                                <i class="bi bi-graph-up"></i>
-                                Analytics
-                            </a>
-                            <a href="#" class="dropdown-item">
-                                <i class="bi bi-speedometer2"></i>
-                                Overview
-                            </a>
-                        </div>
-                    </li>
-
-                    <!-- Research Tools Dropdown -->
-                    <li class="topnav-item dropdown">
-                        <a href="#" class="topnav-link dropdown-toggle" data-dropdown="research">
-                            Research Tools
-                            <i class="bi bi-chevron-down dropdown-icon"></i>
-                        </a>
-                        <div class="dropdown-menu" id="dropdown-research">
-                            <a href="company-research.html" class="dropdown-item">
-                                <i class="bi bi-building"></i>
-                                Company Research
-                            </a>
-                            <a href="market-analysis.html" class="dropdown-item">
-                                <i class="bi bi-search"></i>
-                                Market Analysis
-                            </a>
-                            <a href="economic-indicators.html" class="dropdown-item">
-                                <i class="bi bi-graph-up-arrow"></i>
-                                Economic Indicators
-                            </a>
-                        </div>
-                    </li>
-
-                    <!-- Watchlist -->
-                    <li class="topnav-item">
-                        <a href="watchlist.html" class="topnav-link">
-                            <i class="bi bi-bookmark-star"></i>
-                            Watchlist
-                        </a>
-                    </li>
-
-                    <!-- Community -->
-                    <li class="topnav-item">
-                        <a href="community.html" class="topnav-link">
-                            <i class="bi bi-people"></i>
-                            Community
-                        </a>
-                    </li>
-
-                    <!-- Inside the Capitol -->
-                    <li class="topnav-item">
-                        <a href="inside-the-capitol.html" class="topnav-link">
-                            <i class="bi bi-building"></i>
-                            Inside the Capitol
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- User Menu -->
-            <div class="topnav-user">
-                <div class="user-dropdown">
-                    <button class="user-button" id="user-button">
-                        <div class="user-avatar">
-                            <i class="bi bi-person-circle"></i>
-                        </div>
-                        <span class="user-name">John Doe</span>
-                        <i class="bi bi-chevron-down dropdown-icon"></i>
-                    </button>
-                    <div class="dropdown-menu user-menu" id="user-menu">
-                        <a href="user-profile-settings.html" class="dropdown-item active">
-                            <i class="bi bi-person"></i>
-                            Profile Settings
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="bi bi-gear"></i>
-                            Preferences
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="bi bi-question-circle"></i>
-                            Help & Support
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="bi bi-box-arrow-right"></i>
-                            Sign Out
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-                <i class="bi bi-list"></i>
-            </button>
-        </div>
-    </nav>
+    <!-- Navigation will be dynamically loaded -->
 
     <!-- Notifications Sidebar -->
 <div id="notifications-sidebar" class="notifications-sidebar">
@@ -154,139 +127,8 @@
     </div>
 </div>
 
-<!-- Top Navigation -->
-<nav id="topnav" class="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-500 border-b border-emerald-600 shadow-lg transition-all duration-300 ease-in-out">
-    <div class="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-        <!-- Logo/Brand -->
-        <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                <i class="bi bi-graph-up text-white text-lg font-bold"></i>
-            </div>
-            <span class="text-lg font-bold text-white">Ezana Finance</span>
-        </div>
 
-        <!-- Navigation Menu -->
-        <div class="hidden md:flex items-center space-x-6">
-            <!-- Dashboard -->
-            <button onclick="switchTab('home')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-home">
-                <i class="bi bi-house-door"></i>
-                <span>Dashboard</span>
-            </button>
-
-            <!-- Research Tools Dropdown -->
-            <div class="relative group">
-                <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-search"></i>
-                    <span>Research Tools</span>
-                    <i class="bi bi-chevron-down text-sm"></i>
-                </button>
-                <div class="absolute right-0 top-full mt-1 w-48 bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div class="py-2">
-                        <button onclick="switchTab('inside-the-capitol')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-gray-700 dark:text-gray-300 transition-colors">
-                            <i class="bi bi-building text-sm mr-2"></i>
-                            Inside the Capitol
-                        </button>
-                        <button onclick="switchTab('market-analysis')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-gray-700 dark:text-gray-300 transition-colors">
-                            Market Analysis
-                        </button>
-                        <button onclick="switchTab('company-research')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-gray-700 dark:text-gray-300 transition-colors">
-                            <i class="bi bi-building text-sm mr-2"></i>
-                            Company Research
-                        </button>
-                        <button onclick="switchTab('economic-indicators')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-gray-700 dark:text-gray-300 transition-colors">
-                            <i class="bi bi-graph-up-arrow text-sm mr-2"></i>
-                            Economic Indicators
-                        </button>
-                        <button onclick="switchTab('financial-analytics')" class="w-full text-left px-4 py-2 hover:bg-emerald-800 text-gray-700 dark:text-gray-300 transition-colors">
-                            <i class="bi bi-graph-up text-sm mr-2"></i>
-                            Financial Analytics
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Watchlist -->
-            <button onclick="switchTab('watchlists')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-watchlists">
-                <i class="bi bi-bookmark-star"></i>
-                <span>Watchlist</span>
-            </button>
-
-            <!-- Community -->
-            <button onclick="switchTab('community')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-community">
-                <i class="bi bi-people"></i>
-                <span>Community</span>
-            </button>
-        </div>
-
-        <!-- User Profile -->
-        <div class="hidden md:flex items-center space-x-4">
-            <button onclick="switchTab('user-profile-settings')" class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200" id="topnav-profile">
-                <i class="bi bi-person-circle text-xl"></i>
-                <span class="hidden lg:block">Profile</span>
-            </button>
-        </div>
-
-        <!-- Mobile Menu Toggle -->
-        <button class="md:hidden p-2 rounded-lg hover:bg-emerald-700 text-white" onclick="toggleMobileMenu()">
-            <i class="bi bi-list text-xl"></i>
-        </button>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="md:hidden hidden bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-500 border-t border-emerald-600">
-        <div class="px-6 py-4 space-y-2">
-            <!-- Dashboard -->
-            <button onclick="switchTab('home')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-house-door"></i>
-                <span>Dashboard</span>
-            </button>
-
-            <!-- Research Tools -->
-            <div class="space-y-1">
-                <div class="px-4 py-2 text-sm font-medium text-emerald-100">Research Tools</div>
-                <button onclick="switchTab('inside-the-capitol')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-building text-sm"></i>
-                    <span>Inside the Capitol</span>
-                </button>
-                <button onclick="switchTab('market-analysis')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <span>Market Analysis</span>
-                </button>
-                <button onclick="switchTab('company-research')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-building text-sm"></i>
-                    <span>Company Research</span>
-                </button>
-                <button onclick="switchTab('economic-indicators')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-graph-up-arrow text-sm"></i>
-                    <span>Economic Indicators</span>
-                </button>
-                <button onclick="switchTab('financial-analytics')" class="w-full flex items-center space-x-2 px-6 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                    <i class="bi bi-graph-up text-sm"></i>
-                    <span>Financial Analytics</span>
-                </button>
-            </div>
-
-            <!-- Watchlist -->
-            <button onclick="switchTab('watchlists')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-bookmark-star"></i>
-                <span>Watchlist</span>
-            </button>
-
-            <!-- Community -->
-            <button onclick="switchTab('community')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-people"></i>
-                <span>Community</span>
-            </button>
-
-            <!-- User Profile -->
-            <button onclick="switchTab('user-profile-settings')" class="w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-emerald-700 text-white transition-all duration-200">
-                <i class="bi bi-person-circle"></i>
-                <span>Profile</span>
-            </button>
-        </div>
-    </div>
-</nav>
-
-<div class="main-content" style="margin-top: 80px;">
+<div class="main-content" style="margin-top: calc(var(--nav-height, 64px) + 24px);">
 <div class="container mx-auto px-6 py-12">
     <div class="flex items-center justify-between mb-12">
         <div>
@@ -663,8 +505,9 @@ function showNotification(message, type = 'info') {
 }
 </script>
 
-    <!-- Top Navigation JavaScript -->
-    <script src="../components/topnav/topnav.js"></script>
+    <!-- Navigation JavaScript -->
+    <script src="../components/navigation/navigation-config.js"></script>
+    <script src="../components/navigation/navigation.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script src="../components/notifications/notification-helpers.js"></script>
