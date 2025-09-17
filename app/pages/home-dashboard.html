@@ -260,9 +260,16 @@
         .icon-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
 
+        /* Ensure grid layout is applied on larger screens */
+        @media (min-width: 1025px) {
+            .dashboard-overview-grid {
+                grid-template-columns: 3.5fr 1fr !important;
+            }
+        }
+
         @media (max-width: 1024px) {
             .dashboard-overview-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 2.5fr 1fr; /* Maintain grid layout but adjust ratio for smaller screens */
                 gap: 2rem;
                 margin-left: 0; /* Remove sidebar margin on smaller screens */
             }
