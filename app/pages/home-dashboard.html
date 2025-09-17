@@ -43,6 +43,7 @@
             grid-template-columns: 2fr 1fr;
             gap: 2rem;
             margin-bottom: 3rem;
+            margin-left: 350px; /* Account for notifications sidebar width */
         }
 
         /* Dashboard Portfolio Card - Takes more space */
@@ -263,11 +264,22 @@
             .dashboard-overview-grid {
                 grid-template-columns: 1fr;
                 gap: 2rem;
+                margin-left: 0; /* Remove sidebar margin on smaller screens */
             }
             
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-overview-grid {
+                margin-left: 0;
+            }
+            
+            .mb-12[style*="margin-left: 350px"] {
+                margin-left: 0 !important;
             }
         }
 
@@ -341,7 +353,7 @@
     </div>
 
     <div class="container mx-auto px-6 py-12">
-        <div class="mb-12">
+        <div class="mb-12" style="margin-left: 350px;">
             <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Portfolio Dashboard</h1>
             <p class="text-lg text-muted-foreground">Track your investments and financial performance</p>
         </div>
