@@ -40,7 +40,7 @@
         /* Dashboard Overview Grid - Similar to community-overview-grid */
         .dashboard-overview-grid {
             display: grid;
-            grid-template-columns: 8fr 1fr; /* Extended portfolio card much further to the left to reach green line */
+            grid-template-columns: 12fr 1fr; /* Portfolio card extends almost to the left edge */
             gap: 2rem;
             margin-bottom: 3rem;
             margin-left: 350px; /* Account for notifications sidebar width */
@@ -263,13 +263,13 @@
         /* Ensure grid layout is applied on larger screens */
         @media (min-width: 1025px) {
             .dashboard-overview-grid {
-                grid-template-columns: 8fr 1fr !important;
+                grid-template-columns: 12fr 1fr !important;
             }
         }
 
         @media (max-width: 1024px) {
             .dashboard-overview-grid {
-                grid-template-columns: 6fr 1fr; /* Maintain extended grid layout for smaller screens */
+                grid-template-columns: 8fr 1fr; /* Maintain extended grid layout for smaller screens */
                 gap: 2rem;
                 margin-left: 0; /* Remove sidebar margin on smaller screens */
             }
