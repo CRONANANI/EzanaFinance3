@@ -40,10 +40,12 @@
         /* Dashboard Overview Grid - Similar to community-overview-grid */
         .dashboard-overview-grid {
             display: grid;
-            grid-template-columns: 20fr 1fr; /* Portfolio card extends much further to the left */
-            gap: 1rem;
+            grid-template-columns: 15fr 1fr; /* Portfolio card extends further left, metrics cards wider */
+            gap: 1.5rem;
             margin-bottom: 3rem;
             margin-left: 350px; /* Account for notifications sidebar width */
+            justify-content: center;
+            align-items: center;
         }
 
         /* Dashboard Portfolio Card - Takes more space */
@@ -202,6 +204,7 @@
             align-items: center;
             text-align: center;
             min-height: 78px;
+            min-width: 120px; /* Ensure minimum width for titles */
         }
 
         .metric-card:hover {
@@ -229,6 +232,10 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 4px;
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         .metric-icon {
@@ -263,14 +270,14 @@
         /* Ensure grid layout is applied on larger screens */
         @media (min-width: 1025px) {
             .dashboard-overview-grid {
-                grid-template-columns: 20fr 1fr !important;
+                grid-template-columns: 15fr 1fr !important;
             }
         }
 
         @media (max-width: 1024px) {
             .dashboard-overview-grid {
-                grid-template-columns: 15fr 1fr; /* Maintain extended grid layout for smaller screens */
-                gap: 1rem;
+                grid-template-columns: 12fr 1fr; /* Maintain extended grid layout for smaller screens */
+                gap: 1.5rem;
                 margin-left: 0; /* Remove sidebar margin on smaller screens */
             }
             
@@ -359,8 +366,8 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-6 py-12">
-        <div class="mb-12" style="margin-left: 350px;">
+    <div class="container mx-auto px-6 py-12" style="display: flex; flex-direction: column; align-items: center;">
+        <div class="mb-12" style="margin-left: 350px; text-align: center;">
             <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Portfolio Dashboard</h1>
             <p class="text-lg text-muted-foreground">Track your investments and financial performance</p>
         </div>
