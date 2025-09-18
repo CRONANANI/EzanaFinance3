@@ -1,0 +1,163 @@
+/* Income vs Expenses Card Component Styles */
+.income-vs-expenses-card {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.income-vs-expenses-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+    pointer-events: none;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.income-expenses-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.income-section,
+.expenses-section,
+.net-savings-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.income-section {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.expenses-section {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.net-savings-section {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.income-section:hover,
+.expenses-section:hover,
+.net-savings-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.section-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.income-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.expenses-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.savings-icon {
+    background: #10b981;
+    color: white;
+}
+
+.section-info {
+    flex: 1;
+}
+
+.section-title {
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 0.25rem;
+}
+
+.section-subtitle {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.section-amount {
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.income-amount {
+    color: #10b981;
+}
+
+.expenses-amount {
+    color: #ef4444;
+}
+
+.savings-amount {
+    color: #10b981;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.savings-rate {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #10b981;
+    margin-top: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .income-vs-expenses-card {
+        padding: 1.5rem;
+    }
+    
+    .income-section,
+    .expenses-section,
+    .net-savings-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .section-amount {
+        text-align: center;
+    }
+    
+    .savings-amount {
+        align-items: center;
+    }
+}

@@ -1,0 +1,232 @@
+/* Investment Recommendations Card Component Styles */
+.investment-recommendations-card {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.investment-recommendations-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+    pointer-events: none;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin: 0;
+}
+
+.card-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.risk-selector {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(15, 23, 42, 0.8);
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.risk-selector:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.refresh-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.recommendation-card {
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    background: rgba(15, 23, 42, 0.6);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.recommendation-card:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.recommendation-card.vti:hover {
+    border-color: #10b981;
+}
+
+.recommendation-card.bnd:hover {
+    border-color: #3b82f6;
+}
+
+.recommendation-card.vxus:hover {
+    border-color: #8b5cf6;
+}
+
+.recommendation-card.vnq:hover {
+    border-color: #f59e0b;
+}
+
+.recommendation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.ticker-symbol {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.allocation {
+    text-align: right;
+}
+
+.allocation-percentage {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.allocation-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.recommendation-info {
+    margin-bottom: 0.75rem;
+}
+
+.fund-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    margin-bottom: 0.25rem;
+}
+
+.expected-return {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.recommendation-description {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.recommendation-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.tag.etf {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.tag.low-risk {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.tag.medium-risk {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.tag.high-risk {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .recommendations-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .investment-recommendations-card {
+        padding: 1.5rem;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .card-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .recommendations-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .recommendation-card {
+        padding: 1rem;
+    }
+}

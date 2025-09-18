@@ -1,0 +1,106 @@
+<!-- Investment Recommendations Card Component -->
+<div class="investment-recommendations-card">
+    <div class="card-header">
+        <h3 class="card-title">Personalized Investment Recommendations</h3>
+        <div class="card-controls">
+            <select id="risk-tolerance" onchange="updateInvestmentRecommendations()" class="risk-selector">
+                <option value="conservative">Conservative</option>
+                <option value="moderate" selected>Moderate</option>
+                <option value="aggressive">Aggressive</option>
+            </select>
+            <button onclick="refreshRecommendations()" class="refresh-btn">
+                Refresh
+            </button>
+        </div>
+    </div>
+    
+    <div class="recommendations-grid" id="investment-recommendations">
+        <!-- VTI Recommendation -->
+        <div class="recommendation-card vti">
+            <div class="recommendation-header">
+                <div class="ticker-symbol">VTI</div>
+                <div class="allocation">
+                    <div class="allocation-percentage">40%</div>
+                    <div class="allocation-label">Allocation</div>
+                </div>
+            </div>
+            <div class="recommendation-info">
+                <div class="fund-name">Vanguard Total Stock Market ETF</div>
+                <div class="expected-return">Expected Return: 7-10%</div>
+            </div>
+            <div class="recommendation-description">
+                Balanced growth with diversification
+            </div>
+            <div class="recommendation-tags">
+                <span class="tag etf">ETF</span>
+                <span class="tag medium-risk">Medium Risk</span>
+            </div>
+        </div>
+        
+        <!-- BND Recommendation -->
+        <div class="recommendation-card bnd">
+            <div class="recommendation-header">
+                <div class="ticker-symbol">BND</div>
+                <div class="allocation">
+                    <div class="allocation-percentage">30%</div>
+                    <div class="allocation-label">Allocation</div>
+                </div>
+            </div>
+            <div class="recommendation-info">
+                <div class="fund-name">Vanguard Total Bond Market ETF</div>
+                <div class="expected-return">Expected Return: 3-6%</div>
+            </div>
+            <div class="recommendation-description">
+                Income generation and stability
+            </div>
+            <div class="recommendation-tags">
+                <span class="tag etf">ETF</span>
+                <span class="tag low-risk">Low Risk</span>
+            </div>
+        </div>
+        
+        <!-- VXUS Recommendation -->
+        <div class="recommendation-card vxus">
+            <div class="recommendation-header">
+                <div class="ticker-symbol">VXUS</div>
+                <div class="allocation">
+                    <div class="allocation-percentage">20%</div>
+                    <div class="allocation-label">Allocation</div>
+                </div>
+            </div>
+            <div class="recommendation-info">
+                <div class="fund-name">Vanguard Total International Stock ETF</div>
+                <div class="expected-return">Expected Return: 6-9%</div>
+            </div>
+            <div class="recommendation-description">
+                International diversification
+            </div>
+            <div class="recommendation-tags">
+                <span class="tag etf">ETF</span>
+                <span class="tag medium-risk">Medium Risk</span>
+            </div>
+        </div>
+        
+        <!-- VNQ Recommendation -->
+        <div class="recommendation-card vnq">
+            <div class="recommendation-header">
+                <div class="ticker-symbol">VNQ</div>
+                <div class="allocation">
+                    <div class="allocation-percentage">10%</div>
+                    <div class="allocation-label">Allocation</div>
+                </div>
+            </div>
+            <div class="recommendation-info">
+                <div class="fund-name">Vanguard Real Estate Investment Trust ETF</div>
+                <div class="expected-return">Expected Return: 5-8%</div>
+            </div>
+            <div class="recommendation-description">
+                Real estate exposure and inflation hedge
+            </div>
+            <div class="recommendation-tags">
+                <span class="tag etf">ETF</span>
+                <span class="tag medium-risk">Medium Risk</span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+<!-- Financial Health Score Card Component -->
+<div class="financial-health-score-card">
+    <div class="card-header">
+        <h3 class="card-title">Financial Health Score</h3>
+        <button onclick="refreshFinancialHealth()" class="refresh-btn">
+            <i class="bi bi-arrow-clockwise mr-2"></i>Refresh
+        </button>
+    </div>
+    
+    <div class="health-score-content">
+        <!-- Health Score Display -->
+        <div class="score-display">
+            <div class="score-circle-container">
+                <svg class="score-circle" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="54" stroke="currentColor" class="score-circle-bg" stroke-width="8" fill="none"></circle>
+                    <circle id="health-score-circle" cx="60" cy="60" r="54" stroke="currentColor" class="score-circle-fill" stroke-width="8" fill="none" 
+                            stroke-dasharray="339.292" stroke-dashoffset="203.575" stroke-linecap="round"></circle>
+                </svg>
+                <div class="score-value-container">
+                    <div id="health-score-value" class="score-value">8.7</div>
+                    <div class="score-max">/ 10</div>
+                </div>
+            </div>
+            <div id="health-level" class="health-level">Excellent</div>
+            <div class="health-level-label">Financial Health Level</div>
+        </div>
+        
+        <!-- Health Components -->
+        <div class="health-components">
+            <div class="health-component">
+                <div class="component-icon savings-icon">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+                <div class="component-info">
+                    <div class="component-title">Savings Rate</div>
+                    <div class="component-subtitle">Monthly savings percentage</div>
+                </div>
+                <div class="component-score">
+                    <div id="savings-rate" class="score-number">23.5%</div>
+                    <div class="score-detail">Score: <span id="savings-score">94/100</span></div>
+                </div>
+            </div>
+            
+            <div class="health-component">
+                <div class="component-icon emergency-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="component-info">
+                    <div class="component-title">Emergency Fund</div>
+                    <div class="component-subtitle">Months of expenses covered</div>
+                </div>
+                <div class="component-score">
+                    <div id="emergency-fund" class="score-number">5.2 months</div>
+                    <div class="score-detail">Score: <span id="emergency-score">87/100</span></div>
+                </div>
+            </div>
+            
+            <div class="health-component">
+                <div class="component-icon balance-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="component-info">
+                    <div class="component-title">Total Balance</div>
+                    <div class="component-subtitle">Across all accounts</div>
+                </div>
+                <div class="component-score">
+                    <div id="total-balance" class="score-number">$58,830</div>
+                    <div class="score-detail">Score: <span id="balance-score">85/100</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
