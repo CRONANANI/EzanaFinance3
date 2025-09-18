@@ -15,6 +15,7 @@
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Component Cards CSS -->
+    <link rel="stylesheet" href="../components/pages/home-dashboard/hero-section/hero-section.css">
     <link rel="stylesheet" href="../components/home-dashboard/todays-pnl-card.css">
     <link rel="stylesheet" href="../components/home-dashboard/top-performer-card.css">
     <link rel="stylesheet" href="../components/home-dashboard/risk-score-card.css">
@@ -44,53 +45,7 @@
             padding: 0 2rem;
         }
 
-        /* Hero Section */
-        .dashboard-hero {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 2rem;
-            padding: 3rem;
-            margin-bottom: 3rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dashboard-hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-radius: 2rem;
-        }
-
-        .dashboard-hero-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .dashboard-title {
-            font-size: 3.5rem;
-            font-weight: 300;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        .dashboard-subtitle {
-            font-size: 1.25rem;
-            color: var(--muted-foreground);
-            margin-bottom: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        /* Hero section styles moved to component */
 
         /* Dashboard Overview Grid */
         .dashboard-overview-grid {
@@ -177,14 +132,6 @@
         }
 
         @media (max-width: 768px) {
-            .dashboard-hero {
-                padding: 2rem;
-            }
-            
-            .dashboard-title {
-                font-size: 2.5rem;
-            }
-            
             .metrics-grid {
                 grid-template-columns: 1fr;
             }
@@ -509,13 +456,8 @@
     </div>
 
     <div class="dashboard-container">
-        <!-- Hero Section -->
-        <div class="dashboard-hero">
-            <div class="dashboard-hero-content">
-                <h1 class="dashboard-title">Portfolio Dashboard</h1>
-                <p class="dashboard-subtitle">Track your investments and financial performance with real-time insights</p>
-            </div>
-        </div>
+        <!-- Hero Section Component -->
+        <div id="hero-section-container"></div>
 
         <!-- Portfolio Overview Section -->
         <div class="section-header">
@@ -643,10 +585,15 @@
     <script src="../components/navigation/navigation.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
+    <!-- Hero Section Component JavaScript -->
+    <script src="../components/pages/home-dashboard/hero-section/hero-section.js"></script>
     <script>
-        // Initialize notifications sidebar when page loads
+        // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing dashboard');
+            
+            // Load hero section component
+            loadHeroSection();
             
             // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {
@@ -654,6 +601,17 @@
                 sidebar.init();
             }
         });
+
+        // Function to load hero section component
+        async function loadHeroSection() {
+            try {
+                const response = await fetch('../components/pages/home-dashboard/hero-section/hero-section.html');
+                const html = await response.text();
+                document.getElementById('hero-section-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading hero section component:', error);
+            }
+        }
 </script>
 </body>
 </html>
