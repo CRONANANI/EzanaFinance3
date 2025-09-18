@@ -160,10 +160,162 @@ EzanaFinance3/
 ├── app/                        # Frontend web application
 │   ├── index.html             # Main HTML file
 │   ├── app.js                 # JavaScript functionality
-│   ├── styles.css             # Custom CSS styles
+│   ├── assets/                # Static assets
+│   │   ├── css/              # Stylesheets
+│   │   │   ├── styles.css    # Main application styles
+│   │   │   └── shared.css    # Shared component styles
+│   │   ├── js/               # JavaScript files
+│   │   │   └── component-loader.js # Component loading utility
+│   │   └── images/           # Image assets
+│   ├── components/            # Reusable components
+│   │   ├── shared/           # Shared components across pages
+│   │   │   ├── navigation.html    # Navigation component
+│   │   │   └── notifications.html # Notifications sidebar
+│   │   ├── pages/            # Page-specific components
+│   │   │   ├── home-dashboard/    # Home dashboard components
+│   │   │   │   ├── portfolio-card.html/css/js
+│   │   │   │   ├── metrics-grid.html/css/js
+│   │   │   │   ├── todays-pnl-card.html/css/js
+│   │   │   │   ├── top-performer-card.html/css/js
+│   │   │   │   ├── risk-score-card.html/css/js
+│   │   │   │   ├── monthly-dividends-card.html/css/js
+│   │   │   │   ├── market-performance-card.html/css/js
+│   │   │   │   ├── asset-allocation-card.html/css/js
+│   │   │   │   ├── market-news-card.html/css/js
+│   │   │   │   └── portfolio-news-list.html/css/js
+│   │   │   ├── community/         # Community page components
+│   │   │   │   ├── community-cards.html/css/js
+│   │   │   │   ├── trophy-cabinet.html/css/js
+│   │   │   │   └── community-cards.css
+│   │   │   ├── watchlist/         # Watchlist page components
+│   │   │   │   ├── watchlist-cards.html/css/js
+│   │   │   │   └── watchlist-cards.css
+│   │   │   ├── inside-the-capitol/ # Capitol page components
+│   │   │   │   ├── congressional-trading-card.html/css/js
+│   │   │   │   ├── government-contracts-card.html/css/js
+│   │   │   │   ├── house-trading-card.html/css/js
+│   │   │   │   ├── senator-trading-card.html/css/js
+│   │   │   │   ├── lobbying-activity-card.html/css/js
+│   │   │   │   ├── patent-momentum-card.html/css/js
+│   │   │   │   ├── market-sentiment-card.html/css/js
+│   │   │   │   ├── insights-section.html/css/js
+│   │   │   │   └── summary-stats-cards.html/css/js
+│   │   │   └── research-tools/     # Research tools components
+│   │   │       ├── company-research-cards.html/css/js
+│   │   │       ├── market-analysis-cards.html/css/js
+│   │   │       └── economic-indicators-cards.html/css/js
+│   │   ├── navigation/         # Navigation components
+│   │   │   ├── navigation.html/css/js
+│   │   │   ├── navigation-config.js
+│   │   │   └── README.md
+│   │   ├── notifications/      # Notifications components
+│   │   │   ├── notifications-sidebar.html/css/js
+│   │   │   ├── notification-helpers.js
+│   │   │   └── README.md
+│   │   ├── ui/                # UI utility components
+│   │   │   ├── prism-background.html/css/js
+│   │   │   └── shiny-text.html/css/js
+│   │   └── topnav/            # Legacy topnav (deprecated)
+│   │       ├── topnav.html/css/js
+│   │       └── README.md
+│   ├── pages/                 # Individual page HTML files
+│   │   ├── landing.html       # Landing page
+│   │   ├── landing.css        # Landing page styles
+│   │   ├── landing.js         # Landing page scripts
+│   │   ├── split-text.js      # Split text animation
+│   │   ├── electric-border.js # Electric border animation
+│   │   ├── electric-border.css
+│   │   ├── prism.js           # Prism background effect
+│   │   ├── prism.css
+│   │   ├── home-dashboard.html # Portfolio dashboard
+│   │   ├── community.html     # Community page
+│   │   ├── watchlist.html     # Watchlist page
+│   │   ├── company-research.html # Company research
+│   │   ├── market-analysis.html # Market analysis
+│   │   ├── economic-indicators.html # Economic indicators
+│   │   ├── inside-the-capitol.html # Congressional trading
+│   │   ├── user-profile-settings.html # User settings
+│   │   ├── create-account.html # Account creation
+│   │   ├── create-account.css
+│   │   └── create-account.js
 │   └── dist/                  # Built assets (if using build tools)
+│       ├── assets/
+│       └── index.html
 └── README.md                  # This file
 ```
+
+## 🎯 Component Directory Reference
+
+### 🏠 Home Dashboard Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Portfolio Card | `components/pages/home-dashboard/portfolio-card.*` | Main portfolio value display with chart |
+| Metrics Grid | `components/pages/home-dashboard/metrics-grid.*` | 6 metric cards in 2-column layout |
+| Today's P&L | `components/pages/home-dashboard/todays-pnl-card.*` | Daily profit/loss display |
+| Top Performer | `components/pages/home-dashboard/top-performer-card.*` | Best performing stock |
+| Risk Score | `components/pages/home-dashboard/risk-score-card.*` | Portfolio risk assessment |
+| Monthly Dividends | `components/pages/home-dashboard/monthly-dividends-card.*` | Dividend income tracking |
+| Market Performance | `components/pages/home-dashboard/market-performance-card.*` | Market index performance |
+| Asset Allocation | `components/pages/home-dashboard/asset-allocation-card.*` | Portfolio allocation breakdown |
+| Market News | `components/pages/home-dashboard/market-news-card.*` | Relevant market news |
+| Portfolio News List | `components/pages/home-dashboard/portfolio-news-list.*` | News list component |
+
+### 👥 Community Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Community Cards | `components/pages/community/community-cards.*` | Main community action cards |
+| Trophy Cabinet | `components/pages/community/trophy-cabinet.*` | User achievements display |
+
+### 📋 Watchlist Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Watchlist Cards | `components/pages/watchlist/watchlist-cards.*` | Watchlist management cards |
+
+### 🏛️ Inside The Capitol Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Congressional Trading | `components/pages/inside-the-capitol/congressional-trading-card.*` | Congress trading data |
+| Government Contracts | `components/pages/inside-the-capitol/government-contracts-card.*` | Contract awards |
+| House Trading | `components/pages/inside-the-capitol/house-trading-card.*` | House trading activity |
+| Senator Trading | `components/pages/inside-the-capitol/senator-trading-card.*` | Senate trading activity |
+| Lobbying Activity | `components/pages/inside-the-capitol/lobbying-activity-card.*` | Lobbying expenditure |
+| Patent Momentum | `components/pages/inside-the-capitol/patent-momentum-card.*` | Patent filing data |
+| Market Sentiment | `components/pages/inside-the-capitol/market-sentiment-card.*` | Market sentiment analysis |
+| Insights Section | `components/pages/inside-the-capitol/insights-section.*` | Key insights display |
+| Summary Stats | `components/pages/inside-the-capitol/summary-stats-cards.*` | Summary statistics |
+
+### 🔧 Research Tools Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Company Research | `components/pages/research-tools/company-research-cards.*` | Company analysis tools |
+| Market Analysis | `components/pages/research-tools/market-analysis-cards.*` | Market analysis tools |
+| Economic Indicators | `components/pages/research-tools/economic-indicators-cards.*` | Economic data tools |
+
+### 🔧 Shared Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Navigation | `components/shared/navigation.html` | Main navigation bar |
+| Notifications | `components/shared/notifications.html` | Notifications sidebar |
+| Navigation Config | `components/navigation/navigation-config.js` | Navigation configuration |
+| Navigation Styles | `components/navigation/navigation.css` | Navigation styling |
+| Navigation Logic | `components/navigation/navigation.js` | Navigation functionality |
+| Notifications Styles | `components/notifications/notifications-sidebar.css` | Notifications styling |
+| Notifications Logic | `components/notifications/notifications-sidebar.js` | Notifications functionality |
+| Notification Helpers | `components/notifications/notification-helpers.js` | Notification utilities |
+
+### 🎨 UI Components
+| Component | File | Purpose |
+|-----------|------|---------|
+| Prism Background | `components/ui/prism-background.*` | 3D background effect |
+| Shiny Text | `components/ui/shiny-text.*` | Text animation effects |
+
+### 📁 Assets
+| Asset Type | Location | Purpose |
+|------------|----------|---------|
+| Main Styles | `assets/css/styles.css` | Global application styles |
+| Shared Styles | `assets/css/shared.css` | Shared component styles |
+| Component Loader | `assets/js/component-loader.js` | Dynamic component loading |
+| Images | `assets/images/` | Static image assets |
 
 ## 🔌 API Endpoints
 
@@ -231,20 +383,25 @@ EzanaFinance3/
 
 ## 📱 Frontend Pages & UI Features
 
-### 🏠 Landing Page (`landing.html`)
+### 🏠 Landing Page (`pages/landing.html`)
 - **Hero Section**: Professional gradient background with compelling call-to-action
 - **Feature Showcase**: Interactive cards highlighting key platform features
 - **Responsive Design**: Optimized for all device sizes
 - **Smooth Animations**: CSS transitions and hover effects
+- **Prism Background**: 3D WebGL background effect
+- **Split Text Animation**: Animated text effects
+- **Electric Border**: Interactive button animations
 
-### 📊 Home Dashboard (`home-dashboard.html`)
+### 📊 Home Dashboard (`pages/home-dashboard.html`)
 - **Portfolio Overview**: Real-time portfolio value and performance metrics
 - **Asset Allocation Charts**: Interactive pie charts showing investment distribution
 - **Performance Cards**: Daily P&L, monthly dividends, and risk indicators
 - **Quick Actions**: Refresh data, add transactions, view reports
 - **Responsive Grid Layout**: Adaptive cards that work on all screen sizes
+- **Historical Charts**: Interactive portfolio performance charts
+- **Market News**: Relevant portfolio news feed
 
-### 🏛️ Inside The Capitol (`inside-the-capitol.html`)
+### 🏛️ Inside The Capitol (`pages/inside-the-capitol.html`)
 - **Congressional Trading Tracker**: Real-time trading data with filtering
 - **Follow System**: Star and follow specific congress members
 - **Advanced Filtering**: Filter by trade type, party, chamber, and date range
@@ -252,55 +409,63 @@ EzanaFinance3/
 - **Interactive Tables**: Sortable, searchable tables with pagination
 - **Trade Notifications**: Real-time alerts for followed members' trades
 
-### 📈 Market Analysis (`market-analysis.html`)
+### 📈 Market Analysis (`pages/market-analysis.html`)
 - **Sector Performance**: Comprehensive market sector analysis
 - **Market Trends**: Interactive charts showing market movements
 - **Stock Screener**: Advanced filtering and screening tools
 - **Market Sentiment**: Real-time sentiment indicators and analysis
 
-### 🏢 Company Research (`company-research.html`)
+### 🏢 Company Research (`pages/company-research.html`)
 - **Company Profiles**: Detailed company information and financials
 - **Financial Metrics**: Key performance indicators and ratios
 - **News & Analysis**: Latest news and analyst recommendations
 - **Peer Comparison**: Side-by-side company comparisons
 
-### 📊 Economic Indicators (`economic-indicators.html`)
+### 📊 Economic Indicators (`pages/economic-indicators.html`)
 - **Economic Data**: Real-time economic indicators and metrics
 - **Market Sentiment**: Sentiment analysis and market mood indicators
 - **Economic Calendar**: Upcoming economic events and releases
 - **Historical Data**: Long-term economic trend analysis
 
-### 📋 Watchlist (`watchlist.html`)
+### 📋 Watchlist (`pages/watchlist.html`)
 - **Custom Watchlists**: Create and manage multiple watchlists
 - **Congress Member Tracking**: Follow specific congress members
 - **Price Alerts**: Set up price and trade alerts
 - **Portfolio Integration**: Link watchlists to portfolio holdings
 
-### 👥 Community (`community.html`)
+### 👥 Community (`pages/community.html`)
 - **Discussion Forums**: Community discussions and insights
 - **User Profiles**: Connect with other investors
 - **Share Insights**: Share analysis and trading ideas
 - **Social Features**: Like, comment, and follow other users
+- **Trophy Cabinet**: User achievements and recognition
 
-### 📊 Financial Analytics (`financial-analytics.html`)
+### 📊 Financial Analytics (`pages/financial-analytics.html`)
 - **Advanced Analytics**: Comprehensive financial health scoring
 - **Risk Assessment**: Portfolio risk analysis and recommendations
 - **Performance Metrics**: Detailed performance tracking and analysis
 - **Trend Analysis**: Historical performance and trend identification
 
-### ⚙️ User Profile Settings (`user-profile-settings.html`)
+### ⚙️ User Profile Settings (`pages/user-profile-settings.html`)
 - **Personal Information**: Update profile details and contact info
 - **Account Preferences**: Customize dashboard and notification settings
 - **Security Settings**: Password management and security options
 - **Data Management**: Export data and privacy controls
+
+### 🔐 Account Creation (`pages/create-account.html`)
+- **Registration Form**: Complete user registration process
+- **Form Validation**: Real-time validation and error handling
+- **Password Security**: Secure password requirements and visibility toggle
+- **Terms & Conditions**: User agreement and privacy policy
 
 ## 🎨 UI/UX Features
 
 ### 🎨 Design System
 - **Custom Color Palette**: Professional dark theme with gold accents
 - **Typography**: Clean, modern font hierarchy with excellent readability
-- **Spacing**: Consistent spacing system using Tailwind CSS
+- **Spacing**: Consistent spacing system using CSS variables
 - **Icons**: Comprehensive Bootstrap Icons integration
+- **CSS Variables**: Centralized theming and customization
 
 ### 📱 Responsive Design
 - **Mobile-First**: Optimized for mobile devices with touch-friendly interfaces
@@ -391,26 +556,6 @@ docker run -p 8000:8000 \
   ezana-finance
 ```
 
-### File Structure for Deployment
-```
-EzanaFinance3/
-├── backend/                     # FastAPI backend
-│   ├── main.py                 # Main FastAPI app with static file serving
-│   ├── routers/                # API route handlers
-│   ├── models.py               # Database models
-│   ├── schemas.py              # Pydantic schemas
-│   ├── database.py             # Database configuration
-│   ├── requirements.txt        # Python dependencies
-│   └── azure-deploy.yml        # Azure deployment workflow
-├── app/                        # Frontend static files
-│   ├── index.html             # Main HTML file
-│   ├── app.js                 # JavaScript functionality
-│   ├── styles.css             # Custom CSS styles
-│   ├── landing.css            # Landing page styles
-│   └── pages/                 # Individual page HTML files
-└── README.md                  # This file
-```
-
 ## 📊 Database Schema
 
 ### Core Tables
@@ -443,6 +588,7 @@ pytest --cov=.
 - **Efficient Caching**: Redis caching for external API calls
 - **Database Optimization**: Indexed queries and connection pooling
 - **Frontend Optimization**: Minified assets and lazy loading
+- **Component Loading**: Dynamic component loading for better performance
 
 ## 🤝 Contributing
 
@@ -479,6 +625,7 @@ For support and questions:
 - **v3.1.0**: Complete UI overhaul with modern design system
 - **v3.2.0**: Added comprehensive user profile management
 - **v3.3.0**: Enhanced responsive design and mobile optimization
+- **v3.4.0**: Professional component architecture and code organization
 
 ## 🎯 Current Project Status
 
@@ -494,6 +641,8 @@ For support and questions:
 - **Portfolio Management**: Complete portfolio tracking and analytics
 - **Budget Management**: Comprehensive budget planning and tracking
 - **Static File Serving**: Unified deployment with FastAPI serving frontend
+- **Professional Component Architecture**: Modular, reusable component system
+- **Comprehensive Documentation**: Complete file structure and component reference
 
 ### 🚧 In Progress
 - **Real-time Data Integration**: Live market data and congressional trading updates
