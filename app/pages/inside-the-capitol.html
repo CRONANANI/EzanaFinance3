@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
-    <!-- Import Inside the Capitol Component Styles -->
+<!-- Import Inside the Capitol Component Styles -->
     <link rel="stylesheet" href="../components/pages/inside-the-capitol/summary-stats-cards/summary-stats-cards.css">
     <link rel="stylesheet" href="../components/pages/inside-the-capitol/congressional-trading-card/congressional-trading-card.css">
     <link rel="stylesheet" href="../components/pages/inside-the-capitol/government-contracts-card/government-contracts-card.css">
@@ -102,14 +102,14 @@
             grid-template-columns: repeat(1, minmax(0, 1fr));
         }
 
-        .lg\\:grid-cols-2 {
-            @media (min-width: 1024px) {
+        .md\\:grid-cols-2 {
+            @media (min-width: 768px) {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
-        .xl\\:grid-cols-3 {
-            @media (min-width: 1280px) {
+        .lg\\:grid-cols-3 {
+            @media (min-width: 1024px) {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
             }
         }
@@ -130,6 +130,32 @@
         .py-12 {
             padding-top: 3rem;
             padding-bottom: 3rem;
+        }
+
+        /* Component Cards Grid Styling */
+        .component-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .component-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .component-cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Ensure cards have consistent height in grid */
+        .component-cards-grid > div {
+            display: flex;
+            flex-direction: column;
         }
     </style>
 </head>
@@ -190,353 +216,352 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-6 py-12">
-        <div class="mb-12">
-            <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Inside the Capitol</h1>
-            <p class="text-lg text-muted-foreground">Real-time insights into congressional trading, government contracts, lobbying activities, and more.</p>
-        </div>
+<div class="container mx-auto px-6 py-12">
+    <div class="mb-12">
+        <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Inside the Capitol</h1>
+        <p class="text-lg text-muted-foreground">Real-time insights into congressional trading, government contracts, lobbying activities, and more.</p>
+    </div>
 
-        <!-- Summary Stats -->
-        <div class="summary-stats-grid">
-            <div class="summary-stats-card total-trades-card">
-                <div class="summary-stats-content">
-                    <div class="summary-stats-info">
-                        <p class="summary-stats-label">Total Trades</p>
-                        <p class="summary-stats-value" id="total-trades-summary">1,247</p>
-                    </div>
-                    <div class="summary-stats-icon">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
+    <!-- Summary Stats -->
+    <div class="summary-stats-grid">
+        <div class="summary-stats-card total-trades-card">
+            <div class="summary-stats-content">
+                <div class="summary-stats-info">
+                    <p class="summary-stats-label">Total Trades</p>
+                    <p class="summary-stats-value" id="total-trades-summary">1,247</p>
                 </div>
-            </div>
-            
-            <div class="summary-stats-card total-volume-card">
-                <div class="summary-stats-content">
-                    <div class="summary-stats-info">
-                        <p class="summary-stats-label">Total Volume</p>
-                        <p class="summary-stats-value" id="total-volume-summary">$45.2M</p>
-                    </div>
-                    <div class="summary-stats-icon">
-                        <i class="bi bi-currency-dollar"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="summary-stats-card active-traders-card">
-                <div class="summary-stats-content">
-                    <div class="summary-stats-info">
-                        <p class="summary-stats-label">Active Traders</p>
-                        <p class="summary-stats-value" id="active-traders-summary">89</p>
-                    </div>
-                    <div class="summary-stats-icon">
-                        <i class="bi bi-people"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="summary-stats-card this-week-card">
-                <div class="summary-stats-content">
-                    <div class="summary-stats-info">
-                        <p class="summary-stats-label">This Week</p>
-                        <p class="summary-stats-value" id="weekly-trades-summary">+23</p>
-                    </div>
-                    <div class="summary-stats-icon">
-                        <i class="bi bi-trending-up"></i>
-                    </div>
+                <div class="summary-stats-icon">
+                    <i class="bi bi-graph-up"></i>
                 </div>
             </div>
         </div>
+        
+        <div class="summary-stats-card total-volume-card">
+            <div class="summary-stats-content">
+                <div class="summary-stats-info">
+                    <p class="summary-stats-label">Total Volume</p>
+                    <p class="summary-stats-value" id="total-volume-summary">$45.2M</p>
+                </div>
+                <div class="summary-stats-icon">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary-stats-card active-traders-card">
+            <div class="summary-stats-content">
+                <div class="summary-stats-info">
+                    <p class="summary-stats-label">Active Traders</p>
+                    <p class="summary-stats-value" id="active-traders-summary">89</p>
+                </div>
+                <div class="summary-stats-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary-stats-card this-week-card">
+            <div class="summary-stats-content">
+                <div class="summary-stats-info">
+                    <p class="summary-stats-label">This Week</p>
+                    <p class="summary-stats-value" id="weekly-trades-summary">+23</p>
+                </div>
+                <div class="summary-stats-icon">
+                    <i class="bi bi-trending-up"></i>
+                </div>
+            </div>
+        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            <!-- Historical Congress Trading Card -->
-            <div id="historicalCongressTradingCard" class="congressional-trading-card" onclick="toggleCongressTradingExpansion()">
-                <div class="congressional-trading-header">
-                    <h3 class="congressional-trading-title">Congressional Trading</h3>
-                    <div class="congressional-trading-controls">
-                        <div class="flex items-center space-x-2">
-                            <button id="refreshCongressData" onclick="refreshCongressData(event)" class="congressional-refresh-btn" title="Refresh data">
-                                <i class="bi bi-arrow-clockwise"></i>
-                            </button>
-                        </div>
-                        <div id="congressApiStatus" class="congressional-api-status connected" title="API Connected"></div>
-                        <div class="congressional-toggle-icon">
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
+        <div class="component-cards-grid">
+        <!-- Historical Congress Trading Card -->
+        <div id="historicalCongressTradingCard" class="congressional-trading-card" onclick="toggleCongressTradingExpansion()">
+            <div class="congressional-trading-header">
+                <h3 class="congressional-trading-title">Congressional Trading</h3>
+                <div class="congressional-trading-controls">
+                    <div class="flex items-center space-x-2">
+                        <button id="refreshCongressData" onclick="refreshCongressData(event)" class="congressional-refresh-btn" title="Refresh data">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                    <div id="congressApiStatus" class="congressional-api-status connected" title="API Connected"></div>
+                    <div class="congressional-toggle-icon">
+                        <i class="bi bi-chevron-down"></i>
                     </div>
                 </div>
-                <div class="congressional-stats-grid">
-                    <div class="congressional-stat-row">
-                        <span class="congressional-stat-label">Total Trades:</span>
-                        <span id="congressTotalTrades" class="congressional-stat-value">-</span>
-                    </div>
-                    <div class="congressional-stat-row">
-                        <span class="congressional-stat-label">Total Volume:</span>
-                        <span id="congressTotalVolume" class="congressional-stat-value">-</span>
-                    </div>
-                    <div class="congressional-stat-row">
-                        <span class="congressional-stat-label">Active Traders:</span>
-                        <span id="congressActiveTraders" class="congressional-stat-value">-</span>
-                    </div>
-                    <div class="congressional-last-updated">
-                        Last updated: <span id="congressLastUpdated">-</span>
+            </div>
+            <div class="congressional-stats-grid">
+                <div class="congressional-stat-row">
+                    <span class="congressional-stat-label">Total Trades:</span>
+                    <span id="congressTotalTrades" class="congressional-stat-value">-</span>
+                </div>
+                <div class="congressional-stat-row">
+                    <span class="congressional-stat-label">Total Volume:</span>
+                    <span id="congressTotalVolume" class="congressional-stat-value">-</span>
+                </div>
+                <div class="congressional-stat-row">
+                    <span class="congressional-stat-label">Active Traders:</span>
+                    <span id="congressActiveTraders" class="congressional-stat-value">-</span>
+                </div>
+                <div class="congressional-last-updated">
+                    Last updated: <span id="congressLastUpdated">-</span>
+                </div>
+            </div>
+            
+            <!-- Expandable Content -->
+            <div id="congressTradingExpandedContent" class="congressional-expanded-content hidden" onclick="event.stopPropagation()">
+                <div class="congressional-trading-history">
+                    <h4 class="congressional-trading-history-title">Congressional Trading History</h4>
+                    <div class="congressional-filters">
+                        <button id="filter-all" class="congressional-filter-btn active" onclick="filterCongressTrades(event, 'all')">All Trades</button>
+                        <button id="filter-buy" class="congressional-filter-btn inactive" onclick="filterCongressTrades(event, 'buy')">Buy</button>
+                        <button id="filter-sell" class="congressional-filter-btn inactive" onclick="filterCongressTrades(event, 'sell')">Sell</button>
                     </div>
                 </div>
                 
-                <!-- Expandable Content -->
-                <div id="congressTradingExpandedContent" class="congressional-expanded-content hidden" onclick="event.stopPropagation()">
-                    <div class="congressional-trading-history">
-                        <h4 class="congressional-trading-history-title">Congressional Trading History</h4>
-                        <div class="congressional-filters">
-                            <button id="filter-all" class="congressional-filter-btn active" onclick="filterCongressTrades(event, 'all')">All Trades</button>
-                            <button id="filter-buy" class="congressional-filter-btn inactive" onclick="filterCongressTrades(event, 'buy')">Buy</button>
-                            <button id="filter-sell" class="congressional-filter-btn inactive" onclick="filterCongressTrades(event, 'sell')">Sell</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Trading History Table -->
-                    <div class="congressional-trading-table-container">
-                        <table class="congressional-trading-table">
-                            <thead class="congressional-table-header">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Follow</th>
-                                    <th>Congress Person</th>
-                                    <th>Party</th>
-                                    <th>Company</th>
-                                    <th>Ticker</th>
-                                    <th>Trade Type</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="congressTradingTableBody" class="congressional-table-body">
-                                <!-- Table rows will be populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="congressional-pagination">
-                        <div class="congressional-pagination-info">
-                            Showing <span id="congressTradesStart">1</span> to <span id="congressTradesEnd">10</span> of <span id="congressTradesTotal">0</span> trades
-                        </div>
-                        <div class="congressional-pagination-controls">
-                            <button id="congressPrevPage" class="congressional-pagination-btn primary" onclick="changeCongressPage(event, -1)">Previous</button>
-                            <button id="congressNextPage" class="congressional-pagination-btn primary" onclick="changeCongressPage(event, 1)">Next</button>
-                        </div>
-                    </div>
+                <!-- Trading History Table -->
+                <div class="congressional-trading-table-container">
+                    <table class="congressional-trading-table">
+                        <thead class="congressional-table-header">
+                            <tr>
+                                <th>Date</th>
+                                <th>Follow</th>
+                                <th>Congress Person</th>
+                                <th>Party</th>
+                                <th>Company</th>
+                                <th>Ticker</th>
+                                <th>Trade Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="congressTradingTableBody" class="congressional-table-body">
+                            <!-- Table rows will be populated dynamically -->
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-
-            <!-- Government Contracts Card -->
-            <div id="governmentContractsCard" class="government-contracts-card">
-                <div class="government-contracts-header">
-                    <h3 class="government-contracts-title">Government Contracts</h3>
-                    <div class="government-contracts-controls">
-                        <div id="contractsApiStatus" class="government-contracts-api-status connected" title="API Connected"></div>
-                        <div class="government-contracts-pulse-indicator"></div>
+                
+                <!-- Pagination -->
+                <div class="congressional-pagination">
+                    <div class="congressional-pagination-info">
+                        Showing <span id="congressTradesStart">1</span> to <span id="congressTradesEnd">10</span> of <span id="congressTradesTotal">0</span> trades
                     </div>
-                </div>
-                <div class="government-contracts-stats-grid">
-                    <div class="government-contracts-stat-row">
-                        <span class="government-contracts-stat-label">Total Contracts:</span>
-                        <span id="contractsTotal" class="government-contracts-stat-value">567</span>
-                    </div>
-                    <div class="government-contracts-stat-row">
-                        <span class="government-contracts-stat-label">Total Value:</span>
-                        <span id="contractsValue" class="government-contracts-stat-value">$1.2B</span>
-                    </div>
-                    <div class="government-contracts-stat-row">
-                        <span class="government-contracts-stat-label">Active Companies:</span>
-                        <span id="contractsCompanies" class="government-contracts-stat-value">234</span>
-                    </div>
-                    <div class="government-contracts-last-updated">
-                        Last updated: <span id="contractsLastUpdated">Just now</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- House Trading Card -->
-            <div id="houseTradingCard" class="house-trading-card">
-                <div class="house-trading-header">
-                    <h3 class="house-trading-title">House Trading</h3>
-                    <div class="house-trading-controls">
-                        <div id="houseApiStatus" class="house-trading-api-status connected" title="API Connected"></div>
-                        <div class="house-trading-pulse-indicator"></div>
-                    </div>
-                </div>
-                <div class="house-trading-stats-grid">
-                    <div class="house-trading-stat-row">
-                        <span class="house-trading-stat-label">Total Trades:</span>
-                        <span id="houseTotalTrades" class="house-trading-stat-value">890</span>
-                    </div>
-                    <div class="house-trading-stat-row">
-                        <span class="house-trading-stat-label">Total Volume:</span>
-                        <span id="houseTotalVolume" class="house-trading-stat-value">$32M</span>
-                    </div>
-                    <div class="house-trading-stat-row">
-                        <span class="house-trading-stat-label">Active Traders:</span>
-                        <span id="houseActiveTraders" class="house-trading-stat-value">67</span>
-                    </div>
-                    <div class="house-trading-last-updated">
-                        Last updated: <span id="houseLastUpdated">Just now</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lobbying Activity Card -->
-            <div id="lobbyingActivityCard" class="lobbying-activity-card">
-                <div class="lobbying-activity-header">
-                    <h3 class="lobbying-activity-title">Lobbying Activity</h3>
-                    <div class="lobbying-activity-controls">
-                        <div id="lobbyingApiStatus" class="lobbying-activity-api-status connected" title="API Connected"></div>
-                        <div class="lobbying-activity-pulse-indicator"></div>
-                    </div>
-                </div>
-                <div class="lobbying-activity-stats-grid">
-                    <div class="lobbying-activity-stat-row">
-                        <span class="lobbying-activity-stat-label">Total Reports:</span>
-                        <span id="lobbyingReports" class="lobbying-activity-stat-value">1,234</span>
-                    </div>
-                    <div class="lobbying-activity-stat-row">
-                        <span class="lobbying-activity-stat-label">Total Spending:</span>
-                        <span id="lobbyingSpending" class="lobbying-activity-stat-value">$89M</span>
-                    </div>
-                    <div class="lobbying-activity-stat-row">
-                        <span class="lobbying-activity-stat-label">Active Firms:</span>
-                        <span id="lobbyingFirms" class="lobbying-activity-stat-value">89</span>
-                    </div>
-                    <div class="lobbying-activity-last-updated">
-                        Last updated: <span id="lobbyingLastUpdated">Just now</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Senator Trading Card -->
-            <div id="senatorTradingCard" class="senator-trading-card">
-                <div class="senator-trading-header">
-                    <h3 class="senator-trading-title">Senator Trading</h3>
-                    <div class="senator-trading-controls">
-                        <div id="senatorApiStatus" class="senator-trading-api-status connected" title="API Connected"></div>
-                        <div class="senator-trading-pulse-indicator"></div>
-                    </div>
-                </div>
-                <div class="senator-trading-stats-grid">
-                    <div class="senator-trading-stat-row">
-                        <span class="senator-trading-stat-label">Total Trades:</span>
-                        <span id="senatorTotalTrades" class="senator-trading-stat-value">456</span>
-                    </div>
-                    <div class="senator-trading-stat-row">
-                        <span class="senator-trading-stat-label">Total Volume:</span>
-                        <span id="senatorTotalVolume" class="senator-trading-stat-value">$18M</span>
-                    </div>
-                    <div class="senator-trading-stat-row">
-                        <span class="senator-trading-stat-label">Active Traders:</span>
-                        <span id="senatorActiveTraders" class="senator-trading-stat-value">23</span>
-                    </div>
-                    <div class="senator-trading-last-updated">
-                        Last updated: <span id="senatorLastUpdated">Just now</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Patent Momentum Card -->
-            <div id="patentMomentumCard" class="patent-momentum-card">
-                <div class="patent-momentum-header">
-                    <h3 class="patent-momentum-title">Patent Momentum</h3>
-                    <div class="patent-momentum-controls">
-                        <div id="patentsApiStatus" class="patent-momentum-api-status connected" title="API Connected"></div>
-                        <div class="patent-momentum-pulse-indicator"></div>
-                    </div>
-                </div>
-                <div class="patent-momentum-stats-grid">
-                    <div class="patent-momentum-stat-row">
-                        <span class="patent-momentum-stat-label">Total Patents:</span>
-                        <span id="patentsTotal" class="patent-momentum-stat-value">2,345</span>
-                    </div>
-                    <div class="patent-momentum-stat-row">
-                        <span class="patent-momentum-stat-label">Active Patents:</span>
-                        <span id="patentsActive" class="patent-momentum-stat-value">1,890</span>
-                    </div>
-                    <div class="patent-momentum-stat-row">
-                        <span class="patent-momentum-stat-label">Pending Patents:</span>
-                        <span id="patentsPending" class="patent-momentum-stat-value">455</span>
-                    </div>
-                    <div class="patent-momentum-last-updated">
-                        Last updated: <span id="patentsLastUpdated">Just now</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Market Sentiment Card -->
-            <div id="marketSentimentCard" class="market-sentiment-card">
-                <div class="market-sentiment-header">
-                    <h3 class="market-sentiment-title">Market Sentiment</h3>
-                    <div class="market-sentiment-controls">
-                        <div id="sentimentApiStatus" class="market-sentiment-api-status connected" title="API Connected"></div>
-                        <div class="market-sentiment-pulse-indicator"></div>
-                    </div>
-                </div>
-                <div class="market-sentiment-stats-grid">
-                    <div class="market-sentiment-stat-row">
-                        <span class="market-sentiment-stat-label">Overall Sentiment:</span>
-                        <span id="sentimentOverall" class="market-sentiment-overall bullish">Bullish</span>
-                    </div>
-                    <div class="market-sentiment-stat-row">
-                        <span class="market-sentiment-stat-label">Sentiment Score:</span>
-                        <span id="sentimentScore" class="market-sentiment-stat-value">72/100</span>
-                    </div>
-                    <div class="market-sentiment-stat-row">
-                        <span class="market-sentiment-stat-label">Market Indicators:</span>
-                        <span id="sentimentIndicators" class="market-sentiment-stat-value">8</span>
-                    </div>
-                    <div class="market-sentiment-last-updated">
-                        Last updated: <span id="sentimentLastUpdated">Just now</span>
+                    <div class="congressional-pagination-controls">
+                        <button id="congressPrevPage" class="congressional-pagination-btn primary" onclick="changeCongressPage(event, -1)">Previous</button>
+                        <button id="congressNextPage" class="congressional-pagination-btn primary" onclick="changeCongressPage(event, 1)">Next</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Insights Section -->
-        <div class="insights-section">
-            <h2 class="insights-title">Market Intelligence Summary</h2>
-            <div class="insights-summary-grid">
-                <div class="insights-summary-item">
-                    <div class="insights-summary-value primary" id="totalDataPoints">7,890</div>
-                    <div class="insights-summary-label">Total Data Points</div>
-                </div>
-                <div class="insights-summary-item">
-                    <div class="insights-summary-value accent" id="complianceScore">87.5%</div>
-                    <div class="insights-summary-label">Compliance Score</div>
-                </div>
-                <div class="insights-summary-item">
-                    <div class="insights-summary-value chart-4" id="riskLevel">Medium</div>
-                    <div class="insights-summary-label">Risk Level</div>
+        <!-- Government Contracts Card -->
+        <div id="governmentContractsCard" class="government-contracts-card">
+            <div class="government-contracts-header">
+                <h3 class="government-contracts-title">Government Contracts</h3>
+                <div class="government-contracts-controls">
+                    <div id="contractsApiStatus" class="government-contracts-api-status connected" title="API Connected"></div>
+                    <div class="government-contracts-pulse-indicator"></div>
                 </div>
             </div>
-            
-            <div class="insights-list" id="insightsList">
-                <div class="insight-item primary">
-                    <div class="insight-title primary">High Trading Volume Detected</div>
-                    <div class="insight-description">Unusual trading activity in tech sector stocks by congressional members</div>
+            <div class="government-contracts-stats-grid">
+                <div class="government-contracts-stat-row">
+                    <span class="government-contracts-stat-label">Total Contracts:</span>
+                    <span id="contractsTotal" class="government-contracts-stat-value">567</span>
                 </div>
-                <div class="insight-item accent">
-                    <div class="insight-title accent">Contract Award Trends</div>
-                    <div class="insight-description">Defense contractors showing increased government contract wins</div>
+                <div class="government-contracts-stat-row">
+                    <span class="government-contracts-stat-label">Total Value:</span>
+                    <span id="contractsValue" class="government-contracts-stat-value">$1.2B</span>
                 </div>
-                <div class="insight-item chart-4">
-                    <div class="insight-title chart-4">Lobbying Spending Increase</div>
-                    <div class="insight-description">Healthcare and tech industries increasing lobbying expenditures</div>
+                <div class="government-contracts-stat-row">
+                    <span class="government-contracts-stat-label">Active Companies:</span>
+                    <span id="contractsCompanies" class="government-contracts-stat-value">234</span>
+                </div>
+                <div class="government-contracts-last-updated">
+                    Last updated: <span id="contractsLastUpdated">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- House Trading Card -->
+        <div id="houseTradingCard" class="house-trading-card">
+            <div class="house-trading-header">
+                <h3 class="house-trading-title">House Trading</h3>
+                <div class="house-trading-controls">
+                    <div id="houseApiStatus" class="house-trading-api-status connected" title="API Connected"></div>
+                    <div class="house-trading-pulse-indicator"></div>
+                </div>
+            </div>
+            <div class="house-trading-stats-grid">
+                <div class="house-trading-stat-row">
+                    <span class="house-trading-stat-label">Total Trades:</span>
+                    <span id="houseTotalTrades" class="house-trading-stat-value">890</span>
+                </div>
+                <div class="house-trading-stat-row">
+                    <span class="house-trading-stat-label">Total Volume:</span>
+                    <span id="houseTotalVolume" class="house-trading-stat-value">$32M</span>
+                </div>
+                <div class="house-trading-stat-row">
+                    <span class="house-trading-stat-label">Active Traders:</span>
+                    <span id="houseActiveTraders" class="house-trading-stat-value">67</span>
+                </div>
+                <div class="house-trading-last-updated">
+                    Last updated: <span id="houseLastUpdated">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lobbying Activity Card -->
+        <div id="lobbyingActivityCard" class="lobbying-activity-card">
+            <div class="lobbying-activity-header">
+                <h3 class="lobbying-activity-title">Lobbying Activity</h3>
+                <div class="lobbying-activity-controls">
+                    <div id="lobbyingApiStatus" class="lobbying-activity-api-status connected" title="API Connected"></div>
+                    <div class="lobbying-activity-pulse-indicator"></div>
+                </div>
+            </div>
+            <div class="lobbying-activity-stats-grid">
+                <div class="lobbying-activity-stat-row">
+                    <span class="lobbying-activity-stat-label">Total Reports:</span>
+                    <span id="lobbyingReports" class="lobbying-activity-stat-value">1,234</span>
+                </div>
+                <div class="lobbying-activity-stat-row">
+                    <span class="lobbying-activity-stat-label">Total Spending:</span>
+                    <span id="lobbyingSpending" class="lobbying-activity-stat-value">$89M</span>
+                </div>
+                <div class="lobbying-activity-stat-row">
+                    <span class="lobbying-activity-stat-label">Active Firms:</span>
+                    <span id="lobbyingFirms" class="lobbying-activity-stat-value">89</span>
+                </div>
+                <div class="lobbying-activity-last-updated">
+                    Last updated: <span id="lobbyingLastUpdated">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Senator Trading Card -->
+        <div id="senatorTradingCard" class="senator-trading-card">
+            <div class="senator-trading-header">
+                <h3 class="senator-trading-title">Senator Trading</h3>
+                <div class="senator-trading-controls">
+                    <div id="senatorApiStatus" class="senator-trading-api-status connected" title="API Connected"></div>
+                    <div class="senator-trading-pulse-indicator"></div>
+                </div>
+            </div>
+            <div class="senator-trading-stats-grid">
+                <div class="senator-trading-stat-row">
+                    <span class="senator-trading-stat-label">Total Trades:</span>
+                    <span id="senatorTotalTrades" class="senator-trading-stat-value">456</span>
+                </div>
+                <div class="senator-trading-stat-row">
+                    <span class="senator-trading-stat-label">Total Volume:</span>
+                    <span id="senatorTotalVolume" class="senator-trading-stat-value">$18M</span>
+                </div>
+                <div class="senator-trading-stat-row">
+                    <span class="senator-trading-stat-label">Active Traders:</span>
+                    <span id="senatorActiveTraders" class="senator-trading-stat-value">23</span>
+                </div>
+                <div class="senator-trading-last-updated">
+                    Last updated: <span id="senatorLastUpdated">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patent Momentum Card -->
+        <div id="patentMomentumCard" class="patent-momentum-card">
+            <div class="patent-momentum-header">
+                <h3 class="patent-momentum-title">Patent Momentum</h3>
+                <div class="patent-momentum-controls">
+                    <div id="patentsApiStatus" class="patent-momentum-api-status connected" title="API Connected"></div>
+                    <div class="patent-momentum-pulse-indicator"></div>
+                </div>
+            </div>
+            <div class="patent-momentum-stats-grid">
+                <div class="patent-momentum-stat-row">
+                    <span class="patent-momentum-stat-label">Total Patents:</span>
+                    <span id="patentsTotal" class="patent-momentum-stat-value">2,345</span>
+                </div>
+                <div class="patent-momentum-stat-row">
+                    <span class="patent-momentum-stat-label">Active Patents:</span>
+                    <span id="patentsActive" class="patent-momentum-stat-value">1,890</span>
+                </div>
+                <div class="patent-momentum-stat-row">
+                    <span class="patent-momentum-stat-label">Pending Patents:</span>
+                    <span id="patentsPending" class="patent-momentum-stat-value">455</span>
+                </div>
+                <div class="patent-momentum-last-updated">
+                    Last updated: <span id="patentsLastUpdated">Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Sentiment Card -->
+        <div id="marketSentimentCard" class="market-sentiment-card">
+            <div class="market-sentiment-header">
+                <h3 class="market-sentiment-title">Market Sentiment</h3>
+                <div class="market-sentiment-controls">
+                    <div id="sentimentApiStatus" class="market-sentiment-api-status connected" title="API Connected"></div>
+                    <div class="market-sentiment-pulse-indicator"></div>
+                </div>
+            </div>
+            <div class="market-sentiment-stats-grid">
+                <div class="market-sentiment-stat-row">
+                    <span class="market-sentiment-stat-label">Overall Sentiment:</span>
+                    <span id="sentimentOverall" class="market-sentiment-overall bullish">Bullish</span>
+                </div>
+                <div class="market-sentiment-stat-row">
+                    <span class="market-sentiment-stat-label">Sentiment Score:</span>
+                    <span id="sentimentScore" class="market-sentiment-stat-value">72/100</span>
+                </div>
+                <div class="market-sentiment-stat-row">
+                    <span class="market-sentiment-stat-label">Market Indicators:</span>
+                    <span id="sentimentIndicators" class="market-sentiment-stat-value">8</span>
+                </div>
+                <div class="market-sentiment-last-updated">
+                    Last updated: <span id="sentimentLastUpdated">Just now</span>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Insights Section -->
+    <div class="insights-section">
+        <h2 class="insights-title">Market Intelligence Summary</h2>
+        <div class="insights-summary-grid">
+            <div class="insights-summary-item">
+                <div class="insights-summary-value primary" id="totalDataPoints">7,890</div>
+                <div class="insights-summary-label">Total Data Points</div>
+            </div>
+            <div class="insights-summary-item">
+                <div class="insights-summary-value accent" id="complianceScore">87.5%</div>
+                <div class="insights-summary-label">Compliance Score</div>
+            </div>
+            <div class="insights-summary-item">
+                <div class="insights-summary-value chart-4" id="riskLevel">Medium</div>
+                <div class="insights-summary-label">Risk Level</div>
+            </div>
+        </div>
+        
+        <div class="insights-list" id="insightsList">
+            <div class="insight-item primary">
+                <div class="insight-title primary">High Trading Volume Detected</div>
+                <div class="insight-description">Unusual trading activity in tech sector stocks by congressional members</div>
+            </div>
+            <div class="insight-item accent">
+                <div class="insight-title accent">Contract Award Trends</div>
+                <div class="insight-description">Defense contractors showing increased government contract wins</div>
+            </div>
+            <div class="insight-item chart-4">
+                <div class="insight-title chart-4">Lobbying Spending Increase</div>
+                <div class="insight-description">Healthcare and tech industries increasing lobbying expenditures</div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js"></script>
     <script src="../components/navigation/navigation.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
-    <!-- Import Inside the Capitol JavaScript Functionality -->
+<!-- Import Inside the Capitol JavaScript Functionality -->
     <script src="../components/inside-the-capitol/inside-the-capitol.js"></script>
     <script>
         // Initialize notifications sidebar when page loads
