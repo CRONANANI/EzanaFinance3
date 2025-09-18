@@ -37,15 +37,157 @@
             padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
         }
 
-        /* Dashboard Overview Grid - Similar to community-overview-grid */
+        /* Professional Dashboard Layout */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Hero Section */
+        .dashboard-hero {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 2rem;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border-radius: 2rem;
+        }
+
+        .dashboard-hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .dashboard-title {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1.25rem;
+            color: var(--muted-foreground);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Dashboard Overview Grid */
         .dashboard-overview-grid {
             display: grid;
-            grid-template-columns: 15fr 1fr; /* Portfolio card extends further left, metrics cards wider */
-            gap: 1.5rem;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
             margin-bottom: 3rem;
-            margin-left: 350px; /* Account for notifications sidebar width */
-            justify-content: center;
-            align-items: center;
+            align-items: start;
+        }
+
+        /* Portfolio Card Enhancement */
+        .portfolio-card {
+            background: var(--card);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: var(--foreground);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .section-description {
+            font-size: 1.125rem;
+            color: var(--muted-foreground);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-overview-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-hero {
+                padding: 2rem;
+            }
+            
+            .dashboard-title {
+                font-size: 2.5rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Dashboard Portfolio Card - Takes more space */
@@ -366,13 +508,21 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-6 py-12" style="display: flex; flex-direction: column; align-items: center;">
-        <div class="mb-12" style="margin-left: 350px; text-align: center;">
-            <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Portfolio Dashboard</h1>
-            <p class="text-lg text-muted-foreground">Track your investments and financial performance</p>
+    <div class="dashboard-container">
+        <!-- Hero Section -->
+        <div class="dashboard-hero">
+            <div class="dashboard-hero-content">
+                <h1 class="dashboard-title">Portfolio Dashboard</h1>
+                <p class="dashboard-subtitle">Track your investments and financial performance with real-time insights</p>
+            </div>
         </div>
 
-    <!-- Main Dashboard Layout -->
+        <!-- Portfolio Overview Section -->
+        <div class="section-header">
+            <h2 class="section-title">Portfolio Overview</h2>
+            <p class="section-description">Your complete financial snapshot and performance metrics</p>
+        </div>
+        
         <div class="dashboard-overview-grid">
             <!-- Main Portfolio Card -->
             <div class="dashboard-portfolio-card">
