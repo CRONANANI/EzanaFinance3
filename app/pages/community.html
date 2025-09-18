@@ -38,12 +38,12 @@
             padding: 0 2rem;
         }
 
-        /* Professional Hero Section */
+        /* Professional Hero Section - Compact */
         .community-hero {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 2rem;
-            padding: 3rem;
-            margin-bottom: 3rem;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
             position: relative;
             overflow: hidden;
             text-align: center;
@@ -66,36 +66,36 @@
         }
 
         .community-title {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             font-weight: 300;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem;
             line-height: 1.1;
         }
 
         .community-subtitle {
-            font-size: 1.25rem;
+            font-size: 1rem;
             color: var(--muted-foreground);
-            margin-bottom: 2rem;
-            max-width: 600px;
+            margin-bottom: 1.5rem;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .hero-cta-button {
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
-            padding: 1rem 2rem;
-            border-radius: 1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
             font-weight: 600;
-            font-size: 1.125rem;
+            font-size: 0.95rem;
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
         }
 
         .hero-cta-button:hover {
@@ -103,17 +103,17 @@
             box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
         }
 
-        /* Section Headers */
+        /* Section Headers - Compact */
         .section-header {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .section-title {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 300;
             color: var(--foreground);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             position: relative;
         }
 
@@ -130,11 +130,11 @@
         }
 
         .section-description {
-            font-size: 1.125rem;
+            font-size: 1rem;
             color: var(--muted-foreground);
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         /* Enhanced Community Grid */
@@ -183,11 +183,15 @@
         /* Responsive Design */
         @media (max-width: 768px) {
             .community-hero {
-                padding: 2rem;
+                padding: 1.25rem;
             }
             
             .community-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
+            }
+            
+            .community-subtitle {
+                font-size: 0.9rem;
             }
             
             .community-overview-grid {
