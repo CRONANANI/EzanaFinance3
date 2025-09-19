@@ -1,0 +1,110 @@
+/* 10Y Treasury Card Styles */
+.market-overview-card.treasury {
+    background: var(--card);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.market-overview-card.treasury:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--chart-5);
+}
+
+.market-overview-card.treasury::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--chart-5), var(--chart-1));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.market-overview-card.treasury:hover::before {
+    opacity: 1;
+}
+
+.market-overview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.market-overview-info {
+    flex: 1;
+}
+
+.market-overview-title {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0 0 0.25rem 0;
+    font-weight: 500;
+}
+
+.market-overview-value {
+    font-size: 1.875rem;
+    font-weight: 300;
+    color: var(--foreground);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.market-overview-change {
+    font-size: 0.875rem;
+    color: var(--chart-5);
+    margin: 0.125rem 0 0 0;
+    font-weight: 500;
+}
+
+.market-overview-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--chart-5);
+    box-shadow: 0 4px 12px rgba(var(--chart-5-rgb), 0.3);
+    transition: all 0.3s ease;
+}
+
+.market-overview-card.treasury:hover .market-overview-icon {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(var(--chart-5-rgb), 0.4);
+}
+
+.market-overview-icon i {
+    color: var(--chart-5-foreground);
+    font-size: 1.25rem;
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .market-overview-card.treasury {
+        padding: 1rem;
+    }
+    
+    .market-overview-value {
+        font-size: 1.5rem;
+    }
+    
+    .market-overview-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+}
