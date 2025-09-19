@@ -14,6 +14,11 @@
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <!-- Watchlist Component Cards CSS -->
+    <link rel="stylesheet" href="../components/pages/watchlist/new-watchlist-card/new-watchlist-card.css">
+    <link rel="stylesheet" href="../components/pages/watchlist/set-alert-card/set-alert-card.css">
+    <link rel="stylesheet" href="../components/pages/watchlist/export-data-card/export-data-card.css">
+    <link rel="stylesheet" href="../components/pages/watchlist/share-list-card/share-list-card.css">
     <style>
         * {
             margin: 0;
@@ -730,43 +735,25 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button onclick="createNewWatchlist()" class="p-4 bg-card rounded-xl border border-border hover:border-primary hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary transition-colors">
-                    <i class="bi bi-plus text-primary group-hover:text-primary-foreground text-xl"></i>
-                </div>
-                <span class="font-medium text-foreground">New Watchlist</span>
-            </div>
-        </button>
+    <!-- Quick Actions Section -->
+    <div class="section-header">
+        <h2 class="section-title">Quick Actions</h2>
+        <p class="section-description">Manage your watchlists with powerful tools and features</p>
+    </div>
+
+    <!-- Component Cards Grid -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- New Watchlist Card -->
+        <div id="new-watchlist-card-container"></div>
         
-        <button class="p-6 bg-card rounded-2xl border border-border hover:border-accent hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center group-hover:bg-accent transition-colors">
-                    <i class="bi bi-bell text-accent group-hover:text-accent-foreground text-xl"></i>
-                </div>
-                <span class="font-medium text-foreground">Set Alert</span>
-            </div>
-        </button>
+        <!-- Set Alert Card -->
+        <div id="set-alert-card-container"></div>
         
-        <button class="p-6 bg-card rounded-2xl border border-border hover:border-chart-3 hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-chart-3/10 rounded-full flex items-center justify-center group-hover:bg-chart-3 transition-colors">
-                    <i class="bi bi-download text-chart-3 group-hover:text-chart-2 text-xl"></i>
-                </div>
-                <span class="font-medium text-foreground">Export Data</span>
-            </div>
-        </button>
+        <!-- Export Data Card -->
+        <div id="export-data-card-container"></div>
         
-        <button class="p-6 bg-card rounded-2xl border border-border hover:border-chart-4 hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-chart-4/10 rounded-full flex items-center justify-center group-hover:bg-chart-4 transition-colors">
-                    <i class="bi bi-share text-chart-4 group-hover:text-chart-2 text-xl"></i>
-                </div>
-                <span class="font-medium text-foreground">Share List</span>
-            </div>
-        </button>
+        <!-- Share List Card -->
+        <div id="share-list-card-container"></div>
     </div>
 </div>
 
@@ -775,10 +762,18 @@
     <script src="../components/navigation/navigation.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
+    <!-- Watchlist Component Cards JavaScript -->
+    <script src="../components/pages/watchlist/new-watchlist-card/new-watchlist-card.js"></script>
+    <script src="../components/pages/watchlist/set-alert-card/set-alert-card.js"></script>
+    <script src="../components/pages/watchlist/export-data-card/export-data-card.js"></script>
+    <script src="../components/pages/watchlist/share-list-card/share-list-card.js"></script>
     <script>
-        // Initialize notifications sidebar when page loads
+        // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing watchlist');
+            
+            // Load watchlist component cards
+            loadWatchlistComponents();
             
             // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {
@@ -786,6 +781,35 @@
                 sidebar.init();
             }
         });
+
+        // Function to load watchlist component cards
+        async function loadWatchlistComponents() {
+            try {
+                // Load New Watchlist Card
+                const newWatchlistResponse = await fetch('../components/pages/watchlist/new-watchlist-card/new-watchlist-card.html');
+                const newWatchlistHtml = await newWatchlistResponse.text();
+                document.getElementById('new-watchlist-card-container').innerHTML = newWatchlistHtml;
+
+                // Load Set Alert Card
+                const setAlertResponse = await fetch('../components/pages/watchlist/set-alert-card/set-alert-card.html');
+                const setAlertHtml = await setAlertResponse.text();
+                document.getElementById('set-alert-card-container').innerHTML = setAlertHtml;
+
+                // Load Export Data Card
+                const exportDataResponse = await fetch('../components/pages/watchlist/export-data-card/export-data-card.html');
+                const exportDataHtml = await exportDataResponse.text();
+                document.getElementById('export-data-card-container').innerHTML = exportDataHtml;
+
+                // Load Share List Card
+                const shareListResponse = await fetch('../components/pages/watchlist/share-list-card/share-list-card.html');
+                const shareListHtml = await shareListResponse.text();
+                document.getElementById('share-list-card-container').innerHTML = shareListHtml;
+
+                console.log('All watchlist component cards loaded successfully');
+            } catch (error) {
+                console.error('Error loading watchlist component cards:', error);
+            }
+        }
     </script>
 </body>
 </html>

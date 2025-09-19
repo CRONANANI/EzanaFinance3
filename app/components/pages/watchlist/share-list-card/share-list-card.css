@@ -1,0 +1,136 @@
+/* Share List Card Styles */
+.share-list-card {
+    background: var(--card);
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.share-list-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--chart-4);
+}
+
+.share-list-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--chart-4), var(--destructive), var(--chart-4));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.share-list-card:hover::before {
+    opacity: 1;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--chart-4), var(--destructive));
+    box-shadow: 0 4px 12px rgba(var(--chart-4-rgb), 0.3);
+    transition: all 0.3s ease;
+}
+
+.share-list-card:hover .card-icon {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(var(--chart-4-rgb), 0.4);
+}
+
+.card-icon i {
+    color: var(--chart-4-foreground);
+    font-size: 1.25rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.card-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--chart-4), var(--destructive));
+    color: var(--chart-4-foreground);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(var(--chart-4-rgb), 0.3);
+    align-self: flex-start;
+}
+
+.card-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--chart-4-rgb), 0.4);
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .share-list-card {
+        padding: 1.5rem;
+    }
+    
+    .card-header {
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.125rem;
+    }
+}

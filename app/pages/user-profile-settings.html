@@ -119,13 +119,13 @@
             <div class="notifications-title">
                 <span>Notifications</span>
             </div>
-        </div>
+            </div>
 
     <!-- Notifications List -->
     <div class="notifications-list" id="notifications-list">
         <!-- Notifications will be dynamically populated here -->
+        </div>
     </div>
-</div>
 
 
 <div class="main-content" style="margin-top: calc(var(--nav-height, 64px) + 24px);">
@@ -511,7 +511,7 @@ function showNotification(message, type = 'info') {
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script src="../components/notifications/notification-helpers.js"></script>
-    <script>
+<script>
         // Initialize notifications sidebar when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing profile settings');
@@ -520,8 +520,8 @@ function showNotification(message, type = 'info') {
             if (window.NotificationsSidebar) {
                 const sidebar = new NotificationsSidebar();
                 sidebar.init();
-            }
-        });
-    </script>
+    }
+});
+</script>
 </body>
 </html>
