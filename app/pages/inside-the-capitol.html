@@ -148,7 +148,7 @@
 
         @media (min-width: 1024px) {
             .component-cards-grid {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -156,6 +156,25 @@
         .component-cards-grid > div {
             display: flex;
             flex-direction: column;
+            min-height: 200px;
+        }
+
+        /* Full width layout for better card display */
+        .component-cards-grid {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        /* Individual card styling improvements */
+        .component-cards-grid .congressional-trading-card,
+        .component-cards-grid .government-contracts-card,
+        .component-cards-grid .house-trading-card,
+        .component-cards-grid .lobbying-activity-card,
+        .component-cards-grid .senator-trading-card,
+        .component-cards-grid .patent-momentum-card,
+        .component-cards-grid .market-sentiment-card {
+            width: 100%;
+            height: 100%;
         }
 
         /* Professional Hero Section */
@@ -284,10 +303,12 @@
 
         /* Professional Insights Section */
         .insights-section {
-            margin-top: 4rem;
+            margin-top: 2rem;
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
         }
 
         /* Responsive Hero */
@@ -399,61 +420,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Key Metrics Section -->
-    <div class="section-header">
-        <h2 class="section-title">Key Metrics</h2>
-        <p class="section-description">Real-time data overview of congressional trading activities</p>
-    </div>
-    
-    <div class="summary-stats-grid">
-        <div class="summary-stats-card total-trades-card">
-            <div class="summary-stats-content">
-                <div class="summary-stats-info">
-                    <p class="summary-stats-label">Total Trades</p>
-                    <p class="summary-stats-value" id="total-trades-summary">1,247</p>
-                </div>
-                <div class="summary-stats-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="summary-stats-card total-volume-card">
-            <div class="summary-stats-content">
-                <div class="summary-stats-info">
-                    <p class="summary-stats-label">Total Volume</p>
-                    <p class="summary-stats-value" id="total-volume-summary">$45.2M</p>
-                </div>
-                <div class="summary-stats-icon">
-                    <i class="bi bi-currency-dollar"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="summary-stats-card active-traders-card">
-            <div class="summary-stats-content">
-                <div class="summary-stats-info">
-                    <p class="summary-stats-label">Active Traders</p>
-                    <p class="summary-stats-value" id="active-traders-summary">89</p>
-                </div>
-                <div class="summary-stats-icon">
-                    <i class="bi bi-people"></i>
-                </div>
-            </div>
-        </div>
-        
-        <div class="summary-stats-card this-week-card">
-            <div class="summary-stats-content">
-                <div class="summary-stats-info">
-                    <p class="summary-stats-label">This Week</p>
-                    <p class="summary-stats-value" id="weekly-trades-summary">+23</p>
-                </div>
-                <div class="summary-stats-icon">
-                    <i class="bi bi-trending-up"></i>
-                </div>
-            </div>
-        </div>
 
     <!-- Trading Analysis Section -->
     <div class="section-header">
@@ -709,37 +675,42 @@
             </div>
         </div>
 
-        <!-- Insights Section -->
-        <div class="insights-section">
-            <h2 class="insights-title">Market Intelligence Summary</h2>
-            <div class="insights-summary-grid">
-                <div class="insights-summary-item">
-                    <div class="insights-summary-value primary" id="totalDataPoints">7,890</div>
-                    <div class="insights-summary-label">Total Data Points</div>
-                </div>
-                <div class="insights-summary-item">
-                    <div class="insights-summary-value accent" id="complianceScore">87.5%</div>
-                    <div class="insights-summary-label">Compliance Score</div>
-                </div>
-                <div class="insights-summary-item">
-                    <div class="insights-summary-value chart-4" id="riskLevel">Medium</div>
-                    <div class="insights-summary-label">Risk Level</div>
-                </div>
+    </div>
+
+    <!-- Market Intelligence Section -->
+    <div class="section-header">
+        <h2 class="section-title">Market Intelligence Summary</h2>
+        <p class="section-description">Comprehensive analysis and insights from congressional trading data</p>
+    </div>
+    
+    <div class="insights-section">
+        <div class="insights-summary-grid">
+            <div class="insights-summary-item">
+                <div class="insights-summary-value primary" id="totalDataPoints">7,890</div>
+                <div class="insights-summary-label">Total Data Points</div>
             </div>
-            
-            <div class="insights-list" id="insightsList">
-                <div class="insight-item primary">
-                    <div class="insight-title primary">High Trading Volume Detected</div>
-                    <div class="insight-description">Unusual trading activity in tech sector stocks by congressional members</div>
-                </div>
-                <div class="insight-item accent">
-                    <div class="insight-title accent">Contract Award Trends</div>
-                    <div class="insight-description">Defense contractors showing increased government contract wins</div>
-                </div>
-                <div class="insight-item chart-4">
-                    <div class="insight-title chart-4">Lobbying Spending Increase</div>
-                    <div class="insight-description">Healthcare and tech industries increasing lobbying expenditures</div>
-                </div>
+            <div class="insights-summary-item">
+                <div class="insights-summary-value accent" id="complianceScore">87.5%</div>
+                <div class="insights-summary-label">Compliance Score</div>
+            </div>
+            <div class="insights-summary-item">
+                <div class="insights-summary-value chart-4" id="riskLevel">Medium</div>
+                <div class="insights-summary-label">Risk Level</div>
+            </div>
+        </div>
+        
+        <div class="insights-list" id="insightsList">
+            <div class="insight-item primary">
+                <div class="insight-title primary">High Trading Volume Detected</div>
+                <div class="insight-description">Unusual trading activity in tech sector stocks by congressional members</div>
+            </div>
+            <div class="insight-item accent">
+                <div class="insight-title accent">Contract Award Trends</div>
+                <div class="insight-description">Defense contractors showing increased government contract wins</div>
+            </div>
+            <div class="insight-item chart-4">
+                <div class="insight-title chart-4">Lobbying Spending Increase</div>
+                <div class="insight-description">Healthcare and tech industries increasing lobbying expenditures</div>
             </div>
         </div>
     </div>
