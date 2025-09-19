@@ -28,7 +28,7 @@
 
 /* Shimmer animation removed */
 
-/* Star Border Effect */
+/* Subtle Border Effect */
 .economic-indicator-card::after {
     content: '';
     position: absolute;
@@ -36,18 +36,11 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, 
-        var(--primary) 0%, 
-        var(--accent) 25%, 
-        var(--primary) 50%, 
-        var(--accent) 75%, 
-        var(--primary) 100%);
-    background-size: 400% 400%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
     border-radius: calc(1rem + 2px);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
-    animation: starBorderRotate 4s linear infinite;
 }
 
 .economic-indicator-card:hover::after {
@@ -63,28 +56,7 @@
     }
 }
 
-@keyframes starBorderRotate {
-    0% {
-        background-position: 0% 50%;
-        transform: rotate(0deg);
-    }
-    25% {
-        background-position: 100% 50%;
-        transform: rotate(90deg);
-    }
-    50% {
-        background-position: 100% 50%;
-        transform: rotate(180deg);
-    }
-    75% {
-        background-position: 0% 50%;
-        transform: rotate(270deg);
-    }
-    100% {
-        background-position: 0% 50%;
-        transform: rotate(360deg);
-    }
-}
+/* Removed starBorderRotate animation - no longer needed */
 
 /* Card Header */
 .economic-indicator-card .card-header {
@@ -212,7 +184,7 @@
     opacity: 1;
 }
 
-/* Star Border Effect for Calendar Card */
+/* Subtle Border Effect for Calendar Card */
 .economic-calendar-card::after {
     content: '';
     position: absolute;
@@ -220,18 +192,11 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, 
-        var(--primary) 0%, 
-        var(--accent) 25%, 
-        var(--primary) 50%, 
-        var(--accent) 75%, 
-        var(--primary) 100%);
-    background-size: 400% 400%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
     border-radius: calc(1rem + 2px);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
-    animation: starBorderRotate 4s linear infinite;
 }
 
 .economic-calendar-card:hover::after {
@@ -275,7 +240,7 @@
     opacity: 1;
 }
 
-/* Star Border Effect for Impact Card */
+/* Subtle Border Effect for Impact Card */
 .market-impact-card::after {
     content: '';
     position: absolute;
@@ -283,18 +248,11 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, 
-        var(--primary) 0%, 
-        var(--accent) 25%, 
-        var(--primary) 50%, 
-        var(--accent) 75%, 
-        var(--primary) 100%);
-    background-size: 400% 400%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
     border-radius: calc(1rem + 2px);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
-    animation: starBorderRotate 4s linear infinite;
 }
 
 .market-impact-card:hover::after {
@@ -338,7 +296,7 @@
     opacity: 1;
 }
 
-/* Star Border Effect for Global Economic Cards */
+/* Subtle Border Effect for Global Economic Cards */
 .global-economic-card::after {
     content: '';
     position: absolute;
@@ -346,18 +304,11 @@
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, 
-        var(--primary) 0%, 
-        var(--accent) 25%, 
-        var(--primary) 50%, 
-        var(--accent) 75%, 
-        var(--primary) 100%);
-    background-size: 400% 400%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
     border-radius: calc(1rem + 2px);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
-    animation: starBorderRotate 4s linear infinite;
 }
 
 .global-economic-card:hover::after {
