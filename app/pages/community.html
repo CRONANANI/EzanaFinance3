@@ -38,18 +38,17 @@
             padding: 0 2rem;
         }
 
-        /* Professional Hero Section - Compact */
-        .community-hero {
+        /* Professional Hero Section */
+        .hero-section {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
             border-radius: 1.5rem;
             padding: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             position: relative;
             overflow: hidden;
-            text-align: center;
         }
 
-        .community-hero::before {
+        .hero-section::before {
             content: '';
             position: absolute;
             top: 0;
@@ -60,47 +59,58 @@
             border-radius: 2rem;
         }
 
-        .community-hero-content {
+        .hero-content {
             position: relative;
             z-index: 1;
+            text-align: center;
         }
 
-        .community-title {
-            font-size: 3.5rem;
+        .hero-title {
+            font-size: 2.5rem;
             font-weight: 300;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem;
             line-height: 1.1;
         }
 
-        .community-subtitle {
-            font-size: 1.25rem;
+        .hero-description {
+            font-size: 1rem;
             color: var(--muted-foreground);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        .hero-cta-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 1rem;
-            font-weight: 600;
-            font-size: 1.125rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
         }
 
-        .hero-cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        .hero-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-width: 90px;
+        }
+
+        .hero-stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            font-weight: 500;
         }
 
         /* Section Headers - Compact */
@@ -182,16 +192,30 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .community-hero {
-                padding: 1.25rem;
+            .hero-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
             }
             
-            .community-title {
-                font-size: 2.5rem;
+            .hero-title {
+                font-size: 2rem;
             }
             
-            .community-subtitle {
-                font-size: 1rem;
+            .hero-description {
+                font-size: 0.875rem;
+            }
+            
+            .hero-stats {
+                gap: 0.75rem;
+            }
+            
+            .hero-stat {
+                padding: 0.5rem;
+                min-width: 70px;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.125rem;
             }
             
             .community-overview-grid {
@@ -295,69 +319,76 @@
     <!-- Navigation will be dynamically loaded -->
 
     <!-- Notifications Sidebar -->
-<div id="notifications-sidebar" class="notifications-sidebar open">
-    <!-- Sidebar Toggle Button -->
-    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-        <span class="notification-count" id="notification-count">0</span>
-    </button>
+    <div id="notifications-sidebar" class="notifications-sidebar open">
+        <!-- Sidebar Toggle Button -->
+        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+            <i class="bi bi-bell"></i>
+        </button>
 
-    <!-- Sidebar Content -->
-    <div class="notifications-content">
-        <!-- Header -->
-        <div class="notifications-header">
-            <div class="notifications-title">
-                <h3>Your Feed</h3>
+        <!-- Sidebar Content -->
+        <div class="notifications-content">
+            <!-- Header -->
+            <div class="notifications-header">
+                <div class="notifications-title">
+                    <h3>Investment Feed</h3>
+                </div>
+                <div class="notifications-actions">
+                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
             </div>
-            <div class="notifications-actions">
-                <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
-                    <i class="bi bi-check-all"></i>
+
+            <!-- Filter Tabs -->
+            <div class="notifications-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
+                    All
                 </button>
-                <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                    <i class="bi bi-gear"></i>
+                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
+                    Congress
+                </button>
+                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
+                    Stocks
+                </button>
+                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
+                    Community
                 </button>
             </div>
-        </div>
 
-        <!-- Filter Tabs -->
-        <div class="notifications-filters">
-            <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                All
-            </button>
-            <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                Congress
-            </button>
-            <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                Stocks
-            </button>
-            <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                Community
-            </button>
-        </div>
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notifications-list">
+                <!-- Notifications will be dynamically populated here -->
+            </div>
 
-        <!-- Notifications List -->
-        <div class="notifications-list" id="notifications-list">
-            <!-- Notifications will be dynamically populated here -->
-        </div>
-
-        <!-- Empty State -->
-        <div class="notifications-empty" id="notifications-empty" style="display: none;">
-            <i class="bi bi-bell-slash"></i>
-            <p>No notifications yet</p>
-            <small>We'll notify you when something important happens</small>
+            <!-- Empty State -->
+            <div class="notifications-empty" id="notifications-empty" style="display: none;">
+                <i class="bi bi-bell-slash"></i>
+                <p>No notifications yet</p>
+                <small>We'll notify you when something important happens</small>
+            </div>
         </div>
     </div>
-</div>
 
 <div class="container">
     <!-- Hero Section -->
-    <div class="community-hero">
-        <div class="community-hero-content">
-            <h1 class="community-title page-title-shiny">Community Hub</h1>
-            <p class="community-subtitle">Connect, share, and grow with fellow investors in our vibrant community</p>
-            <button onclick="console.log('Button clicked'); showTrophyCabinet();" class="hero-cta-button">
-                <i class="bi bi-trophy-fill"></i>
-                <span>View Trophy Cabinet</span>
-            </button>
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title page-title-shiny">Community Hub</h1>
+            <p class="hero-description">Connect, share, and grow with fellow investors in our vibrant community</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">12,456</span>
+                    <span class="hero-stat-label">Total Members</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">89</span>
+                    <span class="hero-stat-label">Active Discussions</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">#127</span>
+                    <span class="hero-stat-label">Your Rank</span>
+                </div>
+            </div>
         </div>
     </div>
 
