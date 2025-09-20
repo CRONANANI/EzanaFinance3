@@ -83,6 +83,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
+            width: 100%;
         }
 
         /* Section Headers */
@@ -282,24 +283,27 @@
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(71, 85, 105, 0.3);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 16px;
+            padding: 1.5rem;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
-            min-height: 78px;
-            min-width: 120px; /* Ensure minimum width for titles */
+            align-items: flex-start;
+            text-align: left;
+            min-height: 120px;
+            min-width: 180px;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         .metric-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
             border-color: var(--accent-color);
+            background: rgba(30, 41, 59, 0.9);
         }
 
         .metric-card.positive { --accent-color: #10b981; }
@@ -309,70 +313,97 @@
 
         .metric-header {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            width: 100%;
         }
 
         .metric-title {
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 4px;
-            white-space: nowrap; /* Prevent text wrapping */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
+            margin-left: 12px;
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: unset;
+            max-width: none;
+            flex: 1;
         }
 
         .metric-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             color: white;
-            margin-bottom: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .metric-value {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 2px;
+            margin-bottom: 6px;
+            line-height: 1.2;
         }
 
         .metric-subtitle {
-            font-size: 0.75rem;
-            color: #64748b;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-top: 4px;
         }
 
         .icon-positive { background: linear-gradient(135deg, #10b981, #059669); }
         .icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .icon-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
+        
+        /* Metric card content wrapper */
+        .metric-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
         /* Ensure grid layout is applied on larger screens */
         @media (min-width: 1025px) {
             .dashboard-overview-grid {
-                grid-template-columns: 15fr 1fr !important;
+                grid-template-columns: 2fr 1fr !important;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+            
+            .metric-card {
+                min-width: 200px;
             }
         }
 
         @media (max-width: 1024px) {
             .dashboard-overview-grid {
-                grid-template-columns: 12fr 1fr; /* Maintain extended grid layout for smaller screens */
-                gap: 1.5rem;
-                margin-left: 0; /* Remove sidebar margin on smaller screens */
+                grid-template-columns: 1fr; /* Stack vertically on smaller screens */
+                gap: 2rem;
+                margin-left: 0;
             }
             
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
+                gap: 1.5rem;
+            }
+            
+            .metric-card {
+                min-width: 180px;
             }
         }
 
@@ -405,23 +436,20 @@
     <div id="notifications-sidebar" class="notifications-sidebar open">
         <!-- Sidebar Toggle Button -->
         <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <span class="notification-count" id="notification-count">0</span>
+            <i class="bi bi-bell"></i>
         </button>
 
         <!-- Sidebar Content -->
         <div class="notifications-content">
             <!-- Header -->
             <div class="notifications-header">
-            <div class="notifications-title">
-                <h3>Your Feed</h3>
-            </div>
+                <div class="notifications-title">
+                    <h3>Investment Feed</h3>
+                </div>
                 <div class="notifications-actions">
-                    <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
-                        <i class="bi bi-check-all"></i>
-                </button>
                     <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
                         <i class="bi bi-gear"></i>
-                        </button>
+                    </button>
                 </div>
             </div>
 
@@ -444,7 +472,7 @@
             <!-- Notifications List -->
             <div class="notifications-list" id="notifications-list">
                 <!-- Notifications will be dynamically populated here -->
-    </div>
+            </div>
 
             <!-- Empty State -->
             <div class="notifications-empty" id="notifications-empty" style="display: none;">
@@ -518,8 +546,10 @@
                             </div>
                             <div class="metric-title">Today's P&L</div>
                         </div>
-                        <div class="metric-value">+$1,247</div>
-                        <div class="metric-subtitle">+0.98% from yesterday</div>
+                        <div class="metric-content">
+                            <div class="metric-value">+$1,247</div>
+                            <div class="metric-subtitle">+0.98% from yesterday</div>
+                        </div>
                     </div>
 
                     <div class="metric-card warning">
@@ -529,8 +559,10 @@
                             </div>
                             <div class="metric-title">Top Performer</div>
                         </div>
-                        <div class="metric-value">NVDA</div>
-                        <div class="metric-subtitle">+12.4% this week</div>
+                        <div class="metric-content">
+                            <div class="metric-value">NVDA</div>
+                            <div class="metric-subtitle">+12.4% this week</div>
+                        </div>
                     </div>
 
                     <div class="metric-card warning">
@@ -540,8 +572,10 @@
                             </div>
                             <div class="metric-title">Risk Score</div>
                         </div>
-                        <div class="metric-value">6.2/10</div>
-                        <div class="metric-subtitle">Moderate risk level</div>
+                        <div class="metric-content">
+                            <div class="metric-value">6.2/10</div>
+                            <div class="metric-subtitle">Moderate risk level</div>
+                        </div>
                     </div>
 
                     <div class="metric-card info">
@@ -551,8 +585,10 @@
                             </div>
                             <div class="metric-title">Monthly Dividends</div>
                         </div>
-                        <div class="metric-value">$847.23</div>
-                        <div class="metric-subtitle">Next payout: Oct 15</div>
+                        <div class="metric-content">
+                            <div class="metric-value">$847.23</div>
+                            <div class="metric-subtitle">Next payout: Oct 15</div>
+                        </div>
                     </div>
 
                     <div class="metric-card success">
@@ -562,8 +598,10 @@
                             </div>
                             <div class="metric-title">Market Performance</div>
                         </div>
-                        <div class="metric-value">+8.4%</div>
-                        <div class="metric-subtitle">vs S&P 500: +6.2%</div>
+                        <div class="metric-content">
+                            <div class="metric-value">+8.4%</div>
+                            <div class="metric-subtitle">vs S&P 500: +6.2%</div>
+                        </div>
                     </div>
 
                     <div class="metric-card info">
@@ -573,8 +611,10 @@
                             </div>
                             <div class="metric-title">Asset Allocation</div>
                         </div>
-                        <div class="metric-value">Balanced</div>
-                        <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
+                        <div class="metric-content">
+                            <div class="metric-value">Balanced</div>
+                            <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
+                        </div>
                     </div>
                 </div>
             </div>

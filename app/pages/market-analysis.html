@@ -16,6 +16,125 @@
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Import Market Analysis Component Styles -->
     <link rel="stylesheet" href="../components/research-tools/market-analysis-cards.css">
+    <style>
+        /* Professional Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border-radius: 2rem;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            color: var(--muted-foreground);
+            margin-bottom: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-width: 90px;
+        }
+
+        .hero-stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .page-title-shiny {
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Responsive Hero */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-description {
+                font-size: 0.875rem;
+            }
+            
+            .hero-stats {
+                gap: 0.75rem;
+            }
+            
+            .hero-stat {
+                padding: 0.5rem;
+                min-width: 70px;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.125rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation will be dynamically loaded -->
@@ -24,7 +143,7 @@
     <div id="notifications-sidebar" class="notifications-sidebar open">
         <!-- Sidebar Toggle Button -->
         <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <span class="notification-count" id="notification-count">0</span>
+            <i class="bi bi-bell"></i>
         </button>
 
         <!-- Sidebar Content -->
@@ -32,12 +151,9 @@
             <!-- Header -->
             <div class="notifications-header">
                 <div class="notifications-title">
-                    <h3>Your Feed</h3>
+                    <h3>Investment Feed</h3>
                 </div>
                 <div class="notifications-actions">
-                    <button class="mark-all-read" onclick="markAllAsRead()" title="Mark all as read">
-                        <i class="bi bi-check-all"></i>
-                    </button>
                     <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
                         <i class="bi bi-gear"></i>
                     </button>
@@ -75,9 +191,26 @@
     </div>
 
 <div class="container mx-auto px-6 py-12">
-    <div class="mb-12">
-        <h1 class="text-4xl font-light text-foreground tracking-tight mb-4 page-title-shiny">Market Analysis</h1>
-        <p class="text-lg text-muted-foreground">Advanced market analysis tools and comprehensive insights</p>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title page-title-shiny">Market Analysis</h1>
+            <p class="hero-description">Advanced market analysis tools and comprehensive insights for informed investment decisions</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">4,567.89</span>
+                    <span class="hero-stat-label">S&P 500</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">14,234.12</span>
+                    <span class="hero-stat-label">NASDAQ</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">18.45</span>
+                    <span class="hero-stat-label">VIX Index</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Market Overview Cards -->
