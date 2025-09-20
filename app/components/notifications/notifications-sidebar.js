@@ -292,12 +292,9 @@ class NotificationsSidebar {
         this.updateNotificationCount();
     }
 
-    // Update notification count
+    // Update notification count (removed functionality)
     updateNotificationCount() {
-        const unreadCount = this.notifications.filter(n => !n.read).length;
-        const countElement = document.getElementById('notification-count');
-        countElement.textContent = unreadCount;
-        countElement.style.display = unreadCount > 0 ? 'flex' : 'none';
+        // Notification count functionality removed
     }
 
     // Get time ago string
@@ -339,27 +336,27 @@ class NotificationsSidebar {
         const sampleNotifications = [
             {
                 id: '1',
-                type: 'watchlist',
-                title: 'Nancy Pelosi Stock Trade Alert',
+                type: 'congress',
+                title: 'Nancy Pelosi Trade Alert',
                 content: 'Rep. Nancy Pelosi disclosed new NVIDIA stock purchases worth $1.2M',
                 time: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
                 read: false,
-                icon: 'bi-star-fill',
-                badge: 'Watchlist'
+                icon: 'bi-building',
+                badge: 'Congress'
             },
             {
                 id: '2',
-                type: 'news',
+                type: 'stocks',
                 title: 'AAPL Breaking News',
                 content: 'Apple announces record Q4 earnings, stock up 5% in after-hours trading',
                 time: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
                 read: false,
-                icon: 'bi-newspaper',
-                badge: 'News'
+                icon: 'bi-graph-up',
+                badge: 'Stocks'
             },
             {
                 id: '3',
-                type: 'portfolio',
+                type: 'stocks',
                 title: 'Portfolio Alert',
                 content: 'Your portfolio gained $2,847.31 today (+2.26%)',
                 time: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
@@ -369,43 +366,93 @@ class NotificationsSidebar {
             },
             {
                 id: '4',
-                type: 'social',
-                title: 'Friend Activity',
+                type: 'community',
+                title: 'Community Discussion',
                 content: 'Alex commented on your Tesla discussion thread',
                 time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
                 read: false,
-                icon: 'bi-person',
-                badge: 'Social'
+                icon: 'bi-people',
+                badge: 'Community'
             },
             {
                 id: '5',
-                type: 'watchlist',
+                type: 'congress',
                 title: 'Dan Crenshaw Trade Alert',
                 content: 'Rep. Dan Crenshaw sold defense stocks before committee vote',
                 time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
                 read: true,
-                icon: 'bi-star-fill',
-                badge: 'Watchlist'
+                icon: 'bi-building',
+                badge: 'Congress'
             },
             {
                 id: '6',
-                type: 'research',
+                type: 'stocks',
                 title: 'Market Analysis',
                 content: 'New research report on your TSLA position shows strong buy signals',
                 time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
                 read: true,
-                icon: 'bi-newspaper',
+                icon: 'bi-graph-up',
                 badge: 'Research'
             },
             {
                 id: '7',
-                type: 'payment',
+                type: 'stocks',
                 title: 'Dividend Payment',
                 content: 'Received $127.50 dividend payment from MSFT',
                 time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
                 read: true,
                 icon: 'bi-graph-up',
                 badge: 'Payment'
+            },
+            {
+                id: '8',
+                type: 'congress',
+                title: 'Senate Trading Activity',
+                content: 'Sen. Richard Burr sold $1.8M in airline stocks before market crash',
+                time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+                read: true,
+                icon: 'bi-building',
+                badge: 'Congress'
+            },
+            {
+                id: '9',
+                type: 'stocks',
+                title: 'Market Volatility Alert',
+                content: 'S&P 500 dropped 2.3% - consider rebalancing your portfolio',
+                time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+                read: true,
+                icon: 'bi-graph-down',
+                badge: 'Market'
+            },
+            {
+                id: '10',
+                type: 'community',
+                title: 'New Discussion Thread',
+                content: 'Sarah started a discussion about renewable energy stocks',
+                time: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+                read: true,
+                icon: 'bi-people',
+                badge: 'Community'
+            },
+            {
+                id: '11',
+                type: 'congress',
+                title: 'House Committee Vote',
+                content: 'Financial Services Committee votes on banking regulations tomorrow',
+                time: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+                read: true,
+                icon: 'bi-building',
+                badge: 'Congress'
+            },
+            {
+                id: '12',
+                type: 'stocks',
+                title: 'Earnings Report',
+                content: 'Tesla Q4 earnings beat expectations, stock up 8% pre-market',
+                time: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+                read: true,
+                icon: 'bi-graph-up',
+                badge: 'Earnings'
             }
         ];
 
