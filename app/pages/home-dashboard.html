@@ -50,8 +50,8 @@
         /* Dashboard Overview Grid */
         .dashboard-overview-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
+            grid-template-columns: 1fr 400px;
+            gap: 2.5rem;
             margin-bottom: 3rem;
             align-items: start;
         }
@@ -150,12 +150,12 @@
 
 
         .portfolio-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(71, 85, 105, 0.3);
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
             border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
         }
@@ -212,11 +212,11 @@
         }
 
         .portfolio-value {
-            font-size: 3.5rem;
+            font-size: 3.25rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 16px;
-            margin-top: 8px;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
             letter-spacing: -0.025em;
             line-height: 1.1;
         }
@@ -260,50 +260,51 @@
         }
 
         .chart-placeholder {
-            height: 280px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
-            border-radius: 16px;
-            margin-top: 0px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08));
+            border-radius: 20px;
+            margin-top: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #64748b;
-            border: 1px solid rgba(71, 85, 105, 0.3);
+            color: #94a3b8;
+            border: 1px solid rgba(71, 85, 105, 0.4);
             flex: 1;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
             height: fit-content;
         }
 
         .metric-card {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(71, 85, 105, 0.3);
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 20px;
+            padding: 1.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             cursor: pointer;
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
             text-align: left;
-            min-height: 120px;
-            min-width: 180px;
+            min-height: 100px;
             width: 100%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
         }
 
         .metric-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
             border-color: var(--accent-color);
-            background: rgba(30, 41, 59, 0.9);
+            background: rgba(30, 41, 59, 0.95);
         }
 
         .metric-card.positive { --accent-color: #10b981; }
@@ -315,14 +316,15 @@
             display: flex;
             flex-direction: row;
             align-items: center;
-            margin-bottom: 12px;
-            width: 100%;
+            margin-bottom: 0;
+            width: auto;
+            margin-right: 1.5rem;
         }
 
         .metric-title {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: #cbd5e1;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-left: 12px;
@@ -334,31 +336,31 @@
         }
 
         .metric-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             color: white;
             flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .metric-value {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 6px;
-            line-height: 1.2;
+            margin-bottom: 4px;
+            line-height: 1.1;
         }
 
         .metric-subtitle {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #94a3b8;
-            line-height: 1.4;
-            margin-top: 4px;
+            line-height: 1.3;
+            margin-top: 2px;
         }
 
         .icon-positive { background: linear-gradient(135deg, #10b981, #059669); }
@@ -368,25 +370,26 @@
         
         /* Metric card content wrapper */
         .metric-content {
-            width: 100%;
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            justify-content: center;
         }
 
         /* Ensure grid layout is applied on larger screens */
         @media (min-width: 1025px) {
             .dashboard-overview-grid {
-                grid-template-columns: 2fr 1fr !important;
+                grid-template-columns: 1fr 400px !important;
             }
             
             .metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1.5rem;
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
             }
             
             .metric-card {
-                min-width: 200px;
+                min-width: 100%;
             }
         }
 
@@ -399,17 +402,37 @@
             
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 1.5rem;
+                gap: 1.25rem;
             }
             
             .metric-card {
-                min-width: 180px;
+                min-width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+                min-height: 120px;
+            }
+            
+            .metric-header {
+                margin-bottom: 12px;
+                margin-right: 0;
+                width: 100%;
             }
         }
 
         @media (max-width: 768px) {
             .dashboard-overview-grid {
                 margin-left: 0;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .metric-card {
+                min-height: 100px;
+                padding: 1.5rem;
             }
             
             .mb-12[style*="margin-left: 350px"] {
