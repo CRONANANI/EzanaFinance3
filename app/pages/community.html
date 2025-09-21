@@ -113,6 +113,20 @@
             font-weight: 500;
         }
 
+        .page-title-shiny {
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
         .hero-cta-button {
             display: inline-flex;
             align-items: center;
@@ -391,16 +405,26 @@
         </div>
     </div>
 
-<div class="container">
+<div class="container mx-auto px-6 py-12">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-content">
             <h1 class="hero-title page-title-shiny">Community Hub</h1>
             <p class="hero-description">Connect, share, and grow with fellow investors in our vibrant community</p>
-            <button onclick="console.log('Button clicked'); showTrophyCabinet();" class="hero-cta-button">
-                <i class="bi bi-trophy-fill"></i>
-                <span>View Trophy Cabinet</span>
-            </button>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">2,847</span>
+                    <span class="hero-stat-label">Active Members</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">15.2K</span>
+                    <span class="hero-stat-label">Discussions</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">98.7%</span>
+                    <span class="hero-stat-label">Satisfaction</span>
+                </div>
+            </div>
         </div>
     </div>
 

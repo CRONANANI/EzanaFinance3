@@ -38,14 +38,123 @@
             padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
         }
 
-        /* Professional Dashboard Layout */
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
+        /* Professional Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Hero section styles moved to component */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border-radius: 2rem;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            color: var(--muted-foreground);
+            margin-bottom: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-width: 90px;
+        }
+
+        .hero-stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .page-title-shiny {
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Responsive Hero */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-description {
+                font-size: 0.875rem;
+            }
+            
+            .hero-stats {
+                gap: 0.75rem;
+            }
+            
+            .hero-stat {
+                padding: 0.5rem;
+                min-width: 70px;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.125rem;
+            }
+        }
 
         /* Dashboard Overview Grid */
         .dashboard-overview-grid {
@@ -506,9 +615,28 @@
         </div>
     </div>
 
-    <div class="dashboard-container">
-        <!-- Hero Section Component -->
-        <div id="hero-section-container"></div>
+    <div class="container mx-auto px-6 py-12">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title page-title-shiny">Portfolio Dashboard</h1>
+                <p class="hero-description">Track your investments and financial performance with real-time insights</p>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">$127,843</span>
+                        <span class="hero-stat-label">Portfolio Value</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">+2.28%</span>
+                        <span class="hero-stat-label">Today's Return</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">8.4%</span>
+                        <span class="hero-stat-label">YTD Performance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Portfolio Overview Section -->
         <div class="section-header">
@@ -648,15 +776,10 @@
     <script src="../components/navigation/navigation.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
-    <!-- Hero Section Component JavaScript -->
-    <script src="../components/pages/home-dashboard/hero-section/hero-section.js"></script>
     <script>
         // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing dashboard');
-            
-            // Load hero section component
-            loadHeroSection();
             
             // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {
@@ -664,17 +787,6 @@
                 sidebar.init();
             }
         });
-
-        // Function to load hero section component
-        async function loadHeroSection() {
-            try {
-                const response = await fetch('../components/pages/home-dashboard/hero-section/hero-section.html');
-                const html = await response.text();
-                document.getElementById('hero-section-container').innerHTML = html;
-            } catch (error) {
-                console.error('Error loading hero section component:', error);
-            }
-        }
 </script>
 </body>
 </html>

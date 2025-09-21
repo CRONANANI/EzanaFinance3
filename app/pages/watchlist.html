@@ -41,18 +41,17 @@
             padding: 0 2rem;
         }
 
-        /* Professional Hero Section - Compact */
-        .watchlist-hero {
+        /* Professional Hero Section */
+        .hero-section {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
             border-radius: 1.5rem;
             padding: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             position: relative;
             overflow: hidden;
-            text-align: center;
         }
 
-        .watchlist-hero::before {
+        .hero-section::before {
             content: '';
             position: absolute;
             top: 0;
@@ -63,26 +62,58 @@
             border-radius: 2rem;
         }
 
-        .watchlist-hero-content {
+        .hero-content {
             position: relative;
             z-index: 1;
+            text-align: center;
         }
 
-        .watchlist-title {
-            font-size: 3.5rem;
+        .hero-title {
+            font-size: 2.5rem;
             font-weight: 300;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem;
             line-height: 1.1;
         }
 
-        .watchlist-subtitle {
-            font-size: 1.25rem;
+        .hero-description {
+            font-size: 1rem;
             color: var(--muted-foreground);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            line-height: 1.6;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-width: 90px;
+        }
+
+        .hero-stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            font-weight: 500;
         }
 
         /* Section Headers - Compact */
@@ -162,20 +193,37 @@
             border-color: var(--primary);
         }
 
+        /* Responsive Hero */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-description {
+                font-size: 0.875rem;
+            }
+            
+            .hero-stats {
+                gap: 0.75rem;
+            }
+            
+            .hero-stat {
+                padding: 0.5rem;
+                min-width: 70px;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.125rem;
+            }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
-            .watchlist-hero {
-                padding: 1.25rem;
-            }
-            
-            .watchlist-title {
-                font-size: 2.5rem;
-            }
-            
-            .watchlist-subtitle {
-                font-size: 1rem;
-            }
-            
             .watchlist-grid {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
@@ -330,12 +378,26 @@
     </div>
 </div>
 
-<div class="container">
+<div class="container mx-auto px-6 py-12">
     <!-- Hero Section -->
-    <div class="watchlist-hero">
-        <div class="watchlist-hero-content">
-            <h1 class="watchlist-title page-title-shiny">Watchlists</h1>
-            <p class="watchlist-subtitle">Track your favorite congress people, stocks, and investment opportunities with real-time updates</p>
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title page-title-shiny">Watchlists</h1>
+            <p class="hero-description">Track your favorite congress people, stocks, and investment opportunities with real-time updates</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">24</span>
+                    <span class="hero-stat-label">Following</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">5</span>
+                    <span class="hero-stat-label">Stock Lists</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">12</span>
+                    <span class="hero-stat-label">Alerts</span>
+                </div>
+            </div>
         </div>
     </div>
 
