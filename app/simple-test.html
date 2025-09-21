@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Navigation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>Navigation Test</h1>
+        <p>Testing the navigation between landing page and create account page.</p>
+        
+        <a href="pages/landing.html" class="btn">Go to Landing Page</a>
+        <a href="pages/create-account.html" class="btn">Go to Create Account</a>
+        
+        <div class="info">
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>Click "Go to Landing Page"</li>
+                <li>Click "Register Now" button</li>
+                <li>Click "Back to Home" link</li>
+                <li>Check if you return to the same landing page design</li>
+            </ol>
+            
+            <h3>Expected Result:</h3>
+            <p>You should see the same dark-themed landing page with the Prism effect both times.</p>
+            
+            <h3>If you see a different design:</h3>
+            <p>There might be a caching issue or a different page being loaded. Try:</p>
+            <ul>
+                <li>Hard refresh (Ctrl+F5)</li>
+                <li>Clear browser cache</li>
+                <li>Check browser console for errors</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

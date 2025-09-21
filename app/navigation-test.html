@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test - Ezana Finance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Navigation Test</h1>
+        <p>This page tests the navigation between landing page and create account page.</p>
+        
+        <h2>Test Navigation Links:</h2>
+        <a href="pages/landing.html" class="test-button">Go to Landing Page</a>
+        <a href="pages/create-account.html" class="test-button">Go to Create Account Page</a>
+        
+        <div class="test-results">
+            <h3>Expected Behavior:</h3>
+            <ol>
+                <li>Click "Go to Landing Page" - should show the Ezana Finance landing page</li>
+                <li>Click "Register Now" button on landing page - should go to create account page</li>
+                <li>Click "Back to Home" on create account page - should return to landing page</li>
+            </ol>
+            
+            <h3>Current Issue:</h3>
+            <p>If you're seeing a "completely differently designed website" when clicking "Back to Home", there might be:</p>
+            <ul>
+                <li>A caching issue in your browser</li>
+                <li>A different landing page being loaded</li>
+                <li>A CSS loading issue</li>
+                <li>A JavaScript redirect happening</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

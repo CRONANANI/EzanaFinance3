@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Fix Test - Ezana Finance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .issue {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Navigation Fix Test</h1>
+        <p>This page tests the fixed navigation between the main landing page and create account page.</p>
+        
+        <h2>Test Navigation Links:</h2>
+        <a href="index.html" class="test-button">Go to Main Landing Page (index.html)</a>
+        <a href="pages/create-account.html" class="test-button">Go to Create Account Page</a>
+        
+        <div class="test-results success">
+            <h3>✅ Fixed Navigation Flow:</h3>
+            <ol>
+                <li><strong>Start:</strong> Main landing page (index.html) - Modern Tailwind design</li>
+                <li><strong>Click "Register Now":</strong> Goes to create-account.html</li>
+                <li><strong>Click "Back to Home":</strong> Returns to index.html (same design)</li>
+            </ol>
+            
+            <h3>🔧 What was fixed:</h3>
+            <ul>
+                <li>Updated create-account.html to link to <code>../index.html</code> instead of <code>landing.html</code></li>
+                <li>This ensures consistent navigation between the main landing page and registration page</li>
+                <li>Both pages now use the same modern Tailwind CSS design</li>
+            </ul>
+        </div>
+        
+        <div class="test-results">
+            <h3>📝 Note about the old landing page:</h3>
+            <p>The file <code>pages/landing.html</code> still exists but is no longer used in the main navigation flow. It has a different design with Prism effects. If you want to use that design instead, we can update the main index.html to use that design.</p>
+        </div>
+    </div>
+</body>
+</html>
