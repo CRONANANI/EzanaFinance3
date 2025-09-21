@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trophy Cabinet Demo - Ezana Finance</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Trophy Cabinet Component Styles -->
+    <link rel="stylesheet" href="components/community/trophy-cabinet/trophy-cabinet.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Inter', sans-serif;
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .demo-container {
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .demo-title {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        .demo-description {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .demo-button {
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">Trophy Cabinet Demo</h1>
+        <p class="demo-description">
+            Click the button below to open the trophy cabinet and explore the user achievement system.
+            This demonstrates the modular trophy cabinet component with interactive trophies and categories.
+        </p>
+        <button class="demo-button" onclick="showTrophyCabinet()">
+            <i class="bi bi-trophy-fill" style="margin-right: 0.5rem;"></i>
+            Open Trophy Cabinet
+        </button>
+    </div>
+
+    <!-- Trophy Cabinet Component will be loaded here -->
+    <div id="trophy-cabinet-container"></div>
+
+    <!-- Load Trophy Cabinet Component -->
+    <script>
+        async function loadTrophyCabinet() {
+            try {
+                const response = await fetch('components/community/trophy-cabinet/trophy-cabinet.html');
+                const html = await response.text();
+                document.getElementById('trophy-cabinet-container').innerHTML = html;
+                console.log('Trophy cabinet component loaded successfully');
+            } catch (error) {
+                console.error('Failed to load trophy cabinet component:', error);
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrophyCabinet();
+        });
+    </script>
+
+    <!-- Trophy Cabinet Component Scripts -->
+    <script src="components/community/trophy-cabinet/trophy-cabinet.js"></script>
+</body>
+</html>

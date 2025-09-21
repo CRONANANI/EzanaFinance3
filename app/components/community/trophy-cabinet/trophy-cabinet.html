@@ -1,0 +1,50 @@
+<!-- Trophy Cabinet Component -->
+<div id="trophy-cabinet" class="trophy-cabinet-overlay">
+    <!-- Backdrop -->
+    <div class="trophy-cabinet-backdrop" onclick="closeTrophyCabinet()"></div>
+    
+    <!-- Trophy Cabinet Panel -->
+    <div class="trophy-cabinet-panel">
+        <!-- Cabinet Header -->
+        <div class="trophy-cabinet-header">
+            <div class="trophy-cabinet-header-content">
+                <div class="trophy-cabinet-title-section">
+                    <div class="trophy-cabinet-icon">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <div class="trophy-cabinet-title">
+                        <h2>Trophy Cabinet</h2>
+                        <p>Your Achievement Collection</p>
+                    </div>
+                </div>
+                <button class="trophy-cabinet-close" onclick="closeTrophyCabinet()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cabinet Content -->
+        <div class="trophy-cabinet-content">
+            <!-- Achievement Stats -->
+            <div class="trophy-cabinet-stats">
+                <div class="trophy-stat">
+                    <div class="trophy-stat-number" id="trophies-earned">12</div>
+                    <div class="trophy-stat-label">Trophies Earned</div>
+                </div>
+                <div class="trophy-stat">
+                    <div class="trophy-stat-number" id="badges-unlocked">8</div>
+                    <div class="trophy-stat-label">Badges Unlocked</div>
+                </div>
+                <div class="trophy-stat">
+                    <div class="trophy-stat-number" id="global-rank">#127</div>
+                    <div class="trophy-stat-label">Global Rank</div>
+                </div>
+            </div>
+
+            <!-- Trophy Categories -->
+            <div class="trophy-categories" id="trophy-categories">
+                <!-- Categories will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+</div>

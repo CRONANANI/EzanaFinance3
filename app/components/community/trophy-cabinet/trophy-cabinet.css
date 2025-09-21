@@ -1,0 +1,427 @@
+/* Trophy Cabinet Component Styles */
+.trophy-cabinet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.trophy-cabinet-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.trophy-cabinet-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
+}
+
+.trophy-cabinet-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 500px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+    transform: translateX(100%);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.trophy-cabinet-overlay.show .trophy-cabinet-panel {
+    transform: translateX(0);
+}
+
+/* Header Styles */
+.trophy-cabinet-header {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    padding: 1.5rem;
+    color: white;
+    position: relative;
+    z-index: 10;
+}
+
+.trophy-cabinet-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.trophy-cabinet-title-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.trophy-cabinet-icon {
+    width: 3rem;
+    height: 3rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.trophy-cabinet-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.trophy-cabinet-title h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.trophy-cabinet-title p {
+    font-size: 0.875rem;
+    margin: 0;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.trophy-cabinet-close {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.trophy-cabinet-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.trophy-cabinet-close i {
+    font-size: 1.25rem;
+    color: white;
+}
+
+/* Content Styles */
+.trophy-cabinet-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+/* Stats Section */
+.trophy-cabinet-stats {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.trophy-stat {
+    text-align: center;
+}
+
+.trophy-stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1;
+}
+
+.trophy-stat:first-child .trophy-stat-number {
+    color: #d97706;
+}
+
+.trophy-stat:nth-child(2) .trophy-stat-number {
+    color: #2563eb;
+}
+
+.trophy-stat:nth-child(3) .trophy-stat-number {
+    color: #059669;
+}
+
+.trophy-stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Trophy Categories */
+.trophy-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.trophy-category {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trophy-category:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.trophy-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.trophy-category-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--category-color-1), var(--category-color-2));
+}
+
+.trophy-category-icon i {
+    font-size: 1.125rem;
+    color: white;
+}
+
+.trophy-category-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.trophy-category-trophies {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+/* Individual Trophy Styles */
+.trophy-item {
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--trophy-color-1), var(--trophy-color-2));
+    color: white;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.trophy-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.trophy-item.locked {
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.trophy-item.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.trophy-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.trophy-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.trophy-description {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    line-height: 1.2;
+}
+
+/* Trophy Color Variants */
+.trophy-item.portfolio-pioneer {
+    --trophy-color-1: #fbbf24;
+    --trophy-color-2: #f59e0b;
+}
+
+.trophy-item.diversification-expert {
+    --trophy-color-1: #10b981;
+    --trophy-color-2: #059669;
+}
+
+.trophy-item.risk-manager {
+    --trophy-color-1: #3b82f6;
+    --trophy-color-2: #2563eb;
+}
+
+.trophy-item.social-butterfly {
+    --trophy-color-1: #ec4899;
+    --trophy-color-2: #db2777;
+}
+
+.trophy-item.discussion-master {
+    --trophy-color-1: #6366f1;
+    --trophy-color-2: #4f46e5;
+}
+
+.trophy-item.mentor {
+    --trophy-color-1: #14b8a6;
+    --trophy-color-2: #0d9488;
+}
+
+.trophy-item.scholar {
+    --trophy-color-1: #ef4444;
+    --trophy-color-2: #dc2626;
+}
+
+.trophy-item.speed-learner {
+    --trophy-color-1: #f97316;
+    --trophy-color-2: #ea580c;
+}
+
+.trophy-item.research-expert {
+    --trophy-color-1: #06b6d4;
+    --trophy-color-2: #0891b2;
+}
+
+.trophy-item.early-adopter {
+    --trophy-color-1: #8b5cf6;
+    --trophy-color-2: #7c3aed;
+}
+
+.trophy-item.streak-master {
+    --trophy-color-1: #f43f5e;
+    --trophy-color-2: #e11d48;
+}
+
+/* Category Color Variants */
+.trophy-category.investment-mastery .trophy-category-icon {
+    --category-color-1: #fbbf24;
+    --category-color-2: #f59e0b;
+}
+
+.trophy-category.community-leader .trophy-category-icon {
+    --category-color-1: #ec4899;
+    --category-color-2: #db2777;
+}
+
+.trophy-category.knowledge-seeker .trophy-category-icon {
+    --category-color-1: #ef4444;
+    --category-color-2: #dc2626;
+}
+
+.trophy-category.special-achievements .trophy-category-icon {
+    --category-color-1: #8b5cf6;
+    --category-color-2: #7c3aed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .trophy-cabinet-panel {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .trophy-cabinet-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .trophy-category-trophies {
+        grid-template-columns: 1fr;
+    }
+    
+    .trophy-item {
+        min-height: 80px;
+    }
+    
+    .trophy-cabinet-content {
+        padding: 1rem;
+    }
+    
+    .trophy-cabinet-header {
+        padding: 1rem;
+    }
+}
+
+/* Animation for trophy reveal */
+@keyframes trophyReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) rotateY(180deg);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.9) rotateY(90deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+    }
+}
+
+.trophy-item.revealed {
+    animation: trophyReveal 0.6s ease-out;
+}
+
+/* Loading state */
+.trophy-cabinet-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.trophy-cabinet-loading i {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
