@@ -11,60 +11,8 @@
     <link rel="stylesheet" href="landing.css">
     <link rel="stylesheet" href="electric-border.css">
     <link rel="stylesheet" href="prism.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
 </head>
 <body>
-    <!-- Notifications Sidebar -->
-    <div id="notifications-sidebar" class="notifications-sidebar open">
-        <!-- Sidebar Toggle Button -->
-        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <i class="bi bi-bell"></i>
-        </button>
-
-        <!-- Sidebar Content -->
-        <div class="notifications-content">
-            <!-- Header -->
-            <div class="notifications-header">
-                <div class="notifications-title">
-                    <h3>Investment Feed</h3>
-                </div>
-                <div class="notifications-actions">
-                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="notifications-filters">
-                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                    All
-                </button>
-                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                    Congress
-                </button>
-                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                    Stocks
-                </button>
-                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                    Community
-                </button>
-            </div>
-
-            <!-- Notifications List -->
-            <div class="notifications-list" id="notifications-list">
-                <!-- Notifications will be dynamically populated here -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="notifications-empty" id="notifications-empty" style="display: none;">
-                <i class="bi bi-bell-slash"></i>
-                <p>No notifications yet</p>
-                <small>We'll notify you when something important happens</small>
-            </div>
-        </div>
-    </div>
 
     <!-- Background Elements -->
     <div class="background-elements">
@@ -124,7 +72,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content" style="margin-left: 285px;">
+    <main class="main-content">
         <div class="content-container">
             <!-- Left Section - Marketing Content -->
             <div class="marketing-content">
@@ -258,7 +206,7 @@
     </main>
 
     <!-- Statistics Section -->
-    <section class="stats-section" style="margin-left: 285px;">
+    <section class="stats-section">
         <div class="stats-container">
             <div class="stat-item">
                 <div class="stat-number">50K+</div>
@@ -279,7 +227,5 @@
     <script src="electric-border.js"></script>
     <script src="prism.js"></script>
     <script src="landing.js"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
 </body>
 </html>
