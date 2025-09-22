@@ -5,7 +5,7 @@
     position: fixed;
     left: 0;
     top: var(--nav-height, 64px); /* Start below topnav using CSS variable */
-    width: 380px;
+    width: 190px;
     height: calc(100vh - var(--nav-height, 64px)); /* Full height minus topnav */
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border-right: 1px solid rgba(20, 184, 166, 0.3);
@@ -27,15 +27,15 @@
 /* Toggle Button */
 .notifications-toggle {
     position: fixed;
-    left: 20px;
+    left: 10px;
     top: calc(var(--nav-height, 64px) + 16px); /* Position below navigation with some spacing */
-    width: 56px;
-    height: 56px;
+    width: 28px;
+    height: 28px;
     background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
     border: 2px solid #14b8a6;
     border-radius: 50%;
     color: white;
-    font-size: 1.3rem;
+    font-size: 0.9rem;
     cursor: pointer;
     box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -203,13 +203,13 @@
 
 /* Individual Notification */
 .notification-item {
-    padding: 20px 24px;
+    padding: 10px 12px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     background: rgba(30, 41, 59, 0.4);
-    margin: 8px 16px;
-    border-radius: 16px;
+    margin: 4px 8px;
+    border-radius: 8px;
     border: 1px solid rgba(20, 184, 166, 0.2);
     backdrop-filter: blur(10px);
 }
@@ -229,10 +229,10 @@
 
 .unread-badge {
     position: absolute;
-    top: 16px;
-    right: 20px;
-    width: 10px;
-    height: 10px;
+    top: 8px;
+    right: 10px;
+    width: 5px;
+    height: 5px;
     background: #10b981;
     border-radius: 50%;
     box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
@@ -437,14 +437,14 @@
     }
     
     .notification-item {
-        padding: 16px 20px;
-        margin: 6px 12px;
+        padding: 8px 10px;
+        margin: 3px 6px;
     }
     
     .notification-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1.1rem;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
     }
 }
 
@@ -461,14 +461,14 @@
     }
     
     .notification-item {
-        padding: 14px 16px;
-        margin: 4px 8px;
+        padding: 7px 8px;
+        margin: 2px 4px;
     }
     
     .notification-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
+        width: 18px;
+        height: 18px;
+        font-size: 0.6rem;
     }
     
     .notification-title {
