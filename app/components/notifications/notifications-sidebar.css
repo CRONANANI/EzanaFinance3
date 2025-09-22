@@ -333,8 +333,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
 }
 
 .notification-time {
@@ -347,13 +348,13 @@
 .notification-badge {
     background: linear-gradient(135deg, #14b8a6, #0d9488);
     color: white;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 11px;
-    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 3px 8px rgba(20, 184, 166, 0.3);
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(20, 184, 166, 0.3);
 }
 
 .notification-actions {
