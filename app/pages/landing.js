@@ -112,40 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Apply SplitText animation to hero title
-    const heroTitle = document.querySelector('.hero-title');
-    if (heroTitle) {
-        // Apply character-by-character animation
-        applySplitText('.hero-title', {
-            splitType: 'chars',
-            delay: 50,
-            duration: 0.8,
-            from: { opacity: 0, y: 60 },
-            to: { opacity: 1, y: 0 },
-            threshold: 0.1,
-            rootMargin: '-50px',
-            onComplete: () => {
-                console.log('Hero title animation completed');
-            }
-        });
-    }
+    // Hero title animation removed - text remains statically positioned
 
-    // Apply SplitText animation to hero description
-    const heroDescription = document.querySelector('.hero-description');
-    if (heroDescription) {
-        applySplitText('.hero-description', {
-            splitType: 'words',
-            delay: 100,
-            duration: 0.6,
-            from: { opacity: 0, y: 30 },
-            to: { opacity: 1, y: 0 },
-            threshold: 0.2,
-            rootMargin: '-100px',
-            onComplete: () => {
-                console.log('Hero description animation completed');
-            }
-        });
-    }
+    // Hero description animation removed - text remains statically positioned
 
     // Apply SplitText animation to statistics
     const statNumbers = document.querySelectorAll('.stat-number');
