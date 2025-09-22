@@ -561,9 +561,7 @@ body {
 .stats-section {
     position: relative;
     z-index: 10;
-    background: rgba(15, 23, 42, 0.5);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
     padding: 3rem 0;
 }
 
@@ -578,6 +576,18 @@ body {
 
 .stat-item {
     text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(16, 185, 129, 0.3);
 }
 
 .stat-number {
@@ -641,6 +651,10 @@ body {
     .stats-container {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
     }
 
     .stat-number {
