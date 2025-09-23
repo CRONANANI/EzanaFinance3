@@ -4,9 +4,9 @@
 .notifications-sidebar {
     position: fixed;
     left: 0;
-    top: var(--nav-height, 64px); /* Start below topnav using CSS variable */
+    top: calc(var(--nav-height, 64px) + 1px); /* Start below topnav with 1px gap */
     width: 285px;
-    height: calc(100vh - var(--nav-height, 64px)); /* Full height minus topnav */
+    height: calc(100vh - var(--nav-height, 64px) - 1px); /* Full height minus topnav and gap */
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border-right: 1px solid rgba(20, 184, 166, 0.3);
     backdrop-filter: blur(20px);
@@ -28,22 +28,21 @@
 .notifications-toggle {
     position: fixed;
     left: 10px;
-    top: calc(var(--nav-height, 64px) + 16px); /* Position below navigation with some spacing */
-    width: 28px;
-    height: 28px;
+    top: calc(var(--nav-height, 64px) + 20px); /* Position below navigation with proper spacing */
+    width: 32px;
+    height: 32px;
     background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
     border: 2px solid #14b8a6;
     border-radius: 50%;
     color: white;
-    font-size: 0.9rem;
+    font-size: 1rem;
     cursor: pointer;
     box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
+    z-index: 1001; /* Above sidebar */
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
 }
 
 /* Hide toggle button when sidebar is open */
@@ -76,22 +75,26 @@
 
 /* Header */
 .notifications-header {
-    padding: 24px 24px;
+    padding: 20px 20px;
     border-bottom: 1px solid rgba(20, 184, 166, 0.2);
     background: linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(13, 148, 136, 0.05) 100%);
     display: flex;
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+    min-height: 60px;
+    flex-shrink: 0;
 }
 
 .notifications-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #14b8a6;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    overflow: hidden;
+    flex: 1;
 }
 
 .notifications-title i {
@@ -102,10 +105,13 @@
 
 .notifications-title h3 {
     margin: 0;
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 700;
     color: #14b8a6;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .notifications-actions {

@@ -44,8 +44,9 @@
         inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     z-index: var(--nav-z-index);
     transition: var(--nav-transition);
-    position: relative;
     overflow: hidden;
+    width: 100vw;
+    min-width: 100%;
 }
 
 /* Metallic shine animation */
