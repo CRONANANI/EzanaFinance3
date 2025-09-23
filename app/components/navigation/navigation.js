@@ -71,7 +71,10 @@ class Navigation {
                     </a>
                     <div class="dropdown-content">
                         ${item.children.map(child => `
-                            <a href="${child.href}" class="dropdown-item">${child.text}</a>
+                            <a href="${child.href}" class="dropdown-item">
+                                ${child.icon ? `<i class="${child.icon}"></i>` : ''}
+                                ${child.text}
+                            </a>
                         `).join('')}
                     </div>
                 `;
