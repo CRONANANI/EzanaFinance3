@@ -33,6 +33,11 @@ const NavigationConfig = {
                     text: 'Economic Indicators',
                     href: 'economic-indicators.html',
                     icon: 'bi bi-graph-up-arrow'
+                },
+                {
+                    text: 'Inside the Capitol',
+                    href: 'inside-the-capitol.html',
+                    icon: 'bi bi-bank'
                 }
             ]
         },
