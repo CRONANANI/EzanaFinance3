@@ -12,8 +12,6 @@
     <link rel="stylesheet" href="../styles.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <style>
         * {
             margin: 0;
@@ -112,56 +110,6 @@
 <body>
     <!-- Navigation will be dynamically loaded -->
 
-    <!-- Notifications Sidebar -->
-    <div id="notifications-sidebar" class="notifications-sidebar open">
-        <!-- Sidebar Toggle Button -->
-        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <i class="bi bi-bell"></i>
-        </button>
-
-        <!-- Sidebar Content -->
-        <div class="notifications-content">
-            <!-- Header -->
-            <div class="notifications-header">
-                <div class="notifications-title">
-                    <h3>Investment Feed</h3>
-                </div>
-                <div class="notifications-actions">
-                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="notifications-filters">
-                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                    All
-                </button>
-                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                    Congress
-                </button>
-                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                    Stocks
-                </button>
-                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                    Community
-                </button>
-            </div>
-
-            <!-- Notifications List -->
-            <div class="notifications-list" id="notifications-list">
-                <!-- Notifications will be dynamically populated here -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="notifications-empty" id="notifications-empty" style="display: none;">
-                <i class="bi bi-bell-slash"></i>
-                <p>No notifications yet</p>
-                <small>We'll notify you when something important happens</small>
-            </div>
-        </div>
-    </div>
 
 
 
@@ -545,20 +493,12 @@ function showNotification(message, type = 'info') {
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js"></script>
     <script src="../components/navigation/navigation.js"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
     <script src="../components/notifications/notification-helpers.js"></script>
 <script>
-        // Initialize notifications sidebar when page loads
+        // Initialize page when DOM loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing profile settings');
-            
-            // Initialize the notifications sidebar
-            if (window.NotificationsSidebar) {
-                const sidebar = new NotificationsSidebar();
-                sidebar.init();
-            }
-    }
+        }
 });
 </script>
 </body>
