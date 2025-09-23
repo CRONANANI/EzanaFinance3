@@ -164,6 +164,14 @@ class Navigation {
     }
 
     bindNavigationLinks() {
+        // Handle brand link
+        const brandLink = document.querySelector('.brand-link');
+        if (brandLink) {
+            brandLink.addEventListener('click', (e) => {
+                this.handleNavigationClick(e, brandLink);
+            });
+        }
+
         // Handle direct navigation links
         const directLinks = document.querySelectorAll('.nav-link:not(.dropdown-toggle)');
         directLinks.forEach(link => {
