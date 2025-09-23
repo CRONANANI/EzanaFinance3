@@ -141,25 +141,26 @@
     padding: 20px 24px;
     border-bottom: 1px solid rgba(20, 184, 166, 0.1);
     display: flex;
-    gap: 12px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    gap: 8px;
+    flex-wrap: wrap;
+    overflow-x: hidden;
 }
 
 .filter-btn {
     background: rgba(30, 41, 59, 0.5);
     border: 1px solid rgba(20, 184, 166, 0.3);
     color: #94a3b8;
-    padding: 10px 16px;
-    border-radius: 25px;
-    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 80px;
+    flex: 1;
     text-align: center;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .filter-btn:hover {
@@ -172,7 +173,7 @@
     background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
     color: white;
     border-color: #14b8a6;
-    box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
 }
 
 /* Notifications List */
@@ -439,13 +440,13 @@
     }
     
     .notifications-filters {
-        padding: 16px 20px;
+        padding: 15px 18px;
+        gap: 6px;
     }
     
     .filter-btn {
-        font-size: 13px;
-        padding: 8px 14px;
-        min-width: 70px;
+        font-size: 11px;
+        padding: 6px 8px;
     }
     
     .notification-item {
@@ -478,6 +479,17 @@
         width: 44px;
         height: 44px;
         font-size: 1.1rem;
+    }
+    
+    .notifications-filters {
+        padding: 12px 15px;
+        gap: 4px;
+    }
+    
+    .filter-btn {
+        font-size: 10px;
+        padding: 5px 6px;
+        border-radius: 15px;
     }
     
     .notification-item {
