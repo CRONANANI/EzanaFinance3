@@ -4,7 +4,7 @@ const NavigationConfig = {
     brand: {
         name: 'Ezana Finance',
         icon: 'bi bi-graph-up',
-        href: 'index.html'
+        href: 'landing.html'
     },
 
     // Navigation menu items - matches landing page structure
