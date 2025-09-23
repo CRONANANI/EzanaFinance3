@@ -554,3 +554,53 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Global function for sidebar collapse/expand
+function toggleSidebarCollapse() {
+    const sidebar = document.getElementById('notifications-sidebar');
+    const collapseBtn = document.querySelector('.notifications-collapse i');
+    const mainContent = document.querySelector('.container[style*="margin-left: 350px"]');
+    
+    if (sidebar) {
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand sidebar
+            sidebar.classList.remove('collapsed');
+            if (collapseBtn) {
+                collapseBtn.className = 'bi bi-chevron-double-left';
+            }
+            if (mainContent) {
+                mainContent.style.marginLeft = '350px';
+            }
+        } else {
+            // Collapse sidebar
+            sidebar.classList.add('collapsed');
+            if (collapseBtn) {
+                collapseBtn.className = 'bi bi-chevron-double-right';
+            }
+            if (mainContent) {
+                mainContent.style.marginLeft = '20px';
+            }
+        }
+    }
+}
+
+// Add click handler for collapsed state expand
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('notifications-sidebar');
+    if (sidebar && sidebar.classList.contains('collapsed')) {
+        const rect = sidebar.getBoundingClientRect();
+        const clickX = e.clientX;
+        const clickY = e.clientY;
+        
+        // Check if click is on the collapsed sidebar area or expand button
+        if (clickX >= rect.left && clickX <= rect.right + 30 && 
+            clickY >= rect.top && clickY <= rect.bottom) {
+            toggleSidebarCollapse();
+        }
+    }
+});
+
+// Make function globally available
+window.toggleSidebarCollapse = toggleSidebarCollapse;
