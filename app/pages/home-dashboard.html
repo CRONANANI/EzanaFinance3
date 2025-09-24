@@ -280,12 +280,19 @@
             justify-content: center;
         }
 
+        .portfolio-value-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
         .portfolio-value {
             font-size: 1.5rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 12px;
-            margin-top: 0;
+            margin: 0;
             letter-spacing: -0.025em;
             line-height: 1.1;
         }
@@ -294,11 +301,16 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 12px;
+            margin: 0;
         }
 
         .change-positive {
             color: #10b981;
+            font-weight: 600;
+        }
+
+        .change-negative {
+            color: #ef4444;
             font-weight: 600;
         }
 
@@ -599,13 +611,14 @@
                         </div>
                     </div>
                     
-                    <div class="portfolio-value">$127,843.52</div>
-                    
-                    <div class="portfolio-change">
-                        <span class="change-positive">
-                            <i class="bi bi-arrow-up"></i>
-                            $2,847.31 (+2.28%)
-                        </span>
+                    <div class="portfolio-value-container">
+                        <div class="portfolio-value">$127,843.52</div>
+                        <div class="portfolio-change">
+                            <span class="change-positive">
+                                <i class="bi bi-arrow-up"></i>
+                                $2,847.31 (+2.28%)
+                            </span>
+                        </div>
                     </div>
                     
                     <div class="updated-time">Updated 2 minutes ago</div>
@@ -726,42 +739,74 @@
             1: { // 1 Month
                 labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
                 data: [125000, 126500, 127200, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 125000,
+                change: 2843.52,
+                changePercent: 2.28
             },
             3: { // 3 Months
                 labels: ['Month 1', 'Month 2', 'Month 3'],
                 data: [118000, 122500, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 118000,
+                change: 9843.52,
+                changePercent: 8.34
             },
             6: { // 6 Months
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                 data: [110000, 112500, 115000, 118000, 122500, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 110000,
+                change: 17843.52,
+                changePercent: 16.22
             },
             12: { // 1 Year
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 data: [95000, 98000, 102000, 105000, 108000, 110000, 112500, 115000, 118000, 122500, 125000, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 95000,
+                change: 32843.52,
+                changePercent: 34.57
             },
             36: { // 3 Years
                 labels: ['2021', '2022', '2023'],
                 data: [75000, 85000, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 75000,
+                change: 52843.52,
+                changePercent: 70.46
             },
             60: { // 5 Years
                 labels: ['2019', '2020', '2021', '2022', '2023'],
                 data: [45000, 55000, 75000, 85000, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 45000,
+                change: 82843.52,
+                changePercent: 184.10
             },
             120: { // 10 Years
                 labels: ['2014', '2016', '2018', '2020', '2022', '2023'],
                 data: [25000, 35000, 45000, 55000, 85000, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 25000,
+                change: 102843.52,
+                changePercent: 411.37
             },
             all: { // All Time
                 labels: ['2010', '2012', '2014', '2016', '2018', '2020', '2022', '2023'],
                 data: [10000, 15000, 25000, 35000, 45000, 55000, 85000, 127843.52],
-                color: '#10b981'
+                color: '#10b981',
+                currentValue: 127843.52,
+                previousValue: 10000,
+                change: 117843.52,
+                changePercent: 1178.44
             }
         };
 
@@ -891,6 +936,36 @@
                 console.log('Chart updated successfully');
             } else {
                 console.error('Portfolio chart is not initialized');
+            }
+
+            // Update portfolio value and change display
+            updatePortfolioDisplay(data);
+        }
+
+        // Update portfolio value and change display
+        function updatePortfolioDisplay(data) {
+            const portfolioValue = document.querySelector('.portfolio-value');
+            const portfolioChange = document.querySelector('.portfolio-change .change-positive');
+            
+            if (portfolioValue && portfolioChange) {
+                // Update portfolio value
+                portfolioValue.textContent = `$${data.currentValue.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+                
+                // Update change display
+                const changeIcon = data.change >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+                const changeClass = data.change >= 0 ? 'change-positive' : 'change-negative';
+                
+                portfolioChange.className = changeClass;
+                portfolioChange.innerHTML = `
+                    <i class="bi ${changeIcon}"></i>
+                    $${Math.abs(data.change).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })} (${data.change >= 0 ? '+' : ''}${data.changePercent.toFixed(2)}%)
+                `;
             }
         }
 
