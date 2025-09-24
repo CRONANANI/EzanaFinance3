@@ -449,7 +449,7 @@
 .notification-badge {
     position: absolute;
     top: 0;
-    right: 25px; /* Position to end where icon ends (icon is 20px + 5px margin) */
+    right: 20px; /* Position to end where icon starts (icon is 20px wide at right: 0) */
     background: transparent;
     color: rgba(255, 255, 255, 0.7);
     padding: 0;
@@ -459,6 +459,7 @@
     text-transform: uppercase;
     letter-spacing: 0.2px;
     z-index: 5;
+    text-align: right;
 }
 
 .notification-actions {
@@ -565,7 +566,8 @@
         padding: 0;
         border-radius: 0;
         top: 0;
-        right: 22px;
+        right: 18px; /* Adjusted for 18px icon width */
+        text-align: right;
     }
 }
 
@@ -610,7 +612,8 @@
         padding: 0;
         border-radius: 0;
         top: 0;
-        right: 20px;
+        right: 16px; /* Adjusted for 16px icon width */
+        text-align: right;
     }
     
     .notification-title {

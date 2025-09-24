@@ -204,9 +204,6 @@ class NotificationsSidebar {
                             <div class="notification-description">${notification.content}</div>
                             <div class="notification-meta">
                                 <div class="notification-time">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M17 13H11V7H12.5V11.5H17V13Z"/>
-                                    </svg>
                                     ${timeAgo}
                                 </div>
                                 <div class="notification-badge">${notification.badge || notification.type}</div>
