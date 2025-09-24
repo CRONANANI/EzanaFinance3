@@ -1090,6 +1090,9 @@
                 return;
             }
             
+            // Store the current expanded card data before switching
+            const previousCardType = currentExpandedCard;
+            
             // Update expanded card content
             expandedCard.innerHTML = `
                 <div class="card-content">
@@ -1124,7 +1127,7 @@
             }, 100);
             
             // Move current expanded card to metrics grid
-            moveCardToMetrics(currentExpandedCard);
+            moveCardToMetrics(previousCardType);
             
             // Update current expanded card
             currentExpandedCard = cardType;
@@ -1279,29 +1282,36 @@
             const metricsGrid = document.getElementById('metrics-grid');
             
             if (cardType === 'portfolio') {
-                // Create portfolio metric card
-                const portfolioCard = document.createElement('div');
-                portfolioCard.className = 'metric-card positive';
-                portfolioCard.setAttribute('data-card', 'portfolio');
-                portfolioCard.onclick = () => expandCard('portfolio');
-                portfolioCard.innerHTML = `
-                    <div class="metric-header">
-                        <div class="metric-icon icon-positive">
-                            <i class="bi bi-graph-up"></i>
+                // Check if portfolio card already exists in metrics grid
+                let portfolioCard = document.querySelector('[data-card="portfolio"]');
+                if (!portfolioCard) {
+                    // Create portfolio metric card
+                    portfolioCard = document.createElement('div');
+                    portfolioCard.className = 'metric-card positive';
+                    portfolioCard.setAttribute('data-card', 'portfolio');
+                    portfolioCard.onclick = () => expandCard('portfolio');
+                    portfolioCard.innerHTML = `
+                        <div class="metric-header">
+                            <div class="metric-icon icon-positive">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                            <div class="metric-title">Total Portfolio</div>
                         </div>
-                        <div class="metric-title">Total Portfolio</div>
-                    </div>
-                    <div class="metric-content">
-                        <div class="metric-value">$127,843.52</div>
-                        <div class="metric-subtitle">+2.28% this year</div>
-                    </div>
-                `;
-                metricsGrid.appendChild(portfolioCard);
+                        <div class="metric-content">
+                            <div class="metric-value">$127,843.52</div>
+                            <div class="metric-subtitle">+2.28% this year</div>
+                        </div>
+                    `;
+                    metricsGrid.appendChild(portfolioCard);
+                } else {
+                    // Show the existing portfolio card
+                    portfolioCard.style.display = 'flex';
+                }
             } else {
-                // Hide the clicked card in metrics grid
-                const cardToHide = document.querySelector(`[data-card="${cardType}"]`);
-                if (cardToHide) {
-                    cardToHide.style.display = 'none';
+                // Show the clicked card in metrics grid (it should always be visible)
+                const cardToShow = document.querySelector(`[data-card="${cardType}"]`);
+                if (cardToShow) {
+                    cardToShow.style.display = 'flex';
                 }
             }
         }
