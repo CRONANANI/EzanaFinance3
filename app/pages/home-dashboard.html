@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Component Cards CSS -->
     <link rel="stylesheet" href="../components/pages/home-dashboard/hero-section/hero-section.css">
     <link rel="stylesheet" href="../components/home-dashboard/todays-pnl-card.css">
@@ -326,19 +328,20 @@
             font-size: 0.875rem;
         }
 
-        .chart-placeholder {
+        .chart-container {
             height: 300px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08));
-            border-radius: 20px;
             margin-top: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
+            position: relative;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 20px;
+            padding: 1rem;
             border: 1px solid rgba(71, 85, 105, 0.4);
-            flex: 1;
-            font-size: 1.1rem;
-            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-canvas {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .metrics-grid {
@@ -615,7 +618,7 @@
                     
                     <div class="time-selector">
                         <label>Time Period:</label>
-                        <select>
+                        <select id="timePeriodSelect">
                                 <option value="1">1 Month</option>
                                 <option value="3">3 Months</option>
                                 <option value="6">6 Months</option>
@@ -627,8 +630,8 @@
                             </select>
                     </div>
 
-                    <div class="chart-placeholder">
-                        Portfolio Performance Chart
+                    <div class="chart-container">
+                        <canvas id="portfolioChart" class="chart-canvas"></canvas>
                     </div>
                 </div>
                     </div>
@@ -724,6 +727,162 @@
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script>
+        // Portfolio chart data for different time periods
+        const portfolioData = {
+            1: { // 1 Month
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                data: [125000, 126500, 127200, 127843.52],
+                color: '#10b981'
+            },
+            3: { // 3 Months
+                labels: ['Month 1', 'Month 2', 'Month 3'],
+                data: [118000, 122500, 127843.52],
+                color: '#10b981'
+            },
+            6: { // 6 Months
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                data: [110000, 112500, 115000, 118000, 122500, 127843.52],
+                color: '#10b981'
+            },
+            12: { // 1 Year
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                data: [95000, 98000, 102000, 105000, 108000, 110000, 112500, 115000, 118000, 122500, 125000, 127843.52],
+                color: '#10b981'
+            },
+            36: { // 3 Years
+                labels: ['2021', '2022', '2023'],
+                data: [75000, 85000, 127843.52],
+                color: '#10b981'
+            },
+            60: { // 5 Years
+                labels: ['2019', '2020', '2021', '2022', '2023'],
+                data: [45000, 55000, 75000, 85000, 127843.52],
+                color: '#10b981'
+            },
+            120: { // 10 Years
+                labels: ['2014', '2016', '2018', '2020', '2022', '2023'],
+                data: [25000, 35000, 45000, 55000, 85000, 127843.52],
+                color: '#10b981'
+            },
+            all: { // All Time
+                labels: ['2010', '2012', '2014', '2016', '2018', '2020', '2022', '2023'],
+                data: [10000, 15000, 25000, 35000, 45000, 55000, 85000, 127843.52],
+                color: '#10b981'
+            }
+        };
+
+        let portfolioChart = null;
+
+        // Initialize the portfolio chart
+        function initPortfolioChart() {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            const currentPeriod = document.getElementById('timePeriodSelect').value;
+            const data = portfolioData[currentPeriod];
+
+            portfolioChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: data.data,
+                        borderColor: data.color,
+                        backgroundColor: data.color + '20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: data.color,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: data.color,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#cbd5e1',
+                            borderColor: 'rgba(71, 85, 105, 0.4)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Value: $' + context.parsed.y.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(71, 85, 105, 0.2)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(71, 85, 105, 0.2)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 12
+                                },
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Update chart when time period changes
+        function updateChart() {
+            const currentPeriod = document.getElementById('timePeriodSelect').value;
+            const data = portfolioData[currentPeriod];
+            
+            if (portfolioChart) {
+                portfolioChart.data.labels = data.labels;
+                portfolioChart.data.datasets[0].data = data.data;
+                portfolioChart.data.datasets[0].borderColor = data.color;
+                portfolioChart.data.datasets[0].backgroundColor = data.color + '20';
+                portfolioChart.data.datasets[0].pointBackgroundColor = data.color;
+                portfolioChart.data.datasets[0].pointHoverBackgroundColor = data.color;
+                portfolioChart.update('active');
+            }
+        }
+
         // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing dashboard');
@@ -733,6 +892,12 @@
                 const sidebar = new NotificationsSidebar();
                 sidebar.init();
             }
+
+            // Initialize the portfolio chart
+            initPortfolioChart();
+
+            // Add event listener for time period changes
+            document.getElementById('timePeriodSelect').addEventListener('change', updateChart);
         });
 </script>
 </body>
