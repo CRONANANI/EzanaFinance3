@@ -296,8 +296,13 @@
         <p class="section-description">Find and analyze companies with comprehensive research tools</p>
     </div>
     
-    <div class="bg-card rounded-xl p-6 border border-border mb-8">
-        <h3 class="text-lg font-medium text-foreground mb-4">Company Search & Analysis</h3>
+    <div class="research-card">
+        <div class="card-header">
+            <h3 class="card-title">Company Search & Analysis</h3>
+            <div class="card-icon">
+                <i class="bi bi-search"></i>
+            </div>
+        </div>
         
         <div class="flex flex-col md:flex-row gap-3">
             <div class="flex-1">
@@ -313,7 +318,14 @@
     <!-- Company Analysis Results -->
     <div id="company-analysis-results" class="hidden">
         <!-- Company Overview -->
-        <div class="bg-card rounded-xl p-6 border border-border mb-6">
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Company Overview</h3>
+                <div class="card-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+            </div>
+            
             <div class="flex items-start justify-between mb-6">
                 <div class="flex items-center space-x-4">
                     <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
@@ -354,8 +366,13 @@
         <!-- Financial Analysis Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Financial Metrics -->
-            <div class="bg-card rounded-xl p-6 border border-border">
-                <h3 class="text-lg font-medium text-foreground mb-4">Financial Metrics</h3>
+            <div class="research-card">
+                <div class="card-header">
+                    <h3 class="card-title">Financial Metrics</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-calculator"></i>
+                    </div>
+                </div>
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
@@ -386,8 +403,13 @@
             </div>
 
             <!-- Analyst Ratings -->
-            <div class="bg-card rounded-xl p-6 border border-border">
-                <h3 class="text-lg font-medium text-foreground mb-4">Analyst Ratings</h3>
+            <div class="research-card">
+                <div class="card-header">
+                    <h3 class="card-title">Analyst Ratings</h3>
+                    <div class="card-icon">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
                 
                 <div class="space-y-4">
                     <!-- Overall Rating -->
@@ -456,8 +478,13 @@
     </div>
 
     <!-- Recent Research Reports -->
-    <div class="bg-card rounded-xl p-6 border border-border mb-6">
-        <h3 class="text-lg font-semibold text-foreground mb-4">Recent Research Reports</h3>
+    <div class="research-card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Research Reports</h3>
+            <div class="card-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+        </div>
         
         <div class="space-y-4">
             <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -518,8 +545,13 @@
 
     <!-- Company Comparison Tool -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="bg-card rounded-xl p-6 border border-border">
-            <h3 class="text-lg font-semibold text-foreground mb-4">Company Comparison</h3>
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Company Comparison</h3>
+                <div class="card-icon">
+                    <i class="bi bi-arrow-left-right"></i>
+                </div>
+            </div>
             
             <div class="space-y-4">
                 <div>
@@ -543,8 +575,13 @@
         </div>
 
         <!-- Industry Analysis -->
-        <div class="bg-card rounded-xl p-6 border border-border">
-            <h3 class="text-lg font-semibold text-foreground mb-4">Industry Analysis</h3>
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Industry Analysis</h3>
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
             
             <div class="space-y-4">
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -584,45 +621,45 @@
     </div>
 
     <!-- Research Tools -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-card rounded-xl p-4 border border-border hover:border-primary transition-all duration-200 cursor-pointer group">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-500 transition-colors">
-                    <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>
+    <div class="research-grid">
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Stock Screener</h3>
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
                 </div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Stock Screener</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Filter stocks by criteria</p>
             </div>
+            <p class="text-muted-foreground">Filter stocks by criteria</p>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition-all duration-200 cursor-pointer group">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-500 transition-colors">
-                    <i class="bi bi-calculator text-blue-600 dark:text-blue-400 group-hover:text-white text-xl"></i>
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Valuation Models</h3>
+                <div class="card-icon">
+                    <i class="bi bi-calculator"></i>
                 </div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Valuation Models</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">DCF & comparable analysis</p>
             </div>
+            <p class="text-muted-foreground">DCF & comparable analysis</p>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-purple-500 transition-all duration-200 cursor-pointer group">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-500 transition-colors">
-                    <i class="bi bi-bar-chart text-purple-600 dark:text-purple-400 group-hover:text-white text-xl"></i>
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Peer Analysis</h3>
+                <div class="card-icon">
+                    <i class="bi bi-bar-chart"></i>
                 </div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Peer Analysis</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Compare with competitors</p>
             </div>
+            <p class="text-muted-foreground">Compare with competitors</p>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-orange-500 transition-all duration-200 cursor-pointer group">
-            <div class="text-center">
-                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-500 transition-colors">
-                    <i class="bi bi-file-earmark-bar-graph text-orange-600 dark:text-orange-400 group-hover:text-white text-xl"></i>
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Earnings Analysis</h3>
+                <div class="card-icon">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
                 </div>
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Earnings Analysis</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Historical & projected earnings</p>
             </div>
+            <p class="text-muted-foreground">Historical & projected earnings</p>
         </div>
     </div>
 </div>
