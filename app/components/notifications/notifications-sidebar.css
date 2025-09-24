@@ -134,6 +134,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+.notification-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    border: 2px solid #0f172a;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    animation: pulse 2s infinite;
 }
 
 .notifications-actions button:hover {
@@ -321,9 +341,14 @@
 }
 
 .notification-item.unread {
-    background: rgba(20, 184, 166, 0.08);
-    border-color: rgba(20, 184, 166, 0.3);
-    box-shadow: 0 0 25px rgba(20, 184, 166, 0.15);
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+}
+
+.notification-item.read {
+    background: rgba(71, 85, 105, 0.3);
+    border-color: rgba(71, 85, 105, 0.2);
 }
 
 .unread-badge {

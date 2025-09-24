@@ -189,7 +189,7 @@ class NotificationsSidebar {
         
         container.innerHTML = filteredNotifications.map(notification => {
             const timeAgo = this.getTimeAgo(notification.time);
-            const unreadClass = notification.read ? '' : 'unread';
+            const unreadClass = notification.read ? 'read' : 'unread';
             const unreadBadge = notification.read ? '' : '<div class="unread-badge"></div>';
             
             return `
@@ -289,9 +289,19 @@ class NotificationsSidebar {
         this.updateNotificationCount();
     }
 
-    // Update notification count (removed functionality)
+    // Update notification count
     updateNotificationCount() {
-        // Notification count functionality removed
+        const unreadCount = this.notifications.filter(n => !n.read).length;
+        const badge = document.getElementById('notificationCountBadge');
+        
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
     }
 
     // Get time ago string
