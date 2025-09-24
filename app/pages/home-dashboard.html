@@ -125,6 +125,33 @@
             align-items: start;
         }
 
+        /* Main Card Container */
+        .dashboard-main-card {
+            min-width: 0;
+        }
+
+        .expanded-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .expanded-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #10b981, transparent);
+        }
+
         /* Portfolio Card Enhancement */
         .portfolio-card {
             background: var(--card);
@@ -601,53 +628,56 @@
         </div>
 
         <div class="dashboard-overview-grid">
-            <!-- Main Portfolio Card -->
-            <div class="dashboard-portfolio-card">
-                <div class="portfolio-card">
-                    <div class="portfolio-header">
-                        <div class="portfolio-title">Total Portfolio Value</div>
-                        <div class="portfolio-icon">
-                            <i class="bi bi-graph-up"></i>
+            <!-- Main Expanded Card -->
+            <div class="dashboard-main-card" id="mainCard">
+                <div class="expanded-card" id="expandedCard">
+                    <!-- Portfolio Card Content (Default) -->
+                    <div class="card-content" id="portfolioContent">
+                        <div class="portfolio-header">
+                            <div class="portfolio-title">Total Portfolio Value</div>
+                            <div class="portfolio-icon">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="portfolio-value-container">
-                        <div class="portfolio-value">$127,843.52</div>
-                        <div class="portfolio-change">
-                            <span class="change-positive">
-                                <i class="bi bi-arrow-up"></i>
-                                $2,847.31 (+2.28%)
-                            </span>
+                        
+                        <div class="portfolio-value-container">
+                            <div class="portfolio-value">$127,843.52</div>
+                            <div class="portfolio-change">
+                                <span class="change-positive">
+                                    <i class="bi bi-arrow-up"></i>
+                                    $2,847.31 (+2.28%)
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="updated-time">Updated 2 minutes ago</div>
-                    
-                    <div class="time-selector">
-                        <label>Time Period:</label>
-                        <select id="timePeriodSelect">
-                                <option value="1">1 Month</option>
-                                <option value="3">3 Months</option>
-                                <option value="6">6 Months</option>
-                                <option value="12" selected>1 Year</option>
-                            <option value="36">3 Years</option>
-                                <option value="60">5 Years</option>
-                            <option value="120">10 Years</option>
-                                <option value="all">All Time</option>
-                            </select>
-                    </div>
+                        
+                        <div class="updated-time">Updated 2 minutes ago</div>
+                        
+                        <div class="time-selector">
+                            <label>Time Period:</label>
+                            <select id="timePeriodSelect">
+                                    <option value="1">1 Month</option>
+                                    <option value="3">3 Months</option>
+                                    <option value="6">6 Months</option>
+                                    <option value="12" selected>1 Year</option>
+                                <option value="36">3 Years</option>
+                                    <option value="60">5 Years</option>
+                                <option value="120">10 Years</option>
+                                    <option value="all">All Time</option>
+                                </select>
+                        </div>
 
-                    <div class="chart-container">
-                        <canvas id="portfolioChart" class="chart-canvas"></canvas>
+                        <div class="chart-container">
+                            <canvas id="portfolioChart" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                 </div>
-                    </div>
+            </div>
 
             <!-- Metrics Grid -->
             <div class="dashboard-metrics-grid">
                 <div class="metrics-grid" id="metrics-grid">
                     <!-- Metric Cards -->
-                    <div class="metric-card positive">
+                    <div class="metric-card positive" data-card="pnl" onclick="expandCard('pnl')">
                         <div class="metric-header">
                             <div class="metric-icon icon-positive">
                                 <i class="bi bi-graph-up"></i>
@@ -660,7 +690,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card warning">
+                    <div class="metric-card warning" data-card="performer" onclick="expandCard('performer')">
                         <div class="metric-header">
                             <div class="metric-icon icon-warning">
                                 <i class="bi bi-star-fill"></i>
@@ -673,7 +703,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card warning">
+                    <div class="metric-card warning" data-card="risk" onclick="expandCard('risk')">
                         <div class="metric-header">
                             <div class="metric-icon icon-warning">
                                 <i class="bi bi-exclamation-triangle"></i>
@@ -686,7 +716,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card info">
+                    <div class="metric-card info" data-card="dividends" onclick="expandCard('dividends')">
                         <div class="metric-header">
                             <div class="metric-icon icon-info">
                                 <i class="bi bi-currency-dollar"></i>
@@ -699,7 +729,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card success">
+                    <div class="metric-card success" data-card="market" onclick="expandCard('market')">
                         <div class="metric-header">
                             <div class="metric-icon icon-success">
                                 <i class="bi bi-graph-up"></i>
@@ -712,7 +742,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card info">
+                    <div class="metric-card info" data-card="allocation" onclick="expandCard('allocation')">
                         <div class="metric-header">
                             <div class="metric-icon icon-info">
                                 <i class="bi bi-pie-chart"></i>
@@ -811,6 +841,7 @@
         };
 
         let portfolioChart = null;
+        let currentExpandedCard = 'portfolio';
 
         // Initialize the portfolio chart
         function initPortfolioChart() {
@@ -966,6 +997,251 @@
                         maximumFractionDigits: 2
                     })} (${data.change >= 0 ? '+' : ''}${data.changePercent.toFixed(2)}%)
                 `;
+            }
+        }
+
+        // Card content data for different metric cards
+        const cardContentData = {
+            pnl: {
+                title: "Today's P&L",
+                icon: "bi-graph-up",
+                iconClass: "icon-positive",
+                value: "+$1,247",
+                subtitle: "+0.98% from yesterday",
+                chartData: {
+                    labels: ['9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM'],
+                    data: [800, 950, 1100, 1050, 1200, 1150, 1247, 1247],
+                    color: '#10b981'
+                }
+            },
+            performer: {
+                title: "Top Performer",
+                icon: "bi-star-fill",
+                iconClass: "icon-warning",
+                value: "NVDA",
+                subtitle: "+12.4% this week",
+                chartData: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                    data: [450, 465, 480, 495, 505],
+                    color: '#f59e0b'
+                }
+            },
+            risk: {
+                title: "Risk Score",
+                icon: "bi-exclamation-triangle",
+                iconClass: "icon-warning",
+                value: "6.2/10",
+                subtitle: "Moderate risk level",
+                chartData: {
+                    labels: ['Volatility', 'Liquidity', 'Concentration', 'Leverage', 'Market'],
+                    data: [7, 5, 6, 4, 8],
+                    color: '#f59e0b'
+                }
+            },
+            dividends: {
+                title: "Monthly Dividends",
+                icon: "bi-currency-dollar",
+                iconClass: "icon-info",
+                value: "$847.23",
+                subtitle: "Next payout: Oct 15",
+                chartData: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                    data: [750, 780, 800, 820, 830, 840, 845, 847, 847.23],
+                    color: '#3b82f6'
+                }
+            },
+            market: {
+                title: "Market Performance",
+                icon: "bi-graph-up",
+                iconClass: "icon-success",
+                value: "+8.4%",
+                subtitle: "vs S&P 500: +6.2%",
+                chartData: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    data: [2.1, 4.3, 6.8, 8.4],
+                    color: '#10b981'
+                }
+            },
+            allocation: {
+                title: "Asset Allocation",
+                icon: "bi-pie-chart",
+                iconClass: "icon-info",
+                value: "Balanced",
+                subtitle: "65% Stocks, 35% Bonds",
+                chartData: {
+                    labels: ['Stocks', 'Bonds', 'Cash', 'Alternatives'],
+                    data: [65, 35, 5, 10],
+                    color: '#3b82f6'
+                }
+            }
+        };
+
+        // Expand card function
+        function expandCard(cardType) {
+            if (currentExpandedCard === cardType) return;
+            
+            const expandedCard = document.getElementById('expandedCard');
+            const cardData = cardContentData[cardType];
+            
+            if (!cardData) return;
+            
+            // Update expanded card content
+            expandedCard.innerHTML = `
+                <div class="card-content">
+                    <div class="portfolio-header">
+                        <div class="portfolio-title">${cardData.title}</div>
+                        <div class="portfolio-icon">
+                            <i class="bi ${cardData.icon}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="portfolio-value-container">
+                        <div class="portfolio-value">${cardData.value}</div>
+                        <div class="portfolio-change">
+                            <span class="change-positive">
+                                <i class="bi ${cardData.icon}"></i>
+                                ${cardData.subtitle}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="updated-time">Updated 2 minutes ago</div>
+                    
+                    <div class="chart-container">
+                        <canvas id="expandedChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            // Create chart for expanded card
+            setTimeout(() => {
+                createExpandedChart(cardData.chartData);
+            }, 100);
+            
+            // Move current expanded card to metrics grid
+            moveCardToMetrics(currentExpandedCard);
+            
+            // Update current expanded card
+            currentExpandedCard = cardType;
+        }
+
+        // Create chart for expanded card
+        function createExpandedChart(data) {
+            const canvas = document.getElementById('expandedChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            if (portfolioChart) {
+                portfolioChart.destroy();
+            }
+            
+            portfolioChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: data.title,
+                        data: data.data,
+                        borderColor: data.color,
+                        backgroundColor: data.color + '20',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: data.color,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: data.color,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#cbd5e1',
+                            borderColor: 'rgba(71, 85, 105, 0.4)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(71, 85, 105, 0.2)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(71, 85, 105, 0.2)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Move current expanded card to metrics grid
+        function moveCardToMetrics(cardType) {
+            const metricsGrid = document.getElementById('metrics-grid');
+            
+            if (cardType === 'portfolio') {
+                // Create portfolio metric card
+                const portfolioCard = document.createElement('div');
+                portfolioCard.className = 'metric-card positive';
+                portfolioCard.setAttribute('data-card', 'portfolio');
+                portfolioCard.onclick = () => expandCard('portfolio');
+                portfolioCard.innerHTML = `
+                    <div class="metric-header">
+                        <div class="metric-icon icon-positive">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="metric-title">Total Portfolio</div>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-value">$127,843.52</div>
+                        <div class="metric-subtitle">+2.28% this year</div>
+                    </div>
+                `;
+                metricsGrid.appendChild(portfolioCard);
+            } else {
+                // Find and move the clicked card back to metrics
+                const cardToMove = document.querySelector(`[data-card="${cardType}"]`);
+                if (cardToMove) {
+                    cardToMove.style.display = 'flex';
+                }
             }
         }
 
