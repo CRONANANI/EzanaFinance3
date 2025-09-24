@@ -1069,21 +1069,26 @@
                 value: "Balanced",
                 subtitle: "65% Stocks, 35% Bonds",
                 chartData: {
-                    labels: ['Stocks', 'Bonds', 'Cash', 'Alternatives'],
-                    data: [65, 35, 5, 10],
-                    color: '#3b82f6'
+                    labels: ['Technology', 'Healthcare', 'Financials', 'Consumer Discretionary', 'Industrials', 'Energy', 'Bonds', 'Cash'],
+                    data: [25, 18, 15, 12, 10, 8, 7, 5],
+                    colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b', '#94a3b8'],
+                    type: 'pie'
                 }
             }
         };
 
         // Expand card function
         function expandCard(cardType) {
+            console.log('Expanding card:', cardType);
             if (currentExpandedCard === cardType) return;
             
             const expandedCard = document.getElementById('expandedCard');
             const cardData = cardContentData[cardType];
             
-            if (!cardData) return;
+            if (!cardData) {
+                console.error('Card data not found for:', cardType);
+                return;
+            }
             
             // Update expanded card content
             expandedCard.innerHTML = `
@@ -1136,81 +1141,137 @@
                 portfolioChart.destroy();
             }
             
-            portfolioChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: data.title,
-                        data: data.data,
-                        borderColor: data.color,
-                        backgroundColor: data.color + '20',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: data.color,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        pointHoverBackgroundColor: data.color,
-                        pointHoverBorderColor: '#ffffff',
-                        pointHoverBorderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            titleColor: '#e2e8f0',
-                            bodyColor: '#cbd5e1',
-                            borderColor: 'rgba(71, 85, 105, 0.4)',
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: false
-                        }
+            const chartType = data.type || 'line';
+            
+            if (chartType === 'pie') {
+                portfolioChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: data.colors,
+                            borderColor: data.colors.map(color => color + '80'),
+                            borderWidth: 2,
+                            hoverOffset: 10
+                        }]
                     },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(71, 85, 105, 0.2)',
-                                drawBorder: false
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    font: {
+                                        size: 12
+                                    },
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
                             },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: {
-                                    size: 12
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#cbd5e1',
+                                borderColor: 'rgba(71, 85, 105, 0.4)',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        return `${label}: ${value}%`;
+                                    }
                                 }
                             }
                         },
-                        y: {
-                            grid: {
-                                color: 'rgba(71, 85, 105, 0.2)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: {
-                                    size: 12
-                                }
-                            }
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeInOutQuart'
                         }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeInOutQuart'
                     }
-                }
-            });
+                });
+            } else {
+                portfolioChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: data.title,
+                            data: data.data,
+                            borderColor: data.color,
+                            backgroundColor: data.color + '20',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: data.color,
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointHoverBackgroundColor: data.color,
+                            pointHoverBorderColor: '#ffffff',
+                            pointHoverBorderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                                titleColor: '#e2e8f0',
+                                bodyColor: '#cbd5e1',
+                                borderColor: 'rgba(71, 85, 105, 0.4)',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                displayColors: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(71, 85, 105, 0.2)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(71, 85, 105, 0.2)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+            }
         }
 
         // Move current expanded card to metrics grid
@@ -1237,13 +1298,16 @@
                 `;
                 metricsGrid.appendChild(portfolioCard);
             } else {
-                // Find and move the clicked card back to metrics
-                const cardToMove = document.querySelector(`[data-card="${cardType}"]`);
-                if (cardToMove) {
-                    cardToMove.style.display = 'flex';
+                // Hide the clicked card in metrics grid
+                const cardToHide = document.querySelector(`[data-card="${cardType}"]`);
+                if (cardToHide) {
+                    cardToHide.style.display = 'none';
                 }
             }
         }
+
+        // Make expandCard globally accessible
+        window.expandCard = expandCard;
 
         // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
