@@ -588,12 +588,6 @@
             </div>
         </div>
 
-        <!-- Portfolio Overview Section -->
-        <div class="section-header">
-            <h2 class="section-title">Portfolio Overview</h2>
-            <p class="section-description">Your complete financial snapshot and performance metrics</p>
-        </div>
-        
         <div class="dashboard-overview-grid">
             <!-- Main Portfolio Card -->
             <div class="dashboard-portfolio-card">
@@ -775,9 +769,21 @@
 
         // Initialize the portfolio chart
         function initPortfolioChart() {
-            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            const canvas = document.getElementById('portfolioChart');
+            if (!canvas) {
+                console.error('Portfolio chart canvas not found');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
             const currentPeriod = document.getElementById('timePeriodSelect').value;
             const data = portfolioData[currentPeriod];
+
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js is not loaded');
+                return;
+            }
 
             portfolioChart = new Chart(ctx, {
                 type: 'line',
@@ -872,6 +878,8 @@
             const currentPeriod = document.getElementById('timePeriodSelect').value;
             const data = portfolioData[currentPeriod];
             
+            console.log('Updating chart for period:', currentPeriod, 'with data:', data);
+            
             if (portfolioChart) {
                 portfolioChart.data.labels = data.labels;
                 portfolioChart.data.datasets[0].data = data.data;
@@ -880,6 +888,9 @@
                 portfolioChart.data.datasets[0].pointBackgroundColor = data.color;
                 portfolioChart.data.datasets[0].pointHoverBackgroundColor = data.color;
                 portfolioChart.update('active');
+                console.log('Chart updated successfully');
+            } else {
+                console.error('Portfolio chart is not initialized');
             }
         }
 
@@ -893,8 +904,10 @@
                 sidebar.init();
             }
 
-            // Initialize the portfolio chart
-            initPortfolioChart();
+            // Initialize the portfolio chart with a small delay to ensure Chart.js is loaded
+            setTimeout(() => {
+                initPortfolioChart();
+            }, 100);
 
             // Add event listener for time period changes
             document.getElementById('timePeriodSelect').addEventListener('change', updateChart);
