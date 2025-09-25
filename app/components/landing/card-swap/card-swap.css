@@ -14,8 +14,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 600px;
-  height: 400px;
+  width: 800px;
+  height: 500px;
   border-radius: 8px 8px 0 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(30, 41, 59, 0.95);
@@ -23,6 +23,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 
   transform-style: preserve-3d;
   will-change: transform;
@@ -76,10 +77,12 @@
   text-align: center;
 }
 
-.tab-url {
-  color: #64748b;
-  font-size: 0.75rem;
-  font-family: monospace;
+/* URL removed from tab header */
+
+/* Shimmer animation for page titles */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .card-body {
@@ -167,8 +170,8 @@
 
 @media (max-width: 1024px) {
   .card {
-    width: 500px;
-    height: 350px;
+    width: 700px;
+    height: 450px;
   }
   
   .card-swap-container {
@@ -178,8 +181,8 @@
 
 @media (max-width: 768px) {
   .card {
-    width: 400px;
-    height: 300px;
+    width: 600px;
+    height: 400px;
   }
   
   .card-swap-container {
@@ -189,8 +192,8 @@
 
 @media (max-width: 480px) {
   .card {
-    width: 320px;
-    height: 250px;
+    width: 500px;
+    height: 350px;
   }
   
   .card-swap-container {
