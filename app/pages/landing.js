@@ -83,21 +83,19 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(statsSection);
     }
 
-    // Add loading animation to buttons
-    const buttons = document.querySelectorAll('.btn-primary, .btn-secondary');
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (this.classList.contains('btn-primary')) {
-                // Add loading state for primary button
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i class="bi bi-hourglass-split"></i> Loading...';
-                this.style.pointerEvents = 'none';
-                
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.style.pointerEvents = 'auto';
-                }, 2000);
-            }
+    // Add loading animation to text links
+    const textLinks = document.querySelectorAll('.cta-text-link');
+    textLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Add loading state for text links
+            const originalText = this.textContent;
+            this.textContent = 'Loading...';
+            this.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+                this.style.pointerEvents = 'auto';
+            }, 2000);
         });
     });
 
@@ -132,10 +130,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Apply ElectricBorder animation to Sign Up button
-    const signUpButton = document.querySelector('.btn-primary');
-    if (signUpButton) {
-        applyElectricBorder('.btn-primary', {
+    // Apply ElectricBorder animation to Sign Up text link
+    const signUpLink = document.querySelector('.cta-text-link[href="sign-up.html"]');
+    if (signUpLink) {
+        applyElectricBorder('.cta-text-link[href="sign-up.html"]', {
             color: '#10b981',
             speed: 1.2,
             chaos: 0.8,
@@ -143,24 +141,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Apply ElectricBorder animation to Sign In button
-    const signInButton = document.querySelector('.btn-secondary');
-    if (signInButton) {
-        applyElectricBorder('.btn-secondary', {
+    // Apply ElectricBorder animation to Sign In text link
+    const signInLink = document.querySelector('.cta-text-link[href="sign-in.html"]');
+    if (signInLink) {
+        applyElectricBorder('.cta-text-link[href="sign-in.html"]', {
             color: '#10b981',
             speed: 0.8,
             chaos: 1.2,
-            thickness: 1
-        });
-    }
-
-    // Apply ElectricBorder animation to View Demo button
-    const demoButton = document.querySelector('.btn-tertiary');
-    if (demoButton) {
-        applyElectricBorder('.btn-tertiary', {
-            color: '#10b981',
-            speed: 0.6,
-            chaos: 1.5,
             thickness: 1
         });
     }
