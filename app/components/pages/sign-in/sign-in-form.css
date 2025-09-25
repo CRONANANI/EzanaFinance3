@@ -1,21 +1,6 @@
-/* Sign In Page Styles */
+/* Sign In Form Component Styles */
 
-.sign-in-container {
-    min-height: calc(100vh - 80px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    background: radial-gradient(ellipse at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%));
-}
-
-#sign-in-form-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.sign-in-card {
+.sign-in-form-section {
     background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(71, 85, 105, 0.4);
@@ -28,9 +13,10 @@
         hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px;
     position: relative;
     overflow: hidden;
+    margin: 0 auto;
 }
 
-.sign-in-card::before {
+.sign-in-form-section::before {
     content: '';
     position: absolute;
     top: 0;
@@ -42,35 +28,26 @@
     animation: shimmer 3s ease-in-out infinite;
 }
 
-.logo-section {
+.form-header {
     text-align: center;
     margin-bottom: 2rem;
 }
 
-.logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-}
-
-.logo i {
-    color: #10b981;
-    font-size: 2rem;
-}
-
-.sign-in-title {
+.form-title {
     font-size: 2.5rem;
     font-weight: 700;
     color: white;
-    text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     background: linear-gradient(135deg, #10b981, #34d399);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+.form-subtitle {
+    color: #94a3b8;
+    font-size: 1.125rem;
+    line-height: 1.6;
 }
 
 .sign-in-form {
@@ -278,25 +255,21 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .sign-in-container {
-        padding: 1rem;
-    }
-    
-    .sign-in-card {
+    .sign-in-form-section {
         padding: 2rem;
     }
     
-    .sign-in-title {
+    .form-title {
         font-size: 2rem;
     }
 }
 
 @media (max-width: 480px) {
-    .sign-in-card {
+    .sign-in-form-section {
         padding: 1.5rem;
     }
     
-    .sign-in-title {
+    .form-title {
         font-size: 1.75rem;
     }
     

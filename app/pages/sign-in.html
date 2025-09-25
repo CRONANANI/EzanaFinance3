@@ -30,84 +30,9 @@
     <main class="main-content" style="padding-top: 80px;">
         <!-- Sign In Container -->
         <div class="sign-in-container">
-            <div class="sign-in-card">
-                <!-- Logo -->
-                <div class="logo-section">
-                    <div class="logo">
-                        <i class="bi bi-graph-up"></i>
-                        <span>Ezana Finance</span>
-                    </div>
-                </div>
-
-                <!-- Title -->
-                <h1 class="sign-in-title">Sign in</h1>
-
-                <!-- Sign In Form -->
-                <form id="signInForm" class="sign-in-form">
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email</label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
-                            class="form-input" 
-                            placeholder="your@email.com"
-                            autocomplete="email"
-                            required
-                        >
-                        <div class="error-message" id="emailError"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            class="form-input" 
-                            placeholder="••••••"
-                            autocomplete="current-password"
-                            required
-                        >
-                        <div class="error-message" id="passwordError"></div>
-                    </div>
-
-                    <div class="form-options">
-                        <label class="checkbox-label">
-                            <input type="checkbox" class="checkbox-input" name="remember">
-                            <span class="checkmark"></span>
-                            Remember me
-                        </label>
-                        <a href="#" class="forgot-password">Forgot password?</a>
-                    </div>
-
-                    <button type="submit" class="submit-btn">
-                        Sign in
-                    </button>
-                </form>
-
-                <!-- Divider -->
-                <div class="divider">
-                    <span>or</span>
-                </div>
-
-                <!-- Social Login -->
-                <div class="social-login">
-                    <button class="social-btn google-btn" onclick="signInWithGoogle()">
-                        <i class="bi bi-google"></i>
-                        Sign in with Google
-                    </button>
-                    <button class="social-btn facebook-btn" onclick="signInWithFacebook()">
-                        <i class="bi bi-facebook"></i>
-                        Sign in with Facebook
-                    </button>
-                </div>
-
-                <!-- Sign Up Link -->
-                <div class="sign-up-link">
-                    <span>Don't have an account? </span>
-                    <a href="registration.html">Sign up</a>
-                </div>
+            <!-- Sign In Form Component -->
+            <div id="sign-in-form-container">
+                <!-- Sign in form will be loaded here -->
             </div>
         </div>
     </main>
@@ -118,7 +43,54 @@
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js"></script>
     <script src="../components/navigation/navigation.js"></script>
-    <!-- Sign In JavaScript -->
-    <script src="sign-in.js"></script>
+    <script>
+        // Component Loader for Sign In Page
+        class SignInPageLoader {
+            constructor() {
+                this.init();
+            }
+
+            async init() {
+                await this.loadComponents();
+            }
+
+            async loadComponents() {
+                try {
+                    // Load sign in form component
+                    const formResponse = await fetch('../components/pages/sign-in/sign-in-form.html');
+                    const formHTML = await formResponse.text();
+                    document.getElementById('sign-in-form-container').innerHTML = formHTML;
+
+                    // Load CSS
+                    this.loadCSS('../components/pages/sign-in/sign-in-form.css');
+
+                    // Load JavaScript
+                    this.loadJS('../components/pages/sign-in/sign-in-form.js');
+
+                } catch (error) {
+                    console.error('Error loading sign in components:', error);
+                }
+            }
+
+            loadCSS(href) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                document.head.appendChild(link);
+            }
+
+            loadJS(src) {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                document.head.appendChild(script);
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            new SignInPageLoader();
+        });
+    </script>
 </body>
 </html>
