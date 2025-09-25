@@ -4,10 +4,11 @@
   height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   perspective: 1000px;
   overflow: visible;
   padding: 2rem;
+  padding-top: 4rem;
   
   /* High quality rendering */
   image-rendering: -webkit-optimize-contrast;
