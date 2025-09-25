@@ -32,15 +32,13 @@
     left: 0;
     right: 0;
     height: var(--nav-height);
-    background: linear-gradient(135deg, #064e3b 0%, #065f46 25%, #047857 50%, #059669 75%, #10b981 100%);
-    background-size: 200% 200%;
-    animation: metallicShine 3s ease-in-out infinite;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
         0 4px 6px -1px rgba(0, 0, 0, 0.1),
         0 2px 4px -1px rgba(0, 0, 0, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
         inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     z-index: var(--nav-z-index);
     transition: var(--nav-transition);
@@ -49,22 +47,7 @@
     min-width: 100%;
 }
 
-/* Metallic shine animation */
-@keyframes metallicShine {
-    0%, 100% { 
-        background-position: 0% 50%; 
-        filter: brightness(1) saturate(1);
-    }
-    50% { 
-        background-position: 100% 50%; 
-        filter: brightness(1.1) saturate(1.2);
-    }
-}
-
-@keyframes metallicOverlay {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.6; }
-}
+/* Removed metallic animations - now using simple gradient matching dashboard */
 
 /* Navigation Content */
 .nav-container {
@@ -360,15 +343,13 @@
         top: var(--nav-height);
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #064e3b 0%, #065f46 25%, #047857 50%, #059669 75%, #10b981 100%);
-        background-size: 200% 200%;
-        animation: metallicShine 3s ease-in-out infinite;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 
             0 4px 6px -1px rgba(0, 0, 0, 0.1),
             0 2px 4px -1px rgba(0, 0, 0, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
         opacity: 0;
         visibility: hidden;
         transform: translateY(-100%);
