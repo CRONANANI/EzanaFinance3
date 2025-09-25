@@ -1,14 +1,29 @@
 /* Registration Page Component Styles */
 
 .registration-container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
-    align-items: start;
+    align-items: center;
+    justify-items: center;
     min-height: calc(100vh - 80px);
+}
+
+#registration-form-container {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+}
+
+#benefits-section-container {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
 }
 
 /* Responsive Design */
@@ -16,11 +31,24 @@
     .registration-container {
         grid-template-columns: 1fr;
         gap: 2rem;
+        align-items: center;
+        justify-items: center;
+    }
+    
+    #registration-form-container,
+    #benefits-section-container {
+        max-width: 600px;
     }
 }
 
 @media (max-width: 768px) {
     .registration-container {
         padding: 1rem;
+        gap: 1.5rem;
+    }
+    
+    #registration-form-container,
+    #benefits-section-container {
+        max-width: 100%;
     }
 }
