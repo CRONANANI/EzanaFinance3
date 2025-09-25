@@ -1,12 +1,24 @@
 /* Registration Page Styles */
 
-.registration-container {
-    min-height: calc(100vh - 80px);
+body {
+    background: radial-gradient(ellipse at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%));
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.main-content {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    background: radial-gradient(ellipse at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%));
+}
+
+.registration-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .registration-card {
@@ -16,7 +28,7 @@
     border-radius: 24px;
     padding: 3rem;
     width: 100%;
-    max-width: 450px;
+    max-width: 900px;
     box-shadow: 
         hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, 
         hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px;
