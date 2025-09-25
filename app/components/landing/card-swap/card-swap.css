@@ -27,8 +27,8 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 480px;  /* 60% of 800px */
-  height: 300px; /* 60% of 500px */
+  width: 600px;  /* 75% of 800px */
+  height: 375px; /* 75% of 500px */
   border-radius: 8px 8px 0 0;
   border: 2px solid rgba(255, 255, 255, 0.3);
   background: rgba(30, 41, 59, 0.95);
@@ -245,8 +245,8 @@
 
 @media (max-width: 1024px) {
   .card {
-    width: 420px;  /* 60% of 700px */
-    height: 270px; /* 60% of 450px */
+    width: 525px;  /* 75% of 700px */
+    height: 337px; /* 75% of 450px */
   }
   
   .card-swap-container {
@@ -256,8 +256,8 @@
 
 @media (max-width: 768px) {
   .card {
-    width: 360px;  /* 60% of 600px */
-    height: 240px; /* 60% of 400px */
+    width: 450px;  /* 75% of 600px */
+    height: 300px; /* 75% of 400px */
   }
   
   .card-swap-container {
@@ -267,8 +267,8 @@
 
 @media (max-width: 480px) {
   .card {
-    width: 300px;  /* 60% of 500px */
-    height: 210px; /* 60% of 350px */
+    width: 375px;  /* 75% of 500px */
+    height: 262px; /* 75% of 350px */
   }
   
   .card-swap-container {
