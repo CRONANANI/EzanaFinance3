@@ -283,69 +283,25 @@ body {
     width: 100%;
 }
 
-/* Right Section - Mobile App Preview */
-.mobile-preview {
+/* Right Section - Card Preview */
+.card-preview {
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100%;
+    min-height: 500px;
 }
 
-.phone-container {
+/* Card Preview Container */
+#card-swap-container {
     position: relative;
-    transform: rotate(-5deg);
-    transition: transform 0.3s ease;
-}
-
-.phone-container:hover {
-    transform: rotate(-5deg) scale(1.05);
-}
-
-.phone {
-    width: 280px;
-    height: 560px;
-    background: #1e293b;
-    border-radius: 2rem;
-    padding: 1.5rem;
-    position: relative;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 8px solid #334155;
-}
-
-.phone-screen {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-radius: 1.5rem;
-    padding: 1.5rem;
-    position: relative;
-    overflow: hidden;
+    min-height: 400px;
 }
 
-.phone-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.phone-time {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: white;
-}
-
-.phone-status {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.status-dot {
-    width: 4px;
-    height: 4px;
-    background: white;
-    border-radius: 50%;
-}
+/* Mobile phone styles removed - replaced with CardSwap component */
 
 .balance-section {
     margin-bottom: 1.5rem;
@@ -530,35 +486,7 @@ body {
     flex-shrink: 0;
 }
 
-.phone-nav {
-    position: absolute;
-    bottom: 1rem;
-    left: 1rem;
-    right: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    padding: 0.75rem;
-    display: flex;
-    justify-content: space-around;
-}
-
-.nav-item-phone {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    color: #94a3b8;
-    font-size: 0.75rem;
-    transition: color 0.3s ease;
-}
-
-.nav-item-phone.active {
-    color: #10b981;
-}
-
-.nav-item-phone i {
-    font-size: 1rem;
-}
+/* Mobile phone navigation styles removed */
 
 /* Statistics Section */
 .stats-section {
@@ -610,149 +538,7 @@ body {
     font-weight: 500;
 }
 
-/* Mobile Dashboard Styles */
-.mobile-dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding: 0 1rem;
-}
-
-.mobile-dashboard-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #e2e8f0;
-}
-
-.mobile-refresh-btn {
-    width: 24px;
-    height: 24px;
-    background: rgba(16, 185, 129, 0.2);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #10b981;
-    font-size: 0.75rem;
-}
-
-.mobile-portfolio-section {
-    padding: 0 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.mobile-portfolio-title {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-}
-
-.mobile-portfolio-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 0.25rem;
-}
-
-.mobile-portfolio-change {
-    font-size: 0.75rem;
-    color: #10b981;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.mobile-metrics-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    padding: 0 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.mobile-metric-card {
-    background: rgba(30, 41, 59, 0.6);
-    border-radius: 8px;
-    padding: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid rgba(71, 85, 105, 0.3);
-}
-
-.mobile-metric-icon {
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(135deg, #10b981, #059669);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.625rem;
-    flex-shrink: 0;
-}
-
-.mobile-metric-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.mobile-metric-value {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 0.125rem;
-}
-
-.mobile-metric-label {
-    font-size: 0.625rem;
-    color: #94a3b8;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.mobile-chart-section {
-    padding: 0 1rem;
-    margin-bottom: 1rem;
-}
-
-.mobile-chart-title {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin-bottom: 0.75rem;
-}
-
-.mobile-chart-placeholder {
-    height: 60px;
-    background: rgba(15, 23, 42, 0.3);
-    border-radius: 8px;
-    padding: 0.5rem;
-    display: flex;
-    align-items: end;
-    gap: 2px;
-    border: 1px solid rgba(71, 85, 105, 0.3);
-}
-
-.mobile-chart-line {
-    flex: 1;
-    background: linear-gradient(180deg, #10b981, #34d399);
-    border-radius: 1px;
-    animation: chartPulse 2s ease-in-out infinite;
-}
-
-.mobile-chart-line:nth-child(1) { height: 20%; animation-delay: 0s; }
-.mobile-chart-line:nth-child(2) { height: 40%; animation-delay: 0.2s; }
-.mobile-chart-line:nth-child(3) { height: 60%; animation-delay: 0.4s; }
-.mobile-chart-line:nth-child(4) { height: 80%; animation-delay: 0.6s; }
-.mobile-chart-line:nth-child(5) { height: 100%; animation-delay: 0.8s; }
-
-@keyframes chartPulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-}
+/* Mobile dashboard styles removed - replaced with CardSwap component */
 
 /* Responsive Design */
 @media (max-width: 1024px) {
@@ -767,9 +553,7 @@ body {
         white-space: nowrap;
     }
 
-    .phone-container {
-        transform: rotate(0deg);
-    }
+    /* Mobile phone styles removed */
 }
 
 @media (max-width: 768px) {
@@ -790,14 +574,9 @@ body {
         justify-content: center;
     }
 
-    .phone {
-        width: 280px;
-        height: 520px;
-    }
+    /* Mobile phone styles removed */
     
-    .phone-screen {
-        padding: 1.25rem;
-    }
+    /* Mobile phone styles removed */
 
     .stats-container {
         grid-template-columns: 1fr;
@@ -823,14 +602,9 @@ body {
         white-space: nowrap;
     }
 
-    .phone {
-        width: 260px;
-        height: 480px;
-    }
+    /* Mobile phone styles removed */
 
-    .phone-screen {
-        padding: 1.125rem;
-    }
+    /* Mobile phone styles removed */
     
     .balance-amount {
         font-size: 1.75rem;
@@ -861,14 +635,9 @@ body {
 
 /* Extra small screens */
 @media (max-width: 360px) {
-    .phone {
-        width: 240px;
-        height: 440px;
-    }
+    /* Mobile phone styles removed */
     
-    .phone-screen {
-        padding: 1rem;
-    }
+    /* Mobile phone styles removed */
     
     .balance-amount {
         font-size: 1.5rem;
