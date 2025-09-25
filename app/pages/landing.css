@@ -183,12 +183,12 @@ body {
 }
 
 .content-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 2rem;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 3rem;
     align-items: center;
 }
 
@@ -216,7 +216,7 @@ body {
 }
 
 .hero-title {
-    font-size: 3.5rem;
+    font-size: 2.8rem;
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 1.5rem;
@@ -224,6 +224,7 @@ body {
     text-align: left;
     margin-left: 0;
     padding-left: 0;
+    max-width: 100%;
 }
 
 .hero-title .highlight {
@@ -234,11 +235,12 @@ body {
 }
 
 .hero-description {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     color: #94a3b8;
     line-height: 1.6;
     margin-bottom: 2rem;
     text-align: left;
+    max-width: 400px;
     width: 100%;
 }
 
@@ -551,8 +553,13 @@ body {
     }
 
     .hero-title {
-        font-size: 2.8rem;
+        font-size: 2.5rem;
         white-space: nowrap;
+    }
+    
+    .hero-description {
+        max-width: 500px;
+        margin: 0 auto 2rem;
     }
 
     /* Mobile phone styles removed */
@@ -564,12 +571,13 @@ body {
     }
 
     .hero-title {
-        font-size: 2.2rem;
+        font-size: 2rem;
         white-space: nowrap;
     }
 
     .hero-description {
-        font-size: 1.125rem;
+        font-size: 1rem;
+        max-width: 400px;
     }
 
     .cta-buttons {
@@ -600,8 +608,13 @@ body {
     }
 
     .hero-title {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         white-space: nowrap;
+    }
+    
+    .hero-description {
+        font-size: 0.9rem;
+        max-width: 350px;
     }
 
     /* Mobile phone styles removed */
