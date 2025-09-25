@@ -144,17 +144,17 @@
                     // Initialize CardSwap after HTML is loaded
                     setTimeout(() => {
                         const cardSwap = createCardSwap('#card-swap-container', {
-                            width: 400,
-                            height: 300,
-                            cardDistance: 50,
-                            verticalDistance: 60,
+                            width: 600,
+                            height: 400,
+                            cardDistance: 40,
+                            verticalDistance: 50,
                             delay: 4000,
                             pauseOnHover: true,
                             onCardClick: (index) => {
                                 console.log('Card clicked:', index);
                                 // You can add navigation or other actions here
                             },
-                            skewAmount: 4,
+                            skewAmount: 3,
                             easing: 'elastic'
                         });
                     }, 100);
