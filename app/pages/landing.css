@@ -183,12 +183,12 @@ body {
 }
 
 .content-container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0 2rem;
     display: grid;
-    grid-template-columns: 2fr 0.3fr;
-    gap: 6rem;
+    grid-template-columns: 2.5fr 0.2fr;
+    gap: 8rem;
     align-items: center;
 }
 
@@ -224,7 +224,7 @@ body {
     text-align: left;
     margin-left: 0;
     padding-left: 0;
-    max-width: 600px;
+    max-width: 800px;
 }
 
 .hero-title .highlight {
@@ -289,14 +289,14 @@ body {
 .card-preview {
     position: relative;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     height: 100%;
     min-height: 600px;
     width: 100%;
     overflow: visible;
-    padding-right: 6rem;
-    padding-left: 4rem;
+    padding: 2rem;
+    margin-left: 4rem;
 }
 
 /* Card Preview Container */
