@@ -132,9 +132,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Apply ElectricBorder animation to Register Now button
-    const registerButton = document.querySelector('.btn-primary');
-    if (registerButton) {
+    // Apply ElectricBorder animation to Sign Up button
+    const signUpButton = document.querySelector('.btn-primary');
+    if (signUpButton) {
         applyElectricBorder('.btn-primary', {
             color: '#10b981',
             speed: 1.2,
@@ -143,13 +143,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Apply ElectricBorder animation to View Demo button
-    const demoButton = document.querySelector('.btn-secondary');
-    if (demoButton) {
+    // Apply ElectricBorder animation to Sign In button
+    const signInButton = document.querySelector('.btn-secondary');
+    if (signInButton) {
         applyElectricBorder('.btn-secondary', {
             color: '#10b981',
             speed: 0.8,
             chaos: 1.2,
+            thickness: 1
+        });
+    }
+
+    // Apply ElectricBorder animation to View Demo button
+    const demoButton = document.querySelector('.btn-tertiary');
+    if (demoButton) {
+        applyElectricBorder('.btn-tertiary', {
+            color: '#10b981',
+            speed: 0.6,
+            chaos: 1.5,
             thickness: 1
         });
     }
