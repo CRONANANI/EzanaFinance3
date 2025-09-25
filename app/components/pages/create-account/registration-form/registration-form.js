@@ -2,242 +2,273 @@
 
 class RegistrationForm {
     constructor() {
-        this.form = null;
         this.init();
     }
 
     init() {
-        this.form = document.getElementById('registrationForm');
-        if (this.form) {
-            this.setupEventListeners();
-        }
+        this.setupEventListeners();
+        this.setupFormValidation();
     }
 
     setupEventListeners() {
-        // Form submission
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        const form = document.getElementById('registrationForm');
+        if (form) {
+            form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
 
         // Real-time validation
-        this.setupRealTimeValidation();
+        const inputs = ['fullName', 'email', 'password', 'confirmPassword'];
+        inputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('blur', () => this.validateField(inputId));
+                input.addEventListener('input', () => this.clearError(inputId));
+            }
+        });
 
-        // Password strength validation
-        this.setupPasswordValidation();
+        // Terms checkbox validation
+        const termsCheckbox = document.querySelector('input[name="terms"]');
+        if (termsCheckbox) {
+            termsCheckbox.addEventListener('change', () => this.validateTerms());
+        }
     }
 
-    handleSubmit(e) {
-        e.preventDefault();
+    setupFormValidation() {
+        // Initialize validation state
+        this.validationState = {
+            fullName: { isValid: false, message: '' },
+            email: { isValid: false, message: '' },
+            password: { isValid: false, message: '' },
+            confirmPassword: { isValid: false, message: '' },
+            terms: { isValid: false, message: '' }
+        };
+    }
+
+    validateField(fieldName) {
+        switch (fieldName) {
+            case 'fullName':
+                return this.validateFullName();
+            case 'email':
+                return this.validateEmail();
+            case 'password':
+                return this.validatePassword();
+            case 'confirmPassword':
+                return this.validateConfirmPassword();
+            default:
+                return false;
+        }
+    }
+
+    validateFullName() {
+        const fullNameInput = document.getElementById('fullName');
+        const fullName = fullNameInput.value.trim();
+
+        if (!fullName) {
+            this.setError('fullName', 'Full name is required.');
+            return false;
+        } else if (fullName.length < 2) {
+            this.setError('fullName', 'Full name must be at least 2 characters long.');
+            return false;
+        } else {
+            this.clearError('fullName');
+            this.validationState.fullName = { isValid: true, message: '' };
+            return true;
+        }
+    }
+
+    validateEmail() {
+        const emailInput = document.getElementById('email');
+        const email = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email) {
+            this.setError('email', 'Email is required.');
+            return false;
+        } else if (!emailRegex.test(email)) {
+            this.setError('email', 'Please enter a valid email address.');
+            return false;
+        } else {
+            this.clearError('email');
+            this.validationState.email = { isValid: true, message: '' };
+            return true;
+        }
+    }
+
+    validatePassword() {
+        const passwordInput = document.getElementById('password');
+        const password = passwordInput.value;
+
+        if (!password) {
+            this.setError('password', 'Password is required.');
+            return false;
+        } else if (password.length < 6) {
+            this.setError('password', 'Password must be at least 6 characters long.');
+            return false;
+        } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+            this.setError('password', 'Password must contain at least one uppercase letter, one lowercase letter, and one number.');
+            return false;
+        } else {
+            this.clearError('password');
+            this.validationState.password = { isValid: true, message: '' };
+            // Re-validate confirm password if it has been filled
+            if (document.getElementById('confirmPassword').value) {
+                this.validateConfirmPassword();
+            }
+            return true;
+        }
+    }
+
+    validateConfirmPassword() {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (!confirmPassword) {
+            this.setError('confirmPassword', 'Please confirm your password.');
+            return false;
+        } else if (password !== confirmPassword) {
+            this.setError('confirmPassword', 'Passwords do not match.');
+            return false;
+        } else {
+            this.clearError('confirmPassword');
+            this.validationState.confirmPassword = { isValid: true, message: '' };
+            return true;
+        }
+    }
+
+    validateTerms() {
+        const termsCheckbox = document.querySelector('input[name="terms"]');
         
-        // Clear previous errors
-        this.clearErrors();
+        if (!termsCheckbox.checked) {
+            this.setError('terms', 'You must agree to the Terms and Conditions.');
+            return false;
+        } else {
+            this.clearError('terms');
+            this.validationState.terms = { isValid: true, message: '' };
+            return true;
+        }
+    }
+
+    setError(field, message) {
+        const input = document.getElementById(field);
+        const errorElement = document.getElementById(field + 'Error');
         
-        // Validate form
-        if (this.validateForm()) {
-            this.submitForm();
+        if (input) {
+            input.classList.add('error');
+        }
+        
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+        
+        this.validationState[field] = { isValid: false, message };
+    }
+
+    clearError(field) {
+        const input = document.getElementById(field);
+        const errorElement = document.getElementById(field + 'Error');
+        
+        if (input) {
+            input.classList.remove('error');
+        }
+        
+        if (errorElement) {
+            errorElement.classList.remove('show');
         }
     }
 
     validateForm() {
-        let isValid = true;
+        const fullNameValid = this.validateFullName();
+        const emailValid = this.validateEmail();
+        const passwordValid = this.validatePassword();
+        const confirmPasswordValid = this.validateConfirmPassword();
+        const termsValid = this.validateTerms();
         
-        // Validate first name
-        const firstName = document.getElementById('firstName');
-        if (!firstName.value.trim()) {
-            this.showError('firstNameError', 'First name is required');
-            isValid = false;
-        }
-        
-        // Validate last name
-        const lastName = document.getElementById('lastName');
-        if (!lastName.value.trim()) {
-            this.showError('lastNameError', 'Last name is required');
-            isValid = false;
-        }
-        
-        // Validate email
-        const email = document.getElementById('email');
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email.value.trim()) {
-            this.showError('emailError', 'Email is required');
-            isValid = false;
-        } else if (!emailRegex.test(email.value)) {
-            this.showError('emailError', 'Please enter a valid email address');
-            isValid = false;
-        }
-        
-        // Validate phone
-        const phone = document.getElementById('phone');
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-        if (!phone.value.trim()) {
-            this.showError('phoneError', 'Phone number is required');
-            isValid = false;
-        } else if (!phoneRegex.test(phone.value.replace(/\s/g, ''))) {
-            this.showError('phoneError', 'Please enter a valid phone number');
-            isValid = false;
-        }
-        
-        // Validate date of birth
-        const dateOfBirth = document.getElementById('dateOfBirth');
-        if (!dateOfBirth.value) {
-            this.showError('dateOfBirthError', 'Date of birth is required');
-            isValid = false;
-        } else {
-            const birthDate = new Date(dateOfBirth.value);
-            const today = new Date();
-            const age = today.getFullYear() - birthDate.getFullYear();
-            if (age < 18) {
-                this.showError('dateOfBirthError', 'You must be at least 18 years old');
-                isValid = false;
-            }
-        }
-        
-        // Validate account type
-        const accountType = document.getElementById('accountType');
-        if (!accountType.value) {
-            this.showError('accountTypeError', 'Please select an account type');
-            isValid = false;
-        }
-        
-        // Validate password
-        const password = document.getElementById('password');
-        if (!password.value) {
-            this.showError('passwordError', 'Password is required');
-            isValid = false;
-        } else if (password.value.length < 8) {
-            this.showError('passwordError', 'Password must be at least 8 characters long');
-            isValid = false;
-        }
-        
-        // Validate confirm password
-        const confirmPassword = document.getElementById('confirmPassword');
-        if (!confirmPassword.value) {
-            this.showError('confirmPasswordError', 'Please confirm your password');
-            isValid = false;
-        } else if (password.value !== confirmPassword.value) {
-            this.showError('confirmPasswordError', 'Passwords do not match');
-            isValid = false;
-        }
-        
-        // Validate terms checkbox
-        const terms = document.getElementById('terms');
-        if (!terms.checked) {
-            this.showError('termsError', 'You must agree to the terms and conditions');
-            isValid = false;
-        }
-        
-        return isValid;
+        return fullNameValid && emailValid && passwordValid && confirmPasswordValid && termsValid;
     }
 
-    setupRealTimeValidation() {
-        document.querySelectorAll('.form-input, .form-select').forEach(input => {
-            input.addEventListener('blur', () => {
-                const fieldName = input.name;
-                const errorElement = document.getElementById(fieldName + 'Error');
-                
-                if (input.hasAttribute('required') && !input.value.trim()) {
-                    this.showError(fieldName + 'Error', 'This field is required');
-                } else {
-                    errorElement.style.display = 'none';
-                }
-            });
-        });
-    }
-
-    setupPasswordValidation() {
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
-
-        if (password) {
-            password.addEventListener('input', () => {
-                const passwordValue = password.value;
-                const errorElement = document.getElementById('passwordError');
-                
-                if (passwordValue.length > 0 && passwordValue.length < 8) {
-                    this.showError('passwordError', 'Password must be at least 8 characters long');
-                } else if (passwordValue.length >= 8) {
-                    errorElement.style.display = 'none';
-                }
-            });
+    handleSubmit(event) {
+        event.preventDefault();
+        
+        if (!this.validateForm()) {
+            return;
         }
 
-        if (confirmPassword) {
-            confirmPassword.addEventListener('input', () => {
-                const passwordValue = password.value;
-                const confirmPasswordValue = confirmPassword.value;
-                const errorElement = document.getElementById('confirmPasswordError');
-                
-                if (confirmPasswordValue.length > 0 && passwordValue !== confirmPasswordValue) {
-                    this.showError('confirmPasswordError', 'Passwords do not match');
-                } else if (passwordValue === confirmPasswordValue) {
-                    errorElement.style.display = 'none';
-                }
-            });
-        }
-    }
+        const formData = new FormData(event.target);
+        const data = {
+            fullName: formData.get('fullName'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            confirmPassword: formData.get('confirmPassword'),
+            terms: formData.get('terms') === 'on',
+            newsletter: formData.get('newsletter') === 'on'
+        };
 
-    submitForm() {
+        console.log('Registration data:', data);
+        
         // Show loading state
-        const submitBtn = document.getElementById('submitBtn');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating Account...';
+        const submitBtn = event.target.querySelector('.submit-btn');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating account...';
         submitBtn.disabled = true;
-        
+
         // Simulate API call
         setTimeout(() => {
-            // Show success message
-            this.showSuccess('Account created successfully! Redirecting to dashboard...');
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
             
-            // Redirect to dashboard after 2 seconds
+            // Here you would typically make an API call to your backend
+            // For now, we'll just show a success message
+            this.showSuccessMessage('Account created successfully! Redirecting to sign in...');
+            
+            // Redirect to sign in page after successful registration
             setTimeout(() => {
-                window.location.href = 'home-dashboard.html';
+                window.location.href = 'sign-in.html';
             }, 2000);
         }, 2000);
     }
 
-    showError(elementId, message) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
-    }
-
-    showSuccess(message) {
+    showSuccessMessage(message) {
         // Create success message element
         const successDiv = document.createElement('div');
         successDiv.className = 'success-message';
-        successDiv.style.display = 'block';
-        successDiv.style.background = 'rgba(16, 185, 129, 0.1)';
-        successDiv.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-        successDiv.style.borderRadius = '12px';
-        successDiv.style.padding = '1rem';
-        successDiv.style.marginTop = '1rem';
-        successDiv.style.textAlign = 'center';
-        successDiv.innerHTML = `<i class="bi bi-check-circle"></i> ${message}`;
-        
-        // Insert after form
-        this.form.parentNode.insertBefore(successDiv, this.form.nextSibling);
+        successDiv.textContent = message;
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        `;
+
+        document.body.appendChild(successDiv);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            successDiv.remove();
+        }, 3000);
     }
-
-    clearErrors() {
-        const errorElements = document.querySelectorAll('.error-message');
-        errorElements.forEach(element => {
-            element.style.display = 'none';
-            element.textContent = '';
-        });
-    }
 }
 
-// Global functions for external use
-function showTerms() {
-    alert('Terms of Service would be displayed here. This is a demo.');
+// Social sign up functions
+function signUpWithGoogle() {
+    console.log('Sign up with Google');
+    // Here you would integrate with Google OAuth
+    alert('Google sign-up would be implemented here');
 }
 
-function showPrivacy() {
-    alert('Privacy Policy would be displayed here. This is a demo.');
-}
-
-function showLogin() {
-    alert('Login page would be displayed here. This is a demo.');
+function signUpWithFacebook() {
+    console.log('Sign up with Facebook');
+    // Here you would integrate with Facebook OAuth
+    alert('Facebook sign-up would be implemented here');
 }
 
 // Initialize when DOM is loaded
@@ -245,7 +276,18 @@ document.addEventListener('DOMContentLoaded', function() {
     new RegistrationForm();
 });
 
-// Export for module use
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = RegistrationForm;
-}
+// Add CSS animation for success message
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);

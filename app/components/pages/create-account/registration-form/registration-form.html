@@ -1,93 +1,115 @@
 <!-- Registration Form Component -->
 <div class="registration-form-section">
-    <div class="form-header">
-        <h1 class="form-title">Create Your Account</h1>
-        <p class="form-subtitle">Join thousands of investors making smarter financial decisions</p>
+    <!-- Logo -->
+    <div class="logo-section">
+        <div class="logo">
+            <i class="bi bi-graph-up"></i>
+            <span>Ezana Finance</span>
+        </div>
     </div>
 
-    <form id="registrationForm" novalidate>
-        <div class="form-row">
-            <div class="form-group">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" id="firstName" name="firstName" class="form-input" placeholder="Enter your first name" required>
-                <div class="error-message" id="firstNameError"></div>
-            </div>
-            <div class="form-group">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" id="lastName" name="lastName" class="form-input" placeholder="Enter your last name" required>
-                <div class="error-message" id="lastNameError"></div>
-            </div>
+    <!-- Title -->
+    <h1 class="registration-title">Sign up</h1>
+
+    <!-- Registration Form -->
+    <form id="registrationForm" class="registration-form">
+        <div class="form-group">
+            <label for="fullName" class="form-label">Full name</label>
+            <input 
+                type="text" 
+                id="fullName" 
+                name="fullName" 
+                class="form-input" 
+                placeholder="Jon Snow"
+                autocomplete="name"
+                required
+            >
+            <div class="error-message" id="fullNameError"></div>
         </div>
 
         <div class="form-group">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email address" required>
+            <label for="email" class="form-label">Email</label>
+            <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                class="form-input" 
+                placeholder="your@email.com"
+                autocomplete="email"
+                required
+            >
             <div class="error-message" id="emailError"></div>
         </div>
 
         <div class="form-group">
-            <label for="phone" class="form-label">Phone Number</label>
-            <input type="tel" id="phone" name="phone" class="form-input" placeholder="Enter your phone number" required>
-            <div class="error-message" id="phoneError"></div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input" required>
-                <div class="error-message" id="dateOfBirthError"></div>
-            </div>
-            <div class="form-group">
-                <label for="accountType" class="form-label">Account Type</label>
-                <select id="accountType" name="accountType" class="form-select" required>
-                    <option value="">Select account type</option>
-                    <option value="individual">Individual</option>
-                    <option value="joint">Joint</option>
-                    <option value="business">Business</option>
-                    <option value="retirement">Retirement (IRA)</option>
-                </select>
-                <div class="error-message" id="accountTypeError"></div>
-            </div>
-        </div>
-
-        <div class="form-group">
             <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required>
+            <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                class="form-input" 
+                placeholder="••••••"
+                autocomplete="new-password"
+                required
+            >
             <div class="error-message" id="passwordError"></div>
         </div>
 
         <div class="form-group">
             <label for="confirmPassword" class="form-label">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Confirm your password" required>
+            <input 
+                type="password" 
+                id="confirmPassword" 
+                name="confirmPassword" 
+                class="form-input" 
+                placeholder="••••••"
+                autocomplete="new-password"
+                required
+            >
             <div class="error-message" id="confirmPasswordError"></div>
         </div>
 
-        <div class="checkbox-group">
-            <input type="checkbox" id="terms" name="terms" class="checkbox-input" required>
-            <label for="terms" class="checkbox-label">
-                I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and <a href="#" onclick="showPrivacy()">Privacy Policy</a>
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" class="checkbox-input" name="terms" required>
+                <span class="checkmark"></span>
+                I agree to the <a href="#" class="terms-link">Terms and Conditions</a>
             </label>
         </div>
 
-        <div class="checkbox-group">
-            <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
-            <label for="newsletter" class="checkbox-label">
-                Subscribe to our newsletter for market insights and updates
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" class="checkbox-input" name="newsletter">
+                <span class="checkmark"></span>
+                I want to receive updates via email
             </label>
         </div>
 
-        <button type="submit" class="submit-btn" id="submitBtn">
-            <i class="bi bi-person-plus"></i>
-            Create Account
+        <button type="submit" class="submit-btn">
+            Sign up
         </button>
-
-        <div class="login-link">
-            Already have an account? <a href="#" onclick="showLogin()">Sign in here</a>
-        </div>
     </form>
 
-    <div class="security-badge">
-        <i class="bi bi-shield-check"></i>
-        <p>Your data is protected with bank-level security</p>
+    <!-- Divider -->
+    <div class="divider">
+        <span>or</span>
+    </div>
+
+    <!-- Social Login -->
+    <div class="social-login">
+        <button class="social-btn google-btn" onclick="signUpWithGoogle()">
+            <i class="bi bi-google"></i>
+            Sign up with Google
+        </button>
+        <button class="social-btn facebook-btn" onclick="signUpWithFacebook()">
+            <i class="bi bi-facebook"></i>
+            Sign up with Facebook
+        </button>
+    </div>
+
+    <!-- Sign In Link -->
+    <div class="sign-in-link">
+        <span>Already have an account? </span>
+        <a href="sign-in.html">Sign in</a>
     </div>
 </div>
