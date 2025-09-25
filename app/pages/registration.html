@@ -26,9 +26,17 @@
 
     <!-- Main Content -->
     <main class="main-content" style="padding-top: 80px;">
-        <!-- Registration Page Component -->
-        <div id="registration-page-container">
-            <!-- Components will be loaded here -->
+        <!-- Registration Page Container -->
+        <div class="registration-container">
+            <!-- Registration Form -->
+            <div id="registration-form-container">
+                <!-- Registration form will be loaded here -->
+            </div>
+
+            <!-- Benefits Section -->
+            <div id="benefits-section-container">
+                <!-- Benefits section will be loaded here -->
+            </div>
         </div>
     </main>
 
@@ -51,16 +59,23 @@
 
             async loadComponents() {
                 try {
-                    // Load registration page component
-                    const response = await fetch('../components/pages/create-account/registration-page/registration-page.html');
-                    const html = await response.text();
-                    document.getElementById('registration-page-container').innerHTML = html;
+                    // Load registration form
+                    const formResponse = await fetch('../components/pages/create-account/registration-form/registration-form.html');
+                    const formHTML = await formResponse.text();
+                    document.getElementById('registration-form-container').innerHTML = formHTML;
 
-                    // Load CSS
-                    this.loadCSS('../components/pages/create-account/registration-page/registration-page.css');
+                    // Load benefits section
+                    const benefitsResponse = await fetch('../components/pages/create-account/benefits-section/benefits-section.html');
+                    const benefitsHTML = await benefitsResponse.text();
+                    document.getElementById('benefits-section-container').innerHTML = benefitsHTML;
 
-                    // Load JavaScript
-                    this.loadJS('../components/pages/create-account/registration-page/registration-page.js');
+                    // Load CSS files
+                    this.loadCSS('../components/pages/create-account/registration-form/registration-form.css');
+                    this.loadCSS('../components/pages/create-account/benefits-section/benefits-section.css');
+
+                    // Load JavaScript files
+                    this.loadJS('../components/pages/create-account/registration-form/registration-form.js');
+                    this.loadJS('../components/pages/create-account/benefits-section/benefits-section.js');
 
                 } catch (error) {
                     console.error('Error loading registration components:', error);
