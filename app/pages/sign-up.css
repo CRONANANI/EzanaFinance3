@@ -12,7 +12,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 .sign-up-container {
@@ -284,25 +285,19 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .registration-container {
-        padding: 1rem;
-    }
-    
-    .registration-card {
-        padding: 2rem;
-    }
-    
-    .registration-title {
-        font-size: 2rem;
+    .main-content {
+        padding: 0.5rem;
     }
 }
 
 @media (max-width: 480px) {
-    .registration-card {
-        padding: 1.5rem;
+    .main-content {
+        padding: 0.25rem;
     }
-    
-    .registration-title {
-        font-size: 1.75rem;
+}
+
+@media (max-width: 360px) {
+    .main-content {
+        padding: 0.125rem;
     }
 }
