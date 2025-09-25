@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="landing.css">
     <link rel="stylesheet" href="electric-border.css">
     <link rel="stylesheet" href="prism.css">
-    <!-- Registration CSS -->
-    <link rel="stylesheet" href="registration.css">
+    <!-- Sign Up CSS -->
+    <link rel="stylesheet" href="sign-up.css">
 </head>
 <body>
     <!-- Background Elements -->
@@ -24,16 +24,11 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Registration Container -->
-        <div class="registration-container">
-            <!-- Registration Form Component -->
-            <div id="registration-form-container">
-                <!-- Registration form will be loaded here -->
-            </div>
-
-            <!-- Benefits Section Component -->
-            <div id="benefits-section-container">
-                <!-- Benefits section will be loaded here -->
+        <!-- Sign Up Container -->
+        <div class="sign-up-container">
+            <!-- Sign Up Card Component -->
+            <div id="sign-up-card-container">
+                <!-- Sign up card will be loaded here -->
             </div>
         </div>
     </main>
@@ -42,8 +37,8 @@
     <script src="electric-border.js"></script>
     <script src="prism.js"></script>
     <script>
-        // Component Loader for Registration Page
-        class RegistrationPageLoader {
+        // Component Loader for Sign Up Page
+        class SignUpPageLoader {
             constructor() {
                 this.init();
             }
@@ -54,26 +49,19 @@
 
             async loadComponents() {
                 try {
-                    // Load registration form component
-                    const formResponse = await fetch('../components/pages/create-account/registration-form/registration-form.html');
-                    const formHTML = await formResponse.text();
-                    document.getElementById('registration-form-container').innerHTML = formHTML;
+                    // Load sign up card component
+                    const cardResponse = await fetch('../components/sign-up-card/sign-up-card.html');
+                    const cardHTML = await cardResponse.text();
+                    document.getElementById('sign-up-card-container').innerHTML = cardHTML;
 
-                    // Load benefits section component
-                    const benefitsResponse = await fetch('../components/pages/create-account/benefits-section/benefits-section.html');
-                    const benefitsHTML = await benefitsResponse.text();
-                    document.getElementById('benefits-section-container').innerHTML = benefitsHTML;
+                    // Load CSS
+                    this.loadCSS('../components/sign-up-card/sign-up-card.css');
 
-                    // Load CSS files
-                    this.loadCSS('../components/pages/create-account/registration-form/registration-form.css');
-                    this.loadCSS('../components/pages/create-account/benefits-section/benefits-section.css');
-
-                    // Load JavaScript files
-                    this.loadJS('../components/pages/create-account/registration-form/registration-form.js');
-                    this.loadJS('../components/pages/create-account/benefits-section/benefits-section.js');
+                    // Load JavaScript
+                    this.loadJS('../components/sign-up-card/sign-up-card.js');
 
                 } catch (error) {
-                    console.error('Error loading registration components:', error);
+                    console.error('Error loading sign up components:', error);
                 }
             }
 
@@ -94,7 +82,7 @@
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            new RegistrationPageLoader();
+            new SignUpPageLoader();
         });
     </script>
 </body>
