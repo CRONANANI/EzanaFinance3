@@ -497,10 +497,14 @@ body {
 
 /* Statistics Section */
 .stats-section {
-    position: relative;
+    position: fixed;
+    bottom: -50%;
+    left: 0;
+    right: 0;
     z-index: 10;
     background: transparent;
     padding: 3rem 0;
+    transition: bottom 0.5s ease;
 }
 
 .stats-container {

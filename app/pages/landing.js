@@ -29,6 +29,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle stats section scroll behavior
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+        let hasScrolled = false;
+        
+        window.addEventListener('scroll', function() {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            // Show stats section when user scrolls down
+            if (scrollY > 100 && !hasScrolled) {
+                statsSection.style.bottom = '0';
+                hasScrolled = true;
+            }
+            
+            // Hide stats section when user scrolls back to top
+            if (scrollY < 50 && hasScrolled) {
+                statsSection.style.bottom = '-50%';
+                hasScrolled = false;
+            }
+        });
+    }
+
     // Animate stats on scroll
     const observerOptions = {
         threshold: 0.5,

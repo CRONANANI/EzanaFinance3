@@ -135,33 +135,79 @@
     <script>
         // Initialize CardSwap when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Load CardSwap HTML
-            fetch('../components/landing/card-swap/card-swap.html')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('card-swap-container').innerHTML = html;
-                    
-                    // Initialize CardSwap after HTML is loaded
-                    setTimeout(() => {
+            // Wait for GSAP to be fully loaded
+            function initializeCardSwap() {
+                if (typeof gsap === 'undefined') {
+                    setTimeout(initializeCardSwap, 100);
+                    return;
+                }
+                
+                // Load CardSwap HTML
+                fetch('../components/landing/card-swap/card-swap.html')
+                    .then(response => response.text())
+                    .then(html => {
+                        const container = document.getElementById('card-swap-container');
+                        if (container) {
+                            container.innerHTML = html;
+                            
+                            // Initialize CardSwap after HTML is loaded and DOM is ready
+                            setTimeout(() => {
+                                try {
+                                    const cardSwap = createCardSwap('#card-swap-container', {
+                                        width: 600,  // 75% of 800
+                                        height: 375, // 75% of 500
+                                        cardDistance: 22, // 75% of 30
+                                        verticalDistance: 30, // 75% of 40
+                                        delay: 4000,
+                                        pauseOnHover: true,
+                                        onCardClick: (index) => {
+                                            console.log('Card clicked:', index);
+                                            // You can add navigation or other actions here
+                                        },
+                                        skewAmount: 2,
+                                        easing: 'elastic'
+                                    });
+                                    console.log('CardSwap initialized successfully');
+                                } catch (error) {
+                                    console.error('Error initializing CardSwap:', error);
+                                }
+                            }, 200);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading CardSwap component:', error);
+                    });
+            }
+            
+            initializeCardSwap();
+        });
+        
+        // Fallback initialization on window load
+        window.addEventListener('load', function() {
+            const container = document.getElementById('card-swap-container');
+            if (container && container.innerHTML.includes('CardSwap Component HTML')) {
+                // CardSwap didn't initialize properly, try again
+                setTimeout(() => {
+                    try {
                         const cardSwap = createCardSwap('#card-swap-container', {
-                            width: 600,  // 75% of 800
-                            height: 375, // 75% of 500
-                            cardDistance: 22, // 75% of 30
-                            verticalDistance: 30, // 75% of 40
+                            width: 600,
+                            height: 375,
+                            cardDistance: 22,
+                            verticalDistance: 30,
                             delay: 4000,
                             pauseOnHover: true,
                             onCardClick: (index) => {
                                 console.log('Card clicked:', index);
-                                // You can add navigation or other actions here
                             },
                             skewAmount: 2,
                             easing: 'elastic'
                         });
-                    }, 100);
-                })
-                .catch(error => {
-                    console.error('Error loading CardSwap component:', error);
-                });
+                        console.log('CardSwap initialized on window load');
+                    } catch (error) {
+                        console.error('Error initializing CardSwap on window load:', error);
+                    }
+                }, 500);
+            }
         });
     </script>
 </body>
