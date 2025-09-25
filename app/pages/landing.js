@@ -1,9 +1,6 @@
 // Landing Page JavaScript
 
-// Demo functionality
-function showDemo() {
-    alert('Demo functionality coming soon! This would show a preview of the Ezana Finance dashboard.');
-}
+// Demo functionality removed - no longer needed
 
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -130,27 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Apply ElectricBorder animation to Sign Up text link
-    const signUpLink = document.querySelector('.cta-text-link[href="sign-up.html"]');
-    if (signUpLink) {
-        applyElectricBorder('.cta-text-link[href="sign-up.html"]', {
-            color: '#10b981',
-            speed: 1.2,
-            chaos: 0.8,
-            thickness: 2
-        });
-    }
-
-    // Apply ElectricBorder animation to Sign In text link
-    const signInLink = document.querySelector('.cta-text-link[href="sign-in.html"]');
-    if (signInLink) {
-        applyElectricBorder('.cta-text-link[href="sign-in.html"]', {
-            color: '#10b981',
-            speed: 0.8,
-            chaos: 1.2,
-            thickness: 1
-        });
-    }
+    // Text links are now pure text without electric border animations
 
     // Add mobile menu toggle (for future mobile navigation)
     const createMobileMenu = () => {

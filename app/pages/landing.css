@@ -258,11 +258,14 @@ body {
     position: relative;
     transition: all 0.3s ease;
     padding: 0.5rem 0;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: inline !important;
 }
 
 .cta-text-link:hover {
     color: #34d399;
-    transform: translateY(-2px);
 }
 
 .cta-text-link::after {
