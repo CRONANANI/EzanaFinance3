@@ -177,21 +177,212 @@ class SignInForm {
 }
 
 // Social login functions
+// OAuth Configuration (same as sign-up)
+const OAUTH_CONFIG = {
+    google: {
+        clientId: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+        redirectUri: window.location.origin + '/sign-in.html'
+    },
+    facebook: {
+        appId: 'YOUR_FACEBOOK_APP_ID' // Replace with your actual Facebook App ID
+    }
+};
+
+// Initialize OAuth providers
+function initializeOAuth() {
+    // Initialize Google OAuth
+    if (typeof google !== 'undefined') {
+        google.accounts.id.initialize({
+            client_id: OAUTH_CONFIG.google.clientId,
+            callback: handleGoogleSignInResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true
+        });
+    }
+
+    // Initialize Facebook OAuth
+    if (typeof FB !== 'undefined') {
+        FB.init({
+            appId: OAUTH_CONFIG.facebook.appId,
+            cookie: true,
+            xfbml: true,
+            version: 'v18.0'
+        });
+    }
+}
+
 function signInWithGoogle() {
-    console.log('Sign in with Google');
-    // Here you would integrate with Google OAuth
-    alert('Google sign-in would be implemented here');
+    console.log('Initiating Google sign-in');
+    
+    if (typeof google === 'undefined') {
+        showErrorMessage('Google OAuth not loaded. Please refresh the page and try again.');
+        return;
+    }
+
+    // Show loading state
+    const googleBtn = document.querySelector('.google-btn');
+    const originalText = googleBtn.innerHTML;
+    googleBtn.innerHTML = '<i class="bi bi-google"></i> Connecting...';
+    googleBtn.disabled = true;
+
+    try {
+        // Use Google One Tap or Popup flow
+        google.accounts.id.prompt((notification) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                // Fallback to popup flow
+                google.accounts.oauth2.initTokenClient({
+                    client_id: OAUTH_CONFIG.google.clientId,
+                    scope: 'email profile',
+                    callback: handleGoogleSignInResponse
+                }).requestAccessToken();
+            }
+        });
+    } catch (error) {
+        console.error('Google OAuth error:', error);
+        showErrorMessage('Failed to initiate Google sign-in. Please try again.');
+        resetGoogleButton(googleBtn, originalText);
+    }
 }
 
 function signInWithFacebook() {
-    console.log('Sign in with Facebook');
-    // Here you would integrate with Facebook OAuth
-    alert('Facebook sign-in would be implemented here');
+    console.log('Initiating Facebook sign-in');
+    
+    if (typeof FB === 'undefined') {
+        showErrorMessage('Facebook OAuth not loaded. Please refresh the page and try again.');
+        return;
+    }
+
+    // Show loading state
+    const facebookBtn = document.querySelector('.facebook-btn');
+    const originalText = facebookBtn.innerHTML;
+    facebookBtn.innerHTML = '<i class="bi bi-facebook"></i> Connecting...';
+    facebookBtn.disabled = true;
+
+    FB.login((response) => {
+        if (response.authResponse) {
+            handleFacebookSignInResponse(response);
+        } else {
+            console.log('Facebook login cancelled');
+            showErrorMessage('Facebook sign-in was cancelled.');
+            resetFacebookButton(facebookBtn, originalText);
+        }
+    }, {
+        scope: 'email,public_profile',
+        return_scopes: true
+    });
+}
+
+// Handle Google OAuth response for sign-in
+function handleGoogleSignInResponse(response) {
+    console.log('Google OAuth response:', response);
+    
+    try {
+        // Decode the JWT token to get user info
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const userData = {
+            provider: 'google',
+            id: payload.sub,
+            email: payload.email,
+            name: payload.name,
+            picture: payload.picture,
+            verified: payload.email_verified
+        };
+
+        processOAuthSignIn(userData);
+    } catch (error) {
+        console.error('Error processing Google response:', error);
+        showErrorMessage('Failed to process Google sign-in. Please try again.');
+    }
+}
+
+// Handle Facebook OAuth response for sign-in
+function handleFacebookSignInResponse(response) {
+    console.log('Facebook OAuth response:', response);
+    
+    FB.api('/me', { fields: 'id,name,email,picture' }, (userInfo) => {
+        try {
+            const userData = {
+                provider: 'facebook',
+                id: userInfo.id,
+                email: userInfo.email,
+                name: userInfo.name,
+                picture: userInfo.picture?.data?.url,
+                verified: true // Facebook emails are typically verified
+            };
+
+            processOAuthSignIn(userData);
+        } catch (error) {
+            console.error('Error processing Facebook response:', error);
+            showErrorMessage('Failed to process Facebook sign-in. Please try again.');
+        }
+    });
+}
+
+// Process OAuth sign-in data
+function processOAuthSignIn(userData) {
+    console.log('Processing OAuth sign-in:', userData);
+    
+    // Show success message
+    showSuccessMessage(`${userData.provider.charAt(0).toUpperCase() + userData.provider.slice(1)} sign-in successful! Redirecting...`);
+    
+    // Here you would typically send the user data to your backend
+    // For now, we'll simulate a successful sign-in
+    setTimeout(() => {
+        // Store user data in localStorage for demo purposes
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('isAuthenticated', 'true');
+        
+        // Redirect to dashboard
+        window.location.href = 'home-dashboard.html';
+    }, 2000);
+}
+
+// Utility functions
+function resetGoogleButton(button, originalText) {
+    button.innerHTML = originalText;
+    button.disabled = false;
+}
+
+function resetFacebookButton(button, originalText) {
+    button.innerHTML = originalText;
+    button.disabled = false;
+}
+
+function showErrorMessage(message) {
+    // Create error message element
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message-popup';
+    errorDiv.textContent = message;
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+    `;
+
+    document.body.appendChild(errorDiv);
+
+    // Remove after 5 seconds
+    setTimeout(() => {
+        errorDiv.remove();
+    }, 5000);
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     new SignInForm();
+    
+    // Initialize OAuth after a short delay to ensure SDKs are loaded
+    setTimeout(() => {
+        initializeOAuth();
+    }, 1000);
 });
 
 // Add CSS animation for success message
