@@ -81,21 +81,14 @@ class CardSwap {
   }
 
   setupAnimations() {
-    // Animation configuration based on easing type
-    this.config = this.options.easing === 'elastic' ? {
-      ease: 'elastic.out(0.6,0.9)',
-      durDrop: 2,
-      durMove: 2,
-      durReturn: 2,
-      promoteOverlap: 0.9,
-      returnDelay: 0.05
-    } : {
-      ease: 'power1.inOut',
-      durDrop: 0.8,
-      durMove: 0.8,
-      durReturn: 0.8,
-      promoteOverlap: 0.45,
-      returnDelay: 0.2
+    // Animation configuration for smooth sweeping motion
+    this.config = {
+      ease: 'power2.inOut', // Smooth sweeping motion
+      durDrop: 1.2,
+      durMove: 1.0,
+      durReturn: 1.0,
+      promoteOverlap: 0.7,
+      returnDelay: 0.1
     };
   }
 
