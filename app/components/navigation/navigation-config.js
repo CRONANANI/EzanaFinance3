@@ -1,5 +1,7 @@
 // Navigation Configuration
 const NavigationConfig = {
+    // Version for cache busting
+    version: '1.1.0',
     // Brand configuration
     brand: {
         name: 'Ezana Finance',

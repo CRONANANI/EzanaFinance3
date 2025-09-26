@@ -23,12 +23,17 @@ class Navigation {
     }
 
     generateNavigationHTML() {
-        // Only generate if navigation doesn't exist
-        if (document.getElementById('topnav')) {
-            return;
+        // Always regenerate navigation to ensure latest config is used
+        const existingNav = document.getElementById('topnav');
+        if (existingNav) {
+            existingNav.remove();
         }
 
         const config = window.NavigationConfig || NavigationConfig;
+        
+        // Debug: Log the config to see if it's loaded correctly
+        console.log('Navigation Config:', config);
+        console.log('Research Tools children:', config.menuItems.find(item => item.text === 'Research Tools')?.children);
         
         // Create navigation container
         const topnav = document.createElement('nav');
