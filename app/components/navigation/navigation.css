@@ -32,9 +32,9 @@
     left: 0;
     right: 0;
     height: var(--nav-height);
-    background: #0a0a0a;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
     box-shadow: 
         0 4px 6px -1px rgba(0, 0, 0, 0.1),
         0 2px 4px -1px rgba(0, 0, 0, 0.06),
@@ -45,6 +45,12 @@
     overflow: hidden;
     width: 100vw;
     min-width: 100%;
+}
+
+/* Landing page specific navigation */
+.landing-page .topnav {
+    background: #0a0a0a;
+    border-bottom: none;
 }
 
 /* Removed metallic animations - now using simple gradient matching dashboard */
@@ -343,9 +349,9 @@
         top: var(--nav-height);
         left: 0;
         right: 0;
-        background: #0a0a0a;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: none;
         box-shadow: 
             0 4px 6px -1px rgba(0, 0, 0, 0.1),
             0 2px 4px -1px rgba(0, 0, 0, 0.06),
@@ -360,6 +366,12 @@
         padding: 1rem 0;
         position: relative;
         overflow: hidden;
+    }
+
+    /* Landing page mobile menu */
+    .landing-page .nav-menu {
+        background: #0a0a0a;
+        border-bottom: none;
     }
 
     .nav-menu::before {
