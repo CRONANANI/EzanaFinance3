@@ -66,7 +66,7 @@ body {
 .navbar {
     position: relative;
     z-index: 100;
-    background: rgba(16, 185, 129, 0.95);
+    background: #0a0a0a;
     backdrop-filter: blur(10px);
     padding: 1rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
