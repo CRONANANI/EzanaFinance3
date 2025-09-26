@@ -32,7 +32,7 @@
     left: 0;
     right: 0;
     height: var(--nav-height);
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: #0a0a0a;
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
@@ -343,7 +343,7 @@
         top: var(--nav-height);
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: #0a0a0a;
         backdrop-filter: blur(10px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 
