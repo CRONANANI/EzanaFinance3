@@ -38,6 +38,11 @@ const NavigationConfig = {
                     text: 'Inside the Capitol',
                     href: 'inside-the-capitol.html',
                     icon: 'bi bi-bank'
+                },
+                {
+                    text: 'For the Quants',
+                    href: 'for-the-quants.html',
+                    icon: 'bi bi-calculator'
                 }
             ]
         },

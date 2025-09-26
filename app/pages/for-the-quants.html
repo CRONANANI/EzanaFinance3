@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For the Quants - Ezana Finance</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="../styles.css">
+    <!-- Navigation CSS -->
+    <link rel="stylesheet" href="../components/navigation/navigation.css">
+    <!-- Notifications Sidebar CSS -->
+    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <style>
+        /* Professional Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border-radius: 2rem;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            color: var(--muted-foreground);
+            margin-bottom: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-width: 90px;
+        }
+
+        .hero-stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.125rem;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .page-title-shiny {
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Responsive Hero */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-description {
+                font-size: 0.875rem;
+            }
+            
+            .hero-stats {
+                gap: 0.75rem;
+            }
+            
+            .hero-stat {
+                padding: 0.5rem;
+                min-width: 70px;
+            }
+            
+            .hero-stat-number {
+                font-size: 1.125rem;
+            }
+        }
+
+        /* Body styling for proper topnav spacing */
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 24px;
+            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
+            margin: 0;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: var(--foreground);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .section-description {
+            font-size: 1.125rem;
+            color: var(--muted-foreground);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Quant Tools Grid */
+        .quant-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        /* Research Cards - Match home-dashboard expanded-card styling */
+        .research-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(71, 85, 105, 0.4);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 200px;
+            margin-bottom: 2rem;
+        }
+
+        .research-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #10b981, transparent);
+        }
+
+        .research-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            border-color: #10b981;
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        .research-card .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .research-card .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .research-card .card-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .research-card:hover .card-icon {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .research-card .card-icon i {
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        /* Code Block Styling */
+        .code-block {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .code-block .comment {
+            color: #64748b;
+        }
+
+        .code-block .keyword {
+            color: #f59e0b;
+        }
+
+        .code-block .string {
+            color: #10b981;
+        }
+
+        .code-block .number {
+            color: #3b82f6;
+        }
+
+        /* Formula Styling */
+        .formula {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.25rem;
+            color: #e2e8f0;
+        }
+
+        /* Parameter Table */
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .param-table th,
+        .param-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .param-table th {
+            background: rgba(15, 23, 42, 0.6);
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .param-table td {
+            color: #cbd5e1;
+        }
+
+        .param-table .param-name {
+            font-family: 'Courier New', monospace;
+            color: #f59e0b;
+        }
+
+        .param-table .param-type {
+            color: #3b82f6;
+            font-style: italic;
+        }
+
+        /* Algorithm Steps */
+        .algorithm-steps {
+            counter-reset: step-counter;
+        }
+
+        .algorithm-step {
+            counter-increment: step-counter;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-left: 4px solid #10b981;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .algorithm-step::before {
+            content: counter(step-counter);
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 2rem;
+            font-weight: bold;
+            margin-right: 1rem;
+            vertical-align: top;
+        }
+
+        .algorithm-step h4 {
+            display: inline;
+            margin: 0;
+            color: #e2e8f0;
+        }
+
+        .algorithm-step p {
+            margin: 0.5rem 0 0 3rem;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation will be dynamically loaded -->
+
+    <!-- Notifications Sidebar -->
+    <div id="notifications-sidebar" class="notifications-sidebar open">
+        <!-- Sidebar Toggle Button -->
+        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+            <i class="bi bi-bell"></i>
+        </button>
+
+        <!-- Sidebar Content -->
+        <div class="notifications-content">
+            <!-- Header -->
+            <div class="notifications-header">
+                <div class="notifications-title">
+                    <h3>Investment Feed</h3>
+                </div>
+                <div class="notifications-actions">
+                    <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </button>
+                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="notifications-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
+                    All
+                </button>
+                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
+                    Congress
+                </button>
+                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
+                    Stocks
+                </button>
+                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
+                    Community
+                </button>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list" id="notifications-list">
+                <!-- Notifications will be dynamically populated here -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="notifications-empty" id="notifications-empty" style="display: none;">
+                <i class="bi bi-bell-slash"></i>
+                <p>No notifications yet</p>
+                <small>We'll notify you when something important happens</small>
+            </div>
+        </div>
+    </div>
+
+<div class="container mx-auto px-6 py-12" style="margin-left: 350px;">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title page-title-shiny">For the Quants</h1>
+            <p class="hero-description">Advanced quantitative analysis tools and mathematical models for sophisticated investors</p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">47</span>
+                    <span class="hero-stat-label">Algorithms</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">156</span>
+                    <span class="hero-stat-label">Models</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">99.2%</span>
+                    <span class="hero-stat-label">Accuracy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quantitative Models Section -->
+    <div class="section-header">
+        <h2 class="section-title">Quantitative Models</h2>
+        <p class="section-description">Advanced mathematical models and algorithms for quantitative analysis</p>
+    </div>
+    
+    <div class="quant-tools-grid">
+        <!-- Black-Scholes Model -->
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Black-Scholes Model</h3>
+                <div class="card-icon">
+                    <i class="bi bi-calculator"></i>
+                </div>
+            </div>
+            
+            <p class="text-muted-foreground mb-4">European option pricing model using stochastic calculus</p>
+            
+            <div class="formula">
+                C = S₀N(d₁) - Ke^(-rT)N(d₂)
+            </div>
+            
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">S₀</td>
+                        <td>Current stock price</td>
+                        <td class="param-type">float</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">K</td>
+                        <td>Strike price</td>
+                        <td class="param-type">float</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">r</td>
+                        <td>Risk-free rate</td>
+                        <td class="param-type">float</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">T</td>
+                        <td>Time to expiration</td>
+                        <td class="param-type">float</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">σ</td>
+                        <td>Volatility</td>
+                        <td class="param-type">float</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Monte Carlo Simulation -->
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Monte Carlo Simulation</h3>
+                <div class="card-icon">
+                    <i class="bi bi-dice-6"></i>
+                </div>
+            </div>
+            
+            <p class="text-muted-foreground mb-4">Stochastic simulation for complex option pricing</p>
+            
+            <div class="algorithm-steps">
+                <div class="algorithm-step">
+                    <h4>Initialize Parameters</h4>
+                    <p>Set S₀, K, r, σ, T, and number of simulations N</p>
+                </div>
+                <div class="algorithm-step">
+                    <h4>Generate Random Paths</h4>
+                    <p>Create N random price paths using geometric Brownian motion</p>
+                </div>
+                <div class="algorithm-step">
+                    <h4>Calculate Payoffs</h4>
+                    <p>Compute option payoffs for each simulated path</p>
+                </div>
+                <div class="algorithm-step">
+                    <h4>Average and Discount</h4>
+                    <p>Take the average payoff and discount to present value</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Value at Risk (VaR) -->
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">Value at Risk (VaR)</h3>
+                <div class="card-icon">
+                    <i class="bi bi-graph-down"></i>
+                </div>
+            </div>
+            
+            <p class="text-muted-foreground mb-4">Risk measurement for portfolio management</p>
+            
+            <div class="formula">
+                VaR₍ₐ₎ = μ - σ × Z₍ₐ₎
+            </div>
+            
+            <div class="code-block">
+<span class="comment"># Historical Simulation VaR</span>
+<span class="keyword">def</span> <span class="string">calculate_var</span>(returns, confidence_level):
+    <span class="keyword">return</span> np.percentile(returns, <span class="number">100</span> - confidence_level)
+
+<span class="comment"># Parametric VaR</span>
+<span class="keyword">def</span> <span class="string">parametric_var</span>(mean, std, confidence_level):
+    z_score = norm.ppf(<span class="number">1</span> - confidence_level/<span class="number">100</span>)
+    <span class="keyword">return</span> mean - std * z_score
+            </div>
+        </div>
+
+        <!-- Capital Asset Pricing Model (CAPM) -->
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">CAPM Model</h3>
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+            
+            <p class="text-muted-foreground mb-4">Expected return calculation based on systematic risk</p>
+            
+            <div class="formula">
+                E(Rᵢ) = Rf + βᵢ[E(Rm) - Rf]
+            </div>
+            
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Description</th>
+                        <th>Calculation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">βᵢ</td>
+                        <td>Beta coefficient</td>
+                        <td>Cov(Rᵢ, Rm) / Var(Rm)</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">Rf</td>
+                        <td>Risk-free rate</td>
+                        <td>10-year Treasury yield</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">E(Rm)</td>
+                        <td>Market return</td>
+                        <td>Historical S&P 500 return</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- GARCH Model -->
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">GARCH Model</h3>
+                <div class="card-icon">
+                    <i class="bi bi-activity"></i>
+                </div>
+            </div>
+            
+            <p class="text-muted-foreground mb-4">Generalized Autoregressive Conditional Heteroskedasticity</p>
+            
+            <div class="formula">
+                σₜ² = ω + αεₜ₋₁² + βσₜ₋₁²
+            </div>
+            
+            <div class="code-block">
+<span class="comment"># GARCH(1,1) Implementation</span>
+<span class="keyword">def</span> <span class="string">garch_volatility</span>(returns, omega, alpha, beta):
+    n = len(returns)
+    sigma2 = np.zeros(n)
+    sigma2[<span class="number">0</span>] = np.var(returns)
+    
+    <span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">1</span>, n):
+        sigma2[t] = omega + alpha * returns[t-<span class="number">1</span>]**<span class="number">2</span> + beta * sigma2[t-<span class="number">1</span>]
+    
+    <span class="keyword">return</span> np.sqrt(sigma2)
+            </div>
+        </div>
+
+        <!-- Machine Learning Models -->
+        <div class="research-card">
+            <div class="card-header">
+                <h3 class="card-title">ML Models</h3>
+                <div class="card-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+            </div>
+            
+            <p class="text-muted-foreground mb-4">Machine learning algorithms for predictive modeling</p>
+            
+            <div class="algorithm-steps">
+                <div class="algorithm-step">
+                    <h4>Data Preprocessing</h4>
+                    <p>Feature engineering, normalization, and train/test split</p>
+                </div>
+                <div class="algorithm-step">
+                    <h4>Model Selection</h4>
+                    <p>Random Forest, XGBoost, LSTM, or Transformer models</p>
+                </div>
+                <div class="algorithm-step">
+                    <h4>Training & Validation</h4>
+                    <p>Cross-validation and hyperparameter tuning</p>
+                </div>
+                <div class="algorithm-step">
+                    <h4>Backtesting</h4>
+                    <p>Out-of-sample testing and performance metrics</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Analytics Section -->
+    <div class="section-header">
+        <h2 class="section-title">Advanced Analytics</h2>
+        <p class="section-description">Sophisticated quantitative analysis tools and techniques</p>
+    </div>
+    
+    <div class="research-card">
+        <div class="card-header">
+            <h3 class="card-title">Portfolio Optimization</h3>
+            <div class="card-icon">
+                <i class="bi bi-pie-chart"></i>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold text-emerald-400 mb-3">Mean-Variance Optimization</h4>
+                <div class="formula">
+                    min w'Σw subject to w'μ = μₚ, w'1 = 1
+                </div>
+                <p class="text-sm text-gray-400 mt-2">Markowitz portfolio optimization with risk-return tradeoff</p>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-blue-400 mb-3">Risk Parity</h4>
+                <div class="formula">
+                    wᵢ = (1/σᵢ) / Σ(1/σⱼ)
+                </div>
+                <p class="text-sm text-gray-400 mt-2">Equal risk contribution from each asset</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistical Analysis Tools -->
+    <div class="research-card">
+        <div class="card-header">
+            <h3 class="card-title">Statistical Analysis</h3>
+            <div class="card-icon">
+                <i class="bi bi-bar-chart"></i>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">0.85</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sharpe Ratio</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">1.23</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sortino Ratio</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">0.67</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Calmar Ratio</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation JavaScript -->
+<script src="../components/navigation/navigation-config.js"></script>
+<script src="../components/navigation/navigation.js"></script>
+<!-- Notifications Sidebar JavaScript -->
+<script src="../components/notifications/notifications-sidebar.js"></script>
+<script>
+    // Initialize notifications sidebar when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded - Initializing for the quants');
+        
+        // Initialize the notifications sidebar
+        if (window.NotificationsSidebar) {
+            const sidebar = new NotificationsSidebar();
+            sidebar.init();
+        }
+    });
+</script>
+</body>
+</html>
