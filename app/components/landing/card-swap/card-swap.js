@@ -102,7 +102,7 @@ class CardSwap {
 
     // Drop front card
     timeline.to(frontCard, {
-      y: '+=500',
+      y: '+=80',
       duration: this.config.durDrop,
       ease: this.config.ease
     });
