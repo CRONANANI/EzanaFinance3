@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 
-from database import get_db, engine
+from database import get_db, engine, create_tables
 from models import Base
 from routers import auth, transactions, accounts, budgets, quiver, market_research, bank_integration
+from api_routes import router as api_router
 
 # Load environment variables
 load_dotenv()
@@ -46,6 +47,7 @@ except Exception as e:
 security = HTTPBearer()
 
 # Include routers
+app.include_router(api_router, prefix="/api", tags=["user_management"])
 app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(accounts.router, prefix="/api/accounts", tags=["accounts"])
 app.include_router(transactions.router, prefix="/api/transactions", tags=["transactions"])

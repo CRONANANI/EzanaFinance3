@@ -110,7 +110,7 @@ class SignInForm {
         return emailValid && passwordValid;
     }
 
-    handleSubmit(event) {
+    async handleSubmit(event) {
         event.preventDefault();
         
         if (!this.validateForm()) {
@@ -132,21 +132,31 @@ class SignInForm {
         submitBtn.textContent = 'Signing in...';
         submitBtn.disabled = true;
 
-        // Simulate API call
-        setTimeout(() => {
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
+        try {
+            // Call the API to authenticate
+            const response = await window.apiService.login(data.email, data.password);
             
-            // Here you would typically make an API call to your backend
-            // For now, we'll just show a success message
+            // Show success message
             this.showSuccessMessage('Sign in successful! Redirecting...');
             
-            // Redirect to dashboard after successful sign in
+            // Store user data if remember me is checked
+            if (data.remember) {
+                localStorage.setItem('remember_user', 'true');
+            }
+            
+            // Redirect after a short delay
             setTimeout(() => {
                 window.location.href = 'home-dashboard.html';
             }, 1500);
-        }, 2000);
+
+        } catch (error) {
+            console.error('Sign in error:', error);
+            this.showErrorMessage(error.message || 'Sign in failed. Please try again.');
+        } finally {
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
     }
 
     showSuccessMessage(message) {
