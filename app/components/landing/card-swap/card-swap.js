@@ -3,6 +3,7 @@
 
 class CardSwap {
   constructor(container, options = {}) {
+    console.log('CardSwap constructor called with container:', container);
     this.container = container;
     this.options = {
       width: 500,
@@ -39,6 +40,9 @@ class CardSwap {
   setupCards() {
     // Get all card elements
     this.cards = Array.from(this.container.querySelectorAll('.card'));
+    console.log('CardSwap setupCards: Found', this.cards.length, 'cards');
+    console.log('CardSwap container:', this.container);
+    console.log('CardSwap cards:', this.cards);
     
     // Initialize order array
     this.order = Array.from({ length: this.cards.length }, (_, i) => i);

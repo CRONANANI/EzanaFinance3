@@ -129,12 +129,32 @@
                                 loadingElement.style.display = 'none';
                             }
                             
-                            container.innerHTML = html;
+                            // Extract just the card content from the HTML
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const cardContainer = doc.querySelector('.card-swap-container');
+                            
+                            if (cardContainer) {
+                                // Move the cards directly into our container
+                                container.innerHTML = cardContainer.innerHTML;
+                                // Add the card-swap-container class for CSS
+                                container.classList.add('card-swap-container');
+                            } else {
+                                // Fallback: use the full HTML
+                                container.innerHTML = html;
+                            }
+                            
                             console.log('CardSwap HTML loaded into container');
+                            console.log('Container classes:', container.className);
+                            console.log('Cards found:', container.querySelectorAll('.card').length);
                             
                             // Initialize CardSwap after HTML is loaded and DOM is ready
                             setTimeout(() => {
                                 try {
+                                    console.log('Attempting to initialize CardSwap...');
+                                    console.log('Container element:', container);
+                                    console.log('Cards in container:', container.querySelectorAll('.card'));
+                                    
                                     const cardSwap = createCardSwap('#card-swap-container', {
                                         width: 600,  // 75% of 800
                                         height: 375, // 75% of 500
@@ -215,7 +235,7 @@
             const container = document.getElementById('card-swap-container');
             const loadingElement = document.getElementById('card-swap-loading');
             
-            if (container && (container.innerHTML.includes('CardSwap Component HTML') || container.innerHTML.includes('<!-- CardSwap Component HTML -->'))) {
+            if (container && container.querySelector('.card')) {
                 console.log('CardSwap HTML detected but not initialized, trying fallback...');
                 // CardSwap didn't initialize properly, try again
                 setTimeout(() => {
@@ -265,7 +285,7 @@
             const container = document.getElementById('card-swap-container');
             const loadingElement = document.getElementById('card-swap-loading');
             
-            if (container && container.innerHTML.includes('<!-- CardSwap Component HTML -->') && typeof createCardSwap !== 'undefined') {
+            if (container && container.querySelector('.card') && typeof createCardSwap !== 'undefined') {
                 console.log('Periodic check: CardSwap needs initialization');
                 try {
                     // Hide loading state
