@@ -55,9 +55,6 @@ class Navigation {
         brandSection.className = 'logo';
         brandSection.innerHTML = `
             <a href="${config.brand.href}" class="brand-link">
-                <div class="logo-icon">
-                    <i class="${config.brand.icon}"></i>
-                </div>
                 <span class="logo-text">${config.brand.name}</span>
             </a>
         `;
