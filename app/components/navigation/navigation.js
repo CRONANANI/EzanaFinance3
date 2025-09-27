@@ -26,6 +26,7 @@ class Navigation {
         // Always regenerate navigation to ensure latest config is used
         const existingNav = document.getElementById('topnav');
         if (existingNav) {
+            console.log('Removing existing navigation');
             existingNav.remove();
         }
 
@@ -35,9 +36,14 @@ class Navigation {
         console.log('Navigation Config:', config);
         console.log('Research Tools children:', config.menuItems.find(item => item.text === 'Research Tools')?.children);
         
+        if (!config || !config.menuItems) {
+            console.error('Navigation config not loaded properly');
+            return;
+        }
+        
         // Create navigation container
         const topnav = document.createElement('nav');
-        topnav.className = 'topnav';
+        topnav.className = 'navbar';
         topnav.id = 'topnav';
 
         // Create navigation content
@@ -134,6 +140,8 @@ class Navigation {
 
         // Insert navigation at the beginning of body
         document.body.insertBefore(topnav, document.body.firstChild);
+        console.log('Navigation inserted into DOM');
+        console.log('Navigation HTML:', topnav.outerHTML);
 
         // Update references
         this.topnav = topnav;
@@ -141,6 +149,12 @@ class Navigation {
         this.mobileToggle = mobileToggle;
         this.userButton = document.getElementById('user-button');
         this.userMenu = document.getElementById('user-menu');
+        
+        console.log('Navigation references updated:', {
+            topnav: !!this.topnav,
+            menu: !!this.menu,
+            mobileToggle: !!this.mobileToggle
+        });
     }
 
     bindEvents() {
