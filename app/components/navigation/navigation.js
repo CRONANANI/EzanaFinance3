@@ -62,7 +62,9 @@ class Navigation {
         navMenu.id = 'topnav-menu';
 
         // Generate menu items
-        config.menuItems.forEach(item => {
+        config.menuItems.forEach((item, index) => {
+            console.log(`Generating menu item ${index}:`, item.text, item.dropdown ? 'with dropdown' : 'no dropdown');
+            
             const li = document.createElement('li');
             li.className = 'nav-item';
 
@@ -83,6 +85,7 @@ class Navigation {
                         `).join('')}
                     </div>
                 `;
+                console.log(`Generated dropdown for ${item.text} with ${item.children.length} children`);
             } else {
                 li.innerHTML = `
                     <a href="${item.href}" class="nav-link">
@@ -230,34 +233,44 @@ class Navigation {
     }
 
     initializeDropdowns() {
-        const dropdowns = document.querySelectorAll('.dropdown');
-        dropdowns.forEach(dropdown => {
-            const toggle = dropdown.querySelector('.nav-link');
-            const menu = dropdown.querySelector('.dropdown-content');
+        // Add a small delay to ensure DOM is fully rendered
+        setTimeout(() => {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            console.log('Found dropdowns:', dropdowns.length);
             
-            if (toggle && menu) {
-                // Desktop hover
-                dropdown.addEventListener('mouseenter', () => {
-                    if (!this.isMobile) {
-                        this.showDropdown(menu);
-                    }
-                });
+            dropdowns.forEach((dropdown, index) => {
+                const toggle = dropdown.querySelector('.nav-link');
+                const menu = dropdown.querySelector('.dropdown-content');
+                
+                console.log(`Dropdown ${index}:`, { toggle: !!toggle, menu: !!menu });
+                
+                if (toggle && menu) {
+                    // Desktop hover
+                    dropdown.addEventListener('mouseenter', () => {
+                        console.log('Dropdown mouseenter');
+                        if (!this.isMobile) {
+                            this.showDropdown(menu);
+                        }
+                    });
 
-                dropdown.addEventListener('mouseleave', () => {
-                    if (!this.isMobile) {
-                        this.hideDropdown(menu);
-                    }
-                });
+                    dropdown.addEventListener('mouseleave', () => {
+                        console.log('Dropdown mouseleave');
+                        if (!this.isMobile) {
+                            this.hideDropdown(menu);
+                        }
+                    });
 
-                // Mobile click
-                toggle.addEventListener('click', (e) => {
-                    if (this.isMobile) {
-                        e.preventDefault();
-                        this.toggleDropdown(menu);
-                    }
-                });
-            }
-        });
+                    // Mobile click
+                    toggle.addEventListener('click', (e) => {
+                        console.log('Dropdown click');
+                        if (this.isMobile) {
+                            e.preventDefault();
+                            this.toggleDropdown(menu);
+                        }
+                    });
+                }
+            });
+        }, 100);
     }
 
     toggleMobileMenu() {
