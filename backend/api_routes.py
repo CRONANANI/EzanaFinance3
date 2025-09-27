@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 
@@ -11,7 +11,7 @@ from auth import (
     get_current_user, update_last_login, create_user_session
 )
 from user_service import UserService
-from plaid_integration import plaid_service
+# from plaid_integration import plaid_service
 from models import User
 
 # Create router
@@ -19,7 +19,7 @@ router = APIRouter()
 
 # Pydantic models for request/response
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class LoginResponse(BaseModel):
@@ -29,7 +29,7 @@ class LoginResponse(BaseModel):
     user: Dict[str, Any]
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     first_name: str
     last_name: str
@@ -184,14 +184,7 @@ async def create_plaid_link_token(
     current_user: User = Depends(get_current_user)
 ):
     """Create Plaid link token for account connection"""
-    try:
-        link_token = plaid_service.create_link_token(str(current_user.id))
-        return {"link_token": link_token}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating link token: {str(e)}"
-        )
+    return {"link_token": "demo_token", "message": "Plaid integration coming soon"}
 
 @router.post("/plaid/exchange-token")
 async def exchange_plaid_token(
@@ -200,23 +193,7 @@ async def exchange_plaid_token(
     db: Session = Depends(get_db)
 ):
     """Exchange Plaid public token for access token and sync data"""
-    try:
-        # Exchange public token for access token
-        access_token = plaid_service.exchange_public_token(request.public_token)
-        
-        # Sync Plaid data
-        user_service = UserService(db)
-        sync_result = user_service.sync_plaid_data(current_user.id, access_token)
-        
-        return {
-            "access_token": access_token,
-            "sync_result": sync_result
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error exchanging token: {str(e)}"
-        )
+    return {"message": "Plaid integration coming soon"}
 
 # Portfolio endpoints
 @router.get("/portfolio")

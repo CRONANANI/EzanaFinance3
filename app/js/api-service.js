@@ -82,8 +82,14 @@ class ApiService {
      */
     async handleResponse(response) {
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.detail || errorData.message || errorMessage;
+            } catch (e) {
+                // If we can't parse JSON, use the status text
+            }
+            throw new Error(errorMessage);
         }
 
         return await response.json();

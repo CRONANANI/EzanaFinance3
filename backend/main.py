@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 from database import get_db, engine, create_tables
 from models import Base
-from routers import auth, transactions, accounts, budgets, quiver, market_research, bank_integration
 from api_routes import router as api_router
 
 # Load environment variables
@@ -48,13 +47,6 @@ security = HTTPBearer()
 
 # Include routers
 app.include_router(api_router, prefix="/api", tags=["user_management"])
-app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
-app.include_router(accounts.router, prefix="/api/accounts", tags=["accounts"])
-app.include_router(transactions.router, prefix="/api/transactions", tags=["transactions"])
-app.include_router(budgets.router, prefix="/api/budgets", tags=["budgets"])
-app.include_router(quiver.router, prefix="/api/quiver", tags=["quiver"])
-app.include_router(market_research.router, prefix="/MarketResearch/API", tags=["market_research"])
-app.include_router(bank_integration.router, prefix="/api/bank", tags=["bank_integration"])
 
 # Serve the main HTML file
 @app.get("/", response_class=HTMLResponse)

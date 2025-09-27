@@ -758,6 +758,8 @@
             </div>
         </div>
 
+    <!-- API Service -->
+    <script src="../js/api-service.js"></script>
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js?v=1.1.0"></script>
     <script src="../components/navigation/navigation.js?v=1.1.0"></script>
@@ -1319,9 +1321,85 @@
         // Make expandCard globally accessible
         window.expandCard = expandCard;
 
+        // Check authentication and load user data
+        async function checkAuthAndLoadData() {
+            if (!window.apiService.isAuthenticated()) {
+                console.log('User not authenticated, redirecting to sign-in');
+                window.location.href = 'sign-in.html';
+                return;
+            }
+
+            try {
+                // Load user dashboard data
+                const dashboardData = await window.apiService.getDashboard();
+                console.log('Dashboard data loaded:', dashboardData);
+                
+                // Update portfolio values with real data
+                if (dashboardData.portfolio_summary) {
+                    updatePortfolioWithRealData(dashboardData.portfolio_summary);
+                }
+                
+                // Update metrics with real data
+                if (dashboardData.top_holdings) {
+                    updateMetricsWithRealData(dashboardData.top_holdings);
+                }
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // If there's an error, still show the page but with default data
+            }
+        }
+
+        // Update portfolio with real user data
+        function updatePortfolioWithRealData(portfolioSummary) {
+            const portfolioValue = document.querySelector('.portfolio-value');
+            const portfolioChange = document.querySelector('.portfolio-change .change-positive');
+            
+            if (portfolioValue && portfolioSummary.total_value) {
+                portfolioValue.textContent = `$${portfolioSummary.total_value.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            }
+            
+            if (portfolioChange && portfolioSummary.total_gain_loss !== undefined) {
+                const changeIcon = portfolioSummary.total_gain_loss >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+                const changeClass = portfolioSummary.total_gain_loss >= 0 ? 'change-positive' : 'change-negative';
+                
+                portfolioChange.className = changeClass;
+                portfolioChange.innerHTML = `
+                    <i class="bi ${changeIcon}"></i>
+                    $${Math.abs(portfolioSummary.total_gain_loss).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })} (${portfolioSummary.total_gain_loss >= 0 ? '+' : ''}${portfolioSummary.total_gain_loss_percent.toFixed(2)}%)
+                `;
+            }
+        }
+
+        // Update metrics with real user data
+        function updateMetricsWithRealData(topHoldings) {
+            // Update top performer metric
+            if (topHoldings.length > 0) {
+                const topHolding = topHoldings[0];
+                const performerCard = document.querySelector('[data-card="performer"] .metric-value');
+                const performerSubtitle = document.querySelector('[data-card="performer"] .metric-subtitle');
+                
+                if (performerCard) {
+                    performerCard.textContent = topHolding.symbol;
+                }
+                if (performerSubtitle) {
+                    performerSubtitle.textContent = `${topHolding.unrealized_gain_loss_percent >= 0 ? '+' : ''}${topHolding.unrealized_gain_loss_percent.toFixed(1)}% this week`;
+                }
+            }
+        }
+
         // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing dashboard');
+            
+            // Check authentication and load user data
+            checkAuthAndLoadData();
             
             // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {

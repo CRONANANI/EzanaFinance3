@@ -870,6 +870,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+    <!-- API Service -->
+    <script src="../js/api-service.js"></script>
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js"></script>
     <script src="../components/navigation/navigation.js"></script>
@@ -878,9 +880,24 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script>
+        // Check authentication
+        function checkAuth() {
+            if (!window.apiService.isAuthenticated()) {
+                console.log('User not authenticated, redirecting to sign-in');
+                window.location.href = 'sign-in.html';
+                return false;
+            }
+            return true;
+        }
+
         // Initialize notifications sidebar when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing community');
+            
+            // Check authentication first
+            if (!checkAuth()) {
+                return;
+            }
             
             // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {

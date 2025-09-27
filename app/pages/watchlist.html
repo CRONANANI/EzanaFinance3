@@ -819,6 +819,8 @@
     </div>
 </div>
 
+    <!-- API Service -->
+    <script src="../js/api-service.js"></script>
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js"></script>
     <script src="../components/navigation/navigation.js"></script>
@@ -830,9 +832,24 @@
     <script src="../components/pages/watchlist/export-data-card/export-data-card.js"></script>
     <script src="../components/pages/watchlist/share-list-card/share-list-card.js"></script>
     <script>
+        // Check authentication
+        function checkAuth() {
+            if (!window.apiService.isAuthenticated()) {
+                console.log('User not authenticated, redirecting to sign-in');
+                window.location.href = 'sign-in.html';
+                return false;
+            }
+            return true;
+        }
+
         // Initialize components when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing watchlist');
+            
+            // Check authentication first
+            if (!checkAuth()) {
+                return;
+            }
             
             // Load watchlist component cards
             loadWatchlistComponents();

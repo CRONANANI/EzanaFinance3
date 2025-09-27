@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models import User, UserProfile, InvestmentAccount, Portfolio, Holding, Transaction, Watchlist, WatchlistItem
-from plaid_integration import plaid_service
+# from plaid_integration import plaid_service
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 import json
@@ -14,13 +14,13 @@ class UserService:
     def create_test_user(self) -> User:
         """Create the test user account"""
         # Check if test user already exists
-        test_user = self.db.query(User).filter(User.email == "testing@gmail.com").first()
+        test_user = self.db.query(User).filter(User.email == "testing123@gmail.com").first()
         if test_user:
             return test_user
         
         # Create test user
         test_user = User(
-            email="testing@gmail.com",
+            email="testing123@gmail.com",
             first_name="Test",
             last_name="User",
             is_active=True,
@@ -232,17 +232,11 @@ class UserService:
     def sync_plaid_data(self, user_id: int, access_token: str) -> Dict[str, Any]:
         """Sync user's Plaid data"""
         try:
-            # Get accounts from Plaid
-            accounts = plaid_service.get_accounts(access_token)
-            
-            # Get transactions from Plaid
-            transactions = plaid_service.get_transactions(access_token)
-            
-            # Get investment holdings from Plaid
-            holdings = plaid_service.get_investment_holdings(access_token)
-            
-            # Get investment transactions from Plaid
-            investment_transactions = plaid_service.get_investment_transactions(access_token)
+            # Mock data for demo purposes
+            accounts = []
+            transactions = []
+            holdings = []
+            investment_transactions = []
             
             # Update or create investment accounts
             for account_data in accounts:
