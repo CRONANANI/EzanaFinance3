@@ -20,6 +20,14 @@
     <!-- Navigation JavaScript -->
     <script src="../components/navigation/navigation-config.js?v=1.1.0"></script>
     <script src="../components/navigation/navigation.js?v=1.1.0"></script>
+    
+    <style>
+        /* Loading spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="landing-page">
 
@@ -57,8 +65,15 @@
             <!-- Right Section - Card Swap Preview -->
             <div class="card-preview">
                 <!-- CardSwap component will be loaded here -->
-                <div id="card-swap-container">
-                    <!-- CardSwap component will be dynamically loaded -->
+                <div id="card-swap-container" style="opacity: 0; transition: opacity 0.5s ease;">
+                    <!-- Loading state -->
+                    <div id="card-swap-loading" style="display: flex; justify-content: center; align-items: center; height: 400px; color: #10b981;">
+                        <div style="text-align: center;">
+                            <div style="width: 40px; height: 40px; border: 3px solid #10b981; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                            <div>Loading preview...</div>
+                        </div>
+                    </div>
+                    <!-- CardSwap component will be dynamically loaded here -->
                 </div>
             </div>
         </div>
@@ -106,7 +121,14 @@
                     .then(response => response.text())
                     .then(html => {
                         const container = document.getElementById('card-swap-container');
+                        const loadingElement = document.getElementById('card-swap-loading');
+                        
                         if (container) {
+                            // Hide loading state
+                            if (loadingElement) {
+                                loadingElement.style.display = 'none';
+                            }
+                            
                             container.innerHTML = html;
                             console.log('CardSwap HTML loaded into container');
                             
@@ -127,6 +149,10 @@
                                         skewAmount: 2,
                                         easing: 'smooth'
                                     });
+                                    
+                                    // Show the container with fade-in effect
+                                    container.style.opacity = '1';
+                                    
                                     console.log('CardSwap initialized successfully');
                                 } catch (error) {
                                     console.error('Error initializing CardSwap:', error);
@@ -146,9 +172,20 @@
                                                 skewAmount: 2,
                                                 easing: 'smooth'
                                             });
+                                            
+                                            // Show the container with fade-in effect
+                                            container.style.opacity = '1';
+                                            
                                             console.log('CardSwap initialized on retry');
                                         } catch (retryError) {
                                             console.error('Error on retry:', retryError);
+                                            // Show error state
+                                            const loadingElement = document.getElementById('card-swap-loading');
+                                            if (loadingElement) {
+                                                loadingElement.innerHTML = '<div style="text-align: center; color: #ef4444;">Failed to load preview</div>';
+                                                loadingElement.style.display = 'flex';
+                                            }
+                                            container.style.opacity = '1';
                                         }
                                     }, 1000);
                                 }
@@ -157,6 +194,16 @@
                     })
                     .catch(error => {
                         console.error('Error loading CardSwap component:', error);
+                        // Show error state
+                        const container = document.getElementById('card-swap-container');
+                        const loadingElement = document.getElementById('card-swap-loading');
+                        if (loadingElement) {
+                            loadingElement.innerHTML = '<div style="text-align: center; color: #ef4444;">Failed to load preview</div>';
+                            loadingElement.style.display = 'flex';
+                        }
+                        if (container) {
+                            container.style.opacity = '1';
+                        }
                     });
             }
             
@@ -166,12 +213,19 @@
         // Fallback initialization on window load
         window.addEventListener('load', function() {
             const container = document.getElementById('card-swap-container');
+            const loadingElement = document.getElementById('card-swap-loading');
+            
             if (container && (container.innerHTML.includes('CardSwap Component HTML') || container.innerHTML.includes('<!-- CardSwap Component HTML -->'))) {
                 console.log('CardSwap HTML detected but not initialized, trying fallback...');
                 // CardSwap didn't initialize properly, try again
                 setTimeout(() => {
                     if (typeof createCardSwap !== 'undefined') {
                         try {
+                            // Hide loading state
+                            if (loadingElement) {
+                                loadingElement.style.display = 'none';
+                            }
+                            
                             const cardSwap = createCardSwap('#card-swap-container', {
                                 width: 600,
                                 height: 375,
@@ -185,9 +239,19 @@
                                 skewAmount: 2,
                                 easing: 'smooth'
                             });
+                            
+                            // Show the container with fade-in effect
+                            container.style.opacity = '1';
+                            
                             console.log('CardSwap initialized on window load fallback');
                         } catch (error) {
                             console.error('Error initializing CardSwap on window load:', error);
+                            // Show error state
+                            if (loadingElement) {
+                                loadingElement.innerHTML = '<div style="text-align: center; color: #ef4444;">Failed to load preview</div>';
+                                loadingElement.style.display = 'flex';
+                            }
+                            container.style.opacity = '1';
                         }
                     } else {
                         console.log('createCardSwap function not available on window load');
@@ -199,9 +263,16 @@
         // Additional fallback - check periodically if CardSwap needs initialization
         setTimeout(() => {
             const container = document.getElementById('card-swap-container');
+            const loadingElement = document.getElementById('card-swap-loading');
+            
             if (container && container.innerHTML.includes('<!-- CardSwap Component HTML -->') && typeof createCardSwap !== 'undefined') {
                 console.log('Periodic check: CardSwap needs initialization');
                 try {
+                    // Hide loading state
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
+                    
                     const cardSwap = createCardSwap('#card-swap-container', {
                         width: 600,
                         height: 375,
@@ -215,9 +286,19 @@
                         skewAmount: 2,
                         easing: 'smooth'
                     });
+                    
+                    // Show the container with fade-in effect
+                    container.style.opacity = '1';
+                    
                     console.log('CardSwap initialized on periodic check');
                 } catch (error) {
                     console.error('Error on periodic initialization:', error);
+                    // Show error state
+                    if (loadingElement) {
+                        loadingElement.innerHTML = '<div style="text-align: center; color: #ef4444;">Failed to load preview</div>';
+                        loadingElement.style.display = 'flex';
+                    }
+                    container.style.opacity = '1';
                 }
             }
         }, 2000);
