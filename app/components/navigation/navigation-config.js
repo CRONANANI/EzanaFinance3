@@ -1,11 +1,10 @@
 // Navigation Configuration
 const NavigationConfig = {
     // Version for cache busting
-    version: '1.1.0',
+    version: '1.2.0',
     // Brand configuration
     brand: {
         name: 'Ezana Finance',
-        icon: 'bi bi-graph-up',
         href: 'landing.html'
     },
 
