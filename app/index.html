@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="pages/landing.css">
     <link rel="stylesheet" href="pages/electric-border.css">
     <link rel="stylesheet" href="pages/prism.css">
+    <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
 </head>
 <body>
 
@@ -93,116 +94,18 @@
                 </div>
             </div>
 
-            <!-- Right Section - Mobile App Preview -->
-            <div class="mobile-preview">
-                <div class="phone-container">
-                    <div class="phone">
-                        <div class="phone-screen">
-                            <!-- Phone Header -->
-                            <div class="phone-header">
-                                <div class="phone-time">9:41</div>
-                                <div class="phone-status">
-                                    <div class="status-dot"></div>
-                                    <div class="status-dot"></div>
-                                    <div class="status-dot"></div>
-                                </div>
-                            </div>
-
-                            <!-- Mobile Dashboard Header -->
-                            <div class="mobile-dashboard-header">
-                                <div class="mobile-dashboard-title">Portfolio Dashboard</div>
-                                <div class="mobile-refresh-btn">
-                                    <i class="bi bi-arrow-clockwise"></i>
-                                </div>
-                            </div>
-
-                            <!-- Mobile Portfolio Value -->
-                            <div class="mobile-portfolio-section">
-                                <div class="mobile-portfolio-title">Total Portfolio Value</div>
-                                <div class="mobile-portfolio-value">$127,843.52</div>
-                                <div class="mobile-portfolio-change">
-                                    <i class="bi bi-arrow-up"></i>
-                                    +$2,847.31 (+2.28%)
-                                </div>
-                            </div>
-
-                            <!-- Mobile Metrics Grid -->
-                            <div class="mobile-metrics-grid">
-                                <div class="mobile-metric-card">
-                                    <div class="mobile-metric-icon">
-                                        <i class="bi bi-graph-up"></i>
-                                    </div>
-                                    <div class="mobile-metric-content">
-                                        <div class="mobile-metric-value">+$1,247</div>
-                                        <div class="mobile-metric-label">Today's P&L</div>
-                                    </div>
-                                </div>
-                                <div class="mobile-metric-card">
-                                    <div class="mobile-metric-icon">
-                                        <i class="bi bi-star-fill"></i>
-                                    </div>
-                                    <div class="mobile-metric-content">
-                                        <div class="mobile-metric-value">NVDA</div>
-                                        <div class="mobile-metric-label">Top Performer</div>
-                                    </div>
-                                </div>
-                                <div class="mobile-metric-card">
-                                    <div class="mobile-metric-icon">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                    </div>
-                                    <div class="mobile-metric-content">
-                                        <div class="mobile-metric-value">6.2/10</div>
-                                        <div class="mobile-metric-label">Risk Score</div>
-                                    </div>
-                                </div>
-                                <div class="mobile-metric-card">
-                                    <div class="mobile-metric-icon">
-                                        <i class="bi bi-currency-dollar"></i>
-                                    </div>
-                                    <div class="mobile-metric-content">
-                                        <div class="mobile-metric-value">$847.23</div>
-                                        <div class="mobile-metric-label">Dividends</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Mobile Chart Section -->
-                            <div class="mobile-chart-section">
-                                <div class="mobile-chart-title">Portfolio Performance</div>
-                                <div class="mobile-chart-placeholder">
-                                    <div class="mobile-chart-line"></div>
-                                    <div class="mobile-chart-line"></div>
-                                    <div class="mobile-chart-line"></div>
-                                    <div class="mobile-chart-line"></div>
-                                    <div class="mobile-chart-line"></div>
-                                </div>
-                            </div>
-
-                            <!-- Phone Navigation -->
-                            <div class="phone-nav">
-                                <div class="nav-item-phone active">
-                                    <i class="bi bi-house"></i>
-                                    <span>Home</span>
-                                </div>
-                                <div class="nav-item-phone">
-                                    <i class="bi bi-graph-up"></i>
-                                    <span>Graph</span>
-                                </div>
-                                <div class="nav-item-phone">
-                                    <i class="bi bi-credit-card"></i>
-                                    <span>Cards</span>
-                                </div>
-                                <div class="nav-item-phone">
-                                    <i class="bi bi-person"></i>
-                                    <span>Profile</span>
-                                </div>
-                                <div class="nav-item-phone">
-                                    <i class="bi bi-gear"></i>
-                                    <span>Settings</span>
-                                </div>
-                            </div>
+            <!-- Right Section - Card Swap Preview -->
+            <div class="card-preview">
+                <!-- CardSwap component will be loaded here -->
+                <div id="card-swap-container" style="opacity: 0; transition: opacity 0.5s ease;">
+                    <!-- Loading state -->
+                    <div id="card-swap-loading" style="display: flex; justify-content: center; align-items: center; height: 400px; color: #10b981;">
+                        <div style="text-align: center;">
+                            <div style="width: 40px; height: 40px; border: 3px solid #10b981; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                            <div>Loading preview...</div>
                         </div>
                     </div>
+                    <!-- CardSwap component will be dynamically loaded here -->
                 </div>
             </div>
         </div>
@@ -226,9 +129,112 @@
         </div>
     </section>
 
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
     <script src="pages/split-text.js"></script>
     <script src="pages/electric-border.js"></script>
     <script src="pages/prism.js"></script>
     <script src="pages/landing.js"></script>
+    
+    <!-- CardSwap JavaScript -->
+    <script src="components/landing/card-swap/card-swap.js"></script>
+    <script>
+        // Initialize CardSwap when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Starting CardSwap initialization');
+            
+            // Load CardSwap HTML first
+            fetch('components/landing/card-swap/card-swap.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    console.log('CardSwap HTML fetched successfully');
+                    const container = document.getElementById('card-swap-container');
+                    const loadingElement = document.getElementById('card-swap-loading');
+                    
+                    if (container) {
+                        
+                        if (loadingElement) {
+                            loadingElement.style.display = 'none';
+                        }
+                        
+                        // Set the HTML content directly
+                        container.innerHTML = html;
+                        
+                        // Ensure the container has the proper class
+                        container.classList.add('card-swap-container');
+                        
+                        // Force a reflow to ensure CSS is applied
+                        container.offsetHeight;
+                        
+                        container.style.opacity = '1';
+                        
+                        console.log('CardSwap HTML loaded into container');
+                        console.log('Container classes:', container.className);
+                        console.log('Cards found:', container.querySelectorAll('.card').length);
+                        
+                        // Debug: Check if cards have proper styling
+                        const cards = container.querySelectorAll('.card');
+                        cards.forEach((card, index) => {
+                            console.log(`Card ${index}:`, {
+                                element: card,
+                                classes: card.className,
+                                computedStyle: window.getComputedStyle(card).display,
+                                position: window.getComputedStyle(card).position
+                            });
+                        });
+                        
+                        // Wait for GSAP and createCardSwap to be available
+                        function waitForCardSwap() {
+                            if (typeof gsap === 'undefined' || typeof createCardSwap === 'undefined') {
+                                console.log('Waiting for GSAP or createCardSwap to load...');
+                                setTimeout(waitForCardSwap, 100);
+                                return;
+                            }
+                            
+                            console.log('GSAP and createCardSwap are available, initializing...');
+                            
+                            // Initialize CardSwap
+                            try {
+                                const cardSwap = createCardSwap('#card-swap-container', {
+                                    width: 600,
+                                    height: 375,
+                                    cardDistance: 22,
+                                    verticalDistance: 30,
+                                    delay: 4000,
+                                    pauseOnHover: true,
+                                    onCardClick: (index) => {
+                                        console.log('Card clicked:', index);
+                                    },
+                                    skewAmount: 2,
+                                    easing: 'smooth'
+                                });
+                                
+                                console.log('CardSwap initialized successfully');
+                            } catch (error) {
+                                console.error('Error initializing CardSwap:', error);
+                            }
+                        }
+                        
+                        // Start waiting for dependencies
+                        waitForCardSwap();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading CardSwap HTML:', error);
+                    const container = document.getElementById('card-swap-container');
+                    const loadingElement = document.getElementById('card-swap-loading');
+                    
+                    if (container && loadingElement) {
+                        loadingElement.innerHTML = '<div style="text-align: center; color: #ef4444;">Failed to load preview</div>';
+                    }
+                });
+        });
+    </script>
 </body>
 </html>

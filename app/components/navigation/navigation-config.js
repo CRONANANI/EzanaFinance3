@@ -5,7 +5,7 @@ const NavigationConfig = {
     // Brand configuration
     brand: {
         name: 'Ezana Finance',
-        href: 'landing.html'
+        href: '../index.html'
     },
 
     // Navigation menu items - matches landing page structure
