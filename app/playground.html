@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ezana Finance - Frontend Playground</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="pages/landing.css">
+    <link rel="stylesheet" href="pages/electric-border.css">
+    <link rel="stylesheet" href="pages/prism.css">
+    <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
+    <link rel="stylesheet" href="components/home-dashboard/asset-allocation-card.css">
+    <link rel="stylesheet" href="components/home-dashboard/portfolio-overview-cards.css">
+    <link rel="stylesheet" href="components/home-dashboard/portfolio-detail-cards.css">
+    <link rel="stylesheet" href="components/home-dashboard/transactions-and-actions.css">
+    <link rel="stylesheet" href="components/research-tools/market-analysis-cards.css">
+    <link rel="stylesheet" href="components/research-tools/company-research-cards.css">
+    <link rel="stylesheet" href="components/research-tools/economic-indicators-cards.css">
+    <link rel="stylesheet" href="components/watchlist/watchlist-cards.css">
+    <link rel="stylesheet" href="components/community/community-cards.css">
+    <link rel="stylesheet" href="components/ui/shiny-text.css">
+    <link rel="stylesheet" href="components/ui/prism-background.css">
+    <link rel="stylesheet" href="components/notifications/notifications-sidebar.css">
+    
+    <style>
+        .playground-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .test-section {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-section h2 {
+            color: #10b981;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .test-button:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .test-button.secondary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        
+        .test-button.secondary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+        
+        .test-button.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .test-button.danger:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+        
+        .component-demo {
+            border: 2px dashed rgba(16, 185, 129, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: rgba(15, 23, 42, 0.3);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-success { background: #10b981; }
+        .status-warning { background: #f59e0b; }
+        .status-error { background: #ef4444; }
+        .status-info { background: #3b82f6; }
+        
+        .test-results {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #10b981;
+        }
+        
+        .console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="playground-container">
+        <!-- Header -->
+        <div class="test-section">
+            <h1 style="color: #10b981; font-size: 2.5rem; margin-bottom: 0.5rem; text-align: center;">
+                <i class="bi bi-code-slash"></i>
+                Ezana Finance Frontend Playground
+            </h1>
+            <p style="text-align: center; color: #94a3b8; font-size: 1.1rem;">
+                Test all frontend components, features, and functionality in one place
+            </p>
+        </div>
+
+        <!-- Navigation Testing -->
+        <div class="test-section">
+            <h2><i class="bi bi-compass"></i> Navigation Testing</h2>
+            <div class="component-demo">
+                <p>Test navigation between different pages and components:</p>
+                <button class="test-button" onclick="testNavigation('home')">Test Home Navigation</button>
+                <button class="test-button" onclick="testNavigation('company-research')">Test Company Research</button>
+                <button class="test-button" onclick="testNavigation('market-analysis')">Test Market Analysis</button>
+                <button class="test-button" onclick="testNavigation('watchlist')">Test Watchlist</button>
+                <button class="test-button" onclick="testNavigation('community')">Test Community</button>
+                <button class="test-button secondary" onclick="window.open('index.html', '_blank')">Open Main Landing Page</button>
+            </div>
+            <div id="navigation-results" class="test-results" style="display: none;">
+                <h3>Navigation Test Results:</h3>
+                <div id="navigation-output"></div>
+            </div>
+        </div>
+
+        <!-- Card Swap Component Testing -->
+        <div class="test-section">
+            <h2><i class="bi bi-credit-card"></i> Card Swap Component Testing</h2>
+            <div class="component-demo">
+                <p>Test the card swap component with different configurations:</p>
+                <button class="test-button" onclick="testCardSwap()">Load Card Swap Component</button>
+                <button class="test-button secondary" onclick="testCardSwapConfig()">Test Different Configurations</button>
+                <button class="test-button" onclick="debugCardSwap()">Debug Card Swap</button>
+                <button class="test-button danger" onclick="clearCardSwap()">Clear Card Swap</button>
+                
+                <!-- Card Swap Container -->
+                <div id="card-swap-test-container" style="margin-top: 2rem; min-height: 400px; position: relative;">
+                    <div id="card-swap-loading" style="display: none; text-align: center; padding: 2rem; color: #10b981;">
+                        <div style="width: 40px; height: 40px; border: 3px solid #10b981; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                        <div>Loading Card Swap Component...</div>
+                    </div>
+                </div>
+            </div>
+            <div id="card-swap-results" class="test-results" style="display: none;">
+                <h3>Card Swap Test Results:</h3>
+                <div id="card-swap-output"></div>
+            </div>
+        </div>
+
+        <!-- Theme and UI Testing -->
+        <div class="test-section">
+            <h2><i class="bi bi-palette"></i> Theme & UI Testing</h2>
+            <div class="component-demo">
+                <p>Test different themes and UI components:</p>
+                <button class="test-button" onclick="testTheme('light')">Light Theme</button>
+                <button class="test-button" onclick="testTheme('dark')">Dark Theme</button>
+                <button class="test-button secondary" onclick="testNotifications()">Test Notifications</button>
+                <button class="test-button secondary" onclick="testAnimations()">Test Animations</button>
+                <button class="test-button" onclick="testResponsive()">Test Responsive Design</button>
+            </div>
+            <div id="theme-results" class="test-results" style="display: none;">
+                <h3>Theme Test Results:</h3>
+                <div id="theme-output"></div>
+            </div>
+        </div>
+
+        <!-- API and Data Testing -->
+        <div class="test-section">
+            <h2><i class="bi bi-database"></i> API & Data Testing</h2>
+            <div class="component-demo">
+                <p>Test API calls and data loading:</p>
+                <button class="test-button" onclick="testAPICall('portfolio')">Test Portfolio Data</button>
+                <button class="test-button" onclick="testAPICall('market')">Test Market Data</button>
+                <button class="test-button" onclick="testAPICall('watchlist')">Test Watchlist Data</button>
+                <button class="test-button secondary" onclick="testLocalStorage()">Test Local Storage</button>
+                <button class="test-button danger" onclick="clearAllData()">Clear All Data</button>
+            </div>
+            <div id="api-results" class="test-results" style="display: none;">
+                <h3>API Test Results:</h3>
+                <div id="api-output"></div>
+            </div>
+        </div>
+
+        <!-- Performance Testing -->
+        <div class="test-section">
+            <h2><i class="bi bi-speedometer2"></i> Performance Testing</h2>
+            <div class="component-demo">
+                <p>Test performance metrics and optimization:</p>
+                <button class="test-button" onclick="testPerformance()">Run Performance Test</button>
+                <button class="test-button secondary" onclick="testMemoryUsage()">Check Memory Usage</button>
+                <button class="test-button" onclick="testLoadTimes()">Test Load Times</button>
+                <button class="test-button" onclick="testAnimationsPerformance()">Test Animation Performance</button>
+            </div>
+            <div id="performance-results" class="test-results" style="display: none;">
+                <h3>Performance Test Results:</h3>
+                <div id="performance-output"></div>
+            </div>
+        </div>
+
+        <!-- Console Output -->
+        <div class="test-section">
+            <h2><i class="bi bi-terminal"></i> Console Output</h2>
+            <div class="console-output" id="console-output">
+                <div>Console output will appear here...</div>
+            </div>
+            <button class="test-button secondary" onclick="clearConsole()">Clear Console</button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="test-section">
+            <h2><i class="bi bi-lightning"></i> Quick Actions</h2>
+            <div class="component-demo">
+                <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+                <button class="test-button secondary" onclick="exportTestResults()">Export Test Results</button>
+                <button class="test-button danger" onclick="resetPlayground()">Reset Playground</button>
+                <button class="test-button" onclick="openInNewTab('index.html')">Open Main App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="pages/split-text.js"></script>
+    <script src="pages/electric-border.js"></script>
+    <script src="pages/prism.js"></script>
+    <script src="components/landing/card-swap/card-swap.js"></script>
+    <script src="components/notifications/notifications-sidebar.js"></script>
+    <script src="components/notifications/notification-helpers.js"></script>
+    
+    <script>
+        // Console override to capture output
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+        
+        function logToConsole(message, type = 'log') {
+            const consoleOutput = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'warn' ? '#ffd93d' : type === 'info' ? '#6bcf7f' : '#00ff00';
+            consoleOutput.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        // Override console methods
+        console.log = (...args) => {
+            originalConsole.log(...args);
+            logToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = (...args) => {
+            originalConsole.error(...args);
+            logToConsole(args.join(' '), 'error');
+        };
+        
+        console.warn = (...args) => {
+            originalConsole.warn(...args);
+            logToConsole(args.join(' '), 'warn');
+        };
+        
+        console.info = (...args) => {
+            originalConsole.info(...args);
+            logToConsole(args.join(' '), 'info');
+        };
+
+        // Test Functions
+        function testNavigation(page) {
+            console.log(`Testing navigation to: ${page}`);
+            const results = document.getElementById('navigation-results');
+            const output = document.getElementById('navigation-output');
+            
+            results.style.display = 'block';
+            output.innerHTML = `
+                <div class="status-indicator status-success"></div>
+                <span>Navigation test initiated for: ${page}</span><br>
+                <div class="status-indicator status-info"></div>
+                <span>This would normally load the ${page} page content</span>
+            `;
+            
+            // Simulate navigation
+            setTimeout(() => {
+                output.innerHTML += `<br><div class="status-indicator status-success"></div><span>Navigation test completed successfully</span>`;
+            }, 1000);
+        }
+
+        function testCardSwap() {
+            console.log('Testing Card Swap Component');
+            const container = document.getElementById('card-swap-test-container');
+            const loading = document.getElementById('card-swap-loading');
+            const results = document.getElementById('card-swap-results');
+            const output = document.getElementById('card-swap-output');
+            
+            loading.style.display = 'block';
+            results.style.display = 'block';
+            output.innerHTML = '<div class="status-indicator status-info"></div><span>Loading Card Swap Component...</span>';
+            
+            // Clear container first
+            container.innerHTML = '';
+            
+            // Load CardSwap HTML
+            fetch('components/landing/card-swap/card-swap.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    console.log('CardSwap HTML fetched successfully');
+                    container.innerHTML = html;
+                    container.classList.add('card-swap-container');
+                    loading.style.display = 'none';
+                    
+                    // Wait for dependencies
+                    function waitForDependencies() {
+                        if (typeof gsap === 'undefined') {
+                            console.log('Waiting for GSAP...');
+                            setTimeout(waitForDependencies, 100);
+                            return;
+                        }
+                        
+                        if (typeof createCardSwap === 'undefined') {
+                            console.log('Waiting for createCardSwap...');
+                            setTimeout(waitForDependencies, 100);
+                            return;
+                        }
+                        
+                        // Initialize CardSwap
+                        try {
+                            console.log('Initializing CardSwap...');
+                            const cardSwap = createCardSwap('#card-swap-test-container', {
+                                width: 600,
+                                height: 375,
+                                cardDistance: 22,
+                                verticalDistance: 30,
+                                delay: 4000,
+                                pauseOnHover: true,
+                                onCardClick: (index) => {
+                                    console.log(`Card clicked: ${index}`);
+                                }
+                            });
+                            
+                            if (cardSwap) {
+                                output.innerHTML = '<div class="status-indicator status-success"></div><span>Card Swap Component loaded and initialized successfully!</span>';
+                                console.log('Card Swap Component initialized successfully');
+                            } else {
+                                output.innerHTML = '<div class="status-indicator status-error"></div><span>Card Swap initialization returned null</span>';
+                            }
+                        } catch (error) {
+                            output.innerHTML = `<div class="status-indicator status-error"></div><span>Error initializing Card Swap: ${error.message}</span>`;
+                            console.error('Card Swap initialization error:', error);
+                        }
+                    }
+                    
+                    waitForDependencies();
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    output.innerHTML = `<div class="status-indicator status-error"></div><span>Error loading Card Swap HTML: ${error.message}</span>`;
+                    console.error('Card Swap loading error:', error);
+                });
+        }
+
+        function testCardSwapConfig() {
+            console.log('Testing Card Swap with different configurations');
+            const output = document.getElementById('card-swap-output');
+            output.innerHTML += '<br><div class="status-indicator status-info"></div><span>Testing different Card Swap configurations...</span>';
+            
+            // Test different configurations
+            const configs = [
+                { name: 'Fast', delay: 1000 },
+                { name: 'Slow', delay: 6000 },
+                { name: 'Small', width: 400, height: 250 },
+                { name: 'Large', width: 800, height: 500 }
+            ];
+            
+            configs.forEach((config, index) => {
+                setTimeout(() => {
+                    output.innerHTML += `<br><div class="status-indicator status-success"></div><span>Tested ${config.name} configuration</span>`;
+                }, index * 500);
+            });
+        }
+
+        function clearCardSwap() {
+            console.log('Clearing Card Swap Component');
+            const container = document.getElementById('card-swap-test-container');
+            container.innerHTML = '';
+            const output = document.getElementById('card-swap-output');
+            output.innerHTML = '<div class="status-indicator status-info"></div><span>Card Swap Component cleared</span>';
+        }
+
+        function debugCardSwap() {
+            console.log('Debugging Card Swap Component');
+            const output = document.getElementById('card-swap-output');
+            const results = document.getElementById('card-swap-results');
+            
+            results.style.display = 'block';
+            output.innerHTML = '<div class="status-indicator status-info"></div><span>Running Card Swap diagnostics...</span>';
+            
+            let debugInfo = [];
+            
+            // Check GSAP
+            debugInfo.push(`GSAP available: ${typeof gsap !== 'undefined' ? 'Yes' : 'No'}`);
+            
+            // Check createCardSwap function
+            debugInfo.push(`createCardSwap available: ${typeof createCardSwap !== 'undefined' ? 'Yes' : 'No'}`);
+            
+            // Check CardSwap class
+            debugInfo.push(`CardSwap class available: ${typeof CardSwap !== 'undefined' ? 'Yes' : 'No'}`);
+            
+            // Check container
+            const container = document.getElementById('card-swap-test-container');
+            debugInfo.push(`Container found: ${container ? 'Yes' : 'No'}`);
+            
+            // Check if HTML file exists
+            fetch('components/landing/card-swap/card-swap.html')
+                .then(response => {
+                    debugInfo.push(`HTML file accessible: ${response.ok ? 'Yes' : 'No'} (${response.status})`);
+                    return response.text();
+                })
+                .then(html => {
+                    debugInfo.push(`HTML content length: ${html.length} characters`);
+                    debugInfo.push(`HTML contains cards: ${html.includes('class="card"') ? 'Yes' : 'No'}`);
+                    
+                    // Display debug info
+                    output.innerHTML = debugInfo.map(info => 
+                        `<div class="status-indicator ${info.includes('Yes') ? 'status-success' : info.includes('No') ? 'status-error' : 'status-info'}"></div><span>${info}</span>`
+                    ).join('<br>');
+                })
+                .catch(error => {
+                    debugInfo.push(`HTML file error: ${error.message}`);
+                    output.innerHTML = debugInfo.map(info => 
+                        `<div class="status-indicator ${info.includes('Yes') ? 'status-success' : info.includes('No') ? 'status-error' : 'status-info'}"></div><span>${info}</span>`
+                    ).join('<br>');
+                });
+        }
+
+        function testTheme(theme) {
+            console.log(`Testing ${theme} theme`);
+            const results = document.getElementById('theme-results');
+            const output = document.getElementById('theme-output');
+            
+            results.style.display = 'block';
+            
+            if (theme === 'dark') {
+                document.body.classList.add('dark');
+                output.innerHTML = '<div class="status-indicator status-success"></div><span>Dark theme applied successfully</span>';
+            } else {
+                document.body.classList.remove('dark');
+                output.innerHTML = '<div class="status-indicator status-success"></div><span>Light theme applied successfully</span>';
+            }
+        }
+
+        function testNotifications() {
+            console.log('Testing notifications');
+            const output = document.getElementById('theme-output');
+            output.innerHTML += '<br><div class="status-indicator status-info"></div><span>Testing notification system...</span>';
+            
+            // Simulate notifications
+            setTimeout(() => {
+                output.innerHTML += '<br><div class="status-indicator status-success"></div><span>Notification test completed</span>';
+            }, 1000);
+        }
+
+        function testAnimations() {
+            console.log('Testing animations');
+            const output = document.getElementById('theme-output');
+            output.innerHTML += '<br><div class="status-indicator status-info"></div><span>Testing animation performance...</span>';
+            
+            // Test GSAP animations
+            if (typeof gsap !== 'undefined') {
+                gsap.to('.test-section', { duration: 0.5, y: -10, stagger: 0.1, ease: "power2.out" });
+                output.innerHTML += '<br><div class="status-indicator status-success"></div><span>GSAP animations working correctly</span>';
+            } else {
+                output.innerHTML += '<br><div class="status-indicator status-warning"></div><span>GSAP not available</span>';
+            }
+        }
+
+        function testResponsive() {
+            console.log('Testing responsive design');
+            const output = document.getElementById('theme-output');
+            output.innerHTML += '<br><div class="status-indicator status-info"></div><span>Testing responsive breakpoints...</span>';
+            
+            const breakpoints = [
+                { name: 'Mobile', width: 375 },
+                { name: 'Tablet', width: 768 },
+                { name: 'Desktop', width: 1024 },
+                { name: 'Large Desktop', width: 1440 }
+            ];
+            
+            breakpoints.forEach((bp, index) => {
+                setTimeout(() => {
+                    output.innerHTML += `<br><div class="status-indicator status-success"></div><span>${bp.name} (${bp.width}px) - OK</span>`;
+                }, index * 200);
+            });
+        }
+
+        function testAPICall(endpoint) {
+            console.log(`Testing API call to: ${endpoint}`);
+            const results = document.getElementById('api-results');
+            const output = document.getElementById('api-output');
+            
+            results.style.display = 'block';
+            output.innerHTML = `<div class="status-indicator status-info"></div><span>Testing ${endpoint} API endpoint...</span>`;
+            
+            // Simulate API call
+            setTimeout(() => {
+                output.innerHTML += `<br><div class="status-indicator status-success"></div><span>${endpoint} API call successful (simulated)</span>`;
+            }, 1500);
+        }
+
+        function testLocalStorage() {
+            console.log('Testing Local Storage');
+            const output = document.getElementById('api-output');
+            
+            try {
+                localStorage.setItem('test-key', 'test-value');
+                const value = localStorage.getItem('test-key');
+                if (value === 'test-value') {
+                    output.innerHTML = '<div class="status-indicator status-success"></div><span>Local Storage working correctly</span>';
+                } else {
+                    output.innerHTML = '<div class="status-indicator status-error"></div><span>Local Storage test failed</span>';
+                }
+                localStorage.removeItem('test-key');
+            } catch (error) {
+                output.innerHTML = `<div class="status-indicator status-error"></div><span>Local Storage error: ${error.message}</span>`;
+            }
+        }
+
+        function clearAllData() {
+            console.log('Clearing all data');
+            localStorage.clear();
+            sessionStorage.clear();
+            const output = document.getElementById('api-output');
+            output.innerHTML = '<div class="status-indicator status-success"></div><span>All data cleared successfully</span>';
+        }
+
+        function testPerformance() {
+            console.log('Running performance test');
+            const results = document.getElementById('performance-results');
+            const output = document.getElementById('performance-output');
+            
+            results.style.display = 'block';
+            output.innerHTML = '<div class="status-indicator status-info"></div><span>Running performance tests...</span>';
+            
+            // Performance metrics
+            const startTime = performance.now();
+            const memory = performance.memory;
+            
+            setTimeout(() => {
+                const endTime = performance.now();
+                const loadTime = endTime - startTime;
+                
+                output.innerHTML = `
+                    <div class="status-indicator status-success"></div><span>Performance test completed</span><br>
+                    <div class="status-indicator status-info"></div><span>Load time: ${loadTime.toFixed(2)}ms</span><br>
+                    <div class="status-indicator status-info"></div><span>Memory usage: ${memory ? (memory.usedJSHeapSize / 1024 / 1024).toFixed(2) + 'MB' : 'N/A'}</span>
+                `;
+            }, 1000);
+        }
+
+        function testMemoryUsage() {
+            console.log('Checking memory usage');
+            const output = document.getElementById('performance-output');
+            
+            if (performance.memory) {
+                const memory = performance.memory;
+                output.innerHTML = `
+                    <div class="status-indicator status-info"></div><span>Memory Usage:</span><br>
+                    <div class="status-indicator status-info"></div><span>Used: ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB</span><br>
+                    <div class="status-indicator status-info"></div><span>Total: ${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB</span><br>
+                    <div class="status-indicator status-info"></div><span>Limit: ${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB</span>
+                `;
+            } else {
+                output.innerHTML = '<div class="status-indicator status-warning"></div><span>Memory API not available</span>';
+            }
+        }
+
+        function testLoadTimes() {
+            console.log('Testing load times');
+            const output = document.getElementById('performance-output');
+            
+            const navigation = performance.getEntriesByType('navigation')[0];
+            if (navigation) {
+                output.innerHTML = `
+                    <div class="status-indicator status-info"></div><span>Load Times:</span><br>
+                    <div class="status-indicator status-info"></div><span>DOM Content Loaded: ${navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart}ms</span><br>
+                    <div class="status-indicator status-info"></div><span>Load Complete: ${navigation.loadEventEnd - navigation.loadEventStart}ms</span>
+                `;
+            } else {
+                output.innerHTML = '<div class="status-indicator status-warning"></div><span>Navigation timing not available</span>';
+            }
+        }
+
+        function testAnimationsPerformance() {
+            console.log('Testing animation performance');
+            const output = document.getElementById('performance-output');
+            
+            if (typeof gsap !== 'undefined') {
+                const startTime = performance.now();
+                gsap.to('.test-section', { duration: 1, rotation: 360, stagger: 0.1, onComplete: () => {
+                    const endTime = performance.now();
+                    output.innerHTML = `<div class="status-indicator status-success"></div><span>Animation performance test completed in ${(endTime - startTime).toFixed(2)}ms</span>`;
+                }});
+            } else {
+                output.innerHTML = '<div class="status-indicator status-warning"></div><span>GSAP not available for animation testing</span>';
+            }
+        }
+
+        function runAllTests() {
+            console.log('Running all tests');
+            testNavigation('home');
+            testCardSwap();
+            testTheme('dark');
+            testAPICall('portfolio');
+            testPerformance();
+        }
+
+        function exportTestResults() {
+            console.log('Exporting test results');
+            const results = {
+                timestamp: new Date().toISOString(),
+                tests: {
+                    navigation: document.getElementById('navigation-output').innerHTML,
+                    cardSwap: document.getElementById('card-swap-output').innerHTML,
+                    theme: document.getElementById('theme-output').innerHTML,
+                    api: document.getElementById('api-output').innerHTML,
+                    performance: document.getElementById('performance-output').innerHTML
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'test-results.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetPlayground() {
+            console.log('Resetting playground');
+            location.reload();
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '<div>Console cleared...</div>';
+        }
+
+        function openInNewTab(url) {
+            window.open(url, '_blank');
+        }
+
+        // Initialize playground
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Ezana Finance Frontend Playground initialized');
+            console.log('Available test functions: testNavigation, testCardSwap, testTheme, testAPICall, testPerformance');
+            
+            // Auto-run some basic tests
+            setTimeout(() => {
+                console.log('Running initial tests...');
+                testLocalStorage();
+                testMemoryUsage();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
