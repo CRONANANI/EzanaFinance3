@@ -1,0 +1,211 @@
+/**
+ * Cursor Reveal - feed-like strip of UI component teasers that follows the cursor.
+ * No circular mask: rectangular stack with black gaps between components.
+ * Sits above antigravity (#antigravity-bg), below main UI.
+ */
+
+.cursor-reveal-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    will-change: opacity;
+}
+
+.cursor-reveal-layer.idle {
+    opacity: 0;
+}
+
+/* Rectangular strip: follows cursor, no shape mask */
+.cursor-reveal-viewport {
+    --cursor-x: 0px;
+    --cursor-y: 0px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 260px;
+    max-height: 420px;
+    transform: translate(var(--cursor-x), var(--cursor-y));
+    will-change: transform;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 1px rgba(16, 185, 129, 0.12),
+        0 0 32px 6px rgba(16, 185, 129, 0.08),
+        inset 0 0 24px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    background: transparent;
+}
+
+.cursor-reveal-content {
+    position: relative;
+    width: 100%;
+    min-height: 120px;
+}
+
+/* One "feed" slide at a time: vertical stack of components + gaps */
+.cursor-reveal-slide {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+.cursor-reveal-slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+/* Black gaps between components (feed separation) */
+.reveal-gap {
+    flex-shrink: 0;
+    height: 12px;
+    min-height: 12px;
+    background: #000;
+}
+
+/* Individual component blocks in the strip */
+.reveal-component {
+    flex-shrink: 0;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(71, 85, 105, 0.4);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 10px 12px;
+    min-height: 56px;
+}
+
+.reveal-component:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.reveal-component:last-child {
+    border-radius: 0 0 12px 12px;
+}
+
+.reveal-component + .reveal-gap + .reveal-component {
+    /* visual separation handled by gap */
+}
+
+.reveal-component .comp-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: #10b981;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+}
+
+.reveal-component .comp-body {
+    font-size: 9px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.reveal-component svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 72px;
+}
+
+.reveal-component .teaser-inner {
+    font-size: 9px;
+    color: #e2e8f0;
+    line-height: 1.4;
+}
+
+.reveal-component .teaser-inner strong {
+    color: #10b981;
+    font-size: 10px;
+}
+
+/* Investment Feed / notification style (sidebar-like) */
+.reveal-notification {
+    font-size: 9px;
+    color: #e2e8f0;
+}
+.reveal-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.reveal-badge.congress {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+.reveal-badge.stocks {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+.reveal-badge.market_news {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+}
+.reveal-notif-title {
+    font-weight: 600;
+    color: #f1f5f9;
+    font-size: 10px;
+    line-height: 1.35;
+    margin-bottom: 2px;
+}
+.reveal-notif-meta {
+    font-size: 8px;
+    color: #64748b;
+}
+
+/* Community discussion thread */
+.reveal-community .reveal-thread-title {
+    font-weight: 600;
+    color: #f1f5f9;
+    font-size: 10px;
+    margin-bottom: 4px;
+}
+.reveal-thread-preview {
+    font-size: 9px;
+    color: #94a3b8;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+.reveal-thread-meta {
+    font-size: 8px;
+    color: #64748b;
+}
+
+/* Monte Carlo simulation preview (For the Quants) */
+.reveal-montecarlo .comp-title i {
+    margin-right: 4px;
+    font-size: 11px;
+}
+.reveal-mc-steps {
+    font-size: 8px;
+    color: #94a3b8;
+    line-height: 1.4;
+    margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+    .cursor-reveal-viewport {
+        width: 220px;
+        max-height: 360px;
+    }
+    .reveal-gap {
+        height: 10px;
+        min-height: 10px;
+    }
+    .reveal-component {
+        padding: 8px 10px;
+        min-height: 48px;
+    }
+}
