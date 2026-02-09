@@ -36,6 +36,7 @@ app.add_middleware(
 try:
     app.mount("/static", StaticFiles(directory="../app/dist"), name="static")
     app.mount("/pages", StaticFiles(directory="../app/pages"), name="pages")
+    app.mount("/components", StaticFiles(directory="../app/components"), name="components")
     app.mount("/css", StaticFiles(directory="../app"), name="css")
     app.mount("/js", StaticFiles(directory="../app"), name="js")
 except Exception as e:

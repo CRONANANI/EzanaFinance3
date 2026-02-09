@@ -34,6 +34,7 @@
     const pointer = { x: 0, y: 0 };
     const clock = { getElapsedTime: () => 0 };
     let rafId = 0;
+    let mouseLeaveHandler = null;
 
     function getViewportSize() {
       const vFov = (camera.fov * Math.PI) / 180;
@@ -89,9 +90,13 @@
       clock.getElapsedTime = () => (performance.now() - (clock.start || 0)) / 1000;
       clock.start = performance.now();
 
+      mouseLeaveHandler = function () {
+        pointer.x = 0;
+        pointer.y = 0;
+      };
       window.addEventListener('resize', onResize);
-      containerEl.addEventListener('mousemove', onMouseMove);
-      containerEl.addEventListener('mouseleave', () => { pointer.x = 0; pointer.y = 0; });
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseleave', mouseLeaveHandler);
 
       animate();
     }
@@ -197,7 +202,10 @@
     function destroy() {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', onResize);
-      containerEl.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mousemove', onMouseMove);
+      if (mouseLeaveHandler) {
+        document.removeEventListener('mouseleave', mouseLeaveHandler);
+      }
       if (renderer && renderer.domElement && renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
