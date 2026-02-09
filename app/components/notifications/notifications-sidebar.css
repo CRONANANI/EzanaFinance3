@@ -1,16 +1,16 @@
 /* Notifications Sidebar Component Styles */
 
-/* Sidebar Container */
+/* Sidebar Container - anchored to very top of page (nav overlays top via z-index) */
 .notifications-sidebar {
     position: fixed;
     left: 0;
-    top: calc(var(--nav-height, 64px) + 1px); /* Start below topnav with 1px gap */
-    width: 285px;
-    height: calc(100vh - var(--nav-height, 64px) - 1px); /* Full height minus topnav and gap */
+    top: 0;
+    width: var(--sidebar-width, 280px);
+    height: 100vh;
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border-right: 1px solid rgba(20, 184, 166, 0.3);
     backdrop-filter: blur(20px);
-    z-index: 999; /* Below topnav */
+    z-index: 999; /* Below topnav (1000) */
     display: flex;
     flex-direction: column;
     box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4);
@@ -24,53 +24,22 @@
 }
 
 
-/* Toggle Button */
+/* Toggle button (green bell) - hidden; sidebar is opened/collapsed via header controls inside the panel */
 .notifications-toggle {
-    position: fixed;
-    left: 10px;
-    top: calc(var(--nav-height, 64px) + 20px); /* Position below navigation with proper spacing */
-    width: 32px;
-    height: 32px;
-    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-    border: 2px solid #14b8a6;
-    border-radius: 50%;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1001; /* Above sidebar */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Hide toggle button when sidebar is open */
-.notifications-sidebar.open + .notifications-toggle {
-    display: none;
-}
-
-.notifications-toggle:hover {
-    transform: scale(1.05);
-    box-shadow: 0 12px 35px rgba(20, 184, 166, 0.4);
-    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
-    border-color: #0d9488;
-}
-
-.notifications-toggle:active {
-    transform: scale(0.95);
+    display: none !important;
 }
 
 /* Removed notification count styling */
 
 /* Removed pulse animation */
 
-/* Sidebar Content */
+/* Sidebar Content - start below nav so header isn't covered */
 .notifications-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    padding-top: var(--nav-height, 64px);
 }
 
 /* Header */
@@ -248,13 +217,13 @@
 
 /* Filter Tabs */
 .notifications-filters {
-    padding: 20px 24px;
+    padding: 12px 16px;
     border-bottom: 1px solid rgba(20, 184, 166, 0.1);
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 0;
-    overflow-x: hidden;
+    gap: 6px;
 }
 
 .filter-btn {
@@ -345,6 +314,44 @@
     border-color: rgba(16, 185, 129, 0.4);
     box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
 }
+
+/* Priority and sentiment badges */
+.notification-meta-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+.priority-badge { font-size: 10px; font-weight: 600; border-radius: 4px; padding: 2px 6px; }
+.priority-high { color: #f87171; background: rgba(248, 113, 113, 0.15); }
+.priority-medium { color: #fbbf24; background: rgba(251, 191, 36, 0.15); }
+.priority-low { color: #34d399; background: rgba(52, 211, 153, 0.15); }
+.sentiment-badge { display: inline-flex; padding: 2px 4px; border-radius: 4px; font-size: 12px; }
+.sentiment-badge.bullish { color: #10b981; background: rgba(16, 185, 129, 0.2); }
+.sentiment-badge.bearish { color: #ef4444; background: rgba(239, 68, 68, 0.2); }
+.notification-type-badge { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Ticker and quick actions */
+.notification-ticker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+.ticker-link { color: #14b8a6; font-weight: 600; font-size: 12px; text-decoration: none; }
+.ticker-link:hover { text-decoration: underline; }
+.ticker-action-btn { font-size: 10px; padding: 2px 8px; border-radius: 6px; cursor: pointer; border: 1px solid; transition: all 0.2s; }
+.ticker-action-btn.buy { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #10b981; }
+.ticker-action-btn.sell { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444; }
+.ticker-action-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+/* Mark as Read / Dismiss */
+.notification-actions-inline { display: flex; gap: 8px; flex-wrap: wrap; }
+.action-link { background: none; border: none; color: #94a3b8; font-size: 11px; cursor: pointer; padding: 0; text-decoration: underline; }
+.action-link:hover { color: #14b8a6; }
+.action-link.dismiss:hover { color: #f87171; }
 
 .notification-item.read {
     background: rgba(71, 85, 105, 0.3);

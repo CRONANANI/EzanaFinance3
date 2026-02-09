@@ -1,0 +1,30 @@
+<!-- Interactive Asset Allocation Panel: Target vs Actual, rebalance CTA -->
+<div class="asset-allocation-panel" id="asset-allocation-panel">
+    <div class="allocation-panel-header">
+        <i class="bi bi-pie-chart"></i>
+        <h3>Asset Allocation</h3>
+        <button type="button" class="allocation-expand-btn" onclick="expandCard('allocation')" title="View full chart">View chart</button>
+    </div>
+    <div class="allocation-target-actual">
+        <div class="allocation-row">
+            <span class="allocation-label">Stocks</span>
+            <span class="allocation-bar-wrap">
+                <span class="allocation-bar actual" style="width: 68%;" title="Actual 68%"></span>
+                <span class="allocation-bar target" style="width: 65%;" title="Target 65%"></span>
+            </span>
+            <span class="allocation-values"><strong>68%</strong> / 65% target</span>
+        </div>
+        <div class="allocation-row">
+            <span class="allocation-label">Bonds</span>
+            <span class="allocation-bar-wrap">
+                <span class="allocation-bar actual bonds" style="width: 32%;" title="Actual 32%"></span>
+                <span class="allocation-bar target bonds" style="width: 35%;" title="Target 35%"></span>
+            </span>
+            <span class="allocation-values"><strong>32%</strong> / 35% target</span>
+        </div>
+    </div>
+    <p class="allocation-suggestion">Stocks above target. Consider rebalancing to reduce risk.</p>
+    <div class="allocation-actions">
+        <button type="button" class="allocation-rebalance-btn" onclick="rebalanceAllocation()">Quick rebalance</button>
+    </div>
+</div>

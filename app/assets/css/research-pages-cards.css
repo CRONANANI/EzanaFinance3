@@ -1,0 +1,206 @@
+/**
+ * Research tools pages: card headers and dark-theme overrides
+ * so all content matches home dashboard formatting.
+ */
+
+/* Card header structure (match home dashboard) */
+.page-content .research-card .card-header,
+.page-content .analysis-card .card-header,
+.page-content .market-overview-card .card-header,
+.page-content .bg-card .card-header,
+.page-content .card.card-content .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.page-content .research-card .card-title,
+.page-content .analysis-card .card-title,
+.page-content .market-overview-card .card-title,
+.page-content .bg-card .card-title,
+.page-content .card.card-content .card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.page-content .research-card .card-icon,
+.page-content .analysis-card .card-icon,
+.page-content .market-overview-card .card-icon,
+.page-content .bg-card .card-icon,
+.page-content .card.card-content .card-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.page-content .research-card .card-icon i,
+.page-content .analysis-card .card-icon i,
+.page-content .market-overview-card .card-icon i {
+    font-size: 1.25rem;
+}
+
+/* Section header as card (no floating text) */
+.page-content .section-header.section-header-card {
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.4);
+    border-radius: 1.25rem;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-content .section-header.section-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+}
+
+.page-content .section-header.section-header-card .section-title {
+    margin-bottom: 0.375rem;
+}
+
+.page-content .section-header.section-header-card .section-description {
+    margin-bottom: 0;
+}
+
+/* Dark theme overrides inside research cards (Tailwind gray -> dashboard colors) */
+.page-content .research-card .text-gray-900,
+.page-content .research-card .text-white,
+.page-content .research-card .text-foreground,
+.page-content .analysis-card .text-gray-900,
+.page-content .analysis-card .text-white,
+.page-content .market-overview-card .text-gray-900,
+.page-content .market-overview-card .text-white,
+.page-content .bg-card .text-gray-900,
+.page-content .bg-card .text-white,
+.page-content .bg-card .text-foreground,
+.page-content .card.card-content .text-gray-900,
+.page-content .card.card-content .text-white {
+    color: #e2e8f0 !important;
+}
+
+.page-content .research-card .text-gray-600,
+.page-content .research-card .text-gray-400,
+.page-content .research-card .text-gray-500,
+.page-content .research-card .text-muted-foreground,
+.page-content .analysis-card .text-gray-600,
+.page-content .analysis-card .text-gray-400,
+.page-content .analysis-card .text-gray-500,
+.page-content .market-overview-card .text-gray-600,
+.page-content .market-overview-card .text-gray-400 {
+    color: #94a3b8 !important;
+}
+
+.page-content .research-card .bg-gray-50,
+.page-content .research-card .dark\:bg-gray-700,
+.page-content .research-card .bg-muted,
+.page-content .analysis-card .bg-gray-50,
+.page-content .analysis-card .dark\:bg-gray-700,
+.page-content .market-overview-card .bg-gray-50,
+.page-content .market-overview-card .dark\:bg-gray-700,
+.page-content .bg-card .bg-gray-50,
+.page-content .bg-card .dark\:bg-gray-700,
+.page-content .card.card-content .bg-gray-50,
+.page-content .card.card-content .dark\:bg-gray-700 {
+    background: rgba(15, 23, 42, 0.5) !important;
+}
+
+.page-content .research-card .border-gray-200,
+.page-content .research-card .dark\:border-gray-700,
+.page-content .research-card .border-gray-300,
+.page-content .research-card .dark\:border-gray-600,
+.page-content .analysis-card .border-gray-200,
+.page-content .analysis-card .dark\:border-gray-700,
+.page-content .market-overview-card .border-gray-200,
+.page-content .market-overview-card .dark\:border-gray-700 {
+    border-color: rgba(71, 85, 105, 0.5) !important;
+}
+
+.page-content .research-card .hover\:bg-gray-50:hover,
+.page-content .research-card .dark\:hover\:bg-gray-700:hover,
+.page-content .analysis-card .hover\:bg-gray-50:hover,
+.page-content .analysis-card .dark\:hover\:bg-gray-700:hover {
+    background: rgba(15, 23, 42, 0.7) !important;
+}
+
+/* Financial analytics: bg-card and .card.card-content use same style as research-card */
+.page-content .bg-card,
+.page-content .card.card-content {
+    background: rgba(30, 41, 59, 0.85) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(71, 85, 105, 0.4) !important;
+    border-radius: 1.25rem;
+    padding: 2rem 2.25rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-content .bg-card::before,
+.page-content .card.card-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+}
+
+.page-content .bg-card .text-foreground,
+.page-content .card.card-content .text-foreground {
+    color: #e2e8f0 !important;
+}
+
+.page-content .bg-card .text-muted-foreground,
+.page-content .card.card-content .text-muted-foreground {
+    color: #94a3b8 !important;
+}
+
+.page-content .bg-card .border-border,
+.page-content .card.card-content .border-border {
+    border-color: rgba(71, 85, 105, 0.4) !important;
+}
+
+/* For the quants: formula, code-block, param-table inside cards */
+.page-content .research-card .formula,
+.page-content .research-card .code-block,
+.page-content .research-card .param-table {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: rgba(71, 85, 105, 0.5) !important;
+    color: #e2e8f0;
+}
+
+.page-content .research-card .param-table th {
+    color: #10b981;
+}
+
+.page-content .research-card .param-table td {
+    color: #cbd5e1;
+}
+
+.page-content .research-card .algorithm-step {
+    background: rgba(15, 23, 42, 0.4);
+    border-left-color: #10b981;
+}
+
+.page-content .research-card .text-muted-foreground {
+    color: #94a3b8 !important;
+}

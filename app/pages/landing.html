@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="landing.css">
     <link rel="stylesheet" href="electric-border.css">
     <link rel="stylesheet" href="prism.css">
+    <link rel="stylesheet" href="../components/landing/antigravity-bg/antigravity-bg.css">
     <!-- CardSwap CSS -->
     <link rel="stylesheet" href="../components/landing/card-swap/card-swap.css">
     <!-- Navigation CSS - Load after landing.css to avoid conflicts -->
@@ -30,6 +31,9 @@
     </style>
 </head>
 <body class="landing-page">
+
+    <!-- Antigravity particle background (Three.js) -->
+    <div id="antigravity-bg" aria-hidden="true"></div>
 
     <!-- Background Elements -->
     <div class="background-elements">
@@ -97,6 +101,30 @@
         </div>
     </section>
 
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="../components/landing/antigravity-bg/antigravity-bg.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.THREE && window.AntigravityBackground) {
+                window._antigravityBg = new AntigravityBackground('#antigravity-bg', {
+                    count: 300,
+                    magnetRadius: 10,
+                    ringRadius: 10,
+                    waveSpeed: 0.4,
+                    waveAmplitude: 1,
+                    particleSize: 2,
+                    lerpSpeed: 0.1,
+                    color: '#10b981',
+                    autoAnimate: true,
+                    particleVariance: 1,
+                    rotationSpeed: 0.15,
+                    depthFactor: 1,
+                    pulseSpeed: 3,
+                    fieldStrength: 10
+                });
+            }
+        });
+    </script>
     <script src="split-text.js"></script>
     <script src="electric-border.js"></script>
     <script src="prism.js"></script>

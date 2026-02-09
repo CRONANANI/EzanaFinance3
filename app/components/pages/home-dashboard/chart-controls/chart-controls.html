@@ -1,0 +1,26 @@
+<!-- Chart Controls: type toggle, benchmark overlay, export -->
+<div class="chart-controls" id="chart-controls">
+    <div class="chart-controls-row">
+        <span class="chart-controls-label">Chart type</span>
+        <div class="chart-type-toggles">
+            <button type="button" class="chart-type-btn active" data-type="line" title="Line">Line</button>
+            <button type="button" class="chart-type-btn" data-type="area" title="Area">Area</button>
+            <button type="button" class="chart-type-btn" data-type="performance" title="Performance vs Benchmark">Vs Benchmark</button>
+        </div>
+    </div>
+    <div class="chart-controls-row">
+        <span class="chart-controls-label">Compare</span>
+        <div class="chart-benchmark-toggles">
+            <label class="benchmark-check"><input type="checkbox" id="chart-benchmark-sp500" /> S&P 500</label>
+            <label class="benchmark-check"><input type="checkbox" id="chart-benchmark-nasdaq" /> NASDAQ</label>
+        </div>
+    </div>
+    <div class="chart-controls-row chart-controls-export">
+        <span class="chart-controls-label">Export</span>
+        <div class="chart-export-btns">
+            <button type="button" class="export-btn" data-format="png" title="Download as PNG"><i class="bi bi-image"></i> PNG</button>
+            <button type="button" class="export-btn" data-format="csv" title="Download as CSV"><i class="bi bi-file-text"></i> CSV</button>
+            <button type="button" class="export-btn" data-format="pdf" title="Download as PDF"><i class="bi bi-file-pdf"></i> PDF</button>
+        </div>
+    </div>
+</div>

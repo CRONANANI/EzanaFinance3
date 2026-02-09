@@ -244,42 +244,45 @@ class Navigation {
     }
 
     initializeDropdowns() {
-        // Add a small delay to ensure DOM is fully rendered
+        const CLOSE_DELAY = 200;
+
         setTimeout(() => {
             const dropdowns = document.querySelectorAll('.dropdown');
-            console.log('Found dropdowns:', dropdowns.length);
-            
-            dropdowns.forEach((dropdown, index) => {
+            dropdowns.forEach((dropdown) => {
                 const toggle = dropdown.querySelector('.nav-link');
                 const menu = dropdown.querySelector('.dropdown-content');
-                
-                console.log(`Dropdown ${index}:`, { toggle: !!toggle, menu: !!menu });
-                
-                if (toggle && menu) {
-                    // Desktop hover
-                    dropdown.addEventListener('mouseenter', () => {
-                        console.log('Dropdown mouseenter');
-                        if (!this.isMobile) {
-                            this.showDropdown(menu);
-                        }
-                    });
+                if (!toggle || !menu) return;
 
-                    dropdown.addEventListener('mouseleave', () => {
-                        console.log('Dropdown mouseleave');
-                        if (!this.isMobile) {
-                            this.hideDropdown(menu);
-                        }
-                    });
+                let closeTimeout = null;
 
-                    // Mobile click
-                    toggle.addEventListener('click', (e) => {
-                        console.log('Dropdown click');
-                        if (this.isMobile) {
-                            e.preventDefault();
-                            this.toggleDropdown(menu);
-                        }
-                    });
-                }
+                const cancelClose = () => {
+                    if (closeTimeout) {
+                        clearTimeout(closeTimeout);
+                        closeTimeout = null;
+                    }
+                };
+
+                dropdown.addEventListener('mouseenter', () => {
+                    cancelClose();
+                    if (!this.isMobile) {
+                        this.showDropdown(menu);
+                    }
+                });
+
+                dropdown.addEventListener('mouseleave', () => {
+                    if (this.isMobile) return;
+                    closeTimeout = setTimeout(() => {
+                        this.hideDropdown(menu);
+                        closeTimeout = null;
+                    }, CLOSE_DELAY);
+                });
+
+                toggle.addEventListener('click', (e) => {
+                    if (this.isMobile) {
+                        e.preventDefault();
+                        this.toggleDropdown(menu);
+                    }
+                });
             });
         }, 100);
     }

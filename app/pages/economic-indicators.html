@@ -10,88 +10,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/layout-common.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Import Economic Indicators Component Styles -->
     <link rel="stylesheet" href="../components/research-tools/economic-indicators-cards.css">
+    <!-- Shared page layout and formatting -->
+    <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/cards-common.css">
+    <link rel="stylesheet" href="../assets/css/metrics-common.css">
+    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
     <style>
-        /* Professional Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 24px;
+            padding-top: calc(var(--nav-height, 64px) + 24px);
+            margin: 0;
         }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-radius: 2rem;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 0.75rem;
-            line-height: 1.1;
-        }
-
-        .hero-description {
-            font-size: 1rem;
-            color: var(--muted-foreground);
-            margin-bottom: 1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-stat {
-            text-align: center;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            min-width: 90px;
-        }
-
-        .hero-stat-number {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.125rem;
-        }
-
-        .hero-stat-label {
-            font-size: 0.75rem;
-            color: var(--muted-foreground);
-            font-weight: 500;
-        }
-
         .page-title-shiny {
             background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
             background-size: 200% 200%;
@@ -100,232 +41,72 @@
             background-clip: text;
             animation: shimmer 3s ease-in-out infinite;
         }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        /* Responsive Hero */
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .hero-description {
-                font-size: 0.875rem;
-            }
-            
-            .hero-stats {
-                gap: 0.75rem;
-            }
-            
-            .hero-stat {
-                padding: 0.5rem;
-                min-width: 70px;
-            }
-            
-            .hero-stat-number {
-                font-size: 1.125rem;
-            }
-        }
-
-        /* Body styling for proper topnav spacing */
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: white;
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
-            margin: 0;
-        }
-
-        /* Section Headers */
-        .section-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            color: var(--foreground);
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -0.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 2px;
-        }
-
-        .section-description {
-            font-size: 1.125rem;
-            color: var(--muted-foreground);
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Metrics Grid */
-        .metrics-grid {
+        .page-content .metrics-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
+            gap: 1rem;
             width: 100%;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
-
-        /* Metric Cards */
-        .metric-card {
+        .page-content .metric-card {
             background: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 20px;
-            padding: 0.875rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            min-height: 72px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
             display: flex;
             flex-direction: row;
             align-items: center;
-            text-align: left;
-            min-height: 50px;
-            width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            gap: 1rem;
         }
-
-        .metric-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        .page-content .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
             border-color: var(--accent-color);
             background: rgba(30, 41, 59, 0.95);
         }
-
-        .metric-card.positive { --accent-color: #10b981; }
-        .metric-card.warning { --accent-color: #f59e0b; }
-        .metric-card.info { --accent-color: #3b82f6; }
-        .metric-card.success { --accent-color: #10b981; }
-
-        .metric-header {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            margin-bottom: 0;
-            width: auto;
-            margin-right: 0.75rem;
-        }
-
-        .metric-title {
-            font-size: 0.45rem;
+        .page-content .metric-card.positive { --accent-color: #10b981; }
+        .page-content .metric-card.warning { --accent-color: #f59e0b; }
+        .page-content .metric-card.info { --accent-color: #3b82f6; }
+        .page-content .metric-card.success { --accent-color: #10b981; }
+        .page-content .metric-header { flex-shrink: 0; margin-right: 0; }
+        .page-content .metric-title {
+            font-size: 0.6875rem;
             font-weight: 600;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-left: 6px;
-            white-space: nowrap;
-            overflow: visible;
-            text-overflow: unset;
-            max-width: none;
-            flex: 1;
-        }
-
-        .metric-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.625rem;
-            color: white;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        .metric-value {
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 2px;
-            line-height: 1.1;
-        }
-
-        .metric-subtitle {
-            font-size: 0.425rem;
             color: #94a3b8;
-            line-height: 1.3;
-            margin-top: 1px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-left: 0.5rem;
         }
-
+        .page-content .metric-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+        .page-content .metric-value { font-size: 1rem; font-weight: 700; color: #e2e8f0; }
+        .page-content .metric-subtitle { font-size: 0.75rem; color: #94a3b8; }
         .icon-positive { background: linear-gradient(135deg, #10b981, #059669); }
         .icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .icon-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
-        
-        /* Metric card content wrapper */
-        .metric-content {
+        .page-content .metric-content {
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             justify-content: center;
         }
-
-        /* Research Cards - Match home-dashboard expanded-card styling */
-        .research-card {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: 2rem;
-            min-height: 200px;
-        }
-
-        .research-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-        }
-
-        .research-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            border-color: #10b981;
-            background: rgba(30, 41, 59, 0.95);
-        }
-
-        .research-card .card-header {
+        .page-content .research-card .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1.5rem;
         }
-
-        .research-card .card-title {
+        .page-content .research-card .card-title {
             font-size: 1.125rem;
             font-weight: 600;
             color: #e2e8f0;
@@ -333,8 +114,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-
-        .research-card .card-icon {
+        .page-content .research-card .card-icon {
             width: 3rem;
             height: 3rem;
             border-radius: 0.75rem;
@@ -343,50 +123,21 @@
             justify-content: center;
             background: linear-gradient(135deg, #10b981, #059669);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            transition: all 0.3s ease;
         }
-
-        .research-card:hover .card-icon {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .research-card .card-icon i {
-            color: white;
-            font-size: 1.25rem;
-        }
-
-        /* Responsive Design */
+        .page-content .research-card .card-icon i { color: white; font-size: 1.25rem; }
         @media (max-width: 1024px) {
-            .metrics-grid {
+            .page-content .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-            }
-            
-            .metric-card {
-                min-width: 100%;
-                flex-direction: row;
-                align-items: center;
-                text-align: left;
-                min-height: 50px;
-            }
-            
-            .metric-header {
-                margin-bottom: 0;
-                margin-right: 0.75rem;
-                width: auto;
             }
         }
-
         @media (max-width: 768px) {
-            .metrics-grid {
+            .page-content .metrics-grid {
                 grid-template-columns: 1fr;
-                gap: 0.5rem;
+                gap: 0.875rem;
             }
-            
-            .metric-card {
-                min-height: 50px;
-                padding: 0.75rem 1rem;
+            .page-content .metric-card {
+                min-height: 64px;
+                padding: 0.875rem 1rem;
             }
         }
     </style>
@@ -448,7 +199,7 @@
         </div>
     </div>
 
-<div class="container mx-auto px-6 py-12" style="margin-left: 350px;">
+<div class="page-content">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-content">
@@ -472,7 +223,7 @@
     </div>
 
     <!-- Key Economic Indicators -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Key Economic Indicators</h2>
         <p class="section-description">Real-time economic data and market indicators</p>
     </div>
@@ -558,7 +309,7 @@
     </div>
 
     <!-- Economic Calendar -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Economic Calendar</h2>
         <p class="section-description">Upcoming economic events and data releases</p>
     </div>
@@ -641,7 +392,7 @@
     </div>
 
     <!-- Global Economic Overview -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Global Economic Overview</h2>
         <p class="section-description">Comprehensive economic health indicators and global market data</p>
     </div>
@@ -735,7 +486,7 @@
     </div>
 
     <!-- Market Impact Analysis -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Market Impact Analysis</h2>
         <p class="section-description">Analysis of economic factors affecting market performance</p>
     </div>

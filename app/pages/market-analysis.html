@@ -10,88 +10,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/layout-common.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Import Market Analysis Component Styles -->
     <link rel="stylesheet" href="../components/research-tools/market-analysis-cards.css">
+    <!-- Shared page layout and formatting -->
+    <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/cards-common.css">
+    <link rel="stylesheet" href="../assets/css/metrics-common.css">
+    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
     <style>
-        /* Professional Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            min-height: 100vh;
+            padding: 24px;
+            padding-top: calc(var(--nav-height, 64px) + 24px);
+            margin: 0;
         }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-radius: 2rem;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 0.75rem;
-            line-height: 1.1;
-        }
-
-        .hero-description {
-            font-size: 1rem;
-            color: var(--muted-foreground);
-            margin-bottom: 1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-stat {
-            text-align: center;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            min-width: 90px;
-        }
-
-        .hero-stat-number {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.125rem;
-        }
-
-        .hero-stat-label {
-            font-size: 0.75rem;
-            color: var(--muted-foreground);
-            font-weight: 500;
-        }
-
         .page-title-shiny {
             background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
             background-size: 200% 200%;
@@ -100,98 +41,13 @@
             background-clip: text;
             animation: shimmer 3s ease-in-out infinite;
         }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        /* Responsive Hero */
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .hero-description {
-                font-size: 0.875rem;
-            }
-            
-            .hero-stats {
-                gap: 0.75rem;
-            }
-            
-            .hero-stat {
-                padding: 0.5rem;
-                min-width: 70px;
-            }
-            
-            .hero-stat-number {
-                font-size: 1.125rem;
-            }
-        }
-
-        /* Body styling for proper topnav spacing */
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: white;
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
-            margin: 0;
-        }
-
-        /* Market Overview Cards */
-        .market-overview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .market-overview-card {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 24px;
-            padding: 2.5rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            min-height: 200px;
-        }
-
-        .market-overview-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-        }
-
-        .market-overview-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            border-color: #10b981;
-            background: rgba(30, 41, 59, 0.95);
-        }
-
-        .market-overview-card .card-header {
+        .page-content .market-overview-card .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1rem;
         }
-
-        .market-overview-card .card-icon {
+        .page-content .market-overview-card .card-icon {
             width: 3rem;
             height: 3rem;
             border-radius: 0.75rem;
@@ -201,84 +57,44 @@
             background: linear-gradient(135deg, #10b981, #059669);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
-
-        .market-overview-card .card-icon i {
+        .page-content .market-overview-card .card-icon i {
             color: white;
             font-size: 1.25rem;
         }
-
-        .market-overview-card .card-title {
+        .page-content .market-overview-card .card-title {
             font-size: 1.125rem;
             font-weight: 600;
             color: #e2e8f0;
             margin: 0;
         }
-
-        .market-overview-card .card-value {
-            font-size: 2rem;
+        .page-content .market-overview-card .card-value {
+            font-size: 1.75rem;
             font-weight: 700;
             color: white;
             margin-bottom: 0.5rem;
-            line-height: 1.1;
+            line-height: 1.2;
         }
-
-        .market-overview-card .card-change {
+        .page-content .market-overview-card .card-change {
             font-size: 0.875rem;
             color: #10b981;
             font-weight: 600;
         }
-
-        .market-overview-card .card-change.negative {
+        .page-content .market-overview-card .card-change.negative {
             color: #ef4444;
         }
-
-        /* Analysis Cards - Match home-dashboard expanded-card styling */
-        .analysis-card {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: 200px;
-            margin-bottom: 2rem;
-        }
-
-        .analysis-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-        }
-
-        .analysis-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            border-color: #10b981;
-            background: rgba(30, 41, 59, 0.95);
-        }
-
-        .analysis-card .card-header {
+        .page-content .analysis-card .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1.5rem;
         }
-
-        .analysis-card .card-title {
+        .page-content .analysis-card .card-title {
             font-size: 1.125rem;
             font-weight: 600;
             color: #e2e8f0;
             margin: 0;
         }
-
-        .analysis-card .card-icon {
+        .page-content .analysis-card .card-icon {
             width: 3rem;
             height: 3rem;
             border-radius: 0.75rem;
@@ -288,8 +104,7 @@
             background: linear-gradient(135deg, #10b981, #059669);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
-
-        .analysis-card .card-icon i {
+        .page-content .analysis-card .card-icon i {
             color: white;
             font-size: 1.25rem;
         }
@@ -352,7 +167,7 @@
         </div>
     </div>
 
-<div class="container mx-auto px-6 py-12" style="margin-left: 350px;">
+<div class="page-content">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-content">
@@ -376,7 +191,7 @@
     </div>
 
     <!-- Market Overview Cards -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Market Overview</h2>
         <p class="section-description">Real-time market data and key performance indicators</p>
     </div>
@@ -428,7 +243,7 @@
     </div>
 
     <!-- Market Analysis Tools -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Analysis Tools</h2>
         <p class="section-description">Advanced market analysis tools and technical indicators</p>
     </div>
@@ -547,7 +362,7 @@
     </div>
 
     <!-- Market News & Analysis -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Market News & Analysis</h2>
         <p class="section-description">Latest market news and analysis tools</p>
     </div>
@@ -685,7 +500,7 @@
     </div>
 
     <!-- Market Heat Map -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Market Heat Map</h2>
         <p class="section-description">Visual representation of market performance across different sectors</p>
     </div>

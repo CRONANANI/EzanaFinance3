@@ -10,12 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/layout-common.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Import Trophy Cabinet Component Styles -->
     <link rel="stylesheet" href="../components/community/trophy-cabinet/trophy-cabinet.css">
+    <!-- Shared page layout and card formatting -->
+    <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/cards-common.css">
+    <link rel="stylesheet" href="../assets/css/metrics-common.css">
+    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
     <style>
         * {
             margin: 0;
@@ -38,80 +45,7 @@
             padding: 0 2rem;
         }
 
-        /* Professional Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-radius: 2rem;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 0.75rem;
-            line-height: 1.1;
-        }
-
-        .hero-description {
-            font-size: 1rem;
-            color: var(--muted-foreground);
-            margin-bottom: 1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-stat {
-            text-align: center;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            min-width: 90px;
-        }
-
-        .hero-stat-number {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.125rem;
-        }
-
-        .hero-stat-label {
-            font-size: 0.75rem;
-            color: var(--muted-foreground);
-            font-weight: 500;
-        }
+        /* Hero: same size and formatting as home dashboard via pages-common.css */
 
         .page-title-shiny {
             background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
@@ -228,32 +162,6 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .hero-section {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .hero-description {
-                font-size: 0.875rem;
-            }
-            
-            .hero-stats {
-                gap: 0.75rem;
-            }
-            
-            .hero-stat {
-                padding: 0.5rem;
-                min-width: 70px;
-            }
-            
-            .hero-stat-number {
-                font-size: 1.125rem;
-            }
-            
             .community-overview-grid {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
@@ -408,7 +316,7 @@
         </div>
     </div>
 
-<div class="container mx-auto px-6 py-12" style="margin-left: 350px;">
+<div class="page-content">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-content">
@@ -432,7 +340,7 @@
     </div>
 
     <!-- Community Stats Section -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Community Overview</h2>
         <p class="section-description">Key metrics and statistics about our growing community</p>
     </div>
@@ -488,7 +396,7 @@
     </div>
 
     <!-- Community Features Section -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Community Features</h2>
         <p class="section-description">Explore tools and features to connect with fellow investors</p>
     </div>
@@ -496,11 +404,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
         <!-- User Search Card -->
         <div class="bg-card rounded-2xl border border-border p-8 hover:border-primary transition-all duration-300">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 bg-accent rounded-xl flex items-center justify-center">
-                    <i class="bi bi-search text-accent-foreground text-xl"></i>
+            <div class="card-header">
+                <h3 class="card-title">Find Users</h3>
+                <div class="card-icon">
+                    <i class="bi bi-search"></i>
                 </div>
-                <h3 class="text-xl font-medium text-foreground">Find Users</h3>
             </div>
             <p class="text-muted-foreground mb-6">Search for other investors on the platform to connect with</p>
             <div class="space-y-4">
@@ -522,11 +430,11 @@
 
         <!-- Friends List Card -->
         <div class="bg-card rounded-2xl border border-border p-8 hover:border-primary transition-all duration-300">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 bg-chart-3 rounded-xl flex items-center justify-center">
-                    <i class="bi bi-people-fill text-chart-2 text-xl"></i>
+            <div class="card-header">
+                <h3 class="card-title">My Friends</h3>
+                <div class="card-icon">
+                    <i class="bi bi-people-fill"></i>
                 </div>
-                <h3 class="text-xl font-medium text-foreground">My Friends</h3>
             </div>
             <p class="text-muted-foreground mb-6">View and manage your current connections</p>
             <div class="space-y-4">
@@ -572,11 +480,11 @@
 
         <!-- Activity Feed Card -->
         <div class="bg-card rounded-2xl border border-border p-8 hover:border-primary transition-all duration-300">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 bg-chart-5 rounded-xl flex items-center justify-center">
-                    <i class="bi bi-activity text-chart-2 text-xl"></i>
+            <div class="card-header">
+                <h3 class="card-title">Friends Activity</h3>
+                <div class="card-icon">
+                    <i class="bi bi-activity"></i>
                 </div>
-                <h3 class="text-xl font-medium text-foreground">Friends Activity</h3>
             </div>
             <p class="text-muted-foreground mb-6">Track your friends' investment activities and engagement</p>
             <div id="activity-feed" class="space-y-4 max-h-48 overflow-y-auto">

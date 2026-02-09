@@ -150,15 +150,13 @@ class NotificationsSidebar {
         }, 5000);
     }
 
-    // Filter notifications
+    // Filter notifications (all | congress | portfolio_alerts | community | market_news)
     filterNotifications(filter) {
         this.currentFilter = filter;
         
-        // Update filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+        const btn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
         
         this.renderNotifications();
     }
@@ -176,7 +174,13 @@ class NotificationsSidebar {
         
         let filteredNotifications = this.notifications;
         if (this.currentFilter !== 'all') {
-            filteredNotifications = this.notifications.filter(n => n.type === this.currentFilter);
+            if (this.currentFilter === 'portfolio_alerts') {
+                filteredNotifications = this.notifications.filter(n => n.type === 'portfolio_alerts' || (n.type === 'stocks' && (n.badge === 'Portfolio' || n.badge === 'Alert')));
+            } else if (this.currentFilter === 'market_news') {
+                filteredNotifications = this.notifications.filter(n => n.type === 'market_news' || n.type === 'news' || (n.type === 'stocks' && ['Earnings', 'Market', 'Research'].includes(n.badge)));
+            } else {
+                filteredNotifications = this.notifications.filter(n => n.type === this.currentFilter);
+            }
         }
         
         if (filteredNotifications.length === 0) {
@@ -191,22 +195,35 @@ class NotificationsSidebar {
             const timeAgo = this.getTimeAgo(notification.time);
             const unreadClass = notification.read ? 'read' : 'unread';
             const unreadBadge = notification.read ? '' : '<div class="unread-badge"></div>';
-            
+            const priority = notification.priority || 'medium';
+            const priorityLabel = { high: '🔴 High', medium: '🟡 Medium', low: '🟢 Low' }[priority] || '🟡 Medium';
+            const sentiment = notification.sentiment;
+            const sentimentHtml = sentiment === 'bullish' ? '<span class="sentiment-badge bullish" title="Bullish"><i class="bi bi-graph-up-arrow"></i></span>' : sentiment === 'bearish' ? '<span class="sentiment-badge bearish" title="Bearish"><i class="bi bi-graph-down-arrow"></i></span>' : '';
+            const ticker = notification.ticker || '';
+            const tickerHtml = ticker ? `<div class="notification-ticker"><a href="#" class="ticker-link" onclick="event.preventDefault(); notificationsSidebar.quickTickerAction('${ticker}', 'view')">${ticker}</a><button type="button" class="ticker-action-btn buy" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'buy')" title="Quick buy">Buy</button><button type="button" class="ticker-action-btn sell" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'sell')" title="Quick sell">Sell</button></div>` : '';
+            const badgeDisplay = notification.badge || (notification.type === 'congress' ? 'Congress' : notification.type === 'portfolio_alerts' ? 'Portfolio' : notification.type === 'market_news' ? 'News' : notification.type);
             return `
-                <div class="notification-item ${unreadClass}" onclick="notificationsSidebar.markAsRead('${notification.id}')">
+                <div class="notification-item ${unreadClass}" data-id="${notification.id}">
                     ${unreadBadge}
-                    <div class="notification-content">
+                    <div class="notification-content" onclick="notificationsSidebar.markAsRead('${notification.id}')">
                         <div class="notification-icon ${notification.type}">
                             <i class="bi ${notification.icon}"></i>
                         </div>
                         <div class="notification-text">
+                            <div class="notification-meta-top">
+                                <span class="priority-badge priority-${priority}">${priorityLabel}</span>
+                                ${sentimentHtml}
+                                <span class="notification-type-badge">${badgeDisplay}</span>
+                            </div>
                             <div class="notification-title">${notification.title}</div>
                             <div class="notification-description">${notification.content}</div>
+                            ${tickerHtml}
                             <div class="notification-meta">
-                                <div class="notification-time">
-                                    ${timeAgo}
+                                <div class="notification-time">${timeAgo}</div>
+                                <div class="notification-actions-inline">
+                                    <button type="button" class="action-link mark-read" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')" title="Mark as read">Mark read</button>
+                                    <button type="button" class="action-link dismiss" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')" title="Dismiss">Dismiss</button>
                                 </div>
-                                <div class="notification-badge">${notification.badge || notification.type}</div>
                             </div>
                         </div>
                     </div>
@@ -281,12 +298,23 @@ class NotificationsSidebar {
         this.showToast('Action completed!', 'success');
     }
 
-    // Remove notification
+    // Remove notification (Dismiss)
     removeNotification(notificationId) {
         this.notifications = this.notifications.filter(n => n.id != notificationId);
         this.saveNotifications();
         this.renderNotifications();
         this.updateNotificationCount();
+    }
+
+    // Quick action for ticker (buy/sell/view) - can wire to trading or watchlist
+    quickTickerAction(ticker, action) {
+        if (action === 'buy') {
+            this.showToast(`Quick buy ${ticker} – connect to broker`, 'info');
+        } else if (action === 'sell') {
+            this.showToast(`Quick sell ${ticker} – connect to broker`, 'info');
+        } else {
+            switchTab('watchlist');
+        }
     }
 
     // Update notification count
@@ -337,130 +365,22 @@ class NotificationsSidebar {
         localStorage.setItem('ezana-notifications', JSON.stringify(this.notifications));
     }
 
-    // Load sample notifications for demo
+    // Load sample notifications for demo (priority: high|medium|low; sentiment: bullish|bearish; ticker for quick actions)
     loadSampleNotifications() {
         console.log('Loading sample notifications...');
         const sampleNotifications = [
-            {
-                id: '1',
-                type: 'congress',
-                title: 'Nancy Pelosi Trade Alert',
-                content: 'Rep. Nancy Pelosi disclosed new NVIDIA stock purchases worth $1.2M',
-                time: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-                read: false,
-                icon: 'bi-building',
-                badge: 'Congress'
-            },
-            {
-                id: '2',
-                type: 'stocks',
-                title: 'AAPL Breaking News',
-                content: 'Apple announces record Q4 earnings, stock up 5% in after-hours trading',
-                time: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
-                read: false,
-                icon: 'bi-graph-up',
-                badge: 'Stocks'
-            },
-            {
-                id: '3',
-                type: 'stocks',
-                title: 'Portfolio Alert',
-                content: 'Your portfolio gained $2,847.31 today (+2.26%)',
-                time: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
-                read: true,
-                icon: 'bi-graph-up',
-                badge: 'Portfolio'
-            },
-            {
-                id: '4',
-                type: 'community',
-                title: 'Community Discussion',
-                content: 'Alex commented on your Tesla discussion thread',
-                time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-                read: false,
-                icon: 'bi-people',
-                badge: 'Community'
-            },
-            {
-                id: '5',
-                type: 'congress',
-                title: 'Dan Crenshaw Trade Alert',
-                content: 'Rep. Dan Crenshaw sold defense stocks before committee vote',
-                time: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-                read: true,
-                icon: 'bi-building',
-                badge: 'Congress'
-            },
-            {
-                id: '6',
-                type: 'stocks',
-                title: 'Market Analysis',
-                content: 'New research report on your TSLA position shows strong buy signals',
-                time: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-                read: true,
-                icon: 'bi-graph-up',
-                badge: 'Research'
-            },
-            {
-                id: '7',
-                type: 'stocks',
-                title: 'Dividend Payment',
-                content: 'Received $127.50 dividend payment from MSFT',
-                time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-                read: true,
-                icon: 'bi-graph-up',
-                badge: 'Payment'
-            },
-            {
-                id: '8',
-                type: 'congress',
-                title: 'Senate Trading Activity',
-                content: 'Sen. Richard Burr sold $1.8M in airline stocks before market crash',
-                time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-                read: true,
-                icon: 'bi-building',
-                badge: 'Congress'
-            },
-            {
-                id: '9',
-                type: 'stocks',
-                title: 'Market Volatility Alert',
-                content: 'S&P 500 dropped 2.3% - consider rebalancing your portfolio',
-                time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-                read: true,
-                icon: 'bi-graph-down',
-                badge: 'Market'
-            },
-            {
-                id: '10',
-                type: 'community',
-                title: 'New Discussion Thread',
-                content: 'Sarah started a discussion about renewable energy stocks',
-                time: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
-                read: true,
-                icon: 'bi-people',
-                badge: 'Community'
-            },
-            {
-                id: '11',
-                type: 'congress',
-                title: 'House Committee Vote',
-                content: 'Financial Services Committee votes on banking regulations tomorrow',
-                time: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-                read: true,
-                icon: 'bi-building',
-                badge: 'Congress'
-            },
-            {
-                id: '12',
-                type: 'stocks',
-                title: 'Earnings Report',
-                content: 'Tesla Q4 earnings beat expectations, stock up 8% pre-market',
-                time: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
-                read: true,
-                icon: 'bi-graph-up',
-                badge: 'Earnings'
-            }
+            { id: '1', type: 'congress', title: 'Nancy Pelosi Trade Alert', content: 'Rep. Nancy Pelosi disclosed new NVIDIA stock purchases worth $1.2M', time: new Date(Date.now() - 2 * 60 * 1000), read: false, icon: 'bi-building', badge: 'Congress', priority: 'high', sentiment: 'bullish', ticker: 'NVDA' },
+            { id: '2', type: 'market_news', title: 'AAPL Breaking News', content: 'Apple announces record Q4 earnings, stock up 5% in after-hours trading', time: new Date(Date.now() - 8 * 60 * 1000), read: false, icon: 'bi-graph-up', badge: 'Earnings', priority: 'high', sentiment: 'bullish', ticker: 'AAPL' },
+            { id: '3', type: 'portfolio_alerts', title: 'Portfolio Alert', content: 'Your portfolio gained $2,847.31 today (+2.26%)', time: new Date(Date.now() - 60 * 60 * 1000), read: true, icon: 'bi-graph-up', badge: 'Portfolio', priority: 'medium', sentiment: 'bullish' },
+            { id: '4', type: 'community', title: 'Community Discussion', content: 'Alex commented on your Tesla discussion thread', time: new Date(Date.now() - 2 * 60 * 60 * 1000), read: false, icon: 'bi-people', badge: 'Community', priority: 'low' },
+            { id: '5', type: 'congress', title: 'Dan Crenshaw Trade Alert', content: 'Rep. Dan Crenshaw sold defense stocks before committee vote', time: new Date(Date.now() - 4 * 60 * 60 * 1000), read: true, icon: 'bi-building', badge: 'Congress', priority: 'high', sentiment: 'bearish' },
+            { id: '6', type: 'market_news', title: 'Market Analysis', content: 'New research report on your TSLA position shows strong buy signals', time: new Date(Date.now() - 6 * 60 * 60 * 1000), read: true, icon: 'bi-graph-up', badge: 'Research', priority: 'medium', sentiment: 'bullish', ticker: 'TSLA' },
+            { id: '7', type: 'portfolio_alerts', title: 'Dividend Payment', content: 'Received $127.50 dividend payment from MSFT', time: new Date(Date.now() - 24 * 60 * 60 * 1000), read: true, icon: 'bi-graph-up', badge: 'Payment', priority: 'low', ticker: 'MSFT' },
+            { id: '8', type: 'congress', title: 'Senate Trading Activity', content: 'Sen. Richard Burr sold $1.8M in airline stocks before market crash', time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), read: true, icon: 'bi-building', badge: 'Congress', priority: 'high', sentiment: 'bearish' },
+            { id: '9', type: 'market_news', title: 'Market Volatility Alert', content: 'S&P 500 dropped 2.3% - consider rebalancing your portfolio', time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), read: true, icon: 'bi-graph-down', badge: 'Market', priority: 'high', sentiment: 'bearish' },
+            { id: '10', type: 'community', title: 'New Discussion Thread', content: 'Sarah started a discussion about renewable energy stocks', time: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), read: true, icon: 'bi-people', badge: 'Community', priority: 'low' },
+            { id: '11', type: 'congress', title: 'House Committee Vote', content: 'Financial Services Committee votes on banking regulations tomorrow', time: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), read: true, icon: 'bi-building', badge: 'Congress', priority: 'medium' },
+            { id: '12', type: 'market_news', title: 'Earnings Report', content: 'Tesla Q4 earnings beat expectations, stock up 8% pre-market', time: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), read: true, icon: 'bi-graph-up', badge: 'Earnings', priority: 'high', sentiment: 'bullish', ticker: 'TSLA' }
         ];
 
         this.notifications = sampleNotifications;

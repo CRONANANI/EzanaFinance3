@@ -1,0 +1,97 @@
+/**
+ * Ezana Finance - Cards Common
+ * Unified card styling for dashboard, research, watchlist, community.
+ * Depends on: theme-variables.css
+ */
+
+/* Standardize all card types with same base */
+.dashboard-card,
+.research-card,
+.watchlist-card,
+.community-card,
+.analysis-card,
+.market-overview-card,
+.page-content .research-card,
+.page-content .watchlist-card,
+.page-content .community-card,
+.page-content .analysis-card,
+.page-content .market-overview-card,
+.page-content .component-cards-grid .congressional-trading-card,
+.page-content .component-cards-grid .government-contracts-card,
+.page-content .component-cards-grid .house-trading-card,
+.page-content .component-cards-grid .lobbying-activity-card,
+.page-content .component-cards-grid .senator-trading-card,
+.page-content .component-cards-grid .patent-momentum-card,
+.page-content .component-cards-grid .market-sentiment-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-lg, 1.5rem);
+    transition: all var(--transition-base);
+    min-height: 200px;
+}
+
+.dashboard-card:hover,
+.research-card:hover,
+.watchlist-card:hover,
+.community-card:hover,
+.analysis-card:hover,
+.market-overview-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(16, 185, 129, 0.25);
+    box-shadow: var(--shadow-md);
+}
+
+/* Card header pattern */
+.dashboard-card .card-header,
+.research-card .card-header,
+.watchlist-card .card-header,
+.community-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-md, 1rem);
+}
+
+.dashboard-card .card-title,
+.research-card .card-title,
+.watchlist-card .card-title,
+.community-card .card-title {
+    font-size: var(--font-lg, 1.125rem);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.dashboard-card .card-body,
+.research-card .card-body,
+.watchlist-card .card-body,
+.community-card .card-body {
+    flex: 1;
+}
+
+/* Grid consistency */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg, 1.5rem);
+    margin-top: var(--space-xl, 2rem);
+}
+
+@media (max-width: 639px) {
+    .dashboard-card,
+    .research-card,
+    .watchlist-card,
+    .community-card,
+    .analysis-card,
+    .market-overview-card {
+        min-height: 180px;
+        padding: var(--space-md, 1rem) var(--space-lg, 1.5rem);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-md, 1rem);
+    }
+}

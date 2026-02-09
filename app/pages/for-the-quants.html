@@ -10,85 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/layout-common.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+    <!-- Shared page layout and card formatting -->
+    <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/cards-common.css">
+    <link rel="stylesheet" href="../assets/css/metrics-common.css">
+    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
     <style>
-        /* Professional Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-radius: 2rem;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 0.75rem;
-            line-height: 1.1;
-        }
-
-        .hero-description {
-            font-size: 1rem;
-            color: var(--muted-foreground);
-            margin-bottom: 1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-stat {
-            text-align: center;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            min-width: 90px;
-        }
-
-        .hero-stat-number {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.125rem;
-        }
-
-        .hero-stat-label {
-            font-size: 0.75rem;
-            color: var(--muted-foreground);
-            font-weight: 500;
-        }
+        /* Hero: same size and formatting as home dashboard via pages-common.css */
 
         .page-title-shiny {
             background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
@@ -102,35 +36,6 @@
         @keyframes shimmer {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
-        }
-
-        /* Responsive Hero */
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .hero-description {
-                font-size: 0.875rem;
-            }
-            
-            .hero-stats {
-                gap: 0.75rem;
-            }
-            
-            .hero-stat {
-                padding: 0.5rem;
-                min-width: 70px;
-            }
-            
-            .hero-stat-number {
-                font-size: 1.125rem;
-            }
         }
 
         /* Body styling for proper topnav spacing */
@@ -430,7 +335,7 @@
         </div>
     </div>
 
-<div class="container mx-auto px-6 py-12" style="margin-left: 350px;">
+<div class="page-content">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-content">
@@ -454,7 +359,7 @@
     </div>
 
     <!-- Quantitative Models Section -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Quantitative Models</h2>
         <p class="section-description">Advanced mathematical models and algorithms for quantitative analysis</p>
     </div>
@@ -676,7 +581,7 @@
     </div>
 
     <!-- Advanced Analytics Section -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Advanced Analytics</h2>
         <p class="section-description">Sophisticated quantitative analysis tools and techniques</p>
     </div>

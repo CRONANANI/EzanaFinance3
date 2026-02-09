@@ -233,9 +233,31 @@ body.community .topnav {
     transition: var(--nav-transition);
 }
 
-/* Dropdown Menus */
+.dropdown:hover .nav-link .bi-chevron-down,
+.dropdown .nav-link .bi-chevron-down {
+    transition: transform 0.2s ease;
+}
+
+.dropdown:hover .nav-link .bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menus - no gap so hover is maintained when moving to menu */
 .dropdown {
     position: relative;
+    display: inline-block;
+}
+
+/* Invisible bridge between trigger and menu so cursor never leaves dropdown area */
+.dropdown::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: transparent;
+    z-index: calc(var(--nav-z-index) + 2);
 }
 
 .dropdown-content {
@@ -245,24 +267,24 @@ body.community .topnav {
     min-width: 220px;
     background: rgba(30, 41, 59, 0.98);
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 0.75rem;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 0.5rem;
     box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.2), 0 4px 8px -2px rgba(0, 0, 0, 0.1);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
     z-index: calc(var(--nav-z-index) + 1);
-    margin-top: 0.5rem;
-    padding: 0.75rem 0;
+    margin-top: 0;
+    padding: 0.5rem 0;
     pointer-events: none;
 }
 
 .dropdown:hover .dropdown-content,
 .dropdown-content.show {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: translateY(0) !important;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
     pointer-events: auto;
 }
 

@@ -7,19 +7,22 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 ### 🏠 Landing Page & Navigation
 - **Modern Landing Page**: Professional hero section with feature highlights and call-to-action
 - **Responsive Sidebar Navigation**: Collapsible sidebar with smooth animations and mobile support
+- **Research Tools Dropdown**: Hover-friendly menu (no gap between trigger and menu; stays open while moving to options; 200ms close delay)
 - **Dark/Light Theme Toggle**: Seamless theme switching with persistent user preferences
 - **Loading States**: Professional loading indicators and smooth page transitions
 
 ### 📊 Core Portfolio Management
-- **Personal Portfolio Dashboard**: Real-time portfolio tracking with interactive cards showing:
-  - Total portfolio value with daily P&L
-  - Monthly dividend income tracking
-  - Asset allocation breakdown by sector
-  - Performance metrics and risk indicators
-- **Asset Allocation Analysis**: Visual breakdown of investments by asset class, sector, and performance
+- **Personal Portfolio Dashboard**: Real-time portfolio tracking with:
+  - Total portfolio value, daily P&L, and time-preset charts (1D–All) with benchmark comparison (S&P 500, NASDAQ) and export (PNG, CSV, PDF)
+  - **Enhanced Investment Feed** (left sidebar): filters (Show All, Congress Trades, Portfolio Alerts, Community, Market News), priority badges, sentiment, Mark as Read/Dismiss, clickable tickers with quick Buy/Sell
+  - **Expanded metrics**: Today's P&L, Top Performer, Risk Score, Monthly Dividends, Market Performance, Asset Allocation, Volatility Score, Sharpe Ratio, Beta vs Market, Sector Exposure (all expand to charts)
+  - **Quick Actions**: Refresh Data, Generate Report, Add Transaction, Run Analysis, Set Alerts, Add to Watchlist
+  - **Interactive Asset Allocation**: Target vs Actual (Stocks/Bonds), rebalance suggestion, Quick rebalance
+- **Asset Allocation Analysis**: Visual breakdown by asset class and sector; interactive pie and target-vs-actual panel
 - **Risk Assessment**: Automated risk scoring and portfolio balance recommendations
 - **Dividend Tracking**: Monthly dividend income monitoring and projections
-- **Portfolio Charts**: Interactive charts using Chart.js for data visualization
+- **Portfolio Charts**: Chart.js with type toggle (Line/Area), benchmark overlay, and export
+- **Platform consistency**: Uniform hero and layout across all pages; shared card styling on research, watchlist, and community
 
 ### 🏛️ Market Intelligence (Inside The Capitol)
 - **Congressional Trading Data**: Real-time tracking of congress members' stock trades with:
@@ -163,7 +166,9 @@ EzanaFinance3/
 │   ├── assets/                # Static assets
 │   │   ├── css/              # Stylesheets
 │   │   │   ├── styles.css    # Main application styles
-│   │   │   └── shared.css    # Shared component styles
+│   │   │   ├── shared.css    # Shared component styles
+│   │   │   ├── pages-common.css      # Shared layout & hero (all pages)
+│   │   │   └── research-pages-cards.css # Card styling (research/watchlist/community)
 │   │   ├── js/               # JavaScript files
 │   │   │   └── component-loader.js # Component loading utility
 │   │   └── images/           # Image assets
@@ -182,7 +187,10 @@ EzanaFinance3/
 │   │   │   │   ├── market-performance-card.html/css/js
 │   │   │   │   ├── asset-allocation-card.html/css/js
 │   │   │   │   ├── market-news-card.html/css/js
-│   │   │   │   └── portfolio-news-list.html/css/js
+│   │   │   │   ├── portfolio-news-list.html/css/js
+│   │   │   │   ├── chart-controls/          # Chart type, benchmark, export
+│   │   │   │   ├── quick-actions/           # Refresh, Report, Alerts, etc.
+│   │   │   │   └── asset-allocation-panel/  # Target vs Actual, rebalance
 │   │   │   ├── community/         # Community page components
 │   │   │   │   ├── community-cards.html/css/js
 │   │   │   │   ├── trophy-cabinet.html/css/js
@@ -259,6 +267,9 @@ EzanaFinance3/
 | Asset Allocation | `components/pages/home-dashboard/asset-allocation-card.*` | Portfolio allocation breakdown |
 | Market News | `components/pages/home-dashboard/market-news-card.*` | Relevant market news |
 | Portfolio News List | `components/pages/home-dashboard/portfolio-news-list.*` | News list component |
+| Chart Controls | `components/pages/home-dashboard/chart-controls/*` | Chart type (Line/Area/Vs Benchmark), S&P 500/NASDAQ overlay, Export PNG/CSV/PDF |
+| Quick Actions | `components/pages/home-dashboard/quick-actions/*` | Refresh, Report, Transaction, Analysis, Alerts, Watchlist |
+| Asset Allocation Panel | `components/pages/home-dashboard/asset-allocation-panel/*` | Target vs Actual allocation, rebalance CTA |
 
 ### 👥 Community Components
 | Component | File | Purpose |
@@ -295,12 +306,12 @@ EzanaFinance3/
 | Component | File | Purpose |
 |-----------|------|---------|
 | Navigation | `components/shared/navigation.html` | Main navigation bar |
-| Notifications | `components/shared/notifications.html` | Notifications sidebar |
+| Notifications | `components/shared/notifications.html` | Notifications sidebar (Investment Feed) |
 | Navigation Config | `components/navigation/navigation-config.js` | Navigation configuration |
-| Navigation Styles | `components/navigation/navigation.css` | Navigation styling |
-| Navigation Logic | `components/navigation/navigation.js` | Navigation functionality |
-| Notifications Styles | `components/notifications/notifications-sidebar.css` | Notifications styling |
-| Notifications Logic | `components/notifications/notifications-sidebar.js` | Notifications functionality |
+| Navigation Styles | `components/navigation/navigation.css` | Navigation styling (Research Tools dropdown: no gap, hover bridge, close delay) |
+| Navigation Logic | `components/navigation/navigation.js` | Navigation functionality (dropdown hover: 200ms close delay, cancel on re-enter) |
+| Notifications Styles | `components/notifications/notifications-sidebar.css` | Notifications/Investment Feed styling (priority badges, sentiment, ticker actions) |
+| Notifications Logic | `components/notifications/notifications-sidebar.js` | Feed filters, Mark as Read, Dismiss, sample data |
 | Notification Helpers | `components/notifications/notification-helpers.js` | Notification utilities |
 
 ### 🎨 UI Components
@@ -314,6 +325,8 @@ EzanaFinance3/
 |------------|----------|---------|
 | Main Styles | `assets/css/styles.css` | Global application styles |
 | Shared Styles | `assets/css/shared.css` | Shared component styles |
+| Pages Common | `assets/css/pages-common.css` | Shared page layout, hero section (same size/format on all pages), responsive rules |
+| Research Pages Cards | `assets/css/research-pages-cards.css` | Card headers with icons, dark theme overrides for research, watchlist, community pages |
 | Component Loader | `assets/js/component-loader.js` | Dynamic component loading |
 | Images | `assets/images/` | Static image assets |
 
@@ -383,6 +396,12 @@ EzanaFinance3/
 
 ## 📱 Frontend Pages & UI Features
 
+### 📐 Platform-wide layout & consistency
+- **Unified hero**: All pages (home dashboard, watchlist, community, company-research, market-analysis, economic-indicators, for-the-quants, financial-analytics) use the same hero card size and formatting via `assets/css/pages-common.css`. No page-specific hero overrides.
+- **Page layout**: `.page-content` and `.dashboard-page-content` share the same max-width, padding, and responsive behavior. Main content margin adjusts when the Investment Feed sidebar is open or closed (sidebar closed = content expands into full width).
+- **Investment Feed sidebar**: Left sidebar anchored to the top of the viewport; filter tabs (Show All, Congress Trades, Portfolio Alerts, Community, Market News); no separate bell toggle (collapse/expand via header controls). Used on dashboard and other pages that include the notifications component.
+- **Research / Watchlist / Community**: Section headers and content use card styling from `research-pages-cards.css` (card headers with icons, dark theme) so these pages match the home dashboard card style.
+
 ### 🏠 Landing Page (`pages/landing.html`)
 - **Hero Section**: Professional gradient background with compelling call-to-action
 - **Feature Showcase**: Interactive cards highlighting key platform features
@@ -394,12 +413,14 @@ EzanaFinance3/
 
 ### 📊 Home Dashboard (`pages/home-dashboard.html`)
 - **Portfolio Overview**: Real-time portfolio value and performance metrics
-- **Asset Allocation Charts**: Interactive pie charts showing investment distribution
-- **Performance Cards**: Daily P&L, monthly dividends, and risk indicators
-- **Quick Actions**: Refresh data, add transactions, view reports
-- **Responsive Grid Layout**: Adaptive cards that work on all screen sizes
-- **Historical Charts**: Interactive portfolio performance charts
-- **Market News**: Relevant portfolio news feed
+- **Enhanced Investment Feed** (left sidebar): Filters (Show All, Congress Trades, Portfolio Alerts, Community, Market News); priority badges (High/Medium/Low); sentiment (Bullish/Bearish); Mark as Read and Dismiss; clickable tickers with quick Buy/Sell actions
+- **Chart Controls**: Line / Area / Vs Benchmark toggle; S&P 500 and NASDAQ comparison overlay; Export to PNG, CSV, PDF; time presets 1D, 1W, 1M, 3M, 6M, 1Y, 3Y, 5Y, 10Y, All
+- **Expanded Performance Metrics**: Today's P&L, Top Performer, Risk Score, Monthly Dividends, Market Performance, Asset Allocation, plus Volatility Score, Sharpe Ratio, Beta vs Market, Sector Exposure (all clickable to expand with charts)
+- **Quick Actions Panel**: Refresh Data, Generate Report, Add Transaction, Run Analysis, Set Alerts, Add to Watchlist
+- **Interactive Asset Allocation**: Target vs Actual (Stocks/Bonds), rebalance suggestion, Quick rebalance button; View chart opens full pie
+- **Asset Allocation Charts**: Interactive pie charts (sector breakdown) when expanding allocation card
+- **Responsive Grid Layout**: Adaptive cards; glass-morphism styling
+- **Historical Charts**: Interactive portfolio performance charts with benchmark comparison
 
 ### 🏛️ Inside The Capitol (`pages/inside-the-capitol.html`)
 - **Congressional Trading Tracker**: Real-time trading data with filtering
@@ -626,11 +647,13 @@ For support and questions:
 - **v3.2.0**: Added comprehensive user profile management
 - **v3.3.0**: Enhanced responsive design and mobile optimization
 - **v3.4.0**: Professional component architecture and code organization
+- **v3.5.0**: Dashboard enhancements and platform consistency — Enhanced Investment Feed (filters, priority/sentiment badges, Mark as Read, Dismiss, ticker quick actions); Chart controls (Line/Area/Vs Benchmark, S&P 500/NASDAQ overlay, Export PNG/CSV/PDF); expanded metrics (Volatility, Sharpe, Beta, Sector Exposure); Quick Actions panel; Interactive Asset Allocation (Target vs Actual, rebalance); uniform hero and layout across all pages via `pages-common.css`; research/watchlist/community card styling via `research-pages-cards.css`; notifications sidebar anchored to top, filter tabs
+- **v3.5.1**: Research Tools dropdown hover fix — Dropdown stays visible when moving cursor from trigger to menu (CSS: zero gap, invisible bridge; JS: 200ms close delay, cancel on mouse re-enter); chevron rotates when open
 
 ## 🎯 Current Project Status
 
 ### ✅ Completed Features
-- **Complete Frontend Application**: 9 fully functional pages with modern UI
+- **Complete Frontend Application**: 9+ fully functional pages with modern UI
 - **Responsive Design**: Mobile-first approach with desktop enhancements
 - **Dark/Light Theme System**: Seamless theme switching with persistence
 - **FastAPI Backend**: Comprehensive API with all CRUD operations
@@ -643,6 +666,9 @@ For support and questions:
 - **Static File Serving**: Unified deployment with FastAPI serving frontend
 - **Professional Component Architecture**: Modular, reusable component system
 - **Comprehensive Documentation**: Complete file structure and component reference
+- **Dashboard Enhancements (v3.5.0)**: Enhanced Investment Feed with filters and priority/sentiment/tickers; chart controls and benchmark comparison; expanded performance metrics (Volatility, Sharpe, Beta, Sector); Quick Actions panel; Interactive Asset Allocation (Target vs Actual, rebalance)
+- **Platform Consistency**: Uniform hero and page layout across all pages (`pages-common.css`); shared card styling for research, watchlist, and community (`research-pages-cards.css`); Investment Feed sidebar behavior and styling documented
+- **Navigation**: Research Tools dropdown hover behavior fixed (menu remains open while moving to options; closes only when cursor leaves the dropdown area or after brief delay)
 
 ### 🚧 In Progress
 - **Real-time Data Integration**: Live market data and congressional trading updates

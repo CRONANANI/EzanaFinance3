@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/layout-common.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
     <!-- Notifications Sidebar CSS -->
@@ -19,6 +21,11 @@
     <link rel="stylesheet" href="../components/pages/watchlist/set-alert-card/set-alert-card.css">
     <link rel="stylesheet" href="../components/pages/watchlist/export-data-card/export-data-card.css">
     <link rel="stylesheet" href="../components/pages/watchlist/share-list-card/share-list-card.css">
+    <!-- Shared page layout and card formatting -->
+    <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/cards-common.css">
+    <link rel="stylesheet" href="../assets/css/metrics-common.css">
+    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
     <style>
         * {
             margin: 0;
@@ -41,80 +48,7 @@
             padding: 0 2rem;
         }
 
-        /* Professional Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-radius: 2rem;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 0.75rem;
-            line-height: 1.1;
-        }
-
-        .hero-description {
-            font-size: 1rem;
-            color: var(--muted-foreground);
-            margin-bottom: 1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.5;
-        }
-
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-stat {
-            text-align: center;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            min-width: 90px;
-        }
-
-        .hero-stat-number {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.125rem;
-        }
-
-        .hero-stat-label {
-            font-size: 0.75rem;
-            color: var(--muted-foreground);
-            font-weight: 500;
-        }
+        /* Hero: same size and formatting as home dashboard via pages-common.css */
 
         /* Section Headers - Compact */
         .section-header {
@@ -191,35 +125,6 @@
             transform: translateY(-8px);
             box-shadow: var(--shadow-xl);
             border-color: var(--primary);
-        }
-
-        /* Responsive Hero */
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            .hero-description {
-                font-size: 0.875rem;
-            }
-            
-            .hero-stats {
-                gap: 0.75rem;
-            }
-            
-            .hero-stat {
-                padding: 0.5rem;
-                min-width: 70px;
-            }
-            
-            .hero-stat-number {
-                font-size: 1.125rem;
-            }
         }
 
         /* Responsive Design */
@@ -378,7 +283,7 @@
     </div>
 </div>
 
-<div class="container mx-auto px-6 py-12" style="margin-left: 350px;">
+<div class="page-content">
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="hero-content">
@@ -402,7 +307,7 @@
     </div>
 
     <!-- Watchlist Overview Section -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Watchlist Overview</h2>
         <p class="section-description">Your personalized tracking dashboard for stocks and congressional activities</p>
     </div>
@@ -460,13 +365,17 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- People I'm Following -->
         <div class="bg-card rounded-xl p-6 border border-border">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-foreground">People I'm Following</h3>
-                <button onclick="switchTab('inside-the-capitol')" class="text-primary hover:text-primary/80 font-medium text-sm">
-                    Add More
-                </button>
+            <div class="card-header">
+                <h3 class="card-title">People I'm Following</h3>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="card-icon">
+                        <i class="bi bi-person-hearts"></i>
+                    </div>
+                    <button onclick="switchTab('inside-the-capitol')" class="text-primary hover:text-primary/80 font-medium text-sm">
+                        Add More
+                    </button>
+                </div>
             </div>
-            
             <div id="following-section">
                 <div class="space-y-3">
                     <div class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
@@ -528,13 +437,17 @@
 
         <!-- Stock Watchlists -->
         <div class="bg-card rounded-xl p-6 border border-border">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-foreground">Stock Watchlists</h3>
-                <button onclick="createNewWatchlist()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors text-sm">
-                    <i class="bi bi-plus mr-1"></i>New List
-                </button>
+            <div class="card-header">
+                <h3 class="card-title">Stock Watchlists</h3>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="card-icon">
+                        <i class="bi bi-list-ul"></i>
+                    </div>
+                    <button onclick="createNewWatchlist()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors text-sm">
+                        <i class="bi bi-plus mr-1"></i>New List
+                    </button>
+                </div>
             </div>
-            
             <div class="space-y-4">
                 <!-- Tech Stocks Watchlist -->
                 <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -637,7 +550,12 @@
 
     <!-- Recent Activity -->
     <div class="mt-6 bg-card rounded-xl p-6 border border-border">
-        <h3 class="text-lg font-medium text-foreground mb-4">Recent Activity</h3>
+        <div class="card-header">
+            <h3 class="card-title">Recent Activity</h3>
+            <div class="card-icon">
+                <i class="bi bi-activity"></i>
+            </div>
+        </div>
         
         <div class="space-y-4">
             <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -698,7 +616,12 @@
 
     <!-- Alert Settings -->
     <div class="mt-6 bg-card rounded-xl p-6 border border-border">
-        <h3 class="text-lg font-medium text-foreground mb-4">Alert Settings</h3>
+        <div class="card-header">
+            <h3 class="card-title">Alert Settings</h3>
+            <div class="card-icon">
+                <i class="bi bi-bell"></i>
+            </div>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -774,7 +697,12 @@
 
     <!-- Performance Summary -->
     <div class="mt-6 bg-card rounded-xl p-6 border border-border">
-        <h3 class="text-lg font-medium text-foreground mb-4">Watchlist Performance</h3>
+        <div class="card-header">
+            <h3 class="card-title">Watchlist Performance</h3>
+            <div class="card-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="text-center p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
@@ -798,7 +726,7 @@
     </div>
 
     <!-- Quick Actions Section -->
-    <div class="section-header">
+    <div class="section-header section-header-card">
         <h2 class="section-title">Quick Actions</h2>
         <p class="section-description">Manage your watchlists with powerful tools and features</p>
     </div>
