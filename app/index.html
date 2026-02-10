@@ -54,8 +54,8 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="main-content" id="hero-section">
+    <!-- Main Content (Hero Section - triggers center component hide on scroll) -->
+    <main class="main-content hero-section" id="heroSection">
         <div class="content-container">
             <!-- Left Section - Marketing Content -->
             <div class="marketing-content">
@@ -75,8 +75,8 @@
                 </div>
             </div>
 
-            <!-- Right Section - Card Swap Preview -->
-            <div class="card-preview">
+            <!-- Right Section - Card Swap Preview (center component, fades out when hero scrolls past) -->
+            <div class="card-preview antigravity-center-component" id="antigravityCenterComponent">
                 <!-- CardSwap component will be loaded here -->
                 <div id="card-swap-container" style="opacity: 0; transition: opacity 0.5s ease; min-height: 400px;">
                     <!-- Loading state -->
@@ -356,26 +356,7 @@
             }
         });
     </script>
-    <script>
-        (function() {
-            function updateHeroOut() {
-                var hero = document.getElementById('hero-section');
-                var features = document.getElementById('features');
-                if (!hero) return;
-                var heroRect = hero.getBoundingClientRect();
-                var featuresInView = features && features.getBoundingClientRect().top < window.innerHeight;
-                var heroScrolledAway = heroRect.bottom < 0;
-                document.body.classList.toggle('hero-out', heroScrolledAway || featuresInView);
-            }
-            window.addEventListener('scroll', updateHeroOut, { passive: true });
-            window.addEventListener('resize', updateHeroOut);
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', updateHeroOut);
-            } else {
-                updateHeroOut();
-            }
-        })();
-    </script>
+    <script src="assets/js/antigravity-scroll.js"></script>
     <script src="pages/split-text.js"></script>
     <script src="pages/electric-border.js"></script>
     <script src="pages/prism.js"></script>

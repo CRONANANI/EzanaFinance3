@@ -286,10 +286,20 @@ body {
     width: 100%;
 }
 
-/* Right Section - Card Preview */
-/* Hide center card when in features section or past hero (never show in/over features) */
-body.hero-out .card-preview {
-    display: none !important;
+/* Right Section - Card Preview (center component: fades out when hero scrolls past) */
+.antigravity-center-component {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+    pointer-events: auto;
+}
+.antigravity-center-component.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.antigravity-center-component.fading {
+    opacity: 0.5;
 }
 
 .card-preview {
@@ -301,7 +311,6 @@ body.hero-out .card-preview {
     min-height: 600px;
     width: 100%;
     overflow: visible;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
     padding: 2rem;
     margin-left: 4rem;
     padding-top: 6rem;
