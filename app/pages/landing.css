@@ -287,12 +287,9 @@ body {
 }
 
 /* Right Section - Card Preview */
-/* Hide center card-preview when scrolled past hero (antigravity stays full-page) */
+/* Hide center card when in features section or past hero (never show in/over features) */
 body.hero-out .card-preview {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
+    display: none !important;
 }
 
 .card-preview {

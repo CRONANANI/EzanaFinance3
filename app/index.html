@@ -360,10 +360,12 @@
         (function() {
             function updateHeroOut() {
                 var hero = document.getElementById('hero-section');
+                var features = document.getElementById('features');
                 if (!hero) return;
-                var rect = hero.getBoundingClientRect();
-                var bottom = rect.bottom;
-                document.body.classList.toggle('hero-out', bottom < 0);
+                var heroRect = hero.getBoundingClientRect();
+                var featuresInView = features && features.getBoundingClientRect().top < window.innerHeight;
+                var heroScrolledAway = heroRect.bottom < 0;
+                document.body.classList.toggle('hero-out', heroScrolledAway || featuresInView);
             }
             window.addEventListener('scroll', updateHeroOut, { passive: true });
             window.addEventListener('resize', updateHeroOut);
