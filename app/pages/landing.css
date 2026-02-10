@@ -182,6 +182,8 @@ body {
 }
 
 .content-container {
+    position: relative;
+    z-index: 1;
     max-width: 1600px;
     margin: 0 auto;
     padding: 0 2rem;
@@ -285,6 +287,14 @@ body {
 }
 
 /* Right Section - Card Preview */
+/* Hide center card-preview when scrolled past hero (antigravity stays full-page) */
+body.hero-out .card-preview {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
 .card-preview {
     position: relative;
     display: flex;
@@ -294,6 +304,7 @@ body {
     min-height: 600px;
     width: 100%;
     overflow: visible;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
     padding: 2rem;
     margin-left: 4rem;
     padding-top: 6rem;

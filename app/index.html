@@ -18,7 +18,7 @@
 </head>
 <body>
 
-    <!-- Antigravity particle background (Three.js) -->
+    <!-- Antigravity particle background - full page -->
     <div id="antigravity-bg" aria-hidden="true"></div>
 
     <!-- Cursor reveal: circular teaser above particles, below UI -->
@@ -55,7 +55,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" id="hero-section">
         <div class="content-container">
             <!-- Left Section - Marketing Content -->
             <div class="marketing-content">
@@ -355,6 +355,24 @@
                 });
             }
         });
+    </script>
+    <script>
+        (function() {
+            function updateHeroOut() {
+                var hero = document.getElementById('hero-section');
+                if (!hero) return;
+                var rect = hero.getBoundingClientRect();
+                var bottom = rect.bottom;
+                document.body.classList.toggle('hero-out', bottom < 0);
+            }
+            window.addEventListener('scroll', updateHeroOut, { passive: true });
+            window.addEventListener('resize', updateHeroOut);
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', updateHeroOut);
+            } else {
+                updateHeroOut();
+            }
+        })();
     </script>
     <script src="pages/split-text.js"></script>
     <script src="pages/electric-border.js"></script>
