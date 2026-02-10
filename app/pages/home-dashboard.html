@@ -79,13 +79,10 @@
             transition: margin-left 0.3s ease;
         }
 
-        /* Dashboard Overview Grid */
+        /* Dashboard Overview Grid: main card full width, then carousel below */
         .dashboard-overview-grid {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-            align-items: start;
+            display: block;
+            margin-bottom: 1.5rem;
         }
 
         /* Main Card Container */
@@ -393,26 +390,85 @@
             }
         }
 
+        /* Carousel: horizontal strip below hero/main card, roll-through effect */
+        .dashboard-carousel-section {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+        .dashboard-carousel {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            padding: 0.5rem 0 1rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .dashboard-carousel::-webkit-scrollbar {
+            height: 8px;
+        }
+        .dashboard-carousel::-webkit-scrollbar-track {
+            background: rgba(71, 85, 105, 0.3);
+            border-radius: 4px;
+        }
+        .dashboard-carousel::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.5);
+            border-radius: 4px;
+        }
+        .dashboard-carousel-slide {
+            flex: 0 0 auto;
+            scroll-snap-align: start;
+            min-width: 280px;
+            max-width: 320px;
+        }
+        .dashboard-carousel-slide .quick-actions-panel,
+        .dashboard-carousel-slide .asset-allocation-panel {
+            min-width: 100%;
+        }
+        .dashboard-carousel-slide .metric-card {
+            width: 100%;
+        }
+        .carousel-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .carousel-btn {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #10b981;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+        .carousel-btn:hover {
+            background: rgba(16, 185, 129, 0.25);
+        }
+
         @media (min-width: 1025px) {
-            .dashboard-overview-grid {
-                grid-template-columns: 1fr 380px;
-                gap: 2rem;
-            }
             .metrics-grid {
                 gap: 1rem;
             }
         }
 
         @media (max-width: 1024px) {
-            .dashboard-overview-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-                margin-bottom: 2rem;
+            .dashboard-carousel-slide {
+                min-width: 260px;
+                max-width: 280px;
             }
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
             }
+        }
             .metric-card {
                 min-height: 72px;
                 padding: 1rem 1.25rem;
@@ -592,25 +648,26 @@
                 </div>
             </div>
 
-            <!-- Right column: Quick Actions + Metrics + Allocation -->
-            <div class="dashboard-metrics-grid">
-                <!-- Quick Actions Panel -->
-                <div class="quick-actions-panel" id="quick-actions-panel">
-                    <div class="quick-actions-header">
-                        <i class="bi bi-lightning-charge"></i>
-                        <h3>Quick Actions</h3>
-                    </div>
-                    <div class="quick-actions-list">
-                        <button type="button" class="quick-action-item" data-action="refresh"><i class="bi bi-arrow-clockwise"></i><span>Refresh Data</span></button>
-                        <button type="button" class="quick-action-item" data-action="report"><i class="bi bi-file-earmark-bar-graph"></i><span>Generate Report</span></button>
-                        <button type="button" class="quick-action-item" data-action="transaction"><i class="bi bi-currency-dollar"></i><span>Add Transaction</span></button>
-                        <button type="button" class="quick-action-item" data-action="analysis"><i class="bi bi-graph-up-arrow"></i><span>Run Analysis</span></button>
-                        <button type="button" class="quick-action-item" data-action="alerts"><i class="bi bi-bell"></i><span>Set Alerts</span></button>
-                        <button type="button" class="quick-action-item" data-action="watchlist"><i class="bi bi-star"></i><span>Add to Watchlist</span></button>
+        <!-- Carousel: side components in a horizontal roll below the main card -->
+        <div class="dashboard-carousel-section">
+            <div class="dashboard-carousel" id="dashboardCarousel">
+                <div class="dashboard-carousel-slide">
+                    <div class="quick-actions-panel" id="quick-actions-panel">
+                        <div class="quick-actions-header">
+                            <i class="bi bi-lightning-charge"></i>
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div class="quick-actions-list">
+                            <button type="button" class="quick-action-item" data-action="refresh"><i class="bi bi-arrow-clockwise"></i><span>Refresh Data</span></button>
+                            <button type="button" class="quick-action-item" data-action="report"><i class="bi bi-file-earmark-bar-graph"></i><span>Generate Report</span></button>
+                            <button type="button" class="quick-action-item" data-action="transaction"><i class="bi bi-currency-dollar"></i><span>Add Transaction</span></button>
+                            <button type="button" class="quick-action-item" data-action="analysis"><i class="bi bi-graph-up-arrow"></i><span>Run Analysis</span></button>
+                            <button type="button" class="quick-action-item" data-action="alerts"><i class="bi bi-bell"></i><span>Set Alerts</span></button>
+                            <button type="button" class="quick-action-item" data-action="watchlist"><i class="bi bi-star"></i><span>Add to Watchlist</span></button>
+                        </div>
                     </div>
                 </div>
-                <div class="metrics-grid" id="metrics-grid">
-                    <!-- Metric Cards -->
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card positive" data-card="pnl" onclick="expandCard('pnl')">
                         <div class="metric-header">
                             <div class="metric-icon icon-positive">
@@ -623,7 +680,8 @@
                             <div class="metric-subtitle">+0.98% from yesterday</div>
                         </div>
                     </div>
-
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card warning" data-card="performer" onclick="expandCard('performer')">
                         <div class="metric-header">
                             <div class="metric-icon icon-warning">
@@ -636,7 +694,8 @@
                             <div class="metric-subtitle">+12.4% this week</div>
                         </div>
                     </div>
-
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card warning" data-card="risk" onclick="expandCard('risk')">
                         <div class="metric-header">
                             <div class="metric-icon icon-warning">
@@ -649,7 +708,8 @@
                             <div class="metric-subtitle">Moderate risk level</div>
                         </div>
                     </div>
-
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card info" data-card="dividends" onclick="expandCard('dividends')">
                         <div class="metric-header">
                             <div class="metric-icon icon-info">
@@ -662,7 +722,8 @@
                             <div class="metric-subtitle">Next payout: Oct 15</div>
                         </div>
                     </div>
-
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card success" data-card="market" onclick="expandCard('market')">
                         <div class="metric-header">
                             <div class="metric-icon icon-success">
@@ -675,7 +736,8 @@
                             <div class="metric-subtitle">vs S&P 500: +6.2%</div>
                         </div>
                     </div>
-
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card info" data-card="allocation" onclick="expandCard('allocation')">
                         <div class="metric-header">
                             <div class="metric-icon icon-info">
@@ -688,8 +750,8 @@
                             <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
                         </div>
                     </div>
-
-                    <!-- Expanded performance metrics -->
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card warning" data-card="volatility" onclick="expandCard('volatility')">
                         <div class="metric-header">
                             <div class="metric-icon icon-warning"><i class="bi bi-activity"></i></div>
@@ -700,6 +762,8 @@
                             <div class="metric-subtitle">30-day ↓ trend</div>
                         </div>
                     </div>
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card info" data-card="sharpe" onclick="expandCard('sharpe')">
                         <div class="metric-header">
                             <div class="metric-icon icon-info"><i class="bi bi-graph-up-arrow"></i></div>
@@ -710,6 +774,8 @@
                             <div class="metric-subtitle">Risk-adjusted</div>
                         </div>
                     </div>
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card info" data-card="beta" onclick="expandCard('beta')">
                         <div class="metric-header">
                             <div class="metric-icon icon-info"><i class="bi bi-bullseye"></i></div>
@@ -720,6 +786,8 @@
                             <div class="metric-subtitle">S&P 500</div>
                         </div>
                     </div>
+                </div>
+                <div class="dashboard-carousel-slide">
                     <div class="metric-card success" data-card="sector" onclick="expandCard('sector')">
                         <div class="metric-header">
                             <div class="metric-icon icon-success"><i class="bi bi-bar-chart"></i></div>
@@ -731,9 +799,8 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Interactive Asset Allocation Panel -->
-                <div class="asset-allocation-panel" id="asset-allocation-panel">
+                <div class="dashboard-carousel-slide">
+                    <div class="asset-allocation-panel" id="asset-allocation-panel">
                     <div class="allocation-panel-header">
                         <i class="bi bi-pie-chart"></i>
                         <h3>Target vs Actual</h3>
@@ -759,8 +826,14 @@
                     </div>
                     <p class="allocation-suggestion">Stocks above target. Consider rebalancing.</p>
                     <button type="button" class="allocation-rebalance-btn" onclick="rebalanceAllocation()">Quick rebalance</button>
+                    </div>
                 </div>
             </div>
+            <div class="carousel-nav">
+                <button type="button" class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="carousel-btn carousel-next" id="carouselNext" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>
         </div>
 
     <!-- API Service -->
@@ -772,6 +845,31 @@
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script src="../components/pages/home-dashboard/chart-controls/chart-controls.js"></script>
     <script src="../components/pages/home-dashboard/quick-actions/quick-actions.js"></script>
+    <script>
+        (function() {
+            var carousel = document.getElementById('dashboardCarousel');
+            var prevBtn = document.getElementById('carouselPrev');
+            var nextBtn = document.getElementById('carouselNext');
+            if (!carousel || !prevBtn || !nextBtn) return;
+            var slideWidth = 280 + 16;
+            function scrollBy(amount) {
+                carousel.scrollBy({ left: amount, behavior: 'smooth' });
+            }
+            prevBtn.addEventListener('click', function() { scrollBy(-slideWidth); });
+            nextBtn.addEventListener('click', function() { scrollBy(slideWidth); });
+            var autoRoll = setInterval(function() {
+                var maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                if (maxScroll <= 0) return;
+                if (carousel.scrollLeft >= maxScroll - 10) {
+                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scrollBy(slideWidth);
+                }
+            }, 4500);
+            carousel.addEventListener('mouseenter', function() { clearInterval(autoRoll); });
+            carousel.addEventListener('touchstart', function() { clearInterval(autoRoll); }, { passive: true });
+        })();
+    </script>
     <script>
         function rebalanceAllocation() {
             if (window.notificationsSidebar && window.notificationsSidebar.showToast)
@@ -1307,15 +1405,14 @@
             }
         }
 
-        // Move current expanded card to metrics grid
+        // Move current expanded card to carousel (metrics strip below hero)
         function moveCardToMetrics(cardType) {
-            const metricsGrid = document.getElementById('metrics-grid');
-            
+            const carousel = document.getElementById('dashboardCarousel');
+            if (!carousel) return;
+
             if (cardType === 'portfolio') {
-                // Check if portfolio card already exists in metrics grid
                 let portfolioCard = document.querySelector('[data-card="portfolio"]');
                 if (!portfolioCard) {
-                    // Create portfolio metric card
                     portfolioCard = document.createElement('div');
                     portfolioCard.className = 'metric-card positive';
                     portfolioCard.setAttribute('data-card', 'portfolio');
@@ -1332,7 +1429,10 @@
                             <div class="metric-subtitle">+2.28% this year</div>
                         </div>
                     `;
-                    metricsGrid.appendChild(portfolioCard);
+                    var slide = document.createElement('div');
+                    slide.className = 'dashboard-carousel-slide';
+                    slide.appendChild(portfolioCard);
+                    carousel.appendChild(slide);
                 } else {
                     // Show the existing portfolio card
                     portfolioCard.style.display = 'flex';
