@@ -20,9 +20,9 @@
 .page-content .market-overview-card .card-title,
 .page-content .bg-card .card-title,
 .page-content .card.card-content .card-title {
-    font-size: 1.125rem;
+    font-size: var(--font-lg);
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.01em;
 }
@@ -34,14 +34,14 @@
 .page-content .card.card-content .card-icon {
     width: 3rem;
     height: 3rem;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: white;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    box-shadow: var(--shadow-md);
 }
 
 .page-content .research-card .card-icon i,

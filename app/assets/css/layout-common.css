@@ -22,23 +22,15 @@ body {
     transition: margin-left var(--transition-base);
 }
 
-/* When Investment Feed sidebar is open */
-.page-content.sidebar-open,
-.dashboard-page-content.sidebar-open,
-body.sidebar-open .page-content,
-body.sidebar-open .dashboard-page-content {
-    margin-left: var(--sidebar-width, 280px);
-}
-
-/* When Investment Feed sidebar is closed */
-.page-content.sidebar-closed,
-.dashboard-page-content.sidebar-closed {
+/* Default: no sidebar offset (content full width until sidebar opens) */
+.page-content,
+.dashboard-page-content {
     margin-left: 0;
 }
 
-/* Default: sidebar open on dashboard, use variable for offset */
-.page-content,
-.dashboard-page-content {
+/* When Investment Feed sidebar is open - content shifts right smoothly */
+body.sidebar-open .page-content,
+body.sidebar-open .dashboard-page-content {
     margin-left: var(--sidebar-width, 280px);
 }
 
@@ -57,11 +49,14 @@ body.sidebar-open .dashboard-page-content {
     margin-top: var(--space-xl, 2rem);
 }
 
-/* Responsive: reduce offset when viewport narrow */
-@media (max-width: 1023px) {
+/* Responsive: single-column layout, no sidebar offset */
+@media (max-width: 1024px) {
+    body.sidebar-open .page-content,
+    body.sidebar-open .dashboard-page-content {
+        margin-left: 0;
+    }
     .page-content,
     .dashboard-page-content {
-        margin-left: 0;
         padding-left: var(--space-lg, 1.5rem);
         padding-right: var(--space-lg, 1.5rem);
     }
@@ -88,7 +83,7 @@ body.sidebar-open .dashboard-page-content {
 }
 
 /* Tablet */
-@media (min-width: 640px) and (max-width: 1023px) {
+@media (min-width: 640px) and (max-width: 1024px) {
     .dashboard-grid,
     .page-content .dashboard-grid,
     .page-content .research-grid,
@@ -113,14 +108,16 @@ body.sidebar-open .dashboard-page-content {
     }
 }
 
-/* Chart container - consistent height across pages */
+/* Chart container - consistent height, padding, border, legend placement */
 .chart-container {
     position: relative;
     width: 100%;
     height: var(--chart-height-desktop, 400px);
     padding: var(--space-md, 1rem);
-    background: rgba(17, 24, 39, 0.3);
-    border-radius: var(--radius-md, 8px);
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: var(--shadow-sm);
 }
 
 .chart-container canvas {

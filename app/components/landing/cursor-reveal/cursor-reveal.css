@@ -90,6 +90,11 @@
     border-radius: 0 0 12px 12px;
 }
 
+/* Single-card slide: one component fills the slide, full rounded corners */
+.reveal-component:only-child {
+    border-radius: 12px;
+}
+
 .reveal-component + .reveal-gap + .reveal-component {
     /* visual separation handled by gap */
 }
@@ -153,6 +158,10 @@
     background: rgba(139, 92, 246, 0.2);
     color: #8b5cf6;
 }
+.reveal-badge.portfolio {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
 .reveal-notif-title {
     font-weight: 600;
     color: #f1f5f9;
@@ -193,6 +202,44 @@
     color: #94a3b8;
     line-height: 1.4;
     margin-top: 4px;
+}
+
+/* Fed rate single card (economic indicators style + mini graph) */
+.reveal-fed-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.reveal-fed-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #10b981;
+}
+.reveal-fed-change {
+    font-size: 9px;
+    color: #94a3b8;
+}
+.reveal-mini-chart {
+    margin-top: 4px;
+}
+.reveal-mini-chart svg {
+    max-height: 36px;
+}
+
+/* Value at Risk (VaR) formula card – For the Quants */
+.reveal-var .reveal-formula {
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin: 8px 0 6px;
+    letter-spacing: 0.02em;
+}
+.reveal-var .reveal-code-snippet {
+    font-size: 8px;
+    color: #64748b;
+    font-family: ui-monospace, monospace;
 }
 
 @media (max-width: 768px) {

@@ -15,13 +15,19 @@ class NotificationsSidebar {
         this.updateNotificationCount();
         this.setupEventListeners();
         
+        // Sync body class with sidebar state (for content margin)
+        const sidebar = document.getElementById('notifications-sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+            document.body.classList.add('sidebar-open');
+        }
+
         // Open sidebar by default on home dashboard
         if (window.location.pathname.includes('home-dashboard') || window.location.pathname.includes('index')) {
             setTimeout(() => {
                 this.openSidebar();
             }, 100);
         }
-        
+
         console.log('Notifications sidebar initialized with', this.notifications.length, 'notifications');
     }
 
@@ -62,10 +68,10 @@ class NotificationsSidebar {
         const toggle = document.getElementById('notifications-toggle');
         
         sidebar.classList.add('open');
-        toggle.style.transform = 'scale(1.1)';
+        document.body.classList.add('sidebar-open');
+        if (toggle) toggle.style.transform = 'scale(1.1)';
         this.isOpen = true;
         
-        // Mark all as read when opening
         this.markAllAsRead();
     }
 
@@ -74,7 +80,8 @@ class NotificationsSidebar {
         const toggle = document.getElementById('notifications-toggle');
         
         sidebar.classList.remove('open');
-        toggle.style.transform = 'scale(1)';
+        document.body.classList.remove('sidebar-open');
+        if (toggle) toggle.style.transform = 'scale(1)';
         this.isOpen = false;
     }
 
@@ -482,32 +489,26 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Global function for sidebar collapse/expand
+// Global function for sidebar collapse/expand (narrow strip vs full width)
 function toggleSidebarCollapse() {
     const sidebar = document.getElementById('notifications-sidebar');
     const collapseBtn = document.querySelector('.notifications-collapse i');
-    const mainContent = document.querySelector('.container[style*="margin-left: 350px"]');
-    
+    const sidebarWidth = 280; /* match --sidebar-width in theme */
+
     if (sidebar) {
         const isCollapsed = sidebar.classList.contains('collapsed');
-        
+
         if (isCollapsed) {
-            // Expand sidebar
             sidebar.classList.remove('collapsed');
+            document.body.classList.add('sidebar-open');
             if (collapseBtn) {
                 collapseBtn.className = 'bi bi-chevron-double-left';
             }
-            if (mainContent) {
-                mainContent.style.marginLeft = '350px';
-            }
         } else {
-            // Collapse sidebar
             sidebar.classList.add('collapsed');
+            document.body.classList.remove('sidebar-open');
             if (collapseBtn) {
                 collapseBtn.className = 'bi bi-chevron-double-right';
-            }
-            if (mainContent) {
-                mainContent.style.marginLeft = '20px';
             }
         }
     }

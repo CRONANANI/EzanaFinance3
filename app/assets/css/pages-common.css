@@ -72,10 +72,10 @@
 .page-content .hero-stat,
 .dashboard-page-content .hero-stat {
     text-align: center;
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-sm) var(--space-md);
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-secondary);
     backdrop-filter: blur(10px);
     min-width: 72px;
 }
@@ -85,14 +85,14 @@
     display: block;
     font-size: 1rem;
     font-weight: 700;
-    color: var(--primary, #10b981);
+    color: var(--color-primary);
     margin-bottom: 0;
 }
 
 .page-content .hero-stat-label,
 .dashboard-page-content .hero-stat-label {
-    font-size: 0.6875rem;
-    color: var(--muted-foreground, #94a3b8);
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
@@ -105,7 +105,7 @@
 .page-content .section-title {
     font-size: 2rem;
     font-weight: 300;
-    color: var(--foreground, #e2e8f0);
+    color: var(--text-primary);
     margin-bottom: 0.75rem;
     position: relative;
 }
@@ -118,13 +118,13 @@
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, var(--primary, #10b981), var(--accent, #8b5cf6));
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
     border-radius: 2px;
 }
 
 .page-content .section-description {
-    font-size: 1rem;
-    color: var(--muted-foreground, #94a3b8);
+    font-size: var(--font-base);
+    color: var(--text-secondary);
     max-width: 560px;
     margin: 0 auto;
     line-height: 1.6;
@@ -132,7 +132,7 @@
 
 /* Page title shimmer (use with hero-title) */
 .page-title-shiny {
-    background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
     background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -167,15 +167,15 @@
 .page-content .component-cards-grid .senator-trading-card,
 .page-content .component-cards-grid .patent-momentum-card,
 .page-content .component-cards-grid .market-sentiment-card {
-    background: rgba(30, 41, 59, 0.85);
+    background: var(--bg-card);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(71, 85, 105, 0.4);
-    border-radius: 1.25rem;
-    padding: 2rem 2.25rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl) var(--space-lg);
+    box-shadow: var(--shadow-md);
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-base);
     min-height: 200px;
 }
 
@@ -197,7 +197,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, #10b981, transparent);
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
 }
 
 .page-content .research-card:hover,
@@ -213,9 +213,9 @@
 .page-content .component-cards-grid .patent-momentum-card:hover,
 .page-content .component-cards-grid .market-sentiment-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    border-color: #10b981;
-    background: rgba(30, 41, 59, 0.95);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+    background: var(--bg-card-hover);
 }
 
 /* Grid spacing */
@@ -234,14 +234,7 @@
     gap: 1.5rem;
 }
 
-/* Responsive: when sidebar is collapsed, keep 2rem padding to align with nav brand */
-@media (max-width: 900px) {
-    .page-content {
-        margin-left: 0;
-        padding-left: 2rem;
-        padding-right: 2rem;
-    }
-}
+/* Responsive padding handled in layout-common.css at 1024px */
 
 @media (max-width: 768px) {
     .page-content,
