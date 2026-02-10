@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="components/landing/antigravity-bg/antigravity-bg.css">
     <link rel="stylesheet" href="components/landing/cursor-reveal/cursor-reveal.css">
     <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
+    <link rel="stylesheet" href="components/landing/features-section.css">
 </head>
 <body>
 
@@ -54,7 +55,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content" id="features">
+    <main class="main-content">
         <div class="content-container">
             <!-- Left Section - Marketing Content -->
             <div class="marketing-content">
@@ -90,6 +91,9 @@
             </div>
         </div>
     </main>
+
+    <!-- Features Section (Swarmnode-style blocks) -->
+    <div id="features-section-container"></div>
 
     <!-- Resources Section -->
     <section class="stats-section" id="resources">
@@ -149,6 +153,25 @@
     <script src="pages/prism.js"></script>
     <script src="pages/landing.js"></script>
     
+    <!-- Features Section -->
+    <script src="components/landing/features-section.js"></script>
+    <script>
+      (function () {
+        var container = document.getElementById('features-section-container');
+        if (!container) return;
+        fetch('components/landing/features-section.html')
+          .then(function (r) { return r.text(); })
+          .then(function (html) {
+            container.innerHTML = html;
+            if (window.FeaturesSection) {
+              window._featuresSectionInstance = new FeaturesSection(container);
+            }
+          })
+          .catch(function () {
+            container.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:2rem;">Features section could not be loaded.</p>';
+          });
+      })();
+    </script>
     <!-- CardSwap JavaScript -->
     <script src="components/landing/card-swap/card-swap.js"></script>
     <script>
