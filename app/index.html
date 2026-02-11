@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="components/landing/cursor-reveal/cursor-reveal.css">
     <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
     <link rel="stylesheet" href="components/landing/features-section.css">
+    <link rel="stylesheet" href="components/landing/faq-section.css">
 </head>
 <body>
 
@@ -321,13 +322,486 @@
         </div>
     </section>
 
-    <!-- FAQ Section -->
-    <section class="stats-section" id="faq">
-        <div class="stats-container">
-            <h2 style="font-size: 1.5rem; font-weight: 600; color: #e2e8f0; margin-bottom: 1rem; text-align: center;">Frequently Asked Questions</h2>
-            <p style="text-align: center; color: #94a3b8; max-width: 560px; margin: 0 auto;">Common questions about Ezana Finance. For more, visit our help center or contact support.</p>
+    <!-- FAQ Section (inlined so it works without fetch) -->
+    <div id="faq-section-container"><!-- FAQ Section -->
+<section class="faq-section" id="faq">
+  <div class="faq-container">
+    <div class="faq-header">
+      <h2 class="faq-title">Frequently Asked Questions</h2>
+      <p class="faq-subtitle">
+        If you're new to Ezana Finance or looking to maximize the platform experience,
+        this guide will help you learn more about our features and capabilities.
+      </p>
+    </div>
+
+    <div class="faq-categories">
+      <!-- Getting Started -->
+      <div class="faq-category">
+        <button type="button" class="category-toggle" aria-expanded="false">
+        <span class="category-title">Getting Started</span>
+        <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      </button>
+        <div class="faq-items">
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">What is Ezana Finance?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Ezana Finance is a comprehensive investment analytics platform that provides institutional-grade market intelligence and portfolio management tools to individual investors. We combine real-time congressional trading data, advanced portfolio analytics, and market research capabilities into a unified, user-friendly interface.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">How do I get started with Ezana Finance?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Getting started is simple:</p>
+                <ol>
+                  <li>Click "Sign Up" to create your free account</li>
+                  <li>Complete the onboarding process and set your investment preferences</li>
+                  <li>Explore the dashboard and connect your portfolio (optional)</li>
+                  <li>Start tracking congressional trades and market intelligence</li>
+                </ol>
+                <p>You can start with our free tier and upgrade to Pro or Family plans as your needs grow.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Is there a mobile app available?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Currently, Ezana Finance is optimized for web and desktop use through our responsive web application. A dedicated mobile app for iOS and Android is planned for Q3 2026. In the meantime, you can access the full platform through your mobile browser for on-the-go monitoring.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Do I need to connect my brokerage account?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>No, connecting your brokerage account is completely optional. You can:</p>
+                <ul>
+                  <li><strong>Use without connection:</strong> Track congressional trades, government contracts, and market intelligence without linking any accounts</li>
+                  <li><strong>Manual portfolio tracking:</strong> Enter your holdings manually for portfolio analytics</li>
+                  <li><strong>Full integration:</strong> Connect your brokerage for automatic portfolio syncing and real-time updates</li>
+                </ul>
+                <p>All connection methods use bank-level encryption and are completely secure.</p>
+              </div>
+            </div>
+          </div>
         </div>
-    </section>
+      </div>
+
+      <!-- Congressional Trading -->
+      <div class="faq-category">
+        <button type="button" class="category-toggle" aria-expanded="false">
+        <span class="category-title">Congressional Trading</span>
+        <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      </button>
+        <div class="faq-items">
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">How does congressional trading tracking work?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>We aggregate and analyze publicly disclosed congressional stock trades from the STOCK Act filings. Our platform:</p>
+                <ul>
+                  <li>Monitors all 535 members of Congress (House and Senate)</li>
+                  <li>Updates in real-time as new disclosures are filed</li>
+                  <li>Provides advanced filtering by politician, party, chamber, stock, and trade type</li>
+                  <li>Sends instant alerts when followed politicians make trades</li>
+                  <li>Analyzes trading patterns and correlations with committee assignments</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">How current is the congressional trading data?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Our data is updated in real-time as congressional members file their STOCK Act disclosures. By law, members must report trades within 45 days of the transaction date. We process these filings immediately upon public availability, typically within minutes of disclosure.</p>
+                <p>Pro and Family subscribers receive instant push notifications for trades from followed politicians.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Can I follow specific congress members?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes! You can create custom watchlists of congress members you want to track. Features include:</p>
+                <ul>
+                  <li><strong>Follow unlimited members:</strong> Add any senator or representative to your watchlist</li>
+                  <li><strong>Real-time alerts:</strong> Get notified immediately when they file new trades</li>
+                  <li><strong>Portfolio analysis:</strong> View their complete trading history and current holdings</li>
+                  <li><strong>Committee tracking:</strong> See correlations between committee assignments and trading activity</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Is congressional trading data legal to use for investment decisions?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes, absolutely. All congressional trading data we provide is:</p>
+                <ul>
+                  <li>Publicly disclosed information required by the STOCK Act of 2012</li>
+                  <li>Available to anyone through official government channels</li>
+                  <li>Legal to analyze and use for investment research</li>
+                  <li>Aggregated from official House and Senate disclosure databases</li>
+                </ul>
+                <p>We simply make this public information more accessible and actionable. However, this should be one of many factors in your investment decisions, not the sole basis.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portfolio Management -->
+      <div class="faq-category">
+        <button type="button" class="category-toggle" aria-expanded="false">
+        <span class="category-title">Portfolio Management</span>
+        <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      </button>
+        <div class="faq-items">
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">What portfolio analytics features are available?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Ezana Finance provides institutional-grade portfolio analytics including:</p>
+                <ul>
+                  <li><strong>Performance tracking:</strong> Real-time portfolio value, daily P&L, and historical performance charts</li>
+                  <li><strong>Risk assessment:</strong> Automated risk scoring, volatility analysis, and beta calculations</li>
+                  <li><strong>Asset allocation:</strong> Visual breakdowns by asset class, sector, and geographic region</li>
+                  <li><strong>Dividend tracking:</strong> Monthly dividend income projections and payout schedules</li>
+                  <li><strong>Tax optimization:</strong> Tax lot tracking and capital gains/loss reporting</li>
+                  <li><strong>Benchmark comparison:</strong> Compare performance against S&P 500, NASDAQ, and custom indices</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">How do I add transactions to my portfolio?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>You have multiple options for adding transactions:</p>
+                <ol>
+                  <li><strong>Manual entry:</strong> Click "Add Transaction" and enter buy/sell details manually</li>
+                  <li><strong>CSV import:</strong> Upload transaction history from your brokerage</li>
+                  <li><strong>Brokerage sync:</strong> Connect your account for automatic transaction import</li>
+                  <li><strong>API integration:</strong> Use our API to programmatically add transactions</li>
+                </ol>
+                <p>All methods support stocks, ETFs, mutual funds, bonds, and cryptocurrency.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Does Ezana Finance support multiple portfolios?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes! You can create and manage multiple portfolios:</p>
+                <ul>
+                  <li><strong>Free tier:</strong> 1 portfolio</li>
+                  <li><strong>Pro tier:</strong> 5 portfolios</li>
+                  <li><strong>Family tier:</strong> Unlimited portfolios</li>
+                </ul>
+                <p>This is perfect for tracking different strategies, retirement accounts, taxable accounts, or family portfolios separately while viewing consolidated performance.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Can I export my portfolio data?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Absolutely. You can export your data in multiple formats:</p>
+                <ul>
+                  <li><strong>CSV:</strong> For spreadsheet analysis and tax reporting</li>
+                  <li><strong>PDF:</strong> Professional reports for advisors or record-keeping</li>
+                  <li><strong>JSON:</strong> For developers and programmatic access</li>
+                  <li><strong>Excel:</strong> Pre-formatted worksheets with charts and analysis</li>
+                </ul>
+                <p>All exports include complete transaction history, performance metrics, and tax information.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Intelligence -->
+      <div class="faq-category">
+        <button type="button" class="category-toggle" aria-expanded="false">
+        <span class="category-title">Market Intelligence</span>
+        <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      </button>
+        <div class="faq-items">
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">What types of market intelligence data do you provide?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>We provide comprehensive market intelligence across four key areas:</p>
+                <ul>
+                  <li><strong>Government Contracts:</strong> Track contract awards by agency, contractor, and dollar amount</li>
+                  <li><strong>Lobbying Activity:</strong> Monitor lobbying expenditures and correlate with stock performance</li>
+                  <li><strong>Patent Filings:</strong> Analyze innovation trends through patent velocity and citations</li>
+                  <li><strong>Insider Trading:</strong> Track corporate insider buying and selling activity</li>
+                </ul>
+                <p>All data is aggregated from official government sources and updated in real-time.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">How can government contracts data help my investments?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Government contracts often signal future revenue streams and can be leading indicators for stock performance. Our platform helps you:</p>
+                <ul>
+                  <li>Identify companies winning large contracts before market awareness</li>
+                  <li>Track contract trends in specific sectors (defense, healthcare, tech)</li>
+                  <li>Analyze historical correlations between contract awards and stock performance</li>
+                  <li>Set alerts for contract awards to companies in your watchlist</li>
+                </ul>
+                <p>For example, a major defense contractor winning a $500M contract might signal revenue growth for the next 3-5 years.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">What is patent momentum and why does it matter?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Patent momentum measures the rate and quality of patent filings by companies. It's valuable because:</p>
+                <ul>
+                  <li><strong>Innovation indicator:</strong> High patent velocity often precedes new product launches</li>
+                  <li><strong>Competitive moats:</strong> Patent portfolios can create barriers to entry</li>
+                  <li><strong>M&A targets:</strong> Companies with strong patent portfolios are often acquisition targets</li>
+                  <li><strong>Technology trends:</strong> Identify emerging technologies before they go mainstream</li>
+                </ul>
+                <p>We track over 100,000 patents annually across technology, pharmaceutical, and industrial sectors.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data & Security -->
+      <div class="faq-category">
+        <button type="button" class="category-toggle" aria-expanded="false">
+        <span class="category-title">Data & Security</span>
+        <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      </button>
+        <div class="faq-items">
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">How do you protect my financial data?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Security is our top priority. We employ multiple layers of protection:</p>
+                <ul>
+                  <li><strong>Encryption:</strong> All data encrypted at rest (AES-256) and in transit (TLS 1.3)</li>
+                  <li><strong>Authentication:</strong> JWT-based authentication with bcrypt password hashing</li>
+                  <li><strong>Infrastructure:</strong> Hosted on enterprise-grade Azure cloud infrastructure</li>
+                  <li><strong>Compliance:</strong> SOC 2 Type II certified with annual audits</li>
+                  <li><strong>Access control:</strong> Role-based permissions and multi-factor authentication</li>
+                  <li><strong>Monitoring:</strong> 24/7 security monitoring and anomaly detection</li>
+                </ul>
+                <p>We never sell or share your personal financial data with third parties.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Where does your data come from?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>We source data from verified, official sources:</p>
+                <ul>
+                  <li><strong>Congressional trades:</strong> House and Senate STOCK Act disclosure databases</li>
+                  <li><strong>Government contracts:</strong> USAspending.gov and agency contract databases</li>
+                  <li><strong>Lobbying data:</strong> Senate Lobbying Disclosure Database</li>
+                  <li><strong>Patent information:</strong> USPTO (United States Patent and Trademark Office)</li>
+                  <li><strong>Market data:</strong> Licensed feeds from major exchanges and data providers</li>
+                  <li><strong>Company fundamentals:</strong> SEC EDGAR filings and financial data providers</li>
+                </ul>
+                <p>All data is verified, normalized, and quality-checked before being made available.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Can I delete my account and data?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes, you have full control over your data. You can:</p>
+                <ul>
+                  <li><strong>Export data:</strong> Download all your data before deletion</li>
+                  <li><strong>Delete account:</strong> Permanently delete your account from Settings &gt; Account &gt; Delete Account</li>
+                  <li><strong>Data removal:</strong> All personal data is permanently deleted within 30 days</li>
+                  <li><strong>Retention:</strong> We only retain anonymized analytics data as required by law</li>
+                </ul>
+                <p>This complies with GDPR, CCPA, and other data privacy regulations.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing & Plans -->
+      <div class="faq-category">
+        <button type="button" class="category-toggle" aria-expanded="false">
+        <span class="category-title">Pricing & Plans</span>
+        <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
+      </button>
+        <div class="faq-items">
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">What pricing plans are available?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>We offer three pricing tiers to match your needs:</p>
+                <ul>
+                  <li><strong>Free:</strong> $0/month - Basic congressional trading tracking, 1 portfolio, limited filters</li>
+                  <li><strong>Pro:</strong> $29/month - Full congressional trading access, 5 portfolios, all market intelligence, real-time alerts, advanced analytics</li>
+                  <li><strong>Family:</strong> $99/month - Everything in Pro plus unlimited portfolios, family collaboration, API access, priority support</li>
+                </ul>
+                <p>All paid plans come with a 14-day free trial. No credit card required to start.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Can I change plans or cancel anytime?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Absolutely. You have complete flexibility:</p>
+                <ul>
+                  <li><strong>Upgrade:</strong> Upgrade to a higher tier instantly with prorated billing</li>
+                  <li><strong>Downgrade:</strong> Downgrade at the end of your current billing cycle</li>
+                  <li><strong>Cancel:</strong> Cancel anytime from Settings &gt; Billing with no cancellation fees</li>
+                  <li><strong>Pause:</strong> Pause your subscription for up to 3 months</li>
+                </ul>
+                <p>If you cancel, you keep access until the end of your billing period. You can export all your data before canceling.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Do you offer discounts for annual billing?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes! Save with annual billing:</p>
+                <ul>
+                  <li><strong>Pro Annual:</strong> $290/year (save $58 - 2 months free)</li>
+                  <li><strong>Family Annual:</strong> $990/year (save $198 - 2 months free)</li>
+                </ul>
+                <p>We also offer:</p>
+                <ul>
+                  <li><strong>Student discount:</strong> 50% off Pro plans with valid .edu email</li>
+                  <li><strong>Non-profit discount:</strong> 30% off for registered 501(c)(3) organizations</li>
+                  <li><strong>Group licensing:</strong> Custom pricing for 10+ users</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">What payment methods do you accept?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>We accept all major payment methods:</p>
+                <ul>
+                  <li>Credit cards (Visa, Mastercard, American Express, Discover)</li>
+                  <li>Debit cards</li>
+                  <li>PayPal</li>
+                  <li>Apple Pay</li>
+                  <li>Google Pay</li>
+                  <li>ACH bank transfer (Family plans only)</li>
+                </ul>
+                <p>All payments are processed securely through Stripe. We don't store your payment information on our servers.</p>
+              </div>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-question" aria-expanded="false">
+              <span class="question-text">Is there a money-back guarantee?</span>
+              <span class="faq-icon"><i class="bi bi-plus-circle" aria-hidden="true"></i></span>
+            </button>
+            <div class="faq-answer">
+              <div class="answer-content">
+                <p>Yes, we offer a 30-day money-back guarantee on all paid plans. If you're not satisfied within the first 30 days of your initial subscription, contact our support team for a full refund - no questions asked.</p>
+                <p>This applies to both monthly and annual subscriptions, though annual refunds are prorated after 30 days.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-footer">
+      <div class="faq-footer-content">
+        <h3>Still have questions?</h3>
+        <p>Can't find the answer you're looking for? Our support team is here to help.</p>
+        <div class="faq-footer-actions">
+          <a href="#" class="btn-primary">Contact Support</a>
+          <a href="#" class="btn-secondary">View Documentation</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section></div>
 
     <!-- GSAP Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -364,6 +838,14 @@
     
     <!-- Features Section (content inlined above; no fetch so it works with file:// and any server) -->
     <script src="components/landing/features-section.js"></script>
+    <!-- FAQ Section -->
+    <script src="components/landing/faq-section.js"></script>
+    <script>
+      (function () {
+        var container = document.getElementById('faq-section-container');
+        if (container && window.initFAQ) window.initFAQ(container);
+      })();
+    </script>
     <!-- CardSwap JavaScript -->
     <script src="components/landing/card-swap/card-swap.js"></script>
     <script>
