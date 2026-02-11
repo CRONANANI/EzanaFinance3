@@ -87,11 +87,13 @@ function AntigravityCenterHider() {
 
 /** Resources carousel - auto-rotating */
 function ResourcesCarousel() {
-    this.track = document.querySelector('.carousel-track');
-    this.cards = document.querySelectorAll('.resource-card');
-    this.prevButton = document.querySelector('.carousel-prev');
-    this.nextButton = document.querySelector('.carousel-next');
-    this.indicators = document.querySelectorAll('.indicator');
+    var root = document.getElementById('resources');
+    if (!root) return;
+    this.track = root.querySelector('.carousel-track');
+    this.cards = root.querySelectorAll('.resource-card');
+    this.prevButton = root.querySelector('.carousel-prev');
+    this.nextButton = root.querySelector('.carousel-next');
+    this.indicators = root.querySelectorAll('.indicator');
     this.currentIndex = 0;
     this.autoplayInterval = null;
     this.autoplayDelay = 5000;
@@ -110,17 +112,16 @@ function ResourcesCarousel() {
         self.cardsPerView = getCardsPerView();
         self.maxIndex = Math.max(0, self.cards.length - self.cardsPerView);
         self.currentIndex = Math.min(self.currentIndex, self.maxIndex);
-        var gap = 32;
-        var cardWidth = self.cards[0] && self.cards[0].offsetWidth;
-        if (!cardWidth && self.track.parentElement) {
-            var w = self.track.parentElement.offsetWidth;
-            cardWidth = (w - gap * (self.cardsPerView - 1)) / self.cardsPerView;
-        }
-        cardWidth = cardWidth || 320;
+        var gap = 32; /* 2rem */
+        var trackContainer = self.track.parentElement;
+        var containerWidth = trackContainer ? trackContainer.offsetWidth : 0;
+        if (!containerWidth) containerWidth = root.offsetWidth || window.innerWidth;
+        var cardWidth = (containerWidth - gap * (self.cardsPerView - 1)) / self.cardsPerView;
+        if (cardWidth <= 0) cardWidth = 300;
         var offset = -(self.currentIndex * (cardWidth + gap));
-        self.track.style.transform = 'translateX(' + offset + 'px)';
+        self.track.style.transform = 'translateX(' + Math.round(offset) + 'px)';
         if (self.prevButton) self.prevButton.disabled = self.currentIndex === 0;
-        if (self.nextButton) self.nextButton.disabled = self.currentIndex >= self.maxIndex;
+        if (self.nextButton) self.nextButton.disabled = self.currentIndex >= self.maxIndex && self.maxIndex > 0;
         self.indicators.forEach(function (ind, i) {
             ind.classList.toggle('active', i === self.currentIndex);
         });
@@ -145,12 +146,12 @@ function ResourcesCarousel() {
         self.currentIndex = Math.min(index, self.maxIndex);
         updateCarousel();
     };
-    if (this.prevButton) this.prevButton.addEventListener('click', this.prev);
-    if (this.nextButton) this.nextButton.addEventListener('click', next);
+    if (this.prevButton) this.prevButton.addEventListener('click', function () { self.prev(); });
+    if (this.nextButton) this.nextButton.addEventListener('click', function () { next(); });
     this.indicators.forEach(function (ind, i) {
         ind.addEventListener('click', function () { self.goToSlide(i); });
     });
-    var container = document.querySelector('.resources-carousel');
+    var container = root.querySelector('.resources-carousel');
     if (container) {
         container.addEventListener('mouseenter', function () {
             if (self.autoplayInterval) clearInterval(self.autoplayInterval);
@@ -167,6 +168,8 @@ function ResourcesCarousel() {
         updateCarousel();
     });
     updateCarousel();
+    /* Defer second update in case layout wasn't ready (e.g. section off-screen) */
+    setTimeout(updateCarousel, 100);
     this.autoplayInterval = setInterval(next, this.autoplayDelay);
 }
 
