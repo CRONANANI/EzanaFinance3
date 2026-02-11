@@ -5,8 +5,11 @@ A comprehensive investment analytics platform built with Python (FastAPI) backen
 ## 🚀 Features
 
 ### 🏠 Landing Page & Navigation
-- **Modern Landing Page**: Professional hero section with feature highlights and call-to-action
-- **Responsive Sidebar Navigation**: Collapsible sidebar with smooth animations and mobile support
+- **Main Landing (`app/index.html`)**: Hero with left-aligned “Ezana Finance” title, “Your Network Is Your Net Worth” tagline, subtitle, and Sign Up / Learn More CTAs (no logo in hero). Antigravity particle background; center card preview hides on scroll past hero.
+- **Nav Bar**: “Ezana Finance” text only (no logo icon); nav container aligned with hero content (max-width 1400px, padding 2rem).
+- **FAQ Section**: Two-level accordion—categories (Getting Started, Congressional Trading, etc.) collapse by default; click category to expand questions, then click a question to reveal the answer. FAQ HTML inlined so it works without fetch (e.g. file://).
+- **Landing Interactivity**: Congressional trading filter pills (All / Purchases / Sales / House / Senate); portfolio metrics auto-rotation; market intelligence tabs (Contracts / Lobbying / Patents); community feed Trending vs Recent toggle; CTAs wired (e.g. Explore Congressional Trading, Discover Market Intelligence → #resources, Join Community → sign-up); resources section with market intelligence links; contact support modal (mailto) from FAQ footer.
+- **Responsive Sidebar Navigation**: Collapsible sidebar with smooth animations and mobile support (on other pages)
 - **Research Tools Dropdown**: Hover-friendly menu (no gap between trigger and menu; stays open while moving to options; 200ms close delay)
 - **Dark/Light Theme Toggle**: Seamless theme switching with persistent user preferences
 - **Loading States**: Professional loading indicators and smooth page transitions
@@ -402,14 +405,14 @@ EzanaFinance3/
 - **Investment Feed sidebar**: Left sidebar anchored to the top of the viewport; filter tabs (Show All, Congress Trades, Portfolio Alerts, Community, Market News); no separate bell toggle (collapse/expand via header controls). Used on dashboard and other pages that include the notifications component.
 - **Research / Watchlist / Community**: Section headers and content use card styling from `research-pages-cards.css` (card headers with icons, dark theme) so these pages match the home dashboard card style.
 
-### 🏠 Landing Page (`pages/landing.html`)
-- **Hero Section**: Professional gradient background with compelling call-to-action
-- **Feature Showcase**: Interactive cards highlighting key platform features
-- **Responsive Design**: Optimized for all device sizes
-- **Smooth Animations**: CSS transitions and hover effects
-- **Prism Background**: 3D WebGL background effect
-- **Split Text Animation**: Animated text effects
-- **Electric Border**: Interactive button animations
+### 🏠 Main Landing Page (`app/index.html`)
+- **Hero Section**: Left-aligned layout—title “Ezana Finance”, tagline “Your Network Is Your Net Worth”, subtitle, and Sign Up / Learn More buttons on a consistent left edge; no logo or image beside the title. Antigravity particle background; card preview (right) fades out when scrolling past hero.
+- **Navigation**: Brand “Ezana Finance” text only (white logo icon removed); nav bar aligned with hero (same max-width and padding).
+- **Features Section**: Inlined feature blocks with congressional trading (filter pills), portfolio metrics (rotating sets), market intelligence (Contracts / Lobbying / Patents tabs), and community feed (Trending / Recent). CTAs link to docs, #resources, and sign-up.
+- **Resources Section**: Market Intelligence Resources grid with links to congressional trading, company research, market analysis, economic indicators, government contracts, lobbying, patents, and financial analytics.
+- **FAQ Section**: Inlined two-level accordion—categories collapsed by default; click to expand questions, then click a question for the answer. “Contact Support” opens a modal with mailto form.
+- **Responsive Design**: Optimized for all device sizes with consistent left alignment at all breakpoints.
+- **Other**: Prism/Split Text/Electric Border assets available; Bootstrap Icons.
 
 ### 📊 Home Dashboard (`pages/home-dashboard.html`)
 - **Portfolio Overview**: Real-time portfolio value and performance metrics
@@ -649,6 +652,7 @@ For support and questions:
 - **v3.4.0**: Professional component architecture and code organization
 - **v3.5.0**: Dashboard enhancements and platform consistency — Enhanced Investment Feed (filters, priority/sentiment badges, Mark as Read, Dismiss, ticker quick actions); Chart controls (Line/Area/Vs Benchmark, S&P 500/NASDAQ overlay, Export PNG/CSV/PDF); expanded metrics (Volatility, Sharpe, Beta, Sector Exposure); Quick Actions panel; Interactive Asset Allocation (Target vs Actual, rebalance); uniform hero and layout across all pages via `pages-common.css`; research/watchlist/community card styling via `research-pages-cards.css`; notifications sidebar anchored to top, filter tabs
 - **v3.5.1**: Research Tools dropdown hover fix — Dropdown stays visible when moving cursor from trigger to menu (CSS: zero gap, invisible bridge; JS: 200ms close delay, cancel on mouse re-enter); chevron rotates when open
+- **v3.5.2**: Main landing overhauls — Hero: “Ezana Finance” title and “Your Network Is Your Net Worth” tagline, left-aligned; no logo in hero. Nav: white logo icon removed; brand text only; nav aligned with hero (1400px + 2rem). FAQ: two-level accordion (categories expand/collapse, then questions); inlined so it works without fetch; fixed double-init so category toggles work. Landing interactivity: congressional trading filters, portfolio metrics rotation, market intelligence tabs (Contracts/Lobbying/Patents), community feed Trending/Recent, CTAs and resources section, contact support modal.
 
 ## 🎯 Current Project Status
 
@@ -669,6 +673,7 @@ For support and questions:
 - **Dashboard Enhancements (v3.5.0)**: Enhanced Investment Feed with filters and priority/sentiment/tickers; chart controls and benchmark comparison; expanded performance metrics (Volatility, Sharpe, Beta, Sector); Quick Actions panel; Interactive Asset Allocation (Target vs Actual, rebalance)
 - **Platform Consistency**: Uniform hero and page layout across all pages (`pages-common.css`); shared card styling for research, watchlist, and community (`research-pages-cards.css`); Investment Feed sidebar behavior and styling documented
 - **Navigation**: Research Tools dropdown hover behavior fixed (menu remains open while moving to options; closes only when cursor leaves the dropdown area or after brief delay)
+- **Main landing (v3.5.2)**: Hero and nav left-aligned with no logo in hero and no icon beside “Ezana Finance” in nav; FAQ two-level accordion (categories/questions) inlined and working; congressional filters, portfolio rotation, intel tabs, community toggle, resources section, contact modal
 
 ### 🚧 In Progress
 - **Real-time Data Integration**: Live market data and congressional trading updates
