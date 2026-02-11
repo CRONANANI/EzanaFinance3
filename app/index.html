@@ -934,8 +934,15 @@
     <script src="components/landing/faq-section.js"></script>
     <script>
       (function () {
-        var container = document.getElementById('faq-section-container');
-        if (container && window.initFAQ) window.initFAQ(container);
+        function init() {
+          var container = document.getElementById('faq-section-container');
+          if (container && window.initFAQ) window.initFAQ(container);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
       })();
     </script>
     <!-- CardSwap JavaScript -->

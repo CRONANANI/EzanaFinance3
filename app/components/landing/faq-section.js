@@ -83,13 +83,6 @@
   window.initFAQAccordion = initFAQAccordion;
   window.initFAQ = initFAQ;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      var section = document.querySelector('.faq-section');
-      if (section) initFAQ(section);
-    });
-  } else {
-    var section = document.querySelector('.faq-section');
-    if (section) initFAQ(section);
-  }
+  // No auto-init here: index.html calls initFAQ(container) once. Auto-init would run
+  // again on DOMContentLoaded and attach duplicate listeners (toggle would fire twice = no visible change).
 })();
