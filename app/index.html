@@ -56,8 +56,7 @@
     <main class="main-content hero-section" id="heroSection">
         <div class="content-container hero-container">
             <div class="hero-content">
-                <h1 class="hero-title">Ezana Finance</h1>
-                <h2 class="hero-tagline">Your Network Is Your Net Worth</h2>
+                <h1 class="hero-tagline">Your Network Is Your Net Worth</h1>
                 <p class="hero-subtitle">
                     Track congressional trades, analyze market intelligence, and manage your portfolio
                     with institutional-grade tools designed for individual investors.
@@ -307,52 +306,90 @@
 </section>
     </div>
 
-    <!-- Market Intelligence Resources Section -->
+    <!-- Market Intelligence Resources Section (Carousel) -->
     <section class="resources-section" id="resources">
       <div class="resources-container">
-        <h2>Market Intelligence Resources</h2>
-        <p>Comprehensive documentation of all data sources and analytics</p>
-        <div class="resources-grid">
-          <div class="resource-card">
-            <h3>Congressional Trading</h3>
-            <p>Track stock trades by members of Congress with real-time STOCK Act disclosure data.</p>
-            <a href="https://docs.ezanafinance.com/congressional-trading" target="_blank" rel="noopener">Learn More &rarr;</a>
+        <div class="resources-header">
+          <h2>Market Intelligence Resources</h2>
+          <p>Comprehensive documentation of all data sources and analytics powered by institutional-grade providers</p>
+        </div>
+        <div class="resources-carousel">
+          <button type="button" class="carousel-prev" aria-label="Previous">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+          </button>
+          <div class="carousel-track-container">
+            <div class="carousel-track">
+              <div class="resource-card">
+                <div class="resource-icon"><i class="bi bi-building" aria-hidden="true"></i></div>
+                <h3>Congressional Trading</h3>
+                <p class="resource-description">Track stock trades by members of Congress with real-time STOCK Act disclosure data.</p>
+                <p class="resource-source">Data provided by <strong>Quiver Quantitative</strong> from official House and Senate disclosure databases</p>
+                <a href="https://docs.ezanafinance.com/congressional-trading" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon contracts"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></div>
+                <h3>Government Contracts</h3>
+                <p class="resource-description">Track federal contract awards and analyze their market impact.</p>
+                <p class="resource-source">Data sourced from <strong>USAspending.gov</strong> and aggregated by Quiver Quantitative</p>
+                <a href="https://docs.ezanafinance.com/government-contracts" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon lobbying"><i class="bi bi-megaphone" aria-hidden="true"></i></div>
+                <h3>Lobbying Activity</h3>
+                <p class="resource-description">Monitor lobbying expenditures and correlate with stock performance.</p>
+                <p class="resource-source">Data from <strong>Senate Lobbying Disclosure Database</strong> processed by Quiver Quantitative</p>
+                <a href="https://docs.ezanafinance.com/lobbying" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon patents"><i class="bi bi-lightbulb" aria-hidden="true"></i></div>
+                <h3>Patent Filings</h3>
+                <p class="resource-description">Analyze innovation trends through patent velocity and citations.</p>
+                <p class="resource-source">Patent data from <strong>USPTO</strong> (United States Patent and Trademark Office)</p>
+                <a href="https://docs.ezanafinance.com/patents" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon research"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></div>
+                <h3>Company Research</h3>
+                <p class="resource-description">In-depth financial analysis, ratios, and peer comparisons for publicly traded companies.</p>
+                <p class="resource-source">Financial data from <strong>SEC EDGAR</strong> filings and licensed market data providers</p>
+                <a href="pages/company-research.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon market"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></div>
+                <h3>Market Analysis</h3>
+                <p class="resource-description">Sector performance, market trends, and technical analysis tools.</p>
+                <p class="resource-source">Real-time market data from <strong>major exchanges</strong> and technical indicators</p>
+                <a href="pages/market-analysis.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon economic"><i class="bi bi-currency-dollar" aria-hidden="true"></i></div>
+                <h3>Economic Indicators</h3>
+                <p class="resource-description">Real-time economic data, Fed tracking, and recession probability models.</p>
+                <p class="resource-source">Economic data from <strong>Federal Reserve</strong> and Bureau of Economic Analysis</p>
+                <a href="pages/economic-indicators.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+              <div class="resource-card">
+                <div class="resource-icon analytics"><i class="bi bi-calculator" aria-hidden="true"></i></div>
+                <h3>Financial Analytics</h3>
+                <p class="resource-description">Advanced financial health scoring and portfolio optimization.</p>
+                <p class="resource-source">Proprietary algorithms using <strong>institutional-grade models</strong> and market data</p>
+                <a href="pages/financial-analytics.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              </div>
+            </div>
           </div>
-          <div class="resource-card">
-            <h3>Company Research</h3>
-            <p>In-depth financial analysis, ratios, and peer comparisons for publicly traded companies.</p>
-            <a href="pages/company-research.html">Learn More &rarr;</a>
-          </div>
-          <div class="resource-card">
-            <h3>Market Analysis</h3>
-            <p>Sector performance, market trends, and technical analysis tools.</p>
-            <a href="pages/market-analysis.html">Learn More &rarr;</a>
-          </div>
-          <div class="resource-card">
-            <h3>Economic Indicators</h3>
-            <p>Real-time economic data, Fed tracking, and recession probability models.</p>
-            <a href="pages/economic-indicators.html">Learn More &rarr;</a>
-          </div>
-          <div class="resource-card">
-            <h3>Government Contracts</h3>
-            <p>Track federal contract awards and analyze their market impact.</p>
-            <a href="https://docs.ezanafinance.com/government-contracts" target="_blank" rel="noopener">Learn More &rarr;</a>
-          </div>
-          <div class="resource-card">
-            <h3>Lobbying Activity</h3>
-            <p>Monitor lobbying expenditures and correlate with stock performance.</p>
-            <a href="https://docs.ezanafinance.com/lobbying" target="_blank" rel="noopener">Learn More &rarr;</a>
-          </div>
-          <div class="resource-card">
-            <h3>Patent Filings</h3>
-            <p>Analyze innovation trends through patent velocity and citations.</p>
-            <a href="https://docs.ezanafinance.com/patents" target="_blank" rel="noopener">Learn More &rarr;</a>
-          </div>
-          <div class="resource-card">
-            <h3>Financial Analytics</h3>
-            <p>Advanced financial health scoring and portfolio optimization.</p>
-            <a href="pages/financial-analytics.html">Learn More &rarr;</a>
-          </div>
+          <button type="button" class="carousel-next" aria-label="Next">
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="carousel-indicators">
+          <button type="button" class="indicator active" data-slide="0" aria-label="Slide 1"></button>
+          <button type="button" class="indicator" data-slide="1" aria-label="Slide 2"></button>
+          <button type="button" class="indicator" data-slide="2" aria-label="Slide 3"></button>
+          <button type="button" class="indicator" data-slide="3" aria-label="Slide 4"></button>
+          <button type="button" class="indicator" data-slide="4" aria-label="Slide 5"></button>
+          <button type="button" class="indicator" data-slide="5" aria-label="Slide 6"></button>
+          <button type="button" class="indicator" data-slide="6" aria-label="Slide 7"></button>
+          <button type="button" class="indicator" data-slide="7" aria-label="Slide 8"></button>
         </div>
       </div>
     </section>

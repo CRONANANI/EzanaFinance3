@@ -66,8 +66,119 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
+/** Hide center card when scrolling into features section (black to greenish transition) */
+function AntigravityCenterHider() {
+    this.heroSection = document.getElementById('heroSection');
+    this.featuresSection = document.getElementById('features');
+    this.centerComponent = document.getElementById('antigravityCenterComponent');
+    if (!this.heroSection || !this.featuresSection || !this.centerComponent) return;
+    var self = this;
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                self.centerComponent.classList.add('hidden');
+            } else {
+                self.centerComponent.classList.remove('hidden');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '-100px 0px 0px 0px' });
+    observer.observe(this.featuresSection);
+}
+
+/** Resources carousel - auto-rotating */
+function ResourcesCarousel() {
+    this.track = document.querySelector('.carousel-track');
+    this.cards = document.querySelectorAll('.resource-card');
+    this.prevButton = document.querySelector('.carousel-prev');
+    this.nextButton = document.querySelector('.carousel-next');
+    this.indicators = document.querySelectorAll('.indicator');
+    this.currentIndex = 0;
+    this.autoplayInterval = null;
+    this.autoplayDelay = 5000;
+    var self = this;
+    function getCardsPerView() {
+        var w = window.innerWidth;
+        if (w < 768) return 1;
+        if (w < 1024) return 2;
+        return 3;
+    }
+    this.getCardsPerView = getCardsPerView;
+    this.cardsPerView = getCardsPerView();
+    this.maxIndex = Math.max(0, (this.cards.length || 0) - this.cardsPerView);
+    if (!this.track || !this.cards.length) return;
+    function updateCarousel() {
+        self.cardsPerView = getCardsPerView();
+        self.maxIndex = Math.max(0, self.cards.length - self.cardsPerView);
+        self.currentIndex = Math.min(self.currentIndex, self.maxIndex);
+        var gap = 32;
+        var cardWidth = self.cards[0] && self.cards[0].offsetWidth;
+        if (!cardWidth && self.track.parentElement) {
+            var w = self.track.parentElement.offsetWidth;
+            cardWidth = (w - gap * (self.cardsPerView - 1)) / self.cardsPerView;
+        }
+        cardWidth = cardWidth || 320;
+        var offset = -(self.currentIndex * (cardWidth + gap));
+        self.track.style.transform = 'translateX(' + offset + 'px)';
+        if (self.prevButton) self.prevButton.disabled = self.currentIndex === 0;
+        if (self.nextButton) self.nextButton.disabled = self.currentIndex >= self.maxIndex;
+        self.indicators.forEach(function (ind, i) {
+            ind.classList.toggle('active', i === self.currentIndex);
+        });
+    }
+    this.updateCarousel = updateCarousel;
+    function next() {
+        if (self.currentIndex < self.maxIndex) {
+            self.currentIndex++;
+        } else {
+            self.currentIndex = 0;
+        }
+        updateCarousel();
+    }
+    this.next = next;
+    this.prev = function () {
+        if (self.currentIndex > 0) {
+            self.currentIndex--;
+            updateCarousel();
+        }
+    };
+    this.goToSlide = function (index) {
+        self.currentIndex = Math.min(index, self.maxIndex);
+        updateCarousel();
+    };
+    if (this.prevButton) this.prevButton.addEventListener('click', this.prev);
+    if (this.nextButton) this.nextButton.addEventListener('click', next);
+    this.indicators.forEach(function (ind, i) {
+        ind.addEventListener('click', function () { self.goToSlide(i); });
+    });
+    var container = document.querySelector('.resources-carousel');
+    if (container) {
+        container.addEventListener('mouseenter', function () {
+            if (self.autoplayInterval) clearInterval(self.autoplayInterval);
+            self.autoplayInterval = null;
+        });
+        container.addEventListener('mouseleave', function () {
+            self.autoplayInterval = setInterval(next, self.autoplayDelay);
+        });
+    }
+    window.addEventListener('resize', function () {
+        self.cardsPerView = getCardsPerView();
+        self.maxIndex = Math.max(0, self.cards.length - self.cardsPerView);
+        self.currentIndex = Math.min(self.currentIndex, self.maxIndex);
+        updateCarousel();
+    });
+    updateCarousel();
+    this.autoplayInterval = setInterval(next, this.autoplayDelay);
+}
+
 // Add hover effects to phone preview
 document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('antigravityCenterComponent')) {
+        window.antigravityCenterHider = new AntigravityCenterHider();
+    }
+    if (document.querySelector('.resources-carousel')) {
+        window.resourcesCarousel = new ResourcesCarousel();
+    }
+
     const phoneContainer = document.querySelector('.phone-container');
     if (phoneContainer) {
         phoneContainer.addEventListener('mouseenter', function() {
