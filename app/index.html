@@ -134,11 +134,11 @@
                 </div>
               </div>
               <div class="feed-filters">
-                <button type="button" class="filter-pill active" aria-pressed="true">All Trades</button>
-                <button type="button" class="filter-pill" aria-pressed="false">Purchases</button>
-                <button type="button" class="filter-pill" aria-pressed="false">Sales</button>
-                <button type="button" class="filter-pill" aria-pressed="false">House</button>
-                <button type="button" class="filter-pill" aria-pressed="false">Senate</button>
+                <button type="button" class="filter-pill active" data-filter="all" aria-pressed="true">All Trades</button>
+                <button type="button" class="filter-pill" data-filter="purchases" aria-pressed="false">Purchases</button>
+                <button type="button" class="filter-pill" data-filter="sales" aria-pressed="false">Sales</button>
+                <button type="button" class="filter-pill" data-filter="house" aria-pressed="false">House</button>
+                <button type="button" class="filter-pill" data-filter="senate" aria-pressed="false">Senate</button>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@
             <div class="stat-item"><span class="stat-value">535</span><span class="stat-label">Congress Members</span></div>
             <div class="stat-item"><span class="stat-value">Real-time</span><span class="stat-label">Updates</span></div>
           </div>
-          <a href="pages/inside-the-capitol.html" class="feature-cta"><span>Explore Congressional Trading</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          <a href="https://docs.ezanafinance.com/congressional-trading" class="feature-cta" target="_blank" rel="noopener"><span>Explore Congressional Trading</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
       </div>
     </div>
@@ -207,11 +207,11 @@
           <div class="visual-container intelligence-visual">
             <div class="intelligence-dashboard">
               <div class="intelligence-tabs">
-                <button type="button" class="intel-tab active" aria-selected="true">Contracts</button>
-                <button type="button" class="intel-tab" aria-selected="false">Lobbying</button>
-                <button type="button" class="intel-tab" aria-selected="false">Patents</button>
+                <button type="button" class="intel-tab active" data-tab="contracts" aria-selected="true">Contracts</button>
+                <button type="button" class="intel-tab" data-tab="lobbying" aria-selected="false">Lobbying</button>
+                <button type="button" class="intel-tab" data-tab="patents" aria-selected="false">Patents</button>
               </div>
-              <div class="intel-panel">
+              <div class="intel-panel" data-panel="contracts">
                 <div class="intel-item">
                   <div class="intel-icon contracts"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></div>
                   <div class="intel-content">
@@ -240,6 +240,12 @@
                   </div>
                 </div>
               </div>
+              <div class="intel-panel" data-panel="lobbying" style="display: none;">
+                <!-- Lobbying content filled by JS -->
+              </div>
+              <div class="intel-panel" data-panel="patents" style="display: none;">
+                <!-- Patents content filled by JS -->
+              </div>
             </div>
           </div>
         </div>
@@ -251,7 +257,7 @@
             <div class="stat-item"><span class="stat-value">$3.7B</span><span class="stat-label">Lobbying Tracked</span></div>
             <div class="stat-item"><span class="stat-value">100K+</span><span class="stat-label">Patents Filed</span></div>
           </div>
-          <a href="pages/company-research.html" class="feature-cta"><span>Discover Market Intelligence</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          <a href="#resources" class="feature-cta"><span>Discover Market Intelligence</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
       </div>
     </div>
@@ -265,7 +271,7 @@
             <div class="stat-item"><span class="stat-value">50K+</span><span class="stat-label">Shared Insights</span></div>
             <div class="stat-item"><span class="stat-value">Daily</span><span class="stat-label">Discussions</span></div>
           </div>
-          <a href="pages/community.html" class="feature-cta"><span>Join the Community</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          <a href="pages/sign-up.html" class="feature-cta"><span>Join the Community</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
         </div>
         <div class="feature-visual">
           <div class="visual-container community-visual">
@@ -304,8 +310,58 @@
 </section>
     </div>
 
-    <!-- Resources Section -->
-    <section class="stats-section" id="resources">
+    <!-- Market Intelligence Resources Section -->
+    <section class="resources-section" id="resources">
+      <div class="resources-container">
+        <h2>Market Intelligence Resources</h2>
+        <p>Comprehensive documentation of all data sources and analytics</p>
+        <div class="resources-grid">
+          <div class="resource-card">
+            <h3>Congressional Trading</h3>
+            <p>Track stock trades by members of Congress with real-time STOCK Act disclosure data.</p>
+            <a href="https://docs.ezanafinance.com/congressional-trading" target="_blank" rel="noopener">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Company Research</h3>
+            <p>In-depth financial analysis, ratios, and peer comparisons for publicly traded companies.</p>
+            <a href="pages/company-research.html">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Market Analysis</h3>
+            <p>Sector performance, market trends, and technical analysis tools.</p>
+            <a href="pages/market-analysis.html">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Economic Indicators</h3>
+            <p>Real-time economic data, Fed tracking, and recession probability models.</p>
+            <a href="pages/economic-indicators.html">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Government Contracts</h3>
+            <p>Track federal contract awards and analyze their market impact.</p>
+            <a href="https://docs.ezanafinance.com/government-contracts" target="_blank" rel="noopener">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Lobbying Activity</h3>
+            <p>Monitor lobbying expenditures and correlate with stock performance.</p>
+            <a href="https://docs.ezanafinance.com/lobbying" target="_blank" rel="noopener">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Patent Filings</h3>
+            <p>Analyze innovation trends through patent velocity and citations.</p>
+            <a href="https://docs.ezanafinance.com/patents" target="_blank" rel="noopener">Learn More &rarr;</a>
+          </div>
+          <div class="resource-card">
+            <h3>Financial Analytics</h3>
+            <p>Advanced financial health scoring and portfolio optimization.</p>
+            <a href="pages/financial-analytics.html">Learn More &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section" id="stats">
         <div class="stats-container">
             <div class="stat-item">
                 <div class="stat-number">50K+</div>
@@ -795,13 +851,49 @@
         <h3>Still have questions?</h3>
         <p>Can't find the answer you're looking for? Our support team is here to help.</p>
         <div class="faq-footer-actions">
-          <a href="#" class="btn-primary">Contact Support</a>
-          <a href="#" class="btn-secondary">View Documentation</a>
+          <button type="button" class="btn-primary" onclick="openContactForm()">Contact Support</button>
         </div>
       </div>
     </div>
   </div>
 </section></div>
+
+    <!-- Contact Form Modal -->
+    <div class="contact-modal" id="contactModal" aria-hidden="true">
+      <div class="modal-overlay" onclick="closeContactForm()"></div>
+      <div class="modal-content">
+        <button type="button" class="modal-close" onclick="closeContactForm()" aria-label="Close">
+          <i class="bi bi-x" aria-hidden="true"></i>
+        </button>
+        <h3>Contact Support</h3>
+        <p>Send us a message and we'll get back to you as soon as possible.</p>
+        <form class="contact-form" onsubmit="return handleContactSubmit(event)">
+          <div class="form-group">
+            <label for="contact-name">Name</label>
+            <input type="text" id="contact-name" name="name" required placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Email</label>
+            <input type="email" id="contact-email" name="email" required placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label for="contact-subject">Subject</label>
+            <input type="text" id="contact-subject" name="subject" required placeholder="How can we help?">
+          </div>
+          <div class="form-group">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" required rows="6" placeholder="Tell us more about your question..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary btn-full">
+            <span>Send Message</span>
+            <i class="bi bi-send" aria-hidden="true"></i>
+          </button>
+        </form>
+        <p class="contact-email-info">
+          Or email us directly at <a href="mailto:support@ezanafinance.com">support@ezanafinance.com</a>
+        </p>
+      </div>
+    </div>
 
     <!-- GSAP Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>

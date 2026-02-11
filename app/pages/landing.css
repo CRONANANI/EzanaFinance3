@@ -565,6 +565,229 @@ body {
     font-weight: 500;
 }
 
+/* Resources Section (Market Intelligence) */
+.resources-section {
+    width: 100%;
+    padding: 80px 0;
+    background: linear-gradient(180deg, #0f1419 0%, #1a2332 100%);
+}
+
+.resources-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.resources-container h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+}
+
+.resources-container > p {
+    font-size: 1.125rem;
+    color: #9ca3af;
+    margin-bottom: 3rem;
+}
+
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    text-align: left;
+}
+
+.resource-card {
+    background: rgba(17, 24, 39, 0.6);
+    border: 1px solid rgba(156, 163, 175, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.resource-card:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.resource-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #10b981;
+    margin-bottom: 0.5rem;
+}
+
+.resource-card p {
+    font-size: 0.9375rem;
+    color: #9ca3af;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.resource-card a {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #10b981;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.resource-card a:hover {
+    color: #34d399;
+}
+
+/* Contact Modal */
+.contact-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.contact-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.contact-modal .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.contact-modal .modal-content {
+    position: relative;
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+}
+
+.contact-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(156, 163, 175, 0.1);
+    border: 1px solid rgba(156, 163, 175, 0.2);
+    border-radius: 8px;
+    color: #9ca3af;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.contact-modal .modal-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.contact-modal .modal-content h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.contact-modal .modal-content > p {
+    color: #9ca3af;
+    margin-bottom: 2rem;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contact-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contact-form .form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.contact-form .form-group input,
+.contact-form .form-group textarea {
+    padding: 0.75rem 1rem;
+    background: rgba(17, 24, 39, 0.6);
+    border: 1px solid rgba(156, 163, 175, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.contact-form .form-group input:focus,
+.contact-form .form-group textarea:focus {
+    outline: none;
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(17, 24, 39, 0.8);
+}
+
+.contact-form .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.contact-form .btn-full {
+    width: 100%;
+    justify-content: center;
+}
+
+.contact-email-info {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(156, 163, 175, 0.1);
+    text-align: center;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.contact-email-info a {
+    color: #10b981;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.contact-email-info a:hover {
+    color: #34d399;
+    text-decoration: underline;
+}
+
 /* Mobile dashboard styles removed - replaced with CardSwap component */
 
 /* Responsive Design */

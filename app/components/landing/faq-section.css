@@ -53,7 +53,7 @@
 .faq-categories {
   display: flex;
   flex-direction: column;
-  gap: 60px;
+  gap: 40px;
 }
 
 .faq-category {
@@ -128,7 +128,7 @@
 
 .faq-category .faq-items {
   padding: 0 1rem 1rem;
-  gap: 1rem;
+  gap: 0.75rem;
   display: flex;
   flex-direction: column;
 }
@@ -151,6 +151,7 @@
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
+  margin-bottom: 0;
 }
 
 .faq-item:hover {
@@ -284,8 +285,8 @@
    ============================================ */
 
 .faq-footer {
-  margin-top: 100px;
-  padding: 60px;
+  margin-top: 80px;
+  padding: 40px;
   background: rgba(17, 24, 39, 0.6);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(16, 185, 129, 0.2);
@@ -299,16 +300,16 @@
 }
 
 .faq-footer h3 {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .faq-footer p {
-  font-size: 1.125rem;
+  font-size: 1rem;
   color: #9ca3af;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .faq-footer-actions {

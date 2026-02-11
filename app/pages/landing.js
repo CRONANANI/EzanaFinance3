@@ -1,12 +1,12 @@
 // Landing Page JavaScript
 
-// Demo functionality removed - no longer needed
-
-// Smooth scrolling for navigation links
+// Smooth scrolling for anchor links (skip # and #!)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#' || href === '#!') return;
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({
                 behavior: 'smooth',
@@ -14,6 +14,56 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             });
         }
     });
+});
+
+// Contact form modal
+function openContactForm() {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeContactForm() {
+    const modal = document.getElementById('contactModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+}
+
+function handleContactSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        subject: formData.get('subject'),
+        message: formData.get('message')
+    };
+    const mailtoLink = 'mailto:support@ezanafinance.com?subject=' + encodeURIComponent(data.subject) + '&body=' + encodeURIComponent(
+        'Name: ' + data.name + '\nEmail: ' + data.email + '\n\nMessage:\n' + data.message
+    );
+    window.location.href = mailtoLink;
+    try {
+        alert('Opening your email client... If it doesn\'t open automatically, please email us at support@ezanafinance.com');
+    } catch (err) {}
+    closeContactForm();
+    form.reset();
+    return false;
+}
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        var modal = document.getElementById('contactModal');
+        if (modal && modal.classList.contains('active')) {
+            closeContactForm();
+        }
+    }
 });
 
 // Add hover effects to phone preview
