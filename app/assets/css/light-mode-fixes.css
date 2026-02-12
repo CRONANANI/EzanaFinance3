@@ -125,3 +125,129 @@ body.light-mode .watchlist-table tbody tr:hover,
 body.light-mode .member-item:hover {
   background: var(--accent) !important;
 }
+
+/* ============================================
+   NOTIFICATIONS SIDEBAR - LIGHT MODE
+   ============================================ */
+
+body.light-mode .notifications-sidebar {
+  background: linear-gradient(135deg, var(--sidebar-bg) 0%, var(--muted) 100%) !important;
+  border-right-color: var(--sidebar-border) !important;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .notifications-sidebar.collapsed {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
+}
+
+body.light-mode .notifications-header {
+  background: var(--card) !important;
+  border-bottom-color: var(--border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .notifications-title,
+body.light-mode .notifications-title h3,
+body.light-mode .notifications-title i {
+  color: var(--primary) !important;
+}
+
+body.light-mode .notifications-actions button,
+body.light-mode .notifications-collapse {
+  background: var(--accent) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+body.light-mode .notifications-actions button:hover,
+body.light-mode .notifications-collapse:hover {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+body.light-mode .notification-count-badge {
+  border-color: var(--card) !important;
+}
+
+body.light-mode .notifications-filters {
+  border-bottom-color: var(--border) !important;
+}
+
+body.light-mode .filter-btn {
+  background: var(--muted) !important;
+  border-color: var(--border) !important;
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .filter-btn:hover,
+body.light-mode .filter-btn.active {
+  color: var(--primary) !important;
+}
+
+body.light-mode .notifications-list {
+  background: var(--muted) !important;
+}
+
+body.light-mode .notification-item {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+body.light-mode .notification-item:hover {
+  background: var(--accent) !important;
+  border-color: var(--primary) !important;
+}
+
+body.light-mode .notification-item.unread {
+  background: var(--accent) !important;
+  border-color: var(--primary) !important;
+}
+
+body.light-mode .notification-item.read {
+  background: var(--muted) !important;
+  border-color: var(--border) !important;
+}
+
+body.light-mode .notification-title {
+  color: var(--foreground) !important;
+  text-shadow: none !important;
+}
+
+body.light-mode .notification-description {
+  color: var(--muted-foreground) !important;
+  text-shadow: none !important;
+}
+
+body.light-mode .notification-meta,
+body.light-mode .notification-time {
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .notification-badge {
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .action-link {
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .action-link:hover {
+  color: var(--primary) !important;
+}
+
+body.light-mode .ticker-link {
+  color: var(--primary) !important;
+}
+
+body.light-mode .notification-type-badge {
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .notifications-empty {
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .notifications-empty p,
+body.light-mode .notifications-empty small {
+  color: var(--muted-foreground) !important;
+}
