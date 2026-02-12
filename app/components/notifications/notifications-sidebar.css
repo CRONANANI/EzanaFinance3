@@ -692,3 +692,206 @@
 .dark .notifications-empty {
     color: var(--muted-foreground);
 }
+
+/* ============================================
+   UNIFIED INVESTMENT FEED SIDEBAR
+   ============================================ */
+
+.investment-feed-sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 320px;
+  height: calc(100vh - 64px);
+  background: rgba(15, 20, 25, 0.98);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+  z-index: 50;
+  overflow-y: auto;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.investment-feed-sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+.investment-feed-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.investment-feed-sidebar::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.3);
+}
+
+.investment-feed-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+}
+
+.investment-feed-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+.investment-feed-sidebar .feed-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: rgba(15, 20, 25, 0.95);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.investment-feed-sidebar .feed-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 0;
+}
+
+.investment-feed-sidebar .feed-close-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(156, 163, 175, 0.1);
+  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+  border-radius: 50%;
+  color: var(--text-secondary, #9ca3af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.investment-feed-sidebar .feed-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  transform: scale(1.1);
+}
+
+.investment-feed-sidebar .feed-filters {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+  flex-shrink: 0;
+}
+
+.investment-feed-sidebar .feed-filter {
+  padding: 0.75rem 1rem;
+  background: rgba(17, 24, 39, 0.4);
+  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+  border-radius: 6px;
+  color: var(--text-secondary, #9ca3af);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.investment-feed-sidebar .feed-filter:hover {
+  background: rgba(17, 24, 39, 0.6);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.investment-feed-sidebar .feed-filter.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.investment-feed-sidebar .feed-items {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.investment-feed-sidebar .feed-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-card, rgba(17, 24, 39, 0.6));
+  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.investment-feed-sidebar .feed-item:hover {
+  border-color: #10b981;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.investment-feed-sidebar .feed-item[data-priority="high"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #ef4444;
+  border-radius: 8px 0 0 8px;
+}
+
+.investment-feed-sidebar .feed-item[data-priority="medium"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #fbbf24;
+  border-radius: 8px 0 0 8px;
+}
+
+.investment-feed-sidebar .feed-item[data-priority="low"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #3b82f6;
+  border-radius: 8px 0 0 8px;
+}
+
+.investment-feed-sidebar .feed-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10b981;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+}
+
+.investment-feed-sidebar .feed-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.investment-feed-sidebar .feed-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #ffffff);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.investment-feed-sidebar .feed-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #9ca3af);
+}

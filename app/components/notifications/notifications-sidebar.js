@@ -32,12 +32,18 @@ class NotificationsSidebar {
     }
 
     setupEventListeners() {
+        // Bind nav notification toggle (from navigation component)
+        const navNotificationToggle = document.getElementById('notificationToggle');
+        if (navNotificationToggle) {
+            navNotificationToggle.addEventListener('click', () => this.toggleSidebar());
+        }
+
         // Close sidebar when clicking outside
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('notifications-sidebar');
             const toggle = document.getElementById('notifications-toggle');
-            
-            if (this.isOpen && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+            const navToggle = document.getElementById('notificationToggle');
+            if (this.isOpen && sidebar && !sidebar.contains(e.target) && !toggle?.contains(e.target) && !navToggle?.contains(e.target)) {
                 this.closeSidebar();
             }
         });

@@ -101,10 +101,20 @@ class Navigation {
             navMenu.appendChild(li);
         });
 
-        // Create user section
+        // Create user section with theme toggle, notification, and user menu
         const userSection = document.createElement('div');
         userSection.className = 'navigation-user';
         userSection.innerHTML = `
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem;">
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme" style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 50%; color: #10b981; font-size: 1.125rem; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden;">
+                    <i class="bi bi-sun-fill light-icon" style="position: absolute; opacity: 0;"></i>
+                    <i class="bi bi-moon-fill dark-icon"></i>
+                </button>
+                <button class="notification-toggle" id="notificationToggle" title="Notifications" style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 50%; color: #10b981; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-badge" style="position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; background: #ef4444; border: 2px solid #0f172a; border-radius: 50%; font-size: 0.6875rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center;">3</span>
+                </button>
+            </div>
             <div class="user-dropdown">
                 <button class="user-button" id="user-button">
                     <i class="${config.userMenu.avatar} user-avatar"></i>

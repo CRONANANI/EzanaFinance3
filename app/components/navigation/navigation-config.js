@@ -21,24 +21,24 @@ const NavigationConfig = {
             dropdown: true,
             children: [
                 {
+                    text: 'Inside The Capitol',
+                    href: 'inside-the-capitol.html',
+                    icon: 'bi bi-building'
+                },
+                {
                     text: 'Company Research',
                     href: 'company-research.html',
-                    icon: 'bi bi-building'
+                    icon: 'bi bi-bar-chart-line'
                 },
                 {
                     text: 'Market Analysis',
                     href: 'market-analysis.html',
-                    icon: 'bi bi-search'
+                    icon: 'bi bi-graph-up-arrow'
                 },
                 {
                     text: 'Economic Indicators',
                     href: 'economic-indicators.html',
-                    icon: 'bi bi-graph-up-arrow'
-                },
-                {
-                    text: 'Inside the Capitol',
-                    href: 'inside-the-capitol.html',
-                    icon: 'bi bi-bank'
+                    icon: 'bi bi-currency-dollar'
                 },
                 {
                     text: 'For the Quants',
