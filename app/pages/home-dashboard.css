@@ -511,13 +511,15 @@ body.light-mode .dark-icon {
 .metric-card {
   min-width: 240px;
   display: flex;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-card);
 }
 
 .metric-card:hover,
@@ -584,8 +586,10 @@ body.light-mode .dark-icon {
 .main-chart-section {
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: var(--radius);
+  padding: 2rem;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-card);
 }
 
 .chart-header.compact {
@@ -652,8 +656,10 @@ body.light-mode .dark-icon {
 .portfolio-news-sidebar {
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: var(--radius);
+  padding: 2rem;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-card);
   height: fit-content;
   max-height: 450px;
   overflow: hidden;
@@ -779,8 +785,10 @@ body.light-mode .dark-icon {
 .component-card {
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: var(--radius);
+  padding: 2rem;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-card);
 }
 
 .card-header {
@@ -793,10 +801,11 @@ body.light-mode .dark-icon {
 }
 
 .card-header h3 {
-  font-size: 1.125rem;
+  font-size: var(--font-lg);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  font-family: var(--font-sans);
 }
 
 .card-action-btn {

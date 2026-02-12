@@ -4,7 +4,7 @@
  * Depends on: theme-variables.css
  */
 
-/* Standardize all card types with same base */
+/* Standardize all card types - Pastel Dreams design (spacing, font, radius, shadow) */
 .dashboard-card,
 .research-card,
 .watchlist-card,
@@ -26,10 +26,12 @@
     background: var(--bg-card);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-primary);
-    border-radius: var(--radius-lg, 12px);
-    padding: var(--space-lg, 1.5rem);
+    border-radius: var(--radius);
+    padding: 2rem;
     transition: all var(--transition-base);
     min-height: 200px;
+    font-family: var(--font-sans);
+    box-shadow: var(--shadow-card);
 }
 
 .dashboard-card:hover,
@@ -40,7 +42,7 @@
 .market-overview-card:hover {
     background: var(--bg-card-hover);
     border-color: rgba(16, 185, 129, 0.25);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-card-hover);
 }
 
 /* Card header pattern */
@@ -51,17 +53,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-md, 1rem);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
 }
 
 .dashboard-card .card-title,
 .research-card .card-title,
 .watchlist-card .card-title,
 .community-card .card-title {
-    font-size: var(--font-lg, 1.125rem);
+    font-size: var(--font-lg);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+    font-family: var(--font-sans);
 }
 
 .dashboard-card .card-body,
@@ -75,8 +79,8 @@
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-lg, 1.5rem);
-    margin-top: var(--space-xl, 2rem);
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
 @media (max-width: 639px) {
@@ -87,11 +91,11 @@
     .analysis-card,
     .market-overview-card {
         min-height: 180px;
-        padding: var(--space-md, 1rem) var(--space-lg, 1.5rem);
+        padding: 1.5rem;
     }
 
     .dashboard-grid {
         grid-template-columns: 1fr;
-        gap: var(--space-md, 1rem);
+        gap: 1rem;
     }
 }
