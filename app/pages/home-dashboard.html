@@ -1,1576 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Dashboard</title>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../assets/css/theme-variables.css">
-    <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <!-- Navigation CSS -->
-    <link rel="stylesheet" href="../components/navigation/navigation.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Component Cards CSS -->
-    <link rel="stylesheet" href="../components/pages/home-dashboard/hero-section/hero-section.css">
-    <link rel="stylesheet" href="../components/home-dashboard/todays-pnl-card.css">
-    <link rel="stylesheet" href="../components/home-dashboard/top-performer-card.css">
-    <link rel="stylesheet" href="../components/home-dashboard/risk-score-card.css">
-    <link rel="stylesheet" href="../components/home-dashboard/monthly-dividends-card.css">
-    <link rel="stylesheet" href="../components/home-dashboard/market-performance-card.css">
-    <link rel="stylesheet" href="../components/home-dashboard/asset-allocation-card.css">
-    <link rel="stylesheet" href="../components/pages/home-dashboard/chart-controls/chart-controls.css">
-    <link rel="stylesheet" href="../components/pages/home-dashboard/quick-actions/quick-actions.css">
-    <link rel="stylesheet" href="../components/pages/home-dashboard/asset-allocation-panel/asset-allocation-panel.css">
-    <!-- Shared hero and layout (hero uniform across platform) -->
-    <link rel="stylesheet" href="../assets/css/pages-common.css">
-    <link rel="stylesheet" href="../assets/css/cards-common.css">
-    <link rel="stylesheet" href="../assets/css/metrics-common.css">
-    <style>
-        /* --sidebar-width from theme-variables.css (280px) */
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: white;
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
-        }
-
-        /* Hero styling is in pages-common.css for uniform platform-wide appearance */
-
-        .page-title-shiny {
-            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        /* Responsive hero overrides are in the main @media (max-width: 768px) block below */
-
-        /* Main content area: offset when notifications sidebar is open.
-           Left padding 2rem aligns with nav brand "Ezana Finance". */
-        .dashboard-page-content {
-            max-width: var(--page-max-width, 1400px);
-            margin: 0 auto;
-            padding: 0 2rem 2rem;
-            margin-left: var(--sidebar-width, 280px);
-            transition: margin-left 0.3s ease;
-        }
-
-        /* Dashboard Overview Grid: main card full width, then carousel below */
-        .dashboard-overview-grid {
-            display: block;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Main Card Container */
-        .dashboard-main-card {
-            min-width: 0;
-        }
-
-        .expanded-card {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 1.25rem;
-            padding: 2rem 2.25rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
-            min-height: 420px;
-        }
-
-        .expanded-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-        }
-
-        /* Metrics Grid - consistent spacing between metric cards */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            width: 100%;
-        }
-
-        /* Section Headers */
-        .section-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            color: var(--foreground);
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -0.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 2px;
-        }
-
-        .section-description {
-            font-size: 1.125rem;
-            color: var(--muted-foreground);
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Dashboard Portfolio Card - Takes more space */
-        .dashboard-portfolio-card {
-            min-width: 0; /* Prevents grid overflow */
-        }
-
-        /* Dashboard Metrics Grid - Takes less space */
-        .dashboard-metrics-grid {
-            min-width: 0; /* Prevents grid overflow */
-        }
-
-
-        .portfolio-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .portfolio-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #e2e8f0;
-            letter-spacing: -0.01em;
-        }
-
-        .refresh-btn {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 12px;
-            padding: 8px 12px;
-            color: #10b981;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.875rem;
-        }
-
-        .refresh-btn:hover {
-            background: rgba(16, 185, 129, 0.2);
-        }
-
-        .portfolio-icon {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .portfolio-value-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .portfolio-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: white;
-            margin: 0;
-            letter-spacing: -0.025em;
-            line-height: 1.2;
-        }
-
-        .portfolio-change {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin: 0;
-        }
-
-        .change-positive {
-            color: #10b981;
-            font-weight: 600;
-        }
-
-        .change-negative {
-            color: #ef4444;
-            font-weight: 600;
-        }
-
-        .updated-time {
-            color: #64748b;
-            font-size: 0.8125rem;
-            margin-bottom: 1rem;
-        }
-
-        .time-selector {
-            margin-top: 0;
-            margin-bottom: 1rem;
-        }
-
-        .time-selector label {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            margin-right: 12px;
-        }
-
-        .time-selector select {
-            background: rgba(71, 85, 105, 0.3);
-            border: 1px solid rgba(71, 85, 105, 0.5);
-            border-radius: 8px;
-            padding: 8px 16px;
-            color: white;
-            font-size: 0.875rem;
-        }
-
-        .chart-container {
-            height: 280px;
-            margin-top: 1.25rem;
-            position: relative;
-            background: rgba(15, 23, 42, 0.3);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            backdrop-filter: blur(10px);
-        }
-
-        .chart-canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .metric-card {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(71, 85, 105, 0.4);
-            border-radius: 1rem;
-            padding: 1rem 1.25rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            text-align: left;
-            min-height: 72px;
-            width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-            gap: 1rem;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-            border-color: var(--accent-color);
-            background: rgba(30, 41, 59, 0.95);
-        }
-
-        .metric-card.positive { --accent-color: #10b981; }
-        .metric-card.warning { --accent-color: #f59e0b; }
-        .metric-card.info { --accent-color: #3b82f6; }
-        .metric-card.success { --accent-color: #10b981; }
-
-        .metric-header {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            margin-bottom: 0;
-            width: auto;
-            margin-right: 0;
-            flex-shrink: 0;
-        }
-
-        .metric-title {
-            font-size: 0.6875rem;
-            font-weight: 600;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-left: 0.5rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px;
-        }
-
-        .metric-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: white;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .metric-value {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #e2e8f0;
-            margin-bottom: 0.125rem;
-            line-height: 1.2;
-        }
-
-        .metric-subtitle {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            line-height: 1.35;
-            margin-top: 0;
-        }
-
-        .icon-positive { background: linear-gradient(135deg, #10b981, #059669); }
-        .icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .icon-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .icon-success { background: linear-gradient(135deg, #10b981, #059669); }
-        
-        /* Metric card content wrapper */
-        .metric-content {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
-        }
-
-        /* Responsive: content offset when sidebar is open */
-        @media (max-width: 900px) {
-            .dashboard-page-content {
-                margin-left: 0;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-        }
-
-        /* Carousel: horizontal strip below hero/main card, roll-through effect */
-        .dashboard-carousel-section {
-            position: relative;
-            margin-bottom: 2.5rem;
-        }
-        .dashboard-carousel {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
-            padding: 0.5rem 0 1rem;
-            -webkit-overflow-scrolling: touch;
-        }
-        .dashboard-carousel::-webkit-scrollbar {
-            height: 8px;
-        }
-        .dashboard-carousel::-webkit-scrollbar-track {
-            background: rgba(71, 85, 105, 0.3);
-            border-radius: 4px;
-        }
-        .dashboard-carousel::-webkit-scrollbar-thumb {
-            background: rgba(16, 185, 129, 0.5);
-            border-radius: 4px;
-        }
-        .dashboard-carousel-slide {
-            flex: 0 0 auto;
-            scroll-snap-align: start;
-            min-width: 280px;
-            max-width: 320px;
-        }
-        .dashboard-carousel-slide .quick-actions-panel,
-        .dashboard-carousel-slide .asset-allocation-panel {
-            min-width: 100%;
-        }
-        .dashboard-carousel-slide .metric-card {
-            width: 100%;
-        }
-        .carousel-nav {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-        .carousel-btn {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            color: #10b981;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            transition: all 0.2s;
-        }
-        .carousel-btn:hover {
-            background: rgba(16, 185, 129, 0.25);
-        }
-
-        @media (min-width: 1025px) {
-            .metrics-grid {
-                gap: 1rem;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .dashboard-carousel-slide {
-                min-width: 260px;
-                max-width: 280px;
-            }
-            .metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-        }
-            .metric-card {
-                min-height: 72px;
-                padding: 1rem 1.25rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-page-content {
-                padding: 0 1rem 1.5rem;
-            }
-            /* Hero responsive sizing in pages-common.css */
-            .expanded-card {
-                padding: 1.5rem 1.25rem;
-                min-height: 360px;
-            }
-            .metrics-grid {
-                grid-template-columns: 1fr;
-                gap: 0.875rem;
-            }
-            .metric-card {
-                min-height: 64px;
-                padding: 0.875rem 1rem;
-            }
-            .metric-title {
-                font-size: 0.625rem;
-            }
-            .metric-value {
-                font-size: 0.9375rem;
-            }
-            .metric-subtitle {
-                font-size: 0.6875rem;
-            }
-            .chart-container {
-                height: 240px;
-                padding: 1rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .portfolio-value {
-                font-size: 1.5rem;
-            }
-            .portfolio-value-container {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Dashboard - Ezana Finance</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../assets/css/theme-variables.css">
+  <link rel="stylesheet" href="../assets/css/pages-common.css">
+  <link rel="stylesheet" href="../components/navigation/navigation.css">
+  <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="home-dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="home-dashboard">
-    <!-- Navigation will be dynamically loaded -->
+  <!-- Navigation (loaded by navigation.js) -->
 
-    <!-- Notifications Sidebar -->
-    <div id="notifications-sidebar" class="notifications-sidebar open">
-        <!-- Sidebar Toggle Button -->
-        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <i class="bi bi-bell"></i>
-        </button>
-
-        <!-- Sidebar Content -->
-        <div class="notifications-content">
-            <!-- Header -->
-            <div class="notifications-header">
-                <div class="notifications-title">
-                    <h3>Investment Feed</h3>
-                </div>
-                <div class="notifications-actions">
-                    <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </button>
-                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter Tabs: Enhanced Real-time Investment Feed -->
-            <div class="notifications-filters">
-                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">Show All</button>
-                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress Trades</button>
-                <button class="filter-btn" data-filter="portfolio_alerts" onclick="filterNotifications('portfolio_alerts')">Portfolio Alerts</button>
-                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
-                <button class="filter-btn" data-filter="market_news" onclick="filterNotifications('market_news')">Market News</button>
-            </div>
-
-            <!-- Notifications List -->
-            <div class="notifications-list" id="notifications-list">
-                <!-- Notifications will be dynamically populated here -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="notifications-empty" id="notifications-empty" style="display: none;">
-                <i class="bi bi-bell-slash"></i>
-                <p>No notifications yet</p>
-                <small>We'll notify you when something important happens</small>
-            </div>
+  <!-- Notifications / Investment Feed Sidebar -->
+  <div id="notifications-sidebar" class="notifications-sidebar open">
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+      <i class="bi bi-bell"></i>
+    </button>
+    <div class="notifications-content">
+      <div class="notifications-header">
+        <div class="notifications-title"><h3>Investment Feed</h3></div>
+        <div class="notifications-actions">
+          <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+            <i class="bi bi-gear"></i>
+          </button>
         </div>
+      </div>
+      <div class="notifications-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">Show All</button>
+        <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress Trades</button>
+        <button class="filter-btn" data-filter="portfolio_alerts" onclick="filterNotifications('portfolio_alerts')">Portfolio Alerts</button>
+        <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+        <button class="filter-btn" data-filter="market_news" onclick="filterNotifications('market_news')">Market News</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+      <div class="notifications-empty" id="notifications-empty" style="display: none;">
+        <i class="bi bi-bell-slash"></i>
+        <p>No notifications yet</p>
+        <small>We'll notify you when something important happens</small>
+      </div>
     </div>
+  </div>
 
-    <div class="dashboard-page-content">
-        <!-- Hero Section -->
-        <div class="hero-section">
-            <div class="hero-content">
-                <h1 class="hero-title page-title-shiny">Portfolio Dashboard</h1>
-                <p class="hero-description">Track your investments and financial performance with real-time insights</p>
+  <!-- Main Dashboard Content -->
+  <main class="dashboard-main">
+    <div class="dashboard-container">
+
+      <!-- Quick Actions Bar (Top) -->
+      <section class="quick-actions-bar">
+        <button class="quick-action-btn" data-action="refresh">
+          <i class="bi bi-arrow-clockwise"></i>
+          <span>Refresh Data</span>
+        </button>
+        <button class="quick-action-btn" data-action="report">
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Generate Report</span>
+        </button>
+        <button class="quick-action-btn" data-action="transaction">
+          <i class="bi bi-plus-circle"></i>
+          <span>Add Transaction</span>
+        </button>
+        <button class="quick-action-btn" data-action="analysis">
+          <i class="bi bi-graph-up"></i>
+          <span>Run Analysis</span>
+        </button>
+        <button class="quick-action-btn" data-action="alerts">
+          <i class="bi bi-bell"></i>
+          <span>Set Alerts</span>
+        </button>
+        <button class="quick-action-btn" data-action="watchlist">
+          <i class="bi bi-bookmark"></i>
+          <span>Add to Watchlist</span>
+        </button>
+      </section>
+
+      <!-- Metrics Carousel -->
+      <section class="metrics-carousel-section">
+        <button class="carousel-nav prev" id="carouselPrev" aria-label="Previous">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="metrics-carousel-container">
+          <div class="metrics-carousel-track" id="metricsCarousel">
+            <div class="metric-card" data-metric="pnl">
+              <div class="metric-icon pnl"><i class="bi bi-graph-up"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Today's P&L</span>
+                <span class="metric-value">+$1,247</span>
+                <span class="metric-change positive">+0.98%</span>
+              </div>
             </div>
+            <div class="metric-card" data-metric="performer">
+              <div class="metric-icon performer"><i class="bi bi-star"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Top Performer</span>
+                <span class="metric-value">NVDA</span>
+                <span class="metric-change positive">+12.4% this week</span>
+              </div>
+            </div>
+            <div class="metric-card active" data-metric="risk">
+              <div class="metric-icon risk"><i class="bi bi-shield-exclamation"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Risk Score</span>
+                <span class="metric-value">6.2<span class="metric-unit">/10</span></span>
+                <span class="metric-change">Moderate risk level</span>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="dividends">
+              <div class="metric-icon dividends"><i class="bi bi-cash-coin"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Monthly Dividends</span>
+                <span class="metric-value">$847.23</span>
+                <span class="metric-change">Next payout: Oct 15</span>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="market">
+              <div class="metric-icon market"><i class="bi bi-graph-up-arrow"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Market Performance</span>
+                <span class="metric-value">+8.4%</span>
+                <span class="metric-change">vs S&P 500: +6.2%</span>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="allocation">
+              <div class="metric-icon allocation"><i class="bi bi-pie-chart"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Asset Allocation</span>
+                <span class="metric-value">Balanced</span>
+                <span class="metric-change">65% Stocks, 35% Bonds</span>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="volatility">
+              <div class="metric-icon volatility"><i class="bi bi-activity"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Volatility Score</span>
+                <span class="metric-value">4.8<span class="metric-unit">/10</span></span>
+                <span class="metric-change">Below market average</span>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="beta">
+              <div class="metric-icon beta"><i class="bi bi-arrow-down-up"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Beta vs Market</span>
+                <span class="metric-value">1.05</span>
+                <span class="metric-change">Slightly more volatile</span>
+              </div>
+            </div>
+            <div class="metric-card" data-metric="sector">
+              <div class="metric-icon sector"><i class="bi bi-building"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Sector Exposure</span>
+                <span class="metric-value">Tech</span>
+                <span class="metric-change">35% of portfolio</span>
+              </div>
+            </div>
+          </div>
         </div>
+        <button class="carousel-nav next" id="carouselNext" aria-label="Next">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </section>
 
-        <div class="dashboard-overview-grid">
-            <!-- Main Expanded Card -->
-            <div class="dashboard-main-card" id="mainCard">
-                <div class="expanded-card" id="expandedCard">
-                    <!-- Portfolio Card Content (Default) -->
-                    <div class="card-content" id="portfolioContent">
-                        <div class="portfolio-header">
-                            <div class="portfolio-title">Total Portfolio Value</div>
-                            <div class="portfolio-icon">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                        </div>
-                        
-                        <div class="portfolio-value-container">
-                            <div class="portfolio-value">$127,843.52</div>
-                            <div class="portfolio-change">
-                                <span class="change-positive">
-                                    <i class="bi bi-arrow-up"></i>
-                                    $2,847.31 (+2.28%)
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="updated-time">Updated 2 minutes ago</div>
-                        
-                        <div class="time-selector">
-                            <label>Time Period:</label>
-                            <select id="timePeriodSelect">
-                                <option value="1d">1D</option>
-                                <option value="7">1W</option>
-                                <option value="1">1M</option>
-                                <option value="3">3M</option>
-                                <option value="6">6M</option>
-                                <option value="12" selected>1Y</option>
-                                <option value="36">3Y</option>
-                                <option value="60">5Y</option>
-                                <option value="120">10Y</option>
-                                <option value="all">All</option>
-                            </select>
-                        </div>
-
-                        <!-- Chart controls: type, benchmark, export -->
-                        <div class="chart-controls" id="chart-controls">
-                            <div class="chart-controls-row">
-                                <span class="chart-controls-label">Chart type</span>
-                                <div class="chart-type-toggles">
-                                    <button type="button" class="chart-type-btn active" data-type="line">Line</button>
-                                    <button type="button" class="chart-type-btn" data-type="area">Area</button>
-                                    <button type="button" class="chart-type-btn" data-type="performance">Vs Benchmark</button>
-                                </div>
-                            </div>
-                            <div class="chart-controls-row">
-                                <span class="chart-controls-label">Compare</span>
-                                <label class="benchmark-check"><input type="checkbox" id="chart-benchmark-sp500" /> S&P 500</label>
-                                <label class="benchmark-check"><input type="checkbox" id="chart-benchmark-nasdaq" /> NASDAQ</label>
-                            </div>
-                            <div class="chart-controls-row chart-controls-export">
-                                <span class="chart-controls-label">Export</span>
-                                <button type="button" class="export-btn" data-format="png"><i class="bi bi-image"></i> PNG</button>
-                                <button type="button" class="export-btn" data-format="csv"><i class="bi bi-file-text"></i> CSV</button>
-                                <button type="button" class="export-btn" data-format="pdf"><i class="bi bi-file-pdf"></i> PDF</button>
-                            </div>
-                        </div>
-
-                        <div class="chart-container">
-                            <canvas id="portfolioChart" class="chart-canvas"></canvas>
-                        </div>
-                    </div>
-                </div>
+      <!-- Main Chart Display -->
+      <section class="main-chart-section">
+        <div class="chart-header">
+          <div class="chart-title-area">
+            <h2 class="chart-title" id="chartTitle">Risk Score Analysis</h2>
+            <p class="chart-subtitle" id="chartSubtitle">Portfolio risk assessment over time</p>
+          </div>
+          <div class="chart-controls">
+            <div class="time-range-selector">
+              <button class="time-btn" data-range="1D">1D</button>
+              <button class="time-btn" data-range="1W">1W</button>
+              <button class="time-btn" data-range="1M">1M</button>
+              <button class="time-btn active" data-range="3M">3M</button>
+              <button class="time-btn" data-range="6M">6M</button>
+              <button class="time-btn" data-range="1Y">1Y</button>
+              <button class="time-btn" data-range="ALL">ALL</button>
             </div>
-
-        <!-- Carousel: side components in a horizontal roll below the main card -->
-        <div class="dashboard-carousel-section">
-            <div class="dashboard-carousel" id="dashboardCarousel">
-                <div class="dashboard-carousel-slide">
-                    <div class="quick-actions-panel" id="quick-actions-panel">
-                        <div class="quick-actions-header">
-                            <i class="bi bi-lightning-charge"></i>
-                            <h3>Quick Actions</h3>
-                        </div>
-                        <div class="quick-actions-list">
-                            <button type="button" class="quick-action-item" data-action="refresh"><i class="bi bi-arrow-clockwise"></i><span>Refresh Data</span></button>
-                            <button type="button" class="quick-action-item" data-action="report"><i class="bi bi-file-earmark-bar-graph"></i><span>Generate Report</span></button>
-                            <button type="button" class="quick-action-item" data-action="transaction"><i class="bi bi-currency-dollar"></i><span>Add Transaction</span></button>
-                            <button type="button" class="quick-action-item" data-action="analysis"><i class="bi bi-graph-up-arrow"></i><span>Run Analysis</span></button>
-                            <button type="button" class="quick-action-item" data-action="alerts"><i class="bi bi-bell"></i><span>Set Alerts</span></button>
-                            <button type="button" class="quick-action-item" data-action="watchlist"><i class="bi bi-star"></i><span>Add to Watchlist</span></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card positive" data-card="pnl" onclick="expandCard('pnl')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-positive">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                            <div class="metric-title">Today's P&L</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">+$1,247</div>
-                            <div class="metric-subtitle">+0.98% from yesterday</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card warning" data-card="performer" onclick="expandCard('performer')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-warning">
-                                <i class="bi bi-star-fill"></i>
-                            </div>
-                            <div class="metric-title">Top Performer</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">NVDA</div>
-                            <div class="metric-subtitle">+12.4% this week</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card warning" data-card="risk" onclick="expandCard('risk')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-warning">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                            <div class="metric-title">Risk Score</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">6.2/10</div>
-                            <div class="metric-subtitle">Moderate risk level</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card info" data-card="dividends" onclick="expandCard('dividends')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-info">
-                                <i class="bi bi-currency-dollar"></i>
-                            </div>
-                            <div class="metric-title">Monthly Dividends</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">$847.23</div>
-                            <div class="metric-subtitle">Next payout: Oct 15</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card success" data-card="market" onclick="expandCard('market')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-success">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                            <div class="metric-title">Market Performance</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">+8.4%</div>
-                            <div class="metric-subtitle">vs S&P 500: +6.2%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card info" data-card="allocation" onclick="expandCard('allocation')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-info">
-                                <i class="bi bi-pie-chart"></i>
-                            </div>
-                            <div class="metric-title">Asset Allocation</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">Balanced</div>
-                            <div class="metric-subtitle">65% Stocks, 35% Bonds</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card warning" data-card="volatility" onclick="expandCard('volatility')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-warning"><i class="bi bi-activity"></i></div>
-                            <div class="metric-title">Volatility Score</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">14.2%</div>
-                            <div class="metric-subtitle">30-day ↓ trend</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card info" data-card="sharpe" onclick="expandCard('sharpe')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-info"><i class="bi bi-graph-up-arrow"></i></div>
-                            <div class="metric-title">Sharpe Ratio</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">1.24</div>
-                            <div class="metric-subtitle">Risk-adjusted</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card info" data-card="beta" onclick="expandCard('beta')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-info"><i class="bi bi-bullseye"></i></div>
-                            <div class="metric-title">Beta vs Market</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">1.08</div>
-                            <div class="metric-subtitle">S&P 500</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="metric-card success" data-card="sector" onclick="expandCard('sector')">
-                        <div class="metric-header">
-                            <div class="metric-icon icon-success"><i class="bi bi-bar-chart"></i></div>
-                            <div class="metric-title">Sector Exposure</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">Tech 32%</div>
-                            <div class="metric-subtitle">Healthcare 18%, Fin 15%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-carousel-slide">
-                    <div class="asset-allocation-panel" id="asset-allocation-panel">
-                    <div class="allocation-panel-header">
-                        <i class="bi bi-pie-chart"></i>
-                        <h3>Target vs Actual</h3>
-                        <button type="button" class="allocation-expand-btn" onclick="expandCard('allocation')">View chart</button>
-                    </div>
-                    <div class="allocation-target-actual">
-                        <div class="allocation-row">
-                            <span class="allocation-label">Stocks</span>
-                            <span class="allocation-bar-wrap">
-                                <span class="allocation-bar actual" style="width: 68%;"></span>
-                                <span class="allocation-bar target" style="width: 65%;"></span>
-                            </span>
-                            <span class="allocation-values"><strong>68%</strong> / 65%</span>
-                        </div>
-                        <div class="allocation-row">
-                            <span class="allocation-label">Bonds</span>
-                            <span class="allocation-bar-wrap">
-                                <span class="allocation-bar actual bonds" style="width: 32%;"></span>
-                                <span class="allocation-bar target bonds" style="width: 35%;"></span>
-                            </span>
-                            <span class="allocation-values"><strong>32%</strong> / 35%</span>
-                        </div>
-                    </div>
-                    <p class="allocation-suggestion">Stocks above target. Consider rebalancing.</p>
-                    <button type="button" class="allocation-rebalance-btn" onclick="rebalanceAllocation()">Quick rebalance</button>
-                    </div>
-                </div>
-            </div>
-            <div class="carousel-nav">
-                <button type="button" class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous"><i class="bi bi-chevron-left"></i></button>
-                <button type="button" class="carousel-btn carousel-next" id="carouselNext" aria-label="Next"><i class="bi bi-chevron-right"></i></button>
-            </div>
+            <button class="export-btn"><i class="bi bi-download"></i> Export</button>
+          </div>
         </div>
+        <div class="chart-container">
+          <canvas id="mainChart"></canvas>
         </div>
+      </section>
 
-    <!-- API Service -->
-    <script src="../js/api-service.js"></script>
-    <!-- Navigation JavaScript -->
-    <script src="../components/navigation/navigation-config.js?v=1.2.0"></script>
-    <script src="../components/navigation/navigation.js?v=1.2.0"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
-    <script src="../components/pages/home-dashboard/chart-controls/chart-controls.js"></script>
-    <script src="../components/pages/home-dashboard/quick-actions/quick-actions.js"></script>
-    <script>
-        (function() {
-            var carousel = document.getElementById('dashboardCarousel');
-            var prevBtn = document.getElementById('carouselPrev');
-            var nextBtn = document.getElementById('carouselNext');
-            if (!carousel || !prevBtn || !nextBtn) return;
-            var slideWidth = 280 + 16;
-            function scrollBy(amount) {
-                carousel.scrollBy({ left: amount, behavior: 'smooth' });
-            }
-            prevBtn.addEventListener('click', function() { scrollBy(-slideWidth); });
-            nextBtn.addEventListener('click', function() { scrollBy(slideWidth); });
-            var autoRoll = setInterval(function() {
-                var maxScroll = carousel.scrollWidth - carousel.clientWidth;
-                if (maxScroll <= 0) return;
-                if (carousel.scrollLeft >= maxScroll - 10) {
-                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    scrollBy(slideWidth);
-                }
-            }, 4500);
-            carousel.addEventListener('mouseenter', function() { clearInterval(autoRoll); });
-            carousel.addEventListener('touchstart', function() { clearInterval(autoRoll); }, { passive: true });
-        })();
-    </script>
-    <script>
-        function rebalanceAllocation() {
-            if (window.notificationsSidebar && window.notificationsSidebar.showToast)
-                window.notificationsSidebar.showToast('Rebalance – connect to broker to execute', 'info');
-        }
-        window.rebalanceAllocation = rebalanceAllocation;
-    </script>
-    <script>
-        // Portfolio chart data for different time periods
-        const portfolioData = {
-            '1d': { labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00'], data: [127500, 127600, 127550, 127800, 127843.52, 127900, 127850, 127820, 127780, 127810, 127830, 127843.52, 127840, 127843.52], color: '#10b981', currentValue: 127843.52, previousValue: 127500, change: 343.52, changePercent: 0.27 },
-            7: { // 1 Week
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                data: [126200, 126800, 127100, 127400, 127600, 127750, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 126200,
-                change: 1643.52,
-                changePercent: 1.30
-            },
-            1: { // 1 Month
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                data: [125000, 126500, 127200, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 125000,
-                change: 2843.52,
-                changePercent: 2.28
-            },
-            3: { // 3 Months
-                labels: ['Month 1', 'Month 2', 'Month 3'],
-                data: [118000, 122500, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 118000,
-                change: 9843.52,
-                changePercent: 8.34
-            },
-            6: { // 6 Months
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                data: [110000, 112500, 115000, 118000, 122500, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 110000,
-                change: 17843.52,
-                changePercent: 16.22
-            },
-            12: { // 1 Year
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                data: [95000, 98000, 102000, 105000, 108000, 110000, 112500, 115000, 118000, 122500, 125000, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 95000,
-                change: 32843.52,
-                changePercent: 34.57
-            },
-            36: { // 3 Years
-                labels: ['2021', '2022', '2023'],
-                data: [75000, 85000, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 75000,
-                change: 52843.52,
-                changePercent: 70.46
-            },
-            60: { // 5 Years
-                labels: ['2019', '2020', '2021', '2022', '2023'],
-                data: [45000, 55000, 75000, 85000, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 45000,
-                change: 82843.52,
-                changePercent: 184.10
-            },
-            120: { // 10 Years
-                labels: ['2014', '2016', '2018', '2020', '2022', '2023'],
-                data: [25000, 35000, 45000, 55000, 85000, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 25000,
-                change: 102843.52,
-                changePercent: 411.37
-            },
-            all: { // All Time
-                labels: ['2010', '2012', '2014', '2016', '2018', '2020', '2022', '2023'],
-                data: [10000, 15000, 25000, 35000, 45000, 55000, 85000, 127843.52],
-                color: '#10b981',
-                currentValue: 127843.52,
-                previousValue: 10000,
-                change: 117843.52,
-                changePercent: 1178.44
-            }
-        };
+      <!-- Market News Section -->
+      <section class="market-news-section">
+        <div class="news-header">
+          <h2 class="news-title">Recent Market News</h2>
+          <div class="news-filters">
+            <button class="news-filter active" data-filter="all"><i class="bi bi-collection"></i> All News</button>
+            <button class="news-filter" data-filter="earnings"><i class="bi bi-graph-up"></i> Earnings Calls</button>
+            <button class="news-filter" data-filter="ma"><i class="bi bi-arrow-left-right"></i> M&A</button>
+            <button class="news-filter" data-filter="economic"><i class="bi bi-currency-dollar"></i> Economic Indicators</button>
+          </div>
+        </div>
+        <div class="news-list" id="newsList">
+          <article class="news-card" data-category="earnings">
+            <div class="news-card-header" onclick="toggleNewsCard(this)">
+              <div class="news-badge earnings">Earnings Call</div>
+              <h3 class="news-headline">NVDA Reports Record Q4 Earnings, Beats Expectations by 15%</h3>
+              <div class="news-meta">
+                <span class="news-source"><i class="bi bi-newspaper"></i> Bloomberg</span>
+                <span class="news-time"><i class="bi bi-clock"></i> 2 hours ago</span>
+                <span class="news-impact high"><i class="bi bi-arrow-up-circle"></i> High Impact</span>
+              </div>
+              <button class="expand-btn"><i class="bi bi-chevron-down"></i></button>
+            </div>
+            <div class="news-card-body">
+              <p class="news-excerpt">NVIDIA Corporation exceeded analyst expectations in its Q4 earnings report, posting revenue of $22.1 billion, up 265% year-over-year. The chipmaker's data center segment drove growth with $18.4 billion in revenue, fueled by strong demand for AI accelerators.</p>
+              <div class="news-actions">
+                <button class="news-action-btn"><i class="bi bi-bookmark"></i> Save</button>
+                <button class="news-action-btn"><i class="bi bi-share"></i> Share</button>
+                <a href="#" class="news-action-btn primary">Read Full Article <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </article>
+          <article class="news-card" data-category="ma">
+            <div class="news-card-header" onclick="toggleNewsCard(this)">
+              <div class="news-badge ma">M&A</div>
+              <h3 class="news-headline">Microsoft Announces $68.7B Acquisition of Activision Blizzard</h3>
+              <div class="news-meta">
+                <span class="news-source"><i class="bi bi-newspaper"></i> WSJ</span>
+                <span class="news-time"><i class="bi bi-clock"></i> 5 hours ago</span>
+                <span class="news-impact medium"><i class="bi bi-dash-circle"></i> Medium Impact</span>
+              </div>
+              <button class="expand-btn"><i class="bi bi-chevron-down"></i></button>
+            </div>
+            <div class="news-card-body">
+              <p class="news-excerpt">Microsoft has completed its acquisition of gaming giant Activision Blizzard for $68.7 billion, marking one of the largest tech deals in history. The merger strengthens Microsoft's position in the gaming industry.</p>
+              <div class="news-actions">
+                <button class="news-action-btn"><i class="bi bi-bookmark"></i> Save</button>
+                <button class="news-action-btn"><i class="bi bi-share"></i> Share</button>
+                <a href="#" class="news-action-btn primary">Read Full Article <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </article>
+          <article class="news-card" data-category="economic">
+            <div class="news-card-header" onclick="toggleNewsCard(this)">
+              <div class="news-badge economic">Economic Indicator</div>
+              <h3 class="news-headline">Fed Holds Interest Rates Steady, Signals Potential Cuts in 2024</h3>
+              <div class="news-meta">
+                <span class="news-source"><i class="bi bi-newspaper"></i> Reuters</span>
+                <span class="news-time"><i class="bi bi-clock"></i> 1 day ago</span>
+                <span class="news-impact high"><i class="bi bi-arrow-up-circle"></i> High Impact</span>
+              </div>
+              <button class="expand-btn"><i class="bi bi-chevron-down"></i></button>
+            </div>
+            <div class="news-card-body">
+              <p class="news-excerpt">The Federal Reserve maintained interest rates at 5.25%-5.50% range during its latest meeting. Chairman Jerome Powell indicated that rate cuts could begin in mid-2024 if inflation continues its downward trajectory.</p>
+              <div class="news-actions">
+                <button class="news-action-btn"><i class="bi bi-bookmark"></i> Save</button>
+                <button class="news-action-btn"><i class="bi bi-share"></i> Share</button>
+                <a href="#" class="news-action-btn primary">Read Full Article <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </article>
+          <article class="news-card" data-category="earnings">
+            <div class="news-card-header" onclick="toggleNewsCard(this)">
+              <div class="news-badge earnings">Earnings Call</div>
+              <h3 class="news-headline">Apple Reports Strong iPhone Sales Despite Market Headwinds</h3>
+              <div class="news-meta">
+                <span class="news-source"><i class="bi bi-newspaper"></i> CNBC</span>
+                <span class="news-time"><i class="bi bi-clock"></i> 1 day ago</span>
+                <span class="news-impact medium"><i class="bi bi-dash-circle"></i> Medium Impact</span>
+              </div>
+              <button class="expand-btn"><i class="bi bi-chevron-down"></i></button>
+            </div>
+            <div class="news-card-body">
+              <p class="news-excerpt">Apple Inc. exceeded revenue forecasts with $119.6 billion in quarterly sales, driven by robust iPhone 15 demand. Services revenue reached a record $23.1 billion, up 11% year-over-year.</p>
+              <div class="news-actions">
+                <button class="news-action-btn"><i class="bi bi-bookmark"></i> Save</button>
+                <button class="news-action-btn"><i class="bi bi-share"></i> Share</button>
+                <a href="#" class="news-action-btn primary">Read Full Article <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
 
-        let portfolioChart = null;
-        let currentExpandedCard = 'portfolio';
+    </div>
+  </main>
 
-        // Initialize the portfolio chart
-        function initPortfolioChart() {
-            const canvas = document.getElementById('portfolioChart');
-            if (!canvas) {
-                console.error('Portfolio chart canvas not found');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            const currentPeriod = document.getElementById('timePeriodSelect').value;
-            const data = portfolioData[currentPeriod];
-
-            // Check if Chart.js is loaded
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js is not loaded');
-                return;
-            }
-
-            portfolioChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Portfolio Value',
-                        data: data.data,
-                        borderColor: data.color,
-                        backgroundColor: data.color + '20',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: data.color,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        pointHoverBackgroundColor: data.color,
-                        pointHoverBorderColor: '#ffffff',
-                        pointHoverBorderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            titleColor: '#e2e8f0',
-                            bodyColor: '#cbd5e1',
-                            borderColor: 'rgba(71, 85, 105, 0.4)',
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Value: $' + context.parsed.y.toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    });
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(71, 85, 105, 0.2)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(71, 85, 105, 0.2)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: '#94a3b8',
-                                font: {
-                                    size: 12
-                                },
-                                callback: function(value) {
-                                    return '$' + (value / 1000).toFixed(0) + 'k';
-                                }
-                            }
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeInOutQuart'
-                    }
-                }
-            });
-        }
-
-        // Update chart when time period changes
-        function updateChart() {
-            const currentPeriod = document.getElementById('timePeriodSelect').value;
-            const data = portfolioData[currentPeriod];
-            
-            console.log('Updating chart for period:', currentPeriod, 'with data:', data);
-            
-            if (portfolioChart) {
-                portfolioChart.data.labels = data.labels;
-                portfolioChart.data.datasets[0].data = data.data;
-                portfolioChart.data.datasets[0].borderColor = data.color;
-                portfolioChart.data.datasets[0].backgroundColor = data.color + '20';
-                portfolioChart.data.datasets[0].pointBackgroundColor = data.color;
-                portfolioChart.data.datasets[0].pointHoverBackgroundColor = data.color;
-                portfolioChart.update('active');
-                console.log('Chart updated successfully');
-            } else {
-                console.error('Portfolio chart is not initialized');
-            }
-
-            // Update portfolio value and change display
-            updatePortfolioDisplay(data);
-        }
-
-        // Update portfolio value and change display
-        function updatePortfolioDisplay(data) {
-            const portfolioValue = document.querySelector('.portfolio-value');
-            const portfolioChange = document.querySelector('.portfolio-change .change-positive');
-            
-            if (portfolioValue && portfolioChange) {
-                // Update portfolio value
-                portfolioValue.textContent = `$${data.currentValue.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}`;
-                
-                // Update change display
-                const changeIcon = data.change >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
-                const changeClass = data.change >= 0 ? 'change-positive' : 'change-negative';
-                
-                portfolioChange.className = changeClass;
-                portfolioChange.innerHTML = `
-                    <i class="bi ${changeIcon}"></i>
-                    $${Math.abs(data.change).toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })} (${data.change >= 0 ? '+' : ''}${data.changePercent.toFixed(2)}%)
-                `;
-            }
-        }
-
-        // Card content data for different metric cards
-        const cardContentData = {
-            pnl: {
-                title: "Today's P&L",
-                icon: "bi-graph-up",
-                iconClass: "icon-positive",
-                value: "+$1,247",
-                subtitle: "+0.98% from yesterday",
-                chartData: {
-                    labels: ['9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM'],
-                    data: [800, 950, 1100, 1050, 1200, 1150, 1247, 1247],
-                    color: '#10b981'
-                }
-            },
-            performer: {
-                title: "Top Performer",
-                icon: "bi-star-fill",
-                iconClass: "icon-warning",
-                value: "NVDA",
-                subtitle: "+12.4% this week",
-                chartData: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-                    data: [450, 465, 480, 495, 505],
-                    color: '#f59e0b'
-                }
-            },
-            risk: {
-                title: "Risk Score",
-                icon: "bi-exclamation-triangle",
-                iconClass: "icon-warning",
-                value: "6.2/10",
-                subtitle: "Moderate risk level",
-                chartData: {
-                    labels: ['Volatility', 'Liquidity', 'Concentration', 'Leverage', 'Market'],
-                    data: [7, 5, 6, 4, 8],
-                    color: '#f59e0b'
-                }
-            },
-            dividends: {
-                title: "Monthly Dividends",
-                icon: "bi-currency-dollar",
-                iconClass: "icon-info",
-                value: "$847.23",
-                subtitle: "Next payout: Oct 15",
-                chartData: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-                    data: [750, 780, 800, 820, 830, 840, 845, 847, 847.23],
-                    color: '#3b82f6'
-                }
-            },
-            market: {
-                title: "Market Performance",
-                icon: "bi-graph-up",
-                iconClass: "icon-success",
-                value: "+8.4%",
-                subtitle: "vs S&P 500: +6.2%",
-                chartData: {
-                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                    data: [2.1, 4.3, 6.8, 8.4],
-                    color: '#10b981'
-                }
-            },
-            allocation: {
-                title: "Asset Allocation",
-                icon: "bi-pie-chart",
-                iconClass: "icon-info",
-                value: "Balanced",
-                subtitle: "65% Stocks, 35% Bonds",
-                chartData: {
-                    labels: ['Technology', 'Healthcare', 'Financials', 'Consumer Discretionary', 'Industrials', 'Energy', 'Bonds', 'Cash'],
-                    data: [25, 18, 15, 12, 10, 8, 7, 5],
-                    colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#64748b', '#94a3b8'],
-                    type: 'pie'
-                }
-            },
-            volatility: { title: "Volatility Score", icon: "bi-activity", iconClass: "icon-warning", value: "14.2%", subtitle: "30-day volatility ↓", chartData: { labels: ['W1', 'W2', 'W3', 'W4'], data: [16, 15.2, 14.8, 14.2], color: '#f59e0b' } },
-            sharpe: { title: "Sharpe Ratio", icon: "bi-graph-up-arrow", iconClass: "icon-info", value: "1.24", subtitle: "Risk-adjusted returns", chartData: { labels: ['Q1', 'Q2', 'Q3', 'Q4'], data: [1.0, 1.1, 1.15, 1.24], color: '#3b82f6' } },
-            beta: { title: "Beta vs Market", icon: "bi-bullseye", iconClass: "icon-info", value: "1.08", subtitle: "S&P 500 correlation", chartData: { labels: ['Jan', 'Apr', 'Jul', 'Oct'], data: [1.05, 1.06, 1.07, 1.08], color: '#3b82f6' } },
-            sector: { title: "Sector Exposure", icon: "bi-bar-chart", iconClass: "icon-success", value: "Tech 32%", subtitle: "Top 3: Healthcare 18%, Fin 15%", chartData: { labels: ['Tech', 'Healthcare', 'Fin', 'Consumer', 'Other'], data: [32, 18, 15, 12, 23], colors: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#64748b'], type: 'pie' } }
-        };
-
-        // Expand card function
-        function expandCard(cardType) {
-            console.log('Expanding card:', cardType);
-            if (currentExpandedCard === cardType) return;
-            
-            const expandedCard = document.getElementById('expandedCard');
-            const cardData = cardContentData[cardType];
-            
-            if (!cardData) {
-                console.error('Card data not found for:', cardType);
-                return;
-            }
-            
-            // Store the current expanded card data before switching
-            const previousCardType = currentExpandedCard;
-            
-            // Update expanded card content
-            expandedCard.innerHTML = `
-                <div class="card-content">
-                    <div class="portfolio-header">
-                        <div class="portfolio-title">${cardData.title}</div>
-                        <div class="portfolio-icon">
-                            <i class="bi ${cardData.icon}"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="portfolio-value-container">
-                        <div class="portfolio-value">${cardData.value}</div>
-                        <div class="portfolio-change">
-                            <span class="change-positive">
-                                <i class="bi ${cardData.icon}"></i>
-                                ${cardData.subtitle}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="updated-time">Updated 2 minutes ago</div>
-                    
-                    <div class="chart-container">
-                        <canvas id="expandedChart" class="chart-canvas"></canvas>
-                    </div>
-                </div>
-            `;
-            
-            // Create chart for expanded card
-            setTimeout(() => {
-                createExpandedChart(cardData.chartData);
-            }, 100);
-            
-            // Move current expanded card to metrics grid
-            moveCardToMetrics(previousCardType);
-            
-            // Update current expanded card
-            currentExpandedCard = cardType;
-        }
-
-        // Create chart for expanded card
-        function createExpandedChart(data) {
-            const canvas = document.getElementById('expandedChart');
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            
-            if (portfolioChart) {
-                portfolioChart.destroy();
-            }
-            
-            const chartType = data.type || 'line';
-            
-            if (chartType === 'pie') {
-                portfolioChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            data: data.data,
-                            backgroundColor: data.colors,
-                            borderColor: data.colors.map(color => color + '80'),
-                            borderWidth: 2,
-                            hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'right',
-                                labels: {
-                                    color: '#e2e8f0',
-                                    font: {
-                                        size: 12
-                                    },
-                                    padding: 20,
-                                    usePointStyle: true,
-                                    pointStyle: 'circle'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                titleColor: '#e2e8f0',
-                                bodyColor: '#cbd5e1',
-                                borderColor: 'rgba(71, 85, 105, 0.4)',
-                                borderWidth: 1,
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.parsed || 0;
-                                        return `${label}: ${value}%`;
-                                    }
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeInOutQuart'
-                        }
-                    }
-                });
-            } else {
-                portfolioChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: data.title,
-                            data: data.data,
-                            borderColor: data.color,
-                            backgroundColor: data.color + '20',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: data.color,
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            pointHoverBackgroundColor: data.color,
-                            pointHoverBorderColor: '#ffffff',
-                            pointHoverBorderWidth: 3
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                titleColor: '#e2e8f0',
-                                bodyColor: '#cbd5e1',
-                                borderColor: 'rgba(71, 85, 105, 0.4)',
-                                borderWidth: 1,
-                                cornerRadius: 8,
-                                displayColors: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: {
-                                    color: 'rgba(71, 85, 105, 0.2)',
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    color: '#94a3b8',
-                                    font: {
-                                        size: 12
-                                    }
-                                }
-                            },
-                            y: {
-                                grid: {
-                                    color: 'rgba(71, 85, 105, 0.2)',
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    color: '#94a3b8',
-                                    font: {
-                                        size: 12
-                                    }
-                                }
-                            }
-                        },
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        },
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeInOutQuart'
-                        }
-                    }
-                });
-            }
-        }
-
-        // Move current expanded card to carousel (metrics strip below hero)
-        function moveCardToMetrics(cardType) {
-            const carousel = document.getElementById('dashboardCarousel');
-            if (!carousel) return;
-
-            if (cardType === 'portfolio') {
-                let portfolioCard = document.querySelector('[data-card="portfolio"]');
-                if (!portfolioCard) {
-                    portfolioCard = document.createElement('div');
-                    portfolioCard.className = 'metric-card positive';
-                    portfolioCard.setAttribute('data-card', 'portfolio');
-                    portfolioCard.onclick = () => expandCard('portfolio');
-                    portfolioCard.innerHTML = `
-                        <div class="metric-header">
-                            <div class="metric-icon icon-positive">
-                                <i class="bi bi-graph-up"></i>
-                            </div>
-                            <div class="metric-title">Total Portfolio</div>
-                        </div>
-                        <div class="metric-content">
-                            <div class="metric-value">$127,843.52</div>
-                            <div class="metric-subtitle">+2.28% this year</div>
-                        </div>
-                    `;
-                    var slide = document.createElement('div');
-                    slide.className = 'dashboard-carousel-slide';
-                    slide.appendChild(portfolioCard);
-                    carousel.appendChild(slide);
-                } else {
-                    // Show the existing portfolio card
-                    portfolioCard.style.display = 'flex';
-                }
-            } else {
-                // Show the clicked card in metrics grid (it should always be visible)
-                const cardToShow = document.querySelector(`[data-card="${cardType}"]`);
-                if (cardToShow) {
-                    cardToShow.style.display = 'flex';
-                }
-            }
-        }
-
-        // Make expandCard globally accessible
-        window.expandCard = expandCard;
-
-        // Load user data (no authentication required)
-        async function loadDashboardData() {
-            try {
-                // Try to load user dashboard data if authenticated
-                if (window.apiService && window.apiService.isAuthenticated()) {
-                    const dashboardData = await window.apiService.getDashboard();
-                    console.log('Dashboard data loaded:', dashboardData);
-                    
-                    // Update portfolio values with real data
-                    if (dashboardData.portfolio_summary) {
-                        updatePortfolioWithRealData(dashboardData.portfolio_summary);
-                    }
-                    
-                    // Update metrics with real data
-                    if (dashboardData.top_holdings) {
-                        updateMetricsWithRealData(dashboardData.top_holdings);
-                    }
-                } else {
-                    console.log('User not authenticated, using demo data');
-                    // Continue with demo data
-                }
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
-                // Continue with demo data if API fails
-            }
-        }
-
-        // Update portfolio with real user data
-        function updatePortfolioWithRealData(portfolioSummary) {
-            const portfolioValue = document.querySelector('.portfolio-value');
-            const portfolioChange = document.querySelector('.portfolio-change .change-positive');
-            
-            if (portfolioValue && portfolioSummary.total_value) {
-                portfolioValue.textContent = `$${portfolioSummary.total_value.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}`;
-            }
-            
-            if (portfolioChange && portfolioSummary.total_gain_loss !== undefined) {
-                const changeIcon = portfolioSummary.total_gain_loss >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
-                const changeClass = portfolioSummary.total_gain_loss >= 0 ? 'change-positive' : 'change-negative';
-                
-                portfolioChange.className = changeClass;
-                portfolioChange.innerHTML = `
-                    <i class="bi ${changeIcon}"></i>
-                    $${Math.abs(portfolioSummary.total_gain_loss).toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })} (${portfolioSummary.total_gain_loss >= 0 ? '+' : ''}${portfolioSummary.total_gain_loss_percent.toFixed(2)}%)
-                `;
-            }
-        }
-
-        // Update metrics with real user data
-        function updateMetricsWithRealData(topHoldings) {
-            // Update top performer metric
-            if (topHoldings.length > 0) {
-                const topHolding = topHoldings[0];
-                const performerCard = document.querySelector('[data-card="performer"] .metric-value');
-                const performerSubtitle = document.querySelector('[data-card="performer"] .metric-subtitle');
-                
-                if (performerCard) {
-                    performerCard.textContent = topHolding.symbol;
-                }
-                if (performerSubtitle) {
-                    performerSubtitle.textContent = `${topHolding.unrealized_gain_loss_percent >= 0 ? '+' : ''}${topHolding.unrealized_gain_loss_percent.toFixed(1)}% this week`;
-                }
-            }
-        }
-
-        // Initialize components when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Initializing dashboard');
-            
-            // Load user data (no authentication required)
-            loadDashboardData();
-            
-            // Initialize the notifications sidebar
-            if (window.NotificationsSidebar) {
-                const sidebar = new NotificationsSidebar();
-                sidebar.init();
-            }
-
-            // Initialize the portfolio chart with a small delay to ensure Chart.js is loaded
-            setTimeout(() => {
-                initPortfolioChart();
-                if (window.ChartControls && portfolioChart) {
-                    const getData = () => {
-                        const period = document.getElementById('timePeriodSelect')?.value || '12';
-                        return portfolioData[period] || portfolioData[12];
-                    };
-                    window.ChartControls.init(portfolioChart, getData);
-                }
-            }, 100);
-
-            window.onChartTypeChange = function(type) {
-                if (!portfolioChart) return;
-                portfolioChart.config.type = type === 'area' ? 'line' : 'line';
-                portfolioChart.config.data.datasets[0].fill = type === 'area';
-                portfolioChart.update();
-            };
-            window.onBenchmarkChange = function(benchmark, checked) {
-                if (!portfolioChart) return;
-                const ds = portfolioChart.data.datasets;
-                const base = portfolioData[document.getElementById('timePeriodSelect')?.value || '12'] || portfolioData[12];
-                const hasLabel = (l) => ds.some(d => d.label === l);
-                const removeLabel = (l) => { const i = ds.findIndex(d => d.label === l); if (i >= 0) ds.splice(i, 1); };
-                if (benchmark === 'sp500') {
-                    if (checked && !hasLabel('S&P 500')) ds.push({ label: 'S&P 500', data: base.data.map((v, i) => v * (0.98 - i * 0.002)), borderColor: '#94a3b8', borderWidth: 1, fill: false, pointRadius: 0 });
-                    if (!checked) removeLabel('S&P 500');
-                }
-                if (benchmark === 'nasdaq') {
-                    if (checked && !hasLabel('NASDAQ')) ds.push({ label: 'NASDAQ', data: base.data.map((v, i) => v * (0.97 - i * 0.003)), borderColor: '#64748b', borderWidth: 1, fill: false, pointRadius: 0 });
-                    if (!checked) removeLabel('NASDAQ');
-                }
-                portfolioChart.update();
-            };
-
-            // Add event listener for time period changes
-            document.getElementById('timePeriodSelect').addEventListener('change', updateChart);
-        });
-</script>
+  <script src="../js/api-service.js"></script>
+  <script src="../components/navigation/navigation-config.js"></script>
+  <script src="../components/navigation/navigation.js"></script>
+  <script src="../components/notifications/notifications-sidebar.js"></script>
+  <script src="home-dashboard.js"></script>
 </body>
 </html>
