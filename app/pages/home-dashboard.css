@@ -29,10 +29,11 @@ body.dashboard-page {
   left: 0;
   right: 0;
   height: 64px;
-  background: rgba(15, 20, 25, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-primary);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--nav-border);
   z-index: 100;
+  font-family: var(--font-sans);
 }
 
 .nav-container {
@@ -287,14 +288,14 @@ body.dashboard-page .notifications-sidebar {
   left: 0;
   width: 320px;
   height: calc(100vh - 64px);
-  background: rgba(15, 20, 25, 0.95);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid var(--border-primary);
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--sidebar-border);
   z-index: 50;
   overflow-y: auto;
   transition: transform 0.3s ease;
   transform: translateX(0);
-  box-shadow: none;
+  box-shadow: var(--shadow-lg);
 }
 
 body.dashboard-page .notifications-sidebar:not(.open) {

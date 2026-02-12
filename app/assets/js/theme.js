@@ -4,21 +4,21 @@
 class ThemeManager {
   constructor() {
     this.themeToggle = document.getElementById('themeToggle');
-    this.currentTheme = localStorage.getItem('theme') || 'dark';
+    this.currentTheme = localStorage.getItem('ezana-theme') || 'dark';
     this.init();
   }
 
   init() {
     this.applyTheme(this.currentTheme);
-    if (this.themeToggle) {
-      this.themeToggle.addEventListener('click', () => this.toggleTheme());
-    }
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#themeToggle')) this.toggleTheme();
+    });
   }
 
   toggleTheme() {
     this.currentTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
     this.applyTheme(this.currentTheme);
-    localStorage.setItem('theme', this.currentTheme);
+    localStorage.setItem('ezana-theme', this.currentTheme);
   }
 
   applyTheme(theme) {

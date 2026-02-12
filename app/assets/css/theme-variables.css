@@ -1,43 +1,77 @@
-/**
- * Ezana Finance - Theme Variables
- * Single source for spacing, colors, typography, and layout tokens.
- * Design tokens inspired by Pastel Dreams (spacing, font, radius, shadows).
- * Colors remain Ezana Finance brand.
- */
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..144,400;8..144,600&display=swap');
+/* ============================================
+   THEME VARIABLES - TWEAKCN + EZANA FINANCE
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Source+Serif+4:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
-    /* Primary Colors */
+    /* Tweakcn Structure */
+    --font-sans: 'Open Sans', sans-serif;
+    --font-serif: 'Source Serif 4', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    --radius-sm: 0.5rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
+
+    /* Shadows (Tweakcn) */
+    --shadow-2xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
+    --shadow-xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
+    --shadow-sm: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 1px 2px -5px hsl(0 0% 0% / 0.08);
+    --shadow: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 1px 2px -5px hsl(0 0% 0% / 0.08);
+    --shadow-md: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 2px 4px -5px hsl(0 0% 0% / 0.08);
+    --shadow-lg: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 4px 6px -5px hsl(0 0% 0% / 0.08);
+    --shadow-xl: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 8px 10px -5px hsl(0 0% 0% / 0.08);
+    --shadow-2xl: 0px 8px 16px -4px hsl(0 0% 0% / 0.20);
+
+    /* DARK MODE - Ezana Finance Green Theme */
+    --background: #0f1419;
+    --foreground: #ffffff;
+    --card: rgba(26, 35, 50, 0.6);
+    --card-foreground: #ffffff;
+    --card-border: rgba(16, 185, 129, 0.1);
+
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+    --primary-hover: #34d399;
+
+    --secondary: #1a2332;
+    --secondary-foreground: #9ca3af;
+
+    --muted: rgba(17, 24, 39, 0.4);
+    --muted-foreground: #6b7280;
+
+    --accent: rgba(16, 185, 129, 0.15);
+    --accent-foreground: #10b981;
+
+    --border: rgba(16, 185, 129, 0.1);
+    --input: rgba(17, 24, 39, 0.6);
+    --ring: #10b981;
+
+    --sidebar-bg: rgba(15, 20, 25, 0.98);
+    --sidebar-border: rgba(16, 185, 129, 0.1);
+    --sidebar-hover: rgba(16, 185, 129, 0.1);
+
+    --nav-bg: rgba(15, 20, 25, 0.95);
+    --nav-border: rgba(16, 185, 129, 0.1);
+
+    /* Legacy aliases */
     --color-primary: #10b981;
     --color-primary-dark: #059669;
-    --color-primary-light: #34d399;
-
-    /* Background Colors */
     --bg-primary: #0f1419;
     --bg-secondary: #1a2332;
     --bg-card: rgba(17, 24, 39, 0.5);
     --bg-card-hover: rgba(17, 24, 39, 0.7);
-
-    /* Border Colors */
     --border-primary: rgba(16, 185, 129, 0.1);
-    --border-secondary: rgba(156, 163, 175, 0.1);
-
-    /* Text Colors */
     --text-primary: #ffffff;
     --text-secondary: #9ca3af;
     --text-tertiary: #6b7280;
-
-    /* Design System - Pastel Dreams inspired (spacing, font, radius, shadows only) */
-    --font-sans: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-serif: "Source Serif 4", Georgia, serif;
-    --font-mono: "IBM Plex Mono", "Courier New", monospace;
     --spacing: 0.25rem;
     --radius: 1.5rem;
     --shadow-2xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
     --shadow-xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
-    --shadow-card: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 1px 2px -5px hsl(0 0% 0% / 0.08);
-    --shadow-card-hover: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 4px 6px -5px hsl(0 0% 0% / 0.08);
-    --shadow-card-lg: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 8px 10px -5px hsl(0 0% 0% / 0.08);
+    --shadow-card: var(--shadow-sm);
+    --shadow-card-hover: var(--shadow-lg);
 
     /* Spacing Scale */
     --space-xs: 0.25rem;   /* 4px */
@@ -46,17 +80,6 @@
     --space-lg: 1.5rem;   /* 24px */
     --space-xl: 2rem;     /* 32px */
     --space-2xl: 3rem;    /* 48px */
-
-    /* Border Radius - cards use --radius (1.5rem), smaller UI uses sm/md */
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 0.25rem);
-
-    /* Shadows (legacy) */
-    --shadow-sm: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 1px 2px -5px hsl(0 0% 0% / 0.08);
-    --shadow-md: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 2px 4px -5px hsl(0 0% 0% / 0.08);
-    --shadow-lg: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 4px 6px -5px hsl(0 0% 0% / 0.08);
 
     /* Transitions */
     --transition-fast: 150ms ease;
@@ -84,7 +107,7 @@
 
     /* Layout */
     --nav-height: 64px;
-    --sidebar-width: 280px;
+    --sidebar-width: 320px;
     --page-max-width: 1400px;
     --hero-min-height: 120px;
     --metric-card-min-height: 120px;
@@ -92,11 +115,66 @@
     --chart-height-mobile: 300px;
 }
 
-/* Typography base - Pastel Dreams font for component pages */
-body { font-family: var(--font-sans); }
+/* LIGHT MODE - Tweakcn Light + Ezana Green */
+body.light-mode {
+  --background: #f5f5f0;
+  --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --card-border: rgba(5, 150, 105, 0.15);
+
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --primary-hover: #047857;
+
+  --secondary: #f3f4f6;
+  --secondary-foreground: #4b5563;
+
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+
+  --accent: rgba(5, 150, 105, 0.1);
+  --accent-foreground: #059669;
+
+  --border: rgba(5, 150, 105, 0.15);
+  --input: #ffffff;
+  --ring: #059669;
+
+  --sidebar-bg: #ffffff;
+  --sidebar-border: rgba(5, 150, 105, 0.15);
+  --sidebar-hover: rgba(5, 150, 105, 0.05);
+
+  --nav-bg: rgba(255, 255, 255, 0.95);
+  --nav-border: rgba(5, 150, 105, 0.15);
+
+  --color-primary: #059669;
+  --bg-primary: #f5f5f0;
+  --bg-card: #ffffff;
+  --border-primary: rgba(5, 150, 105, 0.15);
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+}
+
+/* Apply fonts and base styles globally */
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
 h1 { font-size: var(--font-3xl); line-height: 1.2; }
 h2 { font-size: var(--font-2xl); line-height: 1.3; }
 h3 { font-size: var(--font-xl); line-height: 1.4; }
 h4 { font-size: var(--font-lg); line-height: 1.5; }
 p { font-size: var(--font-base); line-height: 1.6; }
 small { font-size: var(--font-sm); line-height: 1.5; }
+
+code, pre {
+  font-family: var(--font-mono);
+}

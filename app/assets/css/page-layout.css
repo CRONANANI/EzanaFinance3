@@ -1,0 +1,115 @@
+/* ============================================
+   UNIFIED PAGE LAYOUT - ALL PAGES
+   ============================================ */
+
+.page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--background);
+  padding-top: 64px;
+  transition: padding-left 0.3s ease;
+}
+
+.page-wrapper.sidebar-active {
+  padding-left: 320px;
+}
+
+.page-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Page Hero */
+.page-hero {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.page-hero h1 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-hero p {
+  font-size: 1rem;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+/* Quick Actions Bar */
+.quick-actions-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: fit-content;
+}
+
+.quick-action-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-action-btn i {
+  font-size: 1.125rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .page-wrapper.sidebar-active {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    padding: 1rem;
+  }
+  
+  .page-hero {
+    padding: 1.5rem;
+  }
+  
+  .page-hero h1 {
+    font-size: 1.5rem;
+  }
+}

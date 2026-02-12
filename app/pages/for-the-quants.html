@@ -11,6 +11,10 @@
     <!-- Main Styles -->
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    <link rel="stylesheet" href="../assets/css/component-cards.css">
+    <link rel="stylesheet" href="../assets/css/page-layout.css">
+    <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
     <link rel="stylesheet" href="../assets/css/layout-common.css">
     <!-- Navigation CSS -->
     <link rel="stylesheet" href="../components/navigation/navigation.css">
@@ -40,9 +44,9 @@
 
         /* Body styling for proper topnav spacing */
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: white;
+            background: var(--background);
+            font-family: var(--font-sans);
+            color: var(--foreground);
             min-height: 100vh;
             padding: 24px;
             padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
@@ -640,6 +644,7 @@
 </div>
 
 <!-- Navigation JavaScript -->
+<script src="../assets/js/theme.js"></script>
 <script src="../components/navigation/navigation-config.js?v=1.2.0"></script>
 <script src="../components/navigation/navigation.js?v=1.2.0"></script>
 <!-- Notifications Sidebar JavaScript -->
