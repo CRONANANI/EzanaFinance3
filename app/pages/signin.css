@@ -1,5 +1,5 @@
 /* ============================================
-   SIGN IN PAGE - ADDITIONAL STYLES
+   SIGN IN PAGE - SINGLE COLUMN LAYOUT
    Inherits from signup.css
    ============================================ */
 
@@ -7,31 +7,52 @@
   background: var(--bg-primary);
 }
 
+.signin-left {
+  display: none !important;
+}
+
 .signin-container {
   position: relative;
   z-index: 1;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.signin-left {
-  background: linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(26, 35, 50, 0.95) 100%);
-  backdrop-filter: blur(20px);
-  padding: var(--spacing-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  grid-template-columns: 1fr;
 }
 
 .signin-right {
-  background: rgba(15, 20, 25, 0.8);
+  background: rgba(15, 20, 25, 0.95);
   backdrop-filter: blur(20px);
   padding: var(--spacing-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow-y: auto;
+  width: 100%;
+}
+
+.signin-page .form-container {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.signin-page .back-to-home {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+  transition: color 0.2s ease;
+}
+
+.signin-page .back-to-home:hover {
+  color: var(--color-primary);
+}
+
+.signin-page .back-to-home i {
+  font-size: 1rem;
 }
 
 .social-signin {
@@ -104,7 +125,8 @@
 }
 
 .signup-link {
-  padding-top: var(--spacing-xl);
+  margin-top: 2rem;
+  padding-top: var(--spacing-lg);
   border-top: 1px solid var(--border-primary);
   text-align: center;
   font-size: 0.9375rem;
@@ -131,6 +153,6 @@
     grid-template-columns: 1fr;
   }
   .signin-left {
-    display: none;
+    display: none !important;
   }
 }
