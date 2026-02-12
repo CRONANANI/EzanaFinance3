@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Ezana Finance</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <!-- Google OAuth SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="signup.css">
+</head>
+<body class="signup-page">
+
+  <!-- Antigravity Background -->
+  <div class="antigravity-background" id="antigravityBg">
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <!-- Main Container -->
+  <div class="signup-container">
+
+    <!-- Left Side - Branding & Info -->
+    <div class="signup-left">
+      <div class="branding-section">
+        <a href="../index.html" class="brand-link">
+          <h1 class="brand-title">Ezana Finance</h1>
+        </a>
+        <p class="brand-tagline">Your Network Is Your Net Worth</p>
+        <div class="features-list">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="bi bi-building"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Congressional Trading Intelligence</h3>
+              <p>Track real-time stock trades by members of Congress</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Professional Portfolio Analytics</h3>
+              <p>Institutional-grade tools for individual investors</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="feature-content">
+              <h3>Secure & Private</h3>
+              <p>Bank-level encryption and data protection</p>
+            </div>
+          </div>
+        </div>
+        <div class="login-link">
+          <span>Already have an account?</span>
+          <a href="sign-in.html">Sign In</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side - Sign Up Form -->
+    <div class="signup-right">
+      <div class="form-container">
+        <div class="form-header">
+          <h2>Create Your Account</h2>
+          <p>Start tracking congressional trades and managing your portfolio</p>
+        </div>
+
+        <!-- Sign Up Form -->
+        <form id="signupForm" class="signup-form" novalidate>
+          <div class="form-group">
+            <label for="fullName" class="form-label">
+              Full Name
+              <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="bi bi-person input-icon"></i>
+              <input type="text" id="fullName" name="fullName" class="form-input" placeholder="John Doe" required autocomplete="name">
+            </div>
+            <span class="error-message" id="fullNameError"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">
+              Email Address
+              <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="bi bi-envelope input-icon"></i>
+              <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+            </div>
+            <span class="error-message" id="emailError"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">
+              Password
+              <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="bi bi-lock input-icon"></i>
+              <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required autocomplete="new-password">
+              <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="password-strength" id="passwordStrength">
+              <div class="strength-bars">
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+              </div>
+              <span class="strength-text">Password strength</span>
+            </div>
+            <span class="error-message" id="passwordError"></span>
+            <ul class="password-requirements" aria-live="polite">
+              <li id="req-length"><i class="bi bi-circle"></i> At least 8 characters</li>
+              <li id="req-uppercase"><i class="bi bi-circle"></i> One uppercase letter</li>
+              <li id="req-lowercase"><i class="bi bi-circle"></i> One lowercase letter</li>
+              <li id="req-number"><i class="bi bi-circle"></i> One number</li>
+              <li id="req-special"><i class="bi bi-circle"></i> One special character</li>
+            </ul>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">
+              Confirm Password
+              <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="bi bi-lock-fill input-icon"></i>
+              <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Re-enter your password" required autocomplete="new-password">
+              <button type="button" class="toggle-password" id="toggleConfirmPassword" aria-label="Toggle confirm password visibility">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <span class="error-message" id="confirmPasswordError"></span>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="terms" name="terms" class="checkbox-input" required>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                I agree to the
+                <a href="terms.html" target="_blank">Terms of Service</a>
+                and
+                <a href="privacy.html" target="_blank">Privacy Policy</a>
+              </span>
+            </label>
+            <span class="error-message" id="termsError"></span>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="marketing" name="marketing" class="checkbox-input">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                Send me updates about new features and market insights
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span class="btn-text">Create Account</span>
+            <span class="btn-loader" style="display: none;">
+              <i class="bi bi-arrow-repeat spinner"></i>
+              Creating account...
+            </span>
+          </button>
+        </form>
+
+        <!-- Social Sign Up -->
+        <div class="social-signup">
+          <div class="divider">
+            <span>Or sign up with</span>
+          </div>
+          <div class="social-buttons">
+            <button type="button" class="social-btn google" id="googleSignUpBtn" aria-label="Sign up with Google">
+              <i class="bi bi-google"></i>
+              Google
+            </button>
+            <button type="button" class="social-btn microsoft" id="microsoftSignUpBtn" aria-label="Sign up with Microsoft" disabled title="Coming soon">
+              <i class="bi bi-microsoft"></i>
+              Microsoft
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="successModal" role="dialog" aria-labelledby="modalTitle" aria-modal="true" aria-hidden="true">
+    <div class="modal-container">
+      <div class="modal-content">
+        <div class="success-icon">
+          <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        </div>
+        <h3 class="modal-title" id="modalTitle">Check Your Email!</h3>
+        <p class="modal-message">
+          We've sent a confirmation code to <strong id="userEmail"></strong>
+        </p>
+        <p class="modal-submessage">
+          Please check your inbox and enter the 6-digit code to verify your account.
+          The code will expire in 15 minutes.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" id="verifyNowBtn">Enter Verification Code</button>
+          <button type="button" class="btn-secondary" id="resendCodeBtn">Resend Code</button>
+        </div>
+        <button type="button" class="modal-close" id="closeModal" aria-label="Close modal">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api-service.js"></script>
+  <script src="signup.js"></script>
+</body>
+</html>
