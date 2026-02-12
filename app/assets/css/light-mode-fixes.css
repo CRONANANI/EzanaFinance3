@@ -1,0 +1,127 @@
+/* ============================================
+   LIGHT MODE - COMPREHENSIVE FIXES
+   ============================================ */
+
+body.light-mode {
+  --background: #f5f5f0;
+  --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --card-border: rgba(5, 150, 105, 0.15);
+
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --primary-hover: #047857;
+
+  --secondary: #f3f4f6;
+  --secondary-foreground: #4b5563;
+
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+
+  --accent: rgba(5, 150, 105, 0.1);
+  --accent-foreground: #059669;
+
+  --border: rgba(5, 150, 105, 0.15);
+  --input-bg: #ffffff;
+  --input-border: rgba(5, 150, 105, 0.2);
+
+  --sidebar-bg: #ffffff;
+  --sidebar-border: rgba(5, 150, 105, 0.15);
+
+  --nav-bg: rgba(255, 255, 255, 0.95);
+  --nav-border: rgba(5, 150, 105, 0.15);
+}
+
+body.light-mode .component-card,
+body.light-mode .metric-card,
+body.light-mode .quick-action-btn,
+body.light-mode .feed-item,
+body.light-mode .news-insight,
+body.light-mode .transaction-item,
+body.light-mode .holding-item,
+body.light-mode .alert-item,
+body.light-mode .perf-metric,
+body.light-mode .news-card,
+body.light-mode .resource-card,
+body.light-mode .stat-card,
+body.light-mode .post-card {
+  background: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--card-border) !important;
+}
+
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode .feed-title,
+body.light-mode .metric-label,
+body.light-mode .card-header h3,
+body.light-mode .stat-value,
+body.light-mode .post-title {
+  color: var(--foreground) !important;
+}
+
+body.light-mode p,
+body.light-mode span:not(.badge):not(.tag),
+body.light-mode .feed-meta,
+body.light-mode .metric-change,
+body.light-mode .stat-label,
+body.light-mode .stat-change,
+body.light-mode .post-text {
+  color: var(--muted-foreground) !important;
+}
+
+body.light-mode .metric-icon,
+body.light-mode .feed-icon {
+  background: var(--accent) !important;
+  color: var(--primary) !important;
+}
+
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--foreground) !important;
+}
+
+body.light-mode .quick-action-btn,
+body.light-mode .card-action-btn,
+body.light-mode .btn-primary {
+  background: var(--accent) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+body.light-mode .quick-action-btn:hover,
+body.light-mode .card-action-btn:hover,
+body.light-mode .btn-primary:hover {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+body.light-mode .component-card,
+body.light-mode .metric-card,
+body.light-mode .stat-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .component-card:hover,
+body.light-mode .metric-card:hover,
+body.light-mode .stat-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode .watchlist-table tbody tr,
+body.light-mode .member-item,
+body.light-mode .alert-item,
+body.light-mode .data-table tbody tr {
+  background: var(--muted) !important;
+}
+
+body.light-mode .watchlist-table tbody tr:hover,
+body.light-mode .member-item:hover {
+  background: var(--accent) !important;
+}

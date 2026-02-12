@@ -1,816 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watchlist - Ezana Finance</title>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../assets/css/theme-variables.css">
-    <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/component-cards.css">
-    <link rel="stylesheet" href="../assets/css/page-layout.css">
-    <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
-    <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <!-- Navigation CSS -->
-    <link rel="stylesheet" href="../components/navigation/navigation.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
-    <!-- Watchlist Component Cards CSS -->
-    <link rel="stylesheet" href="../components/pages/watchlist/new-watchlist-card/new-watchlist-card.css">
-    <link rel="stylesheet" href="../components/pages/watchlist/set-alert-card/set-alert-card.css">
-    <link rel="stylesheet" href="../components/pages/watchlist/export-data-card/export-data-card.css">
-    <link rel="stylesheet" href="../components/pages/watchlist/share-list-card/share-list-card.css">
-    <!-- Shared page layout and card formatting -->
-    <link rel="stylesheet" href="../assets/css/pages-common.css">
-    <link rel="stylesheet" href="../assets/css/cards-common.css">
-    <link rel="stylesheet" href="../assets/css/metrics-common.css">
-    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: var(--background);
-            font-family: var(--font-sans);
-            color: var(--foreground);
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px); /* Account for fixed topnav height */
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        /* Hero: same size and formatting as home dashboard via pages-common.css */
-
-        /* Section Headers - Compact */
-        .section-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 300;
-            color: var(--foreground);
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -0.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            border-radius: 2px;
-        }
-
-        .section-description {
-            font-size: 1.125rem;
-            color: var(--muted-foreground);
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Enhanced Watchlist Grid */
-        .watchlist-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
-        }
-
-        /* Professional Card Enhancements */
-        .watchlist-card {
-            background: var(--card);
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .watchlist-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-            background-size: 200% 100%;
-            animation: shimmer 3s ease-in-out infinite;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .watchlist-card:hover::before {
-            opacity: 1;
-        }
-
-        .watchlist-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
-            border-color: var(--primary);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .watchlist-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-        }
-
-        .page-title-shiny {
-            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .text-foreground {
-            color: #f8fafc;
-        }
-
-        .text-muted-foreground {
-            color: #94a3b8;
-        }
-
-        .text-lg {
-            font-size: 1.125rem;
-            line-height: 1.75rem;
-        }
-
-        .text-4xl {
-            font-size: 2.25rem;
-            line-height: 2.5rem;
-        }
-
-        .font-light {
-            font-weight: 300;
-        }
-
-        .tracking-tight {
-            letter-spacing: -0.025em;
-        }
-
-        .mb-4 {
-            margin-bottom: 1rem;
-        }
-
-        .mb-12 {
-            margin-bottom: 3rem;
-        }
-
-        .grid {
-            display: grid;
-        }
-
-        .grid-cols-1 {
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-        }
-
-        .lg\\:grid-cols-2 {
-            @media (min-width: 1024px) {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        .xl\\:grid-cols-3 {
-            @media (min-width: 1280px) {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-
-        .gap-4 {
-            gap: 1rem;
-        }
-
-        .gap-6 {
-            gap: 1.5rem;
-        }
-
-        .gap-8 {
-            gap: 2rem;
-        }
-
-        .px-6 {
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-        }
-
-        .py-12 {
-            padding-top: 3rem;
-            padding-bottom: 3rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watchlist - Ezana Finance</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/theme-variables.css">
+  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+  <link rel="stylesheet" href="../assets/css/component-cards.css">
+  <link rel="stylesheet" href="../assets/css/page-layout.css">
+  <link rel="stylesheet" href="../components/navigation/unified-nav.css">
+  <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="watchlist.css">
 </head>
-<body class="watchlist">
-    <!-- Navigation will be dynamically loaded -->
+<body>
 
-    <!-- Notifications Sidebar -->
-<div id="notifications-sidebar" class="notifications-sidebar open">
-    <!-- Sidebar Toggle Button -->
-    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-        <i class="bi bi-bell"></i>
-    </button>
+  <nav class="main-nav" id="mainNav"></nav>
 
-    <!-- Sidebar Content -->
+  <div id="notifications-sidebar" class="notifications-sidebar open">
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()"><i class="bi bi-bell"></i></button>
     <div class="notifications-content">
-        <!-- Header -->
-        <div class="notifications-header">
-            <div class="notifications-title">
-                <h3>Investment Feed</h3>
-            </div>
-            <div class="notifications-actions">
-                <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
-                    <i class="bi bi-chevron-double-left"></i>
-                </button>
-                <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                    <i class="bi bi-gear"></i>
-                </button>
-            </div>
+      <div class="notifications-header">
+        <div class="notifications-title"><h3>Investment Feed</h3></div>
+        <div class="notifications-actions">
+          <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse"><i class="bi bi-chevron-double-left"></i></button>
+          <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings"><i class="bi bi-gear"></i></button>
         </div>
-
-        <!-- Filter Tabs -->
-        <div class="notifications-filters">
-            <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                All
-            </button>
-            <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                Congress
-            </button>
-            <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                Stocks
-            </button>
-            <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                Community
-            </button>
-        </div>
-
-        <!-- Notifications List -->
-        <div class="notifications-list" id="notifications-list">
-            <!-- Notifications will be dynamically populated here -->
-        </div>
-
-        <!-- Empty State -->
-        <div class="notifications-empty" id="notifications-empty" style="display: none;">
-            <i class="bi bi-bell-slash"></i>
-            <p>No notifications yet</p>
-            <small>We'll notify you when something important happens</small>
-        </div>
+      </div>
+      <div class="notifications-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">All</button>
+        <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress</button>
+        <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">Stocks</button>
+        <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+      <div class="notifications-empty" id="notifications-empty" style="display:none;"><i class="bi bi-bell-slash"></i><p>No notifications yet</p><small>We'll notify you when something important happens</small></div>
     </div>
-</div>
+  </div>
 
-<div class="page-content">
-    <!-- Hero Section -->
-    <div class="hero-section">
+  <div class="page-wrapper sidebar-active">
+    <main class="page-content">
+
+      <section class="page-hero">
         <div class="hero-content">
-            <h1 class="hero-title page-title-shiny">Watchlists</h1>
-            <p class="hero-description">Track your favorite congress people, stocks, and investment opportunities with real-time updates</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="hero-stat-number">24</span>
-                    <span class="hero-stat-label">Following</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">5</span>
-                    <span class="hero-stat-label">Stock Lists</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">12</span>
-                    <span class="hero-stat-label">Alerts</span>
-                </div>
-            </div>
+          <h1>Watchlist</h1>
+          <p>Track stocks, congressional members, and market opportunities</p>
         </div>
-    </div>
+        <div class="hero-actions">
+          <button class="btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Add to Watchlist
+          </button>
+          <button class="btn-secondary">
+            <i class="bi bi-download"></i>
+            Export
+          </button>
+        </div>
+      </section>
 
-    <!-- Watchlist Overview Section -->
-    <div class="section-header section-header-card">
-        <h2 class="section-title">Watchlist Overview</h2>
-        <p class="section-description">Your personalized tracking dashboard for stocks and congressional activities</p>
-    </div>
-    
-    <div class="watchlist-overview-grid">
-        <div class="watchlist-overview-card total-watchlists">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">Following</p>
-                    <p class="card-value" id="following-count">24</p>
-                </div>
-                <div class="card-icon">
-                    <i class="bi bi-star"></i>
-                </div>
-            </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon stocks">
+            <i class="bi bi-graph-up"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">24</div>
+            <div class="stat-label">Stocks Tracked</div>
+            <div class="stat-change positive">+3 this week</div>
+          </div>
         </div>
-        
-        <div class="watchlist-overview-card active-alerts">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">Stock Lists</p>
-                    <p class="card-value">5</p>
-                </div>
-                <div class="card-icon">
-                    <i class="bi bi-list"></i>
-                </div>
-            </div>
+        <div class="stat-card">
+          <div class="stat-icon congress">
+            <i class="bi bi-person-badge"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">12</div>
+            <div class="stat-label">Congress Members</div>
+            <div class="stat-change">Active traders</div>
+          </div>
         </div>
-        
-        <div class="watchlist-overview-card tracked-stocks">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">Alerts</p>
-                    <p class="card-value">12</p>
-                </div>
-                <div class="card-icon">
-                    <i class="bi bi-bell"></i>
-                </div>
-            </div>
+        <div class="stat-card">
+          <div class="stat-icon alerts">
+            <i class="bi bi-bell"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">8</div>
+            <div class="stat-label">Active Alerts</div>
+            <div class="stat-change warning">2 triggered today</div>
+          </div>
         </div>
-        
-        <div class="watchlist-overview-card portfolio-value">
-            <div class="card-header">
-                <div>
-                    <p class="card-title">This Week</p>
-                    <p class="card-value">8</p>
-                </div>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-            </div>
+        <div class="stat-card">
+          <div class="stat-icon performance">
+            <i class="bi bi-trophy"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">+12.4%</div>
+            <div class="stat-label">Watchlist Performance</div>
+            <div class="stat-change positive">vs +8.2% S&amp;P 500</div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- People I'm Following -->
-        <div class="bg-card rounded-xl p-6 border border-border">
-            <div class="card-header">
-                <h3 class="card-title">People I'm Following</h3>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div class="card-icon">
-                        <i class="bi bi-person-hearts"></i>
-                    </div>
-                    <button onclick="switchTab('inside-the-capitol')" class="text-primary hover:text-primary/80 font-medium text-sm">
-                        Add More
-                    </button>
-                </div>
+      <div class="watchlist-grid">
+        <div class="component-card full-width">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bookmark-star"></i>
+              Stock Watchlist
+            </h3>
+            <div class="header-actions">
+              <select class="filter-select">
+                <option>All Stocks</option>
+                <option>Tech</option>
+                <option>Finance</option>
+                <option>Healthcare</option>
+              </select>
+              <button class="card-action-btn">Manage</button>
             </div>
-            <div id="following-section">
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
-                                <span class="text-white font-bold text-sm">NP</span>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-gray-100">Nancy Pelosi</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">House • Democrat • CA</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">3 trades this week</span>
-                            <button onclick="toggleFollowCongressPerson('Nancy Pelosi', event)" class="text-emerald-600 hover:text-emerald-700 transition-colors">
-                                <i class="bi bi-star-fill"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                                <span class="text-white font-bold text-sm">CS</span>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-gray-100">Chuck Schumer</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">Senate • Democrat • NY</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">1 trade this week</span>
-                            <button onclick="toggleFollowCongressPerson('Chuck Schumer', event)" class="text-blue-600 hover:text-blue-700 transition-colors">
-                                <i class="bi bi-star-fill"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                                <span class="text-white font-bold text-sm">MM</span>
-                            </div>
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-gray-100">Mitch McConnell</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">Senate • Republican • KY</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">No recent trades</span>
-                            <button onclick="toggleFollowCongressPerson('Mitch McConnell', event)" class="text-purple-600 hover:text-purple-700 transition-colors">
-                                <i class="bi bi-star-fill"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
+          <div class="card-body">
+            <table class="watchlist-table data-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Change</th>
+                  <th>% Change</th>
+                  <th>Market Cap</th>
+                  <th>Alert</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>NVDA</strong></td>
+                  <td>NVIDIA Corporation</td>
+                  <td>$485.20</td>
+                  <td class="positive">+$12.40</td>
+                  <td class="positive">+2.6%</td>
+                  <td>$1.2T</td>
+                  <td><span class="badge success">Target Hit</span></td>
+                  <td>
+                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
+                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
+                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>AAPL</strong></td>
+                  <td>Apple Inc.</td>
+                  <td>$182.30</td>
+                  <td class="positive">+$2.10</td>
+                  <td class="positive">+1.2%</td>
+                  <td>$2.8T</td>
+                  <td><span class="badge muted">None</span></td>
+                  <td>
+                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
+                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
+                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>TSLA</strong></td>
+                  <td>Tesla, Inc.</td>
+                  <td>$248.50</td>
+                  <td class="negative">-$8.20</td>
+                  <td class="negative">-3.2%</td>
+                  <td>$780B</td>
+                  <td><span class="badge warning">Price Drop</span></td>
+                  <td>
+                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
+                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
+                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <!-- Stock Watchlists -->
-        <div class="bg-card rounded-xl p-6 border border-border">
-            <div class="card-header">
-                <h3 class="card-title">Stock Watchlists</h3>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div class="card-icon">
-                        <i class="bi bi-list-ul"></i>
-                    </div>
-                    <button onclick="createNewWatchlist()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors text-sm">
-                        <i class="bi bi-plus mr-1"></i>New List
-                    </button>
+        <div class="component-card">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-person-badge-fill"></i>
+              Followed Congress Members
+            </h3>
+            <button class="card-action-btn">Add Member</button>
+          </div>
+          <div class="card-body">
+            <div class="members-list">
+              <div class="member-item">
+                <div class="member-avatar">NP</div>
+                <div class="member-info">
+                  <div class="member-name">Nancy Pelosi</div>
+                  <div class="member-meta">House · Democrat · CA</div>
                 </div>
+                <div class="member-stats">
+                  <div class="stat-small">
+                    <span class="stat-value">15</span>
+                    <span class="stat-label">trades</span>
+                  </div>
+                  <div class="stat-small">
+                    <span class="stat-value positive">+18%</span>
+                    <span class="stat-label">return</span>
+                  </div>
+                </div>
+                <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+              </div>
+              <div class="member-item">
+                <div class="member-avatar">DC</div>
+                <div class="member-info">
+                  <div class="member-name">Dan Crenshaw</div>
+                  <div class="member-meta">House · Republican · TX</div>
+                </div>
+                <div class="member-stats">
+                  <div class="stat-small">
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">trades</span>
+                  </div>
+                  <div class="stat-small">
+                    <span class="stat-value positive">+12%</span>
+                    <span class="stat-label">return</span>
+                  </div>
+                </div>
+                <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+              </div>
+              <div class="member-item">
+                <div class="member-avatar">MW</div>
+                <div class="member-info">
+                  <div class="member-name">Mark Warner</div>
+                  <div class="member-meta">Senate · Democrat · VA</div>
+                </div>
+                <div class="member-stats">
+                  <div class="stat-small">
+                    <span class="stat-value">22</span>
+                    <span class="stat-label">trades</span>
+                  </div>
+                  <div class="stat-small">
+                    <span class="stat-value positive">+24%</span>
+                    <span class="stat-label">return</span>
+                  </div>
+                </div>
+                <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+              </div>
             </div>
-            <div class="space-y-4">
-                <!-- Tech Stocks Watchlist -->
-                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                                <i class="bi bi-cpu text-blue-600 dark:text-blue-400"></i>
-                            </div>
-                            <h4 class="font-semibold text-gray-900 dark:text-white">Tech Stocks</h4>
-                        </div>
-                        <span class="text-sm text-gray-500 dark:text-gray-500">8 stocks</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">AAPL</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+1.2%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">MSFT</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.8%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">GOOGL</div>
-                            <div class="text-xs text-red-600 dark:text-red-400">-0.3%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">NVDA</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+2.1%</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Growth Stocks Watchlist -->
-                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
-                                <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400"></i>
-                            </div>
-                            <h4 class="font-semibold text-gray-900 dark:text-white">Growth Stocks</h4>
-                        </div>
-                        <span class="text-sm text-gray-500 dark:text-gray-500">6 stocks</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">TSLA</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+3.4%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">AMZN</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+1.7%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">META</div>
-                            <div class="text-xs text-red-600 dark:text-red-400">-0.9%</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dividend Stocks Watchlist -->
-                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
-                                <i class="bi bi-cash-coin text-yellow-600 dark:text-yellow-400"></i>
-                            </div>
-                            <h4 class="font-semibold text-gray-900 dark:text-white">Dividend Stocks</h4>
-                        </div>
-                        <span class="text-sm text-gray-500 dark:text-gray-500">10 stocks</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">JNJ</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.5%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">PG</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.3%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">KO</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.7%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">PEP</div>
-                            <div class="text-xs text-red-600 dark:text-red-400">-0.2%</div>
-                        </div>
-                        <div class="text-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                            <div class="font-mono text-sm font-bold text-gray-900 dark:text-white">T</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+0.1%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-    </div>
 
-    <!-- Recent Activity -->
-    <div class="mt-6 bg-card rounded-xl p-6 border border-border">
-        <div class="card-header">
-            <h3 class="card-title">Recent Activity</h3>
-            <div class="card-icon">
-                <i class="bi bi-activity"></i>
+        <div class="component-card">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bell-fill"></i>
+              Active Price Alerts
+            </h3>
+            <button class="card-action-btn">New Alert</button>
+          </div>
+          <div class="card-body">
+            <div class="alerts-list">
+              <div class="alert-item">
+                <div class="alert-icon success">
+                  <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">NVDA reached $485</div>
+                  <div class="alert-meta">Target price hit · 2 hours ago</div>
+                </div>
+                <button class="alert-dismiss"><i class="bi bi-x"></i></button>
+              </div>
+              <div class="alert-item">
+                <div class="alert-icon warning">
+                  <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">TSLA dropped below $250</div>
+                  <div class="alert-meta">Stop loss triggered · 4 hours ago</div>
+                </div>
+                <button class="alert-dismiss"><i class="bi bi-x"></i></button>
+              </div>
+              <div class="alert-item pending">
+                <div class="alert-icon info">
+                  <i class="bi bi-clock"></i>
+                </div>
+                <div class="alert-content">
+                  <div class="alert-title">AAPL above $185</div>
+                  <div class="alert-meta">Pending · Current: $182.30</div>
+                </div>
+                <button class="alert-edit"><i class="bi bi-pencil"></i></button>
+              </div>
             </div>
+          </div>
         </div>
-        
-        <div class="space-y-4">
-            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="font-medium text-gray-900 dark:text-white">Nancy Pelosi bought NVIDIA</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Purchased $50,000 - $100,000 worth of NVDA shares</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm text-gray-500 dark:text-gray-500">2 hours ago</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">+2.1% since trade</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-bell text-blue-600 dark:text-blue-400"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="font-medium text-gray-900 dark:text-white">Price Alert Triggered</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">AAPL reached your target price of $175.00</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm text-gray-500 dark:text-gray-500">1 day ago</div>
-                            <div class="text-xs text-emerald-600 dark:text-emerald-400">Target reached</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-graph-down text-red-600 dark:text-red-400"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h4 class="font-medium text-gray-900 dark:text-white">Chuck Schumer sold Microsoft</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Sold $25,000 - $50,000 worth of MSFT shares</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm text-gray-500 dark:text-gray-500">2 days ago</div>
-                            <div class="text-xs text-red-600 dark:text-red-400">-0.5% since trade</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      </div>
 
-    <!-- Alert Settings -->
-    <div class="mt-6 bg-card rounded-xl p-6 border border-border">
-        <div class="card-header">
-            <h3 class="card-title">Alert Settings</h3>
-            <div class="card-icon">
-                <i class="bi bi-bell"></i>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h4 class="font-medium text-gray-900 dark:text-white mb-4">Price Alerts</h4>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">AAPL > $180.00</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Price target alert</div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                            <span class="text-xs text-gray-500 dark:text-gray-500">Active</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">TSLA < $200.00</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Stop loss alert</div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                            <span class="text-xs text-gray-500 dark:text-gray-500">Active</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="w-full mt-4 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <i class="bi bi-plus mr-2"></i>Add Price Alert
-                </button>
-            </div>
-            
-            <div>
-                <h4 class="font-medium text-gray-900 dark:text-white mb-4">Trading Alerts</h4>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">Congressional Trades</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Notify when followed people trade</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
-                        </label>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">Large Transactions</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Trades over $100,000</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
-                        </label>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">Sector Movements</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Major sector changes</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 dark:peer-focus:ring-emerald-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-emerald-600"></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </main>
+  </div>
 
-    <!-- Performance Summary -->
-    <div class="mt-6 bg-card rounded-xl p-6 border border-border">
-        <div class="card-header">
-            <h3 class="card-title">Watchlist Performance</h3>
-            <div class="card-icon">
-                <i class="bi bi-graph-up-arrow"></i>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="text-center p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                <div class="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">+12.4%</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Average Performance</div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Last 30 days</div>
-            </div>
-            
-            <div class="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">78%</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Winning Trades</div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Success rate</div>
-            </div>
-            
-            <div class="text-center p-6 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">$8,456</div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Total Gains</div>
-                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">This quarter</div>
-            </div>
-        </div>
-    </div>
+  <script src="../assets/js/theme-toggle.js"></script>
+  <script src="../components/navigation/load-nav.js"></script>
+  <script src="../components/notifications/notifications-sidebar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.NotificationsSidebar) new NotificationsSidebar().init();
+    });
+  </script>
 
-    <!-- Quick Actions Section -->
-    <div class="section-header section-header-card">
-        <h2 class="section-title">Quick Actions</h2>
-        <p class="section-description">Manage your watchlists with powerful tools and features</p>
-    </div>
-
-    <!-- Component Cards Grid -->
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- New Watchlist Card -->
-        <div id="new-watchlist-card-container"></div>
-        
-        <!-- Set Alert Card -->
-        <div id="set-alert-card-container"></div>
-        
-        <!-- Export Data Card -->
-        <div id="export-data-card-container"></div>
-        
-        <!-- Share List Card -->
-        <div id="share-list-card-container"></div>
-    </div>
-</div>
-
-    <!-- API Service -->
-    <script src="../js/api-service.js"></script>
-    <!-- Navigation JavaScript -->
-    <script src="../components/navigation/navigation-config.js"></script>
-    <script src="../components/navigation/navigation.js"></script>
-    <script src="../assets/js/theme.js"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
-    <!-- Watchlist Component Cards JavaScript -->
-    <script src="../components/pages/watchlist/new-watchlist-card/new-watchlist-card.js"></script>
-    <script src="../components/pages/watchlist/set-alert-card/set-alert-card.js"></script>
-    <script src="../components/pages/watchlist/export-data-card/export-data-card.js"></script>
-    <script src="../components/pages/watchlist/share-list-card/share-list-card.js"></script>
-    <script>
-        // Page initialization (no authentication required)
-
-        // Initialize components when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Initializing watchlist');
-            
-            // Page is accessible without authentication
-            
-            // Load watchlist component cards
-            loadWatchlistComponents();
-            
-            // Initialize the notifications sidebar
-            if (window.NotificationsSidebar) {
-                const sidebar = new NotificationsSidebar();
-                sidebar.init();
-            }
-        });
-
-        // Function to load watchlist component cards
-        async function loadWatchlistComponents() {
-            try {
-                // Load New Watchlist Card
-                const newWatchlistResponse = await fetch('../components/pages/watchlist/new-watchlist-card/new-watchlist-card.html');
-                const newWatchlistHtml = await newWatchlistResponse.text();
-                document.getElementById('new-watchlist-card-container').innerHTML = newWatchlistHtml;
-
-                // Load Set Alert Card
-                const setAlertResponse = await fetch('../components/pages/watchlist/set-alert-card/set-alert-card.html');
-                const setAlertHtml = await setAlertResponse.text();
-                document.getElementById('set-alert-card-container').innerHTML = setAlertHtml;
-
-                // Load Export Data Card
-                const exportDataResponse = await fetch('../components/pages/watchlist/export-data-card/export-data-card.html');
-                const exportDataHtml = await exportDataResponse.text();
-                document.getElementById('export-data-card-container').innerHTML = exportDataHtml;
-
-                // Load Share List Card
-                const shareListResponse = await fetch('../components/pages/watchlist/share-list-card/share-list-card.html');
-                const shareListHtml = await shareListResponse.text();
-                document.getElementById('share-list-card-container').innerHTML = shareListHtml;
-
-                console.log('All watchlist component cards loaded successfully');
-            } catch (error) {
-                console.error('Error loading watchlist component cards:', error);
-            }
-        }
-    </script>
 </body>
 </html>

@@ -10,80 +10,14 @@
   <link rel="stylesheet" href="../assets/css/component-cards.css">
   <link rel="stylesheet" href="../assets/css/page-layout.css">
   <link rel="stylesheet" href="../assets/css/pages-common.css">
+  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+  <link rel="stylesheet" href="../components/navigation/unified-nav.css">
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
   <link rel="stylesheet" href="home-dashboard.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="dashboard-page sidebar-open">
-  <!-- Dark Navigation Bar -->
-  <nav class="main-nav dark-nav">
-    <div class="nav-container">
-      <a href="../index.html" class="nav-brand">
-        <span class="brand-text">Ezana Finance</span>
-      </a>
-      <div class="nav-links">
-        <a href="home-dashboard.html" class="nav-link active">Dashboard</a>
-        <div class="nav-dropdown">
-          <button class="nav-link dropdown-trigger">
-            Research Tools
-            <i class="bi bi-chevron-down"></i>
-          </button>
-          <div class="dropdown-menu">
-            <a href="inside-the-capitol.html" class="dropdown-item">
-              <i class="bi bi-building"></i>
-              <div>
-                <div class="item-title">Inside The Capitol</div>
-                <div class="item-desc">Congressional trading &amp; lobbying</div>
-              </div>
-            </a>
-            <a href="company-research.html" class="dropdown-item">
-              <i class="bi bi-bar-chart-line"></i>
-              <div>
-                <div class="item-title">Company Research</div>
-                <div class="item-desc">Financial analysis &amp; metrics</div>
-              </div>
-            </a>
-            <a href="market-analysis.html" class="dropdown-item">
-              <i class="bi bi-graph-up-arrow"></i>
-              <div>
-                <div class="item-title">Market Analysis</div>
-                <div class="item-desc">Sector &amp; market trends</div>
-              </div>
-            </a>
-            <a href="economic-indicators.html" class="dropdown-item">
-              <i class="bi bi-currency-dollar"></i>
-              <div>
-                <div class="item-title">Economic Indicators</div>
-                <div class="item-desc">Fed tracking &amp; economic data</div>
-              </div>
-            </a>
-            <a href="for-the-quants.html" class="dropdown-item">
-              <i class="bi bi-calculator"></i>
-              <div>
-                <div class="item-title">For the Quants</div>
-                <div class="item-desc">Quantitative analysis &amp; models</div>
-              </div>
-            </a>
-          </div>
-        </div>
-        <a href="watchlist.html" class="nav-link">Watchlist</a>
-        <a href="community.html" class="nav-link">Community</a>
-      </div>
-      <div class="nav-actions">
-        <button class="theme-toggle" id="themeToggle" title="Toggle theme">
-          <i class="bi bi-sun-fill light-icon"></i>
-          <i class="bi bi-moon-fill dark-icon"></i>
-        </button>
-        <button class="notification-toggle" id="notificationToggle" title="Notifications">
-          <i class="bi bi-bell"></i>
-          <span class="notification-badge" id="notificationCountBadge">3</span>
-        </button>
-        <button class="user-menu-btn" id="userMenuBtn" title="Account">
-          <i class="bi bi-person-circle"></i>
-        </button>
-      </div>
-    </div>
-  </nav>
+  <nav class="main-nav" id="mainNav"></nav>
 
   <!-- Notifications Sidebar (watchlist structure, dashboard design) -->
   <div id="notifications-sidebar" class="notifications-sidebar open">
@@ -457,7 +391,8 @@
     </div>
   </main>
 
-  <script src="../assets/js/theme.js"></script>
+  <script src="../assets/js/theme-toggle.js"></script>
+  <script src="../components/navigation/load-nav.js"></script>
   <script src="../components/notifications/notifications-sidebar.js"></script>
   <script src="../js/api-service.js"></script>
   <script src="home-dashboard.js"></script>

@@ -16,8 +16,8 @@
     <link rel="stylesheet" href="../assets/css/page-layout.css">
     <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
     <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <!-- Navigation CSS -->
-    <link rel="stylesheet" href="../components/navigation/navigation.css">
+    <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+    <link rel="stylesheet" href="../components/navigation/unified-nav.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Import Economic Indicators Component Styles -->
@@ -147,10 +147,9 @@
     </style>
 </head>
 <body class="economic-indicators">
-    <!-- Navigation will be dynamically loaded -->
+  <nav class="main-nav" id="mainNav"></nav>
 
-    <!-- Notifications Sidebar -->
-    <div id="notifications-sidebar" class="notifications-sidebar open">
+  <div id="notifications-sidebar" class="notifications-sidebar open">
         <!-- Sidebar Toggle Button -->
         <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
             <i class="bi bi-bell"></i>
@@ -576,9 +575,8 @@
     <!-- API Service -->
     <script src="../js/api-service.js"></script>
     <!-- Navigation JavaScript -->
-    <script src="../assets/js/theme.js"></script>
-    <script src="../components/navigation/navigation-config.js"></script>
-    <script src="../components/navigation/navigation.js"></script>
+    <script src="../assets/js/theme-toggle.js"></script>
+    <script src="../components/navigation/load-nav.js"></script>
     <!-- Notifications Sidebar JavaScript -->
     <script src="../components/notifications/notifications-sidebar.js"></script>
     <script>

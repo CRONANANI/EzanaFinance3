@@ -16,8 +16,8 @@
     <link rel="stylesheet" href="../assets/css/page-layout.css">
     <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
     <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <!-- Navigation CSS -->
-    <link rel="stylesheet" href="../components/navigation/navigation.css">
+    <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+    <link rel="stylesheet" href="../components/navigation/unified-nav.css">
     <!-- Notifications Sidebar CSS -->
     <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <!-- Import Trophy Cabinet Component Styles -->
@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="../assets/css/cards-common.css">
     <link rel="stylesheet" href="../assets/css/metrics-common.css">
     <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
+    <link rel="stylesheet" href="community.css">
     <style>
         * {
             margin: 0;
@@ -264,9 +265,9 @@
     </style>
 </head>
 <body class="community">
-    <!-- Navigation will be dynamically loaded -->
+  <nav class="main-nav" id="mainNav"></nav>
 
-    <!-- Notifications Sidebar -->
+  <!-- Notifications Sidebar -->
     <div id="notifications-sidebar" class="notifications-sidebar open">
         <!-- Sidebar Toggle Button -->
         <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
@@ -785,9 +786,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- API Service -->
     <script src="../js/api-service.js"></script>
     <!-- Navigation JavaScript -->
-    <script src="../components/navigation/navigation-config.js"></script>
-    <script src="../components/navigation/navigation.js"></script>
-    <script src="../assets/js/theme.js"></script>
+    <script src="../assets/js/theme-toggle.js"></script>
+    <script src="../components/navigation/load-nav.js"></script>
     <!-- Import Trophy Cabinet Component Scripts -->
     <script src="../components/community/trophy-cabinet/trophy-cabinet.js"></script>
     <!-- Notifications Sidebar JavaScript -->
