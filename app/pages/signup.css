@@ -588,8 +588,13 @@ body.signup-page {
 
 .social-buttons {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
+}
+
+.social-btn.yahoo:hover:not(:disabled) {
+  border-color: #6001d2;
+  background: rgba(96, 1, 210, 0.05);
 }
 
 .social-btn {

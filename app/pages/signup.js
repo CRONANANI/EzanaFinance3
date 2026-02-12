@@ -109,6 +109,14 @@ class SignUpForm {
     if (this.googleSignUpBtn) {
       this.googleSignUpBtn.addEventListener('click', () => this.signUpWithGoogle());
     }
+    const yahooBtn = document.getElementById('yahooSignUpBtn');
+    if (yahooBtn) {
+      yahooBtn.addEventListener('click', () => this.signUpWithYahoo());
+    }
+  }
+
+  signUpWithYahoo() {
+    this.showToast('Yahoo sign-up would be initiated here.', 'info');
   }
 
   setupPasswordRequirements() {
