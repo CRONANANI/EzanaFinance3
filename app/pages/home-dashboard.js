@@ -5,9 +5,6 @@
 
 class PortfolioDashboard {
   constructor() {
-    this.sidebar = document.getElementById('investmentFeed');
-    this.closeFeedBtn = document.getElementById('closeFeedBtn');
-    this.notificationToggle = document.getElementById('notificationToggle');
     this.dashboardMain = document.querySelector('.dashboard-main');
 
     this.carousel = document.getElementById('metricsCarousel');
@@ -32,7 +29,7 @@ class PortfolioDashboard {
   }
 
   init() {
-    this.setupSidebar();
+    this.setupDashboardSidebarSync();
     this.setupCarousel();
     this.setupChart();
     this.setupNewsTicker();
@@ -41,23 +38,17 @@ class PortfolioDashboard {
     this.attachResizeListener();
   }
 
-  setupSidebar() {
-    this.sidebar?.classList.remove('hidden');
-    this.dashboardMain?.classList.remove('sidebar-hidden');
-
-    this.closeFeedBtn?.addEventListener('click', () => this.toggleSidebar());
-    this.notificationToggle?.addEventListener('click', () => this.toggleSidebar());
-  }
-
-  toggleSidebar() {
-    this.sidebarVisible = !this.sidebarVisible;
-    if (this.sidebarVisible) {
-      this.sidebar?.classList.remove('hidden');
-      this.dashboardMain?.classList.remove('sidebar-hidden');
-    } else {
-      this.sidebar?.classList.add('hidden');
-      this.dashboardMain?.classList.add('sidebar-hidden');
-    }
+  setupDashboardSidebarSync() {
+    // Notifications sidebar handles its own toggle; sync dashboard-main margin with body.sidebar-open
+    const updateMargin = () => {
+      const open = document.body.classList.contains('sidebar-open');
+      if (this.dashboardMain) {
+        this.dashboardMain.classList.toggle('sidebar-hidden', !open);
+      }
+    };
+    updateMargin();
+    const observer = new MutationObserver(updateMargin);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 
   setupNewsTicker() {

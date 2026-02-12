@@ -191,6 +191,8 @@ class NotificationsSidebar {
                 filteredNotifications = this.notifications.filter(n => n.type === 'portfolio_alerts' || (n.type === 'stocks' && (n.badge === 'Portfolio' || n.badge === 'Alert')));
             } else if (this.currentFilter === 'market_news') {
                 filteredNotifications = this.notifications.filter(n => n.type === 'market_news' || n.type === 'news' || (n.type === 'stocks' && ['Earnings', 'Market', 'Research'].includes(n.badge)));
+            } else if (this.currentFilter === 'stocks') {
+                filteredNotifications = this.notifications.filter(n => n.type === 'market_news' || n.type === 'portfolio_alerts' || n.type === 'stocks');
             } else {
                 filteredNotifications = this.notifications.filter(n => n.type === this.currentFilter);
             }

@@ -273,10 +273,15 @@ body.light-mode .dark-icon {
 }
 
 /* ============================================
-   INVESTMENT FEED SIDEBAR (SHOWN BY DEFAULT)
+   NOTIFICATIONS SIDEBAR - DASHBOARD DESIGN
+   (Watchlist structure, dashboard visual design)
    ============================================ */
 
-.investment-feed-sidebar {
+body.dashboard-page .notifications-sidebar .notifications-toggle {
+  display: none !important;
+}
+
+body.dashboard-page .notifications-sidebar {
   position: fixed;
   top: 64px;
   left: 0;
@@ -288,118 +293,159 @@ body.light-mode .dark-icon {
   z-index: 50;
   overflow-y: auto;
   transition: transform 0.3s ease;
+  transform: translateX(0);
+  box-shadow: none;
 }
 
-.investment-feed-sidebar.hidden {
+body.dashboard-page .notifications-sidebar:not(.open) {
   transform: translateX(-100%);
 }
 
-.feed-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-primary);
+body.dashboard-page .notifications-sidebar .notifications-content {
+  padding-top: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.feed-header h3 {
+body.dashboard-page .notifications-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-primary);
+  background: transparent;
+  box-shadow: none;
+  min-height: auto;
+}
+
+body.dashboard-page .notifications-title h3 {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
 }
 
-.feed-close-btn {
-  width: 32px;
-  height: 32px;
+body.dashboard-page .notifications-actions button {
   background: rgba(156, 163, 175, 0.1);
   border: 1px solid var(--border-primary);
-  border-radius: 50%;
   color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
 }
 
-.feed-close-btn:hover {
+body.dashboard-page .notifications-actions button:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+body.dashboard-page .notifications-actions .notifications-settings:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--color-primary);
+}
+
+body.dashboard-page .notifications-actions .notifications-collapse:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.3);
   color: #ef4444;
 }
 
-.feed-filters {
+body.dashboard-page .notifications-filters {
   padding: 1rem 1.5rem;
-  display: flex;
-  gap: 0.5rem;
   border-bottom: 1px solid var(--border-primary);
+  gap: 0.5rem;
 }
 
-.feed-filter {
+body.dashboard-page .filter-btn {
   padding: 0.5rem 1rem;
   background: rgba(17, 24, 39, 0.4);
   border: 1px solid var(--border-primary);
   border-radius: 6px;
   color: var(--text-secondary);
   font-size: 0.8125rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.feed-filter.active {
+body.dashboard-page .filter-btn:hover {
+  color: var(--color-primary);
+  transform: none;
+}
+
+body.dashboard-page .filter-btn.active {
   background: rgba(16, 185, 129, 0.1);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.feed-items {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+body.dashboard-page .filter-btn:not(:last-child)::after {
+  display: none;
 }
 
-.feed-item {
-  display: flex;
-  gap: 1rem;
+body.dashboard-page .notifications-list {
   padding: 1rem;
+  height: auto;
+  flex: 1;
+  background: transparent;
+}
+
+body.dashboard-page .notification-item {
+  padding: 1rem;
+  margin: 0 0 0.75rem 0;
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
+  backdrop-filter: none;
+  display: flex;
+  gap: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.feed-item:hover {
+body.dashboard-page .notification-item .notification-content {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+body.dashboard-page .notification-item .notification-text {
+  flex: 1;
+  padding-right: 0;
+}
+
+body.dashboard-page .notification-item:hover {
   border-color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
 }
 
-.feed-icon {
+body.dashboard-page .notification-item.unread {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+body.dashboard-page .notification-item .notification-icon {
   width: 40px;
   height: 40px;
-  background: rgba(16, 185, 129, 0.2);
+  min-width: 40px;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
+  font-size: 1.125rem;
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: var(--color-primary) !important;
+  position: static;
   flex-shrink: 0;
 }
 
-.feed-content {
-  flex: 1;
-}
-
-.feed-title {
+body.dashboard-page .notification-title {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: 0.25rem;
 }
 
-.feed-meta {
-  font-size: 0.75rem;
+body.dashboard-page .notification-description {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+body.dashboard-page .notifications-empty {
+  padding: 2rem 1rem;
   color: var(--text-secondary);
 }
 
@@ -1176,12 +1222,12 @@ body.light-mode .dark-icon {
     margin-left: 0;
   }
 
-  .investment-feed-sidebar {
+  body.dashboard-page .notifications-sidebar {
     width: 280px;
     z-index: 90;
   }
 
-  .investment-feed-sidebar.hidden {
+  body.dashboard-page .notifications-sidebar:not(.open) {
     transform: translateX(-100%);
   }
 

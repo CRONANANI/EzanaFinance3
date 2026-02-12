@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="home-dashboard.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page sidebar-open">
   <!-- Dark Navigation Bar -->
   <nav class="main-nav dark-nav">
     <div class="nav-container">
@@ -74,7 +74,7 @@
         </button>
         <button class="notification-toggle" id="notificationToggle" title="Notifications">
           <i class="bi bi-bell"></i>
-          <span class="notification-badge">3</span>
+          <span class="notification-badge" id="notificationCountBadge">3</span>
         </button>
         <button class="user-menu-btn" id="userMenuBtn" title="Account">
           <i class="bi bi-person-circle"></i>
@@ -83,36 +83,39 @@
     </div>
   </nav>
 
-  <!-- Investment Feed Sidebar (Shown by default) -->
-  <aside class="investment-feed-sidebar" id="investmentFeed">
-    <div class="feed-header">
-      <h3>Investment Feed</h3>
-      <button class="feed-close-btn" id="closeFeedBtn">
-        <i class="bi bi-chevron-left"></i>
-      </button>
-    </div>
-    <div class="feed-filters">
-      <button class="feed-filter active" data-filter="all">Show All</button>
-      <button class="feed-filter" data-filter="congress">Congress Trades</button>
-      <button class="feed-filter" data-filter="portfolio">Portfolio Alerts</button>
-    </div>
-    <div class="feed-items">
-      <div class="feed-item" data-priority="high">
-        <div class="feed-icon"><i class="bi bi-graph-up"></i></div>
-        <div class="feed-content">
-          <div class="feed-title">Nancy Pelosi purchased NVDA</div>
-          <div class="feed-meta">2 minutes ago</div>
+  <!-- Notifications Sidebar (watchlist structure, dashboard design) -->
+  <div id="notifications-sidebar" class="notifications-sidebar open">
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+      <i class="bi bi-bell"></i>
+    </button>
+    <div class="notifications-content">
+      <div class="notifications-header">
+        <div class="notifications-title">
+          <h3>Investment Feed</h3>
+        </div>
+        <div class="notifications-actions">
+          <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+            <i class="bi bi-gear"></i>
+          </button>
         </div>
       </div>
-      <div class="feed-item" data-priority="medium">
-        <div class="feed-icon"><i class="bi bi-bell"></i></div>
-        <div class="feed-content">
-          <div class="feed-title">Your portfolio is up 0.45% today</div>
-          <div class="feed-meta">1 hour ago</div>
-        </div>
+      <div class="notifications-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">All</button>
+        <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress</button>
+        <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">Stocks</button>
+        <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+      <div class="notifications-empty" id="notifications-empty" style="display: none;">
+        <i class="bi bi-bell-slash"></i>
+        <p>No notifications yet</p>
+        <small>We'll notify you when something important happens</small>
       </div>
     </div>
-  </aside>
+  </div>
 
   <!-- Main Dashboard Content -->
   <main class="dashboard-main">
@@ -453,6 +456,7 @@
   </main>
 
   <script src="../assets/js/theme.js"></script>
+  <script src="../components/notifications/notifications-sidebar.js"></script>
   <script src="../js/api-service.js"></script>
   <script src="home-dashboard.js"></script>
 </body>
