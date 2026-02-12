@@ -18,6 +18,7 @@ const NAV_FALLBACK_HTML = `<nav class="main-nav" id="mainNav">
       </div>
       <a href="watchlist.html" class="nav-link" data-page="watchlist"><i class="bi bi-bookmark"></i><span>Watchlist</span></a>
       <a href="community.html" class="nav-link" data-page="community"><i class="bi bi-people"></i><span>Community</span></a>
+      <a href="learning-center.html" class="nav-link" data-page="learning-center"><i class="bi bi-mortarboard"></i><span>Learning Center</span></a>
     </div>
     <div class="nav-actions">
       <button class="nav-action-btn theme-toggle" id="themeToggle" title="Toggle theme" type="button"><i class="bi bi-sun-fill light-icon"></i><i class="bi bi-moon-fill dark-icon"></i></button>

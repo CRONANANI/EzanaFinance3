@@ -586,6 +586,7 @@ body.dashboard-page .notifications-empty {
   flex-shrink: 0;
 }
 
+.metric-icon.portfolio { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 .metric-icon.pnl { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 .metric-icon.performer { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
 .metric-icon.risk { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
@@ -615,6 +616,12 @@ body.dashboard-page .notifications-empty {
   font-weight: 700;
   color: var(--text-primary);
 }
+
+.metric-change {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.metric-change.positive { color: #10b981; }
 
 /* ============================================
    DASHBOARD GRID (CHART + NEWS SIDEBAR)

@@ -22,7 +22,7 @@ class PortfolioDashboard {
     this.cardsVisible = this.getCardsVisible();
     this.maxIndex = Math.max(0, (this.metricCards?.length || 0) - this.cardsVisible);
     this.autoplayInterval = null;
-    this.currentMetric = 'risk';
+    this.currentMetric = 'portfolio';
     this.chart = null;
 
     this.init();
@@ -149,7 +149,7 @@ class PortfolioDashboard {
   setupChart() {
     if (!this.chartCanvas) return;
     const ctx = this.chartCanvas.getContext('2d');
-    const data = this.getChartData('risk');
+    const data = this.getChartData('portfolio');
 
     this.chart = new Chart(ctx, {
       type: 'line',
@@ -194,6 +194,7 @@ class PortfolioDashboard {
 
   getMetricInfo(metricType) {
     const info = {
+      portfolio: { title: 'Total Portfolio Value' },
       pnl: { title: "Today's P&L Analysis" },
       performer: { title: 'Top Performer Trend' },
       risk: { title: 'Risk Score Analysis' },
@@ -204,12 +205,13 @@ class PortfolioDashboard {
       beta: { title: 'Beta vs Market' },
       sector: { title: 'Sector Exposure Breakdown' }
     };
-    return info[metricType] || info.risk;
+    return info[metricType] || info.portfolio;
   }
 
   getChartData(metricType) {
     const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
     const datasets = {
+      portfolio: { label: 'Portfolio Value', data: [127500, 129800, 132400, 135100, 138500, 142300, 147850, 152600, 158420], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' },
       pnl: { label: 'P&L', data: [1200, -400, 800, 1500, -200, 2000, 1247, 900, 1100], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' },
       performer: { label: 'NVDA', data: [150, 165, 180, 195, 220, 240, 265, 280, 295], borderColor: '#fbbf24', backgroundColor: 'rgba(251, 191, 36, 0.1)' },
       risk: { label: 'Risk Score', data: [5.5, 5.8, 6.0, 6.2, 6.1, 6.3, 6.2, 6.0, 5.9], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)' },
@@ -221,7 +223,7 @@ class PortfolioDashboard {
       sector: { label: 'Tech %', data: [30, 31, 32, 33, 34, 35, 35, 34, 35], borderColor: '#14b8a6', backgroundColor: 'rgba(20, 184, 166, 0.1)' }
     };
 
-    const ds = datasets[metricType] || datasets.risk;
+    const ds = datasets[metricType] || datasets.portfolio;
     return {
       labels,
       datasets: [{

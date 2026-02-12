@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
   <link rel="stylesheet" href="../components/navigation/unified-nav.css">
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
   <link rel="stylesheet" href="home-dashboard.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -72,6 +73,14 @@
         <button class="carousel-nav prev" id="carouselPrev"><i class="bi bi-chevron-left"></i></button>
         <div class="metrics-carousel-container">
           <div class="metrics-carousel-track" id="metricsCarousel">
+            <div class="metric-card active" data-metric="portfolio">
+              <div class="metric-icon portfolio"><i class="bi bi-wallet2"></i></div>
+              <div class="metric-content">
+                <span class="metric-label">Portfolio Value</span>
+                <span class="metric-value">$158,420</span>
+                <span class="metric-change positive">+24.5% YTD</span>
+              </div>
+            </div>
             <div class="metric-card" data-metric="pnl">
               <div class="metric-icon pnl"><i class="bi bi-graph-up"></i></div>
               <div class="metric-content">
@@ -86,7 +95,7 @@
                 <span class="metric-value">NVDA</span>
               </div>
             </div>
-            <div class="metric-card active" data-metric="risk">
+            <div class="metric-card" data-metric="risk">
               <div class="metric-icon risk"><i class="bi bi-shield-exclamation"></i></div>
               <div class="metric-content">
                 <span class="metric-label">Risk Score</span>
@@ -146,7 +155,7 @@
         <section class="main-chart-section">
           <div class="chart-header compact">
             <div class="chart-title-area">
-              <h2 class="chart-title" id="chartTitle">Risk Score Analysis</h2>
+              <h2 class="chart-title" id="chartTitle">Total Portfolio Value</h2>
             </div>
             <div class="chart-controls">
               <div class="time-range-selector compact">
@@ -388,6 +397,86 @@
           </div>
         </section>
       </div>
+
+      <!-- Learning Opportunities -->
+      <section class="learning-opportunities">
+        <div class="learning-header">
+          <div class="learning-title-area">
+            <div class="learning-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="learning-title-text">
+              <h3>Portfolio Management Courses</h3>
+              <p>Master the skills to optimize your portfolio performance</p>
+            </div>
+          </div>
+          <button class="view-all-btn" onclick="window.location.href='learning-center.html'">View All Courses <i class="bi bi-arrow-right"></i></button>
+        </div>
+        <div class="courses-grid">
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Course</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span>
+            </div>
+            <h4 class="course-title">Portfolio Management Fundamentals</h4>
+            <p class="course-description">Learn the core principles of portfolio construction, asset allocation, and rebalancing strategies.</p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> <span>12 lessons</span></div>
+              <div class="meta-item"><i class="bi bi-people"></i> <span>2,341 enrolled</span></div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level beginner">Beginner</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Course</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span>
+            </div>
+            <h4 class="course-title">Risk Management Strategies</h4>
+            <p class="course-description">Master advanced risk management techniques including hedging, stop-losses, and portfolio insurance.</p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> <span>18 lessons</span></div>
+              <div class="meta-item"><i class="bi bi-people"></i> <span>1,847 enrolled</span></div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level intermediate">Intermediate</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Skill</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 3 hours</span>
+            </div>
+            <h4 class="course-title">Understanding Volatility</h4>
+            <p class="course-description">Deep dive into market volatility, VIX analysis, and how to profit from volatile markets.</p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> <span>8 lessons</span></div>
+              <div class="meta-item"><i class="bi bi-people"></i> <span>1,523 enrolled</span></div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level intermediate">Intermediate</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Skill</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span>
+            </div>
+            <h4 class="course-title">Sector Rotation &amp; Allocation</h4>
+            <p class="course-description">Learn how to rotate between sectors based on economic cycles and market conditions.</p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> <span>15 lessons</span></div>
+              <div class="meta-item"><i class="bi bi-people"></i> <span>1,289 enrolled</span></div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level advanced">Advanced</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 
