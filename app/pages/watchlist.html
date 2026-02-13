@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../assets/css/theme-variables.css">
   <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
   <link rel="stylesheet" href="../assets/css/component-cards.css">
+  <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
   <link rel="stylesheet" href="../assets/css/page-layout.css">
   <link rel="stylesheet" href="../components/navigation/unified-nav.css">
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
@@ -58,7 +59,7 @@
         </div>
       </section>
 
-      <div class="stats-grid">
+      <div class="stats-grid condensed">
         <div class="stat-card">
           <div class="stat-icon stocks">
             <i class="bi bi-graph-up"></i>
@@ -66,7 +67,6 @@
           <div class="stat-content">
             <div class="stat-value">24</div>
             <div class="stat-label">Stocks Tracked</div>
-            <div class="stat-change positive">+3 this week</div>
           </div>
         </div>
         <div class="stat-card">
@@ -76,7 +76,6 @@
           <div class="stat-content">
             <div class="stat-value">12</div>
             <div class="stat-label">Congress Members</div>
-            <div class="stat-change">Active traders</div>
           </div>
         </div>
         <div class="stat-card">
@@ -86,7 +85,6 @@
           <div class="stat-content">
             <div class="stat-value">8</div>
             <div class="stat-label">Active Alerts</div>
-            <div class="stat-change warning">2 triggered today</div>
           </div>
         </div>
         <div class="stat-card">
@@ -95,28 +93,19 @@
           </div>
           <div class="stat-content">
             <div class="stat-value">+12.4%</div>
-            <div class="stat-label">Watchlist Performance</div>
-            <div class="stat-change positive">vs +8.2% S&amp;P 500</div>
+            <div class="stat-label">Performance</div>
           </div>
         </div>
       </div>
 
-      <div class="watchlist-grid">
-        <div class="component-card full-width">
+      <div class="watchlist-grid-two-column">
+        <div class="component-card">
           <div class="card-header">
             <h3>
               <i class="bi bi-bookmark-star"></i>
               Stock Watchlist
             </h3>
-            <div class="header-actions">
-              <select class="filter-select">
-                <option>All Stocks</option>
-                <option>Tech</option>
-                <option>Finance</option>
-                <option>Healthcare</option>
-              </select>
-              <button class="card-action-btn">Manage</button>
-            </div>
+            <button class="card-action-btn">Add Stock</button>
           </div>
           <div class="card-body">
             <table class="watchlist-table data-table">
@@ -184,9 +173,9 @@
           <div class="card-header">
             <h3>
               <i class="bi bi-person-badge-fill"></i>
-              Followed Congress Members
+              Congress Members
             </h3>
-            <button class="card-action-btn">Add Member</button>
+            <button class="card-action-btn" id="addMemberBtn">Add Member</button>
           </div>
           <div class="card-body">
             <div class="members-list">
@@ -248,7 +237,7 @@
           </div>
         </div>
 
-        <div class="component-card">
+        <div class="component-card full-width">
           <div class="card-header">
             <h3>
               <i class="bi bi-bell-fill"></i>
@@ -296,9 +285,41 @@
     </main>
   </div>
 
+  <div class="modal-overlay" id="addMemberModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Congress Member</h3>
+        <button class="modal-close" id="closeModal"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="modal-filters">
+        <select class="filter-select">
+          <option value="">All Chambers</option>
+          <option value="house">House</option>
+          <option value="senate">Senate</option>
+        </select>
+        <select class="filter-select">
+          <option value="">All Parties</option>
+          <option value="democrat">Democrat</option>
+          <option value="republican">Republican</option>
+          <option value="independent">Independent</option>
+        </select>
+        <select class="filter-select">
+          <option value="">All States</option>
+          <option value="CA">California</option>
+          <option value="NY">New York</option>
+          <option value="TX">Texas</option>
+        </select>
+      </div>
+      <div class="modal-body">
+        <div class="members-database-list"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="../assets/js/theme-toggle.js"></script>
   <script src="../components/navigation/load-nav.js"></script>
   <script src="../components/notifications/notifications-sidebar.js"></script>
+  <script src="watchlist.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (window.NotificationsSidebar) new NotificationsSidebar().init();

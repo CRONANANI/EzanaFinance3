@@ -66,23 +66,44 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-/** Hide center card when scrolling into features section (black to greenish transition) */
+/** Antigravity Center - Hide when cursor below hero CTA or when scrolled past hero */
 function AntigravityCenterHider() {
     this.heroSection = document.getElementById('heroSection');
-    this.featuresSection = document.getElementById('features');
+    this.heroCTA = document.querySelector('.hero-cta');
     this.centerComponent = document.getElementById('antigravityCenterComponent');
-    if (!this.heroSection || !this.featuresSection || !this.centerComponent) return;
+    this.lastMouseY = 0;
+    if (!this.centerComponent || !this.heroSection) return;
     var self = this;
-    var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-                self.centerComponent.classList.add('hidden');
-            } else {
-                self.centerComponent.classList.remove('hidden');
-            }
-        });
-    }, { threshold: 0.1, rootMargin: '-100px 0px 0px 0px' });
-    observer.observe(this.featuresSection);
+
+    function hideCenter() {
+        self.centerComponent.style.opacity = '0';
+        self.centerComponent.style.pointerEvents = 'none';
+    }
+    function showCenter() {
+        self.centerComponent.style.opacity = '1';
+        self.centerComponent.style.pointerEvents = 'auto';
+    }
+
+    document.addEventListener('mousemove', function (e) {
+        self.lastMouseY = e.clientY;
+        var heroBottom = self.heroSection.getBoundingClientRect().bottom;
+        if (heroBottom < 0) { hideCenter(); return; }
+        if (!self.heroCTA) { showCenter(); return; }
+        var ctaBottom = self.heroCTA.getBoundingClientRect().bottom + window.scrollY;
+        var mouseY = e.clientY + window.scrollY;
+        if (mouseY > ctaBottom) hideCenter();
+        else showCenter();
+    });
+
+    window.addEventListener('scroll', function () {
+        var heroBottom = self.heroSection.getBoundingClientRect().bottom;
+        if (heroBottom < 0) { hideCenter(); return; }
+        if (!self.heroCTA) { showCenter(); return; }
+        var ctaBottom = self.heroCTA.getBoundingClientRect().bottom + window.scrollY;
+        var mouseY = self.lastMouseY + window.scrollY;
+        if (mouseY > ctaBottom) hideCenter();
+        else showCenter();
+    });
 }
 
 /** Resources carousel - auto-rotating */
@@ -176,6 +197,8 @@ function ResourcesCarousel() {
 // Add hover effects to phone preview
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('antigravityCenterComponent')) {
+        window.lastMouseY = 0;
+        document.addEventListener('mousemove', function (e) { window.lastMouseY = e.clientY; });
         window.antigravityCenterHider = new AntigravityCenterHider();
     }
     if (document.querySelector('.resources-carousel')) {

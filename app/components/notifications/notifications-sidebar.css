@@ -1,5 +1,52 @@
 /* Notifications Sidebar Component Styles */
 
+/* Notification Item Actions - 2x2 Aligned Buttons */
+.notification-item-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border, rgba(20, 184, 166, 0.2));
+}
+
+.notification-item-actions .action-btn-primary {
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: var(--radius-sm, 0.5rem);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-item-actions .action-btn-primary.buy {
+  background: #10b981;
+}
+
+.notification-item-actions .action-btn-primary.sell {
+  background: #ef4444;
+}
+
+.notification-item-actions .action-btn-secondary {
+  padding: 0.5rem 1rem;
+  background: var(--muted, rgba(17, 24, 39, 0.4));
+  color: var(--foreground, #ffffff);
+  border: 1px solid var(--border, rgba(20, 184, 166, 0.2));
+  border-radius: var(--radius-sm, 0.5rem);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-item-actions .action-btn-secondary:hover {
+  background: var(--accent, rgba(20, 184, 166, 0.1));
+  color: var(--primary, #14b8a6);
+}
+
 /* Sidebar Container - anchored to very top of page (nav overlays top via z-index) */
 .notifications-sidebar {
     position: fixed;

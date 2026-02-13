@@ -347,11 +347,11 @@ body {
     transform: none !important;
 }
 
-/* Right Section - Card Preview (center component: fades out when hero scrolls past) */
+/* Right Section - Card Preview (center component: hides when cursor below hero CTA or scroll past) */
 .antigravity-center-component {
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
     pointer-events: auto;
 }
 .antigravity-center-component.hidden {

@@ -19,6 +19,9 @@ class NotificationsSidebar {
         const sidebar = document.getElementById('notifications-sidebar');
         if (sidebar && sidebar.classList.contains('open')) {
             document.body.classList.add('sidebar-open');
+            this.isOpen = true;
+            const toggle = document.getElementById('notificationToggle');
+            if (toggle) toggle.classList.add('active');
         }
 
         // Open sidebar by default on home dashboard
@@ -72,10 +75,12 @@ class NotificationsSidebar {
     openSidebar() {
         const sidebar = document.getElementById('notifications-sidebar');
         const toggle = document.getElementById('notifications-toggle');
+        const navToggle = document.getElementById('notificationToggle');
         
         sidebar.classList.add('open');
         document.body.classList.add('sidebar-open');
         if (toggle) toggle.style.transform = 'scale(1.1)';
+        if (navToggle) navToggle.classList.add('active');
         this.isOpen = true;
         
         this.markAllAsRead();
@@ -84,10 +89,12 @@ class NotificationsSidebar {
     closeSidebar() {
         const sidebar = document.getElementById('notifications-sidebar');
         const toggle = document.getElementById('notifications-toggle');
+        const navToggle = document.getElementById('notificationToggle');
         
         sidebar.classList.remove('open');
         document.body.classList.remove('sidebar-open');
         if (toggle) toggle.style.transform = 'scale(1)';
+        if (navToggle) navToggle.classList.remove('active');
         this.isOpen = false;
     }
 
@@ -215,8 +222,19 @@ class NotificationsSidebar {
             const sentiment = notification.sentiment;
             const sentimentHtml = sentiment === 'bullish' ? '<span class="sentiment-badge bullish" title="Bullish"><i class="bi bi-graph-up-arrow"></i></span>' : sentiment === 'bearish' ? '<span class="sentiment-badge bearish" title="Bearish"><i class="bi bi-graph-down-arrow"></i></span>' : '';
             const ticker = notification.ticker || '';
-            const tickerHtml = ticker ? `<div class="notification-ticker"><a href="#" class="ticker-link" onclick="event.preventDefault(); notificationsSidebar.quickTickerAction('${ticker}', 'view')">${ticker}</a><button type="button" class="ticker-action-btn buy" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'buy')" title="Quick buy">Buy</button><button type="button" class="ticker-action-btn sell" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'sell')" title="Quick sell">Sell</button></div>` : '';
+            const tickerDisplay = ticker ? `<a href="#" class="ticker-link" onclick="event.preventDefault(); notificationsSidebar.quickTickerAction('${ticker}', 'view')">${ticker}</a>` : '';
             const badgeDisplay = notification.badge || (notification.type === 'congress' ? 'Congress' : notification.type === 'portfolio_alerts' ? 'Portfolio' : notification.type === 'market_news' ? 'News' : notification.type);
+            const actionsHtml = ticker
+                ? `<div class="notification-item-actions">
+                    <button type="button" class="action-btn-primary buy" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'buy')">Buy</button>
+                    <button type="button" class="action-btn-primary sell" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'sell')">Sell</button>
+                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')">Mark Read</button>
+                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')">Dismiss</button>
+                  </div>`
+                : `<div class="notification-item-actions">
+                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')">Mark Read</button>
+                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')">Dismiss</button>
+                  </div>`;
             return `
                 <div class="notification-item ${unreadClass}" data-id="${notification.id}">
                     ${unreadBadge}
@@ -232,14 +250,11 @@ class NotificationsSidebar {
                             </div>
                             <div class="notification-title">${notification.title}</div>
                             <div class="notification-description">${notification.content}</div>
-                            ${tickerHtml}
+                            ${tickerDisplay ? `<div class="notification-ticker">${tickerDisplay}</div>` : ''}
                             <div class="notification-meta">
                                 <div class="notification-time">${timeAgo}</div>
-                                <div class="notification-actions-inline">
-                                    <button type="button" class="action-link mark-read" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')" title="Mark as read">Mark read</button>
-                                    <button type="button" class="action-link dismiss" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')" title="Dismiss">Dismiss</button>
-                                </div>
                             </div>
+                            ${actionsHtml}
                         </div>
                     </div>
                 </div>
