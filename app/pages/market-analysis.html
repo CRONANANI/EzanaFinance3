@@ -1,642 +1,915 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Analysis - Ezana Finance</title>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../assets/css/theme-variables.css">
-    <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/component-cards.css">
-    <!-- Unified Component Cards - Dashboard Formatting -->
-    <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
-    <link rel="stylesheet" href="../assets/css/page-layout.css">
-    <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
-    <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
-    <link rel="stylesheet" href="../components/navigation/unified-nav.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
-    <!-- Import Market Analysis Component Styles -->
-    <link rel="stylesheet" href="../components/research-tools/market-analysis-cards.css">
-    <!-- Shared page layout and formatting -->
-    <link rel="stylesheet" href="../assets/css/pages-common.css">
-    <link rel="stylesheet" href="../assets/css/cards-common.css">
-    <link rel="stylesheet" href="../assets/css/metrics-common.css">
-    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
-    <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
-    <style>
-        body {
-            background: var(--background);
-            font-family: var(--font-sans);
-            color: var(--foreground);
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px);
-            margin: 0;
-        }
-        .page-title-shiny {
-            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s ease-in-out infinite;
-        }
-        .page-content .market-overview-card .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-        .page-content .market-overview-card .card-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #10b981, #059669);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        .page-content .market-overview-card .card-icon i {
-            color: white;
-            font-size: 1.25rem;
-        }
-        .page-content .market-overview-card .card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #e2e8f0;
-            margin: 0;
-        }
-        .page-content .market-overview-card .card-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 0.5rem;
-            line-height: 1.2;
-        }
-        .page-content .market-overview-card .card-change {
-            font-size: 0.875rem;
-            color: #10b981;
-            font-weight: 600;
-        }
-        .page-content .market-overview-card .card-change.negative {
-            color: #ef4444;
-        }
-        .page-content .analysis-card .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-        .page-content .analysis-card .card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #e2e8f0;
-            margin: 0;
-        }
-        .page-content .analysis-card .card-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #10b981, #059669);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        .page-content .analysis-card .card-icon i {
-            color: white;
-            font-size: 1.25rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Analysis - Ezana Finance</title>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../assets/css/theme-variables.css">
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+  <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
+  <link rel="stylesheet" href="../assets/css/page-layout.css">
+  <link rel="stylesheet" href="../assets/css/layout-common.css">
+  <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
+  <link rel="stylesheet" href="../components/navigation/unified-nav.css">
+  <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
+  <link rel="stylesheet" href="market-analysis.css">
 </head>
-<body class="market-analysis">
+<body>
+  
   <nav class="main-nav" id="mainNav"></nav>
 
-  <!-- Notifications Sidebar -->
-    <div id="notifications-sidebar" class="notifications-sidebar open">
-        <!-- Sidebar Toggle Button -->
-        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <i class="bi bi-bell"></i>
-        </button>
-
-        <!-- Sidebar Content -->
-        <div class="notifications-content">
-            <!-- Header -->
-            <div class="notifications-header">
-                <div class="notifications-title">
-                    <h3>Investment Feed</h3>
-                </div>
-                <div class="notifications-actions">
-                    <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </button>
-                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="notifications-filters">
-                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                    All
-                </button>
-                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                    Congress
-                </button>
-                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                    Stocks
-                </button>
-                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                    Community
-                </button>
-            </div>
-
-            <!-- Notifications List -->
-            <div class="notifications-list" id="notifications-list">
-                <!-- Notifications will be dynamically populated here -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="notifications-empty" id="notifications-empty" style="display: none;">
-                <i class="bi bi-bell-slash"></i>
-                <p>No notifications yet</p>
-                <small>We'll notify you when something important happens</small>
-            </div>
+  <div id="notifications-sidebar" class="notifications-sidebar open">
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+      <i class="bi bi-bell"></i>
+    </button>
+    <div class="notifications-content">
+      <div class="notifications-header">
+        <div class="notifications-title">
+          <h3>Investment Feed</h3>
         </div>
+        <div class="notifications-actions">
+          <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+          <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
+            <i class="bi bi-gear"></i>
+          </button>
+        </div>
+      </div>
+      <div class="notifications-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">All</button>
+        <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress</button>
+        <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">Stocks</button>
+        <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+      <div class="notifications-empty" id="notifications-empty" style="display: none;">
+        <i class="bi bi-bell-slash"></i>
+        <p>No notifications yet</p>
+        <small>We'll notify you when something important happens</small>
+      </div>
     </div>
-
-<div class="page-content">
-    <!-- Hero Section -->
-    <div class="hero-section">
+  </div>
+  
+  <div class="page-wrapper sidebar-active">
+    <main class="page-content">
+      
+      <!-- Page Hero -->
+      <section class="page-hero">
         <div class="hero-content">
-            <h1 class="hero-title page-title-shiny">Market Analysis</h1>
-            <p class="hero-description">Advanced market analysis tools and comprehensive insights for informed investment decisions</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="hero-stat-number">4,567.89</span>
-                    <span class="hero-stat-label">S&P 500</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">14,234.12</span>
-                    <span class="hero-stat-label">NASDAQ</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">18.45</span>
-                    <span class="hero-stat-label">VIX Index</span>
-                </div>
-            </div>
+          <h1>Market Analysis</h1>
+          <p>Real-time global market data and sector trend analysis</p>
         </div>
-    </div>
-
-    <!-- Market Overview Cards -->
-    <div class="section-header section-header-card">
-        <h2 class="section-title">Market Overview</h2>
-        <p class="section-description">Real-time market data and key performance indicators</p>
-    </div>
-    
-    <div class="market-overview-grid">
-        <div class="market-overview-card s-p-500">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-                <h3 class="card-title">S&P 500</h3>
-            </div>
-            <div class="card-value">4,567.89</div>
-            <div class="card-change">+1.24% (+56.78)</div>
+        <div class="hero-actions">
+          <button class="btn-primary" id="refreshAllBtn">
+            <i class="bi bi-arrow-clockwise"></i>
+            Refresh All Data
+          </button>
+          <button class="btn-secondary" id="exportReportBtn">
+            <i class="bi bi-download"></i>
+            Export Report
+          </button>
+        </div>
+      </section>
+      
+      <!-- Market Overview Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon market">
+            <i class="bi bi-graph-up"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="sp500-value">4,783.45</div>
+            <div class="stat-label">S&P 500</div>
+            <div class="stat-change positive" id="sp500-change">+0.8% (+38.21)</div>
+          </div>
         </div>
         
-        <div class="market-overview-card nasdaq">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-                <h3 class="card-title">NASDAQ</h3>
-            </div>
-            <div class="card-value">14,234.12</div>
-            <div class="card-change">+0.89% (+125.45)</div>
+        <div class="stat-card">
+          <div class="stat-icon indicators">
+            <i class="bi bi-speedometer2"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="vix-value">14.2</div>
+            <div class="stat-label">VIX (Fear Index)</div>
+            <div class="stat-change negative" id="vix-change">-2.1%</div>
+          </div>
         </div>
         
-        <div class="market-overview-card vix">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="bi bi-graph-down"></i>
-                </div>
-                <h3 class="card-title">VIX</h3>
-            </div>
-            <div class="card-value">18.45</div>
-            <div class="card-change negative">-2.1% (-0.39)</div>
+        <div class="stat-card">
+          <div class="stat-icon volume">
+            <i class="bi bi-bar-chart-line"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="10y-yield">4.18%</div>
+            <div class="stat-label">10Y Treasury</div>
+            <div class="stat-change positive" id="10y-change">+0.05%</div>
+          </div>
         </div>
         
-        <div class="market-overview-card treasury">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
-                <h3 class="card-title">10Y Treasury</h3>
-            </div>
-            <div class="card-value">4.23%</div>
-            <div class="card-change">+0.02% (+2bps)</div>
+        <div class="stat-card">
+          <div class="stat-icon trades">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" id="dxy-value">103.45</div>
+            <div class="stat-label">Dollar Index</div>
+            <div class="stat-change positive" id="dxy-change">+0.3%</div>
+          </div>
         </div>
-    </div>
-
-    <!-- Market Analysis Tools -->
-    <div class="section-header section-header-card">
-        <h2 class="section-title">Analysis Tools</h2>
-        <p class="section-description">Advanced market analysis tools and technical indicators</p>
-    </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Technical Analysis -->
-        <div class="analysis-card technical-analysis-card">
-            <div class="card-header">
-                <h3 class="card-title">Technical Analysis</h3>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
+      </div>
+      
+      <!-- Data Category Tabs -->
+      <div class="data-category-tabs">
+        <button class="category-tab active" data-category="all">
+          <i class="bi bi-collection"></i>
+          All Data
+        </button>
+        <button class="category-tab" data-category="equity">
+          <i class="bi bi-graph-up-arrow"></i>
+          Equity Markets
+        </button>
+        <button class="category-tab" data-category="macro">
+          <i class="bi bi-globe"></i>
+          Macroeconomic
+        </button>
+        <button class="category-tab" data-category="sector">
+          <i class="bi bi-pie-chart"></i>
+          Sector Data
+        </button>
+        <button class="category-tab" data-category="alternative">
+          <i class="bi bi-database"></i>
+          Alternative Data
+        </button>
+        <button class="category-tab" data-category="technical">
+          <i class="bi bi-bezier2"></i>
+          Technical
+        </button>
+      </div>
+      
+      <!-- Market Data Cards Grid -->
+      <div class="market-data-grid" id="marketDataGrid">
+        
+        <!-- CATEGORY 1: EQUITY MARKET DATA -->
+        
+        <!-- Card 1: Market Indices -->
+        <div class="component-card data-card" data-category="equity">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bar-chart-steps"></i>
+              Global Market Indices
+            </h3>
+            <button class="card-action-btn" data-action="refresh-indices">
+              <i class="bi bi-arrow-clockwise"></i>
+              Refresh
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="data-table-wrapper">
+              <table class="data-table compact">
+                <thead>
+                  <tr>
+                    <th>Index</th>
+                    <th>Price</th>
+                    <th>Change</th>
+                    <th>% Change</th>
+                  </tr>
+                </thead>
+                <tbody id="indices-table">
+                  <tr>
+                    <td><strong>S&P 500</strong></td>
+                    <td>4,783.45</td>
+                    <td class="positive">+38.21</td>
+                    <td class="positive">+0.80%</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Dow Jones</strong></td>
+                    <td>37,545.33</td>
+                    <td class="positive">+156.82</td>
+                    <td class="positive">+0.42%</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Nasdaq</strong></td>
+                    <td>15,074.57</td>
+                    <td class="positive">+234.12</td>
+                    <td class="positive">+1.58%</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Russell 2000</strong></td>
+                    <td>2,015.67</td>
+                    <td class="negative">-8.45</td>
+                    <td class="negative">-0.42%</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            
-            <div class="space-y-4">
-                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
-                            <i class="bi bi-graph-up text-emerald-600 dark:text-emerald-400"></i>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">Moving Averages</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">50-day & 200-day MA</div>
-                        </div>
-                    </div>
-                    <div class="text-emerald-600 dark:text-emerald-400 font-semibold">Bullish</div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                            <i class="bi bi-speedometer text-blue-600 dark:text-blue-400"></i>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">RSI</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Relative Strength Index</div>
-                        </div>
-                    </div>
-                    <div class="text-yellow-600 dark:text-yellow-400 font-semibold">65.2</div>
-                </div>
-                
-                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                            <i class="bi bi-activity text-purple-600 dark:text-purple-400"></i>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">MACD</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Moving Average Convergence</div>
-                        </div>
-                    </div>
-                    <div class="text-emerald-600 dark:text-emerald-400 font-semibold">Positive</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sector Performance -->
-        <div class="analysis-card sector-performance-card">
-            <div class="card-header">
-                <h3 class="card-title">Sector Performance</h3>
-                <div class="card-icon">
-                    <i class="bi bi-pie-chart"></i>
-                </div>
-            </div>
-            
-            <div class="flex items-center justify-between mb-4">
-                <select class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm dark:bg-gray-700 dark:text-gray-200">
-                    <option>Today</option>
-                    <option>1 Week</option>
-                    <option>1 Month</option>
-                </select>
-            </div>
-            
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-4 h-4 bg-emerald-500 rounded"></div>
-                        <span class="text-gray-900 dark:text-white">Technology</span>
-                    </div>
-                    <span class="text-emerald-600 dark:text-emerald-400 font-semibold">+2.34%</span>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-4 h-4 bg-blue-500 rounded"></div>
-                        <span class="text-gray-900 dark:text-white">Healthcare</span>
-                    </div>
-                    <span class="text-emerald-600 dark:text-emerald-400 font-semibold">+1.89%</span>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-4 h-4 bg-purple-500 rounded"></div>
-                        <span class="text-gray-900 dark:text-white">Financial</span>
-                    </div>
-                    <span class="text-emerald-600 dark:text-emerald-400 font-semibold">+1.45%</span>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-4 h-4 bg-orange-500 rounded"></div>
-                        <span class="text-gray-900 dark:text-white">Energy</span>
-                    </div>
-                    <span class="text-red-600 dark:text-red-400 font-semibold">-0.78%</span>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-4 h-4 bg-red-500 rounded"></div>
-                        <span class="text-gray-900 dark:text-white">Real Estate</span>
-                    </div>
-                    <span class="text-red-600 dark:text-red-400 font-semibold">-1.23%</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Market News & Analysis -->
-    <div class="section-header section-header-card">
-        <h2 class="section-title">Market News & Analysis</h2>
-        <p class="section-description">Latest market news and analysis tools</p>
-    </div>
-    
-    <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Market News -->
-        <div class="lg:col-span-2 research-card">
-            <div class="card-header">
-                <h3 class="card-title">Latest Market News</h3>
-                <div class="card-icon">
-                    <i class="bi bi-newspaper"></i>
-                </div>
-            </div>
-            
-            <div class="space-y-4">
-                <article class="flex space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="bi bi-newspaper text-emerald-600 dark:text-emerald-400 text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Federal Reserve Maintains Rates</h4>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">The Federal Reserve decided to keep interest rates unchanged, supporting continued market growth and investor confidence.</p>
-                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                            <span>Reuters</span>
-                            <span>2 hours ago</span>
-                        </div>
-                    </div>
-                </article>
-                
-                <article class="flex space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="bi bi-cpu text-blue-600 dark:text-blue-400 text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Tech Sector Resilience</h4>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Technology stocks continue to show strong performance despite market volatility, with AI and cloud computing leading gains.</p>
-                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                            <span>Bloomberg</span>
-                            <span>4 hours ago</span>
-                        </div>
-                    </div>
-                </article>
-                
-                <article class="flex space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="bi bi-lightning text-orange-600 dark:text-orange-400 text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Energy Market Stabilization</h4>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Oil prices stabilize as supply chain concerns ease, benefiting energy sector stocks and related investments.</p>
-                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                            <span>CNBC</span>
-                            <span>6 hours ago</span>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </div>
-
-        <!-- Market Tools -->
-        <div class="space-y-6">
-            <!-- Stock Screener -->
-            <div class="research-card">
-                <div class="card-header">
-                    <h3 class="card-title">Stock Screener</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-funnel"></i>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-sm text-gray-600 dark:text-gray-400">Market Cap</label>
-                        <select class="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
-                            <option>All</option>
-                            <option>Large Cap (>$10B)</option>
-                            <option>Mid Cap ($2B-$10B)</option>
-                            <option>Small Cap (<$2B)</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="text-sm text-gray-600 dark:text-gray-400">Sector</label>
-                        <select class="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
-                            <option>All Sectors</option>
-                            <option>Technology</option>
-                            <option>Healthcare</option>
-                            <option>Financial</option>
-                            <option>Energy</option>
-                        </select>
-                    </div>
-                    
-                    <button class="w-full px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors">
-                        Screen Stocks
-                    </button>
-                </div>
-            </div>
-
-            <!-- Economic Calendar -->
-            <div class="research-card">
-                <div class="card-header">
-                    <h3 class="card-title">Economic Calendar</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-calendar-event"></i>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">CPI Data</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Tomorrow 8:30 AM</div>
-                        </div>
-                        <div class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs rounded">High Impact</div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">Fed Minutes</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Wed 2:00 PM</div>
-                        </div>
-                        <div class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs rounded">Medium Impact</div>
-                    </div>
-                    
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white text-sm">Jobs Report</div>
-                            <div class="text-xs text-gray-600 dark:text-gray-400">Friday 8:30 AM</div>
-                        </div>
-                        <div class="px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs rounded">High Impact</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Market Heat Map -->
-    <div class="section-header section-header-card">
-        <h2 class="section-title">Market Heat Map</h2>
-        <p class="section-description">Visual representation of market performance across different sectors</p>
-    </div>
-    
-    <div class="research-card">
-        <div class="card-header">
-            <h3 class="card-title">Market Heat Map</h3>
-            <div class="card-icon">
-                <i class="bi bi-grid-3x3"></i>
-            </div>
+          </div>
         </div>
         
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-2">
-                <button class="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded-md text-sm">S&P 500</button>
-                <button class="px-3 py-1 text-gray-600 dark:text-gray-400 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700">NASDAQ</button>
-                <button class="px-3 py-1 text-gray-600 dark:text-gray-400 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700">DOW</button>
+        <!-- Card 2: Sector Performance -->
+        <div class="component-card data-card" data-category="equity sector">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-grid-3x3"></i>
+              Sector Performance (Today)
+            </h3>
+            <button class="card-action-btn" data-action="analyze-sectors">
+              <i class="bi bi-cpu"></i>
+              AI Analysis
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="sector-performance-list">
+              <div class="sector-item">
+                <div class="sector-name">
+                  <i class="bi bi-cpu"></i>
+                  Technology
+                </div>
+                <div class="sector-bar positive" style="width: 85%">
+                  <span>+2.4%</span>
+                </div>
+              </div>
+              <div class="sector-item">
+                <div class="sector-name">
+                  <i class="bi bi-activity"></i>
+                  Healthcare
+                </div>
+                <div class="sector-bar positive" style="width: 65%">
+                  <span>+1.2%</span>
+                </div>
+              </div>
+              <div class="sector-item">
+                <div class="sector-name">
+                  <i class="bi bi-bank"></i>
+                  Financials
+                </div>
+                <div class="sector-bar positive" style="width: 55%">
+                  <span>+0.8%</span>
+                </div>
+              </div>
+              <div class="sector-item">
+                <div class="sector-name">
+                  <i class="bi bi-lightning"></i>
+                  Energy
+                </div>
+                <div class="sector-bar negative" style="width: 45%">
+                  <span>-0.6%</span>
+                </div>
+              </div>
+              <div class="sector-item">
+                <div class="sector-name">
+                  <i class="bi bi-cart"></i>
+                  Consumer Discretionary
+                </div>
+                <div class="sector-bar negative" style="width: 35%">
+                  <span>-1.1%</span>
+                </div>
+              </div>
             </div>
+            <div class="ai-insight-box" id="sector-analysis"></div>
+          </div>
         </div>
         
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            <!-- Heat map tiles -->
-            <div class="bg-emerald-500 text-white p-4 rounded-lg text-center">
-                <div class="font-semibold text-sm">AAPL</div>
-                <div class="text-xs">+2.45%</div>
+        <!-- Card 3: Market Breadth -->
+        <div class="component-card data-card" data-category="equity technical">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bar-chart"></i>
+              Market Breadth Indicators
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="breadth-metrics">
+              <div class="breadth-metric">
+                <div class="metric-label">Advance-Decline Ratio</div>
+                <div class="metric-value positive">2,145 / 1,023</div>
+                <div class="metric-bar">
+                  <div class="bar-fill positive" style="width: 67%"></div>
+                </div>
+              </div>
+              <div class="breadth-metric">
+                <div class="metric-label">New Highs - New Lows</div>
+                <div class="metric-value positive">+245</div>
+                <div class="metric-subtext">312 new highs, 67 new lows</div>
+              </div>
+              <div class="breadth-metric">
+                <div class="metric-label">% Above 200-Day MA</div>
+                <div class="metric-value">68%</div>
+                <div class="metric-bar">
+                  <div class="bar-fill" style="width: 68%"></div>
+                </div>
+              </div>
             </div>
-            <div class="bg-emerald-400 text-white p-4 rounded-lg text-center">
-                <div class="font-semibold text-sm">MSFT</div>
-                <div class="text-xs">+1.89%</div>
-            </div>
-            <div class="bg-emerald-300 text-white p-4 rounded-lg text-center">
-                <div class="font-semibold text-sm">GOOGL</div>
-                <div class="text-xs">+1.23%</div>
-            </div>
-            <div class="bg-red-400 text-white p-4 rounded-lg text-center">
-                <div class="font-semibold text-sm">TSLA</div>
-                <div class="text-xs">-1.56%</div>
-            </div>
-            <div class="bg-emerald-600 text-white p-4 rounded-lg text-center">
-                <div class="font-semibold text-sm">NVDA</div>
-                <div class="text-xs">+3.21%</div>
-            </div>
-            <div class="bg-red-300 text-white p-4 rounded-lg text-center">
-                <div class="font-semibold text-sm">META</div>
-                <div class="text-xs">-0.89%</div>
-            </div>
+          </div>
         </div>
         
-        <div class="flex items-center justify-center space-x-4 mt-4 text-sm">
-            <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-emerald-500 rounded"></div>
-                <span class="text-gray-600 dark:text-gray-400">Strong Gains</span>
+        <!-- CATEGORY 2: MACROECONOMIC DATA -->
+        
+        <!-- Card 4: Economic Indicators -->
+        <div class="component-card data-card" data-category="macro">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-graph-up"></i>
+              Key Economic Indicators
+            </h3>
+            <button class="card-action-btn" data-action="fetch-economic">
+              <i class="bi bi-download"></i>
+              Update FRED
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="economic-indicators-grid">
+              <div class="indicator-item">
+                <div class="indicator-icon gdp">
+                  <i class="bi bi-coin"></i>
+                </div>
+                <div class="indicator-data">
+                  <div class="indicator-value">2.8%</div>
+                  <div class="indicator-label">GDP Growth (Q4)</div>
+                  <div class="indicator-change positive">+0.3% QoQ</div>
+                </div>
+              </div>
+              <div class="indicator-item">
+                <div class="indicator-icon inflation">
+                  <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div class="indicator-data">
+                  <div class="indicator-value">3.1%</div>
+                  <div class="indicator-label">CPI (YoY)</div>
+                  <div class="indicator-change negative">-0.2% MoM</div>
+                </div>
+              </div>
+              <div class="indicator-item">
+                <div class="indicator-icon employment">
+                  <i class="bi bi-people"></i>
+                </div>
+                <div class="indicator-data">
+                  <div class="indicator-value">3.7%</div>
+                  <div class="indicator-label">Unemployment</div>
+                  <div class="indicator-change">Unchanged</div>
+                </div>
+              </div>
+              <div class="indicator-item">
+                <div class="indicator-icon rates">
+                  <i class="bi bi-percent"></i>
+                </div>
+                <div class="indicator-data">
+                  <div class="indicator-value">5.25-5.50%</div>
+                  <div class="indicator-label">Fed Funds Rate</div>
+                  <div class="indicator-change">Target Range</div>
+                </div>
+              </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-emerald-300 rounded"></div>
-                <span class="text-gray-600 dark:text-gray-400">Moderate Gains</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-red-300 rounded"></div>
-                <span class="text-gray-600 dark:text-gray-400">Moderate Loss</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-red-500 rounded"></div>
-                <span class="text-gray-600 dark:text-gray-400">Strong Loss</span>
-            </div>
+          </div>
         </div>
-    </div>
-</div>
-
-    <!-- Learning Opportunities -->
-    <section class="learning-opportunities">
+        
+        <!-- Card 5: Global PMI Dashboard -->
+        <div class="component-card data-card full-width" data-category="macro">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-globe"></i>
+              Global Manufacturing PMI
+            </h3>
+            <select class="data-filter">
+              <option>All Regions</option>
+              <option>North America</option>
+              <option>Europe</option>
+              <option>Asia Pacific</option>
+            </select>
+          </div>
+          <div class="card-body">
+            <div class="pmi-chart-container">
+              <canvas id="pmiChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- CATEGORY 3: SECTOR-SPECIFIC DATA -->
+        
+        <!-- Card 6: Technology Sector Metrics -->
+        <div class="component-card data-card" data-category="sector">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-cpu-fill"></i>
+              Technology Sector
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="sector-metrics-list">
+              <div class="metric-row">
+                <span class="metric-name">Semiconductor Sales (MoM)</span>
+                <span class="metric-value positive">+4.2%</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">PC Shipments (YoY)</span>
+                <span class="metric-value negative">-2.1%</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Cloud Revenue Growth</span>
+                <span class="metric-value positive">+28%</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Book-to-Bill Ratio</span>
+                <span class="metric-value">1.08</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 7: Energy Sector Metrics -->
+        <div class="component-card data-card" data-category="sector">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-lightning-fill"></i>
+              Energy Sector
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="sector-metrics-list">
+              <div class="metric-row">
+                <span class="metric-name">WTI Crude Oil</span>
+                <span class="metric-value">$78.45/bbl</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Natural Gas</span>
+                <span class="metric-value">$2.85/MMBtu</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Rig Count (Baker Hughes)</span>
+                <span class="metric-value positive">+12 WoW</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Oil Inventories (EIA)</span>
+                <span class="metric-value negative">-2.1M barrels</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 8: Consumer Sector Metrics -->
+        <div class="component-card data-card" data-category="sector">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-cart-fill"></i>
+              Consumer Sector
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="sector-metrics-list">
+              <div class="metric-row">
+                <span class="metric-name">Retail Sales (MoM)</span>
+                <span class="metric-value positive">+0.6%</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Consumer Confidence</span>
+                <span class="metric-value">104.7</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Personal Savings Rate</span>
+                <span class="metric-value">4.2%</span>
+              </div>
+              <div class="metric-row">
+                <span class="metric-name">Credit Card Spending</span>
+                <span class="metric-value positive">+3.1% YoY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- CATEGORY 4: ALTERNATIVE DATA -->
+        
+        <!-- Card 9: Satellite Data Insights -->
+        <div class="component-card data-card" data-category="alternative">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-airplane"></i>
+              Satellite & Geospatial Data
+            </h3>
+            <button class="card-action-btn" data-action="ai-satellite">
+              <i class="bi bi-cpu"></i>
+              AI Insights
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="alt-data-list">
+              <div class="alt-data-item">
+                <div class="alt-icon">
+                  <i class="bi bi-shop"></i>
+                </div>
+                <div class="alt-content">
+                  <div class="alt-title">Retail Parking Lot Traffic</div>
+                  <div class="alt-value positive">+8.2% vs last week</div>
+                  <div class="alt-subtext">Target, Walmart showing strength</div>
+                </div>
+              </div>
+              <div class="alt-data-item">
+                <div class="alt-icon">
+                  <i class="bi bi-droplet"></i>
+                </div>
+                <div class="alt-content">
+                  <div class="alt-title">Oil Tank Levels</div>
+                  <div class="alt-value negative">-3.5% capacity</div>
+                  <div class="alt-subtext">Below 5-year average</div>
+                </div>
+              </div>
+              <div class="alt-data-item">
+                <div class="alt-icon">
+                  <i class="bi bi-truck"></i>
+                </div>
+                <div class="alt-content">
+                  <div class="alt-title">Shipping Activity</div>
+                  <div class="alt-value">Neutral</div>
+                  <div class="alt-subtext">Port congestion easing</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 10: Social Sentiment -->
+        <div class="component-card data-card" data-category="alternative">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-chat-dots"></i>
+              Social Media Sentiment
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="sentiment-stocks-list">
+              <div class="sentiment-stock">
+                <div class="stock-info">
+                  <span class="ticker">NVDA</span>
+                  <span class="name">NVIDIA</span>
+                </div>
+                <div class="sentiment-score bullish">
+                  <span class="score">87</span>
+                  <span class="label">Bullish</span>
+                </div>
+                <div class="sentiment-mentions">
+                  <i class="bi bi-chat"></i>
+                  14.2k mentions
+                </div>
+              </div>
+              <div class="sentiment-stock">
+                <div class="stock-info">
+                  <span class="ticker">TSLA</span>
+                  <span class="name">Tesla</span>
+                </div>
+                <div class="sentiment-score neutral">
+                  <span class="score">52</span>
+                  <span class="label">Neutral</span>
+                </div>
+                <div class="sentiment-mentions">
+                  <i class="bi bi-chat"></i>
+                  23.8k mentions
+                </div>
+              </div>
+              <div class="sentiment-stock">
+                <div class="stock-info">
+                  <span class="ticker">AAPL</span>
+                  <span class="name">Apple</span>
+                </div>
+                <div class="sentiment-score bearish">
+                  <span class="score">34</span>
+                  <span class="label">Bearish</span>
+                </div>
+                <div class="sentiment-mentions">
+                  <i class="bi bi-chat"></i>
+                  9.4k mentions
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 11: Web & App Data -->
+        <div class="component-card data-card" data-category="alternative">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-phone"></i>
+              App & Web Traffic
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="app-metrics-list">
+              <div class="app-metric">
+                <div class="app-name">
+                  <i class="bi bi-bag"></i>
+                  Amazon App
+                </div>
+                <div class="app-data">
+                  <span class="downloads positive">+12% downloads</span>
+                  <span class="engagement">4.2M DAU</span>
+                </div>
+              </div>
+              <div class="app-metric">
+                <div class="app-name">
+                  <i class="bi bi-cup-straw"></i>
+                  Starbucks App
+                </div>
+                <div class="app-data">
+                  <span class="downloads positive">+5% downloads</span>
+                  <span class="engagement">2.8M DAU</span>
+                </div>
+              </div>
+              <div class="app-metric">
+                <div class="app-name">
+                  <i class="bi bi-credit-card"></i>
+                  PayPal App
+                </div>
+                <div class="app-data">
+                  <span class="downloads negative">-2% downloads</span>
+                  <span class="engagement">8.1M DAU</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- CATEGORY 5: TECHNICAL INDICATORS -->
+        
+        <!-- Card 12: Market Technical Indicators -->
+        <div class="component-card data-card" data-category="technical">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bezier"></i>
+              S&P 500 Technical Indicators
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="technical-indicators">
+              <div class="tech-indicator">
+                <div class="tech-name">RSI (14)</div>
+                <div class="tech-value">
+                  <span class="value">62.4</span>
+                  <span class="status neutral">Neutral</span>
+                </div>
+                <div class="tech-bar">
+                  <div class="bar-fill" style="width: 62.4%">
+                    <span class="oversold">30</span>
+                    <span class="overbought">70</span>
+                  </div>
+                </div>
+              </div>
+              <div class="tech-indicator">
+                <div class="tech-name">MACD</div>
+                <div class="tech-value">
+                  <span class="value positive">+12.5</span>
+                  <span class="status bullish">Bullish</span>
+                </div>
+              </div>
+              <div class="tech-indicator">
+                <div class="tech-name">50-Day MA</div>
+                <div class="tech-value">
+                  <span class="value">4,745</span>
+                  <span class="status bullish">Above (0.8%)</span>
+                </div>
+              </div>
+              <div class="tech-indicator">
+                <div class="tech-name">200-Day MA</div>
+                <div class="tech-value">
+                  <span class="value">4,512</span>
+                  <span class="status bullish">Above (6.0%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 13: Options Flow -->
+        <div class="component-card data-card" data-category="technical">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-arrow-left-right"></i>
+              Unusual Options Activity
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="options-flow-list">
+              <div class="options-flow-item">
+                <div class="flow-ticker">NVDA</div>
+                <div class="flow-details">
+                  <span class="flow-type call">CALL</span>
+                  <span class="flow-strike">$500</span>
+                  <span class="flow-expiry">Feb 16</span>
+                </div>
+                <div class="flow-volume">
+                  <span class="volume">15,240 contracts</span>
+                  <span class="premium">$4.2M premium</span>
+                </div>
+              </div>
+              <div class="options-flow-item">
+                <div class="flow-ticker">SPY</div>
+                <div class="flow-details">
+                  <span class="flow-type put">PUT</span>
+                  <span class="flow-strike">$470</span>
+                  <span class="flow-expiry">Mar 15</span>
+                </div>
+                <div class="flow-volume">
+                  <span class="volume">28,500 contracts</span>
+                  <span class="premium">$8.1M premium</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 14: Commodities Dashboard -->
+        <div class="component-card data-card full-width" data-category="all">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bar-chart-fill"></i>
+              Commodities & Currencies
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="commodities-grid">
+              <div class="commodity-item">
+                <div class="commodity-name">
+                  <i class="bi bi-droplet-fill"></i>
+                  WTI Crude
+                </div>
+                <div class="commodity-price">$78.45</div>
+                <div class="commodity-change positive">+1.2%</div>
+              </div>
+              <div class="commodity-item">
+                <div class="commodity-name">
+                  <i class="bi bi-coin"></i>
+                  Gold
+                </div>
+                <div class="commodity-price">$2,042</div>
+                <div class="commodity-change positive">+0.5%</div>
+              </div>
+              <div class="commodity-item">
+                <div class="commodity-name">
+                  <i class="bi bi-lightning"></i>
+                  Natural Gas
+                </div>
+                <div class="commodity-price">$2.85</div>
+                <div class="commodity-change negative">-2.1%</div>
+              </div>
+              <div class="commodity-item">
+                <div class="commodity-name">
+                  <i class="bi bi-broadcast"></i>
+                  Copper
+                </div>
+                <div class="commodity-price">$3.85</div>
+                <div class="commodity-change positive">+0.8%</div>
+              </div>
+              <div class="commodity-item">
+                <div class="commodity-name">
+                  <i class="bi bi-currency-dollar"></i>
+                  EUR/USD
+                </div>
+                <div class="commodity-price">1.0845</div>
+                <div class="commodity-change negative">-0.2%</div>
+              </div>
+              <div class="commodity-item">
+                <div class="commodity-name">
+                  <i class="bi bi-currency-yen"></i>
+                  USD/JPY
+                </div>
+                <div class="commodity-price">148.23</div>
+                <div class="commodity-change positive">+0.3%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Card 15: AI Market Insights -->
+        <div class="component-card data-card full-width featured" data-category="all">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-robot"></i>
+              AI-Powered Market Insights
+            </h3>
+            <button class="card-action-btn primary" id="generateInsightsBtn">
+              <i class="bi bi-stars"></i>
+              Generate Insights
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="ai-insights-container" id="aiInsightsContainer">
+              <div class="insights-placeholder">
+                <i class="bi bi-lightbulb"></i>
+                <p>Click "Generate Insights" to get AI-powered analysis of current market conditions</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- Learning Opportunities -->
+      <section class="learning-opportunities">
         <div class="learning-header">
-            <div class="learning-title-area">
-                <div class="learning-icon"><i class="bi bi-mortarboard-fill"></i></div>
-                <div class="learning-title-text">
-                    <h3>Technical &amp; Market Analysis</h3>
-                    <p>Master chart patterns, indicators, and market psychology</p>
-                </div>
+          <div class="learning-title-area">
+            <div class="learning-icon">
+              <i class="bi bi-mortarboard-fill"></i>
             </div>
-            <button class="view-all-btn" onclick="window.location.href='learning-center.html'">View All Courses</button>
+            <div class="learning-title-text">
+              <h3>Technical & Market Analysis</h3>
+              <p>Master chart patterns, indicators, and market psychology</p>
+            </div>
+          </div>
+          <button class="view-all-btn" onclick="window.location.href='learning-center.html'">
+            View All Courses
+          </button>
         </div>
+        
         <div class="courses-grid">
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span></div>
-                <h4 class="course-title">Technical Analysis Fundamentals</h4>
-                <p class="course-description">Learn chart patterns, support/resistance, and core technical indicators.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 16 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 3,421 enrolled</div></div>
-                <div class="course-footer"><span class="course-level beginner">Beginner</span><button class="enroll-btn">Enroll Now</button></div>
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Course</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span>
             </div>
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span></div>
-                <h4 class="course-title">Advanced Chart Patterns</h4>
-                <p class="course-description">Master head-and-shoulders, cup-and-handle, and other complex patterns.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 20 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 2,156 enrolled</div></div>
-                <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
+            <h4 class="course-title">Technical Analysis Fundamentals</h4>
+            <p class="course-description">
+              Learn chart patterns, trend lines, support/resistance, and key technical indicators.
+            </p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> 16 lessons</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 4,521 enrolled</div>
             </div>
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span></div>
-                <h4 class="course-title">Sector Rotation Strategies</h4>
-                <p class="course-description">Learn how to rotate between sectors based on economic cycles.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 12 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 1,847 enrolled</div></div>
-                <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
+            <div class="course-footer">
+              <span class="course-level beginner">Beginner</span>
+              <button class="enroll-btn">Enroll Now</button>
             </div>
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span></div>
-                <h4 class="course-title">Market Sentiment Analysis</h4>
-                <p class="course-description">Use put/call ratios, VIX, and sentiment indicators for trading.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 18 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 1,523 enrolled</div></div>
-                <div class="course-footer"><span class="course-level advanced">Advanced</span><button class="enroll-btn">Enroll Now</button></div>
+          </div>
+          
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Course</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span>
             </div>
+            <h4 class="course-title">Advanced Chart Patterns</h4>
+            <p class="course-description">
+              Deep dive into head & shoulders, triangles, flags, and complex formations.
+            </p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> 20 lessons</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 2,847 enrolled</div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level intermediate">Intermediate</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+          
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Skill</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span>
+            </div>
+            <h4 class="course-title">Sector Rotation Strategies</h4>
+            <p class="course-description">
+              Learn to identify sector trends and rotate portfolios based on economic cycles.
+            </p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> 12 lessons</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 1,934 enrolled</div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level intermediate">Intermediate</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
+          
+          <div class="course-card">
+            <div class="course-header">
+              <span class="course-type">Course</span>
+              <span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span>
+            </div>
+            <h4 class="course-title">Market Sentiment Analysis</h4>
+            <p class="course-description">
+              Master VIX, put/call ratios, positioning data, and contrarian indicators.
+            </p>
+            <div class="course-meta">
+              <div class="meta-item"><i class="bi bi-book"></i> 18 lessons</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 3,241 enrolled</div>
+            </div>
+            <div class="course-footer">
+              <span class="course-level advanced">Advanced</span>
+              <button class="enroll-btn">Enroll Now</button>
+            </div>
+          </div>
         </div>
-    </section>
-
-    <!-- Navigation JavaScript -->
-    <script src="../assets/js/theme-toggle.js"></script>
-    <script src="../components/navigation/load-nav.js"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
-    <script>
-        // Initialize notifications sidebar when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Initializing market analysis');
-            
-            // Initialize the notifications sidebar
-            if (window.NotificationsSidebar) {
-                const sidebar = new NotificationsSidebar();
-                sidebar.init();
-            }
-        });
-    </script>
+      </section>
+      
+    </main>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../assets/js/theme-toggle.js"></script>
+  <script src="../assets/js/sidebar-toggle.js"></script>
+  <script src="../components/navigation/load-nav.js"></script>
+  <script src="../components/notifications/notifications-sidebar.js"></script>
+  <script src="market-analysis.js"></script>
+  
 </body>
 </html>
