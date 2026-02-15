@@ -94,13 +94,14 @@
   transform: rotate(180deg);
 }
 
+/* Dropdown Menu - SOLID BACKGROUND (no transparency) */
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 0.5rem);
   left: 0;
   min-width: 320px;
   background: var(--card);
-  backdrop-filter: blur(20px);
+  backdrop-filter: none;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 0.5rem;
@@ -110,6 +111,16 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   box-shadow: var(--shadow-2xl);
+}
+
+body.light-mode .dropdown-menu {
+  background: #ffffff;
+  border-color: rgba(5, 150, 105, 0.15);
+}
+
+body:not(.light-mode) .dropdown-menu {
+  background: var(--card);
+  border-color: var(--border);
 }
 
 .nav-dropdown:hover .dropdown-menu {
@@ -153,10 +164,12 @@
   line-height: 1.4;
 }
 
+/* Nav Actions - FIXED ALIGNMENT */
 .nav-actions {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  height: 100%;
 }
 
 .nav-action-btn {
@@ -173,6 +186,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  flex-shrink: 0;
 }
 
 .nav-action-btn:hover {
@@ -188,9 +202,18 @@
   border-color: var(--primary);
 }
 
+/* Theme Toggle - FIXED ALIGNMENT */
+.theme-toggle {
+  margin: 0;
+  padding: 0;
+}
+
 .theme-toggle i {
   position: absolute;
   transition: all 0.3s ease;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .light-icon { color: #fbbf24; }
@@ -198,22 +221,22 @@
 
 body:not(.light-mode) .light-icon {
   opacity: 0;
-  transform: rotate(-90deg) scale(0);
+  transform: translate(-50%, -50%) rotate(-90deg) scale(0);
 }
 
 body:not(.light-mode) .dark-icon {
   opacity: 1;
-  transform: rotate(0deg) scale(1);
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
 }
 
 body.light-mode .light-icon {
   opacity: 1;
-  transform: rotate(0deg) scale(1);
+  transform: translate(-50%, -50%) rotate(0deg) scale(1);
 }
 
 body.light-mode .dark-icon {
   opacity: 0;
-  transform: rotate(90deg) scale(0);
+  transform: translate(-50%, -50%) rotate(90deg) scale(0);
 }
 
 .notification-badge {
