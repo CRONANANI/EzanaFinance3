@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
   <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
   <link rel="stylesheet" href="market-analysis.css">
+  <link rel="stylesheet" href="../components/pages/market-analysis/data-library/data-library-cards.css">
 </head>
 <body>
   
@@ -131,6 +132,10 @@
         <button class="analysis-tab" data-tab="economic">
           <i class="bi bi-currency-dollar"></i>
           Economic Indicators
+        </button>
+        <button class="analysis-tab" data-tab="datalib">
+          <i class="bi bi-database"></i>
+          Data Library
         </button>
       </div>
       
@@ -779,6 +784,486 @@
           </div>
         </div>
         
+      </div>
+      
+      <!-- DATA LIBRARY TAB -->
+      <div class="tab-content" data-content="datalib">
+        <div class="data-library-intro">
+          <h2><i class="bi bi-database"></i> Global Market Data Used by Investment Firms</h2>
+          <p>Comprehensive data categories covering equity markets, fundamentals, macroeconomics, commodities, derivatives, and more. Expand any card to view available metrics.</p>
+        </div>
+        
+        <div class="data-library-grid">
+          
+          <!-- 1. EQUITY MARKET DATA -->
+          <div class="data-category-card component-card" data-category="equity">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon equity"><i class="bi bi-graph-up-arrow"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Equity Market Data</h3>
+                <p class="data-category-desc">Price, volume, corporate actions, index data</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Price & Volume</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Real-time quotes</span><span class="data-metric-value">Bid/Ask/Last</span></li>
+                    <li><span class="data-metric-name">Historical OHLC</span><span class="data-metric-value">20+ years</span></li>
+                    <li><span class="data-metric-name">Intraday data</span><span class="data-metric-value">Minute/tick</span></li>
+                    <li><span class="data-metric-name">Pre-market / After-hours</span><span class="data-metric-value">Extended</span></li>
+                    <li><span class="data-metric-name">Market depth</span><span class="data-metric-value">Level 2</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Corporate Actions</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Dividends</span><span class="data-metric-value">Ex-date, yield</span></li>
+                    <li><span class="data-metric-name">Splits</span><span class="data-metric-value">Ratios, dates</span></li>
+                    <li><span class="data-metric-name">M&A</span><span class="data-metric-value">Terms, ratios</span></li>
+                    <li><span class="data-metric-name">Spin-offs</span><span class="data-metric-value">Distribution</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Index Data</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Major indices</span><span class="data-metric-value">S&P, Dow, Nasdaq</span></li>
+                    <li><span class="data-metric-name">International</span><span class="data-metric-value">FTSE, DAX, Nikkei</span></li>
+                    <li><span class="data-metric-name">Sector ETFs</span><span class="data-metric-value">XLK, XLF, XLV</span></li>
+                    <li><span class="data-metric-name">Constituents</span><span class="data-metric-value">Weightings</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 2. FUNDAMENTAL DATA -->
+          <div class="data-category-card component-card" data-category="fundamental">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon fundamental"><i class="bi bi-cash-stack"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Fundamental Data</h3>
+                <p class="data-category-desc">Financial statements, ratios, analyst estimates</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Financial Statements</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Income Statement</span><span class="data-metric-value">Revenue, EBITDA</span></li>
+                    <li><span class="data-metric-name">Balance Sheet</span><span class="data-metric-value">Assets, equity</span></li>
+                    <li><span class="data-metric-name">Cash Flow</span><span class="data-metric-value">OCF, FCF</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Valuation & Ratios</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">P/E, P/B, P/S</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">EV/EBITDA</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">ROE, ROA, ROIC</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Debt ratios</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Analyst Estimates</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">EPS/Revenue est.</span><span class="data-metric-value">Consensus</span></li>
+                    <li><span class="data-metric-name">Price targets</span><span class="data-metric-value">12‑mo</span></li>
+                    <li><span class="data-metric-name">Ratings</span><span class="data-metric-value">Buy/Hold/Sell</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 3. OWNERSHIP & INSTITUTIONAL -->
+          <div class="data-category-card component-card" data-category="ownership">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon ownership"><i class="bi bi-people"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Ownership & Institutional</h3>
+                <p class="data-category-desc">13F filings, insider trading, short interest, ETFs</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">13F Filings</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Top shareholders</span><span class="data-metric-value">% held</span></li>
+                    <li><span class="data-metric-name">Position changes</span><span class="data-metric-value">QoQ</span></li>
+                    <li><span class="data-metric-name">New positions</span><span class="data-metric-value">Fresh stakes</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Insider & Short</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Form 4 filings</span><span class="data-metric-value">Real-time</span></li>
+                    <li><span class="data-metric-name">Short interest</span><span class="data-metric-value">% float</span></li>
+                    <li><span class="data-metric-name">Days to cover</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">ETF Holdings</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Which ETFs hold</span><span class="data-metric-value">Fund, weight</span></li>
+                    <li><span class="data-metric-name">Flows</span><span class="data-metric-value">In/out</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 4. MACROECONOMIC DATA -->
+          <div class="data-category-card component-card" data-category="macro">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon macro"><i class="bi bi-globe2"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Macroeconomic Data</h3>
+                <p class="data-category-desc">GDP, inflation, employment, consumer, housing</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Growth & Inflation</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">GDP growth</span><span class="data-metric-value">Quarterly</span></li>
+                    <li><span class="data-metric-name">CPI / PPI / PCE</span><span class="data-metric-value">Headline, core</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Labor</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Non-farm payrolls</span><span class="data-metric-value">Monthly</span></li>
+                    <li><span class="data-metric-name">Unemployment</span><span class="data-metric-value">U3, U6</span></li>
+                    <li><span class="data-metric-name">JOLTS</span><span class="data-metric-value">Openings</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Consumer & Housing</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Retail sales</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">ISM Manufacturing</span><span class="data-metric-value">PMI</span></li>
+                    <li><span class="data-metric-name">Housing starts</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 5. MONETARY POLICY & RATES -->
+          <div class="data-category-card component-card" data-category="monetary">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon monetary"><i class="bi bi-bank2"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Monetary Policy & Rates</h3>
+                <p class="data-category-desc">Fed data, Treasury yields, credit markets</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Federal Reserve</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Fed Funds Rate</span><span class="data-metric-value">Target</span></li>
+                    <li><span class="data-metric-name">Balance sheet</span><span class="data-metric-value">QE/QT</span></li>
+                    <li><span class="data-metric-name">FOMC / Dot plot</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Yields</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Treasuries</span><span class="data-metric-value">2Y, 10Y, 30Y</span></li>
+                    <li><span class="data-metric-name">Yield curve</span><span class="data-metric-value">10Y-2Y</span></li>
+                    <li><span class="data-metric-name">Corporate bonds</span><span class="data-metric-value">IG, HY</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 6. COMMODITY & CURRENCY -->
+          <div class="data-category-card component-card" data-category="commodity">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon commodity"><i class="bi bi-gem"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Commodity & Currency</h3>
+                <p class="data-category-desc">Energy, metals, ag, forex</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Energy</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Crude (WTI/Brent)</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Natural gas</span><span class="data-metric-value">Henry Hub</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Metals & Ag</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Gold, silver, copper</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Grains</span><span class="data-metric-value">Corn, wheat</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Forex</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Major pairs</span><span class="data-metric-value">EUR/USD, etc.</span></li>
+                    <li><span class="data-metric-name">Dollar index</span><span class="data-metric-value">DXY</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 7. SECTOR-SPECIFIC METRICS -->
+          <div class="data-category-card component-card" data-category="sector">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon sector"><i class="bi bi-bar-chart-line"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Sector-Specific Metrics</h3>
+                <p class="data-category-desc">Tech, consumer, energy, RE, financials, healthcare</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">By Sector</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Tech</span><span class="data-metric-value">Semis, cloud, app store</span></li>
+                    <li><span class="data-metric-name">Consumer</span><span class="data-metric-value">Same-store sales</span></li>
+                    <li><span class="data-metric-name">Energy</span><span class="data-metric-value">Rig count, inventories</span></li>
+                    <li><span class="data-metric-name">RE</span><span class="data-metric-value">Cap rates, occupancy</span></li>
+                    <li><span class="data-metric-name">Financials</span><span class="data-metric-value">NIM, loan growth</span></li>
+                    <li><span class="data-metric-name">Healthcare</span><span class="data-metric-value">FDA, trials</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 8. SENTIMENT & BEHAVIORAL -->
+          <div class="data-category-card component-card" data-category="sentiment">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon sentiment"><i class="bi bi-emoji-smile"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Sentiment & Behavioral</h3>
+                <p class="data-category-desc">VIX, put/call, surveys, news, positioning</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Market Sentiment</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">VIX</span><span class="data-metric-value">Fear gauge</span></li>
+                    <li><span class="data-metric-name">Put/call ratio</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Bull/bear surveys</span><span class="data-metric-value">AAII</span></li>
+                    <li><span class="data-metric-name">Fund flows</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">News & Positioning</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">News sentiment</span><span class="data-metric-value">NLP</span></li>
+                    <li><span class="data-metric-name">COT data</span><span class="data-metric-value">Futures</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 9. ALTERNATIVE DATA -->
+          <div class="data-category-card component-card" data-category="alternative">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon alternative"><i class="bi bi-satellite"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Alternative Data</h3>
+                <p class="data-category-desc">Satellite, credit card, web, social</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Sources</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Satellite/geospatial</span><span class="data-metric-value">Parking, oil</span></li>
+                    <li><span class="data-metric-name">Credit card</span><span class="data-metric-value">Spending</span></li>
+                    <li><span class="data-metric-name">Web & app</span><span class="data-metric-value">Traffic, downloads</span></li>
+                    <li><span class="data-metric-name">Job postings</span><span class="data-metric-value">LinkedIn</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 10. RISK METRICS -->
+          <div class="data-category-card component-card" data-category="risk">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon risk"><i class="bi bi-shield-exclamation"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Risk Metrics</h3>
+                <p class="data-category-desc">Volatility, VaR, stress tests, credit risk</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Volatility & VaR</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Historical vol</span><span class="data-metric-value">Std dev</span></li>
+                    <li><span class="data-metric-name">Implied vol</span><span class="data-metric-value">Options</span></li>
+                    <li><span class="data-metric-name">Beta</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">VaR / CVaR</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Credit</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">CDS spreads</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Default prob</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 11. GLOBAL MARKET DATA -->
+          <div class="data-category-card component-card" data-category="global">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon global"><i class="bi bi-globe-americas"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Global Market Data</h3>
+                <p class="data-category-desc">International indices, EM, China</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">International</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">MSCI EAFE / EM</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">ADRs</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Global PMI</span><span class="data-metric-value">Markit</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">China</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">PMI / Caixin</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Social financing</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 12. TECHNICAL INDICATORS -->
+          <div class="data-category-card component-card" data-category="technical">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon technical"><i class="bi bi-graph-up"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Technical Indicators</h3>
+                <p class="data-category-desc">Trend, momentum, volume, volatility, breadth</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Indicators</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Moving averages</span><span class="data-metric-value">SMA/EMA</span></li>
+                    <li><span class="data-metric-name">MACD, RSI</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">VWAP, OBV</span><span class="data-metric-value">Volume</span></li>
+                    <li><span class="data-metric-name">Bollinger, ATR</span><span class="data-metric-value">Vol</span></li>
+                    <li><span class="data-metric-name">Advance-decline</span><span class="data-metric-value">Breadth</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 13. DERIVATIVES DATA -->
+          <div class="data-category-card component-card" data-category="derivatives">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon derivatives"><i class="bi bi-arrow-left-right"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">Derivatives Data</h3>
+                <p class="data-category-desc">Options, futures, IV, open interest</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Options</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Implied vol</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Open interest</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">Gamma exposure</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Futures</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Open interest</span><span class="data-metric-value">—</span></li>
+                    <li><span class="data-metric-name">COT</span><span class="data-metric-value">Positioning</span></li>
+                    <li><span class="data-metric-name">Contango</span><span class="data-metric-value">/ backwardation</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 14. ESG & SUSTAINABILITY -->
+          <div class="data-category-card component-card" data-category="esg">
+            <div class="data-category-header" onclick="toggleDataCard(this)">
+              <div class="data-category-icon esg"><i class="bi bi-tree"></i></div>
+              <div class="data-category-title-area">
+                <h3 class="data-category-title">ESG & Sustainability</h3>
+                <p class="data-category-desc">Environmental, social, governance</p>
+              </div>
+              <i class="bi bi-chevron-down card-toggle-icon"></i>
+            </div>
+            <div class="data-category-body">
+              <div class="data-category-content">
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Metrics</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">Carbon emissions</span><span class="data-metric-value">Scope 1–3</span></li>
+                    <li><span class="data-metric-name">Board composition</span><span class="data-metric-value">—</span></li>
+                  </ul>
+                </div>
+                <div class="data-subsection">
+                  <div class="data-subsection-title">Ratings</div>
+                  <ul class="data-metric-list">
+                    <li><span class="data-metric-name">MSCI ESG</span><span class="data-metric-value">AAA–CCC</span></li>
+                    <li><span class="data-metric-name">Sustainalytics</span><span class="data-metric-value">Risk</span></li>
+                    <li><span class="data-metric-name">CDP Climate</span><span class="data-metric-value">A–D</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
       </div>
       
       <!-- Learning Opportunities -->

@@ -1,5 +1,5 @@
 /**
- * Market Analysis - Tab Management
+ * Market Analysis - Tab Management & Data Library Cards
  */
 class MarketAnalysis {
   constructor() {
@@ -40,6 +40,14 @@ class MarketAnalysis {
         content.classList.remove('active');
       }
     });
+  }
+}
+
+// Toggle Data Library card expand/collapse
+function toggleDataCard(headerEl) {
+  const card = headerEl.closest('.data-category-card');
+  if (card) {
+    card.classList.toggle('expanded');
   }
 }
 
