@@ -244,6 +244,40 @@ class CompanyResearch {
       return;
     }
     this.currentCompany = query;
+    this.loadFinnhubData(query);
+  }
+
+  loadFinnhubData(query) {
+    if (!window.FinnhubAPI) return;
+    const ticker = /^[A-Z]{1,5}$/i.test(query) ? query.toUpperCase() : null;
+    if (!ticker) return;
+    Promise.all([
+      window.FinnhubAPI.getQuote(ticker),
+      window.FinnhubAPI.getCompanyProfile(ticker)
+    ]).then(([quote, profile]) => {
+      if (quote && quote.c != null) {
+        const statValue = document.querySelector('.stats-grid .stat-value');
+        const statChange = document.querySelector('.stats-grid .stat-change');
+        if (statValue) statValue.textContent = '$' + quote.c.toFixed(2);
+        if (statChange && quote.dp != null) {
+          statChange.textContent = (quote.dp >= 0 ? '+' : '') + quote.dp.toFixed(2) + '%';
+          statChange.className = 'stat-change ' + (quote.dp >= 0 ? 'positive' : 'negative');
+        }
+      }
+      if (profile && profile.marketCapitalization) {
+        const capCards = document.querySelectorAll('.stat-card');
+        capCards.forEach(card => {
+          const label = card.querySelector('.stat-label');
+          if (label && label.textContent.includes('Market Cap')) {
+            const val = card.querySelector('.stat-value');
+            if (val) {
+              const mcap = profile.marketCapitalization;
+              val.textContent = mcap >= 1e12 ? (mcap / 1e12).toFixed(1) + 'T' : mcap >= 1e9 ? (mcap / 1e9).toFixed(1) + 'B' : mcap >= 1e6 ? (mcap / 1e6).toFixed(0) + 'M' : '$' + mcap.toLocaleString();
+            }
+          }
+        });
+      }
+    });
   }
 
   async runModel(modelType) {

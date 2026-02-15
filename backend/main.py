@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from database import get_db, engine, create_tables
 from models import Base
 from api_routes import router as api_router
+from routers.finnhub import router as finnhub_router
 
 # Load environment variables
 load_dotenv()
@@ -48,6 +49,7 @@ security = HTTPBearer()
 
 # Include routers
 app.include_router(api_router, prefix="/api", tags=["user_management"])
+app.include_router(finnhub_router, prefix="/api", tags=["finnhub"])
 
 # Serve the main HTML file
 @app.get("/", response_class=HTMLResponse)

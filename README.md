@@ -136,7 +136,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 # External APIs
 QUIVER_API_KEY=your-quiver-api-key
-FINNHUB_API_KEY=your-finnhub-api-key
+FINNHUB_API_KEY=your-finnhub-api-key   # Get free key at finnhub.io - used for watchlist, market-analysis, company-research, dashboard
 
 # Environment
 ENVIRONMENT=development

@@ -90,11 +90,12 @@
                 <span class="metric-value">+$1,247</span>
               </div>
             </div>
-            <div class="metric-card" data-metric="performer">
+            <div class="metric-card" data-metric="performer" data-symbol="NVDA">
               <div class="metric-icon performer"><i class="bi bi-star"></i></div>
               <div class="metric-content">
                 <span class="metric-label">Top Performer</span>
-                <span class="metric-value">NVDA</span>
+                <span class="metric-value performer-value">NVDA</span>
+                <span class="metric-change performer-change positive">—</span>
               </div>
             </div>
             <div class="metric-card" data-metric="risk">
@@ -111,11 +112,12 @@
                 <span class="metric-value">$847</span>
               </div>
             </div>
-            <div class="metric-card" data-metric="market">
+            <div class="metric-card" data-metric="market" data-symbol="SPY">
               <div class="metric-icon market"><i class="bi bi-graph-up-arrow"></i></div>
               <div class="metric-content">
-                <span class="metric-label">Market Performance</span>
-                <span class="metric-value">+8.4%</span>
+                <span class="metric-label">S&P 500 (SPY)</span>
+                <span class="metric-value market-value">—</span>
+                <span class="metric-change market-change">—</span>
               </div>
             </div>
             <div class="metric-card" data-metric="allocation">
@@ -483,6 +485,7 @@
   </main>
 
   <script src="../assets/js/theme-toggle.js"></script>
+  <script src="../assets/js/finnhub-api.js"></script>
   <script src="../components/navigation/load-nav.js"></script>
   <script src="../components/notifications/notifications-sidebar.js"></script>
   <script src="../js/api-service.js"></script>

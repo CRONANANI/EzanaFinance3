@@ -123,12 +123,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr data-symbol="NVDA">
                   <td><strong>NVDA</strong></td>
                   <td>NVIDIA Corporation</td>
-                  <td>$485.20</td>
-                  <td class="positive">+$12.40</td>
-                  <td class="positive">+2.6%</td>
+                  <td class="watchlist-price">$485.20</td>
+                  <td class="watchlist-change positive">+$12.40</td>
+                  <td class="watchlist-pct positive">+2.6%</td>
                   <td>$1.2T</td>
                   <td><span class="badge success">Target Hit</span></td>
                   <td>
@@ -137,12 +137,12 @@
                     <button class="icon-btn"><i class="bi bi-trash"></i></button>
                   </td>
                 </tr>
-                <tr>
+                <tr data-symbol="AAPL">
                   <td><strong>AAPL</strong></td>
                   <td>Apple Inc.</td>
-                  <td>$182.30</td>
-                  <td class="positive">+$2.10</td>
-                  <td class="positive">+1.2%</td>
+                  <td class="watchlist-price">$182.30</td>
+                  <td class="watchlist-change positive">+$2.10</td>
+                  <td class="watchlist-pct positive">+1.2%</td>
                   <td>$2.8T</td>
                   <td><span class="badge muted">None</span></td>
                   <td>
@@ -151,12 +151,12 @@
                     <button class="icon-btn"><i class="bi bi-trash"></i></button>
                   </td>
                 </tr>
-                <tr>
+                <tr data-symbol="TSLA">
                   <td><strong>TSLA</strong></td>
                   <td>Tesla, Inc.</td>
-                  <td>$248.50</td>
-                  <td class="negative">-$8.20</td>
-                  <td class="negative">-3.2%</td>
+                  <td class="watchlist-price">$248.50</td>
+                  <td class="watchlist-change negative">-$8.20</td>
+                  <td class="watchlist-pct negative">-3.2%</td>
                   <td>$780B</td>
                   <td><span class="badge warning">Price Drop</span></td>
                   <td>
@@ -318,6 +318,7 @@
   </div>
 
   <script src="../assets/js/theme-toggle.js"></script>
+  <script src="../assets/js/finnhub-api.js"></script>
   <script src="../components/navigation/load-nav.js"></script>
   <script src="../components/notifications/notifications-sidebar.js"></script>
   <script src="watchlist.js"></script>

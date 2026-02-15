@@ -36,6 +36,29 @@ class PortfolioDashboard {
     this.setupQuickActions();
     this.setupTimeRangeButtons();
     this.attachResizeListener();
+    this.loadFinnhubMetrics();
+  }
+
+  loadFinnhubMetrics() {
+    if (!window.FinnhubAPI) return;
+    window.FinnhubAPI.getQuotes('NVDA,SPY').then(data => {
+      if (!data || !data.quotes) return;
+      data.quotes.forEach(q => {
+        if (q.error) return;
+        const card = document.querySelector(`.metric-card[data-symbol="${q.symbol}"]`);
+        if (!card) return;
+        const valueEl = card.querySelector('.metric-value');
+        const changeEl = card.querySelector('.metric-change');
+        if (valueEl) {
+          if (q.symbol === 'NVDA') valueEl.textContent = q.symbol + ' $' + (q.c != null ? q.c.toFixed(2) : '—');
+          else if (q.symbol === 'SPY' && q.c != null) valueEl.textContent = '$' + q.c.toFixed(2);
+        }
+        if (changeEl && q.dp != null) {
+          changeEl.textContent = (q.dp >= 0 ? '+' : '') + q.dp.toFixed(2) + '%';
+          changeEl.className = 'metric-change ' + (q.dp >= 0 ? 'positive' : 'negative');
+        }
+      });
+    });
   }
 
   setupDashboardSidebarSync() {
