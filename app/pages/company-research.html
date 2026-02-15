@@ -1,559 +1,440 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Research - Ezana Finance</title>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../assets/css/theme-variables.css">
-    <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/component-cards.css">
-    <!-- Unified Component Cards - Dashboard Formatting -->
-    <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
-    <link rel="stylesheet" href="../assets/css/page-layout.css">
-    <link rel="stylesheet" href="../assets/css/unified-page-layout.css">
-    <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
-    <link rel="stylesheet" href="../components/navigation/unified-nav.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
-    <!-- Shared page layout and formatting -->
-    <link rel="stylesheet" href="../assets/css/pages-common.css">
-    <link rel="stylesheet" href="../assets/css/cards-common.css">
-    <link rel="stylesheet" href="../assets/css/metrics-common.css">
-    <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
-    <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: var(--background);
-            font-family: var(--font-sans);
-            color: var(--foreground);
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px);
-        }
-        .page-content .research-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Research - Ezana Finance</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/theme-variables.css">
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+  <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
+  <link rel="stylesheet" href="../assets/css/page-layout.css">
+  <link rel="stylesheet" href="../assets/css/layout-common.css">
+  <link rel="stylesheet" href="../components/navigation/unified-nav.css">
+  <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
+  <link rel="stylesheet" href="company-research.css">
 </head>
-<body class="company-research">
+<body>
+
   <nav class="main-nav" id="mainNav"></nav>
 
-  <!-- Notifications Sidebar -->
-    <div id="notifications-sidebar" class="notifications-sidebar open">
-        <!-- Sidebar Toggle Button -->
-        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
-            <i class="bi bi-bell"></i>
-        </button>
-
-        <!-- Sidebar Content -->
-        <div class="notifications-content">
-            <!-- Header -->
-            <div class="notifications-header">
-                <div class="notifications-title">
-                    <h3>Investment Feed</h3>
-                </div>
-                <div class="notifications-actions">
-                    <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </button>
-                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings">
-                        <i class="bi bi-gear"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filter Tabs -->
-            <div class="notifications-filters">
-                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">
-                    All
-                </button>
-                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">
-                    Congress
-                </button>
-                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">
-                    Stocks
-                </button>
-                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">
-                    Community
-                </button>
-            </div>
-
-            <!-- Notifications List -->
-            <div class="notifications-list" id="notifications-list">
-                <!-- Notifications will be dynamically populated here -->
-            </div>
-
-            <!-- Empty State -->
-            <div class="notifications-empty" id="notifications-empty" style="display: none;">
-                <i class="bi bi-bell-slash"></i>
-                <p>No notifications yet</p>
-                <small>We'll notify you when something important happens</small>
-            </div>
+  <div id="notifications-sidebar" class="notifications-sidebar open">
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()"><i class="bi bi-bell"></i></button>
+    <div class="notifications-content">
+      <div class="notifications-header">
+        <div class="notifications-title"><h3>Investment Feed</h3></div>
+        <div class="notifications-actions">
+          <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse"><i class="bi bi-chevron-double-left"></i></button>
+          <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings"><i class="bi bi-gear"></i></button>
         </div>
+      </div>
+      <div class="notifications-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">All</button>
+        <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress</button>
+        <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">Stocks</button>
+        <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+      <div class="notifications-empty" id="notifications-empty" style="display:none;"><i class="bi bi-bell-slash"></i><p>No notifications yet</p><small>We'll notify you when something important happens</small></div>
     </div>
+  </div>
 
-<div class="page-content">
-    <!-- Hero Section -->
-    <div class="hero-section">
+  <div class="page-wrapper sidebar-active">
+    <main class="page-content">
+
+      <!-- Page Hero -->
+      <section class="page-hero">
         <div class="hero-content">
-            <h1 class="hero-title page-title-shiny">Company Research</h1>
-            <p class="hero-description">Comprehensive company analysis and research tools for informed investment decisions</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="hero-stat-number">2,847</span>
-                    <span class="hero-stat-label">Companies</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">15.2K</span>
-                    <span class="hero-stat-label">Research Reports</span>
-                </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">98.7%</span>
-                    <span class="hero-stat-label">Accuracy Rate</span>
-                </div>
-            </div>
+          <h1>Company Research</h1>
+          <p>Advanced financial analysis and valuation models</p>
         </div>
-    </div>
-
-    <!-- Company Search Section -->
-    <div class="research-card">
-        <div class="card-header">
-            <h3 class="card-title">Company Search & Analysis</h3>
-            <div class="card-icon">
-                <i class="bi bi-search"></i>
-            </div>
+        <div class="hero-search">
+          <div class="search-container">
+            <i class="bi bi-search"></i>
+            <input type="text" id="companySearchInput" placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)" class="company-search-input">
+            <button class="search-btn" id="searchCompanyBtn"><i class="bi bi-arrow-right"></i></button>
+          </div>
         </div>
-        
-        <div class="flex flex-col md:flex-row gap-3">
-            <div class="flex-1">
-                <input type="text" id="company-search" placeholder="Search by company name or ticker symbol (e.g., AAPL, Tesla)" 
-                       class="w-full px-4 py-2.5 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-muted text-foreground">
-            </div>
-            <button onclick="searchCompany()" class="px-6 py-2.5 bg-primary hover:bg-opacity-90 text-primary-foreground rounded-lg transition-colors font-medium">
-                <i class="bi bi-search mr-2"></i>Analyze Company
-            </button>
+      </section>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon stocks"><i class="bi bi-graph-up"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">$485.20</div>
+            <div class="stat-label">Stock Price</div>
+            <div class="stat-change positive">+2.6%</div>
+          </div>
         </div>
-    </div>
+        <div class="stat-card">
+          <div class="stat-icon market"><i class="bi bi-building"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">$1.2T</div>
+            <div class="stat-label">Market Cap</div>
+            <div class="stat-change">Large Cap</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon performance"><i class="bi bi-trophy"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">35.4</div>
+            <div class="stat-label">P/E Ratio</div>
+            <div class="stat-change">vs Industry: 28.2</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon volume"><i class="bi bi-bar-chart"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">42.8M</div>
+            <div class="stat-label">Avg Volume</div>
+            <div class="stat-change positive">+18%</div>
+          </div>
+        </div>
+      </div>
 
-    <!-- Company Analysis Results -->
-    <div id="company-analysis-results" class="hidden">
-        <!-- Company Overview -->
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Company Overview</h3>
-                <div class="card-icon">
-                    <i class="bi bi-building"></i>
-                </div>
-            </div>
-            
-            <div class="flex items-start justify-between mb-6">
-                <div class="flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
-                        <span id="company-ticker" class="font-bold text-primary-foreground text-lg">AAPL</span>
-                    </div>
-                    <div>
-                        <h2 id="company-name" class="text-2xl font-light text-foreground">Apple Inc.</h2>
-                        <p id="company-sector" class="text-muted-foreground">Technology • Consumer Electronics</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div id="company-price" class="text-3xl font-light text-foreground">$175.43</div>
-                    <div id="company-change" class="text-primary font-medium">+$2.34 (+1.35%)</div>
-                </div>
-            </div>
+      <!-- Financial Analysis Models -->
+      <div class="models-section">
+        <h2 class="section-title"><i class="bi bi-calculator"></i> Financial Analysis Models</h2>
+        <p class="section-subtitle">Select a model to run AI-powered analysis on any company</p>
+      </div>
 
-            <!-- Key Metrics -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="text-center p-4 bg-muted rounded-lg">
-                    <div class="text-xl font-light text-foreground" id="market-cap">$2.8T</div>
-                    <div class="text-sm text-muted-foreground mt-1">Market Cap</div>
-                </div>
-                <div class="text-center p-4 bg-muted rounded-lg">
-                    <div class="text-xl font-light text-foreground" id="pe-ratio">28.5</div>
-                    <div class="text-sm text-muted-foreground mt-1">P/E Ratio</div>
-                </div>
-                <div class="text-center p-4 bg-muted rounded-lg">
-                    <div class="text-xl font-light text-foreground" id="dividend-yield">0.52%</div>
-                    <div class="text-sm text-muted-foreground mt-1">Div Yield</div>
-                </div>
-                <div class="text-center p-4 bg-muted rounded-lg">
-                    <div class="text-xl font-light text-foreground" id="beta">1.2</div>
-                    <div class="text-sm text-muted-foreground mt-1">Beta</div>
-                </div>
+      <!-- Models Grid -->
+      <div class="models-grid">
+        <!-- Model 1: DCF Valuation -->
+        <div class="component-card model-card" data-model="dcf">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon dcf"><i class="bi bi-cash-stack"></i></div>
+              <div>
+                <h3>DCF Valuation Model</h3>
+                <p class="model-description">Discounted cash flow analysis with 5-year projections</p>
+              </div>
             </div>
+            <button class="run-model-btn" data-model="dcf"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Free Cash Flow Projections</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> WACC Calculation</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Terminal Value Analysis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Sensitivity Tables</span>
+            </div>
+            <div class="model-output" id="output-dcf"></div>
+          </div>
         </div>
 
-        <!-- Financial Analysis Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <!-- Financial Metrics -->
-            <div class="research-card">
-                <div class="card-header">
-                    <h3 class="card-title">Financial Metrics</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-calculator"></i>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-muted-foreground">Revenue (TTM)</span>
-                        <span class="font-medium text-foreground">$394.3B</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-muted-foreground">Net Income (TTM)</span>
-                        <span class="font-medium text-foreground">$97.0B</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-muted-foreground">Total Cash</span>
-                        <span class="font-medium text-foreground">$166.5B</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-muted-foreground">Total Debt</span>
-                        <span class="font-medium text-foreground">$123.9B</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-muted-foreground">ROE</span>
-                        <span class="font-medium text-primary">147.4%</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-muted-foreground">ROA</span>
-                        <span class="font-medium text-primary">27.1%</span>
-                    </div>
-                </div>
+        <!-- Model 2: Three-Statement Model -->
+        <div class="component-card model-card" data-model="three-statement">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon three-statement"><i class="bi bi-file-earmark-spreadsheet"></i></div>
+              <div>
+                <h3>Three-Statement Model</h3>
+                <p class="model-description">Complete financial model with linked statements</p>
+              </div>
             </div>
-
-            <!-- Analyst Ratings -->
-            <div class="research-card">
-                <div class="card-header">
-                    <h3 class="card-title">Analyst Ratings</h3>
-                    <div class="card-icon">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <!-- Overall Rating -->
-                    <div class="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                        <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">BUY</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Overall Rating</div>
-                    </div>
-                    
-                    <!-- Rating Breakdown -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 dark:text-gray-400 text-sm">Strong Buy</span>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                                    <div class="w-16 h-2 bg-emerald-500 rounded-full"></div>
-                                </div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">12</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 dark:text-gray-400 text-sm">Buy</span>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                                    <div class="w-12 h-2 bg-emerald-400 rounded-full"></div>
-                                </div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">8</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 dark:text-gray-400 text-sm">Hold</span>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                                    <div class="w-6 h-2 bg-yellow-400 rounded-full"></div>
-                                </div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">3</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600 dark:text-gray-400 text-sm">Sell</span>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                                    <div class="w-2 h-2 bg-red-400 rounded-full"></div>
-                                </div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">1</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Price Targets -->
-                    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-gray-600 dark:text-gray-400 text-sm">Price Target</span>
-                            <span class="font-semibold text-gray-900 dark:text-white">$195.00</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600 dark:text-gray-400 text-sm">Upside Potential</span>
-                            <span class="font-semibold text-emerald-600 dark:text-emerald-400">+11.2%</span>
-                        </div>
-                    </div>
-                </div>
+            <button class="run-model-btn" data-model="three-statement"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Income Statement (5Y)</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Balance Sheet (5Y)</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Cash Flow Statement</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Working Capital Schedule</span>
             </div>
-        </div>
-    </div>
-
-    <!-- Recent Research Reports -->
-    <div class="research-card">
-        <div class="card-header">
-            <h3 class="card-title">Recent Research Reports</h3>
-            <div class="card-icon">
-                <i class="bi bi-file-earmark-text"></i>
-            </div>
-        </div>
-        
-        <div class="space-y-4">
-            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-file-earmark-text text-emerald-600 dark:text-emerald-400"></i>
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Q4 2024 Technology Sector Outlook</h4>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Comprehensive analysis of technology sector performance and future prospects including AI, cloud computing, and semiconductor trends.</p>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                            <span>Goldman Sachs</span>
-                            <span>3 hours ago</span>
-                            <span class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded">BUY</span>
-                        </div>
-                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Read Report</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-graph-up text-blue-600 dark:text-blue-400"></i>
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Healthcare Innovation Report</h4>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Analysis of breakthrough medical technologies and pharmaceutical developments driving sector growth.</p>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                            <span>Morgan Stanley</span>
-                            <span>1 day ago</span>
-                            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">OVERWEIGHT</span>
-                        </div>
-                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Read Report</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex items-start space-x-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-bank text-purple-600 dark:text-purple-400"></i>
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Financial Services Outlook</h4>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">Interest rate environment impact on banking sector and fintech disruption analysis.</p>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
-                            <span>JPMorgan</span>
-                            <span>2 days ago</span>
-                            <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded">NEUTRAL</span>
-                        </div>
-                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Read Report</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Company Comparison Tool -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Company Comparison</h3>
-                <div class="card-icon">
-                    <i class="bi bi-arrow-left-right"></i>
-                </div>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-sm text-gray-600 dark:text-gray-400">Compare Companies</label>
-                    <div class="flex space-x-2 mt-1">
-                        <input type="text" placeholder="Company 1 (e.g., AAPL)" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
-                        <span class="text-gray-400 self-center">vs</span>
-                        <input type="text" placeholder="Company 2 (e.g., MSFT)" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
-                    </div>
-                </div>
-                
-                <button class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
-                    Compare Companies
-                </button>
-                
-                <!-- Comparison Results Placeholder -->
-                <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center text-gray-500 dark:text-gray-400 text-sm">
-                    Enter two companies to see detailed comparison
-                </div>
-            </div>
+            <div class="model-output" id="output-three-statement"></div>
+          </div>
         </div>
 
-        <!-- Industry Analysis -->
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Industry Analysis</h3>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
+        <!-- Model 3: M&A Accretion/Dilution -->
+        <div class="component-card model-card" data-model="ma-accretion">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon ma"><i class="bi bi-arrow-left-right"></i></div>
+              <div>
+                <h3>M&A Accretion/Dilution</h3>
+                <p class="model-description">Merger impact analysis with synergies</p>
+              </div>
             </div>
-            
-            <div class="space-y-4">
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                        <div class="font-medium text-gray-900 dark:text-white">Technology</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Software & Services</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-emerald-600 dark:text-emerald-400 font-semibold">+2.34%</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-500">Today</div>
-                    </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                        <div class="font-medium text-gray-900 dark:text-white">Healthcare</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Pharmaceuticals</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-emerald-600 dark:text-emerald-400 font-semibold">+1.89%</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-500">Today</div>
-                    </div>
-                </div>
-                
-                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div>
-                        <div class="font-medium text-gray-900 dark:text-white">Financial</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Banking Services</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-emerald-600 dark:text-emerald-400 font-semibold">+1.45%</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-500">Today</div>
-                    </div>
-                </div>
+            <button class="run-model-btn" data-model="ma-accretion"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> EPS Impact Analysis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Synergy Valuation</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Deal Structure</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Credit Impact</span>
             </div>
+            <div class="model-output" id="output-ma-accretion"></div>
+          </div>
         </div>
-    </div>
 
-    <!-- Research Tools -->
-    <div class="research-grid">
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Stock Screener</h3>
-                <div class="card-icon">
-                    <i class="bi bi-graph-up"></i>
-                </div>
+        <!-- Model 4: LBO Model -->
+        <div class="component-card model-card" data-model="lbo">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon lbo"><i class="bi bi-diagram-3"></i></div>
+              <div>
+                <h3>LBO Model</h3>
+                <p class="model-description">Leveraged buyout returns analysis</p>
+              </div>
             </div>
-            <p class="text-muted-foreground">Filter stocks by criteria</p>
-        </div>
-        
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Valuation Models</h3>
-                <div class="card-icon">
-                    <i class="bi bi-calculator"></i>
-                </div>
+            <button class="run-model-btn" data-model="lbo"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Sources & Uses</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Debt Structure</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> IRR Calculation</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Exit Scenarios</span>
             </div>
-            <p class="text-muted-foreground">DCF & comparable analysis</p>
+            <div class="model-output" id="output-lbo"></div>
+          </div>
         </div>
-        
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Peer Analysis</h3>
-                <div class="card-icon">
-                    <i class="bi bi-bar-chart"></i>
-                </div>
-            </div>
-            <p class="text-muted-foreground">Compare with competitors</p>
-        </div>
-        
-        <div class="research-card">
-            <div class="card-header">
-                <h3 class="card-title">Earnings Analysis</h3>
-                <div class="card-icon">
-                    <i class="bi bi-file-earmark-bar-graph"></i>
-                </div>
-            </div>
-            <p class="text-muted-foreground">Historical & projected earnings</p>
-        </div>
-    </div>
-</div>
 
-    <!-- Learning Opportunities -->
-    <section class="learning-opportunities">
+        <!-- Model 5: Comparable Companies -->
+        <div class="component-card model-card" data-model="comps">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon comps"><i class="bi bi-list-check"></i></div>
+              <div>
+                <h3>Comparable Companies</h3>
+                <p class="model-description">Trading multiples analysis vs peers</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="comps"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Peer Group Selection</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Trading Multiples</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Valuation Range</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Premium/Discount</span>
+            </div>
+            <div class="model-output" id="output-comps"></div>
+          </div>
+        </div>
+
+        <!-- Model 6: Precedent Transactions -->
+        <div class="component-card model-card" data-model="precedent">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon precedent"><i class="bi bi-clock-history"></i></div>
+              <div>
+                <h3>Precedent Transactions</h3>
+                <p class="model-description">M&A deal comparables analysis</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="precedent"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Transaction Universe</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Deal Multiples</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Premium Analysis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Market Trends</span>
+            </div>
+            <div class="model-output" id="output-precedent"></div>
+          </div>
+        </div>
+
+        <!-- Model 7: IPO Valuation -->
+        <div class="component-card model-card" data-model="ipo">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon ipo"><i class="bi bi-graph-up-arrow"></i></div>
+              <div>
+                <h3>IPO Valuation</h3>
+                <p class="model-description">Public offering pricing analysis</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="ipo"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Offering Structure</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Valuation Range</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Comparable IPOs</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Dilution Analysis</span>
+            </div>
+            <div class="model-output" id="output-ipo"></div>
+          </div>
+        </div>
+
+        <!-- Model 8: Credit Analysis -->
+        <div class="component-card model-card" data-model="credit">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon credit"><i class="bi bi-shield-check"></i></div>
+              <div>
+                <h3>Credit Analysis</h3>
+                <p class="model-description">Debt capacity and leverage ratios</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="credit"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> EBITDA Analysis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Leverage Ratios</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Debt Capacity</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Covenants</span>
+            </div>
+            <div class="model-output" id="output-credit"></div>
+          </div>
+        </div>
+
+        <!-- Model 9: Sum-of-the-Parts -->
+        <div class="component-card model-card" data-model="sotp">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon sotp"><i class="bi bi-pie-chart"></i></div>
+              <div>
+                <h3>Sum-of-the-Parts</h3>
+                <p class="model-description">Segment-by-segment valuation</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="sotp"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Business Segments</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Segment Financials</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Individual Valuations</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Total Value</span>
+            </div>
+            <div class="model-output" id="output-sotp"></div>
+          </div>
+        </div>
+
+        <!-- Model 10: Operating Model -->
+        <div class="component-card model-card" data-model="operating">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon operating"><i class="bi bi-gear"></i></div>
+              <div>
+                <h3>Operating Model</h3>
+                <p class="model-description">Unit economics and cohort analysis</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="operating"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Revenue Build</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Unit Economics</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Cohort Analysis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Burn Rate</span>
+            </div>
+            <div class="model-output" id="output-operating"></div>
+          </div>
+        </div>
+
+        <!-- Model 11: Sensitivity Analysis -->
+        <div class="component-card model-card" data-model="sensitivity">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon sensitivity"><i class="bi bi-shuffle"></i></div>
+              <div>
+                <h3>Sensitivity Analysis</h3>
+                <p class="model-description">Scenario planning and risk assessment</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="sensitivity"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> One-Way Sensitivity</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Two-Way Tables</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Scenario Builder</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Risk Factors</span>
+            </div>
+            <div class="model-output" id="output-sensitivity"></div>
+          </div>
+        </div>
+
+        <!-- Model 12: Investment Memo -->
+        <div class="component-card model-card" data-model="investment-memo">
+          <div class="card-header">
+            <div class="model-info">
+              <div class="model-icon memo"><i class="bi bi-file-earmark-text"></i></div>
+              <div>
+                <h3>Investment Committee Memo</h3>
+                <p class="model-description">Complete investment analysis report</p>
+              </div>
+            </div>
+            <button class="run-model-btn" data-model="investment-memo"><i class="bi bi-play-circle"></i> Run Model</button>
+          </div>
+          <div class="card-body">
+            <div class="model-features">
+              <span class="feature-tag"><i class="bi bi-check2"></i> Executive Summary</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Investment Thesis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Returns Analysis</span>
+              <span class="feature-tag"><i class="bi bi-check2"></i> Risk Assessment</span>
+            </div>
+            <div class="model-output" id="output-investment-memo"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Opportunities -->
+      <section class="learning-opportunities">
         <div class="learning-header">
-            <div class="learning-title-area">
-                <div class="learning-icon"><i class="bi bi-mortarboard-fill"></i></div>
-                <div class="learning-title-text">
-                    <h3>Fundamental Analysis Mastery</h3>
-                    <p>Deep dive into financial statement analysis and valuation</p>
-                </div>
+          <div class="learning-title-area">
+            <div class="learning-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="learning-title-text">
+              <h3>Fundamental Analysis Mastery</h3>
+              <p>Deep dive into financial statement analysis and valuation</p>
             </div>
-            <button class="view-all-btn" onclick="window.location.href='learning-center.html'">View All Courses</button>
+          </div>
+          <button class="view-all-btn" onclick="window.location.href='learning-center.html'">View All Courses</button>
         </div>
         <div class="courses-grid">
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span></div>
-                <h4 class="course-title">Financial Statement Analysis</h4>
-                <p class="course-description">Master the art of reading and interpreting balance sheets, income statements, and cash flow.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 20 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 2,890 enrolled</div></div>
-                <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
-            </div>
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 8 hours</span></div>
-                <h4 class="course-title">Valuation Methods &amp; DCF Modeling</h4>
-                <p class="course-description">Learn DCF, comparable analysis, and other valuation techniques used by analysts.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 24 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 1,756 enrolled</div></div>
-                <div class="course-footer"><span class="course-level advanced">Advanced</span><button class="enroll-btn">Enroll Now</button></div>
-            </div>
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span></div>
-                <h4 class="course-title">Earnings Call Analysis</h4>
-                <p class="course-description">Extract actionable insights from earnings calls and management commentary.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 14 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 2,134 enrolled</div></div>
-                <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
-            </div>
-            <div class="course-card">
-                <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span></div>
-                <h4 class="course-title">Competitive Analysis Frameworks</h4>
-                <p class="course-description">Build competitive moat analysis and industry positioning frameworks.</p>
-                <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 18 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 1,923 enrolled</div></div>
-                <div class="course-footer"><span class="course-level beginner">Beginner</span><button class="enroll-btn">Enroll Now</button></div>
-            </div>
+          <div class="course-card">
+            <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span></div>
+            <h4 class="course-title">Financial Statement Analysis</h4>
+            <p class="course-description">Master reading and analyzing income statements, balance sheets, and cash flow statements.</p>
+            <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 20 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 3,241 enrolled</div></div>
+            <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
+          </div>
+          <div class="course-card">
+            <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 8 hours</span></div>
+            <h4 class="course-title">Valuation Methods & DCF Modeling</h4>
+            <p class="course-description">Learn to build discounted cash flow models and understand various valuation methodologies.</p>
+            <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 24 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 2,847 enrolled</div></div>
+            <div class="course-footer"><span class="course-level advanced">Advanced</span><button class="enroll-btn">Enroll Now</button></div>
+          </div>
+          <div class="course-card">
+            <div class="course-header"><span class="course-type">Skill</span><span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span></div>
+            <h4 class="course-title">Earnings Call Analysis</h4>
+            <p class="course-description">Learn to extract insights from quarterly earnings calls and management guidance.</p>
+            <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 14 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 1,923 enrolled</div></div>
+            <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
+          </div>
+          <div class="course-card">
+            <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span></div>
+            <h4 class="course-title">Competitive Analysis Frameworks</h4>
+            <p class="course-description">Master Porter's Five Forces, SWOT analysis, and competitive positioning strategies.</p>
+            <div class="course-meta"><div class="meta-item"><i class="bi bi-book"></i> 18 lessons</div><div class="meta-item"><i class="bi bi-people"></i> 2,134 enrolled</div></div>
+            <div class="course-footer"><span class="course-level beginner">Beginner</span><button class="enroll-btn">Enroll Now</button></div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Navigation JavaScript -->
-    <script src="../assets/js/theme.js"></script>
-    <script src="../assets/js/theme-toggle.js"></script>
-    <script src="../components/navigation/load-nav.js"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
-    <script>
-        // Initialize notifications sidebar when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Initializing company research');
-            
-            // Initialize the notifications sidebar
-            if (window.NotificationsSidebar) {
-                const sidebar = new NotificationsSidebar();
-                sidebar.init();
-            }
-        });
-    </script>
+    </main>
+  </div>
+
+  <script src="../assets/js/theme-toggle.js"></script>
+  <script src="../components/navigation/load-nav.js"></script>
+  <script src="../components/notifications/notifications-sidebar.js"></script>
+  <script src="company-research.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.NotificationsSidebar) new NotificationsSidebar().init();
+    });
+  </script>
 </body>
 </html>
