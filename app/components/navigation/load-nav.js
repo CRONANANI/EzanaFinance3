@@ -11,8 +11,7 @@ const NAV_FALLBACK_HTML = `<nav class="main-nav" id="mainNav">
         <div class="dropdown-menu">
           <a href="inside-the-capitol.html" class="dropdown-item"><i class="bi bi-building"></i><div><div class="item-title">Inside The Capitol</div><div class="item-desc">Congressional trading</div></div></a>
           <a href="company-research.html" class="dropdown-item"><i class="bi bi-bar-chart-line"></i><div><div class="item-title">Company Research</div><div class="item-desc">Financial analysis</div></div></a>
-          <a href="market-analysis.html" class="dropdown-item"><i class="bi bi-graph-up-arrow"></i><div><div class="item-title">Market Analysis</div><div class="item-desc">Sector trends</div></div></a>
-          <a href="economic-indicators.html" class="dropdown-item"><i class="bi bi-currency-dollar"></i><div><div class="item-title">Economic Indicators</div><div class="item-desc">Fed tracking</div></div></a>
+          <a href="market-analysis.html" class="dropdown-item"><i class="bi bi-graph-up-arrow"></i><div><div class="item-title">Market Analysis</div><div class="item-desc">Sectors, movers, indices & economic data</div></div></a>
           <a href="for-the-quants.html" class="dropdown-item"><i class="bi bi-calculator"></i><div><div class="item-title">For The Quants</div><div class="item-desc">Quant tools</div></div></a>
         </div>
       </div>

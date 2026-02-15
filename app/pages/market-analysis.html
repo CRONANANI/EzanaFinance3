@@ -29,9 +29,7 @@
     </button>
     <div class="notifications-content">
       <div class="notifications-header">
-        <div class="notifications-title">
-          <h3>Investment Feed</h3>
-        </div>
+        <div class="notifications-title"><h3>Investment Feed</h3></div>
         <div class="notifications-actions">
           <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
             <i class="bi bi-chevron-double-left"></i>
@@ -62,17 +60,17 @@
       <!-- Page Hero -->
       <section class="page-hero">
         <div class="hero-content">
-          <h1>Market Analysis</h1>
-          <p>Real-time global market data and sector trend analysis</p>
+          <h1>Market Analysis & Economic Indicators</h1>
+          <p>Real-time sector trends, market movers, and macroeconomic data</p>
         </div>
         <div class="hero-actions">
-          <button class="btn-primary" id="refreshAllBtn">
-            <i class="bi bi-arrow-clockwise"></i>
-            Refresh All Data
-          </button>
-          <button class="btn-secondary" id="exportReportBtn">
+          <button class="btn-primary">
             <i class="bi bi-download"></i>
             Export Report
+          </button>
+          <button class="btn-secondary">
+            <i class="bi bi-bell"></i>
+            Set Alerts
           </button>
         </div>
       </section>
@@ -81,12 +79,23 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon market">
-            <i class="bi bi-graph-up"></i>
+            <i class="bi bi-graph-up-arrow"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value" id="sp500-value">4,783.45</div>
+            <div class="stat-value">4,783.45</div>
             <div class="stat-label">S&P 500</div>
-            <div class="stat-change positive" id="sp500-change">+0.8% (+38.21)</div>
+            <div class="stat-change positive">+1.2% Today</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon volume">
+            <i class="bi bi-bar-chart"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">$847B</div>
+            <div class="stat-label">Daily Volume</div>
+            <div class="stat-change positive">+8% vs Avg</div>
           </div>
         </div>
         
@@ -95,709 +104,676 @@
             <i class="bi bi-speedometer2"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value" id="vix-value">14.2</div>
-            <div class="stat-label">VIX (Fear Index)</div>
-            <div class="stat-change negative" id="vix-change">-2.1%</div>
+            <div class="stat-value">62</div>
+            <div class="stat-label">Market Sentiment</div>
+            <div class="stat-change">Bullish</div>
           </div>
         </div>
         
         <div class="stat-card">
-          <div class="stat-icon volume">
-            <i class="bi bi-bar-chart-line"></i>
+          <div class="stat-icon performance">
+            <i class="bi bi-trophy"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value" id="10y-yield">4.18%</div>
-            <div class="stat-label">10Y Treasury</div>
-            <div class="stat-change positive" id="10y-change">+0.05%</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon trades">
-            <i class="bi bi-currency-dollar"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="dxy-value">103.45</div>
-            <div class="stat-label">Dollar Index</div>
-            <div class="stat-change positive" id="dxy-change">+0.3%</div>
+            <div class="stat-value">+18.4%</div>
+            <div class="stat-label">YTD Return</div>
+            <div class="stat-change positive">vs +12% 2025</div>
           </div>
         </div>
       </div>
       
-      <!-- Data Category Tabs -->
-      <div class="data-category-tabs">
-        <button class="category-tab active" data-category="all">
-          <i class="bi bi-collection"></i>
-          All Data
+      <!-- Tab Navigation -->
+      <div class="analysis-tabs">
+        <button class="analysis-tab active" data-tab="market">
+          <i class="bi bi-graph-up"></i>
+          Market Analysis
         </button>
-        <button class="category-tab" data-category="equity">
-          <i class="bi bi-graph-up-arrow"></i>
-          Equity Markets
-        </button>
-        <button class="category-tab" data-category="macro">
-          <i class="bi bi-globe"></i>
-          Macroeconomic
-        </button>
-        <button class="category-tab" data-category="sector">
-          <i class="bi bi-pie-chart"></i>
-          Sector Data
-        </button>
-        <button class="category-tab" data-category="alternative">
-          <i class="bi bi-database"></i>
-          Alternative Data
-        </button>
-        <button class="category-tab" data-category="technical">
-          <i class="bi bi-bezier2"></i>
-          Technical
+        <button class="analysis-tab" data-tab="economic">
+          <i class="bi bi-currency-dollar"></i>
+          Economic Indicators
         </button>
       </div>
       
-      <!-- Market Data Cards Grid -->
-      <div class="market-data-grid" id="marketDataGrid">
+      <!-- MARKET ANALYSIS TAB -->
+      <div class="tab-content active" data-content="market">
         
-        <!-- CATEGORY 1: EQUITY MARKET DATA -->
-        
-        <!-- Card 1: Market Indices -->
-        <div class="component-card data-card" data-category="equity">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-bar-chart-steps"></i>
-              Global Market Indices
-            </h3>
-            <button class="card-action-btn" data-action="refresh-indices">
-              <i class="bi bi-arrow-clockwise"></i>
-              Refresh
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="data-table-wrapper">
-              <table class="data-table compact">
-                <thead>
-                  <tr>
-                    <th>Index</th>
-                    <th>Price</th>
-                    <th>Change</th>
-                    <th>% Change</th>
-                  </tr>
-                </thead>
-                <tbody id="indices-table">
-                  <tr>
-                    <td><strong>S&P 500</strong></td>
-                    <td>4,783.45</td>
-                    <td class="positive">+38.21</td>
-                    <td class="positive">+0.80%</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Dow Jones</strong></td>
-                    <td>37,545.33</td>
-                    <td class="positive">+156.82</td>
-                    <td class="positive">+0.42%</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Nasdaq</strong></td>
-                    <td>15,074.57</td>
-                    <td class="positive">+234.12</td>
-                    <td class="positive">+1.58%</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Russell 2000</strong></td>
-                    <td>2,015.67</td>
-                    <td class="negative">-8.45</td>
-                    <td class="negative">-0.42%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Card 2: Sector Performance -->
-        <div class="component-card data-card" data-category="equity sector">
+        <!-- Sector Heatmap -->
+        <div class="component-card full-width">
           <div class="card-header">
             <h3>
               <i class="bi bi-grid-3x3"></i>
-              Sector Performance (Today)
+              Sector Performance Heatmap
             </h3>
-            <button class="card-action-btn" data-action="analyze-sectors">
-              <i class="bi bi-cpu"></i>
-              AI Analysis
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="sector-performance-list">
-              <div class="sector-item">
-                <div class="sector-name">
-                  <i class="bi bi-cpu"></i>
-                  Technology
-                </div>
-                <div class="sector-bar positive" style="width: 85%">
-                  <span>+2.4%</span>
-                </div>
-              </div>
-              <div class="sector-item">
-                <div class="sector-name">
-                  <i class="bi bi-activity"></i>
-                  Healthcare
-                </div>
-                <div class="sector-bar positive" style="width: 65%">
-                  <span>+1.2%</span>
-                </div>
-              </div>
-              <div class="sector-item">
-                <div class="sector-name">
-                  <i class="bi bi-bank"></i>
-                  Financials
-                </div>
-                <div class="sector-bar positive" style="width: 55%">
-                  <span>+0.8%</span>
-                </div>
-              </div>
-              <div class="sector-item">
-                <div class="sector-name">
-                  <i class="bi bi-lightning"></i>
-                  Energy
-                </div>
-                <div class="sector-bar negative" style="width: 45%">
-                  <span>-0.6%</span>
-                </div>
-              </div>
-              <div class="sector-item">
-                <div class="sector-name">
-                  <i class="bi bi-cart"></i>
-                  Consumer Discretionary
-                </div>
-                <div class="sector-bar negative" style="width: 35%">
-                  <span>-1.1%</span>
-                </div>
-              </div>
+            <div class="header-actions">
+              <select class="filter-select">
+                <option>Today</option>
+                <option>1 Week</option>
+                <option>1 Month</option>
+                <option>YTD</option>
+              </select>
             </div>
-            <div class="ai-insight-box" id="sector-analysis"></div>
-          </div>
-        </div>
-        
-        <!-- Card 3: Market Breadth -->
-        <div class="component-card data-card" data-category="equity technical">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-bar-chart"></i>
-              Market Breadth Indicators
-            </h3>
           </div>
           <div class="card-body">
-            <div class="breadth-metrics">
-              <div class="breadth-metric">
-                <div class="metric-label">Advance-Decline Ratio</div>
-                <div class="metric-value positive">2,145 / 1,023</div>
-                <div class="metric-bar">
-                  <div class="bar-fill positive" style="width: 67%"></div>
-                </div>
+            <div class="heatmap-grid">
+              <div class="sector-cell positive-strong" data-sector="technology">
+                <div class="sector-name">Technology</div>
+                <div class="sector-change">+3.2%</div>
               </div>
-              <div class="breadth-metric">
-                <div class="metric-label">New Highs - New Lows</div>
-                <div class="metric-value positive">+245</div>
-                <div class="metric-subtext">312 new highs, 67 new lows</div>
+              <div class="sector-cell positive" data-sector="healthcare">
+                <div class="sector-name">Healthcare</div>
+                <div class="sector-change">+1.8%</div>
               </div>
-              <div class="breadth-metric">
-                <div class="metric-label">% Above 200-Day MA</div>
-                <div class="metric-value">68%</div>
-                <div class="metric-bar">
-                  <div class="bar-fill" style="width: 68%"></div>
-                </div>
+              <div class="sector-cell positive" data-sector="financials">
+                <div class="sector-name">Financials</div>
+                <div class="sector-change">+1.4%</div>
+              </div>
+              <div class="sector-cell positive-light" data-sector="consumer">
+                <div class="sector-name">Consumer</div>
+                <div class="sector-change">+0.7%</div>
+              </div>
+              <div class="sector-cell neutral" data-sector="industrials">
+                <div class="sector-name">Industrials</div>
+                <div class="sector-change">+0.2%</div>
+              </div>
+              <div class="sector-cell negative-light" data-sector="energy">
+                <div class="sector-name">Energy</div>
+                <div class="sector-change">-0.5%</div>
+              </div>
+              <div class="sector-cell negative" data-sector="materials">
+                <div class="sector-name">Materials</div>
+                <div class="sector-change">-1.2%</div>
+              </div>
+              <div class="sector-cell negative" data-sector="utilities">
+                <div class="sector-name">Utilities</div>
+                <div class="sector-change">-1.4%</div>
+              </div>
+              <div class="sector-cell negative-strong" data-sector="real-estate">
+                <div class="sector-name">Real Estate</div>
+                <div class="sector-change">-2.1%</div>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- CATEGORY 2: MACROECONOMIC DATA -->
-        
-        <!-- Card 4: Economic Indicators -->
-        <div class="component-card data-card" data-category="macro">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-graph-up"></i>
-              Key Economic Indicators
-            </h3>
-            <button class="card-action-btn" data-action="fetch-economic">
-              <i class="bi bi-download"></i>
-              Update FRED
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="economic-indicators-grid">
-              <div class="indicator-item">
-                <div class="indicator-icon gdp">
-                  <i class="bi bi-coin"></i>
-                </div>
-                <div class="indicator-data">
-                  <div class="indicator-value">2.8%</div>
-                  <div class="indicator-label">GDP Growth (Q4)</div>
-                  <div class="indicator-change positive">+0.3% QoQ</div>
-                </div>
-              </div>
-              <div class="indicator-item">
-                <div class="indicator-icon inflation">
-                  <i class="bi bi-graph-up-arrow"></i>
-                </div>
-                <div class="indicator-data">
-                  <div class="indicator-value">3.1%</div>
-                  <div class="indicator-label">CPI (YoY)</div>
-                  <div class="indicator-change negative">-0.2% MoM</div>
-                </div>
-              </div>
-              <div class="indicator-item">
-                <div class="indicator-icon employment">
-                  <i class="bi bi-people"></i>
-                </div>
-                <div class="indicator-data">
-                  <div class="indicator-value">3.7%</div>
-                  <div class="indicator-label">Unemployment</div>
-                  <div class="indicator-change">Unchanged</div>
-                </div>
-              </div>
-              <div class="indicator-item">
-                <div class="indicator-icon rates">
-                  <i class="bi bi-percent"></i>
-                </div>
-                <div class="indicator-data">
-                  <div class="indicator-value">5.25-5.50%</div>
-                  <div class="indicator-label">Fed Funds Rate</div>
-                  <div class="indicator-change">Target Range</div>
-                </div>
-              </div>
+        <!-- Market Movers Grid -->
+        <div class="page-grid-2">
+          
+          <!-- Top Gainers -->
+          <div class="component-card">
+            <div class="card-header">
+              <h3>
+                <i class="bi bi-arrow-up-circle"></i>
+                Top Gainers
+              </h3>
+              <a href="#" class="view-all">View All</a>
             </div>
-          </div>
-        </div>
-        
-        <!-- Card 5: Global PMI Dashboard -->
-        <div class="component-card data-card full-width" data-category="macro">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-globe"></i>
-              Global Manufacturing PMI
-            </h3>
-            <select class="data-filter">
-              <option>All Regions</option>
-              <option>North America</option>
-              <option>Europe</option>
-              <option>Asia Pacific</option>
-            </select>
-          </div>
-          <div class="card-body">
-            <div class="pmi-chart-container">
-              <canvas id="pmiChart"></canvas>
-            </div>
-          </div>
-        </div>
-        
-        <!-- CATEGORY 3: SECTOR-SPECIFIC DATA -->
-        
-        <!-- Card 6: Technology Sector Metrics -->
-        <div class="component-card data-card" data-category="sector">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-cpu-fill"></i>
-              Technology Sector
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="sector-metrics-list">
-              <div class="metric-row">
-                <span class="metric-name">Semiconductor Sales (MoM)</span>
-                <span class="metric-value positive">+4.2%</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">PC Shipments (YoY)</span>
-                <span class="metric-value negative">-2.1%</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Cloud Revenue Growth</span>
-                <span class="metric-value positive">+28%</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Book-to-Bill Ratio</span>
-                <span class="metric-value">1.08</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Card 7: Energy Sector Metrics -->
-        <div class="component-card data-card" data-category="sector">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-lightning-fill"></i>
-              Energy Sector
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="sector-metrics-list">
-              <div class="metric-row">
-                <span class="metric-name">WTI Crude Oil</span>
-                <span class="metric-value">$78.45/bbl</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Natural Gas</span>
-                <span class="metric-value">$2.85/MMBtu</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Rig Count (Baker Hughes)</span>
-                <span class="metric-value positive">+12 WoW</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Oil Inventories (EIA)</span>
-                <span class="metric-value negative">-2.1M barrels</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Card 8: Consumer Sector Metrics -->
-        <div class="component-card data-card" data-category="sector">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-cart-fill"></i>
-              Consumer Sector
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="sector-metrics-list">
-              <div class="metric-row">
-                <span class="metric-name">Retail Sales (MoM)</span>
-                <span class="metric-value positive">+0.6%</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Consumer Confidence</span>
-                <span class="metric-value">104.7</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Personal Savings Rate</span>
-                <span class="metric-value">4.2%</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-name">Credit Card Spending</span>
-                <span class="metric-value positive">+3.1% YoY</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- CATEGORY 4: ALTERNATIVE DATA -->
-        
-        <!-- Card 9: Satellite Data Insights -->
-        <div class="component-card data-card" data-category="alternative">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-airplane"></i>
-              Satellite & Geospatial Data
-            </h3>
-            <button class="card-action-btn" data-action="ai-satellite">
-              <i class="bi bi-cpu"></i>
-              AI Insights
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="alt-data-list">
-              <div class="alt-data-item">
-                <div class="alt-icon">
-                  <i class="bi bi-shop"></i>
+            <div class="card-body">
+              <div class="movers-list">
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">NVDA</div>
+                    <div class="mover-name">NVIDIA Corporation</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$485.20</div>
+                    <div class="mover-change positive">+12.4%</div>
+                  </div>
                 </div>
-                <div class="alt-content">
-                  <div class="alt-title">Retail Parking Lot Traffic</div>
-                  <div class="alt-value positive">+8.2% vs last week</div>
-                  <div class="alt-subtext">Target, Walmart showing strength</div>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">AMD</div>
+                    <div class="mover-name">Advanced Micro Devices</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$178.90</div>
+                    <div class="mover-change positive">+8.7%</div>
+                  </div>
                 </div>
-              </div>
-              <div class="alt-data-item">
-                <div class="alt-icon">
-                  <i class="bi bi-droplet"></i>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">TSLA</div>
+                    <div class="mover-name">Tesla, Inc.</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$248.50</div>
+                    <div class="mover-change positive">+6.2%</div>
+                  </div>
                 </div>
-                <div class="alt-content">
-                  <div class="alt-title">Oil Tank Levels</div>
-                  <div class="alt-value negative">-3.5% capacity</div>
-                  <div class="alt-subtext">Below 5-year average</div>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">META</div>
+                    <div class="mover-name">Meta Platforms</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$458.30</div>
+                    <div class="mover-change positive">+5.8%</div>
+                  </div>
                 </div>
-              </div>
-              <div class="alt-data-item">
-                <div class="alt-icon">
-                  <i class="bi bi-truck"></i>
-                </div>
-                <div class="alt-content">
-                  <div class="alt-title">Shipping Activity</div>
-                  <div class="alt-value">Neutral</div>
-                  <div class="alt-subtext">Port congestion easing</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Card 10: Social Sentiment -->
-        <div class="component-card data-card" data-category="alternative">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-chat-dots"></i>
-              Social Media Sentiment
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="sentiment-stocks-list">
-              <div class="sentiment-stock">
-                <div class="stock-info">
-                  <span class="ticker">NVDA</span>
-                  <span class="name">NVIDIA</span>
-                </div>
-                <div class="sentiment-score bullish">
-                  <span class="score">87</span>
-                  <span class="label">Bullish</span>
-                </div>
-                <div class="sentiment-mentions">
-                  <i class="bi bi-chat"></i>
-                  14.2k mentions
-                </div>
-              </div>
-              <div class="sentiment-stock">
-                <div class="stock-info">
-                  <span class="ticker">TSLA</span>
-                  <span class="name">Tesla</span>
-                </div>
-                <div class="sentiment-score neutral">
-                  <span class="score">52</span>
-                  <span class="label">Neutral</span>
-                </div>
-                <div class="sentiment-mentions">
-                  <i class="bi bi-chat"></i>
-                  23.8k mentions
-                </div>
-              </div>
-              <div class="sentiment-stock">
-                <div class="stock-info">
-                  <span class="ticker">AAPL</span>
-                  <span class="name">Apple</span>
-                </div>
-                <div class="sentiment-score bearish">
-                  <span class="score">34</span>
-                  <span class="label">Bearish</span>
-                </div>
-                <div class="sentiment-mentions">
-                  <i class="bi bi-chat"></i>
-                  9.4k mentions
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Card 11: Web & App Data -->
-        <div class="component-card data-card" data-category="alternative">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-phone"></i>
-              App & Web Traffic
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="app-metrics-list">
-              <div class="app-metric">
-                <div class="app-name">
-                  <i class="bi bi-bag"></i>
-                  Amazon App
-                </div>
-                <div class="app-data">
-                  <span class="downloads positive">+12% downloads</span>
-                  <span class="engagement">4.2M DAU</span>
-                </div>
-              </div>
-              <div class="app-metric">
-                <div class="app-name">
-                  <i class="bi bi-cup-straw"></i>
-                  Starbucks App
-                </div>
-                <div class="app-data">
-                  <span class="downloads positive">+5% downloads</span>
-                  <span class="engagement">2.8M DAU</span>
-                </div>
-              </div>
-              <div class="app-metric">
-                <div class="app-name">
-                  <i class="bi bi-credit-card"></i>
-                  PayPal App
-                </div>
-                <div class="app-data">
-                  <span class="downloads negative">-2% downloads</span>
-                  <span class="engagement">8.1M DAU</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- CATEGORY 5: TECHNICAL INDICATORS -->
-        
-        <!-- Card 12: Market Technical Indicators -->
-        <div class="component-card data-card" data-category="technical">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-bezier"></i>
-              S&P 500 Technical Indicators
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="technical-indicators">
-              <div class="tech-indicator">
-                <div class="tech-name">RSI (14)</div>
-                <div class="tech-value">
-                  <span class="value">62.4</span>
-                  <span class="status neutral">Neutral</span>
-                </div>
-                <div class="tech-bar">
-                  <div class="bar-fill" style="width: 62.4%">
-                    <span class="oversold">30</span>
-                    <span class="overbought">70</span>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">AAPL</div>
+                    <div class="mover-name">Apple Inc.</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$182.30</div>
+                    <div class="mover-change positive">+4.3%</div>
                   </div>
                 </div>
               </div>
-              <div class="tech-indicator">
-                <div class="tech-name">MACD</div>
-                <div class="tech-value">
-                  <span class="value positive">+12.5</span>
-                  <span class="status bullish">Bullish</span>
+            </div>
+          </div>
+          
+          <!-- Top Losers -->
+          <div class="component-card">
+            <div class="card-header">
+              <h3>
+                <i class="bi bi-arrow-down-circle"></i>
+                Top Losers
+              </h3>
+              <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="card-body">
+              <div class="movers-list">
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">XOM</div>
+                    <div class="mover-name">Exxon Mobil</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$112.40</div>
+                    <div class="mover-change negative">-5.2%</div>
+                  </div>
                 </div>
-              </div>
-              <div class="tech-indicator">
-                <div class="tech-name">50-Day MA</div>
-                <div class="tech-value">
-                  <span class="value">4,745</span>
-                  <span class="status bullish">Above (0.8%)</span>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">CVX</div>
+                    <div class="mover-name">Chevron Corporation</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$158.70</div>
+                    <div class="mover-change negative">-4.8%</div>
+                  </div>
                 </div>
-              </div>
-              <div class="tech-indicator">
-                <div class="tech-name">200-Day MA</div>
-                <div class="tech-value">
-                  <span class="value">4,512</span>
-                  <span class="status bullish">Above (6.0%)</span>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">BA</div>
+                    <div class="mover-name">Boeing Company</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$187.20</div>
+                    <div class="mover-change negative">-3.9%</div>
+                  </div>
+                </div>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">GE</div>
+                    <div class="mover-name">General Electric</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$145.80</div>
+                    <div class="mover-change negative">-3.4%</div>
+                  </div>
+                </div>
+                <div class="mover-item">
+                  <div class="mover-info">
+                    <div class="mover-symbol">CAT</div>
+                    <div class="mover-name">Caterpillar Inc.</div>
+                  </div>
+                  <div class="mover-stats">
+                    <div class="mover-price">$287.60</div>
+                    <div class="mover-change negative">-2.8%</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          
         </div>
         
-        <!-- Card 13: Options Flow -->
-        <div class="component-card data-card" data-category="technical">
+        <!-- Major Indices -->
+        <div class="component-card full-width">
           <div class="card-header">
             <h3>
-              <i class="bi bi-arrow-left-right"></i>
-              Unusual Options Activity
+              <i class="bi bi-graph-up-arrow"></i>
+              Major Indices
             </h3>
+            <div class="header-actions">
+              <select class="filter-select">
+                <option>1 Day</option>
+                <option>1 Week</option>
+                <option>1 Month</option>
+                <option>YTD</option>
+              </select>
+            </div>
           </div>
           <div class="card-body">
-            <div class="options-flow-list">
-              <div class="options-flow-item">
-                <div class="flow-ticker">NVDA</div>
-                <div class="flow-details">
-                  <span class="flow-type call">CALL</span>
-                  <span class="flow-strike">$500</span>
-                  <span class="flow-expiry">Feb 16</span>
-                </div>
-                <div class="flow-volume">
-                  <span class="volume">15,240 contracts</span>
-                  <span class="premium">$4.2M premium</span>
-                </div>
+            <div class="indices-grid">
+              <div class="index-card">
+                <div class="index-name">S&P 500</div>
+                <div class="index-value">4,783.45</div>
+                <div class="index-change positive">+57.23 (+1.21%)</div>
               </div>
-              <div class="options-flow-item">
-                <div class="flow-ticker">SPY</div>
-                <div class="flow-details">
-                  <span class="flow-type put">PUT</span>
-                  <span class="flow-strike">$470</span>
-                  <span class="flow-expiry">Mar 15</span>
-                </div>
-                <div class="flow-volume">
-                  <span class="volume">28,500 contracts</span>
-                  <span class="premium">$8.1M premium</span>
-                </div>
+              <div class="index-card">
+                <div class="index-name">Dow Jones</div>
+                <div class="index-value">38,467.31</div>
+                <div class="index-change positive">+248.34 (+0.65%)</div>
+              </div>
+              <div class="index-card">
+                <div class="index-name">NASDAQ</div>
+                <div class="index-value">15,387.12</div>
+                <div class="index-change positive">+187.45 (+1.23%)</div>
+              </div>
+              <div class="index-card">
+                <div class="index-name">Russell 2000</div>
+                <div class="index-value">2,087.43</div>
+                <div class="index-change positive">+12.84 (+0.62%)</div>
+              </div>
+              <div class="index-card">
+                <div class="index-name">VIX</div>
+                <div class="index-value">14.23</div>
+                <div class="index-change negative">-0.87 (-5.76%)</div>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Card 14: Commodities Dashboard -->
-        <div class="component-card data-card full-width" data-category="all">
+        <!-- Volume Leaders -->
+        <div class="component-card">
           <div class="card-header">
             <h3>
               <i class="bi bi-bar-chart-fill"></i>
-              Commodities & Currencies
+              Most Active by Volume
             </h3>
           </div>
           <div class="card-body">
-            <div class="commodities-grid">
-              <div class="commodity-item">
-                <div class="commodity-name">
-                  <i class="bi bi-droplet-fill"></i>
-                  WTI Crude
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Price</th>
+                  <th>Change</th>
+                  <th>Volume</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>AAPL</strong></td>
+                  <td>$182.30</td>
+                  <td class="positive">+4.3%</td>
+                  <td>128.4M</td>
+                </tr>
+                <tr>
+                  <td><strong>TSLA</strong></td>
+                  <td>$248.50</td>
+                  <td class="positive">+6.2%</td>
+                  <td>112.7M</td>
+                </tr>
+                <tr>
+                  <td><strong>NVDA</strong></td>
+                  <td>$485.20</td>
+                  <td class="positive">+12.4%</td>
+                  <td>87.3M</td>
+                </tr>
+                <tr>
+                  <td><strong>AMD</strong></td>
+                  <td>$178.90</td>
+                  <td class="positive">+8.7%</td>
+                  <td>74.2M</td>
+                </tr>
+                <tr>
+                  <td><strong>MSFT</strong></td>
+                  <td>$412.80</td>
+                  <td class="positive">+2.1%</td>
+                  <td>68.9M</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- ECONOMIC INDICATORS TAB -->
+      <div class="tab-content" data-content="economic">
+        
+        <!-- Key Economic Indicators -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon indicators">
+              <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">5.25%</div>
+              <div class="stat-label">Fed Funds Rate</div>
+              <div class="stat-change">Unchanged</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon performance">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">3.2%</div>
+              <div class="stat-label">CPI (Inflation)</div>
+              <div class="stat-change negative">+0.3% MoM</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon market">
+              <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">3.8%</div>
+              <div class="stat-label">Unemployment</div>
+              <div class="stat-change positive">-0.1% vs Last</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon volume">
+              <i class="bi bi-bank"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">2.4%</div>
+              <div class="stat-label">GDP Growth</div>
+              <div class="stat-change positive">Q4 2025</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Fed Watch Tool -->
+        <div class="component-card full-width">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-bank2"></i>
+              Fed Watch - Interest Rate Probabilities
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="fed-watch-timeline">
+              <div class="fed-meeting">
+                <div class="meeting-date">Mar 2026</div>
+                <div class="probability-bars">
+                  <div class="prob-bar" style="width: 15%">
+                    <span>-25bp (15%)</span>
+                  </div>
+                  <div class="prob-bar active" style="width: 70%">
+                    <span>Hold (70%)</span>
+                  </div>
+                  <div class="prob-bar" style="width: 15%">
+                    <span>+25bp (15%)</span>
+                  </div>
                 </div>
-                <div class="commodity-price">$78.45</div>
-                <div class="commodity-change positive">+1.2%</div>
               </div>
-              <div class="commodity-item">
-                <div class="commodity-name">
-                  <i class="bi bi-coin"></i>
-                  Gold
+              <div class="fed-meeting">
+                <div class="meeting-date">May 2026</div>
+                <div class="probability-bars">
+                  <div class="prob-bar" style="width: 25%">
+                    <span>-25bp (25%)</span>
+                  </div>
+                  <div class="prob-bar active" style="width: 55%">
+                    <span>Hold (55%)</span>
+                  </div>
+                  <div class="prob-bar" style="width: 20%">
+                    <span>+25bp (20%)</span>
+                  </div>
                 </div>
-                <div class="commodity-price">$2,042</div>
-                <div class="commodity-change positive">+0.5%</div>
               </div>
-              <div class="commodity-item">
-                <div class="commodity-name">
-                  <i class="bi bi-lightning"></i>
-                  Natural Gas
+              <div class="fed-meeting">
+                <div class="meeting-date">Jun 2026</div>
+                <div class="probability-bars">
+                  <div class="prob-bar" style="width: 40%">
+                    <span>-25bp (40%)</span>
+                  </div>
+                  <div class="prob-bar active" style="width: 35%">
+                    <span>Hold (35%)</span>
+                  </div>
+                  <div class="prob-bar" style="width: 25%">
+                    <span>+25bp (25%)</span>
+                  </div>
                 </div>
-                <div class="commodity-price">$2.85</div>
-                <div class="commodity-change negative">-2.1%</div>
-              </div>
-              <div class="commodity-item">
-                <div class="commodity-name">
-                  <i class="bi bi-broadcast"></i>
-                  Copper
-                </div>
-                <div class="commodity-price">$3.85</div>
-                <div class="commodity-change positive">+0.8%</div>
-              </div>
-              <div class="commodity-item">
-                <div class="commodity-name">
-                  <i class="bi bi-currency-dollar"></i>
-                  EUR/USD
-                </div>
-                <div class="commodity-price">1.0845</div>
-                <div class="commodity-change negative">-0.2%</div>
-              </div>
-              <div class="commodity-item">
-                <div class="commodity-name">
-                  <i class="bi bi-currency-yen"></i>
-                  USD/JPY
-                </div>
-                <div class="commodity-price">148.23</div>
-                <div class="commodity-change positive">+0.3%</div>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Card 15: AI Market Insights -->
-        <div class="component-card data-card full-width featured" data-category="all">
+        <!-- Economic Data Grid -->
+        <div class="page-grid-2">
+          
+          <!-- Inflation Indicators -->
+          <div class="component-card">
+            <div class="card-header">
+              <h3>
+                <i class="bi bi-graph-up-arrow"></i>
+                Inflation Indicators
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="indicator-list">
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">CPI (Consumer Price Index)</div>
+                    <div class="indicator-meta">Year-over-Year</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">3.2%</div>
+                    <div class="change negative">+0.3%</div>
+                  </div>
+                </div>
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">Core CPI</div>
+                    <div class="indicator-meta">Excluding Food & Energy</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">3.8%</div>
+                    <div class="change negative">+0.2%</div>
+                  </div>
+                </div>
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">PPI (Producer Price Index)</div>
+                    <div class="indicator-meta">Year-over-Year</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">2.7%</div>
+                    <div class="change positive">-0.1%</div>
+                  </div>
+                </div>
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">PCE Price Index</div>
+                    <div class="indicator-meta">Fed's Preferred Measure</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">2.9%</div>
+                    <div class="change">Flat</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Employment Data -->
+          <div class="component-card">
+            <div class="card-header">
+              <h3>
+                <i class="bi bi-people"></i>
+                Employment Data
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="indicator-list">
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">Unemployment Rate</div>
+                    <div class="indicator-meta">U-3 Measure</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">3.8%</div>
+                    <div class="change positive">-0.1%</div>
+                  </div>
+                </div>
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">Non-Farm Payrolls</div>
+                    <div class="indicator-meta">Monthly Change</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">+187K</div>
+                    <div class="change positive">Above Est.</div>
+                  </div>
+                </div>
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">Labor Force Participation</div>
+                    <div class="indicator-meta">% of Population</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">63.4%</div>
+                    <div class="change positive">+0.2%</div>
+                  </div>
+                </div>
+                <div class="indicator-item">
+                  <div class="indicator-info">
+                    <div class="indicator-name">Average Hourly Earnings</div>
+                    <div class="indicator-meta">Year-over-Year</div>
+                  </div>
+                  <div class="indicator-value">
+                    <div class="value">+4.3%</div>
+                    <div class="change">Flat</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+        <!-- Economic Calendar -->
+        <div class="component-card full-width">
           <div class="card-header">
             <h3>
-              <i class="bi bi-robot"></i>
-              AI-Powered Market Insights
+              <i class="bi bi-calendar-event"></i>
+              Economic Calendar
             </h3>
-            <button class="card-action-btn primary" id="generateInsightsBtn">
-              <i class="bi bi-stars"></i>
-              Generate Insights
-            </button>
+            <div class="header-actions">
+              <select class="filter-select">
+                <option>This Week</option>
+                <option>Next Week</option>
+                <option>This Month</option>
+              </select>
+            </div>
           </div>
           <div class="card-body">
-            <div class="ai-insights-container" id="aiInsightsContainer">
-              <div class="insights-placeholder">
-                <i class="bi bi-lightbulb"></i>
-                <p>Click "Generate Insights" to get AI-powered analysis of current market conditions</p>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Event</th>
+                  <th>Importance</th>
+                  <th>Previous</th>
+                  <th>Forecast</th>
+                  <th>Actual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Feb 16</td>
+                  <td>Retail Sales</td>
+                  <td><span class="badge error">High</span></td>
+                  <td>+0.6%</td>
+                  <td>+0.4%</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Feb 17</td>
+                  <td>Housing Starts</td>
+                  <td><span class="badge warning">Medium</span></td>
+                  <td>1.56M</td>
+                  <td>1.48M</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Feb 18</td>
+                  <td>Fed Minutes</td>
+                  <td><span class="badge error">High</span></td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Feb 19</td>
+                  <td>Initial Jobless Claims</td>
+                  <td><span class="badge warning">Medium</span></td>
+                  <td>212K</td>
+                  <td>215K</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Feb 20</td>
+                  <td>PMI Flash</td>
+                  <td><span class="badge info">Low</span></td>
+                  <td>52.3</td>
+                  <td>52.5</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- GDP & Growth -->
+        <div class="component-card">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-graph-up"></i>
+              GDP & Economic Growth
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="indicator-list">
+              <div class="indicator-item">
+                <div class="indicator-info">
+                  <div class="indicator-name">Real GDP Growth</div>
+                  <div class="indicator-meta">Q4 2025 (Annualized)</div>
+                </div>
+                <div class="indicator-value">
+                  <div class="value">2.4%</div>
+                  <div class="change positive">+0.3%</div>
+                </div>
+              </div>
+              <div class="indicator-item">
+                <div class="indicator-info">
+                  <div class="indicator-name">Consumer Spending</div>
+                  <div class="indicator-meta">% of GDP</div>
+                </div>
+                <div class="indicator-value">
+                  <div class="value">68.2%</div>
+                  <div class="change positive">+1.2%</div>
+                </div>
+              </div>
+              <div class="indicator-item">
+                <div class="indicator-info">
+                  <div class="indicator-name">Business Investment</div>
+                  <div class="indicator-meta">Quarter-over-Quarter</div>
+                </div>
+                <div class="indicator-value">
+                  <div class="value">+3.8%</div>
+                  <div class="change positive">Strong</div>
+                </div>
+              </div>
+              <div class="indicator-item">
+                <div class="indicator-info">
+                  <div class="indicator-name">Trade Balance</div>
+                  <div class="indicator-meta">January 2026</div>
+                </div>
+                <div class="indicator-value">
+                  <div class="value">-$68.2B</div>
+                  <div class="change negative">Deficit</div>
+                </div>
               </div>
             </div>
           </div>
@@ -813,8 +789,8 @@
               <i class="bi bi-mortarboard-fill"></i>
             </div>
             <div class="learning-title-text">
-              <h3>Technical & Market Analysis</h3>
-              <p>Master chart patterns, indicators, and market psychology</p>
+              <h3>Market & Economic Analysis Courses</h3>
+              <p>Master technical analysis, macroeconomics, and market psychology</p>
             </div>
           </div>
           <button class="view-all-btn" onclick="window.location.href='learning-center.html'">
@@ -830,11 +806,11 @@
             </div>
             <h4 class="course-title">Technical Analysis Fundamentals</h4>
             <p class="course-description">
-              Learn chart patterns, trend lines, support/resistance, and key technical indicators.
+              Learn to read charts, identify patterns, and use technical indicators to time your trades.
             </p>
             <div class="course-meta">
               <div class="meta-item"><i class="bi bi-book"></i> 16 lessons</div>
-              <div class="meta-item"><i class="bi bi-people"></i> 4,521 enrolled</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 4,523 enrolled</div>
             </div>
             <div class="course-footer">
               <span class="course-level beginner">Beginner</span>
@@ -849,7 +825,7 @@
             </div>
             <h4 class="course-title">Advanced Chart Patterns</h4>
             <p class="course-description">
-              Deep dive into head & shoulders, triangles, flags, and complex formations.
+              Deep dive into head & shoulders, triangles, flags, and other high-probability patterns.
             </p>
             <div class="course-meta">
               <div class="meta-item"><i class="bi bi-book"></i> 20 lessons</div>
@@ -863,35 +839,35 @@
           
           <div class="course-card">
             <div class="course-header">
-              <span class="course-type">Skill</span>
+              <span class="course-type">Course</span>
               <span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span>
             </div>
-            <h4 class="course-title">Sector Rotation Strategies</h4>
+            <h4 class="course-title">Understanding Economic Indicators</h4>
             <p class="course-description">
-              Learn to identify sector trends and rotate portfolios based on economic cycles.
+              Learn how GDP, inflation, and Fed policy drive market movements and investment decisions.
             </p>
             <div class="course-meta">
-              <div class="meta-item"><i class="bi bi-book"></i> 12 lessons</div>
-              <div class="meta-item"><i class="bi bi-people"></i> 1,934 enrolled</div>
+              <div class="meta-item"><i class="bi bi-book"></i> 14 lessons</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 3,124 enrolled</div>
             </div>
             <div class="course-footer">
-              <span class="course-level intermediate">Intermediate</span>
+              <span class="course-level beginner">Beginner</span>
               <button class="enroll-btn">Enroll Now</button>
             </div>
           </div>
           
           <div class="course-card">
             <div class="course-header">
-              <span class="course-type">Course</span>
+              <span class="course-type">Skill</span>
               <span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span>
             </div>
             <h4 class="course-title">Market Sentiment Analysis</h4>
             <p class="course-description">
-              Master VIX, put/call ratios, positioning data, and contrarian indicators.
+              Master contrarian indicators, sentiment surveys, and behavioral finance principles.
             </p>
             <div class="course-meta">
               <div class="meta-item"><i class="bi bi-book"></i> 18 lessons</div>
-              <div class="meta-item"><i class="bi bi-people"></i> 3,241 enrolled</div>
+              <div class="meta-item"><i class="bi bi-people"></i> 1,847 enrolled</div>
             </div>
             <div class="course-footer">
               <span class="course-level advanced">Advanced</span>
@@ -904,7 +880,6 @@
     </main>
   </div>
   
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../assets/js/theme-toggle.js"></script>
   <script src="../assets/js/sidebar-toggle.js"></script>
   <script src="../components/navigation/load-nav.js"></script>
