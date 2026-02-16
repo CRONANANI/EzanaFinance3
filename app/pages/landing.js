@@ -16,59 +16,184 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Contact support modal
+// Contact support modal - legacy compatibility
 function openContactForm() {
-    var modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
+    var dialog = document.getElementById('supportDialog');
+    if (dialog) {
+        dialog.classList.add('active');
+        dialog.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
-        var firstInput = document.getElementById('contact-name');
-        if (firstInput) {
-            setTimeout(function () { firstInput.focus(); }, 100);
-        }
     }
 }
 
 function closeContactForm() {
-    var modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
+    var dialog = document.getElementById('supportDialog');
+    if (dialog) {
+        dialog.classList.remove('active');
+        dialog.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
     }
 }
 
-function handleContactSubmit(event) {
-    event.preventDefault();
-    var form = event.target;
-    var formData = new FormData(form);
-    var data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        type: formData.get('type') || 'General Inquiry',
-        subject: formData.get('subject'),
-        message: formData.get('message')
-    };
-    var bodyText = 'Name: ' + data.name + '\nEmail: ' + data.email + '\nRequest Type: ' + data.type + '\n\nMessage:\n' + data.message;
-    var mailtoLink = 'mailto:support@ezanafinance.com?subject=' + encodeURIComponent('[Support] ' + data.subject) + '&body=' + encodeURIComponent(bodyText);
-    window.location.href = mailtoLink;
-    try {
-        alert('Opening your email client... If it doesn\'t open automatically, please email us at support@ezanafinance.com');
-    } catch (err) {}
-    closeContactForm();
-    form.reset();
-    return false;
-}
-
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-        var modal = document.getElementById('contactModal');
-        if (modal && modal.classList.contains('active')) {
+        var dialog = document.getElementById('supportDialog');
+        if (dialog && dialog.classList.contains('active')) {
             closeContactForm();
         }
     }
 });
+
+/** IntelligenceCarousel - Market Intelligence one-slide carousel */
+function IntelligenceCarousel() {
+    var track = document.getElementById('carouselTrack');
+    var slides = track ? track.querySelectorAll('.carousel-slide') : [];
+    var prevBtn = document.getElementById('carouselPrev');
+    var nextBtn = document.getElementById('carouselNext');
+    var indicators = document.getElementById('carouselIndicators');
+    indicators = indicators ? indicators.querySelectorAll('.indicator') : [];
+    var currentSlide = 0;
+    var totalSlides = slides.length;
+    var autoPlayInterval = null;
+
+    if (!track || !slides.length) return;
+
+    function goToSlide(index) {
+        slides.forEach(function (s) { s.classList.remove('active'); });
+        indicators.forEach(function (i) { i.classList.remove('active'); });
+        slides[index].classList.add('active');
+        if (indicators[index]) indicators[index].classList.add('active');
+        track.style.transform = 'translateX(-' + index + '00%)';
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        goToSlide((currentSlide + 1) % totalSlides);
+    }
+    function prevSlide() {
+        goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
+    }
+    function startAutoPlay() {
+        autoPlayInterval = setInterval(nextSlide, 5000);
+    }
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+    indicators.forEach(function (ind, i) {
+        ind.addEventListener('click', function () { goToSlide(i); });
+    });
+    var container = track.closest('.intelligence-carousel');
+    if (container) {
+        container.addEventListener('mouseenter', stopAutoPlay);
+        container.addEventListener('mouseleave', startAutoPlay);
+    }
+    startAutoPlay();
+    window.intelligenceCarousel = { goToSlide: goToSlide, nextSlide: nextSlide, prevSlide: prevSlide };
+}
+
+/** PricingToggle - Monthly/Annual pricing switch */
+function PricingToggle() {
+    var toggleBtns = document.querySelectorAll('.pricing-toggle .toggle-btn');
+    var monthlyPrices = document.querySelectorAll('.monthly-price');
+    var annualPrices = document.querySelectorAll('.annual-price');
+    toggleBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var plan = btn.dataset.plan;
+            toggleBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.plan === plan); });
+            if (plan === 'monthly') {
+                monthlyPrices.forEach(function (p) { p.style.display = 'inline'; });
+                annualPrices.forEach(function (p) { p.style.display = 'none'; });
+            } else {
+                monthlyPrices.forEach(function (p) { p.style.display = 'none'; });
+                annualPrices.forEach(function (p) { p.style.display = 'inline'; });
+            }
+        });
+    });
+}
+
+/** SupportDialog - Contact Support modal */
+function SupportDialog() {
+    var dialog = document.getElementById('supportDialog');
+    var form = document.getElementById('supportForm');
+    var successEl = document.getElementById('supportSuccess');
+    var closeBtn = document.getElementById('dialogClose');
+    var closeBtn2 = document.getElementById('supportDialogCloseBtn');
+    var triggerBtns = document.querySelectorAll('[data-support-trigger]');
+
+    if (!dialog || !form) return;
+
+    function open() {
+        dialog.classList.add('active');
+        dialog.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+    function close() {
+        dialog.classList.remove('active');
+        dialog.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        setTimeout(function () {
+            form.reset();
+            form.style.display = 'flex';
+            if (successEl) successEl.style.display = 'none';
+        }, 300);
+    }
+
+    triggerBtns.forEach(function (btn) { btn.addEventListener('click', open); });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (closeBtn2) closeBtn2.addEventListener('click', close);
+    dialog.addEventListener('click', function (e) {
+        if (e.target === dialog) close();
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var data = {
+            name: form.name.value,
+            email: form.email.value,
+            category: form.category.value,
+            message: form.message.value
+        };
+        var bodyText = 'Name: ' + data.name + '\nEmail: ' + data.email + '\nCategory: ' + data.category + '\n\nMessage:\n' + data.message;
+        var mailto = 'mailto:support@ezanafinance.com?subject=' + encodeURIComponent('Support: ' + data.category) + '&body=' + encodeURIComponent(bodyText);
+        window.location.href = mailto;
+        form.style.display = 'none';
+        if (successEl) successEl.style.display = 'block';
+    });
+}
+
+/** Simple FAQ Accordion for flat faq-item structure */
+function FAQAccordion() {
+    var items = document.querySelectorAll('.faq-section .faq-item');
+    items.forEach(function (item) {
+        var q = item.querySelector('.faq-question');
+        var a = item.querySelector('.faq-answer');
+        if (!q || !a) return;
+        q.addEventListener('click', function (e) {
+            e.preventDefault();
+            var isActive = item.classList.contains('active');
+            items.forEach(function (other) {
+                if (other !== item) {
+                    other.classList.remove('active');
+                    var oa = other.querySelector('.faq-answer');
+                    if (oa) oa.style.maxHeight = '';
+                }
+            });
+            if (!isActive) {
+                item.classList.add('active');
+                a.style.maxHeight = a.scrollHeight + 'px';
+            } else {
+                item.classList.remove('active');
+                a.style.maxHeight = '';
+            }
+        });
+    });
+}
 
 /** Antigravity Center - Hide when cursor below hero CTA or when scrolled past hero */
 function AntigravityCenterHider() {
@@ -217,8 +342,12 @@ function ResourcesCarousel() {
     this.autoplayInterval = setInterval(next, this.autoplayDelay);
 }
 
-// Add hover effects to phone preview
 document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('carouselTrack')) IntelligenceCarousel();
+    if (document.querySelector('.pricing-toggle')) PricingToggle();
+    SupportDialog();
+    if (document.querySelector('.faq-section .faq-item')) FAQAccordion();
+
     if (document.getElementById('antigravityCenterComponent')) {
         window.lastMouseY = 0;
         document.addEventListener('mousemove', function (e) { window.lastMouseY = e.clientY; });

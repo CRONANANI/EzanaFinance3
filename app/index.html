@@ -51,6 +51,9 @@
                     <a href="#resources" class="nav-link">Resources</a>
                 </li>
                 <li class="nav-item">
+                    <a href="#pricing" class="nav-link">Pricing</a>
+                </li>
+                <li class="nav-item">
                     <a href="#faq" class="nav-link">FAQ</a>
                 </li>
             </ul>
@@ -92,6 +95,10 @@
                 </div>
             </div>
         </div>
+        <div class="scroll-hint">
+            <span class="scroll-hint-text">Scroll to explore</span>
+            <i class="bi bi-chevron-down scroll-hint-icon" aria-hidden="true"></i>
+        </div>
     </main>
 
     <!-- Features Section (Swarmnode-style blocks) -->
@@ -99,7 +106,53 @@
       <!-- Inlined from components/landing/features-section.html so it works without fetch (file:// and all servers) -->
       <section class="features-section" id="features">
   <div class="features-container">
-    <div class="feature-block" data-feature="congress">
+    <div class="feature-block" data-feature="portfolio">
+      <div class="feature-content">
+        <div class="feature-visual">
+          <div class="visual-container portfolio-visual">
+            <div class="portfolio-dashboard">
+              <div class="dashboard-header">
+                <h4>Portfolio Performance</h4>
+                <div class="time-range">
+                  <button type="button" class="time-btn">1D</button>
+                  <button type="button" class="time-btn active">1W</button>
+                  <button type="button" class="time-btn">1M</button>
+                  <button type="button" class="time-btn">1Y</button>
+                </div>
+              </div>
+              <div class="portfolio-value">
+                <div class="value-amount">$127,843.52</div>
+                <div class="value-change positive"><i class="bi bi-arrow-up" aria-hidden="true"></i><span>+$2,847.31 (+2.28%)</span></div>
+              </div>
+              <div class="mini-chart">
+                <svg width="100%" height="120" viewBox="0 0 400 120" aria-hidden="true">
+                  <defs><linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#10b981;stop-opacity:0.3"/><stop offset="100%" style="stop-color:#10b981;stop-opacity:0"/></linearGradient></defs>
+                  <path class="chart-line" d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20" fill="none" stroke="#10b981" stroke-width="2"/>
+                  <path class="chart-area" d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20 L 400 120 L 0 120 Z" fill="url(#chartGradient)"/>
+                </svg>
+              </div>
+              <div class="metrics-mini-grid">
+                <div class="metric-mini"><span class="metric-label">Risk Score</span><span class="metric-value">6.2<span class="metric-unit">/10</span></span></div>
+                <div class="metric-mini"><span class="metric-label">Sharpe Ratio</span><span class="metric-value">1.45</span></div>
+                <div class="metric-mini"><span class="metric-label">Dividends</span><span class="metric-value">$847<span class="metric-unit">/mo</span></span></div>
+                <div class="metric-mini"><span class="metric-label">Asset Allocation</span><span class="metric-value">Balanced</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-description">
+          <h2 class="feature-title">Professional-grade portfolio analytics</h2>
+          <p class="feature-text">Track your investments with institutional-quality tools. Get real-time performance metrics, automated risk assessment, dividend tracking, and sophisticated asset allocation analysis—all in one elegant dashboard.</p>
+          <div class="feature-stats">
+            <div class="stat-item"><span class="stat-value">Sub-100ms</span><span class="stat-label">Response Time</span></div>
+            <div class="stat-item"><span class="stat-value">10+</span><span class="stat-label">Asset Classes</span></div>
+            <div class="stat-item"><span class="stat-value">24/7</span><span class="stat-label">Market Data</span></div>
+          </div>
+          <a href="pages/home-dashboard.html" class="feature-cta"><span>See Portfolio Tools</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="feature-block reverse" data-feature="congress">
       <div class="feature-content">
         <div class="feature-visual">
           <div class="visual-container congress-visual">
@@ -153,52 +206,6 @@
             <div class="stat-item"><span class="stat-value">Real-time</span><span class="stat-label">Updates</span></div>
           </div>
           <a href="https://docs.ezanafinance.com/congressional-trading" class="feature-cta" target="_blank" rel="noopener"><span>Explore Congressional Trading</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-        </div>
-      </div>
-    </div>
-    <div class="feature-block reverse" data-feature="portfolio">
-      <div class="feature-content">
-        <div class="feature-description">
-          <h2 class="feature-title">Professional-grade portfolio analytics</h2>
-          <p class="feature-text">Track your investments with institutional-quality tools. Get real-time performance metrics, automated risk assessment, dividend tracking, and sophisticated asset allocation analysis—all in one elegant dashboard.</p>
-          <div class="feature-stats">
-            <div class="stat-item"><span class="stat-value">Sub-100ms</span><span class="stat-label">Response Time</span></div>
-            <div class="stat-item"><span class="stat-value">10+</span><span class="stat-label">Asset Classes</span></div>
-            <div class="stat-item"><span class="stat-value">24/7</span><span class="stat-label">Market Data</span></div>
-          </div>
-          <a href="pages/home-dashboard.html" class="feature-cta"><span>See Portfolio Tools</span><i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-        </div>
-        <div class="feature-visual">
-          <div class="visual-container portfolio-visual">
-            <div class="portfolio-dashboard">
-              <div class="dashboard-header">
-                <h4>Portfolio Performance</h4>
-                <div class="time-range">
-                  <button type="button" class="time-btn">1D</button>
-                  <button type="button" class="time-btn active">1W</button>
-                  <button type="button" class="time-btn">1M</button>
-                  <button type="button" class="time-btn">1Y</button>
-                </div>
-              </div>
-              <div class="portfolio-value">
-                <div class="value-amount">$127,843.52</div>
-                <div class="value-change positive"><i class="bi bi-arrow-up" aria-hidden="true"></i><span>+$2,847.31 (+2.28%)</span></div>
-              </div>
-              <div class="mini-chart">
-                <svg width="100%" height="120" viewBox="0 0 400 120" aria-hidden="true">
-                  <defs><linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#10b981;stop-opacity:0.3"/><stop offset="100%" style="stop-color:#10b981;stop-opacity:0"/></linearGradient></defs>
-                  <path class="chart-line" d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20" fill="none" stroke="#10b981" stroke-width="2"/>
-                  <path class="chart-area" d="M 0 80 L 50 70 L 100 65 L 150 55 L 200 50 L 250 45 L 300 35 L 350 30 L 400 20 L 400 120 L 0 120 Z" fill="url(#chartGradient)"/>
-                </svg>
-              </div>
-              <div class="metrics-mini-grid">
-                <div class="metric-mini"><span class="metric-label">Risk Score</span><span class="metric-value">6.2<span class="metric-unit">/10</span></span></div>
-                <div class="metric-mini"><span class="metric-label">Sharpe Ratio</span><span class="metric-value">1.45</span></div>
-                <div class="metric-mini"><span class="metric-label">Dividends</span><span class="metric-value">$847<span class="metric-unit">/mo</span></span></div>
-                <div class="metric-mini"><span class="metric-label">Asset Allocation</span><span class="metric-value">Balanced</span></div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -312,89 +319,115 @@
     </div>
 
     <!-- Market Intelligence Resources Section (Carousel) -->
-    <section class="resources-section" id="resources">
-      <div class="resources-container">
-        <div class="resources-header">
+    <section class="market-intelligence-section" id="resources">
+      <div class="section-container">
+        <div class="section-header">
           <h2>Market Intelligence Resources</h2>
-          <p>Comprehensive documentation of all data sources and analytics powered by institutional-grade providers</p>
+          <p>Exclusive insights and data tools for informed decision-making</p>
         </div>
-        <div class="resources-carousel">
-          <button type="button" class="carousel-prev" aria-label="Previous">
-            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        <div class="intelligence-carousel">
+          <button type="button" class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Previous slide">
+            <i class="bi bi-chevron-left"></i>
           </button>
           <div class="carousel-track-container">
-            <div class="carousel-track">
-              <div class="resource-card">
-                <div class="resource-icon"><i class="bi bi-building" aria-hidden="true"></i></div>
-                <h3>Congressional Trading</h3>
-                <p class="resource-description">Track stock trades by members of Congress with real-time STOCK Act disclosure data.</p>
-                <p class="resource-source">Data provided by <strong>Quiver Quantitative</strong> from official House and Senate disclosure databases</p>
-                <a href="https://docs.ezanafinance.com/congressional-trading" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            <div class="carousel-track" id="carouselTrack">
+              <div class="carousel-slide active">
+                <div class="intelligence-card">
+                  <div class="intelligence-icon"><i class="bi bi-building"></i></div>
+                  <h3>Congressional Trading Dashboard</h3>
+                  <p>Track stock trades made by members of Congress in real-time. See who's buying and selling before the market reacts.</p>
+                  <ul class="intelligence-features">
+                    <li><i class="bi bi-check-circle"></i> Live trade notifications</li>
+                    <li><i class="bi bi-check-circle"></i> Historical trading data</li>
+                    <li><i class="bi bi-check-circle"></i> Politician portfolios</li>
+                    <li><i class="bi bi-check-circle"></i> Sector trends</li>
+                  </ul>
+                  <a href="https://docs.ezanafinance.com/congressional-trading" class="intelligence-btn" target="_blank" rel="noopener">Explore Dashboard</a>
+                </div>
               </div>
-              <div class="resource-card">
-                <div class="resource-icon contracts"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></div>
-                <h3>Government Contracts</h3>
-                <p class="resource-description">Track federal contract awards and analyze their market impact.</p>
-                <p class="resource-source">Data sourced from <strong>USAspending.gov</strong> and aggregated by Quiver Quantitative</p>
-                <a href="https://docs.ezanafinance.com/government-contracts" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <div class="carousel-slide">
+                <div class="intelligence-card">
+                  <div class="intelligence-icon"><i class="bi bi-file-earmark-text"></i></div>
+                  <h3>Government Contracts Tracker</h3>
+                  <p>Monitor billion-dollar government contracts awarded to public companies. Follow the money trail.</p>
+                  <ul class="intelligence-features">
+                    <li><i class="bi bi-check-circle"></i> Federal contract awards</li>
+                    <li><i class="bi bi-check-circle"></i> Defense spending tracker</li>
+                    <li><i class="bi bi-check-circle"></i> Company rankings</li>
+                    <li><i class="bi bi-check-circle"></i> Sector analysis</li>
+                  </ul>
+                  <a href="https://docs.ezanafinance.com/government-contracts" class="intelligence-btn" target="_blank" rel="noopener">View Contracts</a>
+                </div>
               </div>
-              <div class="resource-card">
-                <div class="resource-icon lobbying"><i class="bi bi-megaphone" aria-hidden="true"></i></div>
-                <h3>Lobbying Activity</h3>
-                <p class="resource-description">Monitor lobbying expenditures and correlate with stock performance.</p>
-                <p class="resource-source">Data from <strong>Senate Lobbying Disclosure Database</strong> processed by Quiver Quantitative</p>
-                <a href="https://docs.ezanafinance.com/lobbying" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <div class="carousel-slide">
+                <div class="intelligence-card">
+                  <div class="intelligence-icon"><i class="bi bi-megaphone"></i></div>
+                  <h3>Corporate Lobbying Insights</h3>
+                  <p>Track which companies are spending millions on lobbying and what legislation they're influencing.</p>
+                  <ul class="intelligence-features">
+                    <li><i class="bi bi-check-circle"></i> Lobbying expenditures</li>
+                    <li><i class="bi bi-check-circle"></i> Issue tracking</li>
+                    <li><i class="bi bi-check-circle"></i> Company spending</li>
+                    <li><i class="bi bi-check-circle"></i> Legislative impact</li>
+                  </ul>
+                  <a href="https://docs.ezanafinance.com/lobbying" class="intelligence-btn" target="_blank" rel="noopener">Explore Lobbying</a>
+                </div>
               </div>
-              <div class="resource-card">
-                <div class="resource-icon patents"><i class="bi bi-lightbulb" aria-hidden="true"></i></div>
-                <h3>Patent Filings</h3>
-                <p class="resource-description">Analyze innovation trends through patent velocity and citations.</p>
-                <p class="resource-source">Patent data from <strong>USPTO</strong> (United States Patent and Trademark Office)</p>
-                <a href="https://docs.ezanafinance.com/patents" class="resource-link" target="_blank" rel="noopener">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <div class="carousel-slide">
+                <div class="intelligence-card">
+                  <div class="intelligence-icon"><i class="bi bi-bank"></i></div>
+                  <h3>Institutional Holdings (13F)</h3>
+                  <p>See what hedge funds and institutional investors are buying. Follow the smart money quarterly.</p>
+                  <ul class="intelligence-features">
+                    <li><i class="bi bi-check-circle"></i> Quarterly 13F filings</li>
+                    <li><i class="bi bi-check-circle"></i> Top fund holdings</li>
+                    <li><i class="bi bi-check-circle"></i> Position changes</li>
+                    <li><i class="bi bi-check-circle"></i> Conviction scores</li>
+                  </ul>
+                  <a href="pages/inside-the-capitol.html" class="intelligence-btn">View Holdings</a>
+                </div>
               </div>
-              <div class="resource-card">
-                <div class="resource-icon research"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></div>
-                <h3>Company Research</h3>
-                <p class="resource-description">In-depth financial analysis, ratios, and peer comparisons for publicly traded companies.</p>
-                <p class="resource-source">Financial data from <strong>SEC EDGAR</strong> filings and licensed market data providers</p>
-                <a href="pages/company-research.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <div class="carousel-slide">
+                <div class="intelligence-card">
+                  <div class="intelligence-icon"><i class="bi bi-person-badge"></i></div>
+                  <h3>Corporate Insider Trading</h3>
+                  <p>Track when CEOs and executives buy or sell their own company's stock. Insider conviction signals.</p>
+                  <ul class="intelligence-features">
+                    <li><i class="bi bi-check-circle"></i> Executive transactions</li>
+                    <li><i class="bi bi-check-circle"></i> Cluster buying alerts</li>
+                    <li><i class="bi bi-check-circle"></i> Historical patterns</li>
+                    <li><i class="bi bi-check-circle"></i> Sentiment analysis</li>
+                  </ul>
+                  <a href="pages/inside-the-capitol.html" class="intelligence-btn">Track Insiders</a>
+                </div>
               </div>
-              <div class="resource-card">
-                <div class="resource-icon market"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></div>
-                <h3>Market Analysis</h3>
-                <p class="resource-description">Sector performance, market trends, and technical analysis tools.</p>
-                <p class="resource-source">Real-time market data from <strong>major exchanges</strong> and technical indicators</p>
-                <a href="pages/market-analysis.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-              </div>
-              <div class="resource-card">
-                <div class="resource-icon economic"><i class="bi bi-currency-dollar" aria-hidden="true"></i></div>
-                <h3>Economic Indicators</h3>
-                <p class="resource-description">Real-time economic data, Fed tracking, and recession probability models.</p>
-                <p class="resource-source">Economic data from <strong>Federal Reserve</strong> and Bureau of Economic Analysis</p>
-                <a href="pages/market-analysis.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-              </div>
-              <div class="resource-card">
-                <div class="resource-icon analytics"><i class="bi bi-calculator" aria-hidden="true"></i></div>
-                <h3>Financial Analytics</h3>
-                <p class="resource-description">Advanced financial health scoring and portfolio optimization.</p>
-                <p class="resource-source">Proprietary algorithms using <strong>institutional-grade models</strong> and market data</p>
-                <a href="pages/financial-analytics.html" class="resource-link">Learn More <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+              <div class="carousel-slide">
+                <div class="intelligence-card">
+                  <div class="intelligence-icon"><i class="bi bi-graph-up"></i></div>
+                  <h3>AI Market Sentiment Analysis</h3>
+                  <p>Real-time sentiment tracking across news, social media, and analyst reports using advanced AI.</p>
+                  <ul class="intelligence-features">
+                    <li><i class="bi bi-check-circle"></i> News sentiment scoring</li>
+                    <li><i class="bi bi-check-circle"></i> Social media trends</li>
+                    <li><i class="bi bi-check-circle"></i> Analyst ratings</li>
+                    <li><i class="bi bi-check-circle"></i> Predictive signals</li>
+                  </ul>
+                  <a href="pages/market-analysis.html" class="intelligence-btn">View Sentiment</a>
+                </div>
               </div>
             </div>
           </div>
-          <button type="button" class="carousel-next" aria-label="Next">
-            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          <button type="button" class="carousel-btn carousel-next" id="carouselNext" aria-label="Next slide">
+            <i class="bi bi-chevron-right"></i>
           </button>
-        </div>
-        <div class="carousel-indicators">
-          <button type="button" class="indicator active" data-slide="0" aria-label="Slide 1"></button>
-          <button type="button" class="indicator" data-slide="1" aria-label="Slide 2"></button>
-          <button type="button" class="indicator" data-slide="2" aria-label="Slide 3"></button>
-          <button type="button" class="indicator" data-slide="3" aria-label="Slide 4"></button>
-          <button type="button" class="indicator" data-slide="4" aria-label="Slide 5"></button>
-          <button type="button" class="indicator" data-slide="5" aria-label="Slide 6"></button>
-          <button type="button" class="indicator" data-slide="6" aria-label="Slide 7"></button>
-          <button type="button" class="indicator" data-slide="7" aria-label="Slide 8"></button>
+          <div class="carousel-indicators" id="carouselIndicators">
+            <button type="button" class="indicator active" data-slide="0" aria-label="Slide 1"></button>
+            <button type="button" class="indicator" data-slide="1" aria-label="Slide 2"></button>
+            <button type="button" class="indicator" data-slide="2" aria-label="Slide 3"></button>
+            <button type="button" class="indicator" data-slide="3" aria-label="Slide 4"></button>
+            <button type="button" class="indicator" data-slide="4" aria-label="Slide 5"></button>
+            <button type="button" class="indicator" data-slide="5" aria-label="Slide 6"></button>
+          </div>
         </div>
       </div>
     </section>
@@ -415,6 +448,102 @@
                 <div class="stat-label">Uptime</div>
             </div>
         </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="pricing">
+      <div class="section-container">
+        <div class="section-header">
+          <h2>Simple, Transparent Pricing</h2>
+          <p>Choose the plan that fits your investment strategy</p>
+        </div>
+        <div class="pricing-toggle">
+          <button type="button" class="toggle-btn active" data-plan="monthly">Monthly</button>
+          <button type="button" class="toggle-btn" data-plan="annual">Annual <span class="save-badge">Save 20%</span></button>
+        </div>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3 class="plan-name">Free</h3>
+              <div class="plan-price">
+                <span class="price">$0</span>
+                <span class="period">/month</span>
+              </div>
+              <p class="plan-description">Perfect for getting started</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Connect 1 brokerage account</li>
+              <li><i class="bi bi-check-circle"></i> Basic portfolio tracking</li>
+              <li><i class="bi bi-check-circle"></i> Weekly congressional trade alerts</li>
+              <li><i class="bi bi-check-circle"></i> Limited market data</li>
+              <li><i class="bi bi-x-circle"></i> Real-time alerts</li>
+              <li><i class="bi bi-x-circle"></i> Advanced analytics</li>
+              <li><i class="bi bi-x-circle"></i> API access</li>
+            </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Get Started Free</a>
+          </div>
+          <div class="pricing-card featured">
+            <div class="popular-badge">Most Popular</div>
+            <div class="plan-header">
+              <h3 class="plan-name">Pro</h3>
+              <div class="plan-price">
+                <span class="price monthly-price">$29</span>
+                <span class="price annual-price" style="display: none;">$23</span>
+                <span class="period">/month</span>
+              </div>
+              <p class="plan-description">For serious investors</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Unlimited brokerage accounts</li>
+              <li><i class="bi bi-check-circle"></i> Real-time congressional alerts</li>
+              <li><i class="bi bi-check-circle"></i> Advanced portfolio analytics</li>
+              <li><i class="bi bi-check-circle"></i> Institutional holdings (13F)</li>
+              <li><i class="bi bi-check-circle"></i> AI-powered insights</li>
+              <li><i class="bi bi-check-circle"></i> Lobbying & contracts data</li>
+              <li><i class="bi bi-check-circle"></i> Priority support</li>
+            </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-primary">Start Free Trial</a>
+            <p class="plan-note">14-day free trial • Cancel anytime</p>
+          </div>
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3 class="plan-name">Elite</h3>
+              <div class="plan-price">
+                <span class="price monthly-price">$99</span>
+                <span class="price annual-price" style="display: none;">$79</span>
+                <span class="period">/month</span>
+              </div>
+              <p class="plan-description">Maximum intelligence</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Everything in Pro</li>
+              <li><i class="bi bi-check-circle"></i> API access for automation</li>
+              <li><i class="bi bi-check-circle"></i> Custom watchlists (unlimited)</li>
+              <li><i class="bi bi-check-circle"></i> Advanced pattern detection</li>
+              <li><i class="bi bi-check-circle"></i> Dedicated account manager</li>
+              <li><i class="bi bi-check-circle"></i> Institutional research reports</li>
+              <li><i class="bi bi-check-circle"></i> White-glove onboarding</li>
+            </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Start Free Trial</a>
+            <p class="plan-note">14-day free trial • Cancel anytime</p>
+          </div>
+        </div>
+        <div class="enterprise-section">
+          <div class="enterprise-card">
+            <div class="enterprise-content">
+              <h3>Enterprise</h3>
+              <p>Custom solutions for institutions, advisors, and large teams</p>
+              <ul class="enterprise-features">
+                <li>Custom data integrations</li>
+                <li>Team collaboration tools</li>
+                <li>Dedicated infrastructure</li>
+                <li>SLA guarantees</li>
+              </ul>
+            </div>
+            <button type="button" class="plan-btn btn-primary" data-support-trigger>Contact Sales</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- FAQ Section (inlined so it works without fetch) -->
@@ -890,58 +1019,66 @@
         <h3>Still have questions?</h3>
         <p>Can't find the answer you're looking for? Our support team is here to help.</p>
         <div class="faq-footer-actions">
-          <button type="button" class="btn-primary" onclick="openContactForm()">Contact Support</button>
+          <button type="button" class="btn-primary footer-btn" data-support-trigger>
+            <i class="bi bi-envelope"></i>
+            Contact Support
+          </button>
         </div>
       </div>
     </div>
   </div>
 </section></div>
 
-    <!-- Contact Support Modal -->
-    <div class="contact-modal" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" aria-hidden="true">
-      <div class="modal-overlay" onclick="closeContactForm()" aria-hidden="true"></div>
-      <div class="modal-content">
-        <button type="button" class="modal-close" onclick="closeContactForm()" aria-label="Close modal">
-          <i class="bi bi-x" aria-hidden="true"></i>
+    <!-- Contact Support Dialog -->
+    <div class="support-dialog-overlay" id="supportDialog" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="support-dialog">
+        <button type="button" class="dialog-close" id="dialogClose" aria-label="Close">
+          <i class="bi bi-x"></i>
         </button>
-        <h3 id="contact-modal-title">Contact Support</h3>
-        <p>Send us a support request and we'll get back to you as soon as possible.</p>
-        <form class="contact-form" id="contactForm" onsubmit="return handleContactSubmit(event)">
+        <div class="dialog-header">
+          <div class="dialog-icon">
+            <i class="bi bi-headset"></i>
+          </div>
+          <h3>Contact Support</h3>
+          <p>We typically respond within 24 hours</p>
+        </div>
+        <form class="support-form" id="supportForm">
           <div class="form-group">
-            <label for="contact-name">Name</label>
-            <input type="text" id="contact-name" name="name" required placeholder="Your name" autocomplete="name">
+            <label for="supportName">Your Name</label>
+            <input type="text" id="supportName" name="name" placeholder="John Doe" required>
           </div>
           <div class="form-group">
-            <label for="contact-email">Email</label>
-            <input type="email" id="contact-email" name="email" required placeholder="your@email.com" autocomplete="email">
+            <label for="supportEmail">Email Address</label>
+            <input type="email" id="supportEmail" name="email" placeholder="you@example.com" required>
           </div>
           <div class="form-group">
-            <label for="contact-type">Request Type</label>
-            <select id="contact-type" name="type" required>
+            <label for="supportCategory">Category</label>
+            <select id="supportCategory" name="category" required>
               <option value="">Select a category</option>
-              <option value="Technical Issue">Technical Issue</option>
-              <option value="Billing">Billing</option>
-              <option value="Account">Account</option>
-              <option value="Feature Request">Feature Request</option>
-              <option value="General Inquiry">General Inquiry</option>
+              <option value="account">Account & Billing</option>
+              <option value="technical">Technical Issue</option>
+              <option value="data">Data & Accuracy</option>
+              <option value="feature">Feature Request</option>
+              <option value="general">General Question</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="contact-subject">Subject</label>
-            <input type="text" id="contact-subject" name="subject" required placeholder="Brief summary of your request">
+            <label for="supportMessage">Your Message</label>
+            <textarea id="supportMessage" name="message" rows="6" placeholder="Describe your question or issue in detail..." required></textarea>
           </div>
-          <div class="form-group">
-            <label for="contact-message">Message</label>
-            <textarea id="contact-message" name="message" required rows="6" placeholder="Please provide as much detail as possible so we can assist you quickly."></textarea>
-          </div>
-          <button type="submit" class="btn-primary btn-full">
-            <span>Send Support Request</span>
-            <i class="bi bi-send" aria-hidden="true"></i>
+          <button type="submit" class="support-submit-btn">
+            <i class="bi bi-send"></i>
+            Send Message
           </button>
         </form>
-        <p class="contact-email-info">
-          Or email us directly at <a href="mailto:support@ezanafinance.com">support@ezanafinance.com</a>
-        </p>
+        <div class="support-success" id="supportSuccess" style="display: none;">
+          <div class="success-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <h3>Message Sent Successfully!</h3>
+          <p>Thank you for contacting us. We'll respond to your inquiry within 24 hours at the email address you provided.</p>
+          <button type="button" class="plan-btn btn-primary" id="supportDialogCloseBtn">Close</button>
+        </div>
       </div>
     </div>
 
