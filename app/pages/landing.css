@@ -1328,7 +1328,7 @@ body {
 .faq-section .faq-item {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
 }
@@ -1342,13 +1342,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
+    padding: 0.6rem 0.9rem;
     background: transparent;
     border: none;
     text-align: left;
     cursor: pointer;
     font-family: var(--font-sans);
-    font-size: 1.125rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--foreground);
     transition: all 0.3s ease;
@@ -1359,11 +1359,11 @@ body {
 }
 
 .faq-section .faq-icon {
-    font-size: 1.25rem;
+    font-size: 0.9rem;
     color: var(--muted-foreground);
     transition: transform 0.3s ease;
     flex-shrink: 0;
-    margin-left: 1rem;
+    margin-left: 0.6rem;
 }
 
 .faq-section .faq-item.active .faq-icon {
@@ -1375,17 +1375,17 @@ body {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease;
-    padding: 0 1.5rem;
+    padding: 0 1rem;
 }
 
 .faq-section .faq-item.active .faq-answer {
     max-height: 500px;
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1rem 1rem;
 }
 
 .faq-section .faq-answer p {
-    font-size: 1rem;
-    line-height: 1.7;
+    font-size: 0.8125rem;
+    line-height: 1.5;
     color: var(--muted-foreground);
     margin: 0;
 }
