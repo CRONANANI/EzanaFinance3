@@ -1277,25 +1277,38 @@ body {
 .enterprise-section { max-width: 1200px; margin: 0 auto; }
 
 .enterprise-card {
-    background: linear-gradient(135deg, var(--primary), #059669);
+    background: var(--card);
+    border: 2px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 3rem;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 3rem;
+    gap: 2rem;
+    transition: all 0.3s ease;
+}
+
+.enterprise-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-2xl);
+}
+
+.enterprise-content {
+    text-align: center;
+    width: 100%;
 }
 
 .enterprise-content h3 {
     font-size: 2rem;
     font-weight: 700;
-    color: white;
+    color: var(--foreground);
     margin-bottom: 1rem;
 }
 
 .enterprise-content p {
     font-size: 1.125rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--muted-foreground);
     margin-bottom: 1.5rem;
 }
 
@@ -1306,27 +1319,32 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
+    justify-items: center;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .enterprise-features li {
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--foreground);
     font-size: 0.9375rem;
 }
 
 .enterprise-features li::before {
     content: '✓ ';
     font-weight: bold;
+    color: var(--primary);
 }
 
 .enterprise-card .plan-btn {
     width: auto;
     min-width: 200px;
-    background: white;
-    color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
 }
 
 .enterprise-card .plan-btn:hover {
-    transform: scale(1.05);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 @media (max-width: 1200px) {
@@ -1337,7 +1355,7 @@ body {
     .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
     .pricing-card.featured { transform: scale(1); }
     .pricing-card.featured:hover { transform: translateY(-8px); }
-    .enterprise-card { flex-direction: column; text-align: center; }
+    .enterprise-card { flex-direction: column; }
     .enterprise-features { grid-template-columns: 1fr; }
 }
 

@@ -37,9 +37,15 @@ function closeContactForm() {
 
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-        var dialog = document.getElementById('supportDialog');
-        if (dialog && dialog.classList.contains('active')) {
+        var supportDialog = document.getElementById('supportDialog');
+        var salesDialog = document.getElementById('salesDialog');
+        if (supportDialog && supportDialog.classList.contains('active')) {
             closeContactForm();
+        }
+        if (salesDialog && salesDialog.classList.contains('active')) {
+            salesDialog.classList.remove('active');
+            salesDialog.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
         }
     }
 });
@@ -166,6 +172,67 @@ function SupportDialog() {
         };
         var bodyText = 'Name: ' + data.name + '\nEmail: ' + data.email + '\nCategory: ' + data.category + '\n\nMessage:\n' + data.message;
         var mailto = 'mailto:support@ezana.world?subject=' + encodeURIComponent('Support: ' + data.category) + '&body=' + encodeURIComponent(bodyText);
+        window.location.href = mailto;
+        form.style.display = 'none';
+        if (successEl) successEl.style.display = 'block';
+    });
+}
+
+/** SalesDialog - Contact Sales modal (Enterprise) */
+function SalesDialog() {
+    var dialog = document.getElementById('salesDialog');
+    var form = document.getElementById('salesForm');
+    var successEl = document.getElementById('salesSuccess');
+    var closeBtn = document.getElementById('salesDialogClose');
+    var closeBtn2 = document.getElementById('salesDialogCloseBtn');
+
+    if (!dialog || !form) return;
+
+    function open() {
+        dialog.classList.add('active');
+        dialog.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+    function close() {
+        dialog.classList.remove('active');
+        dialog.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        setTimeout(function () {
+            form.reset();
+            form.style.display = 'flex';
+            if (successEl) successEl.style.display = 'none';
+        }, 300);
+    }
+
+    document.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('[data-sales-trigger]')) {
+            e.preventDefault();
+            open();
+        }
+    });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (closeBtn2) closeBtn2.addEventListener('click', close);
+    dialog.addEventListener('click', function (e) {
+        if (e.target === dialog) close();
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var data = {
+            company: form.company.value,
+            name: form.name.value,
+            email: form.email.value,
+            phone: form.phone.value,
+            teamSize: form.teamSize.value,
+            useCase: form.useCase.value,
+            message: form.message.value
+        };
+        var bodyText = 'Company: ' + data.company + '\nContact: ' + data.name + '\nEmail: ' + data.email +
+            (data.phone ? '\nPhone: ' + data.phone : '') +
+            (data.teamSize ? '\nTeam Size: ' + data.teamSize : '') +
+            (data.useCase ? '\nUse Case: ' + data.useCase : '') +
+            '\n\nAdditional Details:\n' + (data.message || '(none)');
+        var mailto = 'mailto:sales@ezana.world?subject=' + encodeURIComponent('Enterprise Inquiry: ' + data.company) + '&body=' + encodeURIComponent(bodyText);
         window.location.href = mailto;
         form.style.display = 'none';
         if (successEl) successEl.style.display = 'block';
@@ -351,6 +418,7 @@ function initLanding() {
     if (document.getElementById('carouselTrack')) IntelligenceCarousel();
     if (document.querySelector('.pricing-toggle')) PricingToggle();
     SupportDialog();
+    SalesDialog();
 
     if (document.getElementById('antigravityCenterComponent')) {
         window.lastMouseY = 0;

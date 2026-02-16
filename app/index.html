@@ -568,7 +568,7 @@
                 <li>SLA guarantees</li>
               </ul>
             </div>
-            <button type="button" class="plan-btn btn-primary" data-support-trigger>Contact Sales</button>
+            <button type="button" class="plan-btn btn-primary" data-sales-trigger>Contact Sales</button>
           </div>
         </div>
       </div>
@@ -1056,6 +1056,77 @@
           <h3>Message Sent Successfully!</h3>
           <p>Thank you for contacting us. We'll respond to your inquiry within 24 hours at the email address you provided.</p>
           <button type="button" class="plan-btn btn-primary" id="supportDialogCloseBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Sales Dialog (Enterprise) -->
+    <div class="support-dialog-overlay" id="salesDialog" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="support-dialog">
+        <button type="button" class="dialog-close" id="salesDialogClose" aria-label="Close">
+          <i class="bi bi-x"></i>
+        </button>
+        <div class="dialog-header">
+          <div class="dialog-icon">
+            <i class="bi bi-building"></i>
+          </div>
+          <h3>Contact Sales</h3>
+          <p>You'll hear back from sales@ezana.world</p>
+        </div>
+        <form class="support-form" id="salesForm">
+          <div class="form-group">
+            <label for="salesCompany">Company / Organization</label>
+            <input type="text" id="salesCompany" name="company" placeholder="Acme Corp" required>
+          </div>
+          <div class="form-group">
+            <label for="salesName">Contact Name</label>
+            <input type="text" id="salesName" name="name" placeholder="Jane Smith" required>
+          </div>
+          <div class="form-group">
+            <label for="salesEmail">Email Address</label>
+            <input type="email" id="salesEmail" name="email" placeholder="jane@company.com" required>
+          </div>
+          <div class="form-group">
+            <label for="salesPhone">Phone (optional)</label>
+            <input type="tel" id="salesPhone" name="phone" placeholder="+1 (555) 123-4567">
+          </div>
+          <div class="form-group">
+            <label for="salesTeamSize">Team Size / Seats</label>
+            <select id="salesTeamSize" name="teamSize">
+              <option value="">Select...</option>
+              <option value="1-10">1-10 users</option>
+              <option value="11-50">11-50 users</option>
+              <option value="51-200">51-200 users</option>
+              <option value="200+">200+ users</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="salesUseCase">Use Case / Organization Type</label>
+            <select id="salesUseCase" name="useCase">
+              <option value="">Select...</option>
+              <option value="institution">Financial institution</option>
+              <option value="advisor">Advisory firm</option>
+              <option value="hedge">Hedge fund / Asset manager</option>
+              <option value="family-office">Family office</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="salesMessage">Additional Details</label>
+            <textarea id="salesMessage" name="message" rows="5" placeholder="Describe your needs, timeline, and any specific requirements..."></textarea>
+          </div>
+          <button type="submit" class="support-submit-btn">
+            <i class="bi bi-send"></i>
+            Submit Inquiry
+          </button>
+        </form>
+        <div class="support-success" id="salesSuccess" style="display: none;">
+          <div class="success-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <h3>Inquiry Submitted!</h3>
+          <p>Thank you for your interest. Our sales team will contact you within 24 hours at the email address you provided.</p>
+          <button type="button" class="plan-btn btn-primary" id="salesDialogCloseBtn">Close</button>
         </div>
       </div>
     </div>
