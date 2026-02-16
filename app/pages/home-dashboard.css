@@ -865,21 +865,42 @@ body.dashboard-page .notifications-empty {
   cursor: pointer;
 }
 
-/* Allocation chart in main chart section (when Allocation carousel metric selected) */
+/* Allocation chart in main chart section (when Allocation carousel metric selected)
+   Matches .chart-container.compact dimensions (350px height) for consistent card sizing */
 .allocation-chart-view {
-  min-height: 380px;
+  height: 350px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem 0;
+  justify-content: center;
+  background: rgba(17, 24, 39, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.allocation-chart-view .allocation-chart-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.allocation-chart-view .allocation-legend {
+  margin-top: 0.75rem;
+  flex-shrink: 0;
 }
 
 .allocation-chart-container {
   position: relative;
   width: 100%;
   max-width: 400px;
-  margin: 0 auto 2rem;
-  padding: 2rem 0;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .allocation-pie-chart {
@@ -1566,6 +1587,10 @@ body.light-mode .pie-slice.active {
   }
 
   .chart-container.compact {
+    height: 280px;
+  }
+
+  .allocation-chart-view {
     height: 280px;
   }
 
