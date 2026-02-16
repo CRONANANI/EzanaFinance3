@@ -341,6 +341,153 @@ body {
     transform: translateY(-2px);
 }
 
+/* Legacy Signup Component */
+.legacy-signup {
+    margin-top: 2.5rem;
+    width: 100%;
+    max-width: 520px;
+}
+
+.legacy-signup-inner {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.legacy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.15) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #10b981;
+    margin-bottom: 1rem;
+}
+
+.legacy-headline {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.legacy-subtext {
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+}
+
+.legacy-signup-form {
+    margin-bottom: 0.75rem;
+}
+
+.legacy-form-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.legacy-email-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.legacy-email-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.legacy-email-input:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.legacy-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.legacy-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.legacy-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.legacy-privacy {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.75rem 0 0 0;
+}
+
+.legacy-success {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 10px;
+    color: #10b981;
+    font-weight: 500;
+}
+
+.legacy-success i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.legacy-error {
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 10px;
+    color: #f87171;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 640px) {
+    .legacy-form-row {
+        flex-direction: column;
+    }
+    .legacy-email-input {
+        min-width: 100%;
+    }
+    .legacy-submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 .hero-title,
 .hero-tagline,
 .hero-subtitle {
