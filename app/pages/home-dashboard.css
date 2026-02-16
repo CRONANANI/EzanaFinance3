@@ -865,6 +865,15 @@ body.dashboard-page .notifications-empty {
   cursor: pointer;
 }
 
+/* Allocation chart in main chart section (when Allocation carousel metric selected) */
+.allocation-chart-view {
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 0;
+}
+
 .allocation-chart-container {
   position: relative;
   width: 100%;

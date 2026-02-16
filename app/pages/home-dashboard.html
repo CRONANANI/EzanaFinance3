@@ -147,14 +147,14 @@
 
       <!-- Main Content Grid -->
       <div class="dashboard-grid">
-        <!-- Main Chart (2/3 width) -->
+        <!-- Main Chart (2/3 width) - Line chart or Allocation pie when Allocation metric selected -->
         <section class="main-chart-section">
           <div class="chart-header compact">
             <div class="chart-title-area">
               <h2 class="chart-title" id="chartTitle">Total Portfolio Value</h2>
             </div>
-            <div class="chart-controls">
-              <div class="time-range-selector compact">
+            <div class="chart-controls" id="chartControls">
+              <div class="time-range-selector compact" id="timeRangeSelector">
                 <button class="time-btn" data-range="1D">1D</button>
                 <button class="time-btn" data-range="1W">1W</button>
                 <button class="time-btn" data-range="1M">1M</button>
@@ -162,10 +162,40 @@
                 <button class="time-btn" data-range="6M">6M</button>
                 <button class="time-btn" data-range="1Y">1Y</button>
               </div>
+              <select class="filter-select allocation-timeframe-select" id="allocationTimeframe" style="display: none;">
+                <option value="current">Current</option>
+                <option value="1m">1 Month Ago</option>
+                <option value="3m">3 Months Ago</option>
+                <option value="1y">1 Year Ago</option>
+              </select>
             </div>
           </div>
-          <div class="chart-container compact">
+          <div class="chart-container compact" id="lineChartContainer">
             <canvas id="mainChart"></canvas>
+          </div>
+          <!-- Asset Allocation pie chart - shown when Allocation metric card is selected in carousel -->
+          <div class="allocation-chart-view" id="allocationChartView" style="display: none;">
+            <div class="allocation-chart-container">
+              <svg id="allocationPieChart" viewBox="0 0 400 400" class="allocation-pie-chart">
+                <!-- Pie chart rendered by asset-allocation.js -->
+              </svg>
+              <div class="chart-center-label">
+                <div class="total-label">Total Portfolio</div>
+                <div class="total-value">$158,420</div>
+              </div>
+              <div class="sector-tooltip" id="sectorTooltip">
+                <div class="tooltip-header">
+                  <div class="sector-name"></div>
+                  <div class="sector-percentage"></div>
+                </div>
+                <div class="tooltip-body">
+                  <div class="sector-value"></div>
+                  <div class="holdings-title">Top 5 Holdings:</div>
+                  <div class="holdings-list"></div>
+                </div>
+              </div>
+            </div>
+            <div class="allocation-legend" id="allocationLegend"></div>
           </div>
         </section>
 
@@ -267,55 +297,6 @@
                   <div class="date">2 days ago</div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-        <!-- Asset Allocation Card -->
-        <section class="component-card">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-pie-chart-fill"></i>
-              Asset Allocation
-            </h3>
-            <div class="header-actions">
-              <select class="filter-select" id="allocationTimeframe">
-                <option value="current">Current</option>
-                <option value="1m">1 Month Ago</option>
-                <option value="3m">3 Months Ago</option>
-                <option value="1y">1 Year Ago</option>
-              </select>
-            </div>
-          </div>
-          <div class="card-body">
-            <!-- Pie Chart Container -->
-            <div class="allocation-chart-container">
-              <svg id="allocationPieChart" viewBox="0 0 400 400" class="allocation-pie-chart">
-                <!-- Pie chart will be rendered here by JavaScript -->
-              </svg>
-              
-              <!-- Center Total -->
-              <div class="chart-center-label">
-                <div class="total-label">Total Portfolio</div>
-                <div class="total-value">$158,420</div>
-              </div>
-              
-              <!-- Hover Tooltip -->
-              <div class="sector-tooltip" id="sectorTooltip">
-              <div class="tooltip-header">
-                <div class="sector-name"></div>
-                <div class="sector-percentage"></div>
-              </div>
-              <div class="tooltip-body">
-                <div class="sector-value"></div>
-                <div class="holdings-title">Top 5 Holdings:</div>
-                <div class="holdings-list"></div>
-              </div>
-            </div>
-            </div>
-            
-            <!-- Legend -->
-            <div class="allocation-legend" id="allocationLegend">
-              <!-- Legend items will be generated by JavaScript -->
             </div>
           </div>
         </section>

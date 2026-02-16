@@ -32,6 +32,7 @@ class PortfolioDashboard {
   init() {
     this.setupDashboardSidebarSync();
     this.setupCarousel();
+    this.toggleAllocationView(this.currentMetric === 'allocation');
     this.lazyLoadCharts();
     this.setupNewsTicker();
     this.setupQuickActions();
@@ -211,7 +212,19 @@ class PortfolioDashboard {
     this.metricCards?.forEach((card) => {
       card.classList.toggle('active', card.dataset.metric === metricType);
     });
+    this.toggleAllocationView(metricType === 'allocation');
     this.updateChart(metricType);
+  }
+
+  toggleAllocationView(isAllocation) {
+    const lineChart = document.getElementById('lineChartContainer');
+    const allocationView = document.getElementById('allocationChartView');
+    const timeRangeSelector = document.getElementById('timeRangeSelector');
+    const allocationTimeframe = document.getElementById('allocationTimeframe');
+    if (lineChart) lineChart.style.display = isAllocation ? 'none' : '';
+    if (allocationView) allocationView.style.display = isAllocation ? 'block' : 'none';
+    if (timeRangeSelector) timeRangeSelector.style.display = isAllocation ? 'none' : 'flex';
+    if (allocationTimeframe) allocationTimeframe.style.display = isAllocation ? 'block' : 'none';
   }
 
   lazyLoadCharts() {
