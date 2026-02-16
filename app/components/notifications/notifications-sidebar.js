@@ -228,19 +228,27 @@ class NotificationsSidebar {
                 ? `<div class="notification-item-actions">
                     <button type="button" class="action-btn-primary buy" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'buy')">Buy</button>
                     <button type="button" class="action-btn-primary sell" onclick="event.stopPropagation(); notificationsSidebar.quickTickerAction('${ticker}', 'sell')">Sell</button>
-                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')">Mark Read</button>
-                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')">Dismiss</button>
                   </div>`
-                : `<div class="notification-item-actions">
-                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')">Mark Read</button>
-                    <button type="button" class="action-btn-secondary" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')">Dismiss</button>
-                  </div>`;
+                : '';
+            const cardActionsHtml = `
+                <div class="notification-card-actions">
+                    <button type="button" class="notification-card-action-btn" onclick="event.stopPropagation(); notificationsSidebar.markAsRead('${notification.id}')" title="Mark as read" aria-label="Mark as read">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                    <button type="button" class="notification-card-action-btn" onclick="event.stopPropagation(); notificationsSidebar.removeNotification('${notification.id}')" title="Dismiss" aria-label="Dismiss">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            `;
             return `
                 <div class="notification-item ${unreadClass}" data-id="${notification.id}">
                     ${unreadBadge}
+                    ${cardActionsHtml}
                     <div class="notification-content" onclick="notificationsSidebar.markAsRead('${notification.id}')">
-                        <div class="notification-icon ${notification.type}">
-                            <i class="bi ${notification.icon}"></i>
+                        <div class="notification-icon-wrap">
+                            <div class="notification-icon ${notification.type}">
+                                <i class="bi ${notification.icon}"></i>
+                            </div>
                         </div>
                         <div class="notification-text">
                             <div class="notification-meta-top">
