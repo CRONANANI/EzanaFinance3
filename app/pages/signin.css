@@ -104,11 +104,22 @@
   background: rgba(96, 1, 210, 0.05);
 }
 
-.form-options {
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.signin-form .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: -0.5rem 0 0.5rem 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0.25rem;
+  min-height: 2rem;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
 }
 
 .forgot-link {
