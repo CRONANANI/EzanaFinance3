@@ -17,8 +17,12 @@
 
   function showSuccess() {
     if (errorEl) { errorEl.hidden = true; errorEl.textContent = ''; }
+    var inner = form && form.closest('.legacy-signup-inner');
+    if (inner) {
+      var toHide = inner.querySelectorAll('.legacy-badge, .legacy-headline, .legacy-subtext, .legacy-signup-form');
+      toHide.forEach(function (el) { el.hidden = true; });
+    }
     if (successEl) successEl.hidden = false;
-    if (form) form.hidden = true;
     if (submitBtn) submitBtn.disabled = false;
   }
 
