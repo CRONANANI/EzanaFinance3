@@ -229,7 +229,7 @@
 
 /* Value at Risk (VaR) formula card – For the Quants */
 .reveal-var .reveal-formula {
-    font-family: ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
     color: #e2e8f0;
@@ -239,7 +239,7 @@
 .reveal-var .reveal-code-snippet {
     font-size: 8px;
     color: #64748b;
-    font-family: ui-monospace, monospace;
+    font-family: var(--font-mono);
 }
 
 @media (max-width: 768px) {

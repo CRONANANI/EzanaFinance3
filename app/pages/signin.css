@@ -55,6 +55,14 @@
   font-size: 1rem;
 }
 
+.google-signin-wrapper {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .social-signin {
   display: flex;
   flex-direction: column;

@@ -120,6 +120,20 @@ class ApiService {
     }
 
     // Authentication methods
+    async googleLogin(credential, email, name, picture, emailVerified) {
+        return await this.request('/auth/google', {
+            method: 'POST',
+            body: JSON.stringify({
+                credential,
+                email,
+                name,
+                picture,
+                email_verified: emailVerified
+            }),
+            includeAuth: false
+        });
+    }
+
     async login(email, password) {
         const response = await this.request('/auth/login', {
             method: 'POST',
@@ -172,6 +186,32 @@ class ApiService {
     // Watchlist methods
     async getWatchlist() {
         return await this.request('/watchlist');
+    }
+
+    async getMarketQuotes(symbols = []) {
+        const symbolList = Array.isArray(symbols) ? symbols : [symbols];
+        const query = encodeURIComponent(symbolList.filter(Boolean).join(','));
+        return await this.request(`/market/quotes?symbols=${query}`, { includeAuth: false });
+    }
+
+    // Quiver Quantitative - congressional trading and government data
+    async getCongressionalTrading(limit = 100) {
+        return await this.request(`/quiver/congressional-trading?limit=${limit}`, { includeAuth: false });
+    }
+    async getGovernmentContracts(limit = 50) {
+        return await this.request(`/quiver/government-contracts?limit=${limit}`, { includeAuth: false });
+    }
+    async getHouseTrading(limit = 50) {
+        return await this.request(`/quiver/house-trading?limit=${limit}`, { includeAuth: false });
+    }
+    async getSenatorTrading(limit = 50) {
+        return await this.request(`/quiver/senator-trading?limit=${limit}`, { includeAuth: false });
+    }
+    async getLobbyingActivity(limit = 50) {
+        return await this.request(`/quiver/lobbying-activity?limit=${limit}`, { includeAuth: false });
+    }
+    async getPatentMomentum(limit = 50) {
+        return await this.request(`/quiver/patent-momentum?limit=${limit}`, { includeAuth: false });
     }
 
     // Plaid integration methods

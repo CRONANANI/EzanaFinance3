@@ -16,38 +16,72 @@ class QuiverAPIClient:
         self.base_url = QUIVER_API_BASE
         self.api_key = QUIVER_API_KEY
         self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Token {self.api_key}",
             "Accept": "application/json"
         }
 
     async def make_request(self, endpoint: str, params: dict = None):
-        """Make a request to the Quiver API"""
+        """Make a request to the Quiver API (uses Token auth per Quiver docs)"""
         async with httpx.AsyncClient() as client:
             try:
+                url = f"{self.base_url}/{endpoint}"
                 response = await client.get(
-                    f"{self.base_url}/{endpoint}",
+                    url,
                     headers=self.headers,
                     params=params or {},
                     timeout=30.0
                 )
                 if response.status_code == 200:
-                    return response.json()
-                else:
-                    # Return mock data if API fails
-                    return self.get_mock_data(endpoint)
-            except Exception as e:
-                # Return mock data if request fails
+                    data = response.json()
+                    if isinstance(data, str) and "Upgrade your subscription" in data:
+                        return self.get_mock_data(endpoint)
+                    return data
                 return self.get_mock_data(endpoint)
+            except Exception:
+                return self.get_mock_data(endpoint)
+
+    @staticmethod
+    def _normalize_congress_trade(raw: dict, idx: int) -> dict:
+        """Map Quiver fields to frontend format."""
+        date_val = raw.get("TransactionDate") or raw.get("ReportDate") or raw.get("tradeDate") or raw.get("Date") or ""
+        if hasattr(date_val, "isoformat"):
+            date_val = date_val.isoformat()[:10] if date_val else ""
+        elif isinstance(date_val, str) and len(date_val) >= 10:
+            date_val = date_val[:10]
+        member = raw.get("Representative") or raw.get("congressPersonName") or raw.get("member") or ""
+        company = raw.get("Company") or raw.get("companyName") or raw.get("company") or ""
+        ticker = raw.get("Ticker") or raw.get("ticker") or ""
+        trade_type = (raw.get("Transaction") or raw.get("tradeType") or raw.get("Type") or "buy").lower()
+        if "sell" in str(trade_type) or trade_type == "s":
+            trade_type = "sell"
+        else:
+            trade_type = "buy"
+        amount_raw = raw.get("Amount") or raw.get("amount") or raw.get("Value") or 0
+        amount = int(amount_raw) if amount_raw else 0
+        party = raw.get("Party") or raw.get("party") or ""
+        chamber = raw.get("Chamber") or raw.get("chamber") or ""
+        return {
+            "id": idx,
+            "date": date_val,
+            "member": member,
+            "party": party,
+            "chamber": chamber,
+            "company": company,
+            "ticker": ticker,
+            "tradeType": trade_type,
+            "amount": amount,
+            "isFollowing": False
+        }
 
     def get_mock_data(self, endpoint: str):
         """Generate mock data when API is unavailable"""
         if "congresstrading" in endpoint or "congressional-trading" in endpoint:
             return self.generate_mock_congress_trading()
-        elif "government-contracts" in endpoint:
+        elif "govcontracts" in endpoint or "government-contracts" in endpoint:
             return self.generate_mock_government_contracts()
-        elif "house-trading" in endpoint:
+        elif "housetrading" in endpoint or "house-trading" in endpoint:
             return self.generate_mock_house_trading()
-        elif "senator-trading" in endpoint:
+        elif "senatetrading" in endpoint or "senator-trading" in endpoint:
             return self.generate_mock_senator_trading()
         elif "lobbying" in endpoint:
             return self.generate_mock_lobbying()
@@ -196,71 +230,85 @@ class QuiverAPIClient:
 # Initialize the client
 quiver_client = QuiverAPIClient()
 
+def _normalize_congress_list(raw_list: list) -> list:
+    """Normalize Quiver congress trading response for frontend."""
+    if not isinstance(raw_list, list):
+        return []
+    return [QuiverAPIClient._normalize_congress_trade(r, i + 1) for i, r in enumerate(raw_list)]
+
+
 @router.get("/congressional-trading")
-async def get_congressional_trading(limit: int = Query(100, le=200)):
-    """Get congressional trading data"""
+async def get_congressional_trading(limit: int = Query(100, le=500)):
+    """Get live congressional trading data from Quiver API"""
     try:
-        data = await quiver_client.make_request("bulk/congresstrading")
-        if isinstance(data, list):
-            return data[:limit]
-        return data
-    except Exception as e:
-        # Return mock data as fallback
-        return quiver_client.generate_mock_congress_trading()[:limit]
+        data = await quiver_client.make_request("live/congresstrading")
+        raw_list = data if isinstance(data, list) else []
+        if not raw_list:
+            raw_list = quiver_client.generate_mock_congress_trading()
+        normalized = _normalize_congress_list(raw_list[:limit])
+        return {"trades": normalized, "total": len(normalized)}
+    except Exception:
+        raw = quiver_client.generate_mock_congress_trading()[:limit]
+        return {"trades": _normalize_congress_list(raw), "total": len(raw)}
+
 
 @router.get("/government-contracts")
 async def get_government_contracts(limit: int = Query(50, le=100)):
-    """Get government contracts data"""
+    """Get government contracts data from Quiver API"""
     try:
-        data = await quiver_client.make_request("government-contracts")
+        data = await quiver_client.make_request("live/govcontractsall")
         if isinstance(data, list):
             return data[:limit]
-        return data
-    except Exception as e:
+        return quiver_client.generate_mock_government_contracts()[:limit]
+    except Exception:
         return quiver_client.generate_mock_government_contracts()[:limit]
 
+
 @router.get("/house-trading")
-async def get_house_trading(limit: int = Query(50, le=100)):
-    """Get House trading data"""
+async def get_house_trading(limit: int = Query(50, le=200)):
+    """Get House of Representatives trading data from Quiver API"""
     try:
-        data = await quiver_client.make_request("house-trading")
+        data = await quiver_client.make_request("live/housetrading")
         if isinstance(data, list):
-            return data[:limit]
-        return data
-    except Exception as e:
-        return quiver_client.generate_mock_house_trading()[:limit]
+            return _normalize_congress_list(data[:limit])
+        return _normalize_congress_list(quiver_client.generate_mock_house_trading()[:limit])
+    except Exception:
+        return _normalize_congress_list(quiver_client.generate_mock_house_trading()[:limit])
+
 
 @router.get("/senator-trading")
-async def get_senator_trading(limit: int = Query(50, le=100)):
-    """Get Senator trading data"""
+async def get_senator_trading(limit: int = Query(50, le=200)):
+    """Get Senate trading data from Quiver API"""
     try:
-        data = await quiver_client.make_request("senator-trading")
+        data = await quiver_client.make_request("live/senatetrading")
         if isinstance(data, list):
-            return data[:limit]
-        return data
-    except Exception as e:
-        return quiver_client.generate_mock_senator_trading()[:limit]
+            return _normalize_congress_list(data[:limit])
+        return _normalize_congress_list(quiver_client.generate_mock_senator_trading()[:limit])
+    except Exception:
+        return _normalize_congress_list(quiver_client.generate_mock_senator_trading()[:limit])
+
 
 @router.get("/lobbying-activity")
 async def get_lobbying_activity(limit: int = Query(50, le=100)):
-    """Get lobbying activity data"""
+    """Get lobbying activity data from Quiver API"""
     try:
-        data = await quiver_client.make_request("lobbying-activity")
+        data = await quiver_client.make_request("live/lobbying")
         if isinstance(data, list):
             return data[:limit]
-        return data
-    except Exception as e:
         return quiver_client.generate_mock_lobbying()[:limit]
+    except Exception:
+        return quiver_client.generate_mock_lobbying()[:limit]
+
 
 @router.get("/patent-momentum")
 async def get_patent_momentum(limit: int = Query(50, le=100)):
-    """Get patent momentum data"""
+    """Get patent momentum data from Quiver API"""
     try:
-        data = await quiver_client.make_request("patent-momentum")
+        data = await quiver_client.make_request("live/allpatents")
         if isinstance(data, list):
             return data[:limit]
-        return data
-    except Exception as e:
+        return quiver_client.generate_mock_patents()[:limit]
+    except Exception:
         return quiver_client.generate_mock_patents()[:limit]
 
 @router.get("/congressperson/{name}/portfolio")

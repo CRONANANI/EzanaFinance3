@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize all functionality
 function initializeInsideTheCapitol() {
     loadCongressTradingData();
+    loadGovernmentContractsData();
+    loadHouseTradingData();
+    loadSenatorTradingData();
+    loadLobbyingActivityData();
+    loadPatentMomentumData();
     setupEventListeners();
     updateSummaryStats();
     startDataRefreshInterval();
@@ -78,44 +83,135 @@ function toggleCongressTradingExpansion() {
     }
 }
 
-// Load congressional trading data
+// Load congressional trading data from Quiver API
 async function loadCongressTradingData() {
     if (congressTradingData.isLoading) return;
-    
+
     congressTradingData.isLoading = true;
     updateLoadingState(true);
-    
+
     try {
-        // Simulate API call - replace with actual API endpoint
-        const response = await fetch('/api/congress-trading', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            congressTradingData.trades = data.trades || [];
-            congressTradingData.totalTrades = data.total || 0;
+        let data;
+        if (window.apiService && typeof window.apiService.getCongressionalTrading === 'function') {
+            data = await window.apiService.getCongressionalTrading(200);
         } else {
-            // Fallback to mock data
-            congressTradingData.trades = generateMockCongressData();
-            congressTradingData.totalTrades = congressTradingData.trades.length;
+            const url = (window.EZANA_API_BASE || '') + '/api/quiver/congressional-trading?limit=200';
+            const res = await fetch(url || '/api/quiver/congressional-trading?limit=200', { headers: { Accept: 'application/json' } });
+            data = res.ok ? await res.json() : { trades: [], total: 0 };
         }
-        
+
+        congressTradingData.trades = data.trades || [];
+        congressTradingData.totalTrades = data.total ?? congressTradingData.trades.length;
+
+        updateCongressApiStatus(congressTradingData.trades.length > 0 || data.total > 0);
         updateCongressTradingDisplay();
         updateSummaryStats();
-        
     } catch (error) {
         console.error('Error loading congressional trading data:', error);
-        // Use mock data as fallback
         congressTradingData.trades = generateMockCongressData();
         congressTradingData.totalTrades = congressTradingData.trades.length;
+        updateCongressApiStatus(false);
         updateCongressTradingDisplay();
     } finally {
         congressTradingData.isLoading = false;
         updateLoadingState(false);
+    }
+}
+
+function updateCongressApiStatus(connected) {
+    const el = document.getElementById('congressApiStatus');
+    if (el) {
+        el.classList.toggle('connected', connected);
+        el.classList.toggle('disconnected', !connected);
+        el.title = connected ? 'API Connected' : 'Using fallback data';
+    }
+}
+
+async function loadGovernmentContractsData() {
+    try {
+        const data = window.apiService?.getGovernmentContracts
+            ? await window.apiService.getGovernmentContracts(100)
+            : await fetch('/api/quiver/government-contracts?limit=100').then(r => r.json()).catch(() => []);
+        const list = Array.isArray(data) ? data : [];
+        const total = list.length;
+        const totalVal = list.reduce((s, c) => s + (c.contractValue || c.ContractValue || 0), 0);
+        const companies = new Set(list.map(c => c.ticker || c.Ticker || c.companyName || '')).size;
+        setCardStats('contracts', { total, totalVal, companies }, document.getElementById('contractsApiStatus'));
+    } catch (e) { setCardStats('contracts', null, document.getElementById('contractsApiStatus')); }
+}
+
+async function loadHouseTradingData() {
+    try {
+        const data = await (window.apiService?.getHouseTrading?.(100) || fetch('/api/quiver/house-trading?limit=100').then(r => r.json()).catch(() => []));
+        const list = Array.isArray(data) ? data : [];
+        const total = list.length;
+        const totalVol = list.reduce((s, t) => s + (t.amount || 0), 0);
+        const traders = new Set(list.map(t => t.member)).size;
+        setCardStats('house', { total, totalVol, traders }, document.getElementById('houseApiStatus'));
+    } catch (e) { setCardStats('house', null, document.getElementById('houseApiStatus')); }
+}
+
+async function loadSenatorTradingData() {
+    try {
+        const data = await (window.apiService?.getSenatorTrading?.(100) || fetch('/api/quiver/senator-trading?limit=100').then(r => r.json()).catch(() => []));
+        const list = Array.isArray(data) ? data : [];
+        const total = list.length;
+        const totalVol = list.reduce((s, t) => s + (t.amount || 0), 0);
+        const traders = new Set(list.map(t => t.member)).size;
+        setCardStats('senator', { total, totalVol, traders }, document.getElementById('senatorApiStatus'));
+    } catch (e) { setCardStats('senator', null, document.getElementById('senatorApiStatus')); }
+}
+
+async function loadLobbyingActivityData() {
+    try {
+        const data = await (window.apiService?.getLobbyingActivity?.(100) || fetch('/api/quiver/lobbying-activity?limit=100').then(r => r.json()).catch(() => []));
+        const list = Array.isArray(data) ? data : [];
+        const reports = list.length;
+        const spending = list.reduce((s, l) => s + (l.amount || l.Amount || 0), 0);
+        const firms = new Set(list.map(l => l.firmName || l.FirmName || '')).size;
+        setCardStats('lobbying', { reports, spending, firms }, document.getElementById('lobbyingApiStatus'));
+    } catch (e) { setCardStats('lobbying', null, document.getElementById('lobbyingApiStatus')); }
+}
+
+async function loadPatentMomentumData() {
+    try {
+        const data = await (window.apiService?.getPatentMomentum?.(100) || fetch('/api/quiver/patent-momentum?limit=100').then(r => r.json()).catch(() => []));
+        const list = Array.isArray(data) ? data : [];
+        const total = list.length;
+        const active = list.filter(p => (p.status || p.Status) === 'Active').length;
+        const pending = list.filter(p => (p.status || p.Status) === 'Pending').length;
+        setCardStats('patents', { total, active, pending }, document.getElementById('patentsApiStatus'));
+    } catch (e) { setCardStats('patents', null, document.getElementById('patentsApiStatus')); }
+}
+
+function setCardStats(card, stats, statusEl) {
+    const fmt = (n) => n >= 1e9 ? (n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(n);
+    const now = new Date().toLocaleTimeString();
+    if (card === 'contracts' && stats) {
+        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        el('contractsTotal', stats.total); el('contractsValue', '$' + fmt(stats.totalVal)); el('contractsCompanies', stats.companies);
+        el('contractsLastUpdated', now);
+    } else if (card === 'house' && stats) {
+        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        el('houseTotalTrades', stats.total); el('houseTotalVolume', '$' + fmt(stats.totalVol)); el('houseActiveTraders', stats.traders);
+        el('houseLastUpdated', now);
+    } else if (card === 'senator' && stats) {
+        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        el('senatorTotalTrades', stats.total); el('senatorTotalVolume', '$' + fmt(stats.totalVol)); el('senatorActiveTraders', stats.traders);
+        el('senatorLastUpdated', now);
+    } else if (card === 'lobbying' && stats) {
+        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        el('lobbyingReports', stats.reports); el('lobbyingSpending', '$' + fmt(stats.spending)); el('lobbyingFirms', stats.firms);
+        el('lobbyingLastUpdated', now);
+    } else if (card === 'patents' && stats) {
+        const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        el('patentsTotal', stats.total); el('patentsActive', stats.active); el('patentsPending', stats.pending);
+        el('patentsLastUpdated', now);
+    }
+    if (statusEl) {
+        statusEl.classList.toggle('connected', !!stats);
+        statusEl.classList.toggle('disconnected', !stats);
+        statusEl.title = stats ? 'Live data from Quiver' : 'Fallback data';
     }
 }
 

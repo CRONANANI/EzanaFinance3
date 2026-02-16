@@ -79,14 +79,14 @@
       
       <!-- Market Overview Stats -->
       <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" data-symbol="SPY">
           <div class="stat-icon market">
             <i class="bi bi-graph-up-arrow"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">4,783.45</div>
+            <div class="stat-value" id="marketSp500Value">4,783.45</div>
             <div class="stat-label">S&P 500</div>
-            <div class="stat-change positive">+1.2% Today</div>
+            <div class="stat-change positive" id="marketSp500Change">+1.2% Today</div>
           </div>
         </div>
         
@@ -95,9 +95,9 @@
             <i class="bi bi-bar-chart"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">$847B</div>
+            <div class="stat-value" id="marketVolumeValue">$847B</div>
             <div class="stat-label">Daily Volume</div>
-            <div class="stat-change positive">+8% vs Avg</div>
+            <div class="stat-change positive" id="marketVolumeChange">+8% vs Avg</div>
           </div>
         </div>
         
@@ -106,9 +106,9 @@
             <i class="bi bi-speedometer2"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">62</div>
+            <div class="stat-value" id="marketSentimentValue">62</div>
             <div class="stat-label">Market Sentiment</div>
-            <div class="stat-change">Bullish</div>
+            <div class="stat-change" id="marketSentimentChange">Bullish</div>
           </div>
         </div>
         
@@ -117,9 +117,9 @@
             <i class="bi bi-trophy"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">+18.4%</div>
-            <div class="stat-label">YTD Return</div>
-            <div class="stat-change positive">vs +12% 2025</div>
+            <div class="stat-value" id="marketTopMoverValue">+18.4%</div>
+            <div class="stat-label">Top Mover</div>
+            <div class="stat-change positive" id="marketTopMoverChange">—</div>
           </div>
         </div>
       </div>
@@ -1368,6 +1368,7 @@
   
   <script src="../assets/js/theme-toggle.js"></script>
   <script src="../assets/js/finnhub-api.js"></script>
+  <script src="../js/api-service.js"></script>
   <script src="../assets/js/sidebar-toggle.js"></script>
   <script src="../components/navigation/load-nav.js"></script>
   <script src="../components/notifications/notifications-sidebar.js"></script>

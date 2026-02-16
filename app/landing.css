@@ -27,7 +27,7 @@
 
 /* Landing Page Specific Styles */
 #landing-page {
-    font-family: 'Lato', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
 }
 
 /* Hero Section Enhancements */

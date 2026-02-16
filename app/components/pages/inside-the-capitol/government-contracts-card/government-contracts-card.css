@@ -135,7 +135,7 @@
 }
 
 .government-contracts-value-currency {
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
 }
 
 /* Loading States */

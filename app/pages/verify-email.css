@@ -1,4 +1,4 @@
-.verify-page { font-family: Inter, sans-serif; background: #0f1419; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.verify-page { font-family: var(--font-sans); background: #0f1419; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
 .verify-container { width: 100%; max-width: 440px; }
 .verify-card { background: rgba(17,24,39,0.6); border: 1px solid rgba(16,185,129,0.1); border-radius: 16px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
 .verify-header { text-align: center; margin-bottom: 2rem; }

@@ -9,6 +9,8 @@ python-dotenv==1.0.0
 pyodbc==5.0.1
 plaid-python==9.0.0
 requests==2.31.0
+httpx==0.25.2
+google-auth==2.23.0
 pandas==2.1.4
 numpy==1.25.2
 python-dateutil==2.8.2

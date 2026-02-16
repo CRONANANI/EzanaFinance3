@@ -1,13 +1,13 @@
 /* ============================================
    THEME VARIABLES - TWEAKCN + EZANA FINANCE
+   UI-Template Font System
    ============================================ */
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Source+Serif+4:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
-    /* Tweakcn Structure */
-    --font-sans: 'Open Sans', sans-serif;
-    --font-serif: 'Source Serif 4', serif;
-    --font-mono: 'IBM Plex Mono', monospace;
+    /* UI-Template Font Stack - System fonts, no web font requests */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
     --radius-sm: 0.5rem;
     --radius-md: 1rem;
@@ -155,9 +155,24 @@ body.light-mode {
   --text-secondary: #4b5563;
 }
 
-/* Apply fonts and base styles globally */
-body {
+/* .dark - same font stack (fonts consistent in dark mode) */
+.dark {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* App-wide default typography */
+html, body {
   font-family: var(--font-sans);
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+}
+
+/* Apply base styles globally */
+body {
   background: var(--background);
   color: var(--foreground);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -175,6 +190,4 @@ h4 { font-size: var(--font-lg); line-height: 1.5; }
 p { font-size: var(--font-base); line-height: 1.6; }
 small { font-size: var(--font-sm); line-height: 1.5; }
 
-code, pre {
-  font-family: var(--font-mono);
-}
+/* code, pre, kbd, samp already set above */

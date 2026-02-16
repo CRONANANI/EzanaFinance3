@@ -3,10 +3,6 @@
  * Handles authentication via email/password and social providers
  */
 
-const OAUTH_CONFIG = {
-  google: { clientId: window.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID' }
-};
-
 class SignInForm {
   constructor() {
     this.form = document.getElementById('signinForm');
@@ -62,43 +58,10 @@ class SignInForm {
   }
 
   initSocialButtons() {
-    const googleBtn = document.getElementById('googleSignInBtn');
-    if (googleBtn) googleBtn.addEventListener('click', () => this.signInWithGoogle());
     const msBtn = document.getElementById('microsoftSignInBtn');
     if (msBtn) msBtn.addEventListener('click', () => this.signInWithMicrosoft());
     const yahooBtn = document.getElementById('yahooSignInBtn');
     if (yahooBtn) yahooBtn.addEventListener('click', () => this.signInWithYahoo());
-  }
-
-  signInWithGoogle() {
-    if (typeof google === 'undefined') {
-      this.showToast('Google sign-in not loaded. Refresh and try again.', 'error');
-      return;
-    }
-    if (OAUTH_CONFIG.google.clientId === 'YOUR_GOOGLE_CLIENT_ID') {
-      this.showToast('Configure Google Client ID to enable Google sign-in.', 'error');
-      return;
-    }
-    try {
-      const tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: OAUTH_CONFIG.google.clientId,
-        scope: 'openid email profile',
-        callback: async (tokenResponse) => {
-          try {
-            const res = await fetch(
-              `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
-            );
-            const userInfo = await res.json();
-            this.processOAuthSignIn({ provider: 'google', ...userInfo });
-          } catch (e) {
-            this.showToast('Failed to sign in with Google.', 'error');
-          }
-        }
-      });
-      tokenClient.requestAccessToken();
-    } catch (e) {
-      this.showToast('Google sign-in failed.', 'error');
-    }
   }
 
   signInWithMicrosoft() {
@@ -107,15 +70,6 @@ class SignInForm {
 
   signInWithYahoo() {
     this.showToast('Yahoo sign-in would be initiated here.', 'info');
-  }
-
-  processOAuthSignIn(userData) {
-    this.showToast('Signed in successfully! Redirecting...', 'success');
-    localStorage.setItem('userData', JSON.stringify(userData));
-    localStorage.setItem('isAuthenticated', 'true');
-    setTimeout(() => {
-      window.location.href = 'home-dashboard.html';
-    }, 1000);
   }
 
   attachEventListeners() {

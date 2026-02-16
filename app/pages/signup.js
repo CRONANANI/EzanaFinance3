@@ -3,13 +3,6 @@
  * Handles form validation, submission, email confirmation, and Google OAuth
  */
 
-// OAuth config - Replace with your Google Client ID from Google Cloud Console
-const OAUTH_CONFIG = {
-  google: {
-    clientId: window.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID'
-  }
-};
-
 class SignUpForm {
   constructor() {
     this.form = document.getElementById('signupForm');
@@ -48,7 +41,6 @@ class SignUpForm {
     this.attachEventListeners();
     this.setupPasswordRequirements();
     this.initParticleCanvas();
-    this.initGoogleOAuth();
   }
 
   attachEventListeners() {
@@ -106,9 +98,7 @@ class SignUpForm {
       }
     });
 
-    if (this.googleSignUpBtn) {
-      this.googleSignUpBtn.addEventListener('click', () => this.signUpWithGoogle());
-    }
+    /* Google sign-up handled by google-auth.js */
     const yahooBtn = document.getElementById('yahooSignUpBtn');
     if (yahooBtn) {
       yahooBtn.addEventListener('click', () => this.signUpWithYahoo());
@@ -167,127 +157,6 @@ class SignUpForm {
     resize();
     window.addEventListener('resize', resize);
     animate();
-  }
-
-  initGoogleOAuth() {
-    if (typeof google === 'undefined' || OAUTH_CONFIG.google.clientId === 'YOUR_GOOGLE_CLIENT_ID') {
-      return;
-    }
-
-    try {
-      google.accounts.id.initialize({
-        client_id: OAUTH_CONFIG.google.clientId,
-        callback: (response) => this.handleGoogleCredential(response),
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
-    } catch (e) {
-      console.warn('Google OAuth init:', e);
-    }
-  }
-
-  signUpWithGoogle() {
-    if (typeof google === 'undefined') {
-      this.showToast('Google sign-in not loaded. Refresh and try again.', 'error');
-      return;
-    }
-
-    if (OAUTH_CONFIG.google.clientId === 'YOUR_GOOGLE_CLIENT_ID') {
-      this.showToast('Configure Google Client ID in signup.js to enable Google sign-up.', 'error');
-      return;
-    }
-
-    const btn = this.googleSignUpBtn;
-    if (btn) {
-      btn.classList.add('loading');
-      btn.disabled = true;
-      const origHTML = btn.innerHTML;
-      btn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Connecting...';
-    }
-
-    try {
-      this._googleResetTimeout = setTimeout(() => this.resetGoogleButton(btn), 60000);
-      google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          const tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: OAUTH_CONFIG.google.clientId,
-            scope: 'openid email profile',
-            callback: (tokenResponse) => {
-              clearTimeout(this._googleResetTimeout);
-              this.handleGoogleToken(tokenResponse, btn);
-            }
-          });
-          tokenClient.requestAccessToken();
-        } else {
-          clearTimeout(this._googleResetTimeout);
-        }
-      });
-    } catch (e) {
-      console.error('Google OAuth error:', e);
-      this.showToast('Failed to sign in with Google. Try again.', 'error');
-      this.resetGoogleButton(btn);
-    }
-  }
-
-  handleGoogleCredential(response) {
-    clearTimeout(this._googleResetTimeout);
-    try {
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      const userData = {
-        provider: 'google',
-        id: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture,
-        verified: payload.email_verified
-      };
-      this.processOAuthSignUp(userData);
-    } catch (e) {
-      console.error('Google credential error:', e);
-      this.showToast('Failed to process Google sign-up.', 'error');
-    }
-    this.resetGoogleButton(this.googleSignUpBtn);
-  }
-
-  async handleGoogleToken(tokenResponse, btn) {
-    try {
-      const res = await fetch(
-        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
-      );
-      const userInfo = await res.json();
-      const userData = {
-        provider: 'google',
-        id: userInfo.sub,
-        email: userInfo.email,
-        name: userInfo.name,
-        picture: userInfo.picture,
-        verified: userInfo.email_verified
-      };
-      this.processOAuthSignUp(userData);
-    } catch (e) {
-      console.error('Google token error:', e);
-      this.showToast('Failed to get Google profile. Try again.', 'error');
-    }
-    this.resetGoogleButton(btn);
-  }
-
-  resetGoogleButton(btn) {
-    if (!btn) return;
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-google"></i> Google';
-  }
-
-  processOAuthSignUp(userData) {
-    this.showToast(`Signed up with Google! Redirecting...`, 'success');
-
-    localStorage.setItem('userData', JSON.stringify(userData));
-    localStorage.setItem('isAuthenticated', 'true');
-
-    setTimeout(() => {
-      const base = window.location.pathname.includes('pages') ? '' : 'pages/';
-      window.location.href = base + 'home-dashboard.html';
-    }, 1500);
   }
 
   validateFullName() {

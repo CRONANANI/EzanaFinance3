@@ -114,6 +114,34 @@ A comprehensive finance management API built with FastAPI.
 - Start/end dates, spent amount
 - User relationship
 
+## Market Data
+
+Live quotes are served via `/api/market/quotes?symbols=AAPL,MSFT,NVDA`. The endpoint:
+
+- Accepts comma-separated symbols
+- Validates and deduplicates symbols
+- Caches results in-memory with TTL from `MARKET_DATA_REFRESH_SECONDS` (default 5 seconds)
+- Returns normalized fields: `symbol`, `current_price`, `previous_close`, `change`, `change_percent`, `high`, `low`, `open`, `timestamp`
+- Supports partial success: `{ quotes: [...], errors: [...] }`
+- Never exposes the Finnhub API key to the client
+
+**Setup:** Add `FINNHUB_API_KEY` and optionally `MARKET_DATA_REFRESH_SECONDS` to `.env` (see `env_template.txt`).
+
+**Do I need my own server?** The existing FastAPI backend is enough for now. For higher scale (many concurrent users, lower latency), consider Redis for shared cache and a background worker or WebSocket for push updates.
+
+### Quiver Quantitative (Congressional Trading)
+
+Live congressional trading, government contracts, lobbying, and patent data from [Quiver Quantitative](https://www.quiverquant.com/). Add `QUIVER_API_KEY` to `.env` (see `env_template.txt`). Endpoints:
+
+- `GET /api/quiver/congressional-trading` – combined Congress trades
+- `GET /api/quiver/house-trading` – House of Representatives
+- `GET /api/quiver/senator-trading` – Senate
+- `GET /api/quiver/government-contracts` – gov contracts
+- `GET /api/quiver/lobbying-activity` – lobbying reports
+- `GET /api/quiver/patent-momentum` – patent filings
+
+Quiver uses `Authorization: Token <key>`; the key is never exposed to the frontend.
+
 ## Security
 
 - Passwords are hashed using bcrypt

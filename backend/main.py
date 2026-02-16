@@ -11,6 +11,8 @@ from database import get_db, engine, create_tables
 from models import Base
 from api_routes import router as api_router
 from routers.finnhub import router as finnhub_router
+from routers.market import router as market_router
+from routers.quiver import router as quiver_router
 
 # Load environment variables
 load_dotenv()
@@ -50,6 +52,8 @@ security = HTTPBearer()
 # Include routers
 app.include_router(api_router, prefix="/api", tags=["user_management"])
 app.include_router(finnhub_router, prefix="/api", tags=["finnhub"])
+app.include_router(market_router, prefix="/api", tags=["market"])
+app.include_router(quiver_router, prefix="/api/quiver", tags=["quiver"])
 
 # Serve the main HTML file
 @app.get("/", response_class=HTMLResponse)

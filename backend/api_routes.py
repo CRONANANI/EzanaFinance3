@@ -4,15 +4,17 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
+import os
+import secrets
 
 from database import get_db, create_tables
 from auth import (
-    authenticate_user, create_access_token, create_refresh_token, 
+    authenticate_user, create_access_token, create_refresh_token,
     get_current_user, update_last_login, create_user_session
 )
 from user_service import UserService
 # from plaid_integration import plaid_service
-from models import User
+from models import User, UserProfile
 
 # Create router
 router = APIRouter()
@@ -33,6 +35,13 @@ class RegisterRequest(BaseModel):
     password: str
     first_name: str
     last_name: str
+
+class GoogleAuthRequest(BaseModel):
+    credential: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    picture: Optional[str] = None
+    email_verified: Optional[bool] = None
 
 class PlaidLinkTokenRequest(BaseModel):
     user_id: int
@@ -92,6 +101,87 @@ async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         refresh_token=refresh_token,
         user=user_profile
     )
+
+
+async def _verify_google_token(credential: str) -> Optional[Dict[str, Any]]:
+    """Verify Google ID token and return payload if valid."""
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+
+    client_id = os.getenv(
+        "GOOGLE_CLIENT_ID",
+        "296880553171-tshf9f77hcrdqjikged1e1adf766mkbt.apps.googleusercontent.com"
+    )
+    if not client_id or client_id.startswith("your-"):
+        return None
+    try:
+        payload = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            client_id
+        )
+        if payload.get("aud") != client_id:
+            return None
+        return payload
+    except Exception:
+        return None
+
+
+@router.post("/auth/google", response_model=LoginResponse)
+async def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)):
+    """Authenticate or register user via Google Sign-In."""
+    payload = await _verify_google_token(data.credential)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token"
+        )
+
+    email = payload.get("email")
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email not provided by Google"
+        )
+
+    google_id = payload.get("sub")
+    name = payload.get("name") or data.name or ""
+    parts = name.split(None, 1)
+    first_name = parts[0] if parts else "User"
+    last_name = parts[1] if len(parts) > 1 else ""
+
+    user = db.query(User).filter(User.google_id == google_id).first()
+    if not user:
+        user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name or first_name,
+            google_id=google_id,
+            is_active=True,
+            is_verified=bool(payload.get("email_verified", True))
+        )
+        user.set_password(secrets.token_urlsafe(32))
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        profile = UserProfile(user_id=user.id, profile_picture_url=payload.get("picture"))
+        db.add(profile)
+        db.commit()
+
+    update_last_login(user, db)
+    create_user_session(user.id, db)
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    user_service = UserService(db)
+    user_profile = user_service.get_user_profile(user.id)
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user=user_profile
+    )
+
 
 @router.post("/auth/register")
 async def register(register_data: RegisterRequest, db: Session = Depends(get_db)):

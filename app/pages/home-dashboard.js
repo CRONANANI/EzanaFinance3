@@ -36,28 +36,80 @@ class PortfolioDashboard {
     this.setupQuickActions();
     this.setupTimeRangeButtons();
     this.attachResizeListener();
-    this.loadFinnhubMetrics();
+    this.startMarketQuotesPolling();
   }
 
-  loadFinnhubMetrics() {
-    if (!window.FinnhubAPI) return;
-    window.FinnhubAPI.getQuotes('NVDA,SPY').then(data => {
-      if (!data || !data.quotes) return;
-      data.quotes.forEach(q => {
-        if (q.error) return;
-        const card = document.querySelector(`.metric-card[data-symbol="${q.symbol}"]`);
-        if (!card) return;
+  startMarketQuotesPolling() {
+    const POLL_SYMBOLS = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'SPY'];
+    const POLL_INTERVAL_MS = 5000;
+
+    const poll = () => {
+      if (!window.apiService) return;
+      window.apiService.getMarketQuotes(POLL_SYMBOLS).then((data) => {
+        if (!data || !data.quotes) return;
+        const bySymbol = {};
+        data.quotes.forEach((q) => { bySymbol[q.symbol] = q; });
+        this.updateMetricCards(bySymbol);
+        this.updateTopHoldings(bySymbol);
+      }).catch(() => {});
+    };
+
+    poll();
+    this.marketQuotesInterval = setInterval(poll, POLL_INTERVAL_MS);
+    window.addEventListener('beforeunload', () => this.stopMarketQuotesPolling());
+  }
+
+  stopMarketQuotesPolling() {
+    if (this.marketQuotesInterval) {
+      clearInterval(this.marketQuotesInterval);
+      this.marketQuotesInterval = null;
+    }
+  }
+
+  updateMetricCards(bySymbol) {
+    const card = document.querySelector('.metric-card[data-symbol="NVDA"]');
+    if (card) {
+      const q = bySymbol.NVDA;
+      if (q) {
         const valueEl = card.querySelector('.metric-value');
         const changeEl = card.querySelector('.metric-change');
-        if (valueEl) {
-          if (q.symbol === 'NVDA') valueEl.textContent = q.symbol + ' $' + (q.c != null ? q.c.toFixed(2) : '—');
-          else if (q.symbol === 'SPY' && q.c != null) valueEl.textContent = '$' + q.c.toFixed(2);
+        if (valueEl && q.current_price != null) valueEl.textContent = 'NVDA $' + q.current_price.toFixed(2);
+        if (changeEl && q.change_percent != null) {
+          changeEl.textContent = (q.change_percent >= 0 ? '+' : '') + q.change_percent.toFixed(2) + '%';
+          changeEl.className = 'metric-change ' + (q.change_percent >= 0 ? 'positive' : 'negative');
         }
-        if (changeEl && q.dp != null) {
-          changeEl.textContent = (q.dp >= 0 ? '+' : '') + q.dp.toFixed(2) + '%';
-          changeEl.className = 'metric-change ' + (q.dp >= 0 ? 'positive' : 'negative');
+      }
+    }
+    const marketCard = document.querySelector('.metric-card[data-symbol="SPY"]');
+    if (marketCard) {
+      const q = bySymbol.SPY;
+      if (q) {
+        const valueEl = marketCard.querySelector('.metric-value');
+        const changeEl = marketCard.querySelector('.metric-change');
+        if (valueEl && q.current_price != null) valueEl.textContent = '$' + q.current_price.toFixed(2);
+        if (changeEl && q.change_percent != null) {
+          changeEl.textContent = (q.change_percent >= 0 ? '+' : '') + q.change_percent.toFixed(2) + '%';
+          changeEl.className = 'metric-change ' + (q.change_percent >= 0 ? 'positive' : 'negative');
         }
-      });
+      }
+    }
+  }
+
+  updateTopHoldings(bySymbol) {
+    document.querySelectorAll('.holding-item[data-symbol]').forEach((item) => {
+      const q = bySymbol[item.dataset.symbol];
+      if (!q) return;
+      const shares = parseInt(item.dataset.shares || '0', 10);
+      const valueEl = item.querySelector('.holding-value-display');
+      const changeEl = item.querySelector('.holding-change-display');
+      if (valueEl && q.current_price != null) {
+        const val = shares ? (shares * q.current_price).toLocaleString(undefined, { maximumFractionDigits: 0 }) : q.current_price.toFixed(2);
+        valueEl.textContent = shares ? '$' + val : '$' + q.current_price.toFixed(2);
+      }
+      if (changeEl && q.change_percent != null) {
+        changeEl.textContent = (q.change_percent >= 0 ? '+' : '') + q.change_percent.toFixed(2) + '%';
+        changeEl.className = 'holding-change-display change ' + (q.change_percent >= 0 ? 'positive' : 'negative');
+      }
     });
   }
 

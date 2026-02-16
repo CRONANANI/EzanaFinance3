@@ -5,11 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up - Ezana Finance</title>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
@@ -17,6 +12,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- Styles -->
+  <link rel="stylesheet" href="../assets/css/theme-variables.css">
   <link rel="stylesheet" href="signup.css">
 </head>
 <body class="signup-page">
@@ -151,10 +147,7 @@
             <span>Or sign up with</span>
           </div>
           <div class="social-buttons">
-            <button type="button" class="social-btn google" id="googleSignUpBtn" aria-label="Sign up with Google">
-              <i class="bi bi-google"></i>
-              Google
-            </button>
+            <div id="googleSignUpBtn" class="google-signup-wrapper"></div>
             <button type="button" class="social-btn microsoft" id="microsoftSignUpBtn" aria-label="Sign up with Microsoft" disabled title="Coming soon">
               <i class="bi bi-microsoft"></i>
               Microsoft
@@ -202,6 +195,7 @@
   </div>
 
   <script src="../js/api-service.js"></script>
+  <script src="../assets/js/google-auth.js"></script>
   <script src="signup.js"></script>
 </body>
 </html>

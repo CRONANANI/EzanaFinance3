@@ -15,6 +15,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
+    google_id = Column(String(255), unique=True, index=True, nullable=True)
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -36,11 +37,13 @@ class User(Base):
     
     def check_password(self, password: str) -> bool:
         """Check if provided password matches stored hash"""
+        if not self.password_hash:
+            return False
         try:
             salt, stored_hash = self.password_hash.split(':')
             password_hash = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 100000)
             return password_hash.hex() == stored_hash
-        except:
+        except Exception:
             return False
 
 class UserProfile(Base):
