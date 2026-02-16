@@ -559,9 +559,9 @@
     </div>
 
     <div class="faq-categories">
-      <!-- Getting Started -->
-      <div class="faq-category">
-        <button type="button" class="category-toggle" aria-expanded="false">
+      <!-- Getting Started (expanded by default) -->
+      <div class="faq-category category-expanded">
+        <button type="button" class="category-toggle" aria-expanded="true">
         <span class="category-title">Getting Started</span>
         <span class="category-icon"><i class="bi bi-chevron-down" aria-hidden="true"></i></span>
       </button>
@@ -1019,7 +1019,6 @@
         <h3>Still have questions?</h3>
         <p>Can't find the answer you're looking for? Our support team is here to help.</p>
         <div class="faq-footer-actions">
-          <a href="pages/landing-brex.html" class="nav-link" style="margin-right: 1rem;">Try Brex-style layout</a>
           <button type="button" class="btn-primary footer-btn" data-support-trigger>
             <i class="bi bi-envelope"></i>
             Contact Support
@@ -1135,8 +1134,15 @@
     <script src="components/landing/faq-section.js" defer></script>
     <script defer>
       (function () {
-        var container = document.getElementById('faq-section-container');
-        if (container && window.initFAQ) window.initFAQ(container);
+        function init() {
+          var container = document.getElementById('faq-section-container');
+          if (container && window.initFAQ) window.initFAQ(container);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
       })();
     </script>
     <script defer>

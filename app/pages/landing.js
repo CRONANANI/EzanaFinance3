@@ -346,7 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('carouselTrack')) IntelligenceCarousel();
     if (document.querySelector('.pricing-toggle')) PricingToggle();
     SupportDialog();
-    if (document.querySelector('.faq-section .faq-item')) FAQAccordion();
 
     if (document.getElementById('antigravityCenterComponent')) {
         window.lastMouseY = 0;
