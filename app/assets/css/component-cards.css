@@ -82,6 +82,13 @@
   box-shadow: var(--shadow-sm);
 }
 
+.card-description {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground, #9ca3af);
+  margin: -0.75rem 0 1rem 0;
+  line-height: 1.4;
+}
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
