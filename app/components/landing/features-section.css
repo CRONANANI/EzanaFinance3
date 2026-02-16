@@ -5,7 +5,18 @@
 .features-section {
   width: 100%;
   padding: 120px 0;
-  background: linear-gradient(180deg, #0a0e1a 0%, #0f1419 50%, #0a0e1a 100%);
+  /* Smooth blend from hero black (#0a0a0a) into blue-tinted features section */
+  background: linear-gradient(
+    180deg,
+    #0a0a0a 0%,
+    #0a0a0a 12%,
+    #0a0c14 25%,
+    #0b0e18 40%,
+    #0d1119 55%,
+    #0e131a 70%,
+    #0f1419 85%,
+    #0a0e1a 100%
+  );
   position: relative;
   overflow: hidden;
 }
