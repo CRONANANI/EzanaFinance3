@@ -264,7 +264,7 @@ body {
     font-size: 3.5rem;
     font-size: clamp(1.35rem, 5vw, 3.5rem);
     font-weight: 700;
-    max-width: 680px;
+    max-width: 720px; /* Subtitle is wider at 900px */
     line-height: 1.2;
     letter-spacing: -0.02em;
     margin: 0 0 1.5rem 0;
@@ -278,21 +278,18 @@ body {
     white-space: nowrap;
     display: inline-block;
     overflow: visible;
-    max-width: none;
-    width: max-content;
 }
 
-/* Hero Subtitle */
+/* Hero Subtitle - Wider than the tagline (which is ~680-720px) */
 .hero-subtitle {
     font-size: 1.25rem;
     line-height: 1.7;
     font-weight: var(--font-weight-normal);
     margin: 0 auto;
     padding: 0 1rem;
-    max-width: 900px;
+    max-width: 900px; /* Wider than "Your Network Is Your Net Worth" line */
     text-align: center;
     color: #9ca3af;
-    max-width: 720px;
     letter-spacing: -0.01em;
 }
 
