@@ -206,9 +206,8 @@ body {
     width: 100%;
     margin: 0 auto;
     padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4rem;
+    display: flex;
+    justify-content: center;
     align-items: center;
     overflow: visible;
 }
@@ -217,15 +216,16 @@ body {
     max-width: 700px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 0;
-    padding-left: 0;
-    margin-left: 0;
+    padding: 0;
+    margin: 0;
     overflow: visible;
 }
 
 .hero-content > * {
-    align-self: flex-start !important;
+    align-self: center !important;
 }
 
 /* Hero Title - "Ezana Finance" (no logo) */
@@ -267,7 +267,7 @@ body {
     letter-spacing: -0.02em;
     margin: 0 0 1.5rem 0;
     padding: 0;
-    text-align: left;
+    text-align: center;
     color: #ffffff;
     background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
     -webkit-background-clip: text;
@@ -287,7 +287,7 @@ body {
     font-weight: 400;
     margin: 0 0 0 0;
     padding: 0;
-    text-align: left;
+    text-align: center;
     color: #9ca3af;
     max-width: 600px;
 }
@@ -299,7 +299,7 @@ body {
     gap: 1rem;
     margin: 2.5rem 0 0 0;
     padding: 0;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
 }
 
@@ -346,46 +346,6 @@ body {
 .hero-subtitle {
     transform: none !important;
 }
-
-/* Right Section - Card Preview (center component: hides when cursor below hero CTA or scroll past) */
-.antigravity-center-component {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    pointer-events: auto;
-}
-.antigravity-center-component.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-.antigravity-center-component.fading {
-    opacity: 0.5;
-}
-
-.card-preview {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    height: 100%;
-    min-height: 600px;
-    width: 100%;
-    overflow: visible;
-    padding: 2rem;
-    margin-left: 4rem;
-    padding-top: 6rem;
-}
-
-/* Card Preview Container */
-#card-swap-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 400px;
-}
-
-/* Mobile phone styles removed - replaced with CardSwap component */
 
 .balance-section {
     margin-bottom: 1.5rem;
@@ -1023,8 +983,6 @@ body {
 /* Responsive Design */
 @media (max-width: 1024px) {
     .content-container.hero-container {
-        grid-template-columns: 1fr;
-        gap: 3rem;
         padding: 0 1.5rem;
     }
 
@@ -1034,11 +992,6 @@ body {
 
     .hero-subtitle {
         font-size: 1.125rem;
-    }
-
-    .card-preview {
-        margin-left: 0;
-        padding: 1rem;
     }
 }
 
@@ -1053,7 +1006,6 @@ body {
 
     .content-container.hero-container {
         padding: 0 1.5rem;
-        gap: 2rem;
     }
 
     .hero-title {
@@ -1077,11 +1029,6 @@ body {
         justify-content: center;
     }
 
-    .card-preview {
-        padding: 0.5rem;
-        margin-left: 0;
-    }
-
     /* Mobile phone styles removed */
     
     /* Mobile phone styles removed */
@@ -1103,7 +1050,6 @@ body {
 @media (max-width: 480px) {
     .content-container.hero-container {
         padding: 0 1rem;
-        gap: 1.5rem;
     }
 
     .hero-title {
@@ -1118,11 +1064,6 @@ body {
     .btn-hero-secondary {
         padding: 0.875rem 1.5rem;
         font-size: 1rem;
-    }
-
-    .card-preview {
-        padding: 0.25rem;
-        margin-left: 0;
     }
 
     /* Mobile phone styles removed */
@@ -1141,11 +1082,6 @@ body {
 
     .content-container.hero-container {
         padding: 0 1rem;
-        gap: 1rem;
-    }
-
-    .card-preview {
-        padding: 0.125rem;
     }
 
     .balance-amount {
