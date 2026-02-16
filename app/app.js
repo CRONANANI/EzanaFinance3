@@ -981,7 +981,7 @@ function getHomeDashboardContent() {
                         <i class="bi bi-check-circle"></i>
                         Well balanced
                     </div>
-                    <div class="dashboard-card-description">Stocks: 65% | Bonds: 20% | Cash: 15%</div>
+                    <div class="dashboard-card-description">Sector allocation • Expand and hover for top holdings</div>
                     
                     <!-- Asset Allocation Chart Content -->
                     <div class="asset-allocation-chart-content hidden" id="asset-allocation-chart-content">
@@ -989,9 +989,8 @@ function getHomeDashboardContent() {
                             <div class="breakdown-selector">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Breakdown Type:</label>
                                 <select id="breakdown-type" onchange="updateAssetAllocationChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="asset-class" selected>Asset Class</option>
-                                    <option value="sector">Sector</option>
-                                    <option value="performance">Performance</option>
+                                    <option value="sector" selected>Sector</option>
+                                    <option value="asset-class">Asset Class</option>
                                 </select>
                             </div>
                         </div>
@@ -2390,19 +2389,81 @@ function refreshRecommendations() {
     showNotification('Investment recommendations updated!', 'success');
 }
 
+function getAssetAllocationChartData() {
+    const breakdownType = document.getElementById('breakdown-type')?.value || 'sector';
+    if (breakdownType === 'sector') {
+        return {
+            title: 'Sector Allocation',
+            totalValue: '$127,843',
+            data: [
+                { label: 'Technology', value: 35, color: '#10b981', amount: '$44,746', holdings: [
+                    { symbol: 'AAPL', name: 'Apple Inc.', value: '$15,200' },
+                    { symbol: 'MSFT', name: 'Microsoft Corp.', value: '$12,400' },
+                    { symbol: 'NVDA', name: 'NVIDIA Corp.', value: '$8,900' },
+                    { symbol: 'GOOGL', name: 'Alphabet Inc.', value: '$5,100' },
+                    { symbol: 'META', name: 'Meta Platforms', value: '$3,146' }
+                ]},
+                { label: 'Healthcare', value: 18, color: '#3b82f6', amount: '$23,012', holdings: [
+                    { symbol: 'JNJ', name: 'Johnson & Johnson', value: '$8,200' },
+                    { symbol: 'UNH', name: 'UnitedHealth', value: '$6,500' },
+                    { symbol: 'PFE', name: 'Pfizer Inc.', value: '$4,200' },
+                    { symbol: 'ABBV', name: 'AbbVie Inc.', value: '$2,812' },
+                    { symbol: 'MRK', name: 'Merck & Co.', value: '$1,300' }
+                ]},
+                { label: 'Financials', value: 22, color: '#f59e0b', amount: '$28,126', holdings: [
+                    { symbol: 'JPM', name: 'JPMorgan Chase', value: '$10,400' },
+                    { symbol: 'BAC', name: 'Bank of America', value: '$6,800' },
+                    { symbol: 'V', name: 'Visa Inc.', value: '$5,200' },
+                    { symbol: 'MA', name: 'Mastercard Inc.', value: '$3,526' },
+                    { symbol: 'GS', name: 'Goldman Sachs', value: '$2,200' }
+                ]},
+                { label: 'Consumer', value: 12, color: '#8b5cf6', amount: '$15,341', holdings: [
+                    { symbol: 'AMZN', name: 'Amazon.com', value: '$7,200' },
+                    { symbol: 'HD', name: 'Home Depot', value: '$3,400' },
+                    { symbol: 'KO', name: 'Coca-Cola', value: '$2,100' },
+                    { symbol: 'PEP', name: 'PepsiCo', value: '$1,541' },
+                    { symbol: 'NKE', name: 'Nike Inc.', value: '$1,100' }
+                ]},
+                { label: 'Energy', value: 8, color: '#ef4444', amount: '$10,227', holdings: [
+                    { symbol: 'XOM', name: 'Exxon Mobil', value: '$4,200' },
+                    { symbol: 'CVX', name: 'Chevron Corp.', value: '$3,100' },
+                    { symbol: 'COP', name: 'ConocoPhillips', value: '$1,527' },
+                    { symbol: 'EOG', name: 'EOG Resources', value: '$900' },
+                    { symbol: 'SLB', name: 'Schlumberger', value: '$500' }
+                ]},
+                { label: 'Industrials', value: 5, color: '#06b6d4', amount: '$6,392', holdings: [
+                    { symbol: 'BA', name: 'Boeing Co.', value: '$2,400' },
+                    { symbol: 'CAT', name: 'Caterpillar', value: '$1,800' },
+                    { symbol: 'HON', name: 'Honeywell', value: '$1,292' },
+                    { symbol: 'UPS', name: 'UPS Inc.', value: '$600' },
+                    { symbol: 'GE', name: 'General Electric', value: '$300' }
+                ]}
+            ]
+        };
+    } else {
+        return {
+            title: 'Asset Allocation Breakdown',
+            totalValue: '$127,843',
+            data: [
+                { label: 'Stocks', value: 65, color: '#10b981', amount: '$83,099', holdings: [] },
+                { label: 'Bonds', value: 20, color: '#3b82f6', amount: '$25,569', holdings: [] },
+                { label: 'Cash', value: 15, color: '#f59e0b', amount: '$19,175', holdings: [] }
+            ]
+        };
+    }
+}
+
 function drawEnhancedPieChart(ctx, width, height) {
     const centerX = width / 2;
     const centerY = height / 2;
     const radius = Math.min(centerX, centerY) * 0.6;
     
-    const data = [
-        { label: 'Stocks', value: 65, color: '#10b981', amount: '$83,099' },
-        { label: 'Bonds', value: 20, color: '#3b82f6', amount: '$25,569' },
-        { label: 'Cash', value: 15, color: '#f59e0b', amount: '$19,175' }
-    ];
+    const chartConfig = getAssetAllocationChartData();
+    const data = chartConfig.data;
     
-    // Store data globally for tooltip access
+    // Store data and config globally for tooltip and redraw access
     window.pieChartData = data;
+    window.pieChartConfig = chartConfig;
     
     let currentAngle = -Math.PI / 2; // Start from top
     
@@ -2410,7 +2471,7 @@ function drawEnhancedPieChart(ctx, width, height) {
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Asset Allocation Breakdown', centerX, 40);
+    ctx.fillText(chartConfig.title, centerX, 40);
     
     data.forEach((item, index) => {
         const sliceAngle = (item.value / 100) * 2 * Math.PI;
@@ -2460,7 +2521,7 @@ function drawEnhancedPieChart(ctx, width, height) {
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('$127,843', centerX, centerY - 10);
+    ctx.fillText(chartConfig.totalValue, centerX, centerY - 10);
     ctx.font = '14px Arial';
     ctx.fillText('Total Value', centerX, centerY + 15);
 }
@@ -2504,19 +2565,30 @@ function addPieChartTooltips(canvas, ctx) {
             if (hoveredSlice !== -1) {
                 const slice = data[hoveredSlice];
                 
+                // Build holdings HTML (top 5)
+                let holdingsHtml = '';
+                if (slice.holdings && slice.holdings.length > 0) {
+                    holdingsHtml = `
+                        <div style="margin-top:8px;padding-top:8px;border-top:1px solid #4b5563;">
+                            <div style="font-size:11px;font-weight:600;color:#9ca3af;margin-bottom:4px;">TOP 5 HOLDINGS</div>
+                            ${slice.holdings.map(h => `<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;"><span style="font-weight:500">${h.symbol}</span><span style="color:#6ee7b7">${h.value}</span></div>`).join('')}
+                        </div>
+                    `;
+                }
+                
                 // Show tooltip
                 tooltip.style.display = 'block';
                 tooltip.style.left = (event.clientX + 15) + 'px';
                 tooltip.style.top = (event.clientY - 15) + 'px';
                 tooltip.innerHTML = `
-                    <div class="bg-gray-900 text-white p-3 rounded-lg shadow-lg border border-gray-700">
-                        <div class="font-semibold text-lg">${slice.label}</div>
-                        <div class="text-emerald-300">${slice.value}% • ${slice.amount}</div>
-                        <div class="text-sm text-gray-300 mt-1">Click to view details</div>
+                    <div style="background:#111827;color:white;padding:12px;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.3);border:1px solid #374151;min-width:180px;">
+                        <div style="font-weight:600;font-size:18px">${slice.label}</div>
+                        <div style="color:#6ee7b7">${slice.value}% • ${slice.amount}</div>
+                        ${holdingsHtml}
                     </div>
                 `;
                 
-                // Highlight the slice
+                // Highlight the slice (enlarged on hover)
                 redrawPieChartWithHighlight(canvas, ctx, hoveredSlice);
             } else {
                 tooltip.style.display = 'none';
@@ -2540,6 +2612,7 @@ function redrawPieChartWithHighlight(canvas, ctx, highlightIndex) {
     const radius = Math.min(centerX, centerY) * 0.6;
     
     const data = window.pieChartData;
+    const config = window.pieChartConfig;
     if (!data) return;
     
     let currentAngle = -Math.PI / 2;
@@ -2549,13 +2622,13 @@ function redrawPieChartWithHighlight(canvas, ctx, highlightIndex) {
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Asset Allocation Breakdown', centerX, 40);
+    ctx.fillText(config ? config.title : 'Asset Allocation', centerX, 40);
     
-    // Redraw all slices with highlight effect
+    // Redraw all slices with highlight effect (slightly enlarged on hover)
     data.forEach((item, index) => {
         const sliceAngle = (item.value / 100) * 2 * Math.PI;
         const isHighlighted = index === highlightIndex;
-        const sliceRadius = isHighlighted ? radius + 15 : radius;
+        const sliceRadius = isHighlighted ? radius + 18 : radius;
         const opacity = isHighlighted ? 1 : 0.7;
         
         ctx.globalAlpha = opacity;
@@ -2585,7 +2658,29 @@ function redrawPieChartWithHighlight(canvas, ctx, highlightIndex) {
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('$127,843', centerX, centerY - 10);
+    ctx.fillText(config ? config.totalValue : '$127,843', centerX, centerY - 10);
     ctx.font = '14px Arial';
     ctx.fillText('Total Value', centerX, centerY + 15);
+}
+
+function updateAssetAllocationChart() {
+    const canvas = document.getElementById('asset-allocation-chart');
+    const content = document.getElementById('asset-allocation-chart-content');
+    if (!canvas || !content || !content.classList.contains('expanded')) return;
+    
+    const ctx = canvas.getContext('2d');
+    const container = canvas.parentElement;
+    canvas.width = container.clientWidth - 80;
+    canvas.height = 600;
+    
+    drawEnhancedPieChart(ctx, canvas.width, canvas.height);
+    
+    // Update chart summary text
+    const breakdownType = document.getElementById('breakdown-type')?.value || 'sector';
+    const summaryEl = document.getElementById('chart-summary-text');
+    if (summaryEl) {
+        summaryEl.textContent = breakdownType === 'sector'
+            ? 'Your portfolio shows sector diversification. Hover over each sector to see the top 5 stock holdings.'
+            : 'Your portfolio shows a balanced allocation with strong diversification across asset classes.';
+    }
 }

@@ -845,6 +845,25 @@ body.dashboard-page .notifications-empty {
   box-shadow: var(--shadow-card);
 }
 
+.sector-pie-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sector-pie-container {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 280px;
+  margin: 0 auto;
+}
+
+.sector-pie-container canvas {
+  max-width: 100%;
+  height: auto;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

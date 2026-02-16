@@ -33,6 +33,7 @@ class PortfolioDashboard {
     this.setupDashboardSidebarSync();
     this.setupCarousel();
     this.setupChart();
+    this.setupSectorAllocationChart();
     this.setupNewsTicker();
     this.setupQuickActions();
     this.setupTimeRangeButtons();
@@ -247,6 +248,96 @@ class PortfolioDashboard {
             ticks: { color: '#9ca3af', font: { size: 10 } }
           }
         }
+      }
+    });
+  }
+
+  getSectorAllocationData() {
+    return [
+      { label: 'Technology', value: 35, color: '#10b981', holdings: [
+        { symbol: 'AAPL', value: '$15,200' }, { symbol: 'MSFT', value: '$12,400' },
+        { symbol: 'NVDA', value: '$8,900' }, { symbol: 'GOOGL', value: '$5,100' },
+        { symbol: 'META', value: '$3,146' }
+      ]},
+      { label: 'Healthcare', value: 18, color: '#3b82f6', holdings: [
+        { symbol: 'JNJ', value: '$8,200' }, { symbol: 'UNH', value: '$6,500' },
+        { symbol: 'PFE', value: '$4,200' }, { symbol: 'ABBV', value: '$2,812' },
+        { symbol: 'MRK', value: '$1,300' }
+      ]},
+      { label: 'Financials', value: 22, color: '#f59e0b', holdings: [
+        { symbol: 'JPM', value: '$10,400' }, { symbol: 'BAC', value: '$6,800' },
+        { symbol: 'V', value: '$5,200' }, { symbol: 'MA', value: '$3,526' },
+        { symbol: 'GS', value: '$2,200' }
+      ]},
+      { label: 'Consumer', value: 12, color: '#8b5cf6', holdings: [
+        { symbol: 'AMZN', value: '$7,200' }, { symbol: 'HD', value: '$3,400' },
+        { symbol: 'KO', value: '$2,100' }, { symbol: 'PEP', value: '$1,541' },
+        { symbol: 'NKE', value: '$1,100' }
+      ]},
+      { label: 'Energy', value: 8, color: '#ef4444', holdings: [
+        { symbol: 'XOM', value: '$4,200' }, { symbol: 'CVX', value: '$3,100' },
+        { symbol: 'COP', value: '$1,527' }, { symbol: 'EOG', value: '$900' },
+        { symbol: 'SLB', value: '$500' }
+      ]},
+      { label: 'Industrials', value: 5, color: '#06b6d4', holdings: [
+        { symbol: 'BA', value: '$2,400' }, { symbol: 'CAT', value: '$1,800' },
+        { symbol: 'HON', value: '$1,292' }, { symbol: 'UPS', value: '$600' },
+        { symbol: 'GE', value: '$300' }
+      ]}
+    ];
+  }
+
+  setupSectorAllocationChart() {
+    const canvas = document.getElementById('sector-allocation-chart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const sectorData = this.getSectorAllocationData();
+    const ctx = canvas.getContext('2d');
+
+    this.sectorChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: sectorData.map(s => s.label),
+        datasets: [{
+          data: sectorData.map(s => s.value),
+          backgroundColor: sectorData.map(s => s.color),
+          borderColor: '#fff',
+          borderWidth: 2,
+          hoverBorderWidth: 3,
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '55%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.98)',
+            titleColor: '#fff',
+            bodyColor: '#9ca3af',
+            borderColor: 'rgba(71, 85, 105, 0.8)',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: (context) => {
+                const sector = sectorData[context.dataIndex];
+                return `${sector.label}: ${sector.value}%`;
+              },
+              afterBody: (tooltipItems) => {
+                if (!tooltipItems?.length) return [];
+                const sector = sectorData[tooltipItems[0].dataIndex];
+                if (!sector?.holdings?.length) return [];
+                const lines = ['', 'Top 5 Holdings:'];
+                sector.holdings.forEach(h => lines.push(`${h.symbol}: ${h.value}`));
+                return lines;
+              }
+            }
+          }
+        },
+        layout: { padding: { top: 8, bottom: 8 } }
       }
     });
   }
