@@ -74,11 +74,4 @@
       if (errorEl) errorEl.hidden = true;
     });
   }
-
-  try {
-    var stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    if (stored && stored.lastSubmitted) {
-      showSuccess();
-    }
-  } catch (_) {}
 })();
