@@ -16,18 +16,22 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Contact form modal
+// Contact support modal
 function openContactForm() {
-    const modal = document.getElementById('contactModal');
+    var modal = document.getElementById('contactModal');
     if (modal) {
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
+        var firstInput = document.getElementById('contact-name');
+        if (firstInput) {
+            setTimeout(function () { firstInput.focus(); }, 100);
+        }
     }
 }
 
 function closeContactForm() {
-    const modal = document.getElementById('contactModal');
+    var modal = document.getElementById('contactModal');
     if (modal) {
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
@@ -37,17 +41,17 @@ function closeContactForm() {
 
 function handleContactSubmit(event) {
     event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = {
+    var form = event.target;
+    var formData = new FormData(form);
+    var data = {
         name: formData.get('name'),
         email: formData.get('email'),
+        type: formData.get('type') || 'General Inquiry',
         subject: formData.get('subject'),
         message: formData.get('message')
     };
-    const mailtoLink = 'mailto:support@ezanafinance.com?subject=' + encodeURIComponent(data.subject) + '&body=' + encodeURIComponent(
-        'Name: ' + data.name + '\nEmail: ' + data.email + '\n\nMessage:\n' + data.message
-    );
+    var bodyText = 'Name: ' + data.name + '\nEmail: ' + data.email + '\nRequest Type: ' + data.type + '\n\nMessage:\n' + data.message;
+    var mailtoLink = 'mailto:support@ezanafinance.com?subject=' + encodeURIComponent('[Support] ' + data.subject) + '&body=' + encodeURIComponent(bodyText);
     window.location.href = mailtoLink;
     try {
         alert('Opening your email client... If it doesn\'t open automatically, please email us at support@ezanafinance.com');
