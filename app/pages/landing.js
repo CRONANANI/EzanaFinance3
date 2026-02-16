@@ -124,7 +124,6 @@ function SupportDialog() {
     var successEl = document.getElementById('supportSuccess');
     var closeBtn = document.getElementById('dialogClose');
     var closeBtn2 = document.getElementById('supportDialogCloseBtn');
-    var triggerBtns = document.querySelectorAll('[data-support-trigger]');
 
     if (!dialog || !form) return;
 
@@ -144,7 +143,13 @@ function SupportDialog() {
         }, 300);
     }
 
-    triggerBtns.forEach(function (btn) { btn.addEventListener('click', open); });
+    /* Event delegation: handle clicks on any [data-support-trigger] (incl. dynamically added) */
+    document.addEventListener('click', function (e) {
+        if (e.target.closest && e.target.closest('[data-support-trigger]')) {
+            e.preventDefault();
+            open();
+        }
+    });
     if (closeBtn) closeBtn.addEventListener('click', close);
     if (closeBtn2) closeBtn2.addEventListener('click', close);
     dialog.addEventListener('click', function (e) {
@@ -160,7 +165,7 @@ function SupportDialog() {
             message: form.message.value
         };
         var bodyText = 'Name: ' + data.name + '\nEmail: ' + data.email + '\nCategory: ' + data.category + '\n\nMessage:\n' + data.message;
-        var mailto = 'mailto:support@ezanafinance.com?subject=' + encodeURIComponent('Support: ' + data.category) + '&body=' + encodeURIComponent(bodyText);
+        var mailto = 'mailto:support@ezana.world?subject=' + encodeURIComponent('Support: ' + data.category) + '&body=' + encodeURIComponent(bodyText);
         window.location.href = mailto;
         form.style.display = 'none';
         if (successEl) successEl.style.display = 'block';
@@ -342,7 +347,7 @@ function ResourcesCarousel() {
     this.autoplayInterval = setInterval(next, this.autoplayDelay);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function initLanding() {
     if (document.getElementById('carouselTrack')) IntelligenceCarousel();
     if (document.querySelector('.pricing-toggle')) PricingToggle();
     SupportDialog();
@@ -542,4 +547,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize mobile menu
     createMobileMenu();
     window.addEventListener('resize', createMobileMenu);
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLanding);
+} else {
+    initLanding();
+}
