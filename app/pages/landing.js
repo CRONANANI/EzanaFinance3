@@ -119,6 +119,14 @@ function ResourcesCarousel() {
     this.autoplayInterval = null;
     this.autoplayDelay = 5000;
     var self = this;
+    function getGap() {
+        var track = self.track;
+        if (track && window.getComputedStyle) {
+            var g = getComputedStyle(track).gap;
+            if (g && g !== 'normal') return parseFloat(g) || 32;
+        }
+        return 32;
+    }
     function getCardsPerView() {
         var w = window.innerWidth;
         if (w < 768) return 1;
@@ -129,20 +137,25 @@ function ResourcesCarousel() {
     this.cardsPerView = getCardsPerView();
     this.maxIndex = Math.max(0, (this.cards.length || 0) - this.cardsPerView);
     if (!this.track || !this.cards.length) return;
+    function getCardStep() {
+        /* Use actual rendered card width for accurate scrolling */
+        var gap = getGap();
+        var first = self.cards[0];
+        if (first && first.offsetWidth > 0) return first.offsetWidth + gap;
+        var trackContainer = self.track.parentElement;
+        var containerWidth = trackContainer ? trackContainer.offsetWidth : root.offsetWidth || window.innerWidth;
+        if (containerWidth <= 0) return 312;
+        return (containerWidth - gap * (self.cardsPerView - 1)) / self.cardsPerView + gap;
+    }
     function updateCarousel() {
         self.cardsPerView = getCardsPerView();
         self.maxIndex = Math.max(0, self.cards.length - self.cardsPerView);
         self.currentIndex = Math.min(self.currentIndex, self.maxIndex);
-        var gap = 32; /* 2rem */
-        var trackContainer = self.track.parentElement;
-        var containerWidth = trackContainer ? trackContainer.offsetWidth : 0;
-        if (!containerWidth) containerWidth = root.offsetWidth || window.innerWidth;
-        var cardWidth = (containerWidth - gap * (self.cardsPerView - 1)) / self.cardsPerView;
-        if (cardWidth <= 0) cardWidth = 300;
-        var offset = -(self.currentIndex * (cardWidth + gap));
+        var step = getCardStep();
+        var offset = -(self.currentIndex * step);
         self.track.style.transform = 'translateX(' + Math.round(offset) + 'px)';
-        if (self.prevButton) self.prevButton.disabled = self.currentIndex === 0;
-        if (self.nextButton) self.nextButton.disabled = self.currentIndex >= self.maxIndex && self.maxIndex > 0;
+        if (self.prevButton) self.prevButton.disabled = self.currentIndex <= 0;
+        if (self.nextButton) self.nextButton.disabled = self.currentIndex >= self.maxIndex;
         self.indicators.forEach(function (ind, i) {
             ind.classList.toggle('active', i === self.currentIndex);
         });
@@ -189,8 +202,14 @@ function ResourcesCarousel() {
         updateCarousel();
     });
     updateCarousel();
-    /* Defer second update in case layout wasn't ready (e.g. section off-screen) */
+    /* Defer updates in case layout wasn't ready (e.g. section off-screen) */
     setTimeout(updateCarousel, 100);
+    setTimeout(updateCarousel, 500);
+    /* Recalc when resources section becomes visible */
+    if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function () { updateCarousel(); }, { threshold: 0.01 });
+        io.observe(root);
+    }
     this.autoplayInterval = setInterval(next, this.autoplayDelay);
 }
 
