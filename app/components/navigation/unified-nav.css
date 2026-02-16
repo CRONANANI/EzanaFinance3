@@ -51,7 +51,9 @@
   padding: 0.625rem 1rem;
   color: var(--muted-foreground);
   text-decoration: none;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.01em;
   font-size: 0.9375rem;
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
@@ -151,15 +153,18 @@ body:not(.light-mode) .dropdown-menu {
   margin-top: 0.125rem;
 }
 
-.item-title {
+.dropdown-item .item-title {
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.015em;
   color: var(--foreground);
   margin-bottom: 0.25rem;
 }
 
-.item-desc {
+.dropdown-item .item-desc {
   font-size: 0.8125rem;
+  font-weight: var(--font-weight-normal);
+  letter-spacing: -0.01em;
   color: var(--muted-foreground);
   line-height: 1.4;
 }

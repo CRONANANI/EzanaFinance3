@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ezana Finance - Begin Your Financial Journey Like a Pro</title>
     
+    <!-- Inter Font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -508,8 +513,15 @@
         <div id="dynamic-content" style="display: none;"></div>
     </div>
 
-    <script src="app.js"></script>
-    <script src="components/notifications/notifications-sidebar.js"></script>
-    <script src="components/notifications/notification-helpers.js"></script>
+    <script src="app.js" defer></script>
+    <script src="components/notifications/notifications-sidebar.js" defer></script>
+    <script src="components/notifications/notification-helpers.js" defer></script>
+    <script defer>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('sw.js', { scope: './' });
+        });
+      }
+    </script>
   </body>
 </html>

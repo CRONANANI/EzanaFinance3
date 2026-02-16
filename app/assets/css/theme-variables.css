@@ -4,10 +4,24 @@
    ============================================ */
 
 :root {
-    /* UI-Template Font Stack - System fonts, no web font requests */
-    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    /* Typography - Inter Font */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'Inter', "SF Mono", Monaco, "Cascadia Code", monospace;
+
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    --font-weight-black: 900;
+
+    /* Font Smoothing */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 
     --radius-sm: 0.5rem;
     --radius-md: 1rem;
@@ -155,11 +169,11 @@ body.light-mode {
   --text-secondary: #4b5563;
 }
 
-/* .dark - same font stack (fonts consistent in dark mode) */
+/* .dark - Inter font stack (fonts consistent in dark mode) */
 .dark {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Inter', "SF Mono", Monaco, "Cascadia Code", monospace;
 }
 
 /* App-wide default typography */
@@ -172,22 +186,65 @@ code, pre, kbd, samp {
 }
 
 /* Apply base styles globally */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-feature-settings: 'cv05' 1, 'cv08' 1, 'cv11' 1;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-h1 { font-size: var(--font-3xl); line-height: 1.2; }
-h2 { font-size: var(--font-2xl); line-height: 1.3; }
-h3 { font-size: var(--font-xl); line-height: 1.4; }
-h4 { font-size: var(--font-lg); line-height: 1.5; }
-p { font-size: var(--font-base); line-height: 1.6; }
+h1 { font-weight: var(--font-weight-extrabold); letter-spacing: -0.03em; }
+h2 { font-weight: var(--font-weight-bold); letter-spacing: -0.025em; }
+h3 { font-weight: var(--font-weight-semibold); letter-spacing: -0.02em; }
+
+h1 { font-size: var(--font-3xl); }
+h2 { font-size: var(--font-2xl); }
+h3 { font-size: var(--font-xl); }
+h4 { font-size: var(--font-lg); font-weight: var(--font-weight-semibold); }
+h5, h6 { font-weight: var(--font-weight-medium); }
+p {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+a { font-weight: var(--font-weight-medium); }
+input, textarea, select {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: -0.01em;
+}
+.stat-value, .price, .amount, .percentage {
+  font-feature-settings: 'tnum' 1;
+}
+
+.portfolio-value {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.025em;
+  font-feature-settings: 'tnum' 1;
+}
+
+.stock-symbol {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0;
+}
 small { font-size: var(--font-sm); line-height: 1.5; }
+strong, b { font-weight: var(--font-weight-semibold); }
 
 /* code, pre, kbd, samp already set above */

@@ -29,10 +29,12 @@
   border-bottom: 1px solid var(--border);
 }
 
-.card-header h3 {
-  font-family: var(--font-serif);
+.card-header h3,
+.component-card h3 {
+  font-family: var(--font-sans);
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
   color: var(--foreground);
   margin: 0;
   display: flex;
@@ -45,7 +47,11 @@
   font-size: 1.25rem;
 }
 
-.card-body {
+.card-body,
+.card-subtitle {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: -0.01em;
   color: var(--foreground);
 }
 
