@@ -408,6 +408,11 @@ body {
   padding: 0.5rem 0;
 }
 
+/* Larger row spacing in Data partners so last row aligns with Banking panel's last row */
+.partners-partition:first-of-type .partners-scatter {
+  gap: 2.5rem 2rem;
+}
+
 .partner-item {
   display: flex;
   flex-direction: column;
