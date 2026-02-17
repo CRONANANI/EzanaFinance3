@@ -405,6 +405,25 @@ body {
   opacity: 1;
 }
 
+/* Whitish outline for logos that need extra visibility (QuiverQuant, Plaid) */
+.partner-logo img.logo-outline {
+  filter: grayscale(100%) brightness(1.4)
+    drop-shadow(-1px -1px 0 rgba(255, 255, 255, 0.7))
+    drop-shadow(1px -1px 0 rgba(255, 255, 255, 0.7))
+    drop-shadow(-1px 1px 0 rgba(255, 255, 255, 0.7))
+    drop-shadow(1px 1px 0 rgba(255, 255, 255, 0.7))
+    drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+}
+
+.partner-card:hover .partner-logo img.logo-outline {
+  filter: grayscale(0%) brightness(1.1)
+    drop-shadow(-1px -1px 0 rgba(255, 255, 255, 0.5))
+    drop-shadow(1px -1px 0 rgba(255, 255, 255, 0.5))
+    drop-shadow(-1px 1px 0 rgba(255, 255, 255, 0.5))
+    drop-shadow(1px 1px 0 rgba(255, 255, 255, 0.5))
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+}
+
 .logo-placeholder {
   font-size: 1rem;
   font-weight: 700;

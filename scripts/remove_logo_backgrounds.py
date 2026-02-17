@@ -20,10 +20,13 @@ LOGO_FILES = [
 ]
 
 # Pixels with R,G,B all below this threshold become transparent (removes black bg)
-BLACK_THRESHOLD = 35
+DEFAULT_THRESHOLD = 35
+# QuiverQuant and Plaid have dark gray logos - use lower threshold to keep logo visible
+LIGHT_THRESHOLD_FILES = {"quiver-quantitative.png", "plaid.png"}
+LIGHT_THRESHOLD = 12
 
 
-def make_background_transparent(img: Image.Image) -> Image.Image:
+def make_background_transparent(img: Image.Image, threshold: int) -> Image.Image:
     """Replace black/dark pixels with transparent."""
     img = img.convert("RGBA")
     data = img.getdata()
@@ -32,7 +35,7 @@ def make_background_transparent(img: Image.Image) -> Image.Image:
     for item in data:
         r, g, b, a = item
         # If pixel is very dark (black background), make it transparent
-        if r <= BLACK_THRESHOLD and g <= BLACK_THRESHOLD and b <= BLACK_THRESHOLD:
+        if r <= threshold and g <= threshold and b <= threshold:
             new_data.append((r, g, b, 0))
         else:
             new_data.append(item)
@@ -53,8 +56,9 @@ def main():
             continue
 
         try:
+            threshold = LIGHT_THRESHOLD if filename in LIGHT_THRESHOLD_FILES else DEFAULT_THRESHOLD
             img = Image.open(path)
-            img = make_background_transparent(img)
+            img = make_background_transparent(img, threshold)
             img.save(path, "PNG")
             print(f"Updated: {filename}")
         except Exception as e:
