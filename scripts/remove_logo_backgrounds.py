@@ -17,6 +17,8 @@ LOGO_FILES = [
     "uspto.png",
     "sec-edgar.png",
     "plaid.png",
+    "wall-street-bets.png",
+    "polymarket.png",
 ]
 
 # Pixels with R,G,B all below this threshold become transparent (removes black bg)
