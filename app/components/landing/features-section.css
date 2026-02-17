@@ -177,14 +177,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: transparent;
-  border: 1px solid transparent;
-  backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
 }
 
 .feature-stats .stat-item:hover {
-  background: transparent;
-  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .stat-item .stat-value {
