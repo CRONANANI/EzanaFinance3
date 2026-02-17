@@ -19,12 +19,24 @@ LOGO_FILES = [
     "plaid.png",
     "wall-street-bets.png",
     "polymarket.png",
+    "jp-morgan.png",
+    "bank-of-america.png",
+    "wells-fargo.png",
+    "citi.png",
+    "rbc.png",
+    "scotiabank.png",
+    "bmo.png",
+    "cibc.png",
+    "robinhood.png",
+    "chime.png",
+    "sofi.png",
+    "wealthsimple.png",
 ]
 
 # Pixels with R,G,B all below this threshold become transparent (removes black bg)
 DEFAULT_THRESHOLD = 35
 # QuiverQuant and Plaid have dark gray logos - use lower threshold to keep logo visible
-LIGHT_THRESHOLD_FILES = {"quiver-quantitative.png", "plaid.png"}
+LIGHT_THRESHOLD_FILES = {"quiver-quantitative.png", "plaid.png", "citi.png", "wealthsimple.png"}
 LIGHT_THRESHOLD = 12
 
 
