@@ -136,12 +136,20 @@ class WatchlistFilters {
       }
       let show = true;
       if (hasActivity) {
-        const type = (item.dataset.type || '').toLowerCase();
-        show = filters.activity.some((a) => type.includes(a.replace('-', '')) || (a === 'congressional' && type === 'congressional'));
+        const act = (item.dataset.activity || '').toLowerCase();
+        show = filters.activity.some((a) => act === a || act.includes((a || '').replace('-', '')));
       }
       if (show && hasInvestor) {
         const inv = (item.dataset.investor || '').toLowerCase();
-        show = filters.investor.some((i) => inv.includes((i || '').replace('-', '')) || (i === 'congressional' && inv === 'congressional'));
+        show = filters.investor.some((i) => inv === i || inv.includes((i || '').replace('-', '')));
+      }
+      if (show && hasPosition) {
+        const pos = (item.dataset.position || '').toLowerCase();
+        show = filters.position.some((p) => pos === p || pos.includes((p || '').replace('-', '')));
+      }
+      if (show && hasTime) {
+        const t = (item.dataset.time || '').toLowerCase();
+        show = t === filters.time;
       }
       item.style.display = show ? '' : 'none';
     });

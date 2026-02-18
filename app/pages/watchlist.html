@@ -78,7 +78,7 @@
             <i class="bi bi-activity"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">12</div>
+            <div class="stat-value">18</div>
             <div class="stat-label">Recent Activity</div>
           </div>
         </div>
@@ -172,57 +172,237 @@
             </aside>
             <div class="activity-content">
               <div class="members-list" id="activityList">
-                <div class="member-item" data-type="congressional" data-investor="congressional">
+                <!-- Congressional Trades -->
+                <div class="member-item" data-activity="congressional" data-investor="congressional" data-position="over-1m" data-time="7d">
                   <div class="member-avatar">NP</div>
                   <div class="member-info">
                     <div class="member-name">Nancy Pelosi</div>
-                    <div class="member-meta">House · Democrat · CA</div>
+                    <div class="member-meta">House · Democrat · CA · NVDA · 2d ago</div>
                   </div>
                   <div class="member-stats">
-                    <div class="stat-small">
-                      <span class="stat-value">15</span>
-                      <span class="stat-label">trades</span>
-                    </div>
-                    <div class="stat-small">
-                      <span class="stat-value positive">+18%</span>
-                      <span class="stat-label">return</span>
-                    </div>
+                    <div class="stat-small"><span class="stat-value">$1.2M</span><span class="stat-label">buy</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+18%</span><span class="stat-label">return</span></div>
                   </div>
                   <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
                 </div>
-                <div class="member-item" data-type="congressional" data-investor="congressional">
+                <div class="member-item" data-activity="congressional" data-investor="congressional" data-position="100k-1m" data-time="7d">
                   <div class="member-avatar">DC</div>
                   <div class="member-info">
                     <div class="member-name">Dan Crenshaw</div>
-                    <div class="member-meta">House · Republican · TX</div>
+                    <div class="member-meta">House · Republican · TX · AAPL · 5d ago</div>
                   </div>
                   <div class="member-stats">
-                    <div class="stat-small">
-                      <span class="stat-value">8</span>
-                      <span class="stat-label">trades</span>
-                    </div>
-                    <div class="stat-small">
-                      <span class="stat-value positive">+12%</span>
-                      <span class="stat-label">return</span>
-                    </div>
+                    <div class="stat-small"><span class="stat-value">$450K</span><span class="stat-label">buy</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+12%</span><span class="stat-label">return</span></div>
                   </div>
                   <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
                 </div>
-                <div class="member-item" data-type="congressional" data-investor="congressional">
+                <div class="member-item" data-activity="congressional" data-investor="congressional" data-position="over-1m" data-time="30d">
                   <div class="member-avatar">MW</div>
                   <div class="member-info">
                     <div class="member-name">Mark Warner</div>
-                    <div class="member-meta">Senate · Democrat · VA</div>
+                    <div class="member-meta">Senate · Democrat · VA · MSFT · 12d ago</div>
                   </div>
                   <div class="member-stats">
-                    <div class="stat-small">
-                      <span class="stat-value">22</span>
-                      <span class="stat-label">trades</span>
-                    </div>
-                    <div class="stat-small">
-                      <span class="stat-value positive">+24%</span>
-                      <span class="stat-label">return</span>
-                    </div>
+                    <div class="stat-small"><span class="stat-value">22</span><span class="stat-label">trades</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+24%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="congressional" data-investor="congressional" data-position="10k-100k" data-time="24h">
+                  <div class="member-avatar">JT</div>
+                  <div class="member-info">
+                    <div class="member-name">Josh Gottheimer</div>
+                    <div class="member-meta">House · Democrat · NJ · GOOGL · Today</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$65K</span><span class="stat-label">buy</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+3%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="congressional" data-investor="congressional" data-position="under-10k" data-time="7d">
+                  <div class="member-avatar">SB</div>
+                  <div class="member-info">
+                    <div class="member-name">Susan Collins</div>
+                    <div class="member-meta">Senate · Republican · ME · JPM · 4d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$8K</span><span class="stat-label">buy</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+5%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <!-- 13F Filings / Institutional -->
+                <div class="member-item" data-activity="13f" data-investor="hedge-funds" data-position="over-1m" data-time="7d">
+                  <div class="member-avatar">CT</div>
+                  <div class="member-info">
+                    <div class="member-name">Citadel Advisors</div>
+                    <div class="member-meta">Hedge Fund · 13F · NVDA · New position</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$42M</span><span class="stat-label">added</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+15%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="13f" data-investor="hedge-funds" data-position="over-1m" data-time="30d">
+                  <div class="member-avatar">BR</div>
+                  <div class="member-info">
+                    <div class="member-name">Bridgewater Associates</div>
+                    <div class="member-meta">Hedge Fund · 13F · AAPL · Increased 18%</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$890M</span><span class="stat-label">holding</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+8%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="13f" data-investor="institutional" data-position="100k-1m" data-time="7d">
+                  <div class="member-avatar">VG</div>
+                  <div class="member-info">
+                    <div class="member-name">Vanguard Group</div>
+                    <div class="member-meta">Institutional · 13F · TSLA · Rebalance</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$520K</span><span class="stat-label">change</span></div>
+                    <div class="stat-small"><span class="stat-value negative">-2%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="13f" data-investor="institutional" data-position="over-1m" data-time="quarter">
+                  <div class="member-avatar">BK</div>
+                  <div class="member-info">
+                    <div class="member-name">BlackRock Inc</div>
+                    <div class="member-meta">Institutional · 13F · MSFT · New position</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$2.1B</span><span class="stat-label">added</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+22%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <!-- Insider Transactions -->
+                <div class="member-item" data-activity="insider" data-investor="insiders" data-position="over-1m" data-time="24h">
+                  <div class="member-avatar">JH</div>
+                  <div class="member-info">
+                    <div class="member-name">Jensen Huang</div>
+                    <div class="member-meta">CEO · NVDA · Option exercise · Today</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$12M</span><span class="stat-label">exercise</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+2.6%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="insider" data-investor="insiders" data-position="100k-1m" data-time="7d">
+                  <div class="member-avatar">TC</div>
+                  <div class="member-info">
+                    <div class="member-name">Tim Cook</div>
+                    <div class="member-meta">CEO · AAPL · Stock award · 3d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$280K</span><span class="stat-label">award</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+1.2%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="insider" data-investor="insiders" data-position="10k-100k" data-time="30d">
+                  <div class="member-avatar">VM</div>
+                  <div class="member-info">
+                    <div class="member-name">Vaibhav Taneja</div>
+                    <div class="member-meta">CFO · TSLA · Purchase · 18d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$45K</span><span class="stat-label">buy</span></div>
+                    <div class="stat-small"><span class="stat-value negative">-3.2%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="insider" data-investor="insiders" data-position="under-10k" data-time="7d">
+                  <div class="member-avatar">DW</div>
+                  <div class="member-info">
+                    <div class="member-name">David Wadhwani</div>
+                    <div class="member-meta">Director · ADBE · Purchase · 5d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$6K</span><span class="stat-label">buy</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+4%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <!-- Government Contracts -->
+                <div class="member-item" data-activity="gov-contracts" data-investor="institutional" data-position="over-1m" data-time="30d">
+                  <div class="member-avatar">LM</div>
+                  <div class="member-info">
+                    <div class="member-name">Lockheed Martin</div>
+                    <div class="member-meta">Gov Contract · $2.4B · F-35 · 20d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$2.4B</span><span class="stat-label">contract</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+7%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="gov-contracts" data-investor="institutional" data-position="100k-1m" data-time="7d">
+                  <div class="member-avatar">RT</div>
+                  <div class="member-info">
+                    <div class="member-name">Raytheon Technologies</div>
+                    <div class="member-meta">Gov Contract · $180M · Defense · 6d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$180M</span><span class="stat-label">contract</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+3%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <!-- Lobbying Activity -->
+                <div class="member-item" data-activity="lobbying" data-investor="institutional" data-position="10k-100k" data-time="30d">
+                  <div class="member-avatar">PH</div>
+                  <div class="member-info">
+                    <div class="member-name">Pharma Lobby</div>
+                    <div class="member-meta">Lobbying · PFE · Healthcare · 14d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$85K</span><span class="stat-label">spend</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+1%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="lobbying" data-investor="institutional" data-position="under-10k" data-time="7d">
+                  <div class="member-avatar">TC</div>
+                  <div class="member-info">
+                    <div class="member-name">Tech Coalition</div>
+                    <div class="member-meta">Lobbying · GOOGL · Privacy · 2d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">$9K</span><span class="stat-label">spend</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+2%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <!-- Patent Filings -->
+                <div class="member-item" data-activity="patents" data-investor="insiders" data-position="100k-1m" data-time="24h">
+                  <div class="member-avatar">AP</div>
+                  <div class="member-info">
+                    <div class="member-name">Apple Inc</div>
+                    <div class="member-meta">Patent · AI chip design · 47 filings · Today</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">47</span><span class="stat-label">patents</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+1.2%</span><span class="stat-label">return</span></div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-activity="patents" data-investor="institutional" data-position="over-1m" data-time="7d">
+                  <div class="member-avatar">NV</div>
+                  <div class="member-info">
+                    <div class="member-name">NVIDIA Corp</div>
+                    <div class="member-meta">Patent · GPU architecture · 23 filings · 4d ago</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small"><span class="stat-value">23</span><span class="stat-label">patents</span></div>
+                    <div class="stat-small"><span class="stat-value positive">+2.6%</span><span class="stat-label">return</span></div>
                   </div>
                   <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
                 </div>
