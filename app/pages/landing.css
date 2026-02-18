@@ -214,9 +214,46 @@ body {
     margin: 0 auto;
     padding: 0 2rem 2rem 2rem;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
+    gap: 2rem;
     overflow: visible;
+}
+
+.hero-visual {
+    flex-shrink: 0;
+    width: min(520px, 45vw);
+    min-width: 320px;
+    height: 420px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 1024px) {
+    .content-container.hero-container {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    .hero-visual {
+        width: 100%;
+        min-width: unset;
+        height: 380px;
+        order: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-visual {
+        height: 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-visual {
+        display: none;
+    }
 }
 
 .hero-content {

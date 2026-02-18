@@ -18,6 +18,7 @@
     <link rel="preload" href="assets/css/theme-variables.css" as="style">
     <link rel="stylesheet" href="assets/css/theme-variables.css">
     <link rel="stylesheet" href="pages/landing.css">
+    <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
     <link rel="stylesheet" href="pages/electric-border.css">
     <link rel="stylesheet" href="pages/prism.css">
     <link rel="stylesheet" href="components/landing/antigravity-bg/antigravity-bg.css">
@@ -94,6 +95,9 @@
                         <div class="legacy-error" id="legacyError" role="alert" aria-live="assertive" hidden></div>
                     </div>
                 </div>
+            </div>
+            <div class="hero-visual" id="heroCardSwapWrapper">
+                <div id="card-swap-loading" style="display: flex; justify-content: center; align-items: center; min-height: 400px; color: #10b981;">Loading...</div>
             </div>
         </div>
         <div class="scroll-hint">
@@ -1399,8 +1403,43 @@
     <script src="pages/prism.js" defer></script>
     <script src="pages/landing.js" defer></script>
     <script src="components/landing/legacy-signup.js" defer></script>
+    <script src="components/landing/card-swap/card-swap.js" defer></script>
     <script src="components/landing/features-section.js" defer></script>
     <script src="components/landing/faq-section.js" defer></script>
+    <script defer>
+      (function () {
+        function initCardSwap() {
+          var wrapper = document.getElementById('heroCardSwapWrapper');
+          if (!wrapper) return;
+          fetch('components/landing/card-swap/card-swap.html')
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+              wrapper.innerHTML = html;
+              var container = document.getElementById('card-swap-container');
+              if (container) container.style.opacity = '1';
+              function init() {
+                if (typeof gsap === 'undefined' || typeof createCardSwap === 'undefined') {
+                  setTimeout(init, 50);
+                  return;
+                }
+                try {
+                  createCardSwap('#card-swap-container', { delay: 5000, pauseOnHover: true });
+                } catch (e) { console.error('CardSwap init error:', e); }
+              }
+              init();
+            })
+            .catch(function (err) {
+              wrapper.innerHTML = '<div style="color:#94a3b8;padding:2rem;">Preview unavailable</div>';
+              console.error('CardSwap load error:', err);
+            });
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initCardSwap);
+        } else {
+          initCardSwap();
+        }
+      })();
+    </script>
     <script defer>
       (function () {
         function init() {
