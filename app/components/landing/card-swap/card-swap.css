@@ -236,12 +236,13 @@
   height: 100%;
   object-fit: contain;
   object-position: center;
-  /* Crisp text rendering in preview images */
+  /* Maximum clarity for text in preview images */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   image-rendering: -moz-crisp-edges;
-  /* Slight contrast boost for crisper text */
-  filter: contrast(1.04);
+  /* Sharpen (SVG) + contrast for maximum text clarity */
+  filter: url(#card-sharpen) contrast(1.15);
+  -webkit-filter: url(#card-sharpen) contrast(1.15);
   /* GPU layer for sharper scaling */
   transform: translateZ(0);
   backface-visibility: hidden;

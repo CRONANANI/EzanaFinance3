@@ -27,6 +27,14 @@
     <link rel="stylesheet" href="components/landing/faq-section.css" media="print" onload="this.media='all'">
 </head>
 <body>
+    <!-- SVG sharpen filter for clearer text in card preview images -->
+    <svg aria-hidden="true" style="position:absolute;width:0;height:0;">
+      <defs>
+        <filter id="card-sharpen" color-interpolation-filters="sRGB" x="-10%" y="-10%" width="120%" height="120%">
+          <feConvolveMatrix in="SourceGraphic" order="3" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0"/>
+        </filter>
+      </defs>
+    </svg>
 
     <!-- Antigravity particle background - full page -->
     <div id="antigravity-bg" aria-hidden="true"></div>
