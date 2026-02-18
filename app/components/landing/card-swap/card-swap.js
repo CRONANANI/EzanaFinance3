@@ -85,14 +85,15 @@ class CardSwap {
   }
 
   setupAnimations() {
-    // Animation configuration for smooth sweeping motion
+    // Animation configuration for smooth, fluid motion
     this.config = {
-      ease: 'power2.inOut', // Smooth sweeping motion
-      durDrop: 1.2,
-      durMove: 1.0,
-      durReturn: 1.0,
-      promoteOverlap: 0.7,
-      returnDelay: 0.1
+      ease: 'power3.inOut',
+      durDrop: 1.4,
+      durMove: 1.2,
+      durReturn: 1.2,
+      promoteOverlap: 0.85,
+      returnDelay: 0.05,
+      stagger: 0.08
     };
   }
 
@@ -104,14 +105,15 @@ class CardSwap {
     const timeline = gsap.timeline();
     this.timeline = timeline;
 
-    // Drop front card
+    // Drop front card - smooth arc
     timeline.to(frontCard, {
       y: '+=80',
       duration: this.config.durDrop,
-      ease: this.config.ease
+      ease: this.config.ease,
+      overwrite: 'auto'
     });
 
-    // Promote remaining cards
+    // Promote remaining cards - fluid staggered movement
     timeline.addLabel('promote', `-=${this.config.durDrop * this.config.promoteOverlap}`);
     rest.forEach((idx, i) => {
       const card = this.cards[idx];
@@ -123,8 +125,9 @@ class CardSwap {
         y: slot.y,
         z: slot.z,
         duration: this.config.durMove,
-        ease: this.config.ease
-      }, `promote+=${i * 0.15}`);
+        ease: this.config.ease,
+        overwrite: 'auto'
+      }, `promote+=${i * (this.config.stagger || 0.15)}`);
     });
 
     // Return front card to back
@@ -138,7 +141,8 @@ class CardSwap {
       y: backSlot.y,
       z: backSlot.z,
       duration: this.config.durReturn,
-      ease: this.config.ease
+      ease: this.config.ease,
+      overwrite: 'auto'
     }, 'return');
 
     // Update order

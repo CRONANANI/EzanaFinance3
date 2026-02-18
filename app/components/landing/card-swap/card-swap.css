@@ -64,7 +64,7 @@
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 4px 24px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
