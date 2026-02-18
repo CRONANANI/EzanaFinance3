@@ -732,8 +732,8 @@ body {
     margin-bottom: 3rem;
     width: 100%;
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .legacy-signup-inner,
