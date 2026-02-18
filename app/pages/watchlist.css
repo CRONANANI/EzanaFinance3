@@ -1,5 +1,12 @@
 /* Watchlist Page Styles */
 
+/* Match dashboard layout: use dashboard-main/container/grid but avoid double offset.
+   page-wrapper already provides padding-left for sidebar; dashboard-main adds margin on dashboard page. */
+body.watchlist-page .watchlist-main.dashboard-main {
+  margin-left: 0;
+  padding-top: 0;
+}
+
 .page-hero {
   display: flex;
   justify-content: space-between;
@@ -112,12 +119,14 @@
 .stat-change.positive { color: #10b981; }
 .stat-change.warning { color: #fbbf24; }
 
+/* Match dashboard grid: 2fr 1fr same as home-dashboard */
 .watchlist-grid,
 .watchlist-grid-two-column {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  align-items: start;
 }
 
 /* Recent Activity (wider) + Stock Watchlist (narrower) */

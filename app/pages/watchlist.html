@@ -16,9 +16,10 @@
   <link rel="stylesheet" href="../assets/css/page-layout.css">
   <link rel="stylesheet" href="../components/navigation/unified-nav.css">
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="home-dashboard.css">
   <link rel="stylesheet" href="watchlist.css">
 </head>
-<body>
+<body class="watchlist-page">
 
   <nav class="main-nav" id="mainNav"></nav>
 
@@ -44,7 +45,8 @@
   </div>
 
   <div class="page-wrapper sidebar-active">
-    <main class="page-content">
+    <main class="dashboard-main watchlist-main">
+      <div class="dashboard-container watchlist-container">
 
       <section class="page-hero">
         <div class="hero-content">
@@ -102,7 +104,7 @@
         </div>
       </div>
 
-      <div class="watchlist-grid-two-column">
+      <div class="dashboard-grid watchlist-grid-two-column">
         <!-- Recent Activity (wider, left) - with filter sidebar -->
         <div class="component-card recent-activity-card">
           <div class="card-header">
@@ -523,6 +525,7 @@
         </div>
       </div>
 
+      </div>
     </main>
   </div>
 
