@@ -75,11 +75,11 @@
         </div>
         <div class="stat-card">
           <div class="stat-icon congress">
-            <i class="bi bi-person-badge"></i>
+            <i class="bi bi-activity"></i>
           </div>
           <div class="stat-content">
             <div class="stat-value">12</div>
-            <div class="stat-label">Congress Members</div>
+            <div class="stat-label">Recent Activity</div>
           </div>
         </div>
         <div class="stat-card">
@@ -103,7 +103,136 @@
       </div>
 
       <div class="watchlist-grid-two-column">
-        <div class="component-card">
+        <!-- Recent Activity (wider, left) - with filter sidebar -->
+        <div class="component-card recent-activity-card">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-activity"></i>
+              Recent Activity
+            </h3>
+            <button class="card-action-btn" id="addMemberBtn">Add Source</button>
+          </div>
+          <div class="card-body recent-activity-body">
+            <aside class="filters-sidebar" id="filtersSidebar">
+              <div class="filters-header">
+                <span class="filters-title">Filters</span>
+                <button type="button" class="filters-clear-btn" id="clearAllFilters" title="Clear all">Clear all</button>
+              </div>
+              <div class="active-filters-chips" id="activeFiltersChips"></div>
+              <div class="filters-presets">
+                <span class="filters-section-label">Presets</span>
+                <button type="button" class="preset-btn" data-preset="congress">Congress Watch</button>
+                <button type="button" class="preset-btn" data-preset="institutional">Institutional Moves</button>
+                <button type="button" class="preset-btn" data-preset="insider">Insider Buying</button>
+                <button type="button" class="preset-btn" data-preset="tech">Tech Whales</button>
+                <button type="button" class="preset-btn" data-preset="contrarian">Contrarian Plays</button>
+                <button type="button" class="preset-btn" data-preset="political">Political Pulse</button>
+              </div>
+              <nav class="filters-sections" id="filtersSections">
+                <div class="filter-section" data-section="activity-type">
+                  <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>Activity Type</span><span class="filter-count">0</span></button>
+                  <div class="filter-options">
+                    <label><input type="checkbox" name="activity" value="congressional"> Congressional Trades</label>
+                    <label><input type="checkbox" name="activity" value="13f"> 13F Filings</label>
+                    <label><input type="checkbox" name="activity" value="insider"> Insider Transactions</label>
+                    <label><input type="checkbox" name="activity" value="gov-contracts"> Government Contracts</label>
+                    <label><input type="checkbox" name="activity" value="lobbying"> Lobbying Activity</label>
+                    <label><input type="checkbox" name="activity" value="patents"> Patent Filings</label>
+                  </div>
+                </div>
+                <div class="filter-section" data-section="investor-type">
+                  <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>Investor Type</span><span class="filter-count">0</span></button>
+                  <div class="filter-options">
+                    <label><input type="checkbox" name="investor" value="congressional"> Congressional Members</label>
+                    <label><input type="checkbox" name="investor" value="hedge-funds"> Hedge Funds</label>
+                    <label><input type="checkbox" name="investor" value="institutional"> Institutional Investors</label>
+                    <label><input type="checkbox" name="investor" value="insiders"> Corporate Insiders</label>
+                  </div>
+                </div>
+                <div class="filter-section" data-section="position-size">
+                  <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>Position Size</span><span class="filter-count">0</span></button>
+                  <div class="filter-options">
+                    <label><input type="checkbox" name="position" value="under-10k"> Under $10K</label>
+                    <label><input type="checkbox" name="position" value="10k-100k"> $10K - $100K</label>
+                    <label><input type="checkbox" name="position" value="100k-1m"> $100K - $1M</label>
+                    <label><input type="checkbox" name="position" value="over-1m"> Over $1M</label>
+                  </div>
+                </div>
+                <div class="filter-section" data-section="time-period">
+                  <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>Time Period</span><span class="filter-count">0</span></button>
+                  <div class="filter-options">
+                    <label><input type="radio" name="time" value="24h"> Last 24 Hours</label>
+                    <label><input type="radio" name="time" value="7d"> Last 7 Days</label>
+                    <label><input type="radio" name="time" value="30d"> Last 30 Days</label>
+                    <label><input type="radio" name="time" value="quarter"> Last Quarter</label>
+                    <label><input type="radio" name="time" value="year"> Last Year</label>
+                  </div>
+                </div>
+              </nav>
+            </aside>
+            <div class="activity-content">
+              <div class="members-list" id="activityList">
+                <div class="member-item" data-type="congressional" data-investor="congressional">
+                  <div class="member-avatar">NP</div>
+                  <div class="member-info">
+                    <div class="member-name">Nancy Pelosi</div>
+                    <div class="member-meta">House · Democrat · CA</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small">
+                      <span class="stat-value">15</span>
+                      <span class="stat-label">trades</span>
+                    </div>
+                    <div class="stat-small">
+                      <span class="stat-value positive">+18%</span>
+                      <span class="stat-label">return</span>
+                    </div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-type="congressional" data-investor="congressional">
+                  <div class="member-avatar">DC</div>
+                  <div class="member-info">
+                    <div class="member-name">Dan Crenshaw</div>
+                    <div class="member-meta">House · Republican · TX</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small">
+                      <span class="stat-value">8</span>
+                      <span class="stat-label">trades</span>
+                    </div>
+                    <div class="stat-small">
+                      <span class="stat-value positive">+12%</span>
+                      <span class="stat-label">return</span>
+                    </div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+                <div class="member-item" data-type="congressional" data-investor="congressional">
+                  <div class="member-avatar">MW</div>
+                  <div class="member-info">
+                    <div class="member-name">Mark Warner</div>
+                    <div class="member-meta">Senate · Democrat · VA</div>
+                  </div>
+                  <div class="member-stats">
+                    <div class="stat-small">
+                      <span class="stat-value">22</span>
+                      <span class="stat-label">trades</span>
+                    </div>
+                    <div class="stat-small">
+                      <span class="stat-value positive">+24%</span>
+                      <span class="stat-label">return</span>
+                    </div>
+                  </div>
+                  <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Watchlist (narrower, right) -->
+        <div class="component-card stock-watchlist-card">
           <div class="card-header">
             <h3>
               <i class="bi bi-bookmark-star"></i>
@@ -119,21 +248,19 @@
                   <th>Name</th>
                   <th>Price</th>
                   <th>Change</th>
-                  <th>% Change</th>
-                  <th>Market Cap</th>
+                  <th>%</th>
                   <th>Alert</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 <tr data-symbol="NVDA">
                   <td><strong>NVDA</strong></td>
-                  <td>NVIDIA Corporation</td>
+                  <td>NVIDIA</td>
                   <td class="watchlist-price">$485.20</td>
                   <td class="watchlist-change positive">+$12.40</td>
                   <td class="watchlist-pct positive">+2.6%</td>
-                  <td>$1.2T</td>
-                  <td><span class="badge success">Target Hit</span></td>
+                  <td><span class="badge success">Hit</span></td>
                   <td>
                     <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
                     <button class="icon-btn"><i class="bi bi-bell"></i></button>
@@ -142,12 +269,11 @@
                 </tr>
                 <tr data-symbol="AAPL">
                   <td><strong>AAPL</strong></td>
-                  <td>Apple Inc.</td>
+                  <td>Apple</td>
                   <td class="watchlist-price">$182.30</td>
                   <td class="watchlist-change positive">+$2.10</td>
                   <td class="watchlist-pct positive">+1.2%</td>
-                  <td>$2.8T</td>
-                  <td><span class="badge muted">None</span></td>
+                  <td><span class="badge muted">—</span></td>
                   <td>
                     <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
                     <button class="icon-btn"><i class="bi bi-bell"></i></button>
@@ -156,12 +282,11 @@
                 </tr>
                 <tr data-symbol="TSLA">
                   <td><strong>TSLA</strong></td>
-                  <td>Tesla, Inc.</td>
+                  <td>Tesla</td>
                   <td class="watchlist-price">$248.50</td>
                   <td class="watchlist-change negative">-$8.20</td>
                   <td class="watchlist-pct negative">-3.2%</td>
-                  <td>$780B</td>
-                  <td><span class="badge warning">Price Drop</span></td>
+                  <td><span class="badge warning">Drop</span></td>
                   <td>
                     <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
                     <button class="icon-btn"><i class="bi bi-bell"></i></button>
@@ -170,74 +295,6 @@
                 </tr>
               </tbody>
             </table>
-          </div>
-        </div>
-
-        <div class="component-card">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-person-badge-fill"></i>
-              Congress Members
-            </h3>
-            <button class="card-action-btn" id="addMemberBtn">Add Member</button>
-          </div>
-          <div class="card-body">
-            <div class="members-list">
-              <div class="member-item">
-                <div class="member-avatar">NP</div>
-                <div class="member-info">
-                  <div class="member-name">Nancy Pelosi</div>
-                  <div class="member-meta">House · Democrat · CA</div>
-                </div>
-                <div class="member-stats">
-                  <div class="stat-small">
-                    <span class="stat-value">15</span>
-                    <span class="stat-label">trades</span>
-                  </div>
-                  <div class="stat-small">
-                    <span class="stat-value positive">+18%</span>
-                    <span class="stat-label">return</span>
-                  </div>
-                </div>
-                <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
-              </div>
-              <div class="member-item">
-                <div class="member-avatar">DC</div>
-                <div class="member-info">
-                  <div class="member-name">Dan Crenshaw</div>
-                  <div class="member-meta">House · Republican · TX</div>
-                </div>
-                <div class="member-stats">
-                  <div class="stat-small">
-                    <span class="stat-value">8</span>
-                    <span class="stat-label">trades</span>
-                  </div>
-                  <div class="stat-small">
-                    <span class="stat-value positive">+12%</span>
-                    <span class="stat-label">return</span>
-                  </div>
-                </div>
-                <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
-              </div>
-              <div class="member-item">
-                <div class="member-avatar">MW</div>
-                <div class="member-info">
-                  <div class="member-name">Mark Warner</div>
-                  <div class="member-meta">Senate · Democrat · VA</div>
-                </div>
-                <div class="member-stats">
-                  <div class="stat-small">
-                    <span class="stat-value">22</span>
-                    <span class="stat-label">trades</span>
-                  </div>
-                  <div class="stat-small">
-                    <span class="stat-value positive">+24%</span>
-                    <span class="stat-label">return</span>
-                  </div>
-                </div>
-                <button class="icon-btn"><i class="bi bi-three-dots-vertical"></i></button>
-              </div>
-            </div>
           </div>
         </div>
 
