@@ -1,4 +1,4 @@
-// Watchlist Page - Add Member Modal + live market quotes + WatchlistFilters
+// Watchlist Page - Add Member Modal + live market quotes + WatchlistFilters + StockWatchlistFilters
 
 const POLL_SYMBOLS = ['NVDA', 'AAPL', 'TSLA'];
 const POLL_INTERVAL_MS = 5000;
@@ -175,6 +175,153 @@ class WatchlistFilters {
 }
 window.WatchlistFilters = WatchlistFilters;
 
+/** StockWatchlistFilters - Filter panel for Stock Watchlist */
+class StockWatchlistFilters {
+  constructor(options = {}) {
+    this.panel = options.panel || document.getElementById('stockFiltersPanel');
+    this.toggleBtn = options.toggleBtn || document.getElementById('stockFiltersToggle');
+    this.clearBtn = options.clearBtn || document.getElementById('stockFiltersClear');
+    this.table = options.table || document.getElementById('stockWatchlistTable');
+    this.sectionsEl = options.sectionsEl || document.getElementById('stockFiltersSections');
+    this.activeFilters = {};
+    this.presets = {
+      growth: { growth: ['rev-50'], mcap: ['large', 'mid'], valuation: ['pe-20-30'], expert: ['inst-buy'] },
+      value: { valuation: ['pe-under-10', 'pb-under-1'], dividend: ['growth-5'], financial: ['positive-cf'] },
+      momentum: { price: ['up-10-today'], volume: ['vol-2x'], technical: ['above-50dma', 'rsi-overbought'] },
+      contrarian: { price: ['down-20-month'], technical: ['rsi-oversold'], expert: ['insider-buy'], analyst: ['upgrade'] },
+      dividend: { dividend: ['div-yield-5', 'aristocrat', 'payout-low'], financial: ['positive-cf'] },
+      'high-conviction': { expert: ['congress-buy', 'inst-buy', 'multi-insider-buy'], analyst: ['upgrade'] },
+      breakout: { price: ['near-52w-high'], volume: ['vol-2x'], technical: ['breaking-resistance', 'macd-bullish'] },
+      'short-squeeze': { short: ['high-20', 'squeeze-risk', 'days-cover-5'], volume: ['unusual-spike'], price: ['up-5-today'] },
+      earnings: { fundamental: ['earnings-week', 'earnings-beat'], volume: ['vol-2x'], price: ['up-5-today'] },
+      defensive: { market: ['beta-low'], dividend: ['div-yield-3'], sector: ['utilities', 'consumer-staples'] }
+    };
+  }
+
+  setupToggle() {
+    if (this.toggleBtn && this.panel) {
+      this.toggleBtn.addEventListener('click', () => {
+        this.panel.classList.toggle('open');
+      });
+    }
+  }
+
+  setupSectionToggles() {
+    if (!this.sectionsEl) return;
+    this.sectionsEl.querySelectorAll('.filter-section').forEach((section) => {
+      const btn = section.querySelector('.filter-section-toggle');
+      if (btn) {
+        btn.addEventListener('click', () => section.classList.toggle('collapsed'));
+      }
+    });
+  }
+
+  setupCheckboxes() {
+    if (!this.panel) return;
+    this.panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+      cb.addEventListener('change', () => this.updateAndApply());
+    });
+  }
+
+  setupPresets() {
+    if (!this.panel) return;
+    this.panel.querySelectorAll('.preset-btn[data-preset]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.preset;
+        if (this.presets[preset]) this.applyPreset(this.presets[preset]);
+      });
+    });
+  }
+
+  applyPreset(preset) {
+    if (!this.panel) return;
+    this.panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+      cb.checked = false;
+    });
+    Object.entries(preset).forEach(([name, values]) => {
+      const vals = Array.isArray(values) ? values : [values];
+      vals.forEach((v) => {
+        const input = this.panel.querySelector(`input[name="${name}"][value="${v}"]`) ||
+          this.panel.querySelector(`input[value="${v}"]`);
+        if (input) input.checked = true;
+      });
+    });
+    this.updateAndApply();
+  }
+
+  gatherFilters() {
+    const filters = {};
+    if (!this.panel) return filters;
+    this.panel.querySelectorAll('input[type="checkbox"]:checked').forEach((cb) => {
+      const name = cb.name;
+      if (!filters[name]) filters[name] = [];
+      filters[name].push(cb.value);
+    });
+    return filters;
+  }
+
+  updateSectionCounts() {
+    if (!this.sectionsEl) return;
+    this.sectionsEl.querySelectorAll('.filter-section').forEach((section) => {
+      const opts = section.querySelectorAll('.filter-options input:checked');
+      const countEl = section.querySelector('.filter-count');
+      if (countEl) countEl.textContent = opts.length;
+    });
+  }
+
+  updateAndApply() {
+    this.activeFilters = this.gatherFilters();
+    this.updateSectionCounts();
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    const filters = this.activeFilters;
+    const tbody = this.table && this.table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = tbody.querySelectorAll('tr[data-symbol]');
+    const hasAny = Object.keys(filters).some((k) => filters[k] && filters[k].length > 0);
+
+    rows.forEach((row) => {
+      if (!hasAny) {
+        row.style.display = '';
+        return;
+      }
+      let show = true;
+      for (const [filterName, filterValues] of Object.entries(filters)) {
+        if (!filterValues || filterValues.length === 0) continue;
+        const rowValues = (row.dataset[filterName] || '').split(/[,\s]+/).filter(Boolean);
+        if (rowValues.length === 0) {
+          show = false;
+          break;
+        }
+        const match = filterValues.some((fv) => rowValues.includes(fv));
+        if (!match) {
+          show = false;
+          break;
+        }
+      }
+      row.style.display = show ? '' : 'none';
+    });
+  }
+
+  clearAll() {
+    if (!this.panel) return;
+    this.panel.querySelectorAll('input[type="checkbox"]').forEach((cb) => { cb.checked = false; });
+    this.updateAndApply();
+  }
+
+  init() {
+    this.setupToggle();
+    this.setupSectionToggles();
+    this.setupCheckboxes();
+    this.setupPresets();
+    if (this.clearBtn) this.clearBtn.addEventListener('click', () => this.clearAll());
+    this.updateAndApply();
+  }
+}
+window.StockWatchlistFilters = StockWatchlistFilters;
+
 function updateWatchlistFromQuotes(quotes) {
   if (!quotes || !quotes.length) return;
   quotes.forEach((q) => {
@@ -230,6 +377,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const filters = new WatchlistFilters();
     filters.init();
     window.watchlistFilters = filters;
+  }
+
+  if (window.StockWatchlistFilters) {
+    const stockFilters = new StockWatchlistFilters();
+    stockFilters.init();
+    window.stockWatchlistFilters = stockFilters;
   }
 
   if (addMemberBtn) {

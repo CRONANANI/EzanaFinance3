@@ -420,10 +420,334 @@
               <i class="bi bi-bookmark-star"></i>
               Stock Watchlist
             </h3>
-            <button class="card-action-btn">Add Stock</button>
+            <div class="card-header-actions">
+              <button class="card-action-btn stock-filters-toggle" id="stockFiltersToggle" title="Toggle filters">
+                <i class="bi bi-funnel"></i> Filters
+              </button>
+              <button class="card-action-btn">Add Stock</button>
+            </div>
           </div>
-          <div class="card-body">
-            <table class="watchlist-table data-table">
+          <div class="stock-watchlist-filters-panel" id="stockFiltersPanel">
+            <div class="stock-filters-header">
+              <span class="filters-title">Stock Filters</span>
+              <button type="button" class="filters-clear-btn" id="stockFiltersClear">Clear all</button>
+            </div>
+            <div class="stock-filters-presets">
+              <span class="filters-section-label">Presets</span>
+              <div class="stock-preset-btns">
+                <button type="button" class="preset-btn" data-preset="growth">Growth Stocks</button>
+                <button type="button" class="preset-btn" data-preset="value">Value Stocks</button>
+                <button type="button" class="preset-btn" data-preset="momentum">Momentum Plays</button>
+                <button type="button" class="preset-btn" data-preset="contrarian">Contrarian</button>
+                <button type="button" class="preset-btn" data-preset="dividend">Dividend Income</button>
+                <button type="button" class="preset-btn" data-preset="high-conviction">High Conviction</button>
+                <button type="button" class="preset-btn" data-preset="breakout">Breakout</button>
+                <button type="button" class="preset-btn" data-preset="short-squeeze">Short Squeeze</button>
+                <button type="button" class="preset-btn" data-preset="earnings">Earnings Movers</button>
+                <button type="button" class="preset-btn" data-preset="defensive">Risk-Off Defensive</button>
+              </div>
+            </div>
+            <div class="stock-filters-sections" id="stockFiltersSections">
+              <div class="filter-section" data-section="price-movement">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>1. Price Movement</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="price" value="up-5-today"> Up &gt;5% Today</label>
+                  <label><input type="checkbox" name="price" value="up-10-today"> Up &gt;10% Today</label>
+                  <label><input type="checkbox" name="price" value="down-5-today"> Down &gt;5% Today</label>
+                  <label><input type="checkbox" name="price" value="down-10-today"> Down &gt;10% Today</label>
+                  <label><input type="checkbox" name="price" value="up-20-week"> Up &gt;20% This Week</label>
+                  <label><input type="checkbox" name="price" value="down-20-week"> Down &gt;20% This Week</label>
+                  <label><input type="checkbox" name="price" value="up-50-month"> Up &gt;50% This Month</label>
+                  <label><input type="checkbox" name="price" value="down-50-month"> Down &gt;50% This Month</label>
+                  <label><input type="checkbox" name="price" value="52w-high"> New 52-Week High</label>
+                  <label><input type="checkbox" name="price" value="52w-low"> New 52-Week Low</label>
+                  <label><input type="checkbox" name="price" value="near-52w-high"> Near 52-Week High (&lt;5%)</label>
+                  <label><input type="checkbox" name="price" value="near-52w-low"> Near 52-Week Low (&lt;5%)</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="volume">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>2. Volume &amp; Activity</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="volume" value="vol-2x"> Volume &gt;2x Average</label>
+                  <label><input type="checkbox" name="volume" value="vol-5x"> Volume &gt;5x Average</label>
+                  <label><input type="checkbox" name="volume" value="vol-10x"> Volume &gt;10x Average</label>
+                  <label><input type="checkbox" name="volume" value="unusual-spike"> Unusual Volume Spike</label>
+                  <label><input type="checkbox" name="volume" value="decreasing"> Decreasing Volume</label>
+                  <label><input type="checkbox" name="volume" value="above-1-5x"> Above Average &gt;1.5x</label>
+                  <label><input type="checkbox" name="volume" value="below-0-5x"> Below Average &lt;0.5x</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="technical">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>3. Technical Indicators</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="technical" value="rsi-overbought"> RSI Overbought (&gt;70)</label>
+                  <label><input type="checkbox" name="technical" value="rsi-oversold"> RSI Oversold (&lt;30)</label>
+                  <label><input type="checkbox" name="technical" value="macd-bullish"> MACD Bullish Crossover</label>
+                  <label><input type="checkbox" name="technical" value="macd-bearish"> MACD Bearish Crossover</label>
+                  <label><input type="checkbox" name="technical" value="golden-cross"> Golden Cross</label>
+                  <label><input type="checkbox" name="technical" value="death-cross"> Death Cross</label>
+                  <label><input type="checkbox" name="technical" value="above-50dma"> Above 50 DMA</label>
+                  <label><input type="checkbox" name="technical" value="below-50dma"> Below 50 DMA</label>
+                  <label><input type="checkbox" name="technical" value="above-200dma"> Above 200 DMA</label>
+                  <label><input type="checkbox" name="technical" value="below-200dma"> Below 200 DMA</label>
+                  <label><input type="checkbox" name="technical" value="bb-upper"> Bollinger Upper Touch</label>
+                  <label><input type="checkbox" name="technical" value="bb-lower"> Bollinger Lower Touch</label>
+                  <label><input type="checkbox" name="technical" value="breaking-resistance"> Breaking Resistance</label>
+                  <label><input type="checkbox" name="technical" value="breaking-support"> Breaking Support</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="expert">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>4. Expert Activity</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="expert" value="congress-buy"> Congressional Buy (7d)</label>
+                  <label><input type="checkbox" name="expert" value="congress-sell"> Congressional Sell (7d)</label>
+                  <label><input type="checkbox" name="expert" value="inst-buy"> Institutional Buy (13F)</label>
+                  <label><input type="checkbox" name="expert" value="inst-sell"> Institutional Sell (13F)</label>
+                  <label><input type="checkbox" name="expert" value="insider-buy"> Insider Buy (30d)</label>
+                  <label><input type="checkbox" name="expert" value="insider-sell"> Insider Sell (30d)</label>
+                  <label><input type="checkbox" name="expert" value="multi-insider-buy"> Multiple Insiders Buying</label>
+                  <label><input type="checkbox" name="expert" value="multi-insider-sell"> Multiple Insiders Selling</label>
+                  <label><input type="checkbox" name="expert" value="hedge-increase"> Hedge Fund Increased</label>
+                  <label><input type="checkbox" name="expert" value="hedge-decrease"> Hedge Fund Decreased</label>
+                  <label><input type="checkbox" name="expert" value="buffett"> Warren Buffett Buy/Sell</label>
+                  <label><input type="checkbox" name="expert" value="unusual-inst"> Unusual Institutional Activity</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="fundamental">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>5. Fundamental Events</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="fundamental" value="earnings-week"> Earnings This Week</label>
+                  <label><input type="checkbox" name="fundamental" value="earnings-today"> Earnings Today</label>
+                  <label><input type="checkbox" name="fundamental" value="earnings-beat"> Earnings Beat Expected</label>
+                  <label><input type="checkbox" name="fundamental" value="earnings-miss"> Earnings Miss Expected</label>
+                  <label><input type="checkbox" name="fundamental" value="dividend-announce"> Dividend Announcement</label>
+                  <label><input type="checkbox" name="fundamental" value="ex-div-week"> Ex-Dividend This Week</label>
+                  <label><input type="checkbox" name="fundamental" value="stock-split"> Stock Split Announced</label>
+                  <label><input type="checkbox" name="fundamental" value="acquisition"> Major Acquisition News</label>
+                  <label><input type="checkbox" name="fundamental" value="fda-approval"> FDA Approval</label>
+                  <label><input type="checkbox" name="fundamental" value="gov-contract"> Government Contract</label>
+                  <label><input type="checkbox" name="fundamental" value="patent"> Patent Filed/Granted</label>
+                  <label><input type="checkbox" name="fundamental" value="analyst-upgrade"> Analyst Upgrade</label>
+                  <label><input type="checkbox" name="fundamental" value="analyst-downgrade"> Analyst Downgrade</label>
+                  <label><input type="checkbox" name="fundamental" value="target-raised"> Price Target Raised</label>
+                  <label><input type="checkbox" name="fundamental" value="target-lowered"> Price Target Lowered</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="news">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>6. News &amp; Sentiment</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="news" value="breaking-1h"> Breaking News (1h)</label>
+                  <label><input type="checkbox" name="news" value="major-24h"> Major News (24h)</label>
+                  <label><input type="checkbox" name="news" value="high-mentions"> High Media Mentions</label>
+                  <label><input type="checkbox" name="news" value="social-trending"> Trending on Social</label>
+                  <label><input type="checkbox" name="news" value="reddit-wsb"> Reddit WSB Mention</label>
+                  <label><input type="checkbox" name="news" value="twitter-trending"> Twitter/X Trending</label>
+                  <label><input type="checkbox" name="news" value="sentiment-positive"> Positive Sentiment Spike</label>
+                  <label><input type="checkbox" name="news" value="sentiment-negative"> Negative Sentiment Spike</label>
+                  <label><input type="checkbox" name="news" value="coverage-increase"> Analyst Coverage Increase</label>
+                  <label><input type="checkbox" name="news" value="short-squeeze-potential"> Short Squeeze Potential</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="valuation">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>7. Valuation Metrics</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="valuation" value="pe-under-10"> P/E Under 10</label>
+                  <label><input type="checkbox" name="valuation" value="pe-10-20"> P/E 10-20</label>
+                  <label><input type="checkbox" name="valuation" value="pe-20-30"> P/E 20-30</label>
+                  <label><input type="checkbox" name="valuation" value="pe-over-30"> P/E Over 30</label>
+                  <label><input type="checkbox" name="valuation" value="pe-under-industry"> P/E Under Industry Avg</label>
+                  <label><input type="checkbox" name="valuation" value="pe-over-industry"> P/E Over Industry Avg</label>
+                  <label><input type="checkbox" name="valuation" value="forward-pe-low"> Forward P/E &lt; Current</label>
+                  <label><input type="checkbox" name="valuation" value="peg-under-1"> PEG &lt; 1</label>
+                  <label><input type="checkbox" name="valuation" value="peg-over-2"> PEG &gt; 2</label>
+                  <label><input type="checkbox" name="valuation" value="ps-under-1"> Price/Sales &lt; 1</label>
+                  <label><input type="checkbox" name="valuation" value="pb-under-1"> Price/Book &lt; 1</label>
+                  <label><input type="checkbox" name="valuation" value="div-yield-3"> Dividend Yield &gt; 3%</label>
+                  <label><input type="checkbox" name="valuation" value="div-yield-5"> Dividend Yield &gt; 5%</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="financial-health">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>8. Financial Health</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="financial" value="de-low"> Debt/Equity &lt; 0.5</label>
+                  <label><input type="checkbox" name="financial" value="de-high"> Debt/Equity &gt; 2</label>
+                  <label><input type="checkbox" name="financial" value="cr-healthy"> Current Ratio &gt; 2</label>
+                  <label><input type="checkbox" name="financial" value="cr-risk"> Current Ratio &lt; 1</label>
+                  <label><input type="checkbox" name="financial" value="positive-cf"> Positive Cash Flow</label>
+                  <label><input type="checkbox" name="financial" value="negative-cf"> Negative Cash Flow</label>
+                  <label><input type="checkbox" name="financial" value="revenue-growing"> Growing Revenue YoY</label>
+                  <label><input type="checkbox" name="financial" value="revenue-declining"> Declining Revenue YoY</label>
+                  <label><input type="checkbox" name="financial" value="margin-high"> Profit Margin &gt; 20%</label>
+                  <label><input type="checkbox" name="financial" value="margin-low"> Profit Margin &lt; 5%</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="options">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>9. Options Activity</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="options" value="high-options-vol"> High Options Volume</label>
+                  <label><input type="checkbox" name="options" value="unusual-options"> Unusual Options Activity</label>
+                  <label><input type="checkbox" name="options" value="pc-bearish"> Put/Call &gt; 1</label>
+                  <label><input type="checkbox" name="options" value="pc-bullish"> Put/Call &lt; 0.5</label>
+                  <label><input type="checkbox" name="options" value="call-sweep"> Large Call Sweep</label>
+                  <label><input type="checkbox" name="options" value="put-sweep"> Large Put Sweep</label>
+                  <label><input type="checkbox" name="options" value="iv-increasing"> IV Increasing</label>
+                  <label><input type="checkbox" name="options" value="iv-decreasing"> IV Decreasing</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="market-context">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>10. Market Context</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="market" value="outperform-sp500"> Outperforming S&amp;P 500</label>
+                  <label><input type="checkbox" name="market" value="underperform-sp500"> Underperforming S&amp;P 500</label>
+                  <label><input type="checkbox" name="market" value="outperform-sector"> Outperforming Sector</label>
+                  <label><input type="checkbox" name="market" value="underperform-sector"> Underperforming Sector</label>
+                  <label><input type="checkbox" name="market" value="beta-high"> Beta &gt; 1.5</label>
+                  <label><input type="checkbox" name="market" value="beta-low"> Beta &lt; 0.7</label>
+                  <label><input type="checkbox" name="market" value="corr-high"> Correlation High</label>
+                  <label><input type="checkbox" name="market" value="corr-low"> Correlation Low</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="sector">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>11. Sector &amp; Industry</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="sector" value="technology"> Technology</label>
+                  <label><input type="checkbox" name="sector" value="healthcare"> Healthcare</label>
+                  <label><input type="checkbox" name="sector" value="finance"> Finance</label>
+                  <label><input type="checkbox" name="sector" value="energy"> Energy</label>
+                  <label><input type="checkbox" name="sector" value="consumer-disc"> Consumer Discretionary</label>
+                  <label><input type="checkbox" name="sector" value="consumer-staples"> Consumer Staples</label>
+                  <label><input type="checkbox" name="sector" value="industrials"> Industrials</label>
+                  <label><input type="checkbox" name="sector" value="materials"> Materials</label>
+                  <label><input type="checkbox" name="sector" value="real-estate"> Real Estate</label>
+                  <label><input type="checkbox" name="sector" value="utilities"> Utilities</label>
+                  <label><input type="checkbox" name="sector" value="communications"> Communication Services</label>
+                  <label><input type="checkbox" name="sector" value="sector-leader"> Sector Leader</label>
+                  <label><input type="checkbox" name="sector" value="sector-laggard"> Sector Laggard</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="market-cap">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>12. Market Cap &amp; Size</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="mcap" value="mega"> Mega Cap (&gt;$200B)</label>
+                  <label><input type="checkbox" name="mcap" value="large"> Large Cap ($10B-$200B)</label>
+                  <label><input type="checkbox" name="mcap" value="mid"> Mid Cap ($2B-$10B)</label>
+                  <label><input type="checkbox" name="mcap" value="small"> Small Cap ($300M-$2B)</label>
+                  <label><input type="checkbox" name="mcap" value="micro"> Micro Cap (&lt;$300M)</label>
+                  <label><input type="checkbox" name="mcap" value="growing"> Market Cap Growing</label>
+                  <label><input type="checkbox" name="mcap" value="declining"> Market Cap Declining</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="liquidity">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>13. Liquidity &amp; Trading</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="liquidity" value="high"> Highly Liquid (&gt;1M vol)</label>
+                  <label><input type="checkbox" name="liquidity" value="moderate"> Moderate (100K-1M)</label>
+                  <label><input type="checkbox" name="liquidity" value="low"> Low (&lt;100K)</label>
+                  <label><input type="checkbox" name="liquidity" value="tight-spread"> Tight Spread</label>
+                  <label><input type="checkbox" name="liquidity" value="wide-spread"> Wide Spread</label>
+                  <label><input type="checkbox" name="liquidity" value="premarket-gain"> Pre-Market Gainer</label>
+                  <label><input type="checkbox" name="liquidity" value="ah-gain"> After-Hours Gainer</label>
+                  <label><input type="checkbox" name="liquidity" value="premarket-loss"> Pre-Market Loser</label>
+                  <label><input type="checkbox" name="liquidity" value="ah-loss"> After-Hours Loser</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="short-interest">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>14. Short Interest</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="short" value="high-20"> High Short (&gt;20%)</label>
+                  <label><input type="checkbox" name="short" value="medium-10-20"> Medium (10-20%)</label>
+                  <label><input type="checkbox" name="short" value="low-10"> Low (&lt;10%)</label>
+                  <label><input type="checkbox" name="short" value="increasing"> Short Increasing</label>
+                  <label><input type="checkbox" name="short" value="decreasing"> Short Decreasing</label>
+                  <label><input type="checkbox" name="short" value="days-cover-5"> Days to Cover &gt; 5</label>
+                  <label><input type="checkbox" name="short" value="squeeze-risk"> Short Squeeze Risk</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="analyst-ratings">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>15. Analyst Ratings</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="analyst" value="strong-buy"> Strong Buy Consensus</label>
+                  <label><input type="checkbox" name="analyst" value="buy"> Buy Consensus</label>
+                  <label><input type="checkbox" name="analyst" value="hold"> Hold Consensus</label>
+                  <label><input type="checkbox" name="analyst" value="sell"> Sell Consensus</label>
+                  <label><input type="checkbox" name="analyst" value="strong-sell"> Strong Sell Consensus</label>
+                  <label><input type="checkbox" name="analyst" value="upgrade"> Rating Upgrade</label>
+                  <label><input type="checkbox" name="analyst" value="downgrade"> Rating Downgrade</label>
+                  <label><input type="checkbox" name="analyst" value="above-target"> Above Avg Price Target</label>
+                  <label><input type="checkbox" name="analyst" value="below-target"> Below Avg Price Target</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="growth">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>16. Growth Metrics</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="growth" value="rev-20"> Revenue Growth &gt;20% YoY</label>
+                  <label><input type="checkbox" name="growth" value="rev-50"> Revenue Growth &gt;50% YoY</label>
+                  <label><input type="checkbox" name="growth" value="eps-20"> EPS Growth &gt;20% YoY</label>
+                  <label><input type="checkbox" name="growth" value="eps-50"> EPS Growth &gt;50% YoY</label>
+                  <label><input type="checkbox" name="growth" value="rev-negative"> Negative Revenue Growth</label>
+                  <label><input type="checkbox" name="growth" value="eps-negative"> Negative EPS Growth</label>
+                  <label><input type="checkbox" name="growth" value="accelerating"> Accelerating Growth</label>
+                  <label><input type="checkbox" name="growth" value="decelerating"> Decelerating Growth</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="dividend">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>17. Dividend &amp; Returns</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="dividend" value="paying"> Dividend Paying</label>
+                  <label><input type="checkbox" name="dividend" value="aristocrat"> Dividend Aristocrat</label>
+                  <label><input type="checkbox" name="dividend" value="growth-5"> Dividend Growth &gt;5% YoY</label>
+                  <label><input type="checkbox" name="dividend" value="cut"> Dividend Cut Recently</label>
+                  <label><input type="checkbox" name="dividend" value="suspended"> Dividend Suspended</label>
+                  <label><input type="checkbox" name="dividend" value="payout-high"> High Payout (&gt;80%)</label>
+                  <label><input type="checkbox" name="dividend" value="payout-low"> Low Payout (&lt;40%)</label>
+                  <label><input type="checkbox" name="dividend" value="buyback"> Buyback Active</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="patterns">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>18. Pattern Recognition</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="pattern" value="cup-handle"> Cup &amp; Handle</label>
+                  <label><input type="checkbox" name="pattern" value="head-shoulders"> Head &amp; Shoulders</label>
+                  <label><input type="checkbox" name="pattern" value="double-top"> Double Top</label>
+                  <label><input type="checkbox" name="pattern" value="double-bottom"> Double Bottom</label>
+                  <label><input type="checkbox" name="pattern" value="asc-triangle"> Ascending Triangle</label>
+                  <label><input type="checkbox" name="pattern" value="desc-triangle"> Descending Triangle</label>
+                  <label><input type="checkbox" name="pattern" value="flag"> Flag Pattern</label>
+                  <label><input type="checkbox" name="pattern" value="wedge"> Wedge Pattern</label>
+                  <label><input type="checkbox" name="pattern" value="channel-breakout"> Channel Breakout</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="ai">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>19. AI-Powered Insights</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="ai" value="buy-signal"> AI Buy Signal</label>
+                  <label><input type="checkbox" name="ai" value="sell-signal"> AI Sell Signal</label>
+                  <label><input type="checkbox" name="ai" value="hold-signal"> AI Hold Signal</label>
+                  <label><input type="checkbox" name="ai" value="pred-up"> Price Prediction Up &gt;10%</label>
+                  <label><input type="checkbox" name="ai" value="pred-down"> Price Prediction Down &gt;10%</label>
+                  <label><input type="checkbox" name="ai" value="anomaly"> Anomaly Detected</label>
+                  <label><input type="checkbox" name="ai" value="pattern-match"> Pattern Match to Winners</label>
+                  <label><input type="checkbox" name="ai" value="risk-high"> Risk Score High</label>
+                  <label><input type="checkbox" name="ai" value="risk-low"> Risk Score Low</label>
+                  <label><input type="checkbox" name="ai" value="opp-high"> Opportunity Score High</label>
+                </div>
+              </div>
+              <div class="filter-section" data-section="custom">
+                <button type="button" class="filter-section-toggle"><i class="bi bi-chevron-down"></i><span>20. Custom Alerts</span><span class="filter-count">0</span></button>
+                <div class="filter-options">
+                  <label><input type="checkbox" name="custom" value="price-above"> Price Above $X</label>
+                  <label><input type="checkbox" name="custom" value="price-below"> Price Below $X</label>
+                  <label><input type="checkbox" name="custom" value="price-between"> Price Between $X and $Y</label>
+                  <label><input type="checkbox" name="custom" value="mcap-above"> Market Cap Above $X</label>
+                  <label><input type="checkbox" name="custom" value="vol-above"> Volume Above X shares</label>
+                  <label><input type="checkbox" name="custom" value="volatility-above"> Volatility Above X%</label>
+                  <label><input type="checkbox" name="custom" value="custom-condition"> Custom Condition Met</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body stock-watchlist-body">
+            <table class="watchlist-table data-table" id="stockWatchlistTable">
               <thead>
                 <tr>
                   <th>Symbol</th>
@@ -435,8 +759,8 @@
                   <th></th>
                 </tr>
               </thead>
-              <tbody>
-                <tr data-symbol="NVDA">
+              <tbody id="stockWatchlistBody">
+                <tr data-symbol="NVDA" data-price="up-5-today" data-price-change="2.6" data-volume="vol-2x" data-technical="above-200dma,rsi-overbought" data-expert="inst-buy,insider-buy" data-sector="technology" data-mcap="mega" data-growth="rev-50" data-valuation="pe-20-30" data-ai="ai-buy-signal">
                   <td><strong>NVDA</strong></td>
                   <td>NVIDIA</td>
                   <td class="watchlist-price">$485.20</td>
@@ -449,7 +773,7 @@
                     <button class="icon-btn"><i class="bi bi-trash"></i></button>
                   </td>
                 </tr>
-                <tr data-symbol="AAPL">
+                <tr data-symbol="AAPL" data-price-change="1.2" data-volume="above-1-5x" data-technical="above-50dma,above-200dma" data-expert="insider-buy" data-sector="technology" data-mcap="mega" data-growth="rev-20" data-valuation="pe-20-30" data-dividend="paying">
                   <td><strong>AAPL</strong></td>
                   <td>Apple</td>
                   <td class="watchlist-price">$182.30</td>
@@ -462,13 +786,52 @@
                     <button class="icon-btn"><i class="bi bi-trash"></i></button>
                   </td>
                 </tr>
-                <tr data-symbol="TSLA">
+                <tr data-symbol="TSLA" data-price="down-5-today" data-price-change="-3.2" data-volume="vol-5x" data-technical="below-50dma,rsi-oversold" data-expert="insider-buy" data-sector="technology" data-mcap="large" data-growth="rev-50" data-short="medium-10-20">
                   <td><strong>TSLA</strong></td>
                   <td>Tesla</td>
                   <td class="watchlist-price">$248.50</td>
                   <td class="watchlist-change negative">-$8.20</td>
                   <td class="watchlist-pct negative">-3.2%</td>
                   <td><span class="badge warning">Drop</span></td>
+                  <td>
+                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
+                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
+                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr data-symbol="MSFT" data-price-change="0.8" data-technical="above-200dma" data-expert="inst-buy" data-sector="technology" data-mcap="mega" data-valuation="pe-30">
+                  <td><strong>MSFT</strong></td>
+                  <td>Microsoft</td>
+                  <td class="watchlist-price">$415.20</td>
+                  <td class="watchlist-change positive">+$3.30</td>
+                  <td class="watchlist-pct positive">+0.8%</td>
+                  <td><span class="badge muted">—</span></td>
+                  <td>
+                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
+                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
+                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr data-symbol="JPM" data-price-change="1.5" data-sector="finance" data-mcap="large" data-valuation="pe-10-20" data-dividend="paying,growth-5" data-financial="positive-cf">
+                  <td><strong>JPM</strong></td>
+                  <td>JPMorgan</td>
+                  <td class="watchlist-price">$198.40</td>
+                  <td class="watchlist-change positive">+$2.95</td>
+                  <td class="watchlist-pct positive">+1.5%</td>
+                  <td><span class="badge success">Hit</span></td>
+                  <td>
+                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
+                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
+                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr data-symbol="XOM" data-price-change="-1.2" data-sector="energy" data-mcap="large" data-valuation="pe-10-20" data-dividend="aristocrat" data-market="beta-low">
+                  <td><strong>XOM</strong></td>
+                  <td>Exxon Mobil</td>
+                  <td class="watchlist-price">$108.20</td>
+                  <td class="watchlist-change negative">-$1.32</td>
+                  <td class="watchlist-pct negative">-1.2%</td>
+                  <td><span class="badge muted">—</span></td>
                   <td>
                     <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
                     <button class="icon-btn"><i class="bi bi-bell"></i></button>

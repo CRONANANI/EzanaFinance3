@@ -181,6 +181,75 @@ body.watchlist-page .stock-watchlist-card {
 .recent-activity-card { min-width: 0; }
 .stock-watchlist-card { min-width: 0; }
 
+/* Stock Watchlist card header actions */
+.card-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Stock Watchlist filters panel - collapsible */
+.stock-watchlist-filters-panel {
+  display: none;
+  max-height: 280px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+  flex-direction: column;
+}
+
+.stock-watchlist-filters-panel.open {
+  display: flex;
+}
+
+.stock-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stock-filters-presets {
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+}
+
+.stock-preset-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.stock-filters-sections {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 1rem 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.stock-watchlist-filters-panel .stock-filters-sections::-webkit-scrollbar {
+  width: 6px;
+}
+
+.stock-watchlist-filters-panel .stock-filters-sections::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.stock-watchlist-card .stock-filters-sections .filter-section {
+  margin-bottom: 0.25rem;
+}
+
+.stock-watchlist-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* Recent Activity layout: sidebar + content; fills viewport, only activity list scrolls */
 .recent-activity-body {
   display: flex;
