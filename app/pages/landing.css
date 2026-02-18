@@ -268,8 +268,8 @@ body {
 
 /* Hero Tagline (main title) - Single line, fluid scaling */
 .hero-tagline {
-    font-size: 2.1rem;
-    font-size: clamp(0.81rem, 3vw, 2.1rem);
+    font-size: 2.625rem;
+    font-size: clamp(1.0125rem, 3.75vw, 2.625rem);
     font-weight: 700;
     max-width: 900px; /* Ensure "Your Network Is Your Net Worth" fits */
     line-height: 1.2;
@@ -289,7 +289,7 @@ body {
 
 /* Hero Subtitle - Wider than the tagline (which is ~680-720px) */
 .hero-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.9375rem;
     line-height: 1.7;
     font-weight: var(--font-weight-normal);
     margin: 0 0 0 0;
@@ -822,6 +822,11 @@ body {
     color: rgba(255, 255, 255, 0.8);
     margin: 0 0 1.5rem 0;
     line-height: 1.5;
+}
+
+/* Legacy card body text matches hero subtitle size (0.9375rem) */
+.legacy-privacy {
+    font-size: 0.9375rem;
 }
 
 .legacy-signup-form {
