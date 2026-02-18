@@ -236,6 +236,15 @@
   height: 100%;
   object-fit: contain;
   object-position: center;
+  /* Crisp text rendering in preview images */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  /* Slight contrast boost for crisper text */
+  filter: contrast(1.04);
+  /* GPU layer for sharper scaling */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .card-header {
