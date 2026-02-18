@@ -85,7 +85,14 @@ body {
 .logo {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 0.625rem;
+}
+
+.logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .logo-icon {
