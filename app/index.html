@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
     <link rel="stylesheet" href="pages/electric-border.css">
     <link rel="stylesheet" href="pages/prism.css">
-    <link rel="stylesheet" href="components/landing/antigravity-bg/antigravity-bg.css">
     <!-- Defer below-fold CSS for faster first paint -->
     <link rel="stylesheet" href="components/landing/features-section.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="components/landing/faq-section.css" media="print" onload="this.media='all'">
@@ -35,9 +34,6 @@
         </filter>
       </defs>
     </svg>
-
-    <!-- Antigravity particle background - full page -->
-    <div id="antigravity-bg" aria-hidden="true"></div>
 
     <!-- Background Elements -->
     <div class="background-elements">
@@ -1442,49 +1438,8 @@
       </div>
     </div>
 
-    <!-- GSAP and Three.js - defer to avoid blocking render; loaded before dependent scripts -->
+    <!-- GSAP - defer to avoid blocking render; loaded before dependent scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
-    <script src="https://unpkg.com/three@0.160.0/build/three.min.js" defer></script>
-    <script src="components/landing/antigravity-bg/antigravity-bg.js" defer></script>
-    <script defer>
-        (function initAntigravityLazy() {
-            function start() {
-                if (window.THREE && window.AntigravityBackground) {
-                    window._antigravityBg = new AntigravityBackground('#antigravity-bg', {
-                        count: 300,
-                        magnetRadius: 10,
-                        ringRadius: 10,
-                        waveSpeed: 0.4,
-                        waveAmplitude: 1,
-                        particleSize: 2,
-                        lerpSpeed: 0.1,
-                        color: '#10b981',
-                        autoAnimate: true,
-                        particleVariance: 1,
-                        rotationSpeed: 0.15,
-                        depthFactor: 1,
-                        pulseSpeed: 3,
-                        fieldStrength: 10
-                    });
-                }
-            }
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() {
-                    if ('requestIdleCallback' in window) {
-                        requestIdleCallback(start, { timeout: 2000 });
-                    } else {
-                        setTimeout(start, 100);
-                    }
-                });
-            } else {
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(start, { timeout: 2000 });
-                } else {
-                    setTimeout(start, 100);
-                }
-            }
-        })();
-    </script>
     <script src="pages/split-text.js" defer></script>
     <script src="pages/electric-border.js" defer></script>
     <script src="pages/prism.js" defer></script>
