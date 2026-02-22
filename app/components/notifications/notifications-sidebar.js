@@ -35,11 +35,15 @@ class NotificationsSidebar {
     }
 
     setupEventListeners() {
-        // Bind nav notification toggle (from navigation component)
-        const navNotificationToggle = document.getElementById('notificationToggle');
-        if (navNotificationToggle) {
-            navNotificationToggle.addEventListener('click', () => this.toggleSidebar());
-        }
+        // Bind nav notification toggle via event delegation (nav may load async)
+        document.addEventListener('click', (e) => {
+            const toggle = e.target.closest('#notificationToggle');
+            if (toggle) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleSidebar();
+            }
+        });
 
         // Close sidebar when clicking outside
         document.addEventListener('click', (e) => {
