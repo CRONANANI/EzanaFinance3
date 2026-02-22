@@ -222,7 +222,7 @@ class PortfolioDashboard {
     const timeRangeSelector = document.getElementById('timeRangeSelector');
     const allocationTimeframe = document.getElementById('allocationTimeframe');
     if (lineChart) lineChart.style.display = isAllocation ? 'none' : '';
-    if (allocationView) allocationView.style.display = isAllocation ? 'block' : 'none';
+    if (allocationView) allocationView.style.display = isAllocation ? 'flex' : 'none';
     if (timeRangeSelector) timeRangeSelector.style.display = isAllocation ? 'none' : 'flex';
     if (allocationTimeframe) allocationTimeframe.style.display = isAllocation ? 'block' : 'none';
   }
