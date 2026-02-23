@@ -1,21 +1,16 @@
 // Global variables
 let followedCongressPeople = new Set(JSON.parse(localStorage.getItem('followedCongressPeople') || '[]'));
 
-// Page loader functionality
+// Page loader functionality - uses fetch first, then dynamic import for fallback (code-split by route)
 async function loadPageContent(pageName) {
     try {
-        // First try to load from HTML file
         const response = await fetch(`pages/${pageName}.html`);
         if (response.ok) {
-            const content = await response.text();
-            return content;
-        } else {
-            throw new Error(`Failed to load ${pageName}.html`);
+            return await response.text();
         }
+        throw new Error(`Failed to load ${pageName}.html`);
     } catch (error) {
         console.warn(`Could not load ${pageName}.html, using fallback content:`, error);
-        
-        // Fallback to inline content
         const pageMap = {
             'home-dashboard': getHomeDashboardContent,
             'inside-the-capitol': getInsideTheCapitolContent,
@@ -27,13 +22,9 @@ async function loadPageContent(pageName) {
             'financial-analytics': getFinancialAnalyticsContent,
             'user-profile-settings': getUserProfileSettingsContent
         };
-
         const contentFunction = pageMap[pageName];
-        if (contentFunction) {
-            return contentFunction();
-        } else {
-            return `<div class="text-center py-16"><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Page not found</h1></div>`;
-        }
+        if (contentFunction) return contentFunction();
+        return `<div class="text-center py-16"><h1 class="text-2xl font-bold text-gray-900 dark:text-white">Page not found</h1></div>`;
     }
 }
 
@@ -46,11 +37,9 @@ function initializeApp() {
     // Initialize theme
     initializeTheme();
     
-    // Show loading for 2 seconds, then show landing page
-    setTimeout(() => {
-        hideLoading();
-        showLandingPage();
-    }, 2000);
+    // Show content immediately when ready (optimized for CSR - no artificial delay)
+    hideLoading();
+    showLandingPage();
     
     // Add event listeners
     window.addEventListener('resize', handleResize);
@@ -888,17 +877,24 @@ function getHomeDashboardContent() {
                             <i class="bi bi-chevron-down text-lg transition-transform duration-200"></i>
                         </div>
                     </div>
-                    <div class="dashboard-card-value">$127,843.52</div>
-                    <div class="dashboard-card-change positive">
+                    <div id="portfolio-total-value" class="dashboard-card-value">$127,843.52</div>
+                    <div id="portfolio-total-change" class="dashboard-card-change positive">
                         <i class="bi bi-arrow-up"></i>
                         +$2,847.31 (+2.28%)
                     </div>
-                    <div class="dashboard-card-description">Updated 2 minutes ago</div>
+                    <div id="portfolio-total-description" class="dashboard-card-description">Updated 2 minutes ago</div>
                     
                     <!-- Portfolio Chart Content -->
                     <div class="portfolio-chart-content hidden" id="portfolio-chart-content">
                         <div class="portfolio-chart-controls">
                             <div class="time-period-selector">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Portfolio View:</label>
+                                <select id="portfolio-account-view" onchange="updatePortfolioAccountView()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
+                                    <option value="aggregate" selected>Aggregate Portfolio</option>
+                                    <option value="schwab">Charles Schwab</option>
+                                    <option value="robinhood">Robinhood</option>
+                                    <option value="polymarket">Polymarket</option>
+                                </select>
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Time Period:</label>
                                 <select id="portfolio-time-period" onchange="updatePortfolioChart()" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-gray-200">
                                     <option value="3">3 Months</option>
@@ -910,53 +906,8 @@ function getHomeDashboardContent() {
                         
                         <!-- Top 3 Holdings Section -->
                         <div class="top-holdings-section mt-6">
-                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Top 3 Holdings</h4>
-                            <div class="holdings-grid">
-                                <div class="holding-card">
-                                    <div class="holding-header">
-                                        <div class="holding-symbol">AAPL</div>
-                                        <div class="holding-name">Apple Inc.</div>
-                                    </div>
-                                    <div class="holding-details">
-                                        <div class="holding-shares">25 shares</div>
-                                        <div class="holding-value">$4,375.00</div>
-                                    </div>
-                                    <div class="holding-return">
-                                        <span class="return-label">Return:</span>
-                                        <span class="return-value positive">+$875.00 (+25.0%)</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="holding-card">
-                                    <div class="holding-header">
-                                        <div class="holding-symbol">TSLA</div>
-                                        <div class="holding-name">Tesla Inc.</div>
-                                    </div>
-                                    <div class="holding-details">
-                                        <div class="holding-shares">15 shares</div>
-                                        <div class="holding-value">$3,150.00</div>
-                                    </div>
-                                    <div class="holding-return">
-                                        <span class="return-label">Return:</span>
-                                        <span class="return-value positive">+$630.00 (+25.0%)</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="holding-card">
-                                    <div class="holding-header">
-                                        <div class="holding-symbol">MSFT</div>
-                                        <div class="holding-name">Microsoft Corp.</div>
-                                    </div>
-                                    <div class="holding-details">
-                                        <div class="holding-shares">20 shares</div>
-                                        <div class="holding-value">$7,600.00</div>
-                                    </div>
-                                    <div class="holding-return">
-                                        <span class="return-label">Return:</span>
-                                        <span class="return-value positive">+$1,520.00 (+25.0%)</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <h4 id="portfolio-holdings-title" class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Top 3 Holdings • Aggregate</h4>
+                            <div id="portfolio-top-holdings-grid" class="holdings-grid"></div>
                         </div>
                         
                         <div class="portfolio-chart-container mt-6">
@@ -1583,6 +1534,127 @@ function initializePortfolioPage() {
 }
 
 // Portfolio functionality
+const CONNECTED_PORTFOLIO_ACCOUNTS = {
+    aggregate: {
+        name: 'Aggregate Portfolio',
+        value: 127843.52,
+        change: 2847.31,
+        description: 'Updated 2 minutes ago',
+        holdings: [
+            { symbol: 'AAPL', name: 'Apple Inc.', shares: 25, value: 4375.00, returnValue: 875.00, returnPercent: 25.0 },
+            { symbol: 'TSLA', name: 'Tesla Inc.', shares: 15, value: 3150.00, returnValue: 630.00, returnPercent: 25.0 },
+            { symbol: 'MSFT', name: 'Microsoft Corp.', shares: 20, value: 7600.00, returnValue: 1520.00, returnPercent: 25.0 }
+        ]
+    },
+    schwab: {
+        name: 'Charles Schwab',
+        value: 58219.34,
+        change: 1324.77,
+        description: 'Charles Schwab • Updated 2 minutes ago',
+        holdings: [
+            { symbol: 'MSFT', name: 'Microsoft Corp.', shares: 40, value: 15200.00, returnValue: 2120.00, returnPercent: 16.2 },
+            { symbol: 'AVGO', name: 'Broadcom Inc.', shares: 12, value: 6178.56, returnValue: 844.16, returnPercent: 15.8 },
+            { symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', shares: 30, value: 7875.00, returnValue: 740.00, returnPercent: 10.4 }
+        ]
+    },
+    robinhood: {
+        name: 'Robinhood',
+        value: 41307.28,
+        change: 954.13,
+        description: 'Robinhood • Updated 2 minutes ago',
+        holdings: [
+            { symbol: 'NVDA', name: 'NVIDIA Corp.', shares: 22, value: 10436.80, returnValue: 1968.12, returnPercent: 23.2 },
+            { symbol: 'TSLA', name: 'Tesla Inc.', shares: 18, value: 4518.00, returnValue: 503.40, returnPercent: 12.5 },
+            { symbol: 'AAPL', name: 'Apple Inc.', shares: 26, value: 4914.00, returnValue: 438.10, returnPercent: 9.8 }
+        ]
+    },
+    polymarket: {
+        name: 'Polymarket',
+        value: 28316.90,
+        change: 568.41,
+        description: 'Polymarket • Updated 2 minutes ago',
+        holdings: [
+            { symbol: 'US26ELECTION', name: 'US Election Outcome', shares: 190, value: 6840.00, returnValue: 440.20, returnPercent: 6.9 },
+            { symbol: 'FEDCUTS', name: 'Fed Rate Cuts by Dec', shares: 220, value: 5720.00, returnValue: 314.60, returnPercent: 5.8 },
+            { symbol: 'BTC100K', name: 'BTC > $100K by Dec', shares: 140, value: 3640.00, returnValue: 208.33, returnPercent: 6.1 }
+        ]
+    }
+};
+
+function getCurrentPortfolioAccountKey() {
+    const select = document.getElementById('portfolio-account-view');
+    const key = select ? select.value : 'aggregate';
+    return CONNECTED_PORTFOLIO_ACCOUNTS[key] ? key : 'aggregate';
+}
+
+function getCurrentPortfolioAccountData() {
+    return CONNECTED_PORTFOLIO_ACCOUNTS[getCurrentPortfolioAccountKey()];
+}
+
+function formatMoney(value) {
+    return '$' + Number(value).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function formatSignedMoney(value) {
+    const abs = Math.abs(Number(value));
+    return (value >= 0 ? '+$' : '-$') + abs.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function renderPortfolioHoldings(accountData) {
+    const grid = document.getElementById('portfolio-top-holdings-grid');
+    const title = document.getElementById('portfolio-holdings-title');
+    if (!grid || !title || !accountData) return;
+
+    title.textContent = `Top 3 Holdings • ${accountData.name}`;
+    grid.innerHTML = accountData.holdings.map((holding) => `
+        <div class="holding-card">
+            <div class="holding-header">
+                <div class="holding-symbol">${holding.symbol}</div>
+                <div class="holding-name">${holding.name}</div>
+            </div>
+            <div class="holding-details">
+                <div class="holding-shares">${holding.shares} shares</div>
+                <div class="holding-value">${formatMoney(holding.value)}</div>
+            </div>
+            <div class="holding-return">
+                <span class="return-label">Return:</span>
+                <span class="return-value ${holding.returnValue >= 0 ? 'positive' : 'negative'}">
+                    ${formatSignedMoney(holding.returnValue)} (${holding.returnValue >= 0 ? '+' : ''}${holding.returnPercent.toFixed(1)}%)
+                </span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updatePortfolioAccountView() {
+    const accountData = getCurrentPortfolioAccountData();
+    if (!accountData) return;
+
+    const valueEl = document.getElementById('portfolio-total-value');
+    const changeEl = document.getElementById('portfolio-total-change');
+    const descriptionEl = document.getElementById('portfolio-total-description');
+
+    if (valueEl) valueEl.textContent = formatMoney(accountData.value);
+    if (descriptionEl) descriptionEl.textContent = accountData.description;
+    if (changeEl) {
+        const pct = accountData.value ? (accountData.change / (accountData.value - accountData.change)) * 100 : 0;
+        changeEl.className = `dashboard-card-change ${accountData.change >= 0 ? 'positive' : 'negative'}`;
+        changeEl.innerHTML = `
+            <i class="bi bi-arrow-${accountData.change >= 0 ? 'up' : 'down'}"></i>
+            ${formatSignedMoney(accountData.change)} (${accountData.change >= 0 ? '+' : ''}${pct.toFixed(2)}%)
+        `;
+    }
+
+    renderPortfolioHoldings(accountData);
+    updatePortfolioChart();
+}
+
 function togglePortfolioExpansion(event) {
     if (event) event.stopPropagation();
     
@@ -1621,6 +1693,7 @@ function togglePortfolioExpansion(event) {
         // Animate the expansion
         setTimeout(() => {
             content.classList.add('expanded');
+            updatePortfolioAccountView();
             initializePortfolioChart();
         }, 10);
     }
@@ -1645,20 +1718,11 @@ function initializePortfolioChart() {
 function drawPortfolioLineChart(ctx, width, height) {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
-    
-    // Enhanced portfolio data with more points for smoother line
-    const data = [
-        { month: 'Jan', date: '2024-01-01', value: 120000 },
-        { month: 'Jan', date: '2024-01-15', value: 121200 },
-        { month: 'Feb', date: '2024-02-01', value: 122000 },
-        { month: 'Feb', date: '2024-02-15', value: 120800 },
-        { month: 'Mar', date: '2024-03-01', value: 118000 },
-        { month: 'Mar', date: '2024-03-15', value: 119500 },
-        { month: 'Apr', date: '2024-04-01', value: 125000 },
-        { month: 'Apr', date: '2024-04-15', value: 126200 },
-        { month: 'May', date: '2024-05-01', value: 127843 },
-        { month: 'May', date: '2024-05-15', value: 127843 }
-    ];
+
+    const accountData = getCurrentPortfolioAccountData();
+    const periodSelect = document.getElementById('portfolio-time-period');
+    const months = Number(periodSelect ? periodSelect.value : 12) || 12;
+    const data = generatePortfolioSeries(accountData, months);
     
     // Store data globally for tooltip access
     window.portfolioChartData = data;
@@ -1691,14 +1755,22 @@ function drawPortfolioLineChart(ctx, width, height) {
         ctx.fillText('$' + Math.round(value).toLocaleString(), margin.left - 10, y + 5);
     }
     
-    // Vertical grid lines
-    for (let i = 0; i < data.length; i += 2) {
-        const x = margin.left + (i * (chartWidth / (data.length - 1)));
+    // Vertical grid lines at month boundaries
+    const monthAnchorIndexes = [];
+    const seenMonths = new Set();
+    data.forEach((point, index) => {
+        if (!seenMonths.has(point.monthKey)) {
+            seenMonths.add(point.monthKey);
+            monthAnchorIndexes.push(index);
+        }
+    });
+    monthAnchorIndexes.forEach((i) => {
+        const x = margin.left + (i * (chartWidth / Math.max(1, data.length - 1)));
         ctx.beginPath();
         ctx.moveTo(x, margin.top);
         ctx.lineTo(x, height - margin.bottom);
         ctx.stroke();
-    }
+    });
     
     // Draw gradient fill under the line
     const gradient = ctx.createLinearGradient(0, margin.top, 0, height - margin.bottom);
@@ -1760,23 +1832,53 @@ function drawPortfolioLineChart(ctx, width, height) {
         ctx.fillStyle = '#10b981';
     });
     
-    // Draw month labels
+    // Draw month/year labels
     ctx.fillStyle = '#374151';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
-    
-    const uniqueMonths = [...new Set(data.map(d => d.month))];
-    uniqueMonths.forEach((month, index) => {
-        const dataIndex = data.findIndex(d => d.month === month);
-        const x = margin.left + (dataIndex * (chartWidth / (data.length - 1)));
-        ctx.fillText(month, x, height - margin.bottom + 25);
+
+    const labelStep = Math.max(1, Math.ceil(monthAnchorIndexes.length / 6));
+    monthAnchorIndexes.forEach((dataIndex, idx) => {
+        const isLast = idx === monthAnchorIndexes.length - 1;
+        if (idx % labelStep !== 0 && !isLast) return;
+        const point = data[dataIndex];
+        const x = margin.left + (dataIndex * (chartWidth / Math.max(1, data.length - 1)));
+        ctx.fillText(point.axisLabel, x, height - margin.bottom + 25);
     });
     
     // Chart title
     ctx.fillStyle = '#1f2937';
     ctx.font = 'bold 18px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Portfolio Performance Over Time', width / 2, 25);
+    ctx.fillText(`${accountData.name} Performance Over Time`, width / 2, 25);
+}
+
+function generatePortfolioSeries(accountData, months) {
+    const normalizedMonths = Math.max(3, months);
+    const points = Math.max(6, normalizedMonths * 2);
+    const now = new Date();
+    const totalDays = normalizedMonths * 30;
+    const dayStep = totalDays / Math.max(1, points - 1);
+    const startValue = accountData.value * (1 - (normalizedMonths * 0.006));
+    const targetDrift = (accountData.value - startValue) / Math.max(1, points - 1);
+    const volatility = accountData.value * 0.0045;
+
+    const data = [];
+    let value = startValue;
+    for (let i = 0; i < points; i++) {
+        const date = new Date(now);
+        date.setDate(now.getDate() - Math.round(totalDays - (i * dayStep)));
+        const seasonality = Math.sin(i * 0.7) * volatility + Math.cos(i * 0.33) * (volatility * 0.45);
+        value = Math.max(accountData.value * 0.65, value + targetDrift + (seasonality * 0.15));
+        if (i === points - 1) value = accountData.value;
+        data.push({
+            monthKey: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            axisLabel: `${date.toLocaleDateString('en-US', { month: 'short' })} '${date.toLocaleDateString('en-US', { year: '2-digit' })}`,
+            date: date.toISOString().slice(0, 10),
+            value: Math.round(value * 100) / 100
+        });
+    }
+    return data;
 }
 
 function updatePortfolioChart() {

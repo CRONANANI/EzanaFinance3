@@ -304,15 +304,28 @@ class PortfolioDashboard {
   }
 
   getTimeRangeData() {
+    const monthLabels3 = this.getMonthYearLabels(3);
+    const monthLabels6 = this.getMonthYearLabels(6);
+    const monthLabels12 = this.getMonthYearLabels(12);
     const ranges = {
       '1D': { labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'], points: 14 },
       '1W': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], points: 7 },
       '1M': { labels: ['Wk1', 'Wk2', 'Wk3', 'Wk4', 'Wk5'], points: 5 },
-      '3M': { labels: ['Mo1', 'Mo2', 'Mo3'], points: 3 },
-      '6M': { labels: ['Mo1', 'Mo2', 'Mo3', 'Mo4', 'Mo5', 'Mo6'], points: 6 },
-      '1Y': { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], points: 12 }
+      '3M': { labels: monthLabels3, points: 3 },
+      '6M': { labels: monthLabels6, points: 6 },
+      '1Y': { labels: monthLabels12, points: 12 }
     };
     return ranges[this.currentTimeRange] || ranges['3M'];
+  }
+
+  getMonthYearLabels(monthCount) {
+    const labels = [];
+    const now = new Date();
+    for (let i = monthCount - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      labels.push(d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+    }
+    return labels;
   }
 
   getChartData(metricType) {
@@ -482,11 +495,14 @@ class PortfolioDashboard {
   }
 
   getComparisonChartData(range) {
+    const monthLabels3 = this.getMonthYearLabels(3);
+    const monthLabels6 = this.getMonthYearLabels(6);
+    const monthLabels12 = this.getMonthYearLabels(12);
     const config = {
       '1M': { labels: ['Wk1', 'Wk2', 'Wk3', 'Wk4', 'Wk5'], points: 5 },
-      '3M': { labels: ['Mo1', 'Mo2', 'Mo3'], points: 3 },
-      '6M': { labels: ['Mo1', 'Mo2', 'Mo3', 'Mo4', 'Mo5', 'Mo6'], points: 6 },
-      '1Y': { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], points: 12 }
+      '3M': { labels: monthLabels3, points: 3 },
+      '6M': { labels: monthLabels6, points: 6 },
+      '1Y': { labels: monthLabels12, points: 12 }
     };
     const { labels, points } = config[range] || config['3M'];
     const portfolio = [];
