@@ -238,7 +238,7 @@ class CompanyResearch {
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.company-search-wrapper')) this.hideSuggestions();
     });
-    document.querySelectorAll('.model-select-btn, .model-card').forEach(el => {
+    document.querySelectorAll('.model-metric-card, .model-card').forEach(el => {
       el.addEventListener('click', (e) => {
         const card = e.target.closest('.model-card');
         if (!card) return;
@@ -247,6 +247,59 @@ class CompanyResearch {
       });
     });
     document.getElementById('modelDetailClose')?.addEventListener('click', () => this.closeModelDetail());
+    this.setupModelsCarousel();
+  }
+
+  setupModelsCarousel() {
+    const track = document.getElementById('modelsCarouselTrack');
+    const prevBtn = document.getElementById('modelsCarouselPrev');
+    const nextBtn = document.getElementById('modelsCarouselNext');
+    const cards = document.querySelectorAll('.model-metric-card');
+    if (!track || !cards.length) return;
+
+    let currentIndex = 0;
+    const getCardsVisible = () => {
+      const w = window.innerWidth;
+      if (w < 768) return 1;
+      if (w < 1024) return 2;
+      if (w < 1440) return 3;
+      return 4;
+    };
+    let maxIndex = Math.max(0, cards.length - getCardsVisible());
+
+    const updateCarousel = () => {
+      const card = cards[0];
+      const cardWidth = card ? card.offsetWidth + 8 : 248;
+      const offset = -(currentIndex * cardWidth);
+      track.style.transform = `translateX(${offset}px)`;
+      if (prevBtn) prevBtn.disabled = currentIndex === 0;
+      if (nextBtn) nextBtn.disabled = currentIndex >= maxIndex && maxIndex > 0;
+    };
+
+    const onResize = () => {
+      maxIndex = Math.max(0, cards.length - getCardsVisible());
+      currentIndex = Math.min(currentIndex, maxIndex);
+      updateCarousel();
+    };
+
+    prevBtn?.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCarousel();
+      }
+    });
+    nextBtn?.addEventListener('click', () => {
+      if (currentIndex < maxIndex) {
+        currentIndex++;
+        updateCarousel();
+      } else if (maxIndex > 0) {
+        currentIndex = 0;
+        updateCarousel();
+      }
+    });
+
+    window.addEventListener('resize', onResize);
+    updateCarousel();
   }
 
   selectModel(modelType) {

@@ -583,174 +583,121 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 /* ============================================
-   CHART + MODELS GRID (2/3 chart, 1/3 sidebar)
+   MODELS CAROUSEL - Horizontal (dashboard metric-card style)
    ============================================ */
 
-.chart-models-grid {
-  display: grid;
-  grid-template-columns: 5fr 2fr; /* sidebar ~40% thinner than original 1:2 ratio */
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  align-items: start;
-}
-
-/* ============================================
-   MODELS SIDEBAR - Vertical Carousel (Portfolio News style)
-   Full model card design, scrollable vertically
-   ============================================ */
-
-.models-sidebar {
-  background: var(--card, var(--bg-card));
-  border: 1px solid var(--card-border, var(--border-primary));
-  border-radius: var(--radius-lg, var(--radius));
-  padding: 1.25rem;
-  font-family: var(--font-sans);
-  box-shadow: var(--shadow-sm, var(--shadow-card));
-  overflow: hidden;
+.models-carousel-section.compact {
   display: flex;
-  flex-direction: column;
-  max-height: 1360px; /* double length */
-  min-height: 800px;
-}
-
-.models-sidebar-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--primary, var(--color-primary));
-  flex-shrink: 0;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.models-sidebar-header h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--foreground, var(--text-primary));
-  margin: 0;
-}
-
-.models-sidebar-header i {
-  font-size: 1.125rem;
-  color: var(--primary, var(--color-primary));
-}
-
-.models-sidebar-subtitle {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  margin: 0 0 1rem 0;
-}
-
-.models-carousel {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding-right: 0.25rem;
-}
-
-.models-carousel::-webkit-scrollbar {
-  width: 6px;
-}
-
-.models-carousel::-webkit-scrollbar-track {
-  background: rgba(17, 24, 39, 0.3);
-  border-radius: 3px;
-}
-
-.models-carousel::-webkit-scrollbar-thumb {
-  background: var(--primary, var(--color-primary));
-  border-radius: 3px;
-}
-
-/* Full model card design in sidebar - same as original component cards */
-.models-sidebar .model-card {
-  padding: 1.25rem 1.25rem !important;
-  background: var(--card, rgba(17, 24, 39, 0.5));
+.models-carousel-section .carousel-nav {
+  width: 30px;
+  height: 30px;
+  background: var(--card, var(--bg-card));
   border: 1px solid var(--border, var(--border-primary));
-  border-radius: var(--radius-lg);
-  transition: all 0.2s ease;
-  margin: 0;
-  cursor: pointer;
-}
-
-.models-sidebar .model-card:hover {
-  border-color: var(--primary, var(--color-primary));
-  background: rgba(16, 185, 129, 0.08);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-}
-
-.models-sidebar .model-card .card-header {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.75rem;
-  padding: 0;
-}
-
-.models-sidebar .model-card .model-info {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.models-sidebar .model-card .model-icon {
-  width: 48px;
-  height: 48px;
-  font-size: 1.5rem;
-}
-
-.models-sidebar .model-card .model-info h3 {
+  border-radius: 50%;
+  color: var(--primary, var(--color-primary));
   font-size: 1rem;
-  margin-bottom: 0.25rem;
-}
-
-.models-sidebar .model-card .model-description {
-  font-size: 0.8125rem;
-  line-height: 1.4;
-}
-
-.models-sidebar .model-card .model-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.models-sidebar .model-card .feature-tag {
-  font-size: 0.6875rem;
-  padding: 0.25rem 0.5rem;
-}
-
-.models-sidebar .model-card .model-select-btn,
-.models-sidebar .model-card .run-model-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.8125rem;
-  width: 100%;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.models-carousel-section .carousel-nav:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--primary, var(--color-primary));
+}
+
+.models-carousel-section .carousel-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.models-carousel-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.models-carousel-track {
+  display: flex;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  transition: transform 0.5s ease;
 }
 
-.models-sidebar .model-card .model-select-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.model-metric-card {
+  min-width: 240px;
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: var(--card, var(--bg-card));
+  border: 1px solid var(--border, var(--border-primary));
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-sm, var(--shadow-card));
 }
 
-.models-sidebar .model-card .card-body {
-  padding: 0.5rem 0 0 0;
+.model-metric-card:hover,
+.model-metric-card.active {
+  border-color: var(--primary, var(--color-primary));
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
 }
 
-/* Hide output in carousel - interaction happens in detail section below */
-.models-sidebar .model-card .model-output {
-  display: none;
+.model-metric-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  flex-shrink: 0;
+}
+
+.model-metric-icon.dcf { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.model-metric-icon.three-statement { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+.model-metric-icon.ma { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.model-metric-icon.lbo { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+.model-metric-icon.comps { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.model-metric-icon.precedent { background: rgba(20, 184, 166, 0.2); color: #14b8a6; }
+.model-metric-icon.ipo { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
+.model-metric-icon.credit { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.model-metric-icon.sotp { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+.model-metric-icon.operating { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+.model-metric-icon.sensitivity { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+.model-metric-icon.memo { background: rgba(14, 165, 233, 0.2); color: #0ea5e9; }
+
+.model-metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.model-metric-label {
+  font-size: 0.625rem;
+  color: var(--muted-foreground, var(--text-secondary));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.model-metric-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground, var(--text-primary));
+}
+
+.model-metric-change {
+  font-size: 0.6875rem;
+  color: var(--muted-foreground, var(--text-secondary));
 }
 
 /* ============================================
@@ -856,7 +803,7 @@ body.light-mode .suggestion-item.highlighted {
   padding: 1.5rem;
   font-family: var(--font-sans);
   box-shadow: var(--shadow-sm, var(--shadow-card));
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
   transition: all 0.3s ease;
 }
 
@@ -1190,12 +1137,8 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 @media (max-width: 1024px) {
-  .chart-models-grid {
-    grid-template-columns: 1fr;
-  }
-  .models-sidebar {
-    max-height: 800px;
-    min-height: 500px;
+  .model-metric-card {
+    min-width: 200px;
   }
   .market-chart-section .chart-header.compact {
     flex-direction: column;
@@ -1211,16 +1154,8 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 @media (max-width: 768px) {
-  .chart-models-grid {
-    gap: 1rem;
-  }
-  .models-sidebar {
-    max-height: 600px;
-    min-height: 400px;
-    padding: 1rem;
-  }
-  .models-sidebar-header h3 {
-    font-size: 0.9375rem;
+  .model-metric-card {
+    min-width: 180px;
   }
   .market-chart-section .chart-container.compact {
     height: 250px;
@@ -1255,17 +1190,12 @@ body.light-mode .heatmap-container {
   background: #f0f0ec;
 }
 
-body.light-mode .models-sidebar {
+body.light-mode .model-metric-card {
   background: #ffffff;
   border-color: rgba(5, 150, 105, 0.15);
 }
 
-body.light-mode .models-sidebar .model-card {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-body.light-mode .models-sidebar .model-card:hover {
+body.light-mode .model-metric-card:hover {
   background: rgba(5, 150, 105, 0.06);
   border-color: rgba(5, 150, 105, 0.25);
 }

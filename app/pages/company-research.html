@@ -96,8 +96,112 @@
         </div>
       </div>
 
-      <!-- Chart + Models Grid (2/3 chart, 1/3 models carousel) -->
-      <div class="chart-models-grid">
+      <!-- Financial Analysis Models Carousel (dashboard metric-card style) -->
+      <section class="models-carousel-section compact">
+        <button class="carousel-nav prev" id="modelsCarouselPrev" type="button"><i class="bi bi-chevron-left"></i></button>
+        <div class="models-carousel-container">
+          <div class="models-carousel-track" id="modelsCarouselTrack">
+            <div class="model-metric-card model-card" data-model="dcf">
+              <div class="model-metric-icon dcf"><i class="bi bi-cash-stack"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">DCF Valuation</span>
+                <span class="model-metric-value">5-year projections</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="three-statement">
+              <div class="model-metric-icon three-statement"><i class="bi bi-file-earmark-spreadsheet"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Three-Statement</span>
+                <span class="model-metric-value">Linked statements</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="ma-accretion">
+              <div class="model-metric-icon ma"><i class="bi bi-arrow-left-right"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">M&A Accretion</span>
+                <span class="model-metric-value">Merger impact</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="lbo">
+              <div class="model-metric-icon lbo"><i class="bi bi-diagram-3"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">LBO Model</span>
+                <span class="model-metric-value">Leveraged buyout</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="comps">
+              <div class="model-metric-icon comps"><i class="bi bi-list-check"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Comparable Cos</span>
+                <span class="model-metric-value">Trading multiples</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="precedent">
+              <div class="model-metric-icon precedent"><i class="bi bi-clock-history"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Precedent Txns</span>
+                <span class="model-metric-value">M&A comparables</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="ipo">
+              <div class="model-metric-icon ipo"><i class="bi bi-graph-up-arrow"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">IPO Valuation</span>
+                <span class="model-metric-value">Offering pricing</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="credit">
+              <div class="model-metric-icon credit"><i class="bi bi-shield-check"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Credit Analysis</span>
+                <span class="model-metric-value">Debt capacity</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="sotp">
+              <div class="model-metric-icon sotp"><i class="bi bi-pie-chart"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Sum-of-Parts</span>
+                <span class="model-metric-value">Segment valuation</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="operating">
+              <div class="model-metric-icon operating"><i class="bi bi-gear"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Operating Model</span>
+                <span class="model-metric-value">Unit economics</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="sensitivity">
+              <div class="model-metric-icon sensitivity"><i class="bi bi-shuffle"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Sensitivity</span>
+                <span class="model-metric-value">Scenario planning</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+            <div class="model-metric-card model-card" data-model="investment-memo">
+              <div class="model-metric-icon memo"><i class="bi bi-file-earmark-text"></i></div>
+              <div class="model-metric-content">
+                <span class="model-metric-label">Investment Memo</span>
+                <span class="model-metric-value">Full analysis</span>
+                <span class="model-metric-change">Select to run</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-nav next" id="modelsCarouselNext" type="button"><i class="bi bi-chevron-right"></i></button>
+      </section>
+
       <!-- Market Heatmap / Stock Chart Card -->
       <section class="market-chart-section" id="marketChartSection">
         <!-- HEATMAP VIEW (default) -->
@@ -169,293 +273,6 @@
           </div>
         </div>
       </section>
-
-        <!-- Financial Analysis Models Sidebar (vertical carousel) -->
-        <section class="models-sidebar">
-          <div class="models-sidebar-header">
-            <h3>Financial Analysis Models</h3>
-            <i class="bi bi-calculator"></i>
-          </div>
-          <p class="models-sidebar-subtitle">Select a model to run AI-powered analysis</p>
-          <div class="models-carousel">
-        <!-- Model 1: DCF Valuation -->
-        <div class="component-card model-card" data-model="dcf">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon dcf"><i class="bi bi-cash-stack"></i></div>
-              <div>
-                <h3>DCF Valuation Model</h3>
-                <p class="model-description">Discounted cash flow analysis with 5-year projections</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="dcf" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Free Cash Flow Projections</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> WACC Calculation</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Terminal Value Analysis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Sensitivity Tables</span>
-            </div>
-            <div class="model-output" id="output-dcf"></div>
-          </div>
-        </div>
-
-        <!-- Model 2: Three-Statement Model -->
-        <div class="component-card model-card" data-model="three-statement">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon three-statement"><i class="bi bi-file-earmark-spreadsheet"></i></div>
-              <div>
-                <h3>Three-Statement Model</h3>
-                <p class="model-description">Complete financial model with linked statements</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="three-statement" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Income Statement (5Y)</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Balance Sheet (5Y)</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Cash Flow Statement</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Working Capital Schedule</span>
-            </div>
-            <div class="model-output" id="output-three-statement"></div>
-          </div>
-        </div>
-
-        <!-- Model 3: M&A Accretion/Dilution -->
-        <div class="component-card model-card" data-model="ma-accretion">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon ma"><i class="bi bi-arrow-left-right"></i></div>
-              <div>
-                <h3>M&A Accretion/Dilution</h3>
-                <p class="model-description">Merger impact analysis with synergies</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="ma-accretion" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> EPS Impact Analysis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Synergy Valuation</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Deal Structure</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Credit Impact</span>
-            </div>
-            <div class="model-output" id="output-ma-accretion"></div>
-          </div>
-        </div>
-
-        <!-- Model 4: LBO Model -->
-        <div class="component-card model-card" data-model="lbo">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon lbo"><i class="bi bi-diagram-3"></i></div>
-              <div>
-                <h3>LBO Model</h3>
-                <p class="model-description">Leveraged buyout returns analysis</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="lbo" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Sources & Uses</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Debt Structure</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> IRR Calculation</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Exit Scenarios</span>
-            </div>
-            <div class="model-output" id="output-lbo"></div>
-          </div>
-        </div>
-
-        <!-- Model 5: Comparable Companies -->
-        <div class="component-card model-card" data-model="comps">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon comps"><i class="bi bi-list-check"></i></div>
-              <div>
-                <h3>Comparable Companies</h3>
-                <p class="model-description">Trading multiples analysis vs peers</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="comps" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Peer Group Selection</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Trading Multiples</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Valuation Range</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Premium/Discount</span>
-            </div>
-            <div class="model-output" id="output-comps"></div>
-          </div>
-        </div>
-
-        <!-- Model 6: Precedent Transactions -->
-        <div class="component-card model-card" data-model="precedent">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon precedent"><i class="bi bi-clock-history"></i></div>
-              <div>
-                <h3>Precedent Transactions</h3>
-                <p class="model-description">M&A deal comparables analysis</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="precedent" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Transaction Universe</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Deal Multiples</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Premium Analysis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Market Trends</span>
-            </div>
-            <div class="model-output" id="output-precedent"></div>
-          </div>
-        </div>
-
-        <!-- Model 7: IPO Valuation -->
-        <div class="component-card model-card" data-model="ipo">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon ipo"><i class="bi bi-graph-up-arrow"></i></div>
-              <div>
-                <h3>IPO Valuation</h3>
-                <p class="model-description">Public offering pricing analysis</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="ipo" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Offering Structure</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Valuation Range</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Comparable IPOs</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Dilution Analysis</span>
-            </div>
-            <div class="model-output" id="output-ipo"></div>
-          </div>
-        </div>
-
-        <!-- Model 8: Credit Analysis -->
-        <div class="component-card model-card" data-model="credit">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon credit"><i class="bi bi-shield-check"></i></div>
-              <div>
-                <h3>Credit Analysis</h3>
-                <p class="model-description">Debt capacity and leverage ratios</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="credit" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> EBITDA Analysis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Leverage Ratios</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Debt Capacity</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Covenants</span>
-            </div>
-            <div class="model-output" id="output-credit"></div>
-          </div>
-        </div>
-
-        <!-- Model 9: Sum-of-the-Parts -->
-        <div class="component-card model-card" data-model="sotp">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon sotp"><i class="bi bi-pie-chart"></i></div>
-              <div>
-                <h3>Sum-of-the-Parts</h3>
-                <p class="model-description">Segment-by-segment valuation</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="sotp" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Business Segments</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Segment Financials</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Individual Valuations</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Total Value</span>
-            </div>
-            <div class="model-output" id="output-sotp"></div>
-          </div>
-        </div>
-
-        <!-- Model 10: Operating Model -->
-        <div class="component-card model-card" data-model="operating">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon operating"><i class="bi bi-gear"></i></div>
-              <div>
-                <h3>Operating Model</h3>
-                <p class="model-description">Unit economics and cohort analysis</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="operating" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Revenue Build</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Unit Economics</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Cohort Analysis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Burn Rate</span>
-            </div>
-            <div class="model-output" id="output-operating"></div>
-          </div>
-        </div>
-
-        <!-- Model 11: Sensitivity Analysis -->
-        <div class="component-card model-card" data-model="sensitivity">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon sensitivity"><i class="bi bi-shuffle"></i></div>
-              <div>
-                <h3>Sensitivity Analysis</h3>
-                <p class="model-description">Scenario planning and risk assessment</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="sensitivity" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> One-Way Sensitivity</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Two-Way Tables</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Scenario Builder</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Risk Factors</span>
-            </div>
-            <div class="model-output" id="output-sensitivity"></div>
-          </div>
-        </div>
-
-        <!-- Model 12: Investment Memo -->
-        <div class="component-card model-card" data-model="investment-memo">
-          <div class="card-header">
-            <div class="model-info">
-              <div class="model-icon memo"><i class="bi bi-file-earmark-text"></i></div>
-              <div>
-                <h3>Investment Committee Memo</h3>
-                <p class="model-description">Complete investment analysis report</p>
-              </div>
-            </div>
-            <button class="model-select-btn" data-model="investment-memo" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
-          </div>
-          <div class="card-body">
-            <div class="model-features">
-              <span class="feature-tag"><i class="bi bi-check2"></i> Executive Summary</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Investment Thesis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Returns Analysis</span>
-              <span class="feature-tag"><i class="bi bi-check2"></i> Risk Assessment</span>
-            </div>
-            <div class="model-output" id="output-investment-memo"></div>
-          </div>
-        </div>
-          </div>
-        </section>
-      </div>
 
       <!-- Model Detail Section (scroll target when model selected from carousel) -->
       <section class="model-detail-section" id="modelDetailSection" style="display:none;">
