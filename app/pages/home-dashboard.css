@@ -47,6 +47,14 @@ body.dashboard-page {
 
 .nav-brand {
   text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.nav-brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .brand-text {
@@ -1776,3 +1784,53 @@ body.light-mode .pie-slice.active {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
+
+/* ── Market Movers & Live News ── */
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.mover-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-primary, rgba(255,255,255,0.06));
+  font-size: 0.8125rem;
+}
+.mover-item:last-child { border-bottom: none; }
+.mover-symbol { font-weight: 600; color: var(--text-primary); min-width: 60px; }
+.mover-price { color: var(--text-secondary); }
+.mover-change { font-weight: 600; min-width: 70px; text-align: right; }
+.mover-change.positive { color: #10b981; }
+.mover-change.negative { color: #ef4444; }
+
+.live-news-list { display: flex; flex-direction: column; gap: 2px; max-height: 350px; overflow-y: auto; }
+.live-news-item {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.live-news-item:hover { background: rgba(255,255,255,0.04); }
+.news-item-title { font-size: 0.8125rem; font-weight: 500; color: var(--text-primary); line-height: 1.4; margin-bottom: 3px; }
+.news-item-meta { font-size: 0.6875rem; color: var(--text-secondary); display: flex; gap: 8px; }
+.news-source { font-weight: 600; }
+.loading-placeholder { padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.8125rem; }

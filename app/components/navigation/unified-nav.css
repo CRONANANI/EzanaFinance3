@@ -26,6 +26,14 @@
 
 .nav-brand {
   text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.nav-brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .brand-text {

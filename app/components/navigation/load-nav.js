@@ -3,7 +3,7 @@
  */
 const NAV_FALLBACK_HTML = `<nav class="main-nav" id="mainNav">
   <div class="nav-container">
-    <a href="../index.html" class="nav-brand"><span class="brand-text">Ezana Finance</span></a>
+    <a href="../index.html" class="nav-brand"><img src="../assets/images/ezana-logo.png" alt="Ezana Finance" class="nav-brand-logo"></a>
     <div class="nav-links">
       <a href="home-dashboard.html" class="nav-link" data-page="home-dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
       <div class="nav-dropdown">
