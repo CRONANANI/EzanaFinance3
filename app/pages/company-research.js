@@ -381,6 +381,7 @@ class CompanyResearch {
     this.hideSuggestions();
     this.currentCompany = symbol;
     this.loadCompanyData(symbol);
+    if (window.marketChartWidget) window.marketChartWidget.showStockChart(symbol);
   }
 
   hideSuggestions() {
@@ -402,6 +403,7 @@ class CompanyResearch {
     this.hideSuggestions();
     this.currentCompany = query;
     this.loadCompanyData(query);
+    if (window.marketChartWidget) window.marketChartWidget.showStockChart(query);
   }
 
   async loadCompanyData(query) {
@@ -704,81 +706,81 @@ document.addEventListener('DOMContentLoaded', () => {
 class MarketChartWidget {
   constructor() {
     this.chart = null;
-    this.currentSymbol = 'SPY';
+    this.currentSymbol = null;
     this.currentRange = '1M';
-    this.symbolNames = {
-      SPY: 'S&P 500 Index',
-      QQQ: 'NASDAQ 100',
-      DIA: 'Dow Jones Industrial',
-      IWM: 'Russell 2000'
-    };
+    this.mode = 'heatmap';
     this.init();
   }
 
   init() {
     this.bindControls();
-    this.loadData();
+    this.renderHeatmap();
   }
 
   bindControls() {
-    document.querySelectorAll('.market-symbol-selector .symbol-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.market-symbol-selector .symbol-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.currentSymbol = btn.dataset.symbol;
-        document.getElementById('marketChartTitle').textContent = this.symbolNames[this.currentSymbol] || this.currentSymbol;
-        this.loadData();
-      });
-    });
+    const backBtn = document.getElementById('backToHeatmap');
+    if (backBtn) backBtn.addEventListener('click', () => this.showHeatmap());
 
-    document.querySelectorAll('#marketTimeRange .time-btn').forEach(btn => {
+    document.querySelectorAll('#stockTimeRange .time-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('#marketTimeRange .time-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#stockTimeRange .time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.currentRange = btn.dataset.range;
-        this.loadData();
+        if (this.currentSymbol) this.loadStockData(this.currentSymbol);
       });
     });
   }
 
-  async loadData() {
-    this.showLoading(true);
+  showHeatmap() {
+    this.mode = 'heatmap';
+    this.currentSymbol = null;
+    document.getElementById('heatmapView').style.display = '';
+    document.getElementById('stockChartView').style.display = 'none';
+  }
+
+  showStockChart(symbol) {
+    this.mode = 'stock';
+    this.currentSymbol = symbol.toUpperCase();
+    document.getElementById('heatmapView').style.display = 'none';
+    document.getElementById('stockChartView').style.display = '';
+    document.getElementById('stockChartTitle').textContent = this.currentSymbol;
+    this.loadStockData(this.currentSymbol);
+  }
+
+  async loadStockData(symbol) {
+    this.showLoading('stockChartLoading', true);
 
     try {
       const quote = window.AlphaVantageAPI
-        ? await window.AlphaVantageAPI.getGlobalQuote(this.currentSymbol)
+        ? await window.AlphaVantageAPI.getGlobalQuote(symbol)
         : null;
 
-      if (quote) {
-        this.updateQuoteDisplay(quote);
-      }
+      if (quote) this.updateQuoteDisplay(quote);
 
       let series = [];
-
       if (this.currentRange === '1D' && window.AlphaVantageAPI) {
-        series = await window.AlphaVantageAPI.getIntraday(this.currentSymbol, '5min');
+        series = await window.AlphaVantageAPI.getIntraday(symbol, '5min');
       } else if (window.AlphaVantageAPI) {
         const outputsize = ['6M', '1Y'].includes(this.currentRange) ? 'full' : 'compact';
-        series = await window.AlphaVantageAPI.getDailyTimeSeries(this.currentSymbol, outputsize);
+        series = await window.AlphaVantageAPI.getDailyTimeSeries(symbol, outputsize);
       }
 
       if (series && series.length > 0) {
-        const filtered = this.filterByRange(series);
-        this.renderChart(filtered);
+        this.renderChart(this.filterByRange(series));
       } else {
-        this.renderDemoChart();
+        this.renderDemoStockChart(symbol);
       }
     } catch (err) {
-      console.warn('Market chart data fetch failed, using demo:', err);
-      this.renderDemoChart();
+      console.warn('Stock data fetch failed, using demo:', err);
+      this.renderDemoStockChart(symbol);
     }
 
-    this.showLoading(false);
+    this.showLoading('stockChartLoading', false);
   }
 
   updateQuoteDisplay(quote) {
-    const priceEl = document.getElementById('marketPrice');
-    const changeEl = document.getElementById('marketChange');
+    const priceEl = document.getElementById('stockPrice');
+    const changeEl = document.getElementById('stockChange');
     const openEl = document.getElementById('mstatOpen');
     const highEl = document.getElementById('mstatHigh');
     const lowEl = document.getElementById('mstatLow');
@@ -801,7 +803,6 @@ class MarketChartWidget {
   filterByRange(series) {
     const now = new Date();
     let cutoff = new Date();
-
     switch (this.currentRange) {
       case '1D': return series;
       case '1W': cutoff.setDate(now.getDate() - 7); break;
@@ -811,31 +812,22 @@ class MarketChartWidget {
       case '1Y': cutoff.setFullYear(now.getFullYear() - 1); break;
       default: cutoff.setMonth(now.getMonth() - 1);
     }
-
     const cutoffStr = cutoff.toISOString().slice(0, 10);
-    return series.filter(d => {
-      const dateStr = d.date || d.datetime;
-      return dateStr >= cutoffStr;
-    });
+    return series.filter(d => (d.date || d.datetime) >= cutoffStr);
   }
 
   renderChart(data) {
-    const ctx = document.getElementById('marketChart');
+    const ctx = document.getElementById('stockChart');
     if (!ctx) return;
-
     if (this.chart) this.chart.destroy();
 
     const labels = data.map(d => {
       const raw = d.date || d.datetime;
-      if (this.currentRange === '1D') {
-        return raw.split(' ')[1] || raw;
-      }
-      const dt = new Date(raw);
-      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (this.currentRange === '1D') return raw.split(' ')[1] || raw;
+      return new Date(raw).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
 
     const prices = data.map(d => d.close || d.adjustedClose || d.price);
-
     const isPositive = prices.length >= 2 && prices[prices.length - 1] >= prices[0];
     const lineColor = isPositive ? '#10b981' : '#ef4444';
     const fillColor = isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
@@ -860,10 +852,7 @@ class MarketChartWidget {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -874,39 +863,29 @@ class MarketChartWidget {
             borderWidth: 1,
             padding: 12,
             displayColors: false,
-            callbacks: {
-              label: (ctx) => '$' + ctx.parsed.y.toFixed(2)
-            }
+            callbacks: { label: (c) => '$' + c.parsed.y.toFixed(2) }
           }
         },
         scales: {
           x: {
             display: true,
             grid: { color: 'rgba(75, 85, 99, 0.15)' },
-            ticks: {
-              color: 'rgba(156, 163, 175, 0.7)',
-              font: { size: 11 },
-              maxTicksLimit: 8,
-              maxRotation: 0
-            }
+            ticks: { color: 'rgba(156, 163, 175, 0.7)', font: { size: 11 }, maxTicksLimit: 8, maxRotation: 0 }
           },
           y: {
             display: true,
             position: 'right',
             grid: { color: 'rgba(75, 85, 99, 0.15)' },
-            ticks: {
-              color: 'rgba(156, 163, 175, 0.7)',
-              font: { size: 11 },
-              callback: (v) => '$' + v.toFixed(0)
-            }
+            ticks: { color: 'rgba(156, 163, 175, 0.7)', font: { size: 11 }, callback: (v) => '$' + v.toFixed(0) }
           }
         }
       }
     });
   }
 
-  renderDemoChart() {
-    const basePrice = { SPY: 590, QQQ: 510, DIA: 430, IWM: 225 }[this.currentSymbol] || 500;
+  renderDemoStockChart(symbol) {
+    const hash = [...symbol].reduce((h, c) => h * 31 + c.charCodeAt(0), 0);
+    const basePrice = 50 + Math.abs(hash % 500);
     const points = 30;
     const data = [];
     const now = new Date();
@@ -914,12 +893,9 @@ class MarketChartWidget {
     for (let i = points; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const noise = (Math.random() - 0.48) * 8;
-      const trend = ((points - i) / points) * 15;
-      data.push({
-        date: d.toISOString().slice(0, 10),
-        close: basePrice + trend + noise
-      });
+      const noise = (Math.random() - 0.48) * (basePrice * 0.02);
+      const trend = ((points - i) / points) * (basePrice * 0.06);
+      data.push({ date: d.toISOString().slice(0, 10), close: basePrice + trend + noise });
     }
 
     const lastPrice = data[data.length - 1].close;
@@ -927,8 +903,8 @@ class MarketChartWidget {
     const change = lastPrice - firstPrice;
     const changePct = (change / firstPrice) * 100;
 
-    const priceEl = document.getElementById('marketPrice');
-    const changeEl = document.getElementById('marketChange');
+    const priceEl = document.getElementById('stockPrice');
+    const changeEl = document.getElementById('stockChange');
     if (priceEl) priceEl.textContent = '$' + lastPrice.toFixed(2);
     if (changeEl) {
       const sign = change >= 0 ? '+' : '';
@@ -936,17 +912,152 @@ class MarketChartWidget {
       changeEl.className = 'market-change ' + (change >= 0 ? 'positive' : 'negative');
     }
 
-    document.getElementById('mstatOpen').textContent = '$' + (basePrice + 2).toFixed(2);
-    document.getElementById('mstatHigh').textContent = '$' + (basePrice + 20).toFixed(2);
-    document.getElementById('mstatLow').textContent = '$' + (basePrice - 5).toFixed(2);
-    document.getElementById('mstatVolume').textContent = '68.2M';
-    document.getElementById('mstatPrevClose').textContent = '$' + (basePrice + 1).toFixed(2);
+    document.getElementById('mstatOpen').textContent = '$' + (basePrice + 1).toFixed(2);
+    document.getElementById('mstatHigh').textContent = '$' + (basePrice * 1.04).toFixed(2);
+    document.getElementById('mstatLow').textContent = '$' + (basePrice * 0.97).toFixed(2);
+    document.getElementById('mstatVolume').textContent = '24.8M';
+    document.getElementById('mstatPrevClose').textContent = '$' + (basePrice + 0.5).toFixed(2);
 
     this.renderChart(data);
   }
 
-  showLoading(show) {
-    const el = document.getElementById('marketChartLoading');
+  // ===== HEATMAP =====
+
+  async renderHeatmap() {
+    const container = document.getElementById('heatmapContainer');
+    if (!container) return;
+
+    this.showLoading('heatmapLoading', true);
+
+    let moversData = null;
+    try {
+      if (window.AlphaVantageAPI) {
+        moversData = await window.AlphaVantageAPI.getTopMovers();
+      }
+    } catch (e) {
+      console.warn('Heatmap API fetch failed:', e);
+    }
+
+    const stocks = this.buildHeatmapData(moversData);
+    this.drawTreemap(container, stocks);
+    this.showLoading('heatmapLoading', false);
+  }
+
+  buildHeatmapData(moversData) {
+    const sectors = {
+      'Technology': [
+        { t: 'MSFT', mc: 3100, ch: 39.92 }, { t: 'AAPL', mc: 2900, ch: 47.82 },
+        { t: 'NVDA', mc: 2800, ch: 184.01 }, { t: 'GOOGL', mc: 2100, ch: 34.42 },
+        { t: 'META', mc: 1500, ch: 134.23 }, { t: 'AVGO', mc: 800, ch: 53.55 },
+        { t: 'ADBE', mc: 250, ch: 44.12 }, { t: 'CRM', mc: 270, ch: 57.16 },
+        { t: 'ORCL', mc: 390, ch: 45.33 }, { t: 'AMD', mc: 220, ch: -72.94 },
+        { t: 'INTC', mc: 100, ch: -5.30 }, { t: 'CSCO', mc: 230, ch: 7.98 }
+      ],
+      'Finance': [
+        { t: 'BRK.B', mc: 880, ch: 9.89 }, { t: 'JPM', mc: 680, ch: 7.46 },
+        { t: 'V', mc: 570, ch: 13.40 }, { t: 'MA', mc: 440, ch: 11.83 },
+        { t: 'BAC', mc: 340, ch: -13.20 }, { t: 'WFC', mc: 220, ch: -2.80 },
+        { t: 'GS', mc: 180, ch: 16.19 }, { t: 'MS', mc: 160, ch: 0.19 }
+      ],
+      'Healthcare': [
+        { t: 'LLY', mc: 720, ch: 28.06 }, { t: 'UNH', mc: 480, ch: -8.59 },
+        { t: 'JNJ', mc: 400, ch: -6.28 }, { t: 'MRK', mc: 310, ch: 3.99 },
+        { t: 'ABBV', mc: 300, ch: -16.82 }, { t: 'PFE', mc: 150, ch: -28.13 },
+        { t: 'TMO', mc: 210, ch: -5.71 }, { t: 'ABT', mc: 195, ch: -1.47 }
+      ],
+      'Consumer': [
+        { t: 'AMZN', mc: 2000, ch: 52.38 }, { t: 'TSLA', mc: 800, ch: 122.59 },
+        { t: 'WMT', mc: 500, ch: 9.72 }, { t: 'HD', mc: 370, ch: -2.43 },
+        { t: 'COST', mc: 350, ch: 17.19 }, { t: 'MCD', mc: 210, ch: 12.78 },
+        { t: 'NKE', mc: 120, ch: -6.62 }, { t: 'SBUX', mc: 110, ch: -0.11 },
+        { t: 'DIS', mc: 180, ch: -0.11 }, { t: 'NFLX', mc: 280, ch: 80.91 }
+      ],
+      'Energy': [
+        { t: 'XOM', mc: 460, ch: -1.99 }, { t: 'CVX', mc: 300, ch: -8.22 },
+        { t: 'COP', mc: 140, ch: -12.51 }, { t: 'SLB', mc: 70, ch: -18.40 }
+      ],
+      'Industrials': [
+        { t: 'CAT', mc: 170, ch: 2.24 }, { t: 'BA', mc: 130, ch: -67.09 },
+        { t: 'UPS', mc: 100, ch: 1.52 }, { t: 'LMT', mc: 120, ch: -4.87 },
+        { t: 'GE', mc: 190, ch: 44.44 }
+      ]
+    };
+
+    if (moversData && moversData.top_gainers && moversData.top_gainers.length > 0) {
+      moversData.top_gainers.slice(0, 5).forEach(g => {
+        if (!Object.values(sectors).flat().find(s => s.t === g.ticker)) {
+          sectors['Technology'].push({ t: g.ticker, mc: 50, ch: g.changePercent });
+        }
+      });
+    }
+
+    return sectors;
+  }
+
+  drawTreemap(container, sectorData) {
+    const allStocks = [];
+    for (const [sector, stocks] of Object.entries(sectorData)) {
+      stocks.forEach(s => allStocks.push({ ...s, sector }));
+    }
+    allStocks.sort((a, b) => b.mc - a.mc);
+
+    const totalMc = allStocks.reduce((sum, s) => sum + s.mc, 0);
+
+    let html = '<div style="display:flex;flex-wrap:wrap;width:100%;height:100%;min-height:480px;">';
+
+    allStocks.forEach(stock => {
+      const pct = (stock.mc / totalMc) * 100;
+      const bg = this.heatmapColor(stock.ch);
+      let sizeClass = 'small';
+      if (pct > 5) sizeClass = 'large';
+      else if (pct > 2) sizeClass = 'medium';
+      else if (pct < 0.8) sizeClass = 'tiny';
+
+      const w = Math.max(pct * 1.8, 3);
+      const sign = stock.ch >= 0 ? '+' : '';
+
+      html += `<div class="heatmap-cell ${sizeClass}" data-ticker="${stock.t}" 
+        style="width:${w}%;flex-grow:${Math.max(Math.round(pct * 10), 1)};background:${bg};"
+        title="${stock.t} | ${stock.sector} | ${sign}${stock.ch.toFixed(2)}%">
+        <span class="heatmap-cell-ticker">${stock.t}</span>
+        <span class="heatmap-cell-change">${sign}${stock.ch.toFixed(1)}%</span>
+      </div>`;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('.heatmap-cell').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const ticker = cell.dataset.ticker;
+        if (ticker) {
+          if (window.companyResearch) {
+            window.companyResearch.searchInput.value = ticker;
+            window.companyResearch.currentCompany = ticker;
+            window.companyResearch.loadCompanyData(ticker);
+          }
+          this.showStockChart(ticker);
+        }
+      });
+    });
+  }
+
+  heatmapColor(changePct) {
+    if (changePct > 50) return 'linear-gradient(135deg, #059669, #047857)';
+    if (changePct > 20) return 'linear-gradient(135deg, #10b981, #059669)';
+    if (changePct > 10) return 'linear-gradient(135deg, #34d399, #10b981)';
+    if (changePct > 5) return 'linear-gradient(135deg, #4ade80, #22c55e)';
+    if (changePct > 2) return 'linear-gradient(135deg, #6ee7b7, #34d399)';
+    if (changePct > 0) return 'linear-gradient(135deg, #86efac, #4ade80)';
+    if (changePct > -2) return 'linear-gradient(135deg, #fca5a5, #f87171)';
+    if (changePct > -5) return 'linear-gradient(135deg, #f87171, #ef4444)';
+    if (changePct > -10) return 'linear-gradient(135deg, #ef4444, #dc2626)';
+    if (changePct > -20) return 'linear-gradient(135deg, #dc2626, #b91c1c)';
+    return 'linear-gradient(135deg, #b91c1c, #991b1b)';
+  }
+
+  showLoading(id, show) {
+    const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden', !show);
   }
 

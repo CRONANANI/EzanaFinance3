@@ -96,60 +96,74 @@
         </div>
       </div>
 
-      <!-- Stock Market Overview Chart (styled like dashboard's Total Portfolio Value) -->
+      <!-- Market Heatmap / Stock Chart Card -->
       <section class="market-chart-section" id="marketChartSection">
-        <div class="chart-header compact">
-          <div class="chart-title-area">
-            <h2 class="chart-title" id="marketChartTitle">S&P 500 Index</h2>
-            <div class="market-chart-meta" id="marketChartMeta">
-              <span class="market-price" id="marketPrice">--</span>
-              <span class="market-change" id="marketChange">--</span>
+        <!-- HEATMAP VIEW (default) -->
+        <div id="heatmapView">
+          <div class="chart-header compact">
+            <div class="chart-title-area">
+              <h2 class="chart-title">Stock Market Heatmap</h2>
+              <span class="heatmap-subtitle">S&P 500 &middot; Performance YTD % &middot; Market Cap</span>
             </div>
           </div>
-          <div class="chart-controls">
-            <div class="market-symbol-selector">
-              <button class="symbol-btn active" data-symbol="SPY">S&P 500</button>
-              <button class="symbol-btn" data-symbol="QQQ">NASDAQ</button>
-              <button class="symbol-btn" data-symbol="DIA">Dow Jones</button>
-              <button class="symbol-btn" data-symbol="IWM">Russell 2000</button>
-            </div>
-            <div class="time-range-selector compact" id="marketTimeRange">
-              <button class="time-btn" data-range="1D">1D</button>
-              <button class="time-btn" data-range="1W">1W</button>
-              <button class="time-btn active" data-range="1M">1M</button>
-              <button class="time-btn" data-range="3M">3M</button>
-              <button class="time-btn" data-range="6M">6M</button>
-              <button class="time-btn" data-range="1Y">1Y</button>
+          <div class="heatmap-container" id="heatmapContainer">
+            <div class="chart-loading" id="heatmapLoading">
+              <i class="bi bi-arrow-repeat spin"></i>
+              <span>Loading heatmap...</span>
             </div>
           </div>
         </div>
-        <div class="chart-container compact" id="marketChartContainer">
-          <div class="chart-loading" id="marketChartLoading">
-            <i class="bi bi-arrow-repeat spin"></i>
-            <span>Loading market data...</span>
+
+        <!-- STOCK CHART VIEW (shown when a stock is selected) -->
+        <div id="stockChartView" style="display:none;">
+          <div class="chart-header compact">
+            <div class="chart-title-area">
+              <h2 class="chart-title" id="stockChartTitle">--</h2>
+              <div class="market-chart-meta" id="stockChartMeta">
+                <span class="market-price" id="stockPrice">--</span>
+                <span class="market-change" id="stockChange">--</span>
+              </div>
+            </div>
+            <div class="chart-controls">
+              <button class="back-to-heatmap-btn" id="backToHeatmap"><i class="bi bi-grid-3x3-gap"></i> Heatmap</button>
+              <div class="time-range-selector compact" id="stockTimeRange">
+                <button class="time-btn" data-range="1D">1D</button>
+                <button class="time-btn" data-range="1W">1W</button>
+                <button class="time-btn active" data-range="1M">1M</button>
+                <button class="time-btn" data-range="3M">3M</button>
+                <button class="time-btn" data-range="6M">6M</button>
+                <button class="time-btn" data-range="1Y">1Y</button>
+              </div>
+            </div>
           </div>
-          <canvas id="marketChart"></canvas>
-        </div>
-        <div class="market-chart-footer" id="marketChartFooter">
-          <div class="market-stat">
-            <span class="market-stat-label">Open</span>
-            <span class="market-stat-value" id="mstatOpen">--</span>
+          <div class="chart-container compact" id="stockChartContainer">
+            <div class="chart-loading" id="stockChartLoading">
+              <i class="bi bi-arrow-repeat spin"></i>
+              <span>Loading stock data...</span>
+            </div>
+            <canvas id="stockChart"></canvas>
           </div>
-          <div class="market-stat">
-            <span class="market-stat-label">High</span>
-            <span class="market-stat-value" id="mstatHigh">--</span>
-          </div>
-          <div class="market-stat">
-            <span class="market-stat-label">Low</span>
-            <span class="market-stat-value" id="mstatLow">--</span>
-          </div>
-          <div class="market-stat">
-            <span class="market-stat-label">Volume</span>
-            <span class="market-stat-value" id="mstatVolume">--</span>
-          </div>
-          <div class="market-stat">
-            <span class="market-stat-label">Prev Close</span>
-            <span class="market-stat-value" id="mstatPrevClose">--</span>
+          <div class="market-chart-footer" id="stockChartFooter">
+            <div class="market-stat">
+              <span class="market-stat-label">Open</span>
+              <span class="market-stat-value" id="mstatOpen">--</span>
+            </div>
+            <div class="market-stat">
+              <span class="market-stat-label">High</span>
+              <span class="market-stat-value" id="mstatHigh">--</span>
+            </div>
+            <div class="market-stat">
+              <span class="market-stat-label">Low</span>
+              <span class="market-stat-value" id="mstatLow">--</span>
+            </div>
+            <div class="market-stat">
+              <span class="market-stat-label">Volume</span>
+              <span class="market-stat-value" id="mstatVolume">--</span>
+            </div>
+            <div class="market-stat">
+              <span class="market-stat-label">Prev Close</span>
+              <span class="market-stat-value" id="mstatPrevClose">--</span>
+            </div>
           </div>
         </div>
       </section>
