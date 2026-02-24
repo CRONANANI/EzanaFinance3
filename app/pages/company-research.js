@@ -244,38 +244,164 @@ class CompanyResearch {
       return;
     }
     this.currentCompany = query;
-    this.loadFinnhubData(query);
+    this.loadCompanyData(query);
   }
 
-  loadFinnhubData(query) {
-    if (!window.FinnhubAPI) return;
+  async loadCompanyData(query) {
     const ticker = /^[A-Z]{1,5}$/i.test(query) ? query.toUpperCase() : null;
     if (!ticker) return;
+
+    const svc = window.MarketDataService;
+    if (svc) {
+      try {
+        const [profile, quote, dcf, analystData, peers, financials] = await Promise.all([
+          svc.getCompanyProfile(ticker).catch(() => null),
+          svc.getQuote(ticker).catch(() => null),
+          svc.getDCFValuation(ticker).catch(() => null),
+          svc.getAnalystData(ticker).catch(() => null),
+          svc.getPeers(ticker).catch(() => []),
+          svc.getFinancials(ticker).catch(() => null)
+        ]);
+
+        if (quote) this.updateStatsFromQuote(quote, profile);
+        if (profile) this.updateCompanyInfoPanel(profile);
+        if (dcf) this.updateDCF(dcf);
+        if (analystData) this.updateAnalystData(analystData);
+        if (peers && peers.length) this.updatePeers(peers);
+        if (financials) this.updateFinancials(financials);
+      } catch (e) {
+        console.warn('MarketDataService load failed, falling back to Finnhub:', e);
+        this.loadFinnhubData(ticker);
+      }
+    } else {
+      this.loadFinnhubData(ticker);
+    }
+  }
+
+  updateStatsFromQuote(quote, profile) {
+    var el;
+    el = document.getElementById('statPrice');
+    if (el && quote.price != null) el.textContent = '$' + Number(quote.price).toFixed(2);
+    el = document.getElementById('statPriceChange');
+    if (el && quote.changePercent != null) {
+      var pct = Number(quote.changePercent);
+      el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      el.className = 'stat-change ' + (pct >= 0 ? 'positive' : 'negative');
+    }
+    el = document.getElementById('statMarketCap');
+    if (el) {
+      var mc = quote.marketCap || (profile && profile.marketCap) || 0;
+      el.textContent = mc >= 1e12 ? '$' + (mc / 1e12).toFixed(1) + 'T' : mc >= 1e9 ? '$' + (mc / 1e9).toFixed(1) + 'B' : mc >= 1e6 ? '$' + (mc / 1e6).toFixed(0) + 'M' : '$' + mc.toLocaleString();
+    }
+    el = document.getElementById('statCapType');
+    if (el) {
+      var mc2 = quote.marketCap || (profile && profile.marketCap) || 0;
+      el.textContent = mc2 >= 200e9 ? 'Mega Cap' : mc2 >= 10e9 ? 'Large Cap' : mc2 >= 2e9 ? 'Mid Cap' : mc2 >= 300e6 ? 'Small Cap' : 'Micro Cap';
+    }
+    el = document.getElementById('statPE');
+    if (el && profile && profile.pe) el.textContent = Number(profile.pe).toFixed(1);
+    el = document.getElementById('statEPS');
+    if (el && profile && profile.eps) el.textContent = 'EPS: $' + Number(profile.eps).toFixed(2);
+    el = document.getElementById('statVolume');
+    if (el && quote.volume) {
+      var v = quote.volume;
+      el.textContent = v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(0) + 'K' : v;
+    }
+    el = document.getElementById('statBeta');
+    if (el && profile && profile.beta) el.textContent = 'Beta: ' + Number(profile.beta).toFixed(2);
+  }
+
+  updateCompanyInfoPanel(profile) {
+    var panel = document.getElementById('companyInfoPanel');
+    if (!panel) return;
+    panel.style.display = '';
+    var setTxt = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val || '--'; };
+    setTxt('companyName', profile.name);
+    setTxt('companySector', profile.sector + ' / ' + profile.industry);
+    setTxt('companyExchange', profile.exchange);
+    setTxt('companyDescription', profile.description || 'No description available.');
+    setTxt('companyCEO', profile.ceo);
+    setTxt('companyEmployees', profile.employees ? Number(profile.employees).toLocaleString() : '--');
+    setTxt('companyIPODate', profile.ipoDate);
+    setTxt('company52High', profile.high52 ? '$' + Number(profile.high52).toFixed(2) : '--');
+    setTxt('company52Low', profile.low52 ? '$' + Number(profile.low52).toFixed(2) : '--');
+    setTxt('companyDivYield', profile.dividendYield ? (Number(profile.dividendYield) * 100).toFixed(2) + '%' : '--');
+    var logo = document.getElementById('companyLogo');
+    if (logo && profile.image) { logo.src = profile.image; logo.style.display = ''; }
+  }
+
+  updateDCF(dcf) {
+    var el = document.getElementById('companyDCF');
+    if (el && dcf && dcf.dcf != null) el.textContent = '$' + Number(dcf.dcf).toFixed(2);
+  }
+
+  updateAnalystData(data) {
+    var el = document.getElementById('companyRating');
+    if (el && data.rating) {
+      el.textContent = data.rating.ratingRecommendation || data.rating.rating || '--';
+    }
+  }
+
+  updatePeers(peers) {
+    var section = document.getElementById('companyPeers');
+    var list = document.getElementById('peersList');
+    if (!section || !list) return;
+    section.style.display = '';
+    list.innerHTML = peers.slice(0, 8).map(function(p) {
+      return '<span class="peer-badge">' + p + '</span>';
+    }).join('');
+  }
+
+  updateFinancials(fin) {
+    var section = document.getElementById('companyFinancials');
+    var wrap = document.getElementById('financialsTableWrap');
+    if (!section || !wrap || !fin || !fin.metrics || !fin.metrics.length) return;
+    section.style.display = '';
+    var m = fin.metrics[0];
+    var rows = [
+      ['Revenue per Share', m.revenuePerShare],
+      ['Net Income per Share', m.netIncomePerShare],
+      ['Operating CF per Share', m.operatingCashFlowPerShare],
+      ['Free CF per Share', m.freeCashFlowPerShare],
+      ['Book Value per Share', m.bookValuePerShare],
+      ['Debt to Equity', m.debtToEquity],
+      ['Current Ratio', m.currentRatio],
+      ['ROE', m.roe],
+      ['ROA', m.returnOnTangibleAssets],
+      ['Dividend Yield', m.dividendYield],
+    ];
+    var html = '<table class="financials-table"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>';
+    rows.forEach(function(r) {
+      var val = r[1] != null ? (typeof r[1] === 'number' ? r[1].toFixed(2) : r[1]) : '--';
+      html += '<tr><td>' + r[0] + '</td><td>' + val + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  }
+
+  loadFinnhubData(ticker) {
+    if (!window.FinnhubAPI) return;
     Promise.all([
       window.FinnhubAPI.getQuote(ticker),
       window.FinnhubAPI.getCompanyProfile(ticker)
-    ]).then(([quote, profile]) => {
+    ]).then(function(results) {
+      var quote = results[0];
+      var profile = results[1];
       if (quote && quote.c != null) {
-        const statValue = document.querySelector('.stats-grid .stat-value');
-        const statChange = document.querySelector('.stats-grid .stat-change');
-        if (statValue) statValue.textContent = '$' + quote.c.toFixed(2);
-        if (statChange && quote.dp != null) {
-          statChange.textContent = (quote.dp >= 0 ? '+' : '') + quote.dp.toFixed(2) + '%';
-          statChange.className = 'stat-change ' + (quote.dp >= 0 ? 'positive' : 'negative');
+        var priceEl = document.getElementById('statPrice');
+        var changeEl = document.getElementById('statPriceChange');
+        if (priceEl) priceEl.textContent = '$' + quote.c.toFixed(2);
+        if (changeEl && quote.dp != null) {
+          changeEl.textContent = (quote.dp >= 0 ? '+' : '') + quote.dp.toFixed(2) + '%';
+          changeEl.className = 'stat-change ' + (quote.dp >= 0 ? 'positive' : 'negative');
         }
       }
       if (profile && profile.marketCapitalization) {
-        const capCards = document.querySelectorAll('.stat-card');
-        capCards.forEach(card => {
-          const label = card.querySelector('.stat-label');
-          if (label && label.textContent.includes('Market Cap')) {
-            const val = card.querySelector('.stat-value');
-            if (val) {
-              const mcap = profile.marketCapitalization;
-              val.textContent = mcap >= 1e12 ? (mcap / 1e12).toFixed(1) + 'T' : mcap >= 1e9 ? (mcap / 1e9).toFixed(1) + 'B' : mcap >= 1e6 ? (mcap / 1e6).toFixed(0) + 'M' : '$' + mcap.toLocaleString();
-            }
-          }
-        });
+        var mcEl = document.getElementById('statMarketCap');
+        if (mcEl) {
+          var mcap = profile.marketCapitalization;
+          mcEl.textContent = mcap >= 1e12 ? '$' + (mcap / 1e12).toFixed(1) + 'T' : mcap >= 1e9 ? '$' + (mcap / 1e9).toFixed(1) + 'B' : '$' + (mcap / 1e6).toFixed(0) + 'M';
+        }
       }
     });
   }
@@ -415,4 +541,262 @@ class CompanyResearch {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.companyResearch = new CompanyResearch();
+  window.marketChartWidget = new MarketChartWidget();
 });
+
+class MarketChartWidget {
+  constructor() {
+    this.chart = null;
+    this.currentSymbol = 'SPY';
+    this.currentRange = '1M';
+    this.symbolNames = {
+      SPY: 'S&P 500 Index',
+      QQQ: 'NASDAQ 100',
+      DIA: 'Dow Jones Industrial',
+      IWM: 'Russell 2000'
+    };
+    this.init();
+  }
+
+  init() {
+    this.bindControls();
+    this.loadData();
+  }
+
+  bindControls() {
+    document.querySelectorAll('.market-symbol-selector .symbol-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.market-symbol-selector .symbol-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentSymbol = btn.dataset.symbol;
+        document.getElementById('marketChartTitle').textContent = this.symbolNames[this.currentSymbol] || this.currentSymbol;
+        this.loadData();
+      });
+    });
+
+    document.querySelectorAll('#marketTimeRange .time-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#marketTimeRange .time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentRange = btn.dataset.range;
+        this.loadData();
+      });
+    });
+  }
+
+  async loadData() {
+    this.showLoading(true);
+
+    try {
+      const quote = window.AlphaVantageAPI
+        ? await window.AlphaVantageAPI.getGlobalQuote(this.currentSymbol)
+        : null;
+
+      if (quote) {
+        this.updateQuoteDisplay(quote);
+      }
+
+      let series = [];
+
+      if (this.currentRange === '1D' && window.AlphaVantageAPI) {
+        series = await window.AlphaVantageAPI.getIntraday(this.currentSymbol, '5min');
+      } else if (window.AlphaVantageAPI) {
+        const outputsize = ['6M', '1Y'].includes(this.currentRange) ? 'full' : 'compact';
+        series = await window.AlphaVantageAPI.getDailyTimeSeries(this.currentSymbol, outputsize);
+      }
+
+      if (series && series.length > 0) {
+        const filtered = this.filterByRange(series);
+        this.renderChart(filtered);
+      } else {
+        this.renderDemoChart();
+      }
+    } catch (err) {
+      console.warn('Market chart data fetch failed, using demo:', err);
+      this.renderDemoChart();
+    }
+
+    this.showLoading(false);
+  }
+
+  updateQuoteDisplay(quote) {
+    const priceEl = document.getElementById('marketPrice');
+    const changeEl = document.getElementById('marketChange');
+    const openEl = document.getElementById('mstatOpen');
+    const highEl = document.getElementById('mstatHigh');
+    const lowEl = document.getElementById('mstatLow');
+    const volEl = document.getElementById('mstatVolume');
+    const prevEl = document.getElementById('mstatPrevClose');
+
+    if (priceEl) priceEl.textContent = '$' + quote.price.toFixed(2);
+    if (changeEl) {
+      const sign = quote.change >= 0 ? '+' : '';
+      changeEl.textContent = `${sign}${quote.change.toFixed(2)} (${sign}${quote.changePercent.toFixed(2)}%)`;
+      changeEl.className = 'market-change ' + (quote.change >= 0 ? 'positive' : 'negative');
+    }
+    if (openEl) openEl.textContent = '$' + quote.open.toFixed(2);
+    if (highEl) highEl.textContent = '$' + quote.high.toFixed(2);
+    if (lowEl) lowEl.textContent = '$' + quote.low.toFixed(2);
+    if (volEl) volEl.textContent = this.formatVolume(quote.volume);
+    if (prevEl) prevEl.textContent = '$' + quote.previousClose.toFixed(2);
+  }
+
+  filterByRange(series) {
+    const now = new Date();
+    let cutoff = new Date();
+
+    switch (this.currentRange) {
+      case '1D': return series;
+      case '1W': cutoff.setDate(now.getDate() - 7); break;
+      case '1M': cutoff.setMonth(now.getMonth() - 1); break;
+      case '3M': cutoff.setMonth(now.getMonth() - 3); break;
+      case '6M': cutoff.setMonth(now.getMonth() - 6); break;
+      case '1Y': cutoff.setFullYear(now.getFullYear() - 1); break;
+      default: cutoff.setMonth(now.getMonth() - 1);
+    }
+
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    return series.filter(d => {
+      const dateStr = d.date || d.datetime;
+      return dateStr >= cutoffStr;
+    });
+  }
+
+  renderChart(data) {
+    const ctx = document.getElementById('marketChart');
+    if (!ctx) return;
+
+    if (this.chart) this.chart.destroy();
+
+    const labels = data.map(d => {
+      const raw = d.date || d.datetime;
+      if (this.currentRange === '1D') {
+        return raw.split(' ')[1] || raw;
+      }
+      const dt = new Date(raw);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    const prices = data.map(d => d.close || d.adjustedClose || d.price);
+
+    const isPositive = prices.length >= 2 && prices[prices.length - 1] >= prices[0];
+    const lineColor = isPositive ? '#10b981' : '#ef4444';
+    const fillColor = isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+
+    this.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: prices,
+          borderColor: lineColor,
+          backgroundColor: fillColor,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHitRadius: 10,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: lineColor
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(15, 20, 25, 0.95)',
+            titleColor: '#fff',
+            bodyColor: '#10b981',
+            borderColor: 'rgba(16, 185, 129, 0.3)',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false,
+            callbacks: {
+              label: (ctx) => '$' + ctx.parsed.y.toFixed(2)
+            }
+          }
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: { color: 'rgba(75, 85, 99, 0.15)' },
+            ticks: {
+              color: 'rgba(156, 163, 175, 0.7)',
+              font: { size: 11 },
+              maxTicksLimit: 8,
+              maxRotation: 0
+            }
+          },
+          y: {
+            display: true,
+            position: 'right',
+            grid: { color: 'rgba(75, 85, 99, 0.15)' },
+            ticks: {
+              color: 'rgba(156, 163, 175, 0.7)',
+              font: { size: 11 },
+              callback: (v) => '$' + v.toFixed(0)
+            }
+          }
+        }
+      }
+    });
+  }
+
+  renderDemoChart() {
+    const basePrice = { SPY: 590, QQQ: 510, DIA: 430, IWM: 225 }[this.currentSymbol] || 500;
+    const points = 30;
+    const data = [];
+    const now = new Date();
+
+    for (let i = points; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const noise = (Math.random() - 0.48) * 8;
+      const trend = ((points - i) / points) * 15;
+      data.push({
+        date: d.toISOString().slice(0, 10),
+        close: basePrice + trend + noise
+      });
+    }
+
+    const lastPrice = data[data.length - 1].close;
+    const firstPrice = data[0].close;
+    const change = lastPrice - firstPrice;
+    const changePct = (change / firstPrice) * 100;
+
+    const priceEl = document.getElementById('marketPrice');
+    const changeEl = document.getElementById('marketChange');
+    if (priceEl) priceEl.textContent = '$' + lastPrice.toFixed(2);
+    if (changeEl) {
+      const sign = change >= 0 ? '+' : '';
+      changeEl.textContent = `${sign}${change.toFixed(2)} (${sign}${changePct.toFixed(2)}%)`;
+      changeEl.className = 'market-change ' + (change >= 0 ? 'positive' : 'negative');
+    }
+
+    document.getElementById('mstatOpen').textContent = '$' + (basePrice + 2).toFixed(2);
+    document.getElementById('mstatHigh').textContent = '$' + (basePrice + 20).toFixed(2);
+    document.getElementById('mstatLow').textContent = '$' + (basePrice - 5).toFixed(2);
+    document.getElementById('mstatVolume').textContent = '68.2M';
+    document.getElementById('mstatPrevClose').textContent = '$' + (basePrice + 1).toFixed(2);
+
+    this.renderChart(data);
+  }
+
+  showLoading(show) {
+    const el = document.getElementById('marketChartLoading');
+    if (el) el.classList.toggle('hidden', !show);
+  }
+
+  formatVolume(vol) {
+    if (vol >= 1e9) return (vol / 1e9).toFixed(1) + 'B';
+    if (vol >= 1e6) return (vol / 1e6).toFixed(1) + 'M';
+    if (vol >= 1e3) return (vol / 1e3).toFixed(1) + 'K';
+    return vol.toString();
+  }
+}
