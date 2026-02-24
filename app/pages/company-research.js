@@ -221,14 +221,23 @@ class CompanyResearch {
     this.currentCompany = null;
     this.searchInput = document.getElementById('companySearchInput');
     this.searchBtn = document.getElementById('searchCompanyBtn');
+    this.suggestionsEl = document.getElementById('searchSuggestions');
+    this._debounceTimer = null;
+    this._highlightIndex = -1;
+    this._suggestions = [];
     this.init();
   }
 
   init() {
     if (this.searchBtn) this.searchBtn.addEventListener('click', () => this.searchCompany());
     if (this.searchInput) {
-      this.searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') this.searchCompany(); });
+      this.searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { this.handleEnterKey(); } });
+      this.searchInput.addEventListener('input', () => this.onSearchInput());
+      this.searchInput.addEventListener('keydown', (e) => this.onSearchKeydown(e));
     }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.company-search-wrapper')) this.hideSuggestions();
+    });
     document.querySelectorAll('.run-model-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const modelType = e.target.closest('button').dataset.model;
@@ -237,12 +246,160 @@ class CompanyResearch {
     });
   }
 
-  searchCompany() {
-    const query = this.searchInput ? this.searchInput.value.trim() : '';
-    if (!query) {
-      alert('Please enter a company name or ticker');
+  onSearchInput() {
+    clearTimeout(this._debounceTimer);
+    const query = this.searchInput.value.trim();
+    if (query.length < 1) {
+      this.hideSuggestions();
       return;
     }
+    this._debounceTimer = setTimeout(() => this.fetchSuggestions(query), 250);
+  }
+
+  async fetchSuggestions(query) {
+    if (!this.suggestionsEl) return;
+
+    this.suggestionsEl.innerHTML = '<div class="search-suggestions-loading"><i class="bi bi-arrow-repeat spin"></i> Searching...</div>';
+    this.suggestionsEl.classList.add('active');
+
+    let results = [];
+    try {
+      if (window.AlphaVantageAPI) {
+        results = await window.AlphaVantageAPI.searchSymbol(query);
+      }
+    } catch (e) {
+      console.warn('Symbol search failed:', e);
+    }
+
+    if (!results || results.length === 0) {
+      results = this.getLocalMatches(query);
+    }
+
+    this._suggestions = results;
+    this._highlightIndex = -1;
+
+    if (results.length === 0) {
+      this.suggestionsEl.innerHTML = '<div class="search-suggestions-empty">No results found</div>';
+      return;
+    }
+
+    this.suggestionsEl.innerHTML = results.slice(0, 8).map((r, i) => `
+      <div class="suggestion-item" data-index="${i}" data-symbol="${this.escapeAttr(r.symbol)}">
+        <span class="suggestion-symbol">${this.escapeHtml(r.symbol)}</span>
+        <div class="suggestion-details">
+          <div class="suggestion-name">${this.escapeHtml(r.name)}</div>
+          <div class="suggestion-meta">${this.escapeHtml(r.region || '')}${r.currency ? ' &middot; ' + this.escapeHtml(r.currency) : ''}</div>
+        </div>
+        <span class="suggestion-type">${this.escapeHtml(r.type || 'Equity')}</span>
+      </div>
+    `).join('');
+
+    this.suggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
+      item.addEventListener('click', () => {
+        this.selectSuggestion(item.dataset.symbol);
+      });
+    });
+  }
+
+  getLocalMatches(query) {
+    const popular = [
+      { symbol: 'AAPL', name: 'Apple Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'MSFT', name: 'Microsoft Corporation', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'AMZN', name: 'Amazon.com Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'NVDA', name: 'NVIDIA Corporation', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'META', name: 'Meta Platforms Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'TSLA', name: 'Tesla Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'JPM', name: 'JPMorgan Chase & Co.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'V', name: 'Visa Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'JNJ', name: 'Johnson & Johnson', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'WMT', name: 'Walmart Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'UNH', name: 'UnitedHealth Group', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'XOM', name: 'Exxon Mobil Corporation', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'PG', name: 'Procter & Gamble Co.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'HD', name: 'The Home Depot Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'MA', name: 'Mastercard Incorporated', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'DIS', name: 'The Walt Disney Company', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'NFLX', name: 'Netflix Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'ADBE', name: 'Adobe Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'CRM', name: 'Salesforce Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'AMD', name: 'Advanced Micro Devices', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'INTC', name: 'Intel Corporation', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'BA', name: 'The Boeing Company', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'GS', name: 'Goldman Sachs Group', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'PYPL', name: 'PayPal Holdings Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'UBER', name: 'Uber Technologies Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'SQ', name: 'Block Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'COIN', name: 'Coinbase Global Inc.', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'PLTR', name: 'Palantir Technologies', type: 'Equity', region: 'United States', currency: 'USD' },
+      { symbol: 'SNOW', name: 'Snowflake Inc.', type: 'Equity', region: 'United States', currency: 'USD' }
+    ];
+    const q = query.toLowerCase();
+    return popular.filter(s =>
+      s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+    );
+  }
+
+  onSearchKeydown(e) {
+    if (!this.suggestionsEl || !this.suggestionsEl.classList.contains('active')) return;
+    const items = this.suggestionsEl.querySelectorAll('.suggestion-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this._highlightIndex = Math.min(this._highlightIndex + 1, items.length - 1);
+      this.updateHighlight(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this._highlightIndex = Math.max(this._highlightIndex - 1, -1);
+      this.updateHighlight(items);
+    } else if (e.key === 'Escape') {
+      this.hideSuggestions();
+    }
+  }
+
+  handleEnterKey() {
+    const items = this.suggestionsEl ? this.suggestionsEl.querySelectorAll('.suggestion-item') : [];
+    if (this._highlightIndex >= 0 && items[this._highlightIndex]) {
+      this.selectSuggestion(items[this._highlightIndex].dataset.symbol);
+    } else {
+      this.searchCompany();
+    }
+  }
+
+  updateHighlight(items) {
+    items.forEach((item, i) => {
+      item.classList.toggle('highlighted', i === this._highlightIndex);
+    });
+    if (this._highlightIndex >= 0 && items[this._highlightIndex]) {
+      items[this._highlightIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  selectSuggestion(symbol) {
+    if (this.searchInput) this.searchInput.value = symbol;
+    this.hideSuggestions();
+    this.currentCompany = symbol;
+    this.loadCompanyData(symbol);
+  }
+
+  hideSuggestions() {
+    if (this.suggestionsEl) {
+      this.suggestionsEl.classList.remove('active');
+      this.suggestionsEl.innerHTML = '';
+    }
+    this._highlightIndex = -1;
+    this._suggestions = [];
+  }
+
+  escapeAttr(str) {
+    return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  searchCompany() {
+    const query = this.searchInput ? this.searchInput.value.trim() : '';
+    if (!query) return;
+    this.hideSuggestions();
     this.currentCompany = query;
     this.loadCompanyData(query);
   }

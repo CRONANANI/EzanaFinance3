@@ -50,20 +50,15 @@
   <div class="page-wrapper sidebar-active">
     <main class="page-content">
 
-      <!-- Page Hero -->
-      <section class="page-hero">
-        <div class="hero-content">
-          <h1>Company Research</h1>
-          <p>Advanced financial analysis and valuation models</p>
+      <!-- Company Search Bar -->
+      <div class="company-search-wrapper">
+        <div class="search-container">
+          <i class="bi bi-search"></i>
+          <input type="text" id="companySearchInput" placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)" class="company-search-input" autocomplete="off">
+          <button class="search-btn" id="searchCompanyBtn"><i class="bi bi-arrow-right"></i></button>
         </div>
-        <div class="hero-search">
-          <div class="search-container">
-            <i class="bi bi-search"></i>
-            <input type="text" id="companySearchInput" placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)" class="company-search-input">
-            <button class="search-btn" id="searchCompanyBtn"><i class="bi bi-arrow-right"></i></button>
-          </div>
-        </div>
-      </section>
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
 
       <!-- Stats Grid (populated live by FMP/AlphaVantage) -->
       <div class="stats-grid" id="companyStatsGrid">
