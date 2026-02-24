@@ -1,14 +1,6 @@
 /* For The Quants Page - Dashboard Style */
 
-body {
-  background: var(--background);
-  font-family: var(--font-sans);
-  color: var(--foreground);
-  min-height: 100vh;
-  padding: 24px;
-  padding-top: calc(var(--nav-height, 64px) + 24px);
-  margin: 0;
-}
+/* Body padding handled by page-wrapper and page-content */
 
 .page-hero {
   display: flex;

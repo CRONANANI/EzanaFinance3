@@ -39,10 +39,10 @@
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--card-border-radius, var(--radius-lg));
-  padding: var(--card-padding, 1.25rem);
+  padding: var(--card-padding, 2rem);
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
-  margin-bottom: var(--grid-gap, 1.25rem);
+  margin-bottom: var(--grid-gap, 1.5rem);
 }
 
 .post-card:hover {
@@ -61,8 +61,8 @@
 }
 
 .post-title {
-  font-family: var(--font-serif);
-  font-size: var(--card-title-size, 1rem);
+  font-family: var(--font-sans);
+  font-size: var(--card-title-size, 1.125rem);
   font-weight: 600;
   color: var(--foreground);
   margin-bottom: 0.625rem;
@@ -70,14 +70,14 @@
 }
 
 .post-text {
-  font-size: var(--card-body-size, 0.875rem);
+  font-size: var(--card-body-size, 0.9375rem);
   color: var(--foreground);
   line-height: 1.6;
   margin-bottom: 0.875rem;
 }
 
 .post-meta {
-  font-size: var(--card-meta-size, 0.75rem);
+  font-size: var(--card-meta-size, 0.8125rem);
   color: var(--muted-foreground);
 }
 
@@ -190,28 +190,28 @@
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--grid-gap, 1.25rem);
-  margin-bottom: 1.75rem;
+  gap: var(--grid-gap, 1.5rem);
+  margin-bottom: 2rem;
 }
 
 .stat-card {
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--card-border-radius, var(--radius-lg));
-  padding: var(--card-padding, 1.25rem);
+  padding: var(--card-padding, 1.5rem);
   display: flex;
-  gap: 0.875rem;
+  gap: 1rem;
   transition: all 0.3s ease;
 }
 
 .stat-icon {
-  width: var(--stat-icon-size, 40px);
-  height: var(--stat-icon-size, 40px);
+  width: var(--stat-icon-size, 48px);
+  height: var(--stat-icon-size, 48px);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 .stat-icon.members { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
@@ -269,7 +269,7 @@
 }
 .author-name { font-weight: 600; color: var(--foreground); display: flex; align-items: center; gap: 0.5rem; }
 .verified-badge { color: #3b82f6; }
-.post-meta { font-size: var(--card-meta-size, 0.75rem); color: var(--muted-foreground); margin-top: 0.25rem; }
+.post-meta { font-size: var(--card-meta-size, 0.8125rem); color: var(--muted-foreground); margin-top: 0.25rem; }
 .post-menu { background: none; border: none; color: var(--muted-foreground); cursor: pointer; padding: 0.25rem; }
 .post-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .tag {
@@ -281,7 +281,7 @@
   font-weight: 500;
 }
 
-.post-stats { display: flex; gap: 1rem; margin-bottom: 0.875rem; font-size: var(--card-meta-size, 0.75rem); color: var(--muted-foreground); }
+.post-stats { display: flex; gap: 1rem; margin-bottom: 0.875rem; font-size: var(--card-meta-size, 0.8125rem); color: var(--muted-foreground); }
 .post-stats .stat-item { display: flex; align-items: center; gap: 0.5rem; }
 .post-actions { display: flex; gap: 0.75rem; padding-top: 0.875rem; border-top: 1px solid var(--border); }
 .action-btn {

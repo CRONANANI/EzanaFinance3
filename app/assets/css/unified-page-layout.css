@@ -53,14 +53,16 @@ body.sidebar-open .page-wrapper {
 }
 
 .component-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius);
+  background: var(--card, var(--bg-card));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border, var(--border-primary));
+  border-radius: var(--radius-lg, var(--radius));
   padding: 2rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-sans);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm, var(--shadow-card));
+  position: relative;
+  overflow: hidden;
 }
 
 .component-card:hover {
@@ -78,9 +80,9 @@ body.sidebar-open .page-wrapper {
 }
 
 .page-wrapper .card-header h3 {
-  font-size: var(--font-lg);
+  font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--foreground, var(--text-primary));
   margin: 0;
   display: flex;
   align-items: center;
@@ -89,7 +91,7 @@ body.sidebar-open .page-wrapper {
 }
 
 .page-wrapper .card-header h3 i {
-  color: var(--color-primary);
+  color: var(--primary, var(--color-primary));
   font-size: 1.25rem;
 }
 

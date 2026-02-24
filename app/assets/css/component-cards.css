@@ -7,7 +7,7 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 2rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -46,7 +46,7 @@
 }
 
 .card-header h3 {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--foreground);
@@ -83,10 +83,10 @@
 }
 
 .card-description {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--muted-foreground, #9ca3af);
   margin: -0.75rem 0 1rem 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .cards-grid {

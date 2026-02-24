@@ -102,7 +102,7 @@
 .tab-content.active { display: block; }
 
 .section-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--foreground);
@@ -173,7 +173,7 @@
 .course-time { font-size: 0.75rem; color: var(--muted-foreground); }
 
 .course-name {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 700;
   color: var(--foreground);

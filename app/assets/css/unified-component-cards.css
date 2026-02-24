@@ -7,7 +7,7 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 2rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -33,7 +33,7 @@
 .component-card h3 {
   font-family: var(--font-sans);
   font-size: 1.125rem;
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--foreground);
   margin: 0;
@@ -88,6 +88,7 @@
   display: flex;
   gap: 1rem;
   transition: all 0.3s ease;
+  font-family: var(--font-sans);
 }
 
 .stat-card:hover {
