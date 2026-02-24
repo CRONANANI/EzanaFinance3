@@ -60,16 +60,8 @@
         <div class="search-suggestions" id="searchSuggestions"></div>
       </div>
 
-      <!-- Stats Grid (populated live by FMP/AlphaVantage) -->
+      <!-- Stats Grid (populated when a stock is selected) -->
       <div class="stats-grid" id="companyStatsGrid">
-        <div class="stat-card" id="stat-price">
-          <div class="stat-icon stocks"><i class="bi bi-graph-up"></i></div>
-          <div class="stat-content">
-            <div class="stat-value" id="statPrice">$--</div>
-            <div class="stat-label">Stock Price</div>
-            <div class="stat-change" id="statPriceChange">--</div>
-          </div>
-        </div>
         <div class="stat-card" id="stat-mcap">
           <div class="stat-icon market"><i class="bi bi-building"></i></div>
           <div class="stat-content">
@@ -83,15 +75,23 @@
           <div class="stat-content">
             <div class="stat-value" id="statPE">--</div>
             <div class="stat-label">P/E Ratio</div>
-            <div class="stat-change" id="statEPS">--</div>
+            <div class="stat-change" id="statPELabel">--</div>
           </div>
         </div>
-        <div class="stat-card" id="stat-volume">
-          <div class="stat-icon volume"><i class="bi bi-bar-chart"></i></div>
+        <div class="stat-card" id="stat-divyield">
+          <div class="stat-icon stocks"><i class="bi bi-cash-coin"></i></div>
           <div class="stat-content">
-            <div class="stat-value" id="statVolume">--</div>
-            <div class="stat-label">Volume</div>
-            <div class="stat-change" id="statBeta">--</div>
+            <div class="stat-value" id="statDivYield">--</div>
+            <div class="stat-label">Dividend Yield</div>
+            <div class="stat-change" id="statDivYieldLabel">--</div>
+          </div>
+        </div>
+        <div class="stat-card" id="stat-eps">
+          <div class="stat-icon volume"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="stat-content">
+            <div class="stat-value" id="statEPS">--</div>
+            <div class="stat-label">EPS</div>
+            <div class="stat-change" id="statEPSLabel">--</div>
           </div>
         </div>
       </div>

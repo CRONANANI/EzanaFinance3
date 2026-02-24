@@ -439,35 +439,41 @@ class CompanyResearch {
 
   updateStatsFromQuote(quote, profile) {
     var el;
-    el = document.getElementById('statPrice');
-    if (el && quote.price != null) el.textContent = '$' + Number(quote.price).toFixed(2);
-    el = document.getElementById('statPriceChange');
-    if (el && quote.changePercent != null) {
-      var pct = Number(quote.changePercent);
-      el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-      el.className = 'stat-change ' + (pct >= 0 ? 'positive' : 'negative');
-    }
     el = document.getElementById('statMarketCap');
     if (el) {
       var mc = quote.marketCap || (profile && profile.marketCap) || 0;
-      el.textContent = mc >= 1e12 ? '$' + (mc / 1e12).toFixed(1) + 'T' : mc >= 1e9 ? '$' + (mc / 1e9).toFixed(1) + 'B' : mc >= 1e6 ? '$' + (mc / 1e6).toFixed(0) + 'M' : '$' + mc.toLocaleString();
+      el.textContent = mc >= 1e12 ? '$' + (mc / 1e12).toFixed(2) + 'T' : mc >= 1e9 ? '$' + (mc / 1e9).toFixed(2) + 'B' : mc >= 1e6 ? '$' + (mc / 1e6).toFixed(0) + 'M' : mc > 0 ? '$' + mc.toLocaleString() : '--';
     }
     el = document.getElementById('statCapType');
     if (el) {
       var mc2 = quote.marketCap || (profile && profile.marketCap) || 0;
-      el.textContent = mc2 >= 200e9 ? 'Mega Cap' : mc2 >= 10e9 ? 'Large Cap' : mc2 >= 2e9 ? 'Mid Cap' : mc2 >= 300e6 ? 'Small Cap' : 'Micro Cap';
+      el.textContent = mc2 >= 200e9 ? 'Mega Cap' : mc2 >= 10e9 ? 'Large Cap' : mc2 >= 2e9 ? 'Mid Cap' : mc2 >= 300e6 ? 'Small Cap' : mc2 > 0 ? 'Micro Cap' : '--';
     }
     el = document.getElementById('statPE');
-    if (el && profile && profile.pe) el.textContent = Number(profile.pe).toFixed(1);
-    el = document.getElementById('statEPS');
-    if (el && profile && profile.eps) el.textContent = 'EPS: $' + Number(profile.eps).toFixed(2);
-    el = document.getElementById('statVolume');
-    if (el && quote.volume) {
-      var v = quote.volume;
-      el.textContent = v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(0) + 'K' : v;
+    if (el) el.textContent = (profile && profile.pe) ? Number(profile.pe).toFixed(2) : '--';
+    el = document.getElementById('statPELabel');
+    if (el && profile && profile.pe) {
+      var pe = Number(profile.pe);
+      el.textContent = pe < 15 ? 'Undervalued' : pe < 25 ? 'Fair Value' : 'Growth Premium';
     }
-    el = document.getElementById('statBeta');
-    if (el && profile && profile.beta) el.textContent = 'Beta: ' + Number(profile.beta).toFixed(2);
+    el = document.getElementById('statDivYield');
+    if (el) {
+      var dy = profile && profile.dividendYield != null ? Number(profile.dividendYield) : null;
+      el.textContent = dy != null ? (dy > 1 ? dy.toFixed(2) : (dy * 100).toFixed(2)) + '%' : '--';
+    }
+    el = document.getElementById('statDivYieldLabel');
+    if (el && profile && profile.dividendYield != null) {
+      var dyVal = Number(profile.dividendYield);
+      if (dyVal > 1) dyVal = dyVal / 100;
+      el.textContent = dyVal > 0.04 ? 'High Yield' : dyVal > 0.02 ? 'Moderate Yield' : dyVal > 0 ? 'Low Yield' : 'No Dividend';
+    }
+    el = document.getElementById('statEPS');
+    if (el) el.textContent = (profile && profile.eps) ? '$' + Number(profile.eps).toFixed(2) : '--';
+    el = document.getElementById('statEPSLabel');
+    if (el && profile && profile.eps) {
+      el.textContent = Number(profile.eps) > 0 ? 'Profitable' : 'Net Loss';
+      el.className = 'stat-change ' + (Number(profile.eps) > 0 ? 'positive' : 'negative');
+    }
   }
 
   updateCompanyInfoPanel(profile) {
@@ -539,30 +545,67 @@ class CompanyResearch {
   }
 
   loadFinnhubData(ticker) {
-    if (!window.FinnhubAPI) return;
+    if (!window.FinnhubAPI) {
+      this.loadOverviewForStats(ticker);
+      return;
+    }
+    var self = this;
     Promise.all([
       window.FinnhubAPI.getQuote(ticker),
       window.FinnhubAPI.getCompanyProfile(ticker)
     ]).then(function(results) {
-      var quote = results[0];
       var profile = results[1];
-      if (quote && quote.c != null) {
-        var priceEl = document.getElementById('statPrice');
-        var changeEl = document.getElementById('statPriceChange');
-        if (priceEl) priceEl.textContent = '$' + quote.c.toFixed(2);
-        if (changeEl && quote.dp != null) {
-          changeEl.textContent = (quote.dp >= 0 ? '+' : '') + quote.dp.toFixed(2) + '%';
-          changeEl.className = 'stat-change ' + (quote.dp >= 0 ? 'positive' : 'negative');
-        }
-      }
       if (profile && profile.marketCapitalization) {
         var mcEl = document.getElementById('statMarketCap');
         if (mcEl) {
           var mcap = profile.marketCapitalization;
-          mcEl.textContent = mcap >= 1e12 ? '$' + (mcap / 1e12).toFixed(1) + 'T' : mcap >= 1e9 ? '$' + (mcap / 1e9).toFixed(1) + 'B' : '$' + (mcap / 1e6).toFixed(0) + 'M';
+          mcEl.textContent = mcap >= 1e12 ? '$' + (mcap / 1e12).toFixed(2) + 'T' : mcap >= 1e9 ? '$' + (mcap / 1e9).toFixed(2) + 'B' : '$' + (mcap / 1e6).toFixed(0) + 'M';
         }
       }
+      self.loadOverviewForStats(ticker);
     });
+  }
+
+  async loadOverviewForStats(ticker) {
+    if (!window.AlphaVantageAPI) return;
+    try {
+      var overview = await window.AlphaVantageAPI.getCompanyOverview(ticker);
+      if (!overview) return;
+      var el;
+      el = document.getElementById('statMarketCap');
+      if (el && overview.MarketCapitalization) {
+        var mc = Number(overview.MarketCapitalization);
+        el.textContent = mc >= 1e12 ? '$' + (mc / 1e12).toFixed(2) + 'T' : mc >= 1e9 ? '$' + (mc / 1e9).toFixed(2) + 'B' : mc >= 1e6 ? '$' + (mc / 1e6).toFixed(0) + 'M' : '$' + mc.toLocaleString();
+      }
+      el = document.getElementById('statCapType');
+      if (el && overview.MarketCapitalization) {
+        var mc2 = Number(overview.MarketCapitalization);
+        el.textContent = mc2 >= 200e9 ? 'Mega Cap' : mc2 >= 10e9 ? 'Large Cap' : mc2 >= 2e9 ? 'Mid Cap' : mc2 >= 300e6 ? 'Small Cap' : 'Micro Cap';
+      }
+      el = document.getElementById('statPE');
+      if (el) el.textContent = overview.PERatio && overview.PERatio !== 'None' ? Number(overview.PERatio).toFixed(2) : '--';
+      el = document.getElementById('statPELabel');
+      if (el && overview.PERatio && overview.PERatio !== 'None') {
+        var pe = Number(overview.PERatio);
+        el.textContent = pe < 15 ? 'Undervalued' : pe < 25 ? 'Fair Value' : 'Growth Premium';
+      }
+      el = document.getElementById('statDivYield');
+      if (el) el.textContent = overview.DividendYield && overview.DividendYield !== 'None' ? (Number(overview.DividendYield) * 100).toFixed(2) + '%' : '0.00%';
+      el = document.getElementById('statDivYieldLabel');
+      if (el) {
+        var dy = overview.DividendYield && overview.DividendYield !== 'None' ? Number(overview.DividendYield) : 0;
+        el.textContent = dy > 0.04 ? 'High Yield' : dy > 0.02 ? 'Moderate Yield' : dy > 0 ? 'Low Yield' : 'No Dividend';
+      }
+      el = document.getElementById('statEPS');
+      if (el) el.textContent = overview.EPS && overview.EPS !== 'None' ? '$' + Number(overview.EPS).toFixed(2) : '--';
+      el = document.getElementById('statEPSLabel');
+      if (el && overview.EPS && overview.EPS !== 'None') {
+        el.textContent = Number(overview.EPS) > 0 ? 'Profitable' : 'Net Loss';
+        el.className = 'stat-change ' + (Number(overview.EPS) > 0 ? 'positive' : 'negative');
+      }
+    } catch (e) {
+      console.warn('Alpha Vantage overview fetch failed:', e);
+    }
   }
 
   async runModel(modelType) {
@@ -736,6 +779,18 @@ class MarketChartWidget {
     this.currentSymbol = null;
     document.getElementById('heatmapView').style.display = '';
     document.getElementById('stockChartView').style.display = 'none';
+    this.resetStatCards();
+  }
+
+  resetStatCards() {
+    ['statMarketCap', 'statPE', 'statDivYield', 'statEPS'].forEach(id => {
+      var el = document.getElementById(id);
+      if (el) el.textContent = '--';
+    });
+    ['statCapType', 'statPELabel', 'statDivYieldLabel', 'statEPSLabel'].forEach(id => {
+      var el = document.getElementById(id);
+      if (el) { el.textContent = '--'; el.className = 'stat-change'; }
+    });
   }
 
   showStockChart(symbol) {
@@ -745,6 +800,49 @@ class MarketChartWidget {
     document.getElementById('stockChartView').style.display = '';
     document.getElementById('stockChartTitle').textContent = this.currentSymbol;
     this.loadStockData(this.currentSymbol);
+    this.loadOverviewStats(this.currentSymbol);
+  }
+
+  async loadOverviewStats(symbol) {
+    if (!window.AlphaVantageAPI) return;
+    try {
+      var overview = await window.AlphaVantageAPI.getCompanyOverview(symbol);
+      if (!overview) return;
+      var el;
+      el = document.getElementById('statMarketCap');
+      if (el && overview.MarketCapitalization) {
+        var mc = Number(overview.MarketCapitalization);
+        el.textContent = mc >= 1e12 ? '$' + (mc / 1e12).toFixed(2) + 'T' : mc >= 1e9 ? '$' + (mc / 1e9).toFixed(2) + 'B' : mc >= 1e6 ? '$' + (mc / 1e6).toFixed(0) + 'M' : '$' + mc.toLocaleString();
+      }
+      el = document.getElementById('statCapType');
+      if (el && overview.MarketCapitalization) {
+        var mc2 = Number(overview.MarketCapitalization);
+        el.textContent = mc2 >= 200e9 ? 'Mega Cap' : mc2 >= 10e9 ? 'Large Cap' : mc2 >= 2e9 ? 'Mid Cap' : mc2 >= 300e6 ? 'Small Cap' : 'Micro Cap';
+      }
+      el = document.getElementById('statPE');
+      if (el) el.textContent = overview.PERatio && overview.PERatio !== 'None' ? Number(overview.PERatio).toFixed(2) : '--';
+      el = document.getElementById('statPELabel');
+      if (el && overview.PERatio && overview.PERatio !== 'None') {
+        var pe = Number(overview.PERatio);
+        el.textContent = pe < 15 ? 'Undervalued' : pe < 25 ? 'Fair Value' : 'Growth Premium';
+      }
+      el = document.getElementById('statDivYield');
+      if (el) el.textContent = overview.DividendYield && overview.DividendYield !== 'None' ? (Number(overview.DividendYield) * 100).toFixed(2) + '%' : '0.00%';
+      el = document.getElementById('statDivYieldLabel');
+      if (el) {
+        var dy = overview.DividendYield && overview.DividendYield !== 'None' ? Number(overview.DividendYield) : 0;
+        el.textContent = dy > 0.04 ? 'High Yield' : dy > 0.02 ? 'Moderate Yield' : dy > 0 ? 'Low Yield' : 'No Dividend';
+      }
+      el = document.getElementById('statEPS');
+      if (el) el.textContent = overview.EPS && overview.EPS !== 'None' ? '$' + Number(overview.EPS).toFixed(2) : '--';
+      el = document.getElementById('statEPSLabel');
+      if (el && overview.EPS && overview.EPS !== 'None') {
+        el.textContent = Number(overview.EPS) > 0 ? 'Profitable' : 'Net Loss';
+        el.className = 'stat-change ' + (Number(overview.EPS) > 0 ? 'positive' : 'negative');
+      }
+    } catch (e) {
+      console.warn('Overview stats fetch failed:', e);
+    }
   }
 
   async loadStockData(symbol) {
