@@ -7,10 +7,11 @@
   min-height: 100vh;
   background: var(--background);
   padding-top: 64px;
+  padding-left: 0;
   transition: padding-left 0.3s ease;
 }
 
-.page-wrapper.sidebar-active {
+body.sidebar-open .page-wrapper {
   padding-left: 320px;
 }
 
@@ -95,7 +96,7 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .page-wrapper.sidebar-active {
+  body.sidebar-open .page-wrapper {
     padding-left: 0;
   }
 }

@@ -1,7 +1,6 @@
 /* Watchlist Page Styles */
 
-/* Match dashboard layout: use dashboard-main/container/grid but avoid double offset.
-   page-wrapper already provides padding-left for sidebar; dashboard-main adds margin on dashboard page. */
+/* Watchlist uses page-wrapper for sidebar offset; zero out dashboard-main margin */
 body.watchlist-page .watchlist-main.dashboard-main {
   margin-left: 0;
   padding-top: 0;
@@ -9,6 +8,7 @@ body.watchlist-page .watchlist-main.dashboard-main {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  transition: none;
 }
 
 /* Viewport fit: component cards fill to bottom of screen for max visibility without page scroll */
@@ -839,7 +839,6 @@ body.watchlist-page .stock-watchlist-card {
 }
 
 @media (max-width: 1023px) {
-  .page-wrapper.sidebar-active { padding-left: 0; }
   .watchlist-grid,
   .watchlist-grid-two-column { grid-template-columns: 1fr; }
 }

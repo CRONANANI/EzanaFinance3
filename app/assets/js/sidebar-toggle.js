@@ -41,14 +41,12 @@ class SidebarToggle {
 
   showSidebar() {
     this.sidebar?.classList.remove('hidden');
-    this.pageWrapper?.classList.add('sidebar-active');
     document.body.classList.add('sidebar-open');
     if (this.dashboardMain) this.dashboardMain.classList.remove('sidebar-hidden');
   }
 
   hideSidebar() {
     this.sidebar?.classList.add('hidden');
-    this.pageWrapper?.classList.remove('sidebar-active');
     document.body.classList.remove('sidebar-open');
     if (this.dashboardMain) this.dashboardMain.classList.add('sidebar-hidden');
   }

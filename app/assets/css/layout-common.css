@@ -19,19 +19,22 @@ body {
     max-width: var(--page-max-width, 1400px);
     margin: 0 auto;
     padding: var(--space-xl, 2rem) var(--space-lg, 1.5rem);
-    transition: margin-left var(--transition-base);
+    transition: margin-left 0.3s ease;
 }
 
-/* Default: no sidebar offset (content full width until sidebar opens) */
+/* Default: no sidebar offset */
 .page-content,
 .dashboard-page-content {
     margin-left: 0;
 }
 
-/* When Investment Feed sidebar is open - content shifts right smoothly */
-body.sidebar-open .page-content,
-body.sidebar-open .dashboard-page-content {
-    margin-left: var(--sidebar-width, 280px);
+/* When sidebar is open and .page-content is a direct child of body
+   (pages without .page-wrapper like inside-the-capitol, community, financial-analytics),
+   shift content right to match the 320px sidebar.
+   Pages WITH .page-wrapper handle offset via padding-left on the wrapper. */
+body.sidebar-open > .page-content,
+body.sidebar-open > .dashboard-page-content {
+    margin-left: 320px;
 }
 
 /* Standard grid for cards - consistent gap */
@@ -51,8 +54,8 @@ body.sidebar-open .dashboard-page-content {
 
 /* Responsive: single-column layout, no sidebar offset */
 @media (max-width: 1024px) {
-    body.sidebar-open .page-content,
-    body.sidebar-open .dashboard-page-content {
+    body.sidebar-open > .page-content,
+    body.sidebar-open > .dashboard-page-content {
         margin-left: 0;
     }
     .page-content,
