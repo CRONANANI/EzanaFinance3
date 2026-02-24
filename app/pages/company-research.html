@@ -188,7 +188,7 @@
                 <p class="model-description">Discounted cash flow analysis with 5-year projections</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="dcf"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="dcf" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -211,7 +211,7 @@
                 <p class="model-description">Complete financial model with linked statements</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="three-statement"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="three-statement" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -234,7 +234,7 @@
                 <p class="model-description">Merger impact analysis with synergies</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="ma-accretion"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="ma-accretion" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -257,7 +257,7 @@
                 <p class="model-description">Leveraged buyout returns analysis</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="lbo"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="lbo" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -280,7 +280,7 @@
                 <p class="model-description">Trading multiples analysis vs peers</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="comps"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="comps" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -303,7 +303,7 @@
                 <p class="model-description">M&A deal comparables analysis</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="precedent"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="precedent" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -326,7 +326,7 @@
                 <p class="model-description">Public offering pricing analysis</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="ipo"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="ipo" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -349,7 +349,7 @@
                 <p class="model-description">Debt capacity and leverage ratios</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="credit"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="credit" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -372,7 +372,7 @@
                 <p class="model-description">Segment-by-segment valuation</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="sotp"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="sotp" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -395,7 +395,7 @@
                 <p class="model-description">Unit economics and cohort analysis</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="operating"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="operating" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -418,7 +418,7 @@
                 <p class="model-description">Scenario planning and risk assessment</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="sensitivity"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="sensitivity" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -441,7 +441,7 @@
                 <p class="model-description">Complete investment analysis report</p>
               </div>
             </div>
-            <button class="run-model-btn" data-model="investment-memo"><i class="bi bi-play-circle"></i> Run Model</button>
+            <button class="model-select-btn" data-model="investment-memo" type="button"><i class="bi bi-box-arrow-up-right"></i> Select</button>
           </div>
           <div class="card-body">
             <div class="model-features">
@@ -456,6 +456,19 @@
           </div>
         </section>
       </div>
+
+      <!-- Model Detail Section (scroll target when model selected from carousel) -->
+      <section class="model-detail-section" id="modelDetailSection" style="display:none;">
+        <div class="component-card model-detail-card">
+          <div class="card-header">
+            <h3 id="modelDetailTitle">Financial Analysis Model</h3>
+            <button class="card-action-btn" id="modelDetailClose" type="button"><i class="bi bi-x-lg"></i> Close</button>
+          </div>
+          <div class="model-detail-body" id="modelDetailBody">
+            <!-- DCF form or other model UI injected here -->
+          </div>
+        </div>
+      </section>
 
       <!-- Company Info Panel (hidden until search, populated by FMP) -->
       <div id="companyInfoPanel" style="display:none;" class="company-info-panel">

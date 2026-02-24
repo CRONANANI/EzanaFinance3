@@ -238,12 +238,210 @@ class CompanyResearch {
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.company-search-wrapper')) this.hideSuggestions();
     });
-    document.querySelectorAll('.run-model-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const modelType = e.target.closest('button').dataset.model;
-        if (modelType) this.runModel(modelType);
+    document.querySelectorAll('.model-select-btn, .model-card').forEach(el => {
+      el.addEventListener('click', (e) => {
+        const card = e.target.closest('.model-card');
+        if (!card) return;
+        const modelType = card.dataset.model;
+        if (modelType) this.selectModel(modelType);
       });
     });
+    document.getElementById('modelDetailClose')?.addEventListener('click', () => this.closeModelDetail());
+  }
+
+  selectModel(modelType) {
+    if (!this.currentCompany) {
+      alert('Please search for a company first');
+      if (this.searchInput) this.searchInput.focus();
+      return;
+    }
+    this.selectedModelType = modelType;
+    const section = document.getElementById('modelDetailSection');
+    const titleEl = document.getElementById('modelDetailTitle');
+    const bodyEl = document.getElementById('modelDetailBody');
+    if (!section || !titleEl || !bodyEl) return;
+    titleEl.textContent = this.getModelTitle(modelType);
+    if (modelType === 'dcf') {
+      this.renderDCFForm(bodyEl);
+    } else {
+      bodyEl.innerHTML = '<div class="model-placeholder"><p>This model is coming soon. For now, use the AI-powered analysis from the previous flow.</p></div>';
+    }
+    section.style.display = '';
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  closeModelDetail() {
+    const section = document.getElementById('modelDetailSection');
+    if (section) section.style.display = 'none';
+  }
+
+  renderDCFForm(container) {
+    const symbol = (this.currentCompany || '').toUpperCase();
+    const defaults = {
+      revenueGrowthPct: 0.1094,
+      ebitdaPct: 0.3127,
+      depreciationAndAmortizationPct: 0.0346,
+      cashAndShortTermInvestmentsPct: 0.2344,
+      receivablesPct: 0.1534,
+      inventoriesPct: 0.0155,
+      payablePct: 0.1615,
+      ebitPct: 0.2782,
+      capitalExpenditurePct: 0.0306,
+      operatingCashFlowPct: 0.2886,
+      sellingGeneralAndAdministrativeExpensesPct: 0.0663,
+      taxRate: 0.1492,
+      longTermGrowthRate: 4,
+      costOfDebt: 3.64,
+      costOfEquity: 9.51168,
+      marketRiskPremium: 4.72,
+      beta: 1.244,
+      riskFreeRate: 3.64
+    };
+    container.innerHTML = `
+      <form id="dcfForm" class="dcf-form">
+        <div class="dcf-form-grid">
+          <div class="dcf-form-group">
+            <label for="dcfSymbol">Symbol *</label>
+            <input type="text" id="dcfSymbol" value="${symbol}" required placeholder="AAPL">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfRevenueGrowth">Revenue Growth %</label>
+            <input type="number" id="dcfRevenueGrowth" step="0.0001" value="${defaults.revenueGrowthPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfEbitda">EBITDA %</label>
+            <input type="number" id="dcfEbitda" step="0.0001" value="${defaults.ebitdaPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfDepreciation">Depreciation & Amortization %</label>
+            <input type="number" id="dcfDepreciation" step="0.0001" value="${defaults.depreciationAndAmortizationPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfCash">Cash & Short-Term Investments %</label>
+            <input type="number" id="dcfCash" step="0.0001" value="${defaults.cashAndShortTermInvestmentsPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfReceivables">Receivables %</label>
+            <input type="number" id="dcfReceivables" step="0.0001" value="${defaults.receivablesPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfInventories">Inventories %</label>
+            <input type="number" id="dcfInventories" step="0.0001" value="${defaults.inventoriesPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfPayable">Payable %</label>
+            <input type="number" id="dcfPayable" step="0.0001" value="${defaults.payablePct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfEbit">EBIT %</label>
+            <input type="number" id="dcfEbit" step="0.0001" value="${defaults.ebitPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfCapEx">Capital Expenditure %</label>
+            <input type="number" id="dcfCapEx" step="0.0001" value="${defaults.capitalExpenditurePct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfOperatingCF">Operating Cash Flow %</label>
+            <input type="number" id="dcfOperatingCF" step="0.0001" value="${defaults.operatingCashFlowPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfSGA">SG&A Expenses %</label>
+            <input type="number" id="dcfSGA" step="0.0001" value="${defaults.sellingGeneralAndAdministrativeExpensesPct}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfTaxRate">Tax Rate</label>
+            <input type="number" id="dcfTaxRate" step="0.0001" value="${defaults.taxRate}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfLTGR">Long-Term Growth Rate %</label>
+            <input type="number" id="dcfLTGR" step="0.01" value="${defaults.longTermGrowthRate}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfCostOfDebt">Cost of Debt %</label>
+            <input type="number" id="dcfCostOfDebt" step="0.01" value="${defaults.costOfDebt}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfCostOfEquity">Cost of Equity %</label>
+            <input type="number" id="dcfCostOfEquity" step="0.0001" value="${defaults.costOfEquity}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfMRP">Market Risk Premium %</label>
+            <input type="number" id="dcfMRP" step="0.01" value="${defaults.marketRiskPremium}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfBeta">Beta</label>
+            <input type="number" id="dcfBeta" step="0.001" value="${defaults.beta}">
+          </div>
+          <div class="dcf-form-group">
+            <label for="dcfRiskFree">Risk-Free Rate %</label>
+            <input type="number" id="dcfRiskFree" step="0.01" value="${defaults.riskFreeRate}">
+          </div>
+        </div>
+        <div class="dcf-form-actions">
+          <button type="submit" class="run-model-btn"><i class="bi bi-calculator"></i> Calculate DCF</button>
+          <span id="dcfStatus"></span>
+        </div>
+        <div id="dcfOutput" class="dcf-output-box" style="display:none;"></div>
+      </form>
+    `;
+    container.querySelector('#dcfForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.runDCFModel();
+    });
+  }
+
+  async runDCFModel() {
+    const symbol = (document.getElementById('dcfSymbol')?.value || '').trim().toUpperCase();
+    if (!symbol) {
+      alert('Please enter a symbol');
+      return;
+    }
+    const statusEl = document.getElementById('dcfStatus');
+    const outputEl = document.getElementById('dcfOutput');
+    if (statusEl) statusEl.textContent = 'Calculating...';
+    if (outputEl) { outputEl.style.display = 'none'; outputEl.innerHTML = ''; }
+    const params = {
+      symbol,
+      revenueGrowthPct: parseFloat(document.getElementById('dcfRevenueGrowth')?.value) || 0,
+      ebitdaPct: parseFloat(document.getElementById('dcfEbitda')?.value) || 0,
+      depreciationAndAmortizationPct: parseFloat(document.getElementById('dcfDepreciation')?.value) || 0,
+      cashAndShortTermInvestmentsPct: parseFloat(document.getElementById('dcfCash')?.value) || 0,
+      receivablesPct: parseFloat(document.getElementById('dcfReceivables')?.value) || 0,
+      inventoriesPct: parseFloat(document.getElementById('dcfInventories')?.value) || 0,
+      payablePct: parseFloat(document.getElementById('dcfPayable')?.value) || 0,
+      ebitPct: parseFloat(document.getElementById('dcfEbit')?.value) || 0,
+      capitalExpenditurePct: parseFloat(document.getElementById('dcfCapEx')?.value) || 0,
+      operatingCashFlowPct: parseFloat(document.getElementById('dcfOperatingCF')?.value) || 0,
+      sellingGeneralAndAdministrativeExpensesPct: parseFloat(document.getElementById('dcfSGA')?.value) || 0,
+      taxRate: parseFloat(document.getElementById('dcfTaxRate')?.value) || 0,
+      longTermGrowthRate: parseFloat(document.getElementById('dcfLTGR')?.value) || 0,
+      costOfDebt: parseFloat(document.getElementById('dcfCostOfDebt')?.value) || 0,
+      costOfEquity: parseFloat(document.getElementById('dcfCostOfEquity')?.value) || 0,
+      marketRiskPremium: parseFloat(document.getElementById('dcfMRP')?.value) || 0,
+      beta: parseFloat(document.getElementById('dcfBeta')?.value) || 0,
+      riskFreeRate: parseFloat(document.getElementById('dcfRiskFree')?.value) || 0
+    };
+    try {
+      const fmp = window.FmpAPI;
+      if (!fmp || !fmp.getCustomDCF) {
+        throw new Error('FMP Custom DCF API not available');
+      }
+      const data = await fmp.getCustomDCF(params);
+      if (statusEl) statusEl.textContent = '';
+      if (outputEl) {
+        outputEl.style.display = '';
+        const price = data?.dcf || data?.price || data?.equityValuePerShare || data?.[0]?.dcf || data?.[0]?.price;
+        outputEl.innerHTML = price != null
+          ? `<div class="stock-price-result">DCF Fair Value: $${Number(price).toFixed(2)}</div><p class="dcf-meta">Based on your custom assumptions for ${symbol}</p>`
+          : `<p>Unable to compute. Response: ${JSON.stringify(data)}</p>`;
+      }
+    } catch (e) {
+      if (statusEl) statusEl.textContent = '';
+      if (outputEl) {
+        outputEl.style.display = '';
+        outputEl.innerHTML = `<p style="color:var(--destructive)">Error: ${e.message}. The Custom DCF API may require a premium FMP subscription.</p>`;
+      }
+    }
   }
 
   onSearchInput() {
