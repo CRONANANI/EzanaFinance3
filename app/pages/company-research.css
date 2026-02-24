@@ -541,6 +541,153 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 /* ============================================
+   CHART + MODELS GRID (2/3 chart, 1/3 sidebar)
+   ============================================ */
+
+.chart-models-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  align-items: start;
+}
+
+/* ============================================
+   MODELS SIDEBAR - Vertical Carousel (Portfolio News style)
+   ============================================ */
+
+.models-sidebar {
+  background: var(--card, var(--bg-card));
+  border: 1px solid var(--card-border, var(--border-primary));
+  border-radius: var(--radius-lg, var(--radius));
+  padding: 1.25rem;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-sm, var(--shadow-card));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 680px;
+  min-height: 400px;
+}
+
+.models-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--primary, var(--color-primary));
+  flex-shrink: 0;
+}
+
+.models-sidebar-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground, var(--text-primary));
+  margin: 0;
+}
+
+.models-sidebar-header i {
+  font-size: 1.125rem;
+  color: var(--primary, var(--color-primary));
+}
+
+.models-sidebar-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0 0 1rem 0;
+}
+
+.models-carousel {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.25rem;
+}
+
+.models-carousel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.models-carousel::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.3);
+  border-radius: 3px;
+}
+
+.models-carousel::-webkit-scrollbar-thumb {
+  background: var(--primary, var(--color-primary));
+  border-radius: 3px;
+}
+
+/* Compact model cards in sidebar */
+.models-sidebar .model-card {
+  padding: 0.875rem 1rem !important;
+  background: rgba(17, 24, 39, 0.4);
+  border: 1px solid var(--border, var(--border-primary));
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  margin: 0;
+}
+
+.models-sidebar .model-card:hover {
+  border-color: var(--primary, var(--color-primary));
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.models-sidebar .model-card .card-header {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0;
+}
+
+.models-sidebar .model-card .model-info {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.models-sidebar .model-card .model-icon {
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+}
+
+.models-sidebar .model-card .model-info h3 {
+  font-size: 0.875rem;
+  margin-bottom: 0.125rem;
+}
+
+.models-sidebar .model-card .model-description {
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+
+.models-sidebar .model-card .model-features {
+  display: none;
+}
+
+.models-sidebar .model-card .run-model-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.models-sidebar .model-card .card-body {
+  padding: 0.5rem 0 0 0;
+}
+
+.models-sidebar .model-card .model-output {
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* ============================================
    MARKET CHART CARD - Dashboard Style
    ============================================ */
 
@@ -548,10 +695,10 @@ body.light-mode .suggestion-item.highlighted {
   background: var(--card, var(--bg-card));
   border: 1px solid var(--card-border, var(--border-primary));
   border-radius: var(--radius-lg, var(--radius));
-  padding: 2rem;
+  padding: 1.5rem;
   font-family: var(--font-sans);
   box-shadow: var(--shadow-sm, var(--shadow-card));
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
   transition: all 0.3s ease;
 }
 
@@ -577,7 +724,7 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 .market-chart-section .chart-title {
-  font-size: 1.25rem;
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--foreground, var(--text-primary));
   margin: 0;
@@ -590,14 +737,14 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 .market-price {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--foreground, var(--text-primary));
   font-feature-settings: 'tnum' 1;
 }
 
 .market-change {
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   font-feature-settings: 'tnum' 1;
 }
@@ -675,7 +822,7 @@ body.light-mode .suggestion-item.highlighted {
 
 .market-chart-section .chart-container.compact {
   position: relative;
-  height: 350px;
+  height: 320px;
   background: rgba(17, 24, 39, 0.3);
   border-radius: 8px;
   padding: 0.5rem;
@@ -747,7 +894,7 @@ body.light-mode .suggestion-item.highlighted {
 
 /* Heatmap subtitle */
 .heatmap-subtitle {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--muted-foreground);
   font-weight: 500;
 }
@@ -885,6 +1032,13 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 @media (max-width: 1024px) {
+  .chart-models-grid {
+    grid-template-columns: 1fr;
+  }
+  .models-sidebar {
+    max-height: 420px;
+    min-height: 320px;
+  }
   .market-chart-section .chart-header.compact {
     flex-direction: column;
     align-items: flex-start;
@@ -899,6 +1053,17 @@ body.light-mode .suggestion-item.highlighted {
 }
 
 @media (max-width: 768px) {
+  .chart-models-grid {
+    gap: 1rem;
+  }
+  .models-sidebar {
+    max-height: 360px;
+    min-height: 280px;
+    padding: 1rem;
+  }
+  .models-sidebar-header h3 {
+    font-size: 0.9375rem;
+  }
   .market-chart-section .chart-container.compact {
     height: 250px;
   }
@@ -930,4 +1095,19 @@ body.light-mode .chart-loading {
 
 body.light-mode .heatmap-container {
   background: #f0f0ec;
+}
+
+body.light-mode .models-sidebar {
+  background: #ffffff;
+  border-color: rgba(5, 150, 105, 0.15);
+}
+
+body.light-mode .models-sidebar .model-card {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .models-sidebar .model-card:hover {
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.25);
 }

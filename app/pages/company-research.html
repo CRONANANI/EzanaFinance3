@@ -96,6 +96,8 @@
         </div>
       </div>
 
+      <!-- Chart + Models Grid (2/3 chart, 1/3 models carousel) -->
+      <div class="chart-models-grid">
       <!-- Market Heatmap / Stock Chart Card -->
       <section class="market-chart-section" id="marketChartSection">
         <!-- HEATMAP VIEW (default) -->
@@ -168,49 +170,14 @@
         </div>
       </section>
 
-      <!-- Company Info Panel (hidden until search, populated by FMP) -->
-      <div id="companyInfoPanel" style="display:none;" class="company-info-panel">
-        <div class="company-info-grid">
-          <div class="company-info-main">
-            <div class="company-header-row">
-              <img id="companyLogo" src="" alt="" class="company-logo" style="display:none;">
-              <div>
-                <h2 id="companyName">--</h2>
-                <span id="companySector" class="company-sector-badge">--</span>
-                <span id="companyExchange" class="company-exchange-badge">--</span>
-              </div>
-            </div>
-            <p id="companyDescription" class="company-description">Search for a company to see its details.</p>
+        <!-- Financial Analysis Models Sidebar (vertical carousel) -->
+        <section class="models-sidebar">
+          <div class="models-sidebar-header">
+            <h3>Financial Analysis Models</h3>
+            <i class="bi bi-calculator"></i>
           </div>
-          <div class="company-info-sidebar">
-            <div class="info-row"><span class="info-label">CEO</span><span id="companyCEO" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">Employees</span><span id="companyEmployees" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">IPO Date</span><span id="companyIPODate" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">52W High</span><span id="company52High" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">52W Low</span><span id="company52Low" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">Div Yield</span><span id="companyDivYield" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">DCF Value</span><span id="companyDCF" class="info-value">--</span></div>
-            <div class="info-row"><span class="info-label">Analyst Rating</span><span id="companyRating" class="info-value">--</span></div>
-          </div>
-        </div>
-        <div id="companyFinancials" class="company-financials-section" style="display:none;">
-          <h3><i class="bi bi-table"></i> Key Financial Metrics</h3>
-          <div class="financials-table-wrap" id="financialsTableWrap"></div>
-        </div>
-        <div id="companyPeers" class="company-peers-section" style="display:none;">
-          <h3><i class="bi bi-people"></i> Peer Companies</h3>
-          <div class="peers-list" id="peersList"></div>
-        </div>
-      </div>
-
-      <!-- Financial Analysis Models -->
-      <div class="models-section">
-        <h2 class="section-title"><i class="bi bi-calculator"></i> Financial Analysis Models</h2>
-        <p class="section-subtitle">Select a model to run AI-powered analysis on any company</p>
-      </div>
-
-      <!-- Models Grid -->
-      <div class="models-grid">
+          <p class="models-sidebar-subtitle">Select a model to run AI-powered analysis</p>
+          <div class="models-carousel">
         <!-- Model 1: DCF Valuation -->
         <div class="component-card model-card" data-model="dcf">
           <div class="card-header">
@@ -485,6 +452,43 @@
             </div>
             <div class="model-output" id="output-investment-memo"></div>
           </div>
+        </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Company Info Panel (hidden until search, populated by FMP) -->
+      <div id="companyInfoPanel" style="display:none;" class="company-info-panel">
+        <div class="company-info-grid">
+          <div class="company-info-main">
+            <div class="company-header-row">
+              <img id="companyLogo" src="" alt="" class="company-logo" style="display:none;">
+              <div>
+                <h2 id="companyName">--</h2>
+                <span id="companySector" class="company-sector-badge">--</span>
+                <span id="companyExchange" class="company-exchange-badge">--</span>
+              </div>
+            </div>
+            <p id="companyDescription" class="company-description">Search for a company to see its details.</p>
+          </div>
+          <div class="company-info-sidebar">
+            <div class="info-row"><span class="info-label">CEO</span><span id="companyCEO" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">Employees</span><span id="companyEmployees" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">IPO Date</span><span id="companyIPODate" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">52W High</span><span id="company52High" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">52W Low</span><span id="company52Low" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">Div Yield</span><span id="companyDivYield" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">DCF Value</span><span id="companyDCF" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">Analyst Rating</span><span id="companyRating" class="info-value">--</span></div>
+          </div>
+        </div>
+        <div id="companyFinancials" class="company-financials-section" style="display:none;">
+          <h3><i class="bi bi-table"></i> Key Financial Metrics</h3>
+          <div class="financials-table-wrap" id="financialsTableWrap"></div>
+        </div>
+        <div id="companyPeers" class="company-peers-section" style="display:none;">
+          <h3><i class="bi bi-people"></i> Peer Companies</h3>
+          <div class="peers-list" id="peersList"></div>
         </div>
       </div>
 
