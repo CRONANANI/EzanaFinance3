@@ -10,18 +10,19 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/theme-variables.css">
   <link rel="stylesheet" href="../assets/css/theme.css">
-  <link rel="stylesheet" href="../assets/css/universal-card-standards.css">
-  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+  <link rel="stylesheet" href="../assets/css/component-cards.css">
   <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
+  <link rel="stylesheet" href="../assets/css/universal-card-standards.css">
   <link rel="stylesheet" href="../assets/css/page-layout.css">
+  <link rel="stylesheet" href="../assets/css/pages-common.css">
   <link rel="stylesheet" href="../assets/css/layout-common.css">
+  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
   <link rel="stylesheet" href="../components/navigation/unified-nav.css">
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
   <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
   <link rel="stylesheet" href="company-research.css">
-  <script src="../assets/js/finnhub-api.js" defer></script>
 </head>
-<body>
+<body class="dashboard-page sidebar-open">
 
   <nav class="main-nav" id="mainNav"></nav>
 
@@ -64,39 +65,74 @@
         </div>
       </section>
 
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card">
+      <!-- Stats Grid (populated live by FMP/AlphaVantage) -->
+      <div class="stats-grid" id="companyStatsGrid">
+        <div class="stat-card" id="stat-price">
           <div class="stat-icon stocks"><i class="bi bi-graph-up"></i></div>
           <div class="stat-content">
-            <div class="stat-value">$485.20</div>
+            <div class="stat-value" id="statPrice">$--</div>
             <div class="stat-label">Stock Price</div>
-            <div class="stat-change positive">+2.6%</div>
+            <div class="stat-change" id="statPriceChange">--</div>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" id="stat-mcap">
           <div class="stat-icon market"><i class="bi bi-building"></i></div>
           <div class="stat-content">
-            <div class="stat-value">$1.2T</div>
+            <div class="stat-value" id="statMarketCap">--</div>
             <div class="stat-label">Market Cap</div>
-            <div class="stat-change">Large Cap</div>
+            <div class="stat-change" id="statCapType">--</div>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" id="stat-pe">
           <div class="stat-icon performance"><i class="bi bi-trophy"></i></div>
           <div class="stat-content">
-            <div class="stat-value">35.4</div>
+            <div class="stat-value" id="statPE">--</div>
             <div class="stat-label">P/E Ratio</div>
-            <div class="stat-change">vs Industry: 28.2</div>
+            <div class="stat-change" id="statEPS">--</div>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" id="stat-volume">
           <div class="stat-icon volume"><i class="bi bi-bar-chart"></i></div>
           <div class="stat-content">
-            <div class="stat-value">42.8M</div>
-            <div class="stat-label">Avg Volume</div>
-            <div class="stat-change positive">+18%</div>
+            <div class="stat-value" id="statVolume">--</div>
+            <div class="stat-label">Volume</div>
+            <div class="stat-change" id="statBeta">--</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Company Info Panel (hidden until search, populated by FMP) -->
+      <div id="companyInfoPanel" style="display:none;" class="company-info-panel">
+        <div class="company-info-grid">
+          <div class="company-info-main">
+            <div class="company-header-row">
+              <img id="companyLogo" src="" alt="" class="company-logo" style="display:none;">
+              <div>
+                <h2 id="companyName">--</h2>
+                <span id="companySector" class="company-sector-badge">--</span>
+                <span id="companyExchange" class="company-exchange-badge">--</span>
+              </div>
+            </div>
+            <p id="companyDescription" class="company-description">Search for a company to see its details.</p>
+          </div>
+          <div class="company-info-sidebar">
+            <div class="info-row"><span class="info-label">CEO</span><span id="companyCEO" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">Employees</span><span id="companyEmployees" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">IPO Date</span><span id="companyIPODate" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">52W High</span><span id="company52High" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">52W Low</span><span id="company52Low" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">Div Yield</span><span id="companyDivYield" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">DCF Value</span><span id="companyDCF" class="info-value">--</span></div>
+            <div class="info-row"><span class="info-label">Analyst Rating</span><span id="companyRating" class="info-value">--</span></div>
+          </div>
+        </div>
+        <div id="companyFinancials" class="company-financials-section" style="display:none;">
+          <h3><i class="bi bi-table"></i> Key Financial Metrics</h3>
+          <div class="financials-table-wrap" id="financialsTableWrap"></div>
+        </div>
+        <div id="companyPeers" class="company-peers-section" style="display:none;">
+          <h3><i class="bi bi-people"></i> Peer Companies</h3>
+          <div class="peers-list" id="peersList"></div>
         </div>
       </div>
 
@@ -432,6 +468,12 @@
     </main>
   </div>
 
+  <script src="../js/api-config.js" defer></script>
+  <script src="../assets/js/api-cache.js" defer></script>
+  <script src="../assets/js/alpha-vantage-api.js" defer></script>
+  <script src="../assets/js/fmp-api.js" defer></script>
+  <script src="../assets/js/news-api.js" defer></script>
+  <script src="../assets/js/market-data-service.js" defer></script>
   <script src="../assets/js/theme-toggle.js" defer></script>
   <script src="../components/navigation/load-nav.js" defer></script>
   <script src="../components/notifications/notifications-sidebar.js" defer></script>

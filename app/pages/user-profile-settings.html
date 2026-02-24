@@ -7,35 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts -->
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="../styles.css">
-    <!-- Navigation CSS -->
-    <link rel="stylesheet" href="../components/navigation/navigation.css">
+    <link rel="stylesheet" href="../assets/css/theme-variables.css">
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    <link rel="stylesheet" href="../assets/css/component-cards.css">
+    <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
+    <link rel="stylesheet" href="../assets/css/universal-card-standards.css">
+    <link rel="stylesheet" href="../assets/css/page-layout.css">
+    <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+    <link rel="stylesheet" href="../components/navigation/unified-nav.css">
+    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: var(--font-sans);
-            color: white;
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
         .page-title-shiny {
             background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
             background-size: 200% 200%;
@@ -109,13 +92,33 @@
         }
     </style>
 </head>
-<body>
-    <!-- Navigation will be dynamically loaded -->
+<body class="dashboard-page sidebar-open">
+    <nav class="main-nav" id="mainNav"></nav>
+
+    <div id="notifications-sidebar" class="notifications-sidebar open">
+        <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()"><i class="bi bi-bell"></i></button>
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <div class="notifications-title"><h3>Investment Feed</h3></div>
+                <div class="notifications-actions">
+                    <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse"><i class="bi bi-chevron-double-left"></i></button>
+                    <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings"><i class="bi bi-gear"></i></button>
+                </div>
+            </div>
+            <div class="notifications-filters">
+                <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">All</button>
+                <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress</button>
+                <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">Stocks</button>
+                <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+            </div>
+            <div class="notifications-list" id="notifications-list"></div>
+            <div class="notifications-empty" id="notifications-empty" style="display:none;"><i class="bi bi-bell-slash"></i><p>No notifications yet</p><small>We'll notify you when something important happens</small></div>
+        </div>
+    </div>
 
 
-
-
-<div class="main-content" style="margin-top: calc(var(--nav-height, 64px) + 24px);">
+<div class="page-wrapper sidebar-active">
+<div class="main-content" style="padding-top: calc(var(--nav-height, 64px) + 24px);">
 <div class="container mx-auto px-6 py-12">
     <div class="flex items-center justify-between mb-12">
         <div>
@@ -492,16 +495,8 @@ function showNotification(message, type = 'info') {
 }
 </script>
 
-    <!-- Navigation JavaScript -->
-    <script src="../components/navigation/navigation-config.js"></script>
-    <script src="../components/navigation/navigation.js"></script>
-    <script src="../components/notifications/notification-helpers.js"></script>
-<script>
-        // Initialize page when DOM loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Initializing profile settings');
-        }
-});
-</script>
+    <script src="../assets/js/theme-toggle.js" defer></script>
+    <script src="../components/navigation/load-nav.js" defer></script>
+    <script src="../components/notifications/notifications-sidebar.js" defer></script>
 </body>
 </html>

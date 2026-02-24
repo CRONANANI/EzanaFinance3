@@ -10,45 +10,21 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Google Fonts -->
-    <!-- Main Styles -->
-    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="../assets/css/theme-variables.css">
-    <link rel="stylesheet" href="../assets/css/layout-common.css">
-    <!-- Navigation CSS -->
-    <link rel="stylesheet" href="../components/navigation/navigation.css">
-    <!-- Notifications Sidebar CSS -->
-    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
-    <!-- Shared page layout and card formatting -->
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    <link rel="stylesheet" href="../assets/css/component-cards.css">
+    <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
+    <link rel="stylesheet" href="../assets/css/universal-card-standards.css">
+    <link rel="stylesheet" href="../assets/css/page-layout.css">
     <link rel="stylesheet" href="../assets/css/pages-common.css">
+    <link rel="stylesheet" href="../assets/css/layout-common.css">
+    <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+    <link rel="stylesheet" href="../components/navigation/unified-nav.css">
+    <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
     <link rel="stylesheet" href="../assets/css/cards-common.css">
     <link rel="stylesheet" href="../assets/css/metrics-common.css">
     <link rel="stylesheet" href="../assets/css/research-pages-cards.css">
-    <!-- Unified Component Cards - Dashboard Formatting -->
-    <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            font-family: var(--font-sans);
-            color: white;
-            min-height: 100vh;
-            padding: 24px;
-            padding-top: calc(var(--nav-height, 64px) + 24px);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        /* Hero: same size and formatting as home dashboard via pages-common.css */
-
         .page-title-shiny {
             background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
             background-size: 200% 200%;
@@ -62,11 +38,10 @@
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-
     </style>
 </head>
-<body>
-    <!-- Navigation will be dynamically loaded -->
+<body class="dashboard-page sidebar-open">
+    <nav class="main-nav" id="mainNav"></nav>
 
     <!-- Notifications Sidebar -->
     <div id="notifications-sidebar" class="notifications-sidebar open">
@@ -621,21 +596,8 @@
 </div>
 
     <!-- Navigation JavaScript -->
-    <script src="../components/navigation/navigation-config.js"></script>
-    <script src="../components/navigation/navigation.js"></script>
-    <!-- Notifications Sidebar JavaScript -->
-    <script src="../components/notifications/notifications-sidebar.js"></script>
-    <script>
-        // Initialize notifications sidebar when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Initializing financial analytics');
-            
-            // Initialize the notifications sidebar
-            if (window.NotificationsSidebar) {
-                const sidebar = new NotificationsSidebar();
-                sidebar.init();
-            }
-        });
-    </script>
+    <script src="../assets/js/theme-toggle.js" defer></script>
+    <script src="../components/navigation/load-nav.js" defer></script>
+    <script src="../components/notifications/notifications-sidebar.js" defer></script>
 </body>
 </html>
