@@ -2,6 +2,11 @@
    COMPANY RESEARCH PAGE
    ============================================ */
 
+/* Reduce gap between nav and content - move cards higher */
+.page-wrapper .page-content {
+  padding-top: 0.75rem;
+}
+
 /* Stat icon colors */
 .stat-icon.stocks { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 .stat-icon.market { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
@@ -700,6 +705,34 @@ body.light-mode .suggestion-item.highlighted {
   color: var(--muted-foreground, var(--text-secondary));
 }
 
+/* GRPV Flagship card - brand logo */
+.model-metric-card.grpv-flagship {
+  border-color: var(--primary, var(--color-primary));
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+}
+
+.model-metric-card.grpv-flagship:hover {
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+
+.grpv-brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px;
+}
+
+.grpv-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* ============================================
    MODEL DETAIL SECTION (below chart)
    ============================================ */
@@ -790,6 +823,134 @@ body.light-mode .suggestion-item.highlighted {
   padding: 2rem;
   text-align: center;
   color: var(--muted-foreground);
+}
+
+/* GRPV Analysis Form */
+.grpv-form-section {
+  margin-bottom: 1.5rem;
+}
+
+.grpv-form-section h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: var(--foreground);
+}
+
+.grpv-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.grpv-category-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.grpv-category-item label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.grpv-weight-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.grpv-weight-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+}
+
+.grpv-weight-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.grpv-sector-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.grpv-sector-chip {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.grpv-sector-chip:hover {
+  border-color: var(--primary);
+}
+
+.grpv-sector-chip.selected {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.grpv-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.grpv-results-table th,
+.grpv-results-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.grpv-results-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.grpv-unlock-badge {
+  font-size: 0.6875rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(251, 191, 36, 0.2);
+  color: #f59e0b;
+  border-radius: var(--radius-sm);
+  margin-left: 0.5rem;
+}
+
+.grpv-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.grpv-output-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--muted);
+  border-radius: var(--radius-md);
+}
+
+.grpv-unlock-hint {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  margin: 0.5rem 0;
 }
 
 /* ============================================

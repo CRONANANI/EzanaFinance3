@@ -303,7 +303,7 @@ class CompanyResearch {
   }
 
   selectModel(modelType) {
-    if (!this.currentCompany) {
+    if (modelType !== 'grpv' && !this.currentCompany) {
       alert('Please search for a company first');
       if (this.searchInput) this.searchInput.focus();
       return;
@@ -314,7 +314,9 @@ class CompanyResearch {
     const bodyEl = document.getElementById('modelDetailBody');
     if (!section || !titleEl || !bodyEl) return;
     titleEl.textContent = this.getModelTitle(modelType);
-    if (modelType === 'dcf') {
+    if (modelType === 'grpv') {
+      this.renderGRPVForm(bodyEl);
+    } else if (modelType === 'dcf') {
       this.renderDCFForm(bodyEl);
     } else {
       bodyEl.innerHTML = '<div class="model-placeholder"><p>This model is coming soon. For now, use the AI-powered analysis from the previous flow.</p></div>';
@@ -495,6 +497,190 @@ class CompanyResearch {
         outputEl.innerHTML = `<p style="color:var(--destructive)">Error: ${e.message}. The Custom DCF API may require a premium FMP subscription.</p>`;
       }
     }
+  }
+
+  /** GRPV Analysis Model - Score stocks out of 72 based on user preferences */
+  hasMetricWeightingUnlock() {
+    try {
+      const completed = JSON.parse(localStorage.getItem('ezana_learning_completed') || '[]');
+      return Array.isArray(completed) && completed.length >= 2;
+    } catch (_) { return false; }
+  }
+
+  isEliteMember() {
+    try {
+      return localStorage.getItem('ezana_elite') === 'true';
+    } catch (_) { return false; }
+  }
+
+  renderGRPVForm(container) {
+    const hasUnlock = this.hasMetricWeightingUnlock();
+    const maxStocks = this.isEliteMember() ? 25 : 10;
+    const sectors = ['Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical', 'Consumer Defensive', 'Industrials', 'Energy', 'Utilities', 'Real Estate', 'Basic Materials', 'Communication Services'];
+    const categories = [
+      { id: 'growth', label: 'Growth', metrics: ['Quarterly Revenue Growth (%)', 'Quarterly Earnings Growth (%)'] },
+      { id: 'risk', label: 'Risk', metrics: ['D/E Ratio', 'Beta'] },
+      { id: 'profitability', label: 'Profitability', metrics: ['Profit Margin (%)', 'Operating Margin (%)', 'Annual Dividend Yield (%)', 'Return on Assets (%)', 'EBITDA/Sales'] },
+      { id: 'valuation', label: 'Valuation', metrics: ['Market Cap', 'Trailing P/E', 'PEG Ratio (5yr)', 'Price/Book', 'EV/Revenue', 'EPS'] }
+    ];
+    let metricHTML = '';
+    if (hasUnlock) {
+      metricHTML = categories.map(c => `
+        <div class="grpv-form-section">
+          <h4>${c.label} - Individual Metrics</h4>
+          <div class="grpv-category-grid">
+            ${c.metrics.map((m, i) => `
+              <div class="grpv-category-item">
+                <label for="grpv-metric-${c.id}-${i}">${m}</label>
+                <input type="range" id="grpv-metric-${c.id}-${i}" class="grpv-weight-slider" min="1" max="5" value="4" data-cat="${c.id}" data-metric="${i}">
+                <span class="grpv-weight-value" data-for="grpv-metric-${c.id}-${i}">4</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    } else {
+      metricHTML = '<p class="grpv-unlock-hint"><i class="bi bi-lock"></i> Complete 2 courses in the Learning Center to unlock individual metric weighting.</p>';
+    }
+    container.innerHTML = `
+      <form id="grpvForm" class="grpv-form">
+        <div class="grpv-form-section">
+          <h4>Category Weighting (1–5)</h4>
+          <div class="grpv-category-grid">
+            ${categories.map(c => `
+              <div class="grpv-category-item">
+                <label for="grpv-cat-${c.id}">${c.label}</label>
+                <input type="range" id="grpv-cat-${c.id}" class="grpv-weight-slider" min="1" max="5" value="4" data-cat="${c.id}">
+                <span class="grpv-weight-value" data-for="grpv-cat-${c.id}">4</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${metricHTML}
+        <div class="grpv-form-section">
+          <h4>Select sectors</h4>
+          <div class="grpv-sector-grid">
+            ${sectors.map(s => `
+              <button type="button" class="grpv-sector-chip" data-sector="${s}">${s}</button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="grpv-form-actions">
+          <button type="submit" class="run-model-btn"><i class="bi bi-calculator"></i> Run GRPV Analysis</button>
+          <span id="grpvStatus"></span>
+        </div>
+        <div id="grpvOutput" class="grpv-output-box" style="display:none;"></div>
+      </form>
+    `;
+    container.querySelectorAll('.grpv-weight-slider').forEach(slider => {
+      const valEl = container.querySelector(`[data-for="${slider.id}"]`);
+      const update = () => { if (valEl) valEl.textContent = slider.value; };
+      slider.addEventListener('input', update);
+      update();
+    });
+    container.querySelectorAll('.grpv-sector-chip').forEach(c => {
+      c.addEventListener('click', () => {
+        c.classList.toggle('selected');
+      });
+    });
+    container.querySelector('#grpvForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.runGRPV();
+    });
+  }
+
+  async runGRPV() {
+    const statusEl = document.getElementById('grpvStatus');
+    const outputEl = document.getElementById('grpvOutput');
+    if (statusEl) statusEl.textContent = 'Running GRPV analysis...';
+    if (outputEl) { outputEl.style.display = 'none'; outputEl.innerHTML = ''; }
+
+    const catWeights = {};
+    ['growth', 'risk', 'profitability', 'valuation'].forEach(id => {
+      const el = document.getElementById(`grpv-cat-${id}`);
+      catWeights[id] = el ? parseInt(el.value, 10) : 4;
+    });
+
+    const selectedSectors = Array.from(document.querySelectorAll('.grpv-sector-chip.selected')).map(c => c.dataset.sector);
+    if (selectedSectors.length === 0) {
+      if (statusEl) statusEl.textContent = '';
+      alert('Please select at least one sector.'); return;
+    }
+
+    const maxStocks = this.isEliteMember() ? 25 : 10;
+    const fmp = window.FmpAPI;
+    if (!fmp || !fmp.screenStocks) {
+      if (statusEl) statusEl.textContent = '';
+      if (outputEl) { outputEl.style.display = ''; outputEl.innerHTML = '<p style="color:var(--destructive)">FMP API not available.</p>'; }
+      return;
+    }
+
+    try {
+      let candidates = [];
+      for (const sector of selectedSectors) {
+        const screened = await fmp.screenStocks({ limit: 50, sector });
+        const list = Array.isArray(screened) ? screened : [];
+        candidates.push(...list);
+      }
+      candidates = [...new Map(candidates.map(c => [(c.symbol || c.ticker), c])].map(([, c]) => c);
+      if (candidates.length === 0) {
+        const fallback = await fmp.screenStocks({ limit: 100 });
+        candidates = Array.isArray(fallback) ? fallback : [];
+      }
+
+      const symbols = [...new Set(candidates.map(c => c.symbol || c.ticker).filter(Boolean))].slice(0, 50);
+      const scores = [];
+      for (const sym of symbols) {
+        const score = await this.computeGRPVScore(sym, catWeights);
+        if (score != null) scores.push({ symbol: sym, score, name: candidates.find(c => (c.symbol || c.ticker) === sym)?.companyName || sym });
+      }
+      scores.sort((a, b) => (b.score || 0) - (a.score || 0));
+      const top = scores.slice(0, maxStocks);
+
+      if (statusEl) statusEl.textContent = '';
+      if (outputEl) {
+        outputEl.style.display = '';
+        outputEl.innerHTML = `
+          <h4>Top ${maxStocks} stocks (score out of 72)</h4>
+          <table class="grpv-results-table">
+            <thead><tr><th>Symbol</th><th>Company</th><th>Score</th></tr></thead>
+            <tbody>
+              ${top.map(r => `<tr><td><strong>${r.symbol}</strong></td><td>${(r.name || '').slice(0, 40)}</td><td>${(r.score || 0).toFixed(2)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    } catch (e) {
+      if (statusEl) statusEl.textContent = '';
+      if (outputEl) {
+        outputEl.style.display = '';
+        outputEl.innerHTML = `<p style="color:var(--destructive)">Error: ${e.message}</p>`;
+      }
+    }
+  }
+
+  async computeGRPVScore(symbol, catWeights) {
+    const fmp = window.FmpAPI;
+    if (!fmp) return null;
+    const [profile, ratios, metrics] = await Promise.all([
+      fmp.getCompanyProfile(symbol),
+      fmp.getFinancialRatios(symbol, 'ttm', 1),
+      fmp.getKeyMetrics(symbol, 'ttm', 1)
+    ]);
+    const r = ratios && ratios[0] ? ratios[0] : {};
+    const m = metrics && metrics[0] ? metrics[0] : {};
+    const p = profile || {};
+    const mcap = p.mktCap || p.marketCap || 0;
+    const growth = ((r.revenueGrowth || 0) + (r.netIncomeGrowth || 0)) / 2;
+    const risk = r.debtEquityRatio != null ? (1 / (1 + Math.min(r.debtEquityRatio, 5))) * 5 : 2.5;
+    const beta = r.beta != null ? Math.max(0, 5 - Math.abs(r.beta - 1)) : 2.5;
+    const profit = (r.profitMargin || 0) + (r.operatingProfitMargin || 0) + (r.dividendYield || 0) * 100 + (r.returnOnAssets || 0);
+    const val = (r.peRatio || 0) ? Math.max(0, 5 - Math.abs(Math.log10(r.peRatio || 1))) : 2;
+    const catWeight = (catWeights.growth || 4) + (catWeights.risk || 4) + (catWeights.profitability || 4) + (catWeights.valuation || 4);
+    const norm = catWeight / 16;
+    let score = (growth * 2 + risk + beta + profit * 0.5 + val * 2) * norm;
+    score = Math.min(72, Math.max(0, score * 4));
+    return score;
   }
 
   onSearchInput() {
@@ -947,6 +1133,7 @@ class CompanyResearch {
 
   getModelTitle(modelType) {
     const titles = {
+      'grpv': 'GRPV Analysis Model',
       'dcf': 'DCF Valuation Model',
       'three-statement': 'Three-Statement Financial Model',
       'ma-accretion': 'M&A Accretion/Dilution Analysis',
