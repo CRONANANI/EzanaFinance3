@@ -622,7 +622,8 @@ class CompanyResearch {
         const list = Array.isArray(screened) ? screened : [];
         candidates.push(...list);
       }
-      candidates = [...new Map(candidates.map(c => [(c.symbol || c.ticker), c])].map(([, c]) => c);
+      const bySymbol = new Map(candidates.map(c => [(c.symbol || c.ticker), c]));
+      candidates = Array.from(bySymbol.values());
       if (candidates.length === 0) {
         const fallback = await fmp.screenStocks({ limit: 100 });
         candidates = Array.isArray(fallback) ? fallback : [];
