@@ -1,3 +1,7 @@
-/* Ezana Finance - Global Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ezana Finance - Theme variables and nav (compatibility) */
 @import '../../app/assets/css/theme-variables.css';
 @import '../../app/components/navigation/unified-nav.css';

@@ -1,13 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
+import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const isLanding = pathname === '/';
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   if (isLanding) {
     return (
@@ -99,9 +108,26 @@ export function Navbar() {
             <i className="bi bi-bell"></i>
             <span className="notification-badge">3</span>
           </button>
-          <Link href="/user-profile-settings" className="nav-action-btn user-menu-btn" title="Account">
-            <i className="bi bi-person-circle"></i>
-          </Link>
+          {user ? (
+            <>
+              <Link href="/user-profile-settings" className="nav-action-btn user-menu-btn" title="Account">
+                <i className="bi bi-person-circle"></i>
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="nav-action-btn"
+                title="Sign out"
+                type="button"
+              >
+                <i className="bi bi-box-arrow-right"></i>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/signin" className="nav-link">Sign In</Link>
+              <Link href="/signup" className="btn-nav-primary">Sign Up</Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

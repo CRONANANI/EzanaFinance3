@@ -1,5 +1,6 @@
 import '@/app/globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { AuthProvider } from '@/components/AuthProvider';
 import { Navbar } from '@/components/Layout/Navbar';
 
 export const metadata = {
@@ -18,8 +19,10 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <Navbar />
-          {children}
+          <AuthProvider>
+            <Navbar />
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
