@@ -16,7 +16,16 @@ This Ezana Finance app is configured for deployment on Vercel with:
    - `NEXT_PUBLIC_FMP_API_KEY` – Financial Modeling Prep API key
    - `NEXT_PUBLIC_ALPHA_VANTAGE_KEY` – Alpha Vantage API key
    - Other API keys as used by your app
-6. Click **Deploy**.
+7. Click **Deploy**.
+
+### Troubleshooting: "No Output Directory named 'public' found"
+
+If you see this error, Vercel is configured for a static site instead of Next.js:
+
+1. Go to your project on Vercel → **Settings** → **Build & Development Settings**
+2. Set **Output Directory** to **empty** (clear the field – do not use `public`)
+3. Ensure **Framework Preset** is **Next.js**
+4. Redeploy
 
 ## Local Development
 
