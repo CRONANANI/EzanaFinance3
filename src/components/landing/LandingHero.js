@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import WaitlistForm from '@/components/WaitlistForm';
 
 export function LandingHero() {
   return (
@@ -9,11 +10,10 @@ export function LandingHero() {
           Track congressional trades, analyze market intelligence, and manage your portfolio
           with institutional-grade tools designed for individual investors.
         </p>
-        <div className="hero-cta">
-          <Link href="/signup" className="btn-hero-primary">
-            <span>Sign Up</span>
-            <i className="bi bi-arrow-right" aria-hidden="true" />
-          </Link>
+        <div className="hero-waitlist">
+          <WaitlistForm />
+        </div>
+        <div className="hero-cta hero-cta-secondary">
           <Link href="/signin" className="btn-hero-secondary">
             <span>Sign In</span>
           </Link>

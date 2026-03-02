@@ -708,6 +708,12 @@ body {
     60% { transform: translateX(-50%) translateY(-5px); }
 }
 
+/* Hero Waitlist Form */
+.hero-waitlist {
+    margin: 2.5rem 0 1.5rem 0;
+    width: 100%;
+}
+
 /* Hero CTA Buttons */
 .hero-cta {
     display: flex;
@@ -717,6 +723,10 @@ body {
     padding: 0;
     justify-content: center;
     align-items: center;
+}
+
+.hero-cta-secondary {
+    margin-top: 1rem;
 }
 
 .btn-hero-primary,
