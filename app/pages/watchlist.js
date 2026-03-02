@@ -389,6 +389,58 @@ document.addEventListener('DOMContentLoaded', function() {
   const modal = document.getElementById('addMemberModal');
   const closeBtn = document.getElementById('closeModal');
 
+  // Watchlist dropdown - select between created watchlists
+  const watchlistDropdownBtn = document.getElementById('watchlistDropdownBtn');
+  const watchlistDropdownMenu = document.getElementById('watchlistDropdownMenu');
+  const activeWatchlistName = document.getElementById('activeWatchlistName');
+  const watchlistDropdownWrap = document.querySelector('.watchlist-dropdown-wrap');
+
+  function closeWatchlistDropdown() {
+    if (watchlistDropdownWrap) watchlistDropdownWrap.classList.remove('active');
+    if (watchlistDropdownBtn) watchlistDropdownBtn.setAttribute('aria-expanded', 'false');
+    if (watchlistDropdownMenu) watchlistDropdownMenu.setAttribute('aria-hidden', 'true');
+  }
+
+  function setActiveWatchlist(id, label) {
+    if (activeWatchlistName) activeWatchlistName.textContent = label;
+    document.querySelectorAll('.watchlist-dropdown-item').forEach(function(item) {
+      item.classList.toggle('active', item.dataset.watchlist === id);
+    });
+    document.querySelectorAll('.watchlist-category').forEach(function(cat) {
+      const catId = cat.dataset.category;
+      const show = id === 'all' || catId === id;
+      cat.style.display = show ? '' : 'none';
+      if (show && id !== 'all') {
+        cat.classList.add('expanded');
+        var icon = cat.querySelector('.watchlist-category-toggle i');
+        if (icon) icon.className = 'bi bi-chevron-up';
+      }
+    });
+    closeWatchlistDropdown();
+  }
+
+  if (watchlistDropdownBtn && watchlistDropdownWrap) {
+    watchlistDropdownBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const isOpen = watchlistDropdownWrap.classList.toggle('active');
+      watchlistDropdownBtn.setAttribute('aria-expanded', isOpen);
+      watchlistDropdownMenu.setAttribute('aria-hidden', !isOpen);
+    });
+  }
+
+  document.querySelectorAll('.watchlist-dropdown-item').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      setActiveWatchlist(item.dataset.watchlist, item.querySelector('span').textContent);
+    });
+  });
+
+  document.addEventListener('click', function(e) {
+    if (watchlistDropdownWrap && !watchlistDropdownWrap.contains(e.target)) {
+      closeWatchlistDropdown();
+    }
+  });
+
   // Watchlist category expand/collapse
   document.querySelectorAll('.watchlist-category-toggle').forEach(function(btn) {
     btn.addEventListener('click', function() {

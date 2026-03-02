@@ -293,6 +293,69 @@ body.watchlist-page .stock-watchlist-card {
 .stock-watchlist-dropdown-btn i {
   font-size: 0.75rem;
   opacity: 0.8;
+  transition: transform 0.2s ease;
+}
+
+.watchlist-dropdown-wrap.active .stock-watchlist-dropdown-btn i {
+  transform: rotate(180deg);
+}
+
+.watchlist-dropdown-wrap {
+  position: relative;
+}
+
+.watchlist-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 180px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  padding: 0.375rem;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.watchlist-dropdown-wrap.active .watchlist-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.watchlist-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.watchlist-dropdown-item:hover {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.watchlist-dropdown-item.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-primary);
+}
+
+.watchlist-dropdown-item i {
+  font-size: 1rem;
+  opacity: 0.9;
 }
 
 .stock-watchlist-info-btn,

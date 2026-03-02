@@ -402,10 +402,26 @@
           <div class="stock-watchlist-header">
             <h3 class="stock-watchlist-title">Watchlist</h3>
             <div class="stock-watchlist-header-actions">
-              <button class="stock-watchlist-dropdown-btn" id="watchlistDropdownBtn" title="Select watchlist">
-                <span id="activeWatchlistName">My Watchlist</span>
-                <i class="bi bi-chevron-down"></i>
-              </button>
+              <div class="watchlist-dropdown-wrap">
+                <button class="stock-watchlist-dropdown-btn" id="watchlistDropdownBtn" title="Select watchlist" type="button" aria-haspopup="true" aria-expanded="false">
+                  <span id="activeWatchlistName">My Watchlist</span>
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="watchlist-dropdown-menu" id="watchlistDropdownMenu" role="menu" aria-hidden="true">
+                  <button type="button" class="watchlist-dropdown-item active" data-watchlist="all" role="menuitem">
+                    <i class="bi bi-bookmark-star"></i>
+                    <span>My Watchlist</span>
+                  </button>
+                  <button type="button" class="watchlist-dropdown-item" data-watchlist="technology" role="menuitem">
+                    <i class="bi bi-cpu"></i>
+                    <span>Technology</span>
+                  </button>
+                  <button type="button" class="watchlist-dropdown-item" data-watchlist="finance-energy" role="menuitem">
+                    <i class="bi bi-bank"></i>
+                    <span>Finance &amp; Energy</span>
+                  </button>
+                </div>
+              </div>
               <button class="stock-watchlist-info-btn" title="Info"><i class="bi bi-info-circle"></i></button>
               <button class="stock-filters-toggle icon-btn" id="stockFiltersToggle" title="Filters"><i class="bi bi-funnel"></i></button>
             </div>
