@@ -1,0 +1,369 @@
+/* ============================================
+   INSIDE THE CAPITOL - DASHBOARD-STYLE CARDS
+   Match home dashboard component-card design:
+   colors, sizing, font scale, aesthetic
+   ============================================ */
+
+/* Ensure dashboard card variables (match home-dashboard) */
+.inside-the-capitol {
+  --bg-card: rgba(17, 24, 39, 0.6);
+  --border-primary: rgba(16, 185, 129, 0.1);
+  --shadow-card: var(--shadow-sm);
+}
+
+/* Grid - match additional-components-grid from home dashboard */
+.inside-the-capitol .component-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .inside-the-capitol .component-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Base card styling - match home dashboard .component-card */
+.congressional-trading-card,
+.government-contracts-card,
+.house-trading-card,
+.lobbying-activity-card,
+.senator-trading-card,
+.patent-momentum-card,
+.market-sentiment-card {
+  background: var(--bg-card, rgba(17, 24, 39, 0.6)) !important;
+  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1)) !important;
+  border-radius: var(--radius, 0.75rem) !important;
+  padding: 1.5rem 2rem !important;
+  font-family: var(--font-sans) !important;
+  box-shadow: var(--shadow-card, var(--shadow-sm)) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.congressional-trading-card:hover,
+.government-contracts-card:hover,
+.house-trading-card:hover,
+.lobbying-activity-card:hover,
+.senator-trading-card:hover,
+.patent-momentum-card:hover,
+.market-sentiment-card:hover {
+  border-color: var(--primary, #10b981) !important;
+  box-shadow: var(--shadow-lg) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Remove shimmer bar - use clean dashboard look */
+.congressional-trading-card::before,
+.government-contracts-card::before,
+.house-trading-card::before,
+.lobbying-activity-card::before,
+.senator-trading-card::before,
+.patent-momentum-card::before,
+.market-sentiment-card::before {
+  display: none !important;
+}
+
+/* Card headers - match home dashboard card-header */
+.congressional-trading-header,
+.government-contracts-header,
+.house-trading-header,
+.lobbying-activity-header,
+.senator-trading-header,
+.patent-momentum-header,
+.market-sentiment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-primary, rgba(16, 185, 129, 0.1));
+}
+
+/* Card titles - match home dashboard h3 (1.125rem) */
+.congressional-trading-title,
+.government-contracts-title,
+.house-trading-title,
+.lobbying-activity-title,
+.senator-trading-title,
+.patent-momentum-title,
+.market-sentiment-title {
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
+  color: var(--foreground, var(--text-primary)) !important;
+  margin: 0 !important;
+}
+
+/* Stats grid - proportional font sizing */
+.congressional-stats-grid,
+.government-contracts-stats-grid,
+.house-trading-stats-grid,
+.lobbying-activity-stats-grid,
+.senator-trading-stats-grid,
+.patent-momentum-stats-grid,
+.market-sentiment-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Stat rows */
+.congressional-stat-row,
+.government-contracts-stat-row,
+.house-trading-stat-row,
+.lobbying-activity-stat-row,
+.senator-trading-stat-row,
+.patent-momentum-stat-row,
+.market-sentiment-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Stat labels - match home dashboard secondary text */
+.congressional-stat-label,
+.government-contracts-stat-label,
+.house-trading-stat-label,
+.lobbying-activity-stat-label,
+.senator-trading-stat-label,
+.patent-momentum-stat-label,
+.market-sentiment-stat-label {
+  font-size: 0.8125rem !important;
+  color: var(--muted-foreground, var(--text-secondary)) !important;
+  font-weight: 500;
+}
+
+/* Stat values - match home dashboard value styling */
+.congressional-stat-value,
+.government-contracts-stat-value,
+.house-trading-stat-value,
+.lobbying-activity-stat-value,
+.senator-trading-stat-value,
+.patent-momentum-stat-value,
+.market-sentiment-stat-value {
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: var(--foreground, var(--text-primary)) !important;
+}
+
+/* Market sentiment overall badge */
+.market-sentiment-overall {
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+}
+
+.market-sentiment-overall.bullish {
+  color: var(--primary, #10b981) !important;
+}
+
+.market-sentiment-overall.bearish {
+  color: var(--destructive, #ef4444) !important;
+}
+
+.market-sentiment-overall.neutral {
+  color: var(--muted-foreground) !important;
+}
+
+/* Last updated - smaller, muted */
+.congressional-last-updated,
+.government-contracts-last-updated,
+.house-trading-last-updated,
+.lobbying-activity-last-updated,
+.senator-trading-last-updated,
+.patent-momentum-last-updated,
+.market-sentiment-last-updated {
+  font-size: 0.6875rem !important;
+  color: var(--muted-foreground, var(--text-secondary)) !important;
+  margin-top: 0.5rem;
+}
+
+/* Controls - API status, pulse, refresh */
+.congressional-trading-controls,
+.government-contracts-controls,
+.house-trading-controls,
+.lobbying-activity-controls,
+.senator-trading-controls,
+.patent-momentum-controls,
+.market-sentiment-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.congressional-api-status,
+.government-contracts-api-status,
+.house-trading-api-status,
+.lobbying-activity-api-status,
+.senator-trading-api-status,
+.patent-momentum-api-status,
+.market-sentiment-api-status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.congressional-api-status.connected,
+.government-contracts-api-status.connected,
+.house-trading-api-status.connected,
+.lobbying-activity-api-status.connected,
+.senator-trading-api-status.connected,
+.patent-momentum-api-status.connected,
+.market-sentiment-api-status.connected {
+  background: var(--primary, #10b981);
+}
+
+.congressional-api-status.disconnected,
+.government-contracts-api-status.disconnected,
+.house-trading-api-status.disconnected,
+.lobbying-activity-api-status.disconnected,
+.senator-trading-api-status.disconnected,
+.patent-momentum-api-status.disconnected,
+.market-sentiment-api-status.disconnected {
+  background: var(--destructive, #ef4444);
+}
+
+/* Pulse indicators - subtle, match dashboard accent */
+.government-contracts-pulse-indicator,
+.house-trading-pulse-indicator,
+.lobbying-activity-pulse-indicator,
+.senator-trading-pulse-indicator,
+.patent-momentum-pulse-indicator,
+.market-sentiment-pulse-indicator {
+  width: 6px;
+  height: 6px;
+  background: rgba(16, 185, 129, 0.5);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Refresh button */
+.congressional-refresh-btn {
+  padding: 0.375rem;
+  color: var(--muted-foreground);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.congressional-refresh-btn:hover {
+  color: var(--primary);
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--primary);
+}
+
+/* Toggle icon */
+.congressional-toggle-icon {
+  color: var(--primary);
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.congressional-toggle-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Expanded content - match card body styling */
+.congressional-expanded-content {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary);
+}
+
+.congressional-trading-history-title {
+  font-size: 1rem !important;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.75rem;
+}
+
+.congressional-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.congressional-filter-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--border-primary);
+  background: rgba(17, 24, 39, 0.4);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.congressional-filter-btn.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.congressional-filter-btn.inactive:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--primary);
+}
+
+/* Table - proportional font */
+.congressional-trading-table {
+  font-size: 0.8125rem;
+}
+
+.congressional-table-header th {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+}
+
+.congressional-table-body td {
+  padding: 0.5rem 0.75rem;
+  color: var(--foreground);
+}
+
+/* Pagination */
+.congressional-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary);
+}
+
+.congressional-pagination-info {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.congressional-pagination-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.congressional-pagination-btn:hover:not(:disabled) {
+  background: var(--primary-hover, #34d399);
+  transform: translateY(-1px);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
