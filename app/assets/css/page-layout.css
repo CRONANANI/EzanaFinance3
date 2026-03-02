@@ -1,6 +1,28 @@
 /* ============================================
    UNIFIED PAGE LAYOUT - ALL PAGES
+   Base template: dashboard-main + dashboard-container (matches home-dashboard)
    ============================================ */
+
+/* Main content area - offset by sidebar when open */
+.dashboard-main {
+  margin-left: 0;
+  padding-top: 64px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+body.sidebar-open .dashboard-main {
+  margin-left: 320px;
+}
+
+.dashboard-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
 .page-wrapper {
   display: flex;
@@ -99,10 +121,15 @@ body.sidebar-open .page-wrapper {
   body.sidebar-open .page-wrapper {
     padding-left: 0;
   }
+
+  .dashboard-main {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 768px) {
-  .page-content {
+  .page-content,
+  .dashboard-container {
     padding: 1rem;
   }
   

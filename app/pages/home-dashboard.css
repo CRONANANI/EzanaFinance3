@@ -291,10 +291,14 @@ body.light-mode .dark-icon {
    ============================================ */
 
 .dashboard-main {
-  margin-left: 320px; /* Sidebar width */
+  margin-left: 0;
   padding-top: 64px;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
+}
+
+body.sidebar-open .dashboard-main {
+  margin-left: 320px; /* Sidebar width - matches notifications-sidebar */
 }
 
 .dashboard-main.sidebar-hidden {

@@ -1,27 +1,32 @@
 /* ============================================
    UNIFIED PAGE LAYOUT - ALL PAGES
+   Base template matches home-dashboard: dashboard-main + dashboard-container
    ============================================ */
 
+/* Legacy page-wrapper - deprecated; use dashboard-main as direct child of body */
 .page-wrapper {
   display: flex;
   min-height: 100vh;
-  background: var(--bg-primary);
-  padding-top: 64px;
-  padding-left: 0;
-  transition: padding-left 0.3s ease;
+  background: transparent;
+  padding: 0;
+  transition: none;
 }
 
 body.sidebar-open .page-wrapper {
-  padding-left: 320px;
+  padding-left: 0;
 }
 
-.page-content {
+/* page-content: when used inside dashboard-main, inherits dashboard-container styling */
+.page-content,
+.dashboard-container {
   flex: 1;
   padding: 2rem;
   max-width: 1600px;
   margin: 0 auto;
   width: 100%;
-  transition: padding-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .page-hero {
@@ -70,7 +75,9 @@ body.sidebar-open .page-wrapper {
   box-shadow: var(--shadow-card-hover);
 }
 
-.page-wrapper .card-header {
+.page-wrapper .card-header,
+.dashboard-main .card-header,
+.dashboard-container .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -79,7 +86,9 @@ body.sidebar-open .page-wrapper {
   border-bottom: 1px solid var(--border-primary);
 }
 
-.page-wrapper .card-header h3 {
+.page-wrapper .card-header h3,
+.dashboard-main .card-header h3,
+.dashboard-container .card-header h3 {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--foreground, var(--text-primary));
@@ -90,7 +99,9 @@ body.sidebar-open .page-wrapper {
   font-family: var(--font-sans);
 }
 
-.page-wrapper .card-header h3 i {
+.page-wrapper .card-header h3 i,
+.dashboard-main .card-header h3 i,
+.dashboard-container .card-header h3 i {
   color: var(--primary, var(--color-primary));
   font-size: 1.25rem;
 }

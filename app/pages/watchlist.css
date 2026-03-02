@@ -1,20 +1,11 @@
 /* Watchlist Page Styles */
 
-/* Watchlist uses page-wrapper for sidebar offset; zero out dashboard-main margin */
+/* Watchlist: dashboard-main uses body.sidebar-open for margin; ensure flex layout for viewport fit */
 body.watchlist-page .watchlist-main.dashboard-main {
-  margin-left: 0;
-  padding-top: 0;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  transition: none;
-}
-
-/* Viewport fit: component cards fill to bottom of screen for max visibility without page scroll */
-body.watchlist-page .page-wrapper {
-  flex-direction: column;
-  min-height: 100vh;
 }
 
 body.watchlist-page .watchlist-container {
