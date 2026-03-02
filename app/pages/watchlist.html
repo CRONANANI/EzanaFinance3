@@ -397,18 +397,17 @@
           </div>
         </div>
 
-        <!-- Stock Watchlist (narrower, right) -->
-        <div class="component-card stock-watchlist-card">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-bookmark-star"></i>
-              Stock Watchlist
-            </h3>
-            <div class="card-header-actions">
-              <button class="card-action-btn stock-filters-toggle" id="stockFiltersToggle" title="Toggle filters">
-                <i class="bi bi-funnel"></i> Filters
+        <!-- Stock Watchlist (template design, Ezana brand) -->
+        <div class="component-card stock-watchlist-card stock-watchlist-template">
+          <div class="stock-watchlist-header">
+            <h3 class="stock-watchlist-title">Watchlist</h3>
+            <div class="stock-watchlist-header-actions">
+              <button class="stock-watchlist-dropdown-btn" id="watchlistDropdownBtn" title="Select watchlist">
+                <span id="activeWatchlistName">My Watchlist</span>
+                <i class="bi bi-chevron-down"></i>
               </button>
-              <button class="card-action-btn">Add Stock</button>
+              <button class="stock-watchlist-info-btn" title="Info"><i class="bi bi-info-circle"></i></button>
+              <button class="stock-filters-toggle icon-btn" id="stockFiltersToggle" title="Filters"><i class="bi bi-funnel"></i></button>
             </div>
           </div>
           <div class="stock-watchlist-filters-panel" id="stockFiltersPanel">
@@ -730,93 +729,106 @@
               </div>
             </div>
           </div>
-          <div class="card-body stock-watchlist-body">
-            <table class="watchlist-table data-table" id="stockWatchlistTable">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th>Price</th>
-                  <th>Change</th>
-                  <th>%</th>
-                  <th>Alert</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="stockWatchlistBody">
-                <tr data-symbol="NVDA" data-price="up-5-today" data-price-change="2.6" data-volume="vol-2x" data-technical="above-200dma,rsi-overbought" data-expert="inst-buy,insider-buy" data-sector="technology" data-mcap="mega" data-growth="rev-50" data-valuation="pe-20-30" data-ai="ai-buy-signal">
-                  <td><strong>NVDA</strong></td>
-                  <td class="watchlist-price">$485.20</td>
-                  <td class="watchlist-change positive">+$12.40</td>
-                  <td class="watchlist-pct positive">+2.6%</td>
-                  <td><span class="badge success">Hit</span></td>
-                  <td>
-                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
-                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
-                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-                <tr data-symbol="AAPL" data-price-change="1.2" data-volume="above-1-5x" data-technical="above-50dma,above-200dma" data-expert="insider-buy" data-sector="technology" data-mcap="mega" data-growth="rev-20" data-valuation="pe-20-30" data-dividend="paying">
-                  <td><strong>AAPL</strong></td>
-                  <td class="watchlist-price">$182.30</td>
-                  <td class="watchlist-change positive">+$2.10</td>
-                  <td class="watchlist-pct positive">+1.2%</td>
-                  <td><span class="badge muted">—</span></td>
-                  <td>
-                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
-                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
-                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-                <tr data-symbol="TSLA" data-price="down-5-today" data-price-change="-3.2" data-volume="vol-5x" data-technical="below-50dma,rsi-oversold" data-expert="insider-buy" data-sector="technology" data-mcap="large" data-growth="rev-50" data-short="medium-10-20">
-                  <td><strong>TSLA</strong></td>
-                  <td class="watchlist-price">$248.50</td>
-                  <td class="watchlist-change negative">-$8.20</td>
-                  <td class="watchlist-pct negative">-3.2%</td>
-                  <td><span class="badge warning">Drop</span></td>
-                  <td>
-                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
-                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
-                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-                <tr data-symbol="MSFT" data-price-change="0.8" data-technical="above-200dma" data-expert="inst-buy" data-sector="technology" data-mcap="mega" data-valuation="pe-30">
-                  <td><strong>MSFT</strong></td>
-                  <td class="watchlist-price">$415.20</td>
-                  <td class="watchlist-change positive">+$3.30</td>
-                  <td class="watchlist-pct positive">+0.8%</td>
-                  <td><span class="badge muted">—</span></td>
-                  <td>
-                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
-                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
-                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-                <tr data-symbol="JPM" data-price-change="1.5" data-sector="finance" data-mcap="large" data-valuation="pe-10-20" data-dividend="paying,growth-5" data-financial="positive-cf">
-                  <td><strong>JPM</strong></td>
-                  <td class="watchlist-price">$198.40</td>
-                  <td class="watchlist-change positive">+$2.95</td>
-                  <td class="watchlist-pct positive">+1.5%</td>
-                  <td><span class="badge success">Hit</span></td>
-                  <td>
-                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
-                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
-                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-                <tr data-symbol="XOM" data-price-change="-1.2" data-sector="energy" data-mcap="large" data-valuation="pe-10-20" data-dividend="aristocrat" data-market="beta-low">
-                  <td><strong>XOM</strong></td>
-                  <td class="watchlist-price">$108.20</td>
-                  <td class="watchlist-change negative">-$1.32</td>
-                  <td class="watchlist-pct negative">-1.2%</td>
-                  <td><span class="badge muted">—</span></td>
-                  <td>
-                    <button class="icon-btn"><i class="bi bi-graph-up"></i></button>
-                    <button class="icon-btn"><i class="bi bi-bell"></i></button>
-                    <button class="icon-btn"><i class="bi bi-trash"></i></button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="stock-watchlist-body">
+            <div class="watchlist-categories">
+              <div class="watchlist-category expanded" data-category="all">
+                <button type="button" class="watchlist-category-toggle">
+                  <span class="category-title">Top 10 hot</span>
+                  <span class="category-count">6 items</span>
+                  <i class="bi bi-chevron-up"></i>
+                </button>
+                <div class="watchlist-category-items">
+                  <div class="watchlist-stock-item" data-symbol="NVDA" data-price-change="2.6" data-volume="vol-2x" data-technical="above-200dma,rsi-overbought" data-expert="inst-buy,insider-buy" data-sector="technology" data-mcap="mega" data-growth="rev-50" data-valuation="pe-20-30" data-ai="ai-buy-signal">
+                    <div class="stock-item-logo nvda"><span>N</span></div>
+                    <div class="stock-item-info">
+                      <span class="stock-item-symbol">NVDA</span>
+                    </div>
+                    <div class="stock-item-price">
+                      <span class="watchlist-price">$485.20</span>
+                      <span class="watchlist-change positive">+$12.40</span>
+                    </div>
+                  </div>
+                  <div class="watchlist-stock-item" data-symbol="AAPL" data-price-change="1.2" data-sector="technology" data-mcap="mega" data-dividend="paying">
+                    <div class="stock-item-logo aapl"><span>A</span></div>
+                    <div class="stock-item-info">
+                      <span class="stock-item-symbol">AAPL</span>
+                    </div>
+                    <div class="stock-item-price">
+                      <span class="watchlist-price">$182.30</span>
+                      <span class="watchlist-change positive">+$2.10</span>
+                    </div>
+                  </div>
+                  <div class="watchlist-stock-item" data-symbol="TSLA" data-price-change="-3.2" data-sector="technology" data-mcap="large">
+                    <div class="stock-item-logo tsla"><span>T</span></div>
+                    <div class="stock-item-info">
+                      <span class="stock-item-symbol">TSLA</span>
+                    </div>
+                    <div class="stock-item-price">
+                      <span class="watchlist-price">$248.50</span>
+                      <span class="watchlist-change negative">-$8.20</span>
+                    </div>
+                  </div>
+                  <div class="watchlist-stock-item" data-symbol="MSFT" data-price-change="0.8" data-sector="technology" data-mcap="mega">
+                    <div class="stock-item-logo msft"><span>M</span></div>
+                    <div class="stock-item-info">
+                      <span class="stock-item-symbol">MSFT</span>
+                    </div>
+                    <div class="stock-item-price">
+                      <span class="watchlist-price">$415.20</span>
+                      <span class="watchlist-change positive">+$3.30</span>
+                    </div>
+                  </div>
+                  <div class="watchlist-stock-item" data-symbol="JPM" data-price-change="1.5" data-sector="finance" data-mcap="large" data-dividend="paying">
+                    <div class="stock-item-logo jpm"><span>J</span></div>
+                    <div class="stock-item-info">
+                      <span class="stock-item-symbol">JPM</span>
+                    </div>
+                    <div class="stock-item-price">
+                      <span class="watchlist-price">$198.40</span>
+                      <span class="watchlist-change positive">+$2.95</span>
+                    </div>
+                  </div>
+                  <div class="watchlist-stock-item" data-symbol="XOM" data-price-change="-1.2" data-sector="energy" data-mcap="large">
+                    <div class="stock-item-logo xom"><span>X</span></div>
+                    <div class="stock-item-info">
+                      <span class="stock-item-symbol">XOM</span>
+                    </div>
+                    <div class="stock-item-price">
+                      <span class="watchlist-price">$108.20</span>
+                      <span class="watchlist-change negative">-$1.32</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="watchlist-category" data-category="technology">
+                <button type="button" class="watchlist-category-toggle">
+                  <span class="category-title">Technology</span>
+                  <span class="category-count">4 items</span>
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="watchlist-category-items">
+                  <div class="watchlist-stock-item" data-symbol="NVDA" data-sector="technology"><div class="stock-item-logo nvda"><span>N</span></div><div class="stock-item-info"><span class="stock-item-symbol">NVDA</span></div><div class="stock-item-price"><span class="watchlist-price">$485.20</span><span class="watchlist-change positive">+$12.40</span></div></div>
+                  <div class="watchlist-stock-item" data-symbol="AAPL" data-sector="technology"><div class="stock-item-logo aapl"><span>A</span></div><div class="stock-item-info"><span class="stock-item-symbol">AAPL</span></div><div class="stock-item-price"><span class="watchlist-price">$182.30</span><span class="watchlist-change positive">+$2.10</span></div></div>
+                  <div class="watchlist-stock-item" data-symbol="TSLA" data-sector="technology"><div class="stock-item-logo tsla"><span>T</span></div><div class="stock-item-info"><span class="stock-item-symbol">TSLA</span></div><div class="stock-item-price"><span class="watchlist-price">$248.50</span><span class="watchlist-change negative">-$8.20</span></div></div>
+                  <div class="watchlist-stock-item" data-symbol="MSFT" data-sector="technology"><div class="stock-item-logo msft"><span>M</span></div><div class="stock-item-info"><span class="stock-item-symbol">MSFT</span></div><div class="stock-item-price"><span class="watchlist-price">$415.20</span><span class="watchlist-change positive">+$3.30</span></div></div>
+                </div>
+              </div>
+              <div class="watchlist-category" data-category="finance-energy">
+                <button type="button" class="watchlist-category-toggle">
+                  <span class="category-title">Finance &amp; Energy</span>
+                  <span class="category-count">2 items</span>
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="watchlist-category-items">
+                  <div class="watchlist-stock-item" data-symbol="JPM" data-sector="finance"><div class="stock-item-logo jpm"><span>J</span></div><div class="stock-item-info"><span class="stock-item-symbol">JPM</span></div><div class="stock-item-price"><span class="watchlist-price">$198.40</span><span class="watchlist-change positive">+$2.95</span></div></div>
+                  <div class="watchlist-stock-item" data-symbol="XOM" data-sector="energy"><div class="stock-item-logo xom"><span>X</span></div><div class="stock-item-info"><span class="stock-item-symbol">XOM</span></div><div class="stock-item-price"><span class="watchlist-price">$108.20</span><span class="watchlist-change negative">-$1.32</span></div></div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="watchlist-create-btn">
+              <i class="bi bi-plus-lg"></i>
+              Create new watchlist
+            </button>
           </div>
         </div>
 

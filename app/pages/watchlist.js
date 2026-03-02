@@ -277,9 +277,9 @@ class StockWatchlistFilters {
 
   applyFilters() {
     const filters = this.activeFilters;
-    const tbody = this.table && this.table.querySelector('tbody');
-    if (!tbody) return;
-    const rows = tbody.querySelectorAll('tr[data-symbol]');
+    const container = this.container || document.querySelector('.stock-watchlist-template');
+    if (!container) return;
+    const rows = container.querySelectorAll('.watchlist-stock-item[data-symbol]');
     const hasAny = Object.keys(filters).some((k) => filters[k] && filters[k].length > 0);
 
     rows.forEach((row) => {
@@ -325,22 +325,17 @@ window.StockWatchlistFilters = StockWatchlistFilters;
 function updateWatchlistFromQuotes(quotes) {
   if (!quotes || !quotes.length) return;
   quotes.forEach((q) => {
-    const row = document.querySelector(`.watchlist-table tbody tr[data-symbol="${q.symbol}"]`);
-    if (!row) return;
+    const item = document.querySelector(`.watchlist-stock-item[data-symbol="${q.symbol}"]`);
+    if (!item) return;
     const price = q.current_price != null ? q.current_price : 0;
     const change = q.change != null ? q.change : 0;
     const changePct = q.change_percent != null ? q.change_percent : 0;
-    const priceEl = row.querySelector('.watchlist-price');
-    const changeEl = row.querySelector('.watchlist-change');
-    const pctEl = row.querySelector('.watchlist-pct');
+    const priceEl = item.querySelector('.watchlist-price');
+    const changeEl = item.querySelector('.watchlist-change');
     if (priceEl) priceEl.textContent = '$' + price.toFixed(2);
     if (changeEl) {
       changeEl.textContent = (change >= 0 ? '+' : '') + '$' + change.toFixed(2);
       changeEl.className = 'watchlist-change ' + (change >= 0 ? 'positive' : 'negative');
-    }
-    if (pctEl) {
-      pctEl.textContent = (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%';
-      pctEl.className = 'watchlist-pct ' + (changePct >= 0 ? 'positive' : 'negative');
     }
   });
   const perfEl = document.getElementById('watchlistPerformanceValue');
@@ -358,11 +353,26 @@ function updateWatchlistFromQuotes(quotes) {
 }
 
 function startWatchlistPolling() {
-  if (!window.apiService) return null;
   const poll = () => {
-    window.apiService.getMarketQuotes(POLL_SYMBOLS).then((data) => {
-      if (data && data.quotes) updateWatchlistFromQuotes(data.quotes);
-    }).catch(() => {});
+    if (window.MarketDataService) {
+      window.MarketDataService.getBatchQuotes(POLL_SYMBOLS).then((quotes) => {
+        if (quotes && quotes.length) {
+          var adapted = quotes.map(function(q) {
+            return {
+              symbol: q.symbol,
+              current_price: q.price,
+              change: q.change,
+              change_percent: q.changePercent
+            };
+          });
+          updateWatchlistFromQuotes(adapted);
+        }
+      }).catch(function() {});
+    } else if (window.apiService) {
+      window.apiService.getMarketQuotes(POLL_SYMBOLS).then((data) => {
+        if (data && data.quotes) updateWatchlistFromQuotes(data.quotes);
+      }).catch(() => {});
+    }
   };
   poll();
   return setInterval(poll, POLL_INTERVAL_MS);
@@ -372,6 +382,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const addMemberBtn = document.getElementById('addMemberBtn');
   const modal = document.getElementById('addMemberModal');
   const closeBtn = document.getElementById('closeModal');
+
+  // Watchlist category expand/collapse
+  document.querySelectorAll('.watchlist-category-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const category = btn.closest('.watchlist-category');
+      const icon = btn.querySelector('i.bi-chevron-down, i.bi-chevron-up');
+      category.classList.toggle('expanded');
+      if (icon) {
+        icon.className = category.classList.contains('expanded') ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+      }
+    });
+  });
 
   if (window.WatchlistFilters) {
     const filters = new WatchlistFilters();

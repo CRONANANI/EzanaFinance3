@@ -240,6 +240,248 @@ body.watchlist-page .stock-watchlist-card {
   overflow-y: auto;
 }
 
+/* ===== Stock Watchlist Template Design (Ezana brand) ===== */
+.stock-watchlist-template {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.stock-watchlist-template .stock-watchlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.stock-watchlist-template .stock-watchlist-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.stock-watchlist-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stock-watchlist-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--muted);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stock-watchlist-dropdown-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.stock-watchlist-dropdown-btn i {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.stock-watchlist-info-btn,
+.stock-watchlist-template .stock-filters-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stock-watchlist-info-btn:hover,
+.stock-watchlist-template .stock-filters-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.stock-watchlist-template .stock-watchlist-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.watchlist-categories {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.watchlist-category {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.watchlist-category:last-of-type {
+  border-bottom: none;
+}
+
+.watchlist-category-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.watchlist-category-toggle:hover {
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.watchlist-category .category-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.watchlist-category .category-count {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.watchlist-category .watchlist-category-toggle i {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.watchlist-category.expanded .watchlist-category-toggle i {
+  transform: rotate(180deg);
+}
+
+.watchlist-category-items {
+  display: none;
+  flex-direction: column;
+  padding: 0 1rem 1rem;
+}
+
+.watchlist-category.expanded .watchlist-category-items {
+  display: flex;
+}
+
+.watchlist-stock-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.watchlist-stock-item:hover {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.stock-item-logo {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.stock-item-logo.nvda { background: linear-gradient(135deg, #76b900 0%, #5a8f00 100%); }
+.stock-item-logo.aapl { background: linear-gradient(135deg, #555555 0%, #333333 100%); }
+.stock-item-logo.tsla { background: linear-gradient(135deg, #e31937 0%, #b8142d 100%); }
+.stock-item-logo.msft { background: linear-gradient(135deg, #00a4ef 0%, #0078d4 100%); }
+.stock-item-logo.jpm { background: linear-gradient(135deg, #0e4c92 0%, #083d73 100%); }
+.stock-item-logo.xom { background: linear-gradient(135deg, #0066b3 0%, #004d87 100%); }
+
+.stock-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stock-item-symbol {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stock-item-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.stock-item-price .watchlist-price {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stock-item-price .watchlist-change {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.stock-item-price .watchlist-change.positive { color: #10b981; }
+.stock-item-price .watchlist-change.negative { color: #ef4444; }
+
+.watchlist-create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  margin: 0;
+  margin-top: auto;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 0 0 var(--radius) var(--radius);
+  color: var(--color-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.watchlist-create-btn:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: var(--color-primary);
+}
+
 /* Recent Activity layout: sidebar + content; fills viewport, only activity list scrolls */
 .recent-activity-body {
   display: flex;
