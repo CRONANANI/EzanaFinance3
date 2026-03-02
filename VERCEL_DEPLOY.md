@@ -27,6 +27,14 @@ If you see this error, Vercel is configured for a static site instead of Next.js
 3. Ensure **Framework Preset** is **Next.js**
 4. Redeploy
 
+### Troubleshooting: "Configuration Settings differ from Project Settings"
+
+This warning means the last deployment used different config than your current settings:
+
+1. Ensure `vercel.json` only contains `{"framework": "nextjs"}` – no `buildCommand`, `outputDirectory`, or `installCommand` (these can conflict with dashboard settings)
+2. In Vercel → **Settings** → **Build & Development Settings**, leave **Build Command**, **Output Directory**, and **Install Command** as default (empty) so Vercel uses Next.js preset
+3. **Redeploy** – the warning clears once a new deployment uses the current config
+
 ## Local Development
 
 ```bash

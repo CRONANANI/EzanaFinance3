@@ -562,23 +562,7 @@ The application uses a unified deployment approach where FastAPI serves both the
    CORS_ORIGINS=https://your-domain.com
    ```
 
-4. **Deploy using GitHub Actions**:
-   - Configure the `azure-deploy.yml` workflow
-   - Add `AZURE_WEBAPP_PUBLISH_PROFILE` secret to GitHub
-   - Automatic deployment on push to main branch
-
-### Docker Deployment
-```bash
-# Build and run with Docker
-docker build -t ezana-finance .
-docker run -p 8000:8000 ezana-finance
-
-# With environment variables
-docker run -p 8000:8000 \
-  -e DATABASE_URL=postgresql://user:pass@host:port/dbname \
-  -e SECRET_KEY=your-secret-key \
-  ezana-finance
-```
+4. **Deploy the frontend** to Vercel (see `VERCEL_DEPLOY.md`).
 
 ## 📊 Database Schema
 

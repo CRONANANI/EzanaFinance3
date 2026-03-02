@@ -45,16 +45,9 @@ A comprehensive finance management API built with FastAPI.
 
 ### Production (Azure App Service)
 
-1. **Set up Azure App Service:**
-   - Create a new App Service with Python runtime
-   - Configure environment variables in Azure portal
-   - Set up PostgreSQL database
+1. **Set up your hosting** (e.g. Railway, Render, or similar) with Python runtime and PostgreSQL.
 
-2. **Deploy using GitHub Actions:**
-   - Configure the `azure-deploy.yml` workflow
-   - Add `AZURE_WEBAPP_PUBLISH_PROFILE` secret to GitHub
-
-3. **Environment Variables for Production:**
+2. **Environment Variables for Production:**
    ```
    DATABASE_URL=postgresql://user:pass@host:port/dbname
    SECRET_KEY=your-production-secret-key
