@@ -325,18 +325,24 @@ window.StockWatchlistFilters = StockWatchlistFilters;
 function updateWatchlistFromQuotes(quotes) {
   if (!quotes || !quotes.length) return;
   quotes.forEach((q) => {
-    const item = document.querySelector(`.watchlist-stock-item[data-symbol="${q.symbol}"]`);
-    if (!item) return;
-    const price = q.current_price != null ? q.current_price : 0;
-    const change = q.change != null ? q.change : 0;
-    const changePct = q.change_percent != null ? q.change_percent : 0;
-    const priceEl = item.querySelector('.watchlist-price');
-    const changeEl = item.querySelector('.watchlist-change');
-    if (priceEl) priceEl.textContent = '$' + price.toFixed(2);
-    if (changeEl) {
-      changeEl.textContent = (change >= 0 ? '+' : '') + '$' + change.toFixed(2);
-      changeEl.className = 'watchlist-change ' + (change >= 0 ? 'positive' : 'negative');
-    }
+    document.querySelectorAll(`.watchlist-stock-item[data-symbol="${q.symbol}"]`).forEach((item) => {
+      const price = q.current_price != null ? q.current_price : 0;
+      const change = q.change != null ? q.change : 0;
+      const changePct = q.change_percent != null ? q.change_percent : 0;
+      const isPositive = change >= 0;
+      const priceEl = item.querySelector('.watchlist-price');
+      const changeEl = item.querySelector('.watchlist-change');
+      const iconEl = item.querySelector('.stock-item-icon.insight-icon');
+      if (priceEl) priceEl.textContent = '$' + price.toFixed(2);
+      if (changeEl) {
+        changeEl.textContent = (isPositive ? '+' : '') + '$' + change.toFixed(2);
+        changeEl.className = 'watchlist-change ' + (isPositive ? 'positive' : 'negative');
+      }
+      if (iconEl) {
+        iconEl.className = 'stock-item-icon insight-icon ' + (isPositive ? 'positive' : 'negative');
+        iconEl.innerHTML = isPositive ? '<i class="bi bi-graph-up-arrow"></i>' : '<i class="bi bi-graph-down-arrow"></i>';
+      }
+    });
   });
   const perfEl = document.getElementById('watchlistPerformanceValue');
   if (perfEl && quotes.length) {

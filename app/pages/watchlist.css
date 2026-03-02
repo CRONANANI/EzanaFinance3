@@ -404,26 +404,38 @@ body.watchlist-page .stock-watchlist-card {
   background: rgba(16, 185, 129, 0.08);
 }
 
-.stock-item-logo {
+/* Stock item icons - match portfolio news insight-icon (home-dashboard) */
+.stock-item-icon.insight-icon {
   width: 40px;
   height: 40px;
   min-width: 40px;
-  border-radius: 10px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  font-weight: 700;
-  color: white;
+  font-size: 1.25rem;
   flex-shrink: 0;
 }
 
-.stock-item-logo.nvda { background: linear-gradient(135deg, #76b900 0%, #5a8f00 100%); }
-.stock-item-logo.aapl { background: linear-gradient(135deg, #555555 0%, #333333 100%); }
-.stock-item-logo.tsla { background: linear-gradient(135deg, #e31937 0%, #b8142d 100%); }
-.stock-item-logo.msft { background: linear-gradient(135deg, #00a4ef 0%, #0078d4 100%); }
-.stock-item-logo.jpm { background: linear-gradient(135deg, #0e4c92 0%, #083d73 100%); }
-.stock-item-logo.xom { background: linear-gradient(135deg, #0066b3 0%, #004d87 100%); }
+.stock-item-icon.insight-icon.positive {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.stock-item-icon.insight-icon.warning {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.stock-item-icon.insight-icon.info {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.stock-item-icon.insight-icon.negative {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
 
 .stock-item-info {
   flex: 1;
