@@ -22,13 +22,6 @@ body {
     transition: margin-left 0.3s ease;
 }
 
-/* When .page-content is used with .dashboard-container (e.g. company-research), match home-dashboard layout:
-   same max-width and uniform 2rem padding so right-edge spacing matches when sidebar is open */
-.dashboard-container.page-content {
-    max-width: 1600px;
-    padding: 2rem;
-}
-
 /* Default: no sidebar offset */
 .page-content,
 .dashboard-page-content {
