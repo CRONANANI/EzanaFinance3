@@ -53,8 +53,31 @@ npm start
 
 ## Project Structure
 
-- `src/app/` – Next.js App Router pages (SSR by default)
-- `src/components/` – React components
-- `app/` – Legacy static assets (CSS, images) used by the Next.js app
-- `tailwind.config.js` – Tailwind configuration
-- `vercel.json` – Vercel framework detection
+This project uses Next.js with the `src/` directory:
+
+```
+ezana-finance/
+├── src/
+│   ├── app/
+│   │   ├── page.js          ← Homepage
+│   │   ├── layout.js        ← Root layout
+│   │   ├── globals.css
+│   │   ├── signup/page.js
+│   │   ├── signin/page.js
+│   │   ├── home-dashboard/page.js
+│   │   └── ...
+│   ├── components/
+│   └── lib/
+├── app/                     ← Legacy static assets (CSS, images)
+├── package.json
+├── next.config.js
+├── vercel.json
+└── .gitignore
+```
+
+**Vercel Build & Development Settings:**
+- Framework Preset: Next.js
+- Root Directory: `./` (empty – project root)
+- Build Command: (empty – uses `next build` from package.json)
+- Output Directory: (empty – uses `.next`)
+- Install Command: (empty – uses `npm install`)
