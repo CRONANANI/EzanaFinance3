@@ -158,19 +158,18 @@ body.watchlist-page .stock-watchlist-card {
 .stat-change.positive { color: #10b981; }
 .stat-change.warning { color: #fbbf24; }
 
-/* Match dashboard grid: 2fr 1fr same as home-dashboard */
+/* Recent Activity (wider) + Stock Watchlist (narrower) - stock watchlist has symbol only, no name column */
 .watchlist-grid,
 .watchlist-grid-two-column {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
   align-items: start;
 }
 
-/* Recent Activity (wider) + Stock Watchlist (narrower) */
 .recent-activity-card { min-width: 0; }
-.stock-watchlist-card { min-width: 0; }
+.stock-watchlist-card { min-width: 0; max-width: 420px; }
 
 /* Stock Watchlist card header actions */
 .card-header-actions {
