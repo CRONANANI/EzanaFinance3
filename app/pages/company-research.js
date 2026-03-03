@@ -315,11 +315,15 @@ class CompanyResearch {
     if (!section || !titleEl || !bodyEl) return;
     titleEl.textContent = this.getModelTitle(modelType);
     if (modelType === 'grpv') {
+      section.classList.add('grpv-centered');
       this.renderGRPVForm(bodyEl);
-    } else if (modelType === 'dcf') {
-      this.renderDCFForm(bodyEl);
     } else {
-      bodyEl.innerHTML = '<div class="model-placeholder"><p>This model is coming soon. For now, use the AI-powered analysis from the previous flow.</p></div>';
+      section.classList.remove('grpv-centered');
+      if (modelType === 'dcf') {
+        this.renderDCFForm(bodyEl);
+      } else {
+        bodyEl.innerHTML = '<div class="model-placeholder"><p>This model is coming soon. For now, use the AI-powered analysis from the previous flow.</p></div>';
+      }
     }
     section.style.display = '';
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -544,18 +548,9 @@ class CompanyResearch {
     }
     container.innerHTML = `
       <form id="grpvForm" class="grpv-form">
-        <div class="grpv-form-section">
+        <div class="grpv-form-section grpv-form-centered">
           <h4>Category Weighting (1–5)</h4>
-          <div class="grpv-category-grid">
-            ${categories.map(c => `
-              <div class="grpv-category-item">
-                <label for="grpv-cat-${c.id}">${c.label}</label>
-                <input type="range" id="grpv-cat-${c.id}" class="grpv-weight-slider" min="1" max="5" value="4" data-cat="${c.id}">
-                <span class="grpv-weight-value" data-for="grpv-cat-${c.id}">4</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
+          <div class="grpv-category-grid grpv-category-grid-centered"></div>
         ${metricHTML}
         <div class="grpv-form-section">
           <h4>Select sectors</h4>
@@ -572,12 +567,26 @@ class CompanyResearch {
         <div id="grpvOutput" class="grpv-output-box" style="display:none;"></div>
       </form>
     `;
-    container.querySelectorAll('.grpv-weight-slider').forEach(slider => {
-      const valEl = container.querySelector(`[data-for="${slider.id}"]`);
-      const update = () => { if (valEl) valEl.textContent = slider.value; };
-      slider.addEventListener('input', update);
-      update();
-    });
+    var catGridEl = container.querySelector('.grpv-category-grid-centered');
+    if (catGridEl && window.createGRPVSnappySlider) {
+      categories.forEach(function (c) {
+        var item = document.createElement('div');
+        item.className = 'grpv-category-item';
+        var slider = window.createGRPVSnappySlider({
+          values: [1, 2, 3, 4, 5],
+          defaultValue: 4,
+          min: 1,
+          max: 5,
+          step: 1,
+          label: c.label,
+          id: 'grpv-cat-' + c.id,
+          dataCat: c.id,
+          onChange: function () {}
+        });
+        item.appendChild(slider);
+        catGridEl.appendChild(item);
+      });
+    }
     container.querySelectorAll('.grpv-sector-chip').forEach(c => {
       c.addEventListener('click', () => {
         c.classList.toggle('selected');
@@ -595,10 +604,11 @@ class CompanyResearch {
     if (statusEl) statusEl.textContent = 'Running GRPV analysis...';
     if (outputEl) { outputEl.style.display = 'none'; outputEl.innerHTML = ''; }
 
-    const catWeights = {};
-    ['growth', 'risk', 'profitability', 'valuation'].forEach(id => {
-      const el = document.getElementById(`grpv-cat-${id}`);
-      catWeights[id] = el ? parseInt(el.value, 10) : 4;
+    var catWeights = {};
+    var formEl = document.getElementById('grpvForm');
+    ['growth', 'risk', 'profitability', 'valuation'].forEach(function (id) {
+      var sliderWrap = formEl ? formEl.querySelector('.grpv-snappy-slider[data-cat="' + id + '"]') : null;
+      catWeights[id] = sliderWrap && sliderWrap.getValue ? sliderWrap.getValue() : 4;
     });
 
     const selectedSectors = Array.from(document.querySelectorAll('.grpv-sector-chip.selected')).map(c => c.dataset.sector);
