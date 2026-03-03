@@ -15,28 +15,148 @@
 .world-map-card {
   position: relative;
   width: 100%;
-  min-height: 320px;
 }
 
 .world-map-container {
   position: relative;
   width: 100%;
-  height: 320px;
-  overflow: hidden;
+  aspect-ratio: 2 / 1;
+  min-height: 280px;
+  max-height: 420px;
+  overflow: visible;
+  background: #0a0f1a;
+}
+
+.world-map-base {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .world-map-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  filter: brightness(0.35) contrast(1.1) saturate(0.8);
+  object-fit: contain;
+  object-position: center;
+  filter: brightness(0.25) contrast(1.2) saturate(0.6) hue-rotate(-10deg);
 }
 
-.world-map-overlay {
+.world-map-hex-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 20, 25, 0.3) 100%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='35' viewBox='0 0 20 35'%3E%3Cpath fill='none' stroke='rgba(59,130,246,0.07)' stroke-width='0.35' d='M10 0 L20 8.66 L20 25.98 L10 34.64 L0 25.98 L0 8.66 Z'/%3E%3Cpath fill='none' stroke='rgba(168,85,247,0.05)' stroke-width='0.3' d='M10 17.32 L20 25.98 L20 43.3 L10 51.96 L0 43.3 L0 25.98 Z'/%3E%3C/svg%3E");
+  background-size: 20px 35px;
+  background-position: 0 -8px;
   pointer-events: none;
+  opacity: 0.9;
+}
+
+.world-map-connections {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.world-map-connections .connection-line {
+  opacity: 0.7;
+  stroke-linecap: round;
+}
+
+.world-map-markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.map-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.map-marker .marker-glow {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: markerPulse 2.5s ease-in-out infinite;
+}
+
+.map-marker .marker-glow-magenta {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.6) 0%, transparent 70%);
+}
+
+.map-marker .marker-glow-blue {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, transparent 70%);
+}
+
+.map-marker .marker-dot {
+  width: 10px;
+  height: 10px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.8), 0 0 24px rgba(16, 185, 129, 0.4);
+  position: relative;
+}
+
+.map-marker .marker-label {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  min-width: 100px;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.map-marker .marker-icon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.map-marker .marker-name {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 2px;
+}
+
+.map-marker .marker-value {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-feature-settings: 'tnum' 1;
+}
+
+.map-marker:hover .marker-label,
+.map-marker.selected .marker-label {
+  border-color: var(--primary);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+}
+
+.map-marker.selected .marker-dot {
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.9), 0 0 32px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes markerPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
 }
 
 .world-map-selected-badge {
@@ -50,6 +170,22 @@
   font-size: 0.875rem;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .world-map-container {
+    min-height: 220px;
+    max-height: 320px;
+  }
+  .map-marker .marker-label {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    min-width: 80px;
+  }
+  .map-marker .marker-value {
+    font-size: 0.75rem;
+  }
 }
 
 .main-indicators-divider {

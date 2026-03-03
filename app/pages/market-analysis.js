@@ -73,17 +73,31 @@ class MarketAnalysis {
   
   attachCountryRowListeners() {
     const rows = document.querySelectorAll('.main-indicators-table .country-row');
+    const markers = document.querySelectorAll('.map-marker[data-country]');
     const badge = document.getElementById('selectedCountryBadge');
     const labelEl = document.getElementById('topMoversCountryLabel');
+
+    const selectCountry = (country) => {
+      this.selectedCountry = country;
+      rows.forEach(r => {
+        r.classList.toggle('selected', r.dataset.country === country);
+      });
+      markers.forEach(m => {
+        m.classList.toggle('selected', m.dataset.country === country);
+      });
+      const label = COUNTRY_LABELS[country] || country;
+      if (badge) badge.textContent = label;
+      if (labelEl) labelEl.textContent = label;
+    };
+
     rows.forEach(row => {
-      row.addEventListener('click', () => {
-        const country = row.dataset.country;
-        this.selectedCountry = country;
-        rows.forEach(r => r.classList.remove('selected'));
-        row.classList.add('selected');
-        const label = COUNTRY_LABELS[country] || country;
-        if (badge) badge.textContent = label;
-        if (labelEl) labelEl.textContent = label;
+      row.addEventListener('click', () => selectCountry(row.dataset.country));
+    });
+    markers.forEach(marker => {
+      marker.style.pointerEvents = 'auto';
+      marker.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectCountry(marker.dataset.country);
       });
     });
   }
