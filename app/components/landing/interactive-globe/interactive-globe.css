@@ -1,14 +1,14 @@
-/* Interactive Globe - Hero visual replacement for card-swap */
+/* Interactive Globe - Hero visual replacement for card-swap
+   Preserve hero-visual dimensions so text layout stays the same as before */
 .hero-visual.globe-preview {
+  flex-shrink: 0;
+  width: min(520px, 45vw);
+  min-width: 320px;
+  height: 420px;
   min-height: 400px;
-}
-
-.globe-preview {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 360px;
 }
 
 .globe-container {
@@ -28,8 +28,11 @@
 }
 
 @media (max-width: 1024px) {
-  .globe-preview {
-    min-height: 360px;
+  .hero-visual.globe-preview {
+    width: 100%;
+    min-width: unset;
+    height: 380px;
+    order: 2;
   }
   .globe-container {
     max-width: 360px;
@@ -39,9 +42,18 @@
 }
 
 @media (max-width: 768px) {
+  .hero-visual.globe-preview {
+    height: 320px;
+  }
   .globe-container {
     max-width: 320px;
     height: 320px;
     min-height: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-visual.globe-preview {
+    display: none;
   }
 }
