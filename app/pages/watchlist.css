@@ -477,6 +477,14 @@ body.watchlist-page .stock-watchlist-card {
   display: flex;
 }
 
+.watchlist-empty-hint {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-align: center;
+  margin: 0;
+}
+
 .watchlist-stock-item {
   display: flex;
   align-items: center;
