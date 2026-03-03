@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -44,7 +43,7 @@ export default function WaitlistForm() {
         .insert([
           {
             email: email.toLowerCase().trim(),
-            full_name: fullName.trim(),
+            full_name: '',
             user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
           },
         ])
@@ -56,7 +55,6 @@ export default function WaitlistForm() {
       setSuccess(true);
       setLegacyNumber(data.legacy_number);
       setEmail('');
-      setFullName('');
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
@@ -65,7 +63,7 @@ export default function WaitlistForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-md">
       {success && (
         <div className="mb-6 p-4 bg-green-500/10 border border-green-500 rounded-lg">
           <div className="flex items-start">
@@ -96,23 +94,11 @@ export default function WaitlistForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
-            placeholder="Full Name"
-            required
-            disabled={loading || success}
-          />
-        </div>
-
-        <div>
-          <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
-            placeholder="Email Address"
+            placeholder="Enter your email"
             required
             disabled={loading || success}
           />
@@ -123,7 +109,7 @@ export default function WaitlistForm() {
           disabled={loading || success}
           className="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50"
         >
-          {loading ? 'Joining...' : success ? "You're on the list!" : 'Join Waitlist — First 1,000 Free Forever'}
+          {loading ? 'Joining...' : success ? "You're on the list!" : 'Join Waitlist'}
         </button>
 
         <p className="text-xs text-gray-500 text-center">
