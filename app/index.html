@@ -18,7 +18,7 @@
     <link rel="preload" href="assets/css/theme-variables.css" as="style">
     <link rel="stylesheet" href="assets/css/theme-variables.css">
     <link rel="stylesheet" href="pages/landing.css">
-    <link rel="stylesheet" href="components/landing/card-swap/card-swap.css">
+    <link rel="stylesheet" href="components/landing/interactive-globe/interactive-globe.css">
     <link rel="stylesheet" href="pages/electric-border.css">
     <link rel="stylesheet" href="pages/prism.css">
     <!-- Defer below-fold CSS for faster first paint -->
@@ -100,50 +100,8 @@
                     </div>
                 </div>
             </div>
-            <div class="hero-visual" id="heroCardSwapWrapper">
-                <!-- Inlined from components/landing/card-swap/card-swap.html so it works without fetch (file:// and all servers) -->
-                <div class="card-swap-container" id="card-swap-container">
-                  <!-- Card 1: Portfolio Dashboard -->
-                  <div class="card portfolio-card">
-                    <div class="card-content">
-                      <div class="card-header-tab">
-                        <div class="tab-dots">
-                          <div class="tab-dot close"></div>
-                          <div class="tab-dot minimize"></div>
-                          <div class="tab-dot maximize"></div>
-                        </div>
-                        <div class="tab-title">Portfolio Dashboard</div>
-                      </div>
-                      <div class="card-body card-body-image">
-                        <img src="assets/images/portfolio-dashboard-preview.png" alt="Portfolio Dashboard - Total Portfolio Value, News, Transactions, Top Holdings" class="card-preview-image">
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Card 2: Company Research -->
-                  <div class="card market-card">
-                    <div class="card-content">
-                      <div class="card-header-tab">
-                        <div class="tab-dots"><div class="tab-dot close"></div><div class="tab-dot minimize"></div><div class="tab-dot maximize"></div></div>
-                        <div class="tab-title">Company Research</div>
-                      </div>
-                      <div class="card-body card-body-image">
-                        <img src="assets/images/company-research-preview.png" alt="Company Research - Financial metrics and analysis models" class="card-preview-image">
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Card 3: Watchlist -->
-                  <div class="card holdings-card">
-                    <div class="card-content">
-                      <div class="card-header-tab">
-                        <div class="tab-dots"><div class="tab-dot close"></div><div class="tab-dot minimize"></div><div class="tab-dot maximize"></div></div>
-                        <div class="tab-title">Watchlist</div>
-                      </div>
-                      <div class="card-body card-body-image">
-                        <img src="assets/images/watchlist-preview.png" alt="Watchlist - Recent Activity, Stock Watchlist, filters and alerts" class="card-preview-image">
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="hero-visual globe-preview" id="heroGlobeWrapper">
+                <div class="globe-container" id="globe-container"></div>
             </div>
         </div>
         <div class="scroll-hint">
@@ -1064,29 +1022,22 @@
     <script src="pages/prism.js" defer></script>
     <script src="pages/landing.js" defer></script>
     <script src="components/landing/legacy-signup.js" defer></script>
-    <script src="components/landing/card-swap/card-swap.js" defer></script>
+    <script src="components/landing/interactive-globe/interactive-globe.js" defer></script>
     <script src="components/landing/features-section.js" defer></script>
     <script src="components/landing/faq-section.js" defer></script>
     <script defer>
       (function () {
-        function initCardSwap() {
-          var container = document.getElementById('card-swap-container');
-          if (!container) return;
-          function init() {
-            if (typeof gsap === 'undefined' || typeof createCardSwap === 'undefined') {
-              setTimeout(init, 50);
-              return;
-            }
-            try {
-              createCardSwap('#card-swap-container', { delay: 5000, pauseOnHover: true });
-            } catch (e) { console.error('CardSwap init error:', e); }
-          }
-          init();
+        function initGlobe() {
+          var container = document.getElementById('globe-container');
+          if (!container || typeof window.initInteractiveGlobe !== 'function') return;
+          try {
+            window.initInteractiveGlobe(container, { autoRotateSpeed: 0.002 });
+          } catch (e) { console.error('Globe init error:', e); }
         }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initCardSwap);
+          document.addEventListener('DOMContentLoaded', initGlobe);
         } else {
-          initCardSwap();
+          initGlobe();
         }
       })();
     </script>

@@ -1,0 +1,47 @@
+/* Interactive Globe - Hero visual replacement for card-swap */
+.hero-visual.globe-preview {
+  min-height: 400px;
+}
+
+.globe-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 360px;
+}
+
+.globe-container {
+  width: 100%;
+  max-width: 460px;
+  height: 400px;
+  min-height: 360px;
+  position: relative;
+}
+
+.globe-canvas {
+  cursor: grab;
+}
+
+.globe-canvas:active {
+  cursor: grabbing;
+}
+
+@media (max-width: 1024px) {
+  .globe-preview {
+    min-height: 360px;
+  }
+  .globe-container {
+    max-width: 360px;
+    height: 360px;
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .globe-container {
+    max-width: 320px;
+    height: 320px;
+    min-height: 320px;
+  }
+}

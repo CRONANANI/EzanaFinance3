@@ -1,0 +1,32 @@
+---
+description: Sync changes between React/JS components and static HTML pages
+globs: "**/*.js,**/*.jsx,app/**/*.html"
+alwaysApply: true
+---
+
+# Sync React/JS and Static HTML
+
+This project has **two entry points** for the landing experience:
+
+1. **Next.js app** (`src/app/page.js`) – React components, used when running `npm run dev`
+2. **Static HTML** (`app/index.html`) – Plain HTML/CSS/JS, used when opening from `app/playground.html` or serving the `app/` folder
+
+## Rule: Keep Both in Sync
+
+When making changes to landing page features (hero, FAQ, globe, waitlist form, etc.):
+
+- **If you edit React components** (`src/components/landing/*.js`, `src/components/ui/*.jsx`): Also update the corresponding static HTML/CSS/JS in `app/` so users opening from `playground.html` or `index.html` see the same changes.
+- **If you edit static files** (`app/index.html`, `app/components/landing/*.html`, `app/components/landing/*.js`): Consider whether the Next.js app needs the same update.
+
+## Key Mappings
+
+| Feature | Next.js (React) | Static HTML |
+|---------|-----------------|-------------|
+| Hero + Globe | `LandingHero.js` + `interactive-globe.jsx` | `index.html` + `interactive-globe/interactive-globe.js` |
+| FAQ | `faq1.jsx` + `accordion.jsx` | `index.html` FAQ section + `faq-section.js` + `faq-section.css` |
+| Waitlist form | `WaitlistForm.js` | `index.html` legacy-signup + `legacy-signup.js` |
+
+## Static Globe Location
+
+- `app/components/landing/interactive-globe/interactive-globe.js` – vanilla JS
+- `app/components/landing/interactive-globe/interactive-globe.css` – styles
