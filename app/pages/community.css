@@ -217,6 +217,16 @@
   font-size: 0.7rem;
 }
 
+.stats-grid.condensed .stat-card-with-buttons .stat-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.stats-grid.condensed .stat-card-buttons {
+  margin-top: 0.4rem;
+}
+
 /* Community features grid - matches dashboard 2fr 1fr layout */
 .community-features-grid {
   grid-template-columns: 2fr 1fr;
@@ -303,18 +313,24 @@
 .stat-icon.engagement { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
 .stat-icon.experts { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
 
-/* Small action buttons inside stat cards */
+/* Small action buttons inside stat cards - uniform sizing */
 .stat-card-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+  align-items: center;
 }
 
 .stat-card-btn {
-  padding: 0.2rem 0.5rem;
-  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.2;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--muted);
@@ -329,21 +345,25 @@
   border-color: var(--primary);
 }
 
-/* Discussion filter buttons in Active Discussions card header */
+/* Discussion filter buttons in Active Discussions card header - match stat-card-btn sizing */
 .discussion-filter-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .discussion-filter-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
+  min-height: 1.75rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  border-radius: var(--radius-md);
+  line-height: 1.2;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--muted);
   color: var(--muted-foreground);
