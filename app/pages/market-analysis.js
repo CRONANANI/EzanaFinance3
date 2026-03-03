@@ -73,7 +73,7 @@ class MarketAnalysis {
   
   attachCountryRowListeners() {
     const rows = document.querySelectorAll('.main-indicators-table .country-row');
-    const callouts = document.querySelectorAll('.map-callout[data-country]');
+    const badges = document.querySelectorAll('.gdp-badge[data-country]');
     const badge = document.getElementById('selectedCountryBadge');
     const labelEl = document.getElementById('topMoversCountryLabel');
 
@@ -82,22 +82,24 @@ class MarketAnalysis {
       rows.forEach(r => {
         r.classList.toggle('selected', r.dataset.country === country);
       });
-      callouts.forEach(c => {
-        c.classList.toggle('selected', c.dataset.country === country);
+      badges.forEach(b => {
+        b.classList.toggle('selected', b.dataset.country === country);
       });
       const label = COUNTRY_LABELS[country] || country;
       if (badge) badge.textContent = label;
       if (labelEl) labelEl.textContent = label;
     };
 
+    this.selectCountry = selectCountry;
+    window.marketAnalysis = this;
+
     rows.forEach(row => {
       row.addEventListener('click', () => selectCountry(row.dataset.country));
     });
-    callouts.forEach(callout => {
-      callout.style.pointerEvents = 'auto';
-      callout.addEventListener('click', (e) => {
+    badges.forEach(badgeEl => {
+      badgeEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectCountry(callout.dataset.country);
+        selectCountry(badgeEl.dataset.country);
       });
     });
   }

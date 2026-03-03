@@ -3,7 +3,7 @@
    Match home dashboard / watchlist layout exactly
    ============================================ */
 
-/* TOP: World Map + Main Economic Indicators */
+/* TOP: World GDP Heatmap + Main Economic Indicators */
 .market-analysis-hero {
   background: var(--card);
   border: 1px solid var(--card-border);
@@ -12,159 +12,70 @@
   margin-bottom: 1.5rem;
 }
 
-.world-map-card {
+.gdp-heatmap-card {
   position: relative;
-  width: 100%;
+  padding: 1.5rem;
 }
 
-.world-map-container {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 2 / 1;
-  min-height: 300px;
-  max-height: 420px;
-  overflow: visible;
-  background: #0a0f1a;
-}
-
-.world-map-base {
-  position: absolute;
-  inset: 0;
+.gdp-heatmap-title {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 1rem 0;
 }
 
-.world-map-bg {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #0f0f1f 0%, #1a1a2e 50%, #0d0d1a 100%);
+.gdp-heatmap-title i {
+  color: var(--primary);
 }
 
-.world-map-hex-layer {
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='28' viewBox='0 0 16 28'%3E%3Cpath fill='rgba(70,65,100,0.2)' stroke='rgba(90,80,130,0.25)' stroke-width='0.4' d='M8 0 L16 5 L16 19 L8 24 L0 19 L0 5 Z'/%3E%3Cpath fill='rgba(70,65,100,0.2)' stroke='rgba(90,80,130,0.25)' stroke-width='0.4' d='M8 12 L16 17 L16 31 L8 36 L0 31 L0 17 Z'/%3E%3C/svg%3E");
-  background-size: 16px 28px;
-  background-position: 0 -7px;
-  pointer-events: none;
-  opacity: 0.9;
+.gdp-heatmap-container {
+  position: relative;
+  background: linear-gradient(135deg, #0d1425 0%, #1a1a2e 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
-.world-map-img {
-  position: absolute;
+.gdp-heatmap-svg {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  filter: brightness(0.15) contrast(1.4) saturate(0.7);
-  opacity: 0.85;
+  height: 400px;
+  display: block;
 }
 
-.world-map-heatmap {
+.gdp-heatmap-badges {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.heat-spot {
+.gdp-badge {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.5;
-}
-
-.heat-usa { left: 18%; top: 32%; width: 25%; height: 25%; background: radial-gradient(circle, rgba(239,68,68,0.6) 0%, rgba(168,85,247,0.3) 50%, transparent 70%); }
-.heat-china { left: 72%; top: 35%; width: 22%; height: 22%; background: radial-gradient(circle, rgba(239,68,68,0.7) 0%, rgba(236,72,153,0.4) 50%, transparent 70%); }
-.heat-europe { left: 48%; top: 25%; width: 18%; height: 18%; background: radial-gradient(circle, rgba(59,130,246,0.5) 0%, rgba(168,85,247,0.25) 50%, transparent 70%); }
-.heat-africa { left: 50%; top: 48%; width: 20%; height: 20%; background: radial-gradient(circle, rgba(236,72,153,0.6) 0%, rgba(239,68,68,0.3) 50%, transparent 70%); }
-.heat-india { left: 68%; top: 42%; width: 16%; height: 16%; background: radial-gradient(circle, rgba(239,68,68,0.5) 0%, rgba(168,85,247,0.2) 50%, transparent 70%); }
-.heat-australia { left: 82%; top: 68%; width: 18%; height: 18%; background: radial-gradient(circle, rgba(34,197,94,0.5) 0%, rgba(59,130,246,0.2) 50%, transparent 70%); }
-
-.world-map-callouts {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.map-callout {
-  position: absolute;
-  transform: translate(-50%, -50%);
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
   pointer-events: auto;
   cursor: pointer;
-}
-
-.map-callout .callout-inner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  min-width: 100px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.map-callout:hover .callout-inner,
-.map-callout.selected .callout-inner {
-  transform: scale(1.02);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+.gdp-badge:hover,
+.gdp-badge.selected {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
 }
 
-.map-callout .callout-icon {
-  font-size: 1.125rem;
-  color: #ffffff;
-  flex-shrink: 0;
-}
+.gdp-badge-purple { background: #7c3aed; top: 1rem; left: 1rem; }
+.gdp-badge-green { background: #10b981; top: 1rem; right: 1rem; }
+.gdp-badge-red { background: #dc2626; top: 5rem; right: 8rem; }
+.gdp-badge-blue { background: #2563eb; top: 6rem; left: 2.5rem; }
+.gdp-badge-orange { background: #ea580c; top: 4rem; left: 8rem; }
 
-.map-callout .callout-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.map-callout .callout-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.map-callout .callout-value {
-  font-size: 1rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.95);
-  font-feature-settings: 'tnum' 1;
-}
-
-.callout-purple .callout-inner { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
-.callout-red .callout-inner { background: linear-gradient(135deg, #dc2626, #b91c1c); }
-.callout-lime .callout-inner { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.callout-blue .callout-inner { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-.callout-orange .callout-inner { background: linear-gradient(135deg, #ea580c, #c2410c); }
-.callout-pink .callout-inner { background: linear-gradient(135deg, #db2777, #be185d); }
-
-@media (max-width: 768px) {
-  .world-map-container {
-    min-height: 240px;
-    max-height: 320px;
-  }
-  .map-callout .callout-inner {
-    padding: 6px 10px;
-    min-width: 85px;
-  }
-  .map-callout .callout-icon {
-    font-size: 0.9rem;
-  }
-  .map-callout .callout-name {
-    font-size: 0.6875rem;
-  }
-  .map-callout .callout-value {
-    font-size: 0.875rem;
-  }
-}
-
-.world-map-selected-badge {
+.gdp-selected-badge {
   position: absolute;
   bottom: 1rem;
   left: 1rem;
@@ -176,6 +87,42 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   z-index: 2;
+}
+
+.gdp-tooltip {
+  position: fixed;
+  z-index: 50;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-xl);
+  pointer-events: none;
+}
+
+.gdp-tooltip-name {
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.25rem;
+}
+
+.gdp-tooltip-row {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.gdp-tooltip-row.positive { color: #10b981; }
+.gdp-tooltip-row.negative { color: #ef4444; }
+
+@media (max-width: 768px) {
+  .gdp-heatmap-svg {
+    height: 300px;
+  }
+  .gdp-badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+  }
+  .gdp-badge-red { right: 4rem; }
 }
 
 .main-indicators-divider {
@@ -234,6 +181,10 @@
 
 .main-indicators-table .country-row.selected {
   background: rgba(16, 185, 129, 0.2);
+}
+
+.main-indicators-table .country-row-highlight {
+  background: rgba(16, 185, 129, 0.08);
 }
 
 .main-indicators-table .val-positive {

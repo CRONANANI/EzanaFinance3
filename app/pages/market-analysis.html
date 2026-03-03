@@ -63,57 +63,27 @@
   <main class="dashboard-main market-analysis-main">
     <div class="dashboard-container market-analysis-container">
       
-      <!-- TOP: World Map + Main Economic Indicators (default: United States) -->
+      <!-- TOP: World GDP Heatmap + Main Economic Indicators -->
       <section class="market-analysis-hero">
-        <div class="world-map-card">
-          <div class="world-map-container" id="worldMapContainer">
-            <div class="world-map-base">
-              <div class="world-map-bg"></div>
-              <div class="world-map-hex-layer" aria-hidden="true"></div>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1200px-Equirectangular_projection_SW.jpg" alt="World Map" class="world-map-img">
-              <div class="world-map-heatmap">
-                <div class="heat-spot heat-usa"></div>
-                <div class="heat-spot heat-china"></div>
-                <div class="heat-spot heat-europe"></div>
-                <div class="heat-spot heat-africa"></div>
-                <div class="heat-spot heat-india"></div>
-                <div class="heat-spot heat-australia"></div>
-              </div>
+        <div class="gdp-heatmap-card">
+          <h2 class="gdp-heatmap-title">
+            <i class="bi bi-globe2"></i>
+            Global GDP Distribution
+          </h2>
+          <div class="gdp-heatmap-container">
+            <svg class="gdp-heatmap-svg" id="gdpHeatmapSvg" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet">
+              <!-- Country regions drawn by JS -->
+            </svg>
+            <div class="gdp-heatmap-badges">
+              <div class="gdp-badge gdp-badge-purple selected" data-country="USA">United States: 17,419</div>
+              <div class="gdp-badge gdp-badge-green" data-country="Japan">Japan: 4,601</div>
+              <div class="gdp-badge gdp-badge-red" data-country="China">China: 10,355</div>
+              <div class="gdp-badge gdp-badge-blue" data-country="Germany">Germany: 3,868</div>
+              <div class="gdp-badge gdp-badge-orange" data-country="UK">United Kingdom: 2,989</div>
             </div>
-            <div class="world-map-callouts">
-              <div class="map-callout callout-purple selected" data-country="USA" style="left: 20%; top: 38%;">
-                <div class="callout-inner">
-                  <i class="bi bi-building callout-icon"></i>
-                  <div class="callout-text"><span class="callout-name">United States</span><span class="callout-value">17,419</span></div>
-                </div>
-              </div>
-              <div class="map-callout callout-red" data-country="China" style="left: 76%; top: 40%;">
-                <div class="callout-inner">
-                  <i class="bi bi-graph-up-arrow callout-icon"></i>
-                  <div class="callout-text"><span class="callout-name">China</span><span class="callout-value">10,355</span></div>
-                </div>
-              </div>
-              <div class="map-callout callout-lime" data-country="Japan" style="left: 86%; top: 34%;">
-                <div class="callout-inner">
-                  <i class="bi bi-geo-alt callout-icon"></i>
-                  <div class="callout-text"><span class="callout-name">Japan</span><span class="callout-value">4,601</span></div>
-                </div>
-              </div>
-              <div class="map-callout callout-blue" data-country="Germany" style="left: 50%; top: 30%;">
-                <div class="callout-inner">
-                  <i class="bi bi-building callout-icon"></i>
-                  <div class="callout-text"><span class="callout-name">Germany</span><span class="callout-value">3,868</span></div>
-                </div>
-              </div>
-              <div class="map-callout callout-orange" data-country="UK" style="left: 46%; top: 26%;">
-                <div class="callout-inner">
-                  <i class="bi bi-box callout-icon"></i>
-                  <div class="callout-text"><span class="callout-name">United Kingdom</span><span class="callout-value">2,989</span></div>
-                </div>
-              </div>
-            </div>
-            <div class="world-map-selected-badge" id="selectedCountryBadge">United States</div>
+            <div class="gdp-selected-badge" id="selectedCountryBadge">United States</div>
           </div>
+          <div id="gdpTooltip" class="gdp-tooltip" style="display:none;"></div>
         </div>
         <div class="main-indicators-divider">
           <h2 class="main-indicators-title">Main economic indicators</h2>
@@ -167,7 +137,7 @@
                 <td>—</td>
                 <td class="val-positive">0.52</td>
               </tr>
-              <tr class="country-row" data-country="Germany">
+              <tr class="country-row country-row-highlight" data-country="Germany">
                 <td><strong>Germany</strong></td>
                 <td>3,868</td>
                 <td class="val-positive">1.6</td>
@@ -1241,6 +1211,7 @@
   <script src="../assets/js/sidebar-toggle.js" defer></script>
   <script src="../components/navigation/load-nav.js" defer></script>
   <script src="../components/notifications/notifications-sidebar.js" defer></script>
+  <script src="../assets/js/gdp-heatmap.js" defer></script>
   <script src="market-analysis.js" defer></script>
 </body>
 </html>
