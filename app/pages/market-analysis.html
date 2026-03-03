@@ -70,10 +70,16 @@
             <i class="bi bi-globe2"></i>
             Global GDP Distribution
           </h2>
+          <div class="gdp-kpi-bar">
+            <div class="gdp-kpi-item"><span class="gdp-kpi-label">Total GDP</span><span class="gdp-kpi-value">$142T</span></div>
+            <div class="gdp-kpi-item"><span class="gdp-kpi-label">Top Economy</span><span class="gdp-kpi-value">USA 17.4T</span></div>
+            <div class="gdp-kpi-item"><span class="gdp-kpi-label">Countries</span><span class="gdp-kpi-value">195</span></div>
+          </div>
           <div class="gdp-heatmap-container">
-            <svg class="gdp-heatmap-svg" id="gdpHeatmapSvg" viewBox="0 0 1000 400" preserveAspectRatio="xMidYMid meet">
-              <!-- Country regions drawn by JS -->
-            </svg>
+            <div class="gdp-map-wrapper">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1200px-Equirectangular_projection_SW.jpg" alt="World Map" class="gdp-world-map-img">
+              <div class="gdp-map-dots" id="gdpMapDots"></div>
+            </div>
             <div class="gdp-heatmap-badges">
               <div class="gdp-badge gdp-badge-purple selected" data-country="USA">United States: 17,419</div>
               <div class="gdp-badge gdp-badge-green" data-country="Japan">Japan: 4,601</div>

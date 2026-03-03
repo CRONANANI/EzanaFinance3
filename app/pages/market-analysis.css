@@ -31,18 +31,90 @@
   color: var(--primary);
 }
 
+.gdp-kpi-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0.75rem 1rem;
+  background: rgba(13, 20, 37, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.gdp-kpi-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.gdp-kpi-label {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.gdp-kpi-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
 .gdp-heatmap-container {
   position: relative;
   background: linear-gradient(135deg, #0d1425 0%, #1a1a2e 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: visible;
 }
 
-.gdp-heatmap-svg {
+.gdp-map-wrapper {
+  position: relative;
   width: 100%;
-  height: 400px;
-  display: block;
+  aspect-ratio: 2 / 1;
+  min-height: 280px;
+  max-height: 450px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gdp-world-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: brightness(0.4) contrast(1.2) saturate(0.8);
+}
+
+.gdp-map-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gdp-map-dots .gdp-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.9);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.gdp-map-dots .gdp-dot-clickable {
+  cursor: pointer;
+  background: rgba(16, 185, 129, 0.9);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.gdp-map-dots .gdp-dot-clickable:hover {
+  background: rgba(16, 185, 129, 1);
+  transform: translate(-50%, -50%) scale(1.5);
 }
 
 .gdp-heatmap-badges {
@@ -115,8 +187,9 @@
 .gdp-tooltip-row.negative { color: #ef4444; }
 
 @media (max-width: 768px) {
-  .gdp-heatmap-svg {
-    height: 300px;
+  .gdp-map-wrapper {
+    min-height: 220px;
+    max-height: 320px;
   }
   .gdp-badge {
     font-size: 0.6875rem;
