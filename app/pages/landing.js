@@ -16,7 +16,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Contact support modal - legacy compatibility
+// Contact support modal - legacy compatibility (also used by inline onclick)
 function openContactForm() {
     var dialog = document.getElementById('supportDialog');
     if (dialog) {
@@ -25,6 +25,8 @@ function openContactForm() {
         document.body.style.overflow = 'hidden';
     }
 }
+// Expose globally for inline handlers
+window.openContactForm = openContactForm;
 
 function closeContactForm() {
     var dialog = document.getElementById('supportDialog');
