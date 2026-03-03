@@ -522,3 +522,272 @@
 @media (max-width: 767px) {
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================
+   MY FRIENDS CARD - League & Ranked Design
+   ============================================ */
+
+.my-friends-card .card-header {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.add-friend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-friend-btn:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* League hexagon tiers */
+.league-tiers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.league-hexagon {
+  width: 32px;
+  height: 36px;
+  background: var(--muted);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+}
+
+.league-hexagon.league-unlocked {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.league-hexagon.league-current {
+  width: 36px;
+  height: 40px;
+  font-size: 0.85rem;
+  background: rgba(16, 185, 129, 0.25);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.league-hexagon.league-locked {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.league-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground);
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+/* Rank toggle (Local Rank / Friend Rank) */
+.rank-toggle {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: var(--muted);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+}
+
+.rank-tab {
+  flex: 1;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rank-tab:hover {
+  color: var(--foreground);
+}
+
+.rank-tab.active {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: var(--shadow-sm);
+}
+
+/* User stats row (Streak + League) */
+.user-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.user-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.user-stat-card i {
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.user-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.user-stat-label {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+}
+
+/* Ranked friends list */
+.friends-ranked-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 0.75rem;
+}
+
+.friend-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.friend-rank-item:hover {
+  background: var(--accent);
+  border-color: var(--primary);
+}
+
+.friend-rank-item.friend-rank-you {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.friend-rank-badge {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--card);
+  color: var(--muted-foreground);
+  border-radius: 50%;
+}
+
+.friend-rank-badge.rank-1 {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #fff;
+  font-size: 0.65rem;
+}
+
+.friend-rank-badge.rank-2 {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  color: #fff;
+  font-size: 0.65rem;
+}
+
+.friend-rank-badge.rank-3 {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #fff;
+  font-size: 0.65rem;
+}
+
+.friend-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 50%;
+}
+
+.friend-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.friend-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.friend-streak {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.friend-streak i {
+  color: var(--primary);
+  font-size: 0.75rem;
+}
+
+.view-all-friends-btn {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-all-friends-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}

@@ -180,52 +180,104 @@
             </div>
         </div>
 
-        <!-- Friends List Card -->
-        <div class="component-card">
+        <!-- My Friends Card - League & Ranked Friends -->
+        <div class="component-card my-friends-card">
             <div class="card-header">
                 <h3><i class="bi bi-people-fill"></i> My Friends</h3>
-            </div>
-            <div class="card-body">
-            <p class="text-muted-foreground mb-6">View and manage your current connections</p>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm text-muted-foreground">Total Friends:</span>
-                    <span class="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">47</span>
-                </div>
-                <div id="friends-list" class="space-y-3 max-h-48 overflow-y-auto">
-                    <!-- Sample friends -->
-                    <div class="flex items-center space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
-                        <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
-                            <span class="text-accent-foreground text-sm font-bold">AJ</span>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm text-foreground font-medium">Alex Johnson</div>
-                            <div class="text-xs text-primary">Online • +15.2% this month</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
-                        <div class="w-10 h-10 bg-chart-3 rounded-xl flex items-center justify-center">
-                            <span class="text-chart-2 text-sm font-bold">SC</span>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm text-foreground font-medium">Sarah Chen</div>
-                            <div class="text-xs text-muted-foreground">2h ago • +8.7% this month</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
-                        <div class="w-10 h-10 bg-chart-5 rounded-xl flex items-center justify-center">
-                            <span class="text-chart-2 text-sm font-bold">MB</span>
-                        </div>
-                        <div class="flex-1">
-                            <div class="text-sm text-foreground font-medium">Mike Brown</div>
-                            <div class="text-xs text-muted-foreground">1d ago • +22.1% this month</div>
-                        </div>
-                    </div>
-                </div>
-                <button onclick="viewAllFriends()" class="w-full bg-primary text-primary-foreground py-3 rounded-xl hover:bg-opacity-90 transition-colors text-sm font-medium">
-                    View All Friends
+                <button type="button" class="add-friend-btn" onclick="addFriend()">
+                    <i class="bi bi-person-plus"></i> Add a new friend
                 </button>
             </div>
+            <div class="card-body">
+                <!-- League Tiers -->
+                <div class="league-tiers">
+                    <div class="league-hexagon league-unlocked" title="Ruby League">
+                        <i class="bi bi-gem"></i>
+                    </div>
+                    <div class="league-hexagon league-current" title="Emerald League">
+                        <i class="bi bi-gem"></i>
+                    </div>
+                    <div class="league-hexagon league-locked" title="Locked">
+                        <i class="bi bi-lock"></i>
+                    </div>
+                    <div class="league-hexagon league-locked" title="Locked">
+                        <i class="bi bi-lock"></i>
+                    </div>
+                    <div class="league-hexagon league-locked" title="Locked">
+                        <i class="bi bi-lock"></i>
+                    </div>
+                </div>
+                <div class="league-title">Emerald League</div>
+                <!-- Rank Toggle -->
+                <div class="rank-toggle">
+                    <button type="button" class="rank-tab active" data-rank="local" onclick="setFriendRankView('local')">Local Rank</button>
+                    <button type="button" class="rank-tab" data-rank="friend" onclick="setFriendRankView('friend')">Friend Rank</button>
+                </div>
+                <!-- User Stats (Streak + League) -->
+                <div class="user-stats-row">
+                    <div class="user-stat-card">
+                        <i class="bi bi-fire text-primary"></i>
+                        <span class="user-stat-value">354</span>
+                        <span class="user-stat-label">days</span>
+                    </div>
+                    <div class="user-stat-card">
+                        <i class="bi bi-gem"></i>
+                        <span class="user-stat-value">Emerald</span>
+                        <span class="user-stat-label">League</span>
+                    </div>
+                </div>
+                <!-- Ranked Friends List -->
+                <div class="friends-ranked-list" id="friends-ranked-list">
+                    <div class="friend-rank-item">
+                        <div class="friend-rank-badge rank-1"><i class="bi bi-trophy-fill"></i></div>
+                        <div class="friend-avatar">EM</div>
+                        <div class="friend-info">
+                            <span class="friend-name">Eric Morrison</span>
+                            <span class="friend-streak"><i class="bi bi-fire"></i> 410 days</span>
+                        </div>
+                    </div>
+                    <div class="friend-rank-item">
+                        <div class="friend-rank-badge rank-2"><i class="bi bi-trophy-fill"></i></div>
+                        <div class="friend-avatar">JM</div>
+                        <div class="friend-info">
+                            <span class="friend-name">Joseph Morrison</span>
+                            <span class="friend-streak"><i class="bi bi-fire"></i> 328 days</span>
+                        </div>
+                    </div>
+                    <div class="friend-rank-item">
+                        <div class="friend-rank-badge rank-3"><i class="bi bi-trophy-fill"></i></div>
+                        <div class="friend-avatar">JM</div>
+                        <div class="friend-info">
+                            <span class="friend-name">John Morrison</span>
+                            <span class="friend-streak"><i class="bi bi-fire"></i> 256 days</span>
+                        </div>
+                    </div>
+                    <div class="friend-rank-item">
+                        <div class="friend-rank-badge">4</div>
+                        <div class="friend-avatar">EM</div>
+                        <div class="friend-info">
+                            <span class="friend-name">Emily Morrison</span>
+                            <span class="friend-streak"><i class="bi bi-fire"></i> 142 days</span>
+                        </div>
+                    </div>
+                    <div class="friend-rank-item friend-rank-you">
+                        <div class="friend-rank-badge">5</div>
+                        <div class="friend-avatar">DL</div>
+                        <div class="friend-info">
+                            <span class="friend-name">Diana Larussa</span>
+                            <span class="friend-streak"><i class="bi bi-fire"></i> 354 days</span>
+                        </div>
+                    </div>
+                    <div class="friend-rank-item">
+                        <div class="friend-rank-badge">6</div>
+                        <div class="friend-avatar">CL</div>
+                        <div class="friend-info">
+                            <span class="friend-name">Cathy Morrison</span>
+                            <span class="friend-streak"><i class="bi bi-fire"></i> 89 days</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="viewAllFriends()" class="view-all-friends-btn">View All Friends</button>
             </div>
         </div>
 
@@ -522,6 +574,12 @@ document.addEventListener('DOMContentLoaded', function() {
         function viewTopContributors() { /* TODO: show top contributors */ }
         function viewNewMembers() { /* TODO: show new members */ }
         function addFriend() { /* TODO: open add friend flow */ }
+        function setFriendRankView(rank) {
+            document.querySelectorAll('.rank-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.rank === rank);
+            });
+            /* TODO: switch between local rank and friend rank data */
+        }
         function viewFriendsActivity() { /* TODO: scroll/focus to Friends Activity card */ }
         function viewLeaderboard() { /* TODO: scroll/focus to Leaderboard */ }
         function viewMyStats() { /* TODO: show user stats */ }
