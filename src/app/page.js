@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import '../../app/pages/landing.css';
 import '../../app/components/landing/features-section.css';
-import '../../app/components/landing/faq-section.css';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { FAQSection } from '@/components/landing/FAQSection';
+import { Faq1 } from '@/components/ui/faq1';
 
 export default function HomePage() {
   return (
@@ -24,7 +23,7 @@ export default function HomePage() {
       </div>
 
       <section id="faq" className="faq-section-wrapper">
-        <FAQSection />
+        <Faq1 heading="Frequently asked questions" />
       </section>
 
       <footer className="landing-footer">
