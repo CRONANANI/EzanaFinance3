@@ -230,6 +230,93 @@
 }
 
 /* ============================================
+   FAQ1 STYLE (shadcn-style flat accordion)
+   ============================================ */
+
+.faq1-style .faq1-container {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .faq1-style .faq1-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .faq1-style .faq1-container {
+    padding: 0 2rem;
+  }
+}
+
+.faq1-heading {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .faq1-heading {
+    font-size: 3rem;
+    margin-bottom: 2.75rem;
+  }
+}
+
+.faq1-accordion {
+  width: 100%;
+}
+
+.faq1-style .faq1-accordion .faq-item {
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+.faq1-style .faq1-accordion .faq-item:hover {
+  border-color: rgba(16, 185, 129, 0.1);
+  box-shadow: none;
+}
+
+.faq1-style .faq-question {
+  padding: 1rem 0;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.faq1-style .faq-question:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.faq1-style .question-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.faq1-style .faq-item.active .faq-icon {
+  transform: rotate(180deg);
+  color: #10b981;
+}
+
+.faq1-style .answer-content {
+  padding: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.faq1-style .faq-footer {
+  margin-top: 4rem;
+}
+
+/* ============================================
    FAQ ANSWER (COLLAPSIBLE CONTENT)
    ============================================ */
 
