@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Stock quotes - read-only for authenticated users
+    match /stockQuotes/{symbol} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only backend can write
+    }
+    
+    // Congress trades - read-only
+    match /congressTrades/{tradeId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    
+    // Default: deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

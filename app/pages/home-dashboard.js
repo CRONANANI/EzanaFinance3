@@ -546,4 +546,127 @@ class PortfolioDashboard {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.portfolioDashboard = new PortfolioDashboard();
+  initLiveMarketData();
 });
+
+/**
+ * Live Market Data Integration
+ * Loads market movers, news, and enhanced chart data from
+ * Alpha Vantage, FMP, and News API via MarketDataService.
+ */
+function initLiveMarketData() {
+  if (!window.MarketDataService) return;
+  loadMarketMovers();
+  loadLiveNews();
+  enhanceDashboardWithLiveQuotes();
+}
+
+async function loadMarketMovers() {
+  var svc = window.MarketDataService;
+  if (!svc) return;
+  try {
+    var movers = await svc.getMarketMovers();
+    var section = document.getElementById('marketMoversSection');
+    if (section) section.style.display = '';
+    renderMoversList('topGainersList', movers.gainers, true);
+    renderMoversList('topLosersList', movers.losers, false);
+    renderMoversList('mostActiveList', movers.actives, null);
+  } catch (e) {
+    console.warn('Market movers load failed:', e);
+  }
+}
+
+function renderMoversList(elId, items, isPositive) {
+  var el = document.getElementById(elId);
+  if (!el || !items || !items.length) return;
+  var html = '';
+  var list = items.slice(0, 5);
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i];
+    var sym = item.symbol || item.ticker || '';
+    var price = item.price || 0;
+    var pct = item.changesPercentage || item.changePercent || 0;
+    var cls = pct >= 0 ? 'positive' : 'negative';
+    if (isPositive !== null) cls = isPositive ? 'positive' : 'negative';
+    var sign = pct >= 0 ? '+' : '';
+    html += '<div class="mover-item">' +
+      '<span class="mover-symbol">' + sym + '</span>' +
+      '<span class="mover-price">$' + Number(price).toFixed(2) + '</span>' +
+      '<span class="mover-change ' + cls + '">' + sign + Number(pct).toFixed(2) + '%</span>' +
+    '</div>';
+  }
+  el.innerHTML = html;
+}
+
+async function loadLiveNews() {
+  var svc = window.MarketDataService;
+  if (!svc) return;
+  try {
+    var articles = await svc.getMarketNews(8);
+    renderLiveNews(articles);
+  } catch (e) {
+    console.warn('Live news load failed:', e);
+  }
+  var btn = document.getElementById('refreshNewsBtn');
+  if (btn) btn.addEventListener('click', loadLiveNews);
+}
+
+function renderLiveNews(articles) {
+  var el = document.getElementById('liveNewsList');
+  if (!el || !articles || !articles.length) return;
+  var html = '';
+  for (var i = 0; i < articles.length; i++) {
+    var a = articles[i];
+    var time = a.publishedAt ? timeAgo(new Date(a.publishedAt)) : '';
+    html += '<a class="live-news-item" href="' + (a.url || '#') + '" target="_blank" rel="noopener">' +
+      '<div class="news-item-content">' +
+        '<div class="news-item-title">' + escapeHtml(a.title || '') + '</div>' +
+        '<div class="news-item-meta"><span class="news-source">' + escapeHtml(a.source || '') + '</span> <span class="news-time">' + time + '</span></div>' +
+      '</div>' +
+    '</a>';
+  }
+  el.innerHTML = html;
+}
+
+async function enhanceDashboardWithLiveQuotes() {
+  var svc = window.MarketDataService;
+  if (!svc) return;
+  try {
+    var quotes = await svc.getBatchQuotes(['NVDA', 'AAPL', 'MSFT', 'TSLA', 'AMZN', 'GOOGL']);
+    if (quotes && quotes.length) {
+      var bySymbol = {};
+      quotes.forEach(function(q) { bySymbol[q.symbol] = q; });
+      if (window.portfolioDashboard) {
+        window.portfolioDashboard.updateMetricCards(adaptQuotes(bySymbol));
+        window.portfolioDashboard.updateTopHoldings(adaptQuotes(bySymbol));
+      }
+    }
+  } catch (e) {
+    console.warn('Live quotes enhancement failed:', e);
+  }
+}
+
+function adaptQuotes(bySymbol) {
+  var adapted = {};
+  Object.keys(bySymbol).forEach(function(sym) {
+    var q = bySymbol[sym];
+    adapted[sym] = { current_price: q.price, change_percent: q.changePercent };
+  });
+  return adapted;
+}
+
+function timeAgo(date) {
+  var s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return s + 's ago';
+  var m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ago';
+  var h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+
+function escapeHtml(text) {
+  var d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}

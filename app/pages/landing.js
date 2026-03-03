@@ -123,6 +123,36 @@ function PricingToggle() {
     });
 }
 
+/** PricingToggleNew - shadcn-style monthly/yearly pill */
+function PricingToggleNew() {
+    var pill = document.getElementById('pricingTogglePill');
+    if (!pill) return;
+    var btns = pill.querySelectorAll('button');
+    var monthlyPrices = document.querySelectorAll('.pricing-section-new .monthly-price');
+    var yearlyPrices = document.querySelectorAll('.pricing-section-new .yearly-price');
+    var periods = document.querySelectorAll('.pricing-section-new .pricing-card-new:not([data-plan="free"]) .pricing-card-price .period');
+    var proBadge = document.getElementById('proDiscountBadge');
+    var familyBadge = document.getElementById('familyDiscountBadge');
+
+    function setFreq(freq) {
+        btns.forEach(function (b) { b.classList.toggle('active', b.dataset.freq === freq); });
+        var isYearly = freq === 'yearly';
+        monthlyPrices.forEach(function (p) { p.style.display = isYearly ? 'none' : 'inline'; });
+        yearlyPrices.forEach(function (p) { p.style.display = isYearly ? 'inline' : 'none'; });
+        periods.forEach(function (p) {
+            p.textContent = isYearly ? '/year' : '/month';
+        });
+        if (proBadge) proBadge.style.display = isYearly ? 'inline-flex' : 'none';
+        if (familyBadge) familyBadge.style.display = isYearly ? 'inline-flex' : 'none';
+    }
+
+    btns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            setFreq(btn.dataset.freq);
+        });
+    });
+}
+
 /** SupportDialog - Contact Support modal */
 function SupportDialog() {
     var dialog = document.getElementById('supportDialog');
@@ -417,6 +447,7 @@ function ResourcesCarousel() {
 function initLanding() {
     if (document.getElementById('carouselTrack')) IntelligenceCarousel();
     if (document.querySelector('.pricing-toggle')) PricingToggle();
+    if (document.getElementById('pricingTogglePill')) PricingToggleNew();
     SupportDialog();
     SalesDialog();
 

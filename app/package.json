@@ -1,0 +1,16 @@
+{
+  "name": "ezana-finance-webapp",
+  "version": "1.0.0",
+  "description": "Ezana Finance static web app",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "start": "npx serve dist -s -l 8080"
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

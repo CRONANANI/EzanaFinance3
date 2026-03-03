@@ -19,6 +19,10 @@ module.exports = {
         muted: 'rgba(17, 24, 39, 0.4)',
         'muted-foreground': '#6b7280',
         border: 'rgba(16, 185, 129, 0.1)',
+        input: 'rgba(17, 24, 39, 0.6)',
+        ring: '#10b981',
+        popover: 'rgba(26, 35, 50, 0.98)',
+        'popover-foreground': '#ffffff',
       },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
@@ -45,5 +49,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };

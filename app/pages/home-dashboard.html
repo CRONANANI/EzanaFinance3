@@ -439,6 +439,54 @@
         </section>
       </div>
 
+      <!-- Market Movers Section (live data from FMP/Alpha Vantage) -->
+      <div class="additional-components-grid" id="marketMoversSection" style="display:none;">
+        <section class="component-card">
+          <div class="card-header">
+            <h3><i class="bi bi-graph-up-arrow"></i> Top Gainers</h3>
+            <span class="badge-live">LIVE</span>
+          </div>
+          <div class="card-body">
+            <div class="movers-list" id="topGainersList">
+              <div class="loading-placeholder">Loading market data...</div>
+            </div>
+          </div>
+        </section>
+        <section class="component-card">
+          <div class="card-header">
+            <h3><i class="bi bi-graph-down-arrow"></i> Top Losers</h3>
+            <span class="badge-live">LIVE</span>
+          </div>
+          <div class="card-body">
+            <div class="movers-list" id="topLosersList">
+              <div class="loading-placeholder">Loading market data...</div>
+            </div>
+          </div>
+        </section>
+        <section class="component-card">
+          <div class="card-header">
+            <h3><i class="bi bi-lightning-charge"></i> Most Active</h3>
+            <span class="badge-live">LIVE</span>
+          </div>
+          <div class="card-body">
+            <div class="movers-list" id="mostActiveList">
+              <div class="loading-placeholder">Loading market data...</div>
+            </div>
+          </div>
+        </section>
+        <section class="component-card" style="grid-column: span 1;">
+          <div class="card-header">
+            <h3><i class="bi bi-newspaper"></i> Market News</h3>
+            <button class="card-action-btn" id="refreshNewsBtn">Refresh</button>
+          </div>
+          <div class="card-body">
+            <div class="live-news-list" id="liveNewsList">
+              <div class="loading-placeholder">Loading news...</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <!-- Learning Opportunities -->
       <section class="learning-opportunities">
         <div class="learning-header">
@@ -521,6 +569,12 @@
     </div>
   </main>
 
+  <script src="../js/api-config.js" defer></script>
+  <script src="../assets/js/api-cache.js" defer></script>
+  <script src="../assets/js/alpha-vantage-api.js" defer></script>
+  <script src="../assets/js/fmp-api.js" defer></script>
+  <script src="../assets/js/news-api.js" defer></script>
+  <script src="../assets/js/market-data-service.js" defer></script>
   <script src="../assets/js/theme-toggle.js" defer></script>
   <script src="../assets/js/finnhub-api.js" defer></script>
   <script src="../components/navigation/load-nav.js" defer></script>
