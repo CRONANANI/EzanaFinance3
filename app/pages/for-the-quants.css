@@ -12,6 +12,13 @@
 
 .hero-content { flex: 1; min-width: 200px; }
 
+/* Stats grid condensed - matches watchlist/community */
+.stats-grid.condensed { gap: 0.9rem; margin-bottom: 1.2rem; }
+.stats-grid.condensed .stat-card { padding: 0.9rem; }
+.stats-grid.condensed .stat-icon { width: 28.8px; height: 28.8px; font-size: 0.9rem; }
+.stats-grid.condensed .stat-value { font-size: 1.05rem; }
+.stats-grid.condensed .stat-label { font-size: 0.7rem; }
+
 /* Stat icon variants for Quants page */
 .stat-icon.quants { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
 .stat-icon.performance { background: rgba(16, 185, 129, 0.2); color: #10b981; }

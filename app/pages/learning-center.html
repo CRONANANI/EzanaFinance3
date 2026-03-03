@@ -49,21 +49,42 @@
   <main class="dashboard-main">
     <div class="dashboard-container page-content">
 
-      <div class="progress-overview">
-        <div class="component-card progress-card">
-          <div class="card-header">
-            <h3><i class="bi bi-graph-up-arrow"></i> Your Learning Progress</h3>
+      <!-- Learning Stats - dashboard metric-card style -->
+      <div class="stats-grid condensed">
+        <div class="stat-card">
+          <div class="stat-icon members">
+            <i class="bi bi-percent"></i>
           </div>
-          <div class="card-body">
-            <div class="overall-progress">
-              <div class="progress-stats">
-                <div class="stat-group"><span class="stat-number">67%</span><span class="stat-label">Overall Completion</span></div>
-                <div class="stat-group"><span class="stat-number">28</span><span class="stat-label">Hours Learned</span></div>
-                <div class="stat-group"><span class="stat-number">15</span><span class="stat-label">Courses Completed</span></div>
-                <div class="stat-group"><span class="stat-number">5</span><span class="stat-label">Active Streak (Days)</span></div>
-              </div>
-              <div class="progress-bar-large"><div class="progress-fill" style="width: 67%"></div></div>
-            </div>
+          <div class="stat-content">
+            <div class="stat-value">67%</div>
+            <div class="stat-label">Overall Completion</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon posts">
+            <i class="bi bi-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">28</div>
+            <div class="stat-label">Hours Learned</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon engagement">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">15</div>
+            <div class="stat-label">Courses Completed</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon experts">
+            <i class="bi bi-fire"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">5</div>
+            <div class="stat-label">Active Streak (Days)</div>
           </div>
         </div>
       </div>

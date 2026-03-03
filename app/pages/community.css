@@ -194,6 +194,90 @@
   margin-bottom: 2rem;
 }
 
+.stats-grid.condensed {
+  gap: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+
+.stats-grid.condensed .stat-card {
+  padding: 0.9rem;
+}
+
+.stats-grid.condensed .stat-icon {
+  width: 28.8px;
+  height: 28.8px;
+  font-size: 0.9rem;
+}
+
+.stats-grid.condensed .stat-value {
+  font-size: 1.05rem;
+}
+
+.stats-grid.condensed .stat-label {
+  font-size: 0.7rem;
+}
+
+/* Community features grid - matches dashboard 2fr 1fr layout */
+.community-features-grid {
+  grid-template-columns: 2fr 1fr;
+  margin-bottom: 1.5rem;
+}
+
+.community-features-grid .component-card:first-child {
+  grid-row: span 2;
+}
+
+/* Community actions grid - 4 action buttons */
+.community-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.community-action-btn {
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  padding: 1.5rem;
+  display: block;
+  width: 100%;
+  font-family: inherit;
+}
+
+/* Community insights grid */
+.community-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+/* Community discussions grid - 2fr 1fr like dashboard */
+.community-discussions-grid {
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1023px) {
+  .community-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .community-features-grid .component-card:first-child {
+    grid-row: span 1;
+  }
+  .community-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .community-insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .community-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-card {
   background: var(--card);
   border: 1px solid var(--card-border);
