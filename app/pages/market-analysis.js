@@ -44,20 +44,47 @@ function startMarketStatPolling() {
   return setInterval(poll, MARKET_POLL_INTERVAL_MS);
 }
 
+const COUNTRY_LABELS = {
+  USA: 'United States',
+  China: 'China',
+  Japan: 'Japan',
+  Germany: 'Germany',
+  UK: 'United Kingdom'
+};
+
 class MarketAnalysis {
   constructor() {
     this.tabs = document.querySelectorAll('.analysis-tab');
     this.contents = document.querySelectorAll('.tab-content');
+    this.selectedCountry = 'USA';
     
     this.init();
   }
   
   init() {
     this.attachTabListeners();
+    this.attachCountryRowListeners();
     this.setupDashboardSidebarSync();
     this.marketStatInterval = startMarketStatPolling();
     window.addEventListener('beforeunload', () => {
       if (this.marketStatInterval) clearInterval(this.marketStatInterval);
+    });
+  }
+  
+  attachCountryRowListeners() {
+    const rows = document.querySelectorAll('.main-indicators-table .country-row');
+    const badge = document.getElementById('selectedCountryBadge');
+    const labelEl = document.getElementById('topMoversCountryLabel');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const country = row.dataset.country;
+        this.selectedCountry = country;
+        rows.forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+        const label = COUNTRY_LABELS[country] || country;
+        if (badge) badge.textContent = label;
+        if (labelEl) labelEl.textContent = label;
+      });
     });
   }
 

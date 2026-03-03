@@ -3,6 +3,138 @@
    Match home dashboard / watchlist layout exactly
    ============================================ */
 
+/* TOP: World Map + Main Economic Indicators */
+.market-analysis-hero {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.world-map-card {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+}
+
+.world-map-container {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+}
+
+.world-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.35) contrast(1.1) saturate(0.8);
+}
+
+.world-map-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 20, 25, 0.3) 100%);
+  pointer-events: none;
+}
+
+.world-map-selected-badge {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.9);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.main-indicators-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.main-indicators-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.main-indicators-table-wrap {
+  overflow-x: auto;
+}
+
+.main-indicators-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.main-indicators-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  background: rgba(17, 24, 39, 0.6);
+  color: var(--muted-foreground);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.main-indicators-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.main-indicators-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.main-indicators-table .country-row {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.main-indicators-table .country-row:hover {
+  background: var(--accent);
+}
+
+.main-indicators-table .country-row.selected {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.main-indicators-table .val-positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.main-indicators-table .val-negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Stats row - 3 cards */
+.market-stats-row {
+  margin-bottom: 1.5rem;
+}
+
+.stats-row-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+  .stats-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Same sidebar margin as home dashboard - open and collapsed */
 body.market-analysis-page .market-analysis-main.dashboard-main {
   margin-left: 0;

@@ -63,60 +63,96 @@
   <main class="dashboard-main market-analysis-main">
     <div class="dashboard-container market-analysis-container">
       
-      <!-- Market Overview Stats -->
-      <div class="stats-grid condensed">
-        <div class="stat-card" data-symbol="SPY">
-          <div class="stat-icon market">
-            <i class="bi bi-graph-up-arrow"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="marketSp500Value">4,783.45</div>
-            <div class="stat-label">S&P 500</div>
-            <div class="stat-change positive" id="marketSp500Change">+1.2% Today</div>
+      <!-- TOP: World Map + Main Economic Indicators (default: United States) -->
+      <section class="market-analysis-hero">
+        <div class="world-map-card">
+          <div class="world-map-container" id="worldMapContainer">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1200px-Equirectangular_projection_SW.jpg" alt="World Map" class="world-map-img">
+            <div class="world-map-overlay"></div>
+            <div class="world-map-selected-badge" id="selectedCountryBadge">United States</div>
           </div>
         </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon volume">
-            <i class="bi bi-bar-chart"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="marketVolumeValue">$847B</div>
-            <div class="stat-label">Daily Volume</div>
-            <div class="stat-change positive" id="marketVolumeChange">+8% vs Avg</div>
-          </div>
+        <div class="main-indicators-divider">
+          <h2 class="main-indicators-title">Main economic indicators</h2>
         </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon indicators">
-            <i class="bi bi-speedometer2"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="marketSentimentValue">62</div>
-            <div class="stat-label">Market Sentiment</div>
-            <div class="stat-change" id="marketSentimentChange">Bullish</div>
-          </div>
+        <div class="main-indicators-table-wrap">
+          <table class="main-indicators-table">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>GDP</th>
+                <th>GDP Growth</th>
+                <th>Industrial Production</th>
+                <th>Interest Rate</th>
+                <th>Inflation</th>
+                <th>Budget</th>
+                <th>Debt</th>
+                <th>Current Account</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="country-row selected" data-country="USA">
+                <td><strong>USA</strong></td>
+                <td>17,419</td>
+                <td class="val-positive">2.39</td>
+                <td>—</td>
+                <td class="val-positive">1.77</td>
+                <td class="val-positive">1.62</td>
+                <td class="val-negative">-4.92</td>
+                <td class="val-positive">96.14</td>
+                <td class="val-negative">-2.24</td>
+              </tr>
+              <tr class="country-row" data-country="China">
+                <td><strong>China</strong></td>
+                <td>10,355</td>
+                <td class="val-positive">7.27</td>
+                <td class="val-positive">7.3</td>
+                <td class="val-positive">4.71</td>
+                <td class="val-positive">2</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+              <tr class="country-row" data-country="Japan">
+                <td><strong>Japan</strong></td>
+                <td>4,601</td>
+                <td class="val-negative">-0.1</td>
+                <td>—</td>
+                <td class="val-negative">-10.73</td>
+                <td class="val-positive">2.75</td>
+                <td>—</td>
+                <td>—</td>
+                <td class="val-positive">0.52</td>
+              </tr>
+              <tr class="country-row" data-country="Germany">
+                <td><strong>Germany</strong></td>
+                <td>3,868</td>
+                <td class="val-positive">1.6</td>
+                <td class="val-positive">1.76</td>
+                <td>—</td>
+                <td class="val-positive">0.91</td>
+                <td>—</td>
+                <td>—</td>
+                <td class="val-positive">7.51</td>
+              </tr>
+              <tr class="country-row" data-country="UK">
+                <td><strong>UK</strong></td>
+                <td>2,989</td>
+                <td class="val-positive">2.94</td>
+                <td class="val-positive">2.9</td>
+                <td class="val-negative">-1.19</td>
+                <td class="val-positive">1.46</td>
+                <td>—</td>
+                <td>—</td>
+                <td class="val-negative">-5.82</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon performance">
-            <i class="bi bi-trophy"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value" id="marketTopMoverValue">+18.4%</div>
-            <div class="stat-label">Top Mover</div>
-            <div class="stat-change positive" id="marketTopMoverChange">—</div>
-          </div>
-        </div>
-      </div>
+      </section>
       
-      <!-- Tab Navigation -->
       <div class="analysis-tabs">
-        <button class="analysis-tab active" data-tab="market">
-          <i class="bi bi-graph-up"></i>
-          Market Analysis
-        </button>
-        <button class="analysis-tab" data-tab="economic">
+        <button class="analysis-tab active" data-tab="economic">
           <i class="bi bi-currency-dollar"></i>
           Economic Indicators
         </button>
@@ -126,307 +162,8 @@
         </button>
       </div>
       
-      <!-- MARKET ANALYSIS TAB -->
-      <div class="tab-content active" data-content="market">
-        
-        <!-- Sector Heatmap -->
-        <div class="component-card full-width">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-grid-3x3"></i>
-              Sector Performance Heatmap
-            </h3>
-            <div class="header-actions">
-              <select class="filter-select">
-                <option>Today</option>
-                <option>1 Week</option>
-                <option>1 Month</option>
-                <option>YTD</option>
-              </select>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="heatmap-grid">
-              <div class="sector-cell positive-strong" data-sector="technology">
-                <div class="sector-name">Technology</div>
-                <div class="sector-change">+3.2%</div>
-              </div>
-              <div class="sector-cell positive" data-sector="healthcare">
-                <div class="sector-name">Healthcare</div>
-                <div class="sector-change">+1.8%</div>
-              </div>
-              <div class="sector-cell positive" data-sector="financials">
-                <div class="sector-name">Financials</div>
-                <div class="sector-change">+1.4%</div>
-              </div>
-              <div class="sector-cell positive-light" data-sector="consumer">
-                <div class="sector-name">Consumer</div>
-                <div class="sector-change">+0.7%</div>
-              </div>
-              <div class="sector-cell neutral" data-sector="industrials">
-                <div class="sector-name">Industrials</div>
-                <div class="sector-change">+0.2%</div>
-              </div>
-              <div class="sector-cell negative-light" data-sector="energy">
-                <div class="sector-name">Energy</div>
-                <div class="sector-change">-0.5%</div>
-              </div>
-              <div class="sector-cell negative" data-sector="materials">
-                <div class="sector-name">Materials</div>
-                <div class="sector-change">-1.2%</div>
-              </div>
-              <div class="sector-cell negative" data-sector="utilities">
-                <div class="sector-name">Utilities</div>
-                <div class="sector-change">-1.4%</div>
-              </div>
-              <div class="sector-cell negative-strong" data-sector="real-estate">
-                <div class="sector-name">Real Estate</div>
-                <div class="sector-change">-2.1%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Market Movers Grid -->
-        <div class="page-grid-2">
-          
-          <!-- Top Gainers -->
-          <div class="component-card">
-            <div class="card-header">
-              <h3>
-                <i class="bi bi-arrow-up-circle"></i>
-                Top Gainers
-              </h3>
-              <a href="#" class="view-all">View All</a>
-            </div>
-            <div class="card-body">
-              <div class="movers-list">
-                <div class="mover-item" data-symbol="NVDA">
-                  <div class="mover-info">
-                    <div class="mover-symbol">NVDA</div>
-                    <div class="mover-name">NVIDIA Corporation</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$485.20</div>
-                    <div class="mover-change positive">+12.4%</div>
-                  </div>
-                </div>
-                <div class="mover-item">
-                  <div class="mover-info">
-                    <div class="mover-symbol">AMD</div>
-                    <div class="mover-name">Advanced Micro Devices</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$178.90</div>
-                    <div class="mover-change positive">+8.7%</div>
-                  </div>
-                </div>
-                <div class="mover-item" data-symbol="TSLA">
-                  <div class="mover-info">
-                    <div class="mover-symbol">TSLA</div>
-                    <div class="mover-name">Tesla, Inc.</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$248.50</div>
-                    <div class="mover-change positive">+6.2%</div>
-                  </div>
-                </div>
-                <div class="mover-item" data-symbol="META">
-                  <div class="mover-info">
-                    <div class="mover-symbol">META</div>
-                    <div class="mover-name">Meta Platforms</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$458.30</div>
-                    <div class="mover-change positive">+5.8%</div>
-                  </div>
-                </div>
-                <div class="mover-item" data-symbol="AAPL">
-                  <div class="mover-info">
-                    <div class="mover-symbol">AAPL</div>
-                    <div class="mover-name">Apple Inc.</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$182.30</div>
-                    <div class="mover-change positive">+4.3%</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Top Losers -->
-          <div class="component-card">
-            <div class="card-header">
-              <h3>
-                <i class="bi bi-arrow-down-circle"></i>
-                Top Losers
-              </h3>
-              <a href="#" class="view-all">View All</a>
-            </div>
-            <div class="card-body">
-              <div class="movers-list">
-                <div class="mover-item" data-symbol="XOM">
-                  <div class="mover-info">
-                    <div class="mover-symbol">XOM</div>
-                    <div class="mover-name">Exxon Mobil</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$112.40</div>
-                    <div class="mover-change negative">-5.2%</div>
-                  </div>
-                </div>
-                <div class="mover-item" data-symbol="CVX">
-                  <div class="mover-info">
-                    <div class="mover-symbol">CVX</div>
-                    <div class="mover-name">Chevron Corporation</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$158.70</div>
-                    <div class="mover-change negative">-4.8%</div>
-                  </div>
-                </div>
-                <div class="mover-item" data-symbol="BA">
-                  <div class="mover-info">
-                    <div class="mover-symbol">BA</div>
-                    <div class="mover-name">Boeing Company</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$187.20</div>
-                    <div class="mover-change negative">-3.9%</div>
-                  </div>
-                </div>
-                <div class="mover-item">
-                  <div class="mover-info">
-                    <div class="mover-symbol">GE</div>
-                    <div class="mover-name">General Electric</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$145.80</div>
-                    <div class="mover-change negative">-3.4%</div>
-                  </div>
-                </div>
-                <div class="mover-item" data-symbol="CAT">
-                  <div class="mover-info">
-                    <div class="mover-symbol">CAT</div>
-                    <div class="mover-name">Caterpillar Inc.</div>
-                  </div>
-                  <div class="mover-stats">
-                    <div class="mover-price">$287.60</div>
-                    <div class="mover-change negative">-2.8%</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-        </div>
-        
-        <!-- Major Indices -->
-        <div class="component-card full-width">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-graph-up-arrow"></i>
-              Major Indices
-            </h3>
-            <div class="header-actions">
-              <select class="filter-select">
-                <option>1 Day</option>
-                <option>1 Week</option>
-                <option>1 Month</option>
-                <option>YTD</option>
-              </select>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="indices-grid">
-              <div class="index-card" data-symbol="SPY">
-                <div class="index-name">S&P 500</div>
-                <div class="index-value">4,783.45</div>
-                <div class="index-change positive">+57.23 (+1.21%)</div>
-              </div>
-              <div class="index-card" data-symbol="DIA">
-                <div class="index-name">Dow Jones</div>
-                <div class="index-value">38,467.31</div>
-                <div class="index-change positive">+248.34 (+0.65%)</div>
-              </div>
-              <div class="index-card" data-symbol="QQQ">
-                <div class="index-name">NASDAQ</div>
-                <div class="index-value">15,387.12</div>
-                <div class="index-change positive">+187.45 (+1.23%)</div>
-              </div>
-              <div class="index-card" data-symbol="IWM">
-                <div class="index-name">Russell 2000</div>
-                <div class="index-value">2,087.43</div>
-                <div class="index-change positive">+12.84 (+0.62%)</div>
-              </div>
-              <div class="index-card" data-symbol="^VIX">
-                <div class="index-name">VIX</div>
-                <div class="index-value">14.23</div>
-                <div class="index-change negative">-0.87 (-5.76%)</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Volume Leaders -->
-        <div class="component-card">
-          <div class="card-header">
-            <h3>
-              <i class="bi bi-bar-chart-fill"></i>
-              Most Active by Volume
-            </h3>
-          </div>
-          <div class="card-body">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th>Price</th>
-                  <th>Change</th>
-                  <th>Volume</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr data-symbol="AAPL">
-                  <td><strong>AAPL</strong></td>
-                  <td class="volume-price">$182.30</td>
-                  <td class="volume-change positive">+4.3%</td>
-                  <td>128.4M</td>
-                </tr>
-                <tr data-symbol="TSLA">
-                  <td><strong>TSLA</strong></td>
-                  <td class="volume-price">$248.50</td>
-                  <td class="volume-change positive">+6.2%</td>
-                  <td>112.7M</td>
-                </tr>
-                <tr data-symbol="NVDA">
-                  <td><strong>NVDA</strong></td>
-                  <td class="volume-price">$485.20</td>
-                  <td class="volume-change positive">+12.4%</td>
-                  <td>87.3M</td>
-                </tr>
-                <tr data-symbol="AMD">
-                  <td><strong>AMD</strong></td>
-                  <td class="volume-price">$178.90</td>
-                  <td class="volume-change positive">+8.7%</td>
-                  <td>74.2M</td>
-                </tr>
-                <tr data-symbol="MSFT">
-                  <td><strong>MSFT</strong></td>
-                  <td class="volume-price">$412.80</td>
-                  <td class="volume-change positive">+2.1%</td>
-                  <td>68.9M</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        
-      </div>
-      
-      <!-- ECONOMIC INDICATORS TAB -->
-      <div class="tab-content" data-content="economic">
+      <!-- ECONOMIC INDICATORS TAB (default) -->
+      <div class="tab-content active" data-content="economic">
         
         <!-- Key Economic Indicators -->
         <div class="stats-grid">
@@ -1252,6 +989,109 @@
           
         </div>
       </div>
+      
+      <!-- S&P 500, Daily Volume, Market Sentiment Cards -->
+      <section class="market-stats-row">
+        <div class="stats-grid condensed stats-row-3">
+          <div class="stat-card" data-symbol="SPY">
+            <div class="stat-icon market">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="marketSp500Value">4,783.45</div>
+              <div class="stat-label">S&P 500</div>
+              <div class="stat-change positive" id="marketSp500Change">+1.2% Today</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon volume">
+              <i class="bi bi-bar-chart"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="marketVolumeValue">$847B</div>
+              <div class="stat-label">Daily Volume</div>
+              <div class="stat-change positive" id="marketVolumeChange">+8% vs Avg</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon indicators">
+              <i class="bi bi-speedometer2"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="marketSentimentValue">62</div>
+              <div class="stat-label">Market Sentiment</div>
+              <div class="stat-change" id="marketSentimentChange">Bullish</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Top Movers for Selected Country (default: United States) -->
+      <section class="top-movers-section">
+        <div class="component-card full-width">
+          <div class="card-header">
+            <h3>
+              <i class="bi bi-trophy"></i>
+              Top Movers — <span id="topMoversCountryLabel">United States</span>
+            </h3>
+            <a href="#" class="view-all">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="movers-list">
+              <div class="mover-item" data-symbol="NVDA">
+                <div class="mover-info">
+                  <div class="mover-symbol">NVDA</div>
+                  <div class="mover-name">NVIDIA Corporation</div>
+                </div>
+                <div class="mover-stats">
+                  <div class="mover-price">$485.20</div>
+                  <div class="mover-change positive">+12.4%</div>
+                </div>
+              </div>
+              <div class="mover-item" data-symbol="AMD">
+                <div class="mover-info">
+                  <div class="mover-symbol">AMD</div>
+                  <div class="mover-name">Advanced Micro Devices</div>
+                </div>
+                <div class="mover-stats">
+                  <div class="mover-price">$178.90</div>
+                  <div class="mover-change positive">+8.7%</div>
+                </div>
+              </div>
+              <div class="mover-item" data-symbol="TSLA">
+                <div class="mover-info">
+                  <div class="mover-symbol">TSLA</div>
+                  <div class="mover-name">Tesla, Inc.</div>
+                </div>
+                <div class="mover-stats">
+                  <div class="mover-price">$248.50</div>
+                  <div class="mover-change positive">+6.2%</div>
+                </div>
+              </div>
+              <div class="mover-item" data-symbol="META">
+                <div class="mover-info">
+                  <div class="mover-symbol">META</div>
+                  <div class="mover-name">Meta Platforms</div>
+                </div>
+                <div class="mover-stats">
+                  <div class="mover-price">$458.30</div>
+                  <div class="mover-change positive">+5.8%</div>
+                </div>
+              </div>
+              <div class="mover-item" data-symbol="AAPL">
+                <div class="mover-info">
+                  <div class="mover-symbol">AAPL</div>
+                  <div class="mover-name">Apple Inc.</div>
+                </div>
+                <div class="mover-stats">
+                  <div class="mover-price">$182.30</div>
+                  <div class="mover-change positive">+4.3%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       
       <!-- Learning Opportunities -->
       <section class="learning-opportunities">
