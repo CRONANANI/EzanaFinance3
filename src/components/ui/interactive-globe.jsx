@@ -195,11 +195,21 @@ export function InteractiveGlobe({
       const t = (Math.sin(time * 1.2 + lat1 * 0.1) + 1) / 2;
       const tx = (1 - t) * (1 - t) * sx1 + 2 * (1 - t) * t * scx + t * t * sx2;
       const ty = (1 - t) * (1 - t) * sy1 + 2 * (1 - t) * t * scy + t * t * sy2;
-
+      const dx = 2 * (1 - t) * (scx - sx1) + 2 * t * (sx2 - scx);
+      const dy = 2 * (1 - t) * (scy - sy1) + 2 * t * (sy2 - scy);
+      const angle = Math.atan2(dy, dx);
+      ctx.save();
+      ctx.translate(tx, ty);
+      ctx.rotate(angle);
       ctx.beginPath();
-      ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+      ctx.moveTo(3.5, 0);
+      ctx.lineTo(-2.5, -2);
+      ctx.lineTo(-1.5, 0);
+      ctx.lineTo(-2.5, 2);
+      ctx.closePath();
       ctx.fillStyle = markerColor;
       ctx.fill();
+      ctx.restore();
     }
 
     for (const marker of markers) {

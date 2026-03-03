@@ -167,10 +167,21 @@
         var t = (Math.sin(time * 1.2 + conn.from[0] * 0.1) + 1) / 2;
         var tx = (1 - t) * (1 - t) * s1[0] + 2 * (1 - t) * t * elev[0] + t * t * s2[0];
         var ty = (1 - t) * (1 - t) * s1[1] + 2 * (1 - t) * t * elev[1] + t * t * s2[1];
+        var dx = 2 * (1 - t) * (elev[0] - s1[0]) + 2 * t * (s2[0] - elev[0]);
+        var dy = 2 * (1 - t) * (elev[1] - s1[1]) + 2 * t * (s2[1] - elev[1]);
+        var angle = Math.atan2(dy, dx);
+        ctx.save();
+        ctx.translate(tx, ty);
+        ctx.rotate(angle);
         ctx.beginPath();
-        ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+        ctx.moveTo(3.5, 0);
+        ctx.lineTo(-2.5, -2);
+        ctx.lineTo(-1.5, 0);
+        ctx.lineTo(-2.5, 2);
+        ctx.closePath();
         ctx.fillStyle = markerColor;
         ctx.fill();
+        ctx.restore();
       }
 
       for (var m = 0; m < markers.length; m++) {

@@ -2,20 +2,22 @@
    Preserve hero-visual dimensions so text layout stays the same as before */
 .hero-visual.globe-preview {
   flex-shrink: 0;
-  width: min(520px, 45vw);
-  min-width: 320px;
-  height: 420px;
-  min-height: 400px;
+  width: min(560px, 48vw);
+  min-width: 340px;
+  height: 460px;
+  min-height: 440px;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: flex-start;
+  margin-top: -1.5rem;
 }
 
 .globe-container {
   width: 100%;
-  max-width: 460px;
-  height: 400px;
-  min-height: 360px;
+  max-width: 500px;
+  height: 440px;
+  min-height: 400px;
   position: relative;
 }
 
@@ -31,24 +33,25 @@
   .hero-visual.globe-preview {
     width: 100%;
     min-width: unset;
-    height: 380px;
+    height: 400px;
+    margin-top: 0;
     order: 2;
   }
   .globe-container {
-    max-width: 360px;
-    height: 360px;
-    min-height: 360px;
+    max-width: 400px;
+    height: 380px;
+    min-height: 380px;
   }
 }
 
 @media (max-width: 768px) {
   .hero-visual.globe-preview {
-    height: 320px;
+    height: 360px;
   }
   .globe-container {
-    max-width: 320px;
-    height: 320px;
-    min-height: 320px;
+    max-width: 360px;
+    height: 340px;
+    min-height: 340px;
   }
 }
 
