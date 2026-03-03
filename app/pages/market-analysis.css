@@ -1,8 +1,33 @@
 /* ============================================
    MARKET ANALYSIS PAGE (WITH ECONOMIC INDICATORS)
+   Match home dashboard / watchlist layout exactly
    ============================================ */
 
-/* Body padding handled by page-wrapper and page-content */
+/* Same sidebar margin as home dashboard - open and collapsed */
+body.market-analysis-page .market-analysis-main.dashboard-main {
+  margin-left: 0;
+  padding-top: 64px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+body.market-analysis-page.sidebar-open .market-analysis-main.dashboard-main {
+  margin-left: 320px;
+}
+
+body.market-analysis-page .market-analysis-main.dashboard-main.sidebar-hidden {
+  margin-left: 0;
+}
+
+/* Container - same as home dashboard */
+body.market-analysis-page .market-analysis-container.dashboard-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
 /* Page Hero Layout */
 .page-hero {
@@ -78,12 +103,18 @@
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* Page Grid */
+/* Page Grid - exact same as home dashboard .additional-components-grid */
 .page-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Full-width card spans both columns - same as home dashboard */
+.component-card.full-width {
+  grid-column: 1 / -1;
 }
 
 /* Header Actions */
@@ -392,14 +423,36 @@
 .indicator-value .change.positive { color: #10b981; }
 .indicator-value .change.negative { color: #ef4444; }
 
-/* Responsive */
+/* Data Library grid - match home dashboard 2-column layout */
+body.market-analysis-page .data-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Responsive - match home dashboard breakpoints */
+@media (max-width: 1440px) {
+  body.market-analysis-page .data-library-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1024px) {
+  body.market-analysis-page .market-analysis-main.dashboard-main {
+    margin-left: 0;
+  }
+
   .heatmap-grid { grid-template-columns: repeat(2, 1fr); }
   .indices-grid { grid-template-columns: repeat(3, 1fr); }
   .page-grid-2 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
+  body.market-analysis-page .market-analysis-container.dashboard-container {
+    padding: 1rem;
+  }
+
   .heatmap-grid,
   .indices-grid {
     grid-template-columns: 1fr;

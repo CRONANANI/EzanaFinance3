@@ -54,10 +54,23 @@ class MarketAnalysis {
   
   init() {
     this.attachTabListeners();
+    this.setupDashboardSidebarSync();
     this.marketStatInterval = startMarketStatPolling();
     window.addEventListener('beforeunload', () => {
       if (this.marketStatInterval) clearInterval(this.marketStatInterval);
     });
+  }
+
+  setupDashboardSidebarSync() {
+    const dashboardMain = document.querySelector('.market-analysis-main.dashboard-main');
+    if (!dashboardMain) return;
+    const updateMargin = () => {
+      const open = document.body.classList.contains('sidebar-open');
+      dashboardMain.classList.toggle('sidebar-hidden', !open);
+    };
+    updateMargin();
+    const observer = new MutationObserver(updateMargin);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
   
   attachTabListeners() {
