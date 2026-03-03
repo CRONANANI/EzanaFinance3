@@ -303,6 +303,66 @@
 .stat-icon.engagement { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
 .stat-icon.experts { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
 
+/* Small action buttons inside stat cards */
+.stat-card-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.stat-card-btn {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stat-card-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+/* Discussion filter buttons in Active Discussions card header */
+.discussion-filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.discussion-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.discussion-filter-btn:hover {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.discussion-filter-btn.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
 .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--foreground); margin-bottom: 0.25rem; }
 .stat-label { font-size: 0.875rem; color: var(--muted-foreground); }
 .stat-change.positive { color: #10b981; }

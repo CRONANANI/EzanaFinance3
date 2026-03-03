@@ -93,42 +93,62 @@
 
   <main class="dashboard-main">
     <div class="dashboard-container">
-    <!-- Community Stats - dashboard metric-card style (matches watchlist, home dashboard) -->
+    <!-- Community Stats - dashboard metric-card style with inline action buttons -->
     <div class="stats-grid condensed">
-        <div class="stat-card">
+        <div class="stat-card stat-card-with-buttons">
             <div class="stat-icon members">
                 <i class="bi bi-people"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">12,456</div>
                 <div class="stat-label">Total Members</div>
+                <div class="stat-card-buttons">
+                    <button type="button" class="stat-card-btn" onclick="browseMembers()">Browse</button>
+                    <button type="button" class="stat-card-btn" onclick="viewTopContributors()">Top</button>
+                    <button type="button" class="stat-card-btn" onclick="viewNewMembers()">New</button>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-with-buttons">
             <div class="stat-icon posts">
                 <i class="bi bi-chat-dots"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">89</div>
                 <div class="stat-label">Active Discussions</div>
+                <div class="stat-card-buttons">
+                    <button type="button" class="stat-card-btn" onclick="createThread()">Start</button>
+                    <button type="button" class="stat-card-btn" onclick="viewFollowingDiscussions()">Following</button>
+                    <button type="button" class="stat-card-btn" onclick="viewTrendingDiscussions()">Trending</button>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-with-buttons">
             <div class="stat-icon engagement">
                 <i class="bi bi-person-hearts"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">47</div>
                 <div class="stat-label">Your Friends</div>
+                <div class="stat-card-buttons">
+                    <button type="button" class="stat-card-btn" onclick="viewAllFriends()">View All</button>
+                    <button type="button" class="stat-card-btn" onclick="addFriend()">Add</button>
+                    <button type="button" class="stat-card-btn" onclick="viewFriendsActivity()">Activity</button>
+                </div>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-with-buttons">
             <div class="stat-icon experts">
                 <i class="bi bi-trophy"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-value">#127</div>
                 <div class="stat-label">Your Rank</div>
+                <div class="stat-card-buttons">
+                    <button type="button" class="stat-card-btn" onclick="viewLeaderboard()">Leaderboard</button>
+                    <button type="button" class="stat-card-btn" onclick="showTrophyCabinet()">Awards</button>
+                    <button type="button" class="stat-card-btn" onclick="viewMyStats()">My Stats</button>
+                </div>
             </div>
         </div>
     </div>
@@ -259,9 +279,17 @@
         <div class="component-card">
             <div class="card-header">
                 <h3><i class="bi bi-chat-dots"></i> Active Discussions</h3>
-                <button onclick="createThread()" class="card-action-btn">
-                    <i class="bi bi-plus-circle"></i> New Thread
-                </button>
+                <div class="discussion-filter-buttons">
+                    <button type="button" class="discussion-filter-btn" onclick="createThread()">
+                        <i class="bi bi-plus-circle"></i> Start Discussion
+                    </button>
+                    <button type="button" class="discussion-filter-btn active" data-filter="following" onclick="filterDiscussions('following')">
+                        <i class="bi bi-bookmark"></i> Following
+                    </button>
+                    <button type="button" class="discussion-filter-btn" data-filter="trending" onclick="filterDiscussions('trending')">
+                        <i class="bi bi-fire"></i> Trending
+                    </button>
+                </div>
             </div>
             <div class="card-body">
             
@@ -408,45 +436,6 @@
         </div>
     </div>
 
-    <!-- Community Features Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button onclick="createThread()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-500 hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
-                    <i class="bi bi-chat-dots text-indigo-600 dark:text-indigo-400 group-hover:text-white text-xl"></i>
-                </div>
-                <span class="font-medium text-gray-900 dark:text-white">Start Discussion</span>
-            </div>
-        </button>
-        
-        <button onclick="viewThreads()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-emerald-500 hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                    <i class="bi bi-list-ul text-emerald-600 dark:text-emerald-400 group-hover:text-white text-xl"></i>
-                </div>
-                <span class="font-medium text-gray-900 dark:text-white">Browse Threads</span>
-            </div>
-        </button>
-        
-        <button onclick="manageCommunities()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center group-hover:bg-purple-500 transition-colors">
-                    <i class="bi bi-building text-purple-600 dark:text-purple-400 group-hover:text-white text-xl"></i>
-                </div>
-                <span class="font-medium text-gray-900 dark:text-white">My Communities</span>
-            </div>
-        </button>
-        
-        <button onclick="showTrophyCabinet()" class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-yellow-500 hover:shadow-lg transition-all duration-200 group">
-            <div class="flex flex-col items-center space-y-3">
-                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
-                    <i class="bi bi-award text-yellow-600 dark:text-yellow-400 group-hover:text-white text-xl"></i>
-                </div>
-                <span class="font-medium text-gray-900 dark:text-white">View Awards</span>
-            </div>
-        </button>
-    </div>
-
     <!-- Community Insights -->
     <div class="component-card">
         <div class="card-header">
@@ -519,15 +508,31 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="../components/community/trophy-cabinet/trophy-cabinet.js" defer></script>
     <script src="../components/notifications/notifications-sidebar.js" defer></script>
     <script defer>
-        // Page initialization (no authentication required)
+        // Community page action handlers
+        function createThread() { /* TODO: open create discussion modal */ console.log('Create thread'); }
+        function viewFollowingDiscussions() { filterDiscussions('following'); }
+        function viewTrendingDiscussions() { filterDiscussions('trending'); }
+        function filterDiscussions(filter) {
+            document.querySelectorAll('.discussion-filter-btn[data-filter]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            /* TODO: filter discussion list by following/trending based on user profile */
+        }
+        function browseMembers() { /* TODO: navigate to members browse */ }
+        function viewTopContributors() { /* TODO: show top contributors */ }
+        function viewNewMembers() { /* TODO: show new members */ }
+        function addFriend() { /* TODO: open add friend flow */ }
+        function viewFriendsActivity() { /* TODO: scroll/focus to Friends Activity card */ }
+        function viewLeaderboard() { /* TODO: scroll/focus to Leaderboard */ }
+        function viewMyStats() { /* TODO: show user stats */ }
+        function searchUsers() { /* TODO: search users */ }
+        function viewAllFriends() { /* TODO: expand/navigate to full friends list */ }
+        function viewAllActivity() { /* TODO: expand activity feed */ }
+        function manageCommunities() { /* TODO: manage communities */ }
+        function showTrophyCabinet() { if (window.trophyCabinet) window.trophyCabinet.show?.(); }
 
-        // Initialize notifications sidebar when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM Content Loaded - Initializing community');
-            
-            // Page is accessible without authentication
-            
-            // Initialize the notifications sidebar
             if (window.NotificationsSidebar) {
                 const sidebar = new NotificationsSidebar();
                 sidebar.init();
