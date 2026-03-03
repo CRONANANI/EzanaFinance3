@@ -155,28 +155,74 @@
 
     <!-- Community Features - component-card style -->
     <div class="dashboard-grid community-features-grid">
-        <!-- User Search Card -->
-        <div class="component-card">
+        <!-- Community Feed Card - Discussion layout -->
+        <div class="component-card community-feed-card">
             <div class="card-header">
-                <h3><i class="bi bi-search"></i> Find Users</h3>
+                <h3><i class="bi bi-chat-square-text"></i> Community Feed</h3>
             </div>
             <div class="card-body">
-            <p class="text-muted-foreground mb-6">Search for other investors on the platform to connect with</p>
-            <div class="space-y-4">
-                <div class="relative">
-                    <input type="text" id="user-search" placeholder="Search by username, name, or interests..." 
-                           class="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-muted text-foreground">
-                    <button onclick="searchUsers()" class="absolute right-3 top-3 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
-                        <i class="bi bi-search"></i>
-                    </button>
+                <!-- Filter Bar -->
+                <div class="community-feed-filters">
+                    <button type="button" class="feed-filter-btn active" data-filter="followed" onclick="setCommunityFeedFilter('followed')">Followed Discussions</button>
+                    <button type="button" class="feed-filter-btn" data-filter="topics" onclick="setCommunityFeedFilter('topics')">Topics</button>
+                    <button type="button" class="feed-filter-btn" data-filter="suggestions" onclick="setCommunityFeedFilter('suggestions')">Platform Feature Suggestions</button>
+                    <button type="button" class="feed-filter-btn" data-filter="trending" onclick="setCommunityFeedFilter('trending')">Trending</button>
+                    <button type="button" class="feed-filter-btn" data-filter="explore" onclick="setCommunityFeedFilter('explore')">Explore</button>
                 </div>
-                <div id="search-results" class="space-y-3 max-h-48 overflow-y-auto">
-                    <!-- Search results will appear here -->
-                    <div class="text-center py-6 text-muted-foreground text-sm">
-                        Enter a search term to find users
-                    </div>
+                <!-- Discussion Thread Cards -->
+                <div class="community-feed-threads" id="community-feed-threads">
+                    <article class="feed-thread-card">
+                        <div class="thread-meta-top">
+                            <div class="thread-author">
+                                <div class="thread-avatar">AS</div>
+                                <span class="thread-author-name">Aakash Sharma</span>
+                            </div>
+                            <span class="thread-topic-tag">Portfolio Tips</span>
+                        </div>
+                        <h4 class="thread-title">What are some effective strategies to stay productive with market research, especially when tracking multiple sectors?</h4>
+                        <p class="thread-preview">I've been struggling to keep up with sector rotations and earnings cycles. Would love to hear how others structure their research workflow...</p>
+                        <div class="thread-engagement">
+                            <div class="thread-avatar-sm">AS</div>
+                            <span class="thread-time">2 Hrs Ago</span>
+                            <span class="thread-stat"><i class="bi bi-heart-fill"></i> 20</span>
+                            <span class="thread-stat"><i class="bi bi-chat"></i> 8</span>
+                        </div>
+                    </article>
+                    <article class="feed-thread-card">
+                        <div class="thread-meta-top">
+                            <div class="thread-author">
+                                <div class="thread-avatar">NR</div>
+                                <span class="thread-author-name">Nidhi Rao</span>
+                            </div>
+                            <span class="thread-topic-tag">Congressional Trading</span>
+                        </div>
+                        <h4 class="thread-title">Best practices for interpreting 13F filings and congressional disclosure data</h4>
+                        <p class="thread-preview">New to following institutional moves. What metrics do you focus on when analyzing 13F changes? Any tools you recommend?</p>
+                        <div class="thread-engagement">
+                            <div class="thread-avatar-sm">NR</div>
+                            <span class="thread-time">3 Hrs Ago</span>
+                            <span class="thread-stat"><i class="bi bi-heart-fill"></i> 35</span>
+                            <span class="thread-stat"><i class="bi bi-chat"></i> 9</span>
+                        </div>
+                    </article>
+                    <article class="feed-thread-card">
+                        <div class="thread-meta-top">
+                            <div class="thread-author">
+                                <div class="thread-avatar">SP</div>
+                                <span class="thread-author-name">Sunita Patil</span>
+                            </div>
+                            <span class="thread-topic-tag">Time Management</span>
+                        </div>
+                        <h4 class="thread-title">How do you balance fundamental analysis with keeping up to date on market news?</h4>
+                        <p class="thread-preview">Finding it hard to allocate time between deep dives and staying current. What's your daily routine look like?</p>
+                        <div class="thread-engagement">
+                            <div class="thread-avatar-sm">SP</div>
+                            <span class="thread-time">5 Hrs Ago</span>
+                            <span class="thread-stat"><i class="bi bi-heart-fill"></i> 17</span>
+                            <span class="thread-stat"><i class="bi bi-chat"></i> 6</span>
+                        </div>
+                    </article>
                 </div>
-            </div>
             </div>
         </div>
 
@@ -583,7 +629,12 @@ document.addEventListener('DOMContentLoaded', function() {
         function viewFriendsActivity() { /* TODO: scroll/focus to Friends Activity card */ }
         function viewLeaderboard() { /* TODO: scroll/focus to Leaderboard */ }
         function viewMyStats() { /* TODO: show user stats */ }
-        function searchUsers() { /* TODO: search users */ }
+        function setCommunityFeedFilter(filter) {
+            document.querySelectorAll('.feed-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            /* TODO: filter feed by followed/topics/suggestions/trending/explore */
+        }
         function viewAllFriends() { /* TODO: expand/navigate to full friends list */ }
         function viewAllActivity() { /* TODO: expand activity feed */ }
         function manageCommunities() { /* TODO: manage communities */ }
