@@ -123,10 +123,11 @@ function PricingToggle() {
     });
 }
 
-/** SupportDialog - Contact Support modal */
+/** SupportDialog - Contact Support modal (Contact2 layout) */
 function SupportDialog() {
     var dialog = document.getElementById('supportDialog');
     var form = document.getElementById('supportForm');
+    var wrapper = dialog ? dialog.querySelector('.contact2-wrapper') : null;
     var successEl = document.getElementById('supportSuccess');
     var closeBtn = document.getElementById('dialogClose');
     var closeBtn2 = document.getElementById('supportDialogCloseBtn');
@@ -144,7 +145,7 @@ function SupportDialog() {
         document.body.style.overflow = '';
         setTimeout(function () {
             form.reset();
-            form.style.display = 'flex';
+            if (wrapper) wrapper.style.display = '';
             if (successEl) successEl.style.display = 'none';
         }, 300);
     }
@@ -165,15 +166,16 @@ function SupportDialog() {
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         var data = {
-            name: form.name.value,
-            email: form.email.value,
-            category: form.category.value,
-            message: form.message.value
+            firstname: form.firstname?.value || '',
+            lastname: form.lastname?.value || '',
+            email: form.email?.value || '',
+            subject: form.subject?.value || 'Support Request',
+            message: form.message?.value || ''
         };
-        var bodyText = 'Name: ' + data.name + '\nEmail: ' + data.email + '\nCategory: ' + data.category + '\n\nMessage:\n' + data.message;
-        var mailto = 'mailto:support@ezana.world?subject=' + encodeURIComponent('Support: ' + data.category) + '&body=' + encodeURIComponent(bodyText);
+        var bodyText = 'Name: ' + data.firstname + ' ' + data.lastname + '\nEmail: ' + data.email + '\nSubject: ' + data.subject + '\n\nMessage:\n' + data.message;
+        var mailto = 'mailto:support@ezana.world?subject=' + encodeURIComponent(data.subject || 'Support Request') + '&body=' + encodeURIComponent(bodyText);
         window.location.href = mailto;
-        form.style.display = 'none';
+        if (wrapper) wrapper.style.display = 'none';
         if (successEl) successEl.style.display = 'block';
     });
 }

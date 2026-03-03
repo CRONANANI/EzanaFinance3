@@ -16,6 +16,8 @@ module.exports = {
         background: '#0f1419',
         foreground: '#ffffff',
         card: 'rgba(26, 35, 50, 0.6)',
+        'card-foreground': '#ffffff',
+        accent: 'rgba(16, 185, 129, 0.15)',
         muted: 'rgba(17, 24, 39, 0.4)',
         'muted-foreground': '#6b7280',
         border: 'rgba(16, 185, 129, 0.1)',

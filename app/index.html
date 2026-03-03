@@ -24,6 +24,8 @@
     <!-- Defer below-fold CSS for faster first paint -->
     <link rel="stylesheet" href="components/landing/features-section.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="components/landing/faq-section.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="components/landing/pricing-module/pricing-module.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="components/landing/footer-section/footer-section.css" media="print" onload="this.media='all'">
 </head>
 <body>
     <!-- SVG sharpen filter for clearer text in card preview images -->
@@ -678,113 +680,104 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section class="pricing-section" id="pricing">
-      <div class="section-container">
-        <div class="section-header">
-          <h2>Simple, Transparent Pricing</h2>
-          <p>Choose the plan that fits your investment strategy</p>
+    <!-- Pricing Section (PricingModule style) -->
+    <section class="pricing-module" id="pricing">
+      <div class="pricing-module-inner">
+        <h2>Simple, Transparent Pricing</h2>
+        <p class="pricing-subtitle">Choose the plan that fits your investment strategy.</p>
+        <div class="pricing-switch-wrap">
+          <div class="pricing-switch" id="pricingSwitch" role="switch" aria-checked="false" tabindex="0">
+            <div class="pricing-switch-thumb"></div>
+          </div>
+          <span class="pricing-switch-label" id="pricingSwitchLabel">Pay annually and save 20%</span>
         </div>
-        <div class="pricing-toggle">
-          <button type="button" class="toggle-btn active" data-plan="monthly">Monthly</button>
-          <button type="button" class="toggle-btn" data-plan="annual">Annual <span class="save-badge">Save 20%</span></button>
-        </div>
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <div class="plan-header">
-              <h3 class="plan-name">Free</h3>
-              <div class="plan-price">
-                <span class="price">$0</span>
-                <span class="period">/month</span>
-              </div>
-              <p class="plan-description">Perfect for getting started</p>
+        <div class="pricing-grid-module">
+          <div class="pricing-card-module" data-plan="free">
+            <div class="pricing-card-icon"><i class="bi bi-house-door" style="font-size:2rem"></i></div>
+            <h3 class="pricing-card-name">Free</h3>
+            <p class="pricing-card-desc">Perfect for getting started</p>
+            <div class="pricing-card-price">$0</div>
+            <p class="pricing-card-period"></p>
+            <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
+            <div class="pricing-card-overview">
+              <h4>Overview</h4>
+              <p class="overview-users">✓ 1 brokerage account</p>
+              <h4>Highlights</h4>
+              <ul class="highlights-list">
+                <li class="included"><i class="bi bi-check icon-check"></i> Basic portfolio tracking</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Weekly congressional alerts</li>
+                <li class="excluded"><i class="bi bi-x icon-x"></i> Real-time alerts</li>
+                <li class="excluded"><i class="bi bi-x icon-x"></i> Advanced analytics</li>
+                <li class="excluded"><i class="bi bi-x icon-x"></i> API access</li>
+              </ul>
             </div>
-            <ul class="plan-features">
-              <li><i class="bi bi-check-circle"></i> Connect 1 brokerage account</li>
-              <li><i class="bi bi-check-circle"></i> Basic portfolio tracking</li>
-              <li><i class="bi bi-check-circle"></i> Weekly congressional trade alerts</li>
-              <li><i class="bi bi-check-circle"></i> Limited market data</li>
-              <li><i class="bi bi-x-circle"></i> Real-time alerts</li>
-              <li><i class="bi bi-x-circle"></i> Advanced analytics</li>
-              <li><i class="bi bi-x-circle"></i> API access</li>
-            </ul>
-            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Get Started Free</a>
           </div>
-          <div class="pricing-card featured">
-            <div class="popular-badge">Most Popular</div>
-            <div class="plan-header">
-              <h3 class="plan-name">Pro</h3>
-              <div class="plan-price">
-                <span class="price monthly-price">$29</span>
-                <span class="price annual-price" style="display: none;">$23</span>
-                <span class="period">/month</span>
-              </div>
-              <p class="plan-description">For serious investors</p>
+          <div class="pricing-card-module recommended" data-plan="pro">
+            <span class="badge-recommended">Recommended</span>
+            <div class="pricing-card-icon"><i class="bi bi-graph-up-arrow" style="font-size:2rem"></i></div>
+            <h3 class="pricing-card-name">Pro</h3>
+            <p class="pricing-card-desc">For serious investors</p>
+            <div class="pricing-card-price"><span class="monthly-price">$29</span><span class="yearly-price" style="display:none">$278</span></div>
+            <p class="pricing-card-period">/ month</p>
+            <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
+            <div class="pricing-card-overview">
+              <h4>Overview</h4>
+              <p class="overview-users">✓ Unlimited brokerage accounts</p>
+              <h4>Highlights</h4>
+              <ul class="highlights-list">
+                <li class="included"><i class="bi bi-check icon-check"></i> Real-time congressional alerts</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Advanced portfolio analytics</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Institutional holdings (13F)</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> AI-powered insights</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Lobbying & contracts data</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Priority support</li>
+              </ul>
             </div>
-            <ul class="plan-features">
-              <li><i class="bi bi-check-circle"></i> Unlimited brokerage accounts</li>
-              <li><i class="bi bi-check-circle"></i> Real-time congressional alerts</li>
-              <li><i class="bi bi-check-circle"></i> Advanced portfolio analytics</li>
-              <li><i class="bi bi-check-circle"></i> Institutional holdings (13F)</li>
-              <li><i class="bi bi-check-circle"></i> AI-powered insights</li>
-              <li><i class="bi bi-check-circle"></i> Lobbying & contracts data</li>
-              <li><i class="bi bi-check-circle"></i> Priority support</li>
-            </ul>
-            <a href="pages/sign-up.html" class="plan-btn btn-primary">Start Free Trial</a>
-            <p class="plan-note">14-day free trial • Cancel anytime</p>
           </div>
-          <div class="pricing-card">
-            <div class="plan-header">
-              <h3 class="plan-name">Family</h3>
-              <div class="plan-price plan-price-family">
-                <div class="plan-tier">
-                  <span class="price monthly-price">$99</span>
-                  <span class="price annual-price" style="display: none;">$79</span>
-                  <span class="period">/mo</span> Pro
-                </div>
-                <div class="plan-tier">
-                  <span class="price monthly-price">$399</span>
-                  <span class="price annual-price" style="display: none;">$319</span>
-                  <span class="period">/mo</span> Elite
-                </div>
-              </div>
-              <p class="plan-description">For households & shared portfolios</p>
+          <div class="pricing-card-module" data-plan="family">
+            <div class="pricing-card-icon"><i class="bi bi-people" style="font-size:2rem"></i></div>
+            <h3 class="pricing-card-name">Family</h3>
+            <p class="pricing-card-desc">For households & shared portfolios</p>
+            <div class="pricing-card-price"><span class="monthly-price">$99</span><span class="yearly-price" style="display:none">$950</span></div>
+            <p class="pricing-card-period">/ month</p>
+            <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
+            <div class="pricing-card-overview">
+              <h4>Overview</h4>
+              <p class="overview-users">✓ Up to 5 members</p>
+              <h4>Highlights</h4>
+              <ul class="highlights-list">
+                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Pro</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Shared watchlists & alerts</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Family portfolio dashboard</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Lobbying & contracts data</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Priority support</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> 14-day free trial</li>
+              </ul>
             </div>
-            <ul class="plan-features">
-              <li><i class="bi bi-check-circle"></i> Everything in Pro (up to 5 members)</li>
-              <li><i class="bi bi-check-circle"></i> Shared watchlists & alerts</li>
-              <li><i class="bi bi-check-circle"></i> Family portfolio dashboard</li>
-              <li><i class="bi bi-check-circle"></i> Lobbying & contracts data</li>
-              <li><i class="bi bi-check-circle"></i> Priority support</li>
-              <li><i class="bi bi-check-circle"></i> 14-day free trial</li>
-            </ul>
-            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Start Free Trial</a>
-            <p class="plan-note">14-day free trial • Cancel anytime</p>
           </div>
-          <div class="pricing-card">
-            <div class="plan-header">
-              <h3 class="plan-name">Elite</h3>
-              <div class="plan-price">
-                <span class="price monthly-price">$99</span>
-                <span class="price annual-price" style="display: none;">$79</span>
-                <span class="period">/month</span>
-              </div>
-              <p class="plan-description">Maximum intelligence</p>
+          <div class="pricing-card-module" data-plan="elite">
+            <div class="pricing-card-icon"><i class="bi bi-building" style="font-size:2rem"></i></div>
+            <h3 class="pricing-card-name">Elite</h3>
+            <p class="pricing-card-desc">Maximum intelligence</p>
+            <div class="pricing-card-price"><span class="monthly-price">$99</span><span class="yearly-price" style="display:none">$950</span></div>
+            <p class="pricing-card-period">/ month</p>
+            <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
+            <div class="pricing-card-overview">
+              <h4>Overview</h4>
+              <p class="overview-users">✓ Unlimited everything</p>
+              <h4>Highlights</h4>
+              <ul class="highlights-list">
+                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Pro</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> API access for automation</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Custom watchlists (unlimited)</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Advanced pattern detection</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Dedicated account manager</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> White-glove onboarding</li>
+              </ul>
             </div>
-            <ul class="plan-features">
-              <li><i class="bi bi-check-circle"></i> Everything in Pro</li>
-              <li><i class="bi bi-check-circle"></i> API access for automation</li>
-              <li><i class="bi bi-check-circle"></i> Custom watchlists (unlimited)</li>
-              <li><i class="bi bi-check-circle"></i> Advanced pattern detection</li>
-              <li><i class="bi bi-check-circle"></i> Dedicated account manager</li>
-              <li><i class="bi bi-check-circle"></i> Institutional research reports</li>
-              <li><i class="bi bi-check-circle"></i> White-glove onboarding</li>
-            </ul>
-            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Start Free Trial</a>
-            <p class="plan-note">14-day free trial • Cancel anytime</p>
           </div>
         </div>
-        <div class="enterprise-section">
+        <div class="enterprise-section" style="max-width:72rem;margin:3rem auto 0;">
           <div class="enterprise-card">
             <div class="enterprise-content">
               <h3>Enterprise</h3>
@@ -891,48 +884,121 @@
   </div>
 </section></div>
 
-    <!-- Contact Support Dialog -->
+    <!-- Footer Section -->
+    <footer class="footer-section">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <div class="footer-newsletter relative">
+            <h2>Stay Connected</h2>
+            <p>Join our newsletter for the latest updates and exclusive offers.</p>
+            <div class="footer-newsletter-blur" aria-hidden="true"></div>
+            <form class="footer-newsletter-form" id="footerNewsletterForm" action="#" method="post">
+              <input type="email" name="email" placeholder="Enter your email" class="footer-newsletter-input" required>
+              <button type="submit" class="footer-newsletter-btn" aria-label="Subscribe">
+                <i class="bi bi-send"></i>
+              </button>
+            </form>
+          </div>
+          <div class="footer-col">
+            <h3>Quick Links</h3>
+            <nav>
+              <a href="#heroSection">Home</a>
+              <a href="#features">Features</a>
+              <a href="#pricing">Pricing</a>
+              <a href="#faq">FAQ</a>
+              <a href="#" data-support-trigger>Contact</a>
+            </nav>
+          </div>
+          <div class="footer-col">
+            <h3>Contact Us</h3>
+            <address>
+              <p>Ezana Finance</p>
+              <p>support@ezana.world</p>
+              <p>Contact us for enterprise inquiries</p>
+            </address>
+          </div>
+          <div class="footer-col">
+            <h3>Follow Us</h3>
+            <div class="footer-social-row">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="Facebook">
+                <i class="bi bi-facebook"></i>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="Twitter">
+                <i class="bi bi-twitter-x"></i>
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="Instagram">
+                <i class="bi bi-instagram"></i>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="footer-social-btn" aria-label="LinkedIn">
+                <i class="bi bi-linkedin"></i>
+              </a>
+            </div>
+            <div class="footer-dark-mode">
+              <i class="bi bi-sun footer-dark-icon" aria-hidden="true"></i>
+              <div class="footer-dark-switch" id="footerDarkSwitch" role="switch" aria-checked="true" tabindex="0">
+                <div class="footer-dark-switch-thumb"></div>
+              </div>
+              <i class="bi bi-moon footer-dark-icon" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p class="footer-copyright">© <span id="footerYear">2025</span> Ezana Finance. All rights reserved.</p>
+          <nav class="footer-legal">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookie Settings</a>
+          </nav>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Contact Support Dialog (Contact2 layout) -->
     <div class="support-dialog-overlay" id="supportDialog" role="dialog" aria-modal="true" aria-hidden="true">
-      <div class="support-dialog">
+      <div class="support-dialog support-dialog-contact2">
         <button type="button" class="dialog-close" id="dialogClose" aria-label="Close">
           <i class="bi bi-x"></i>
         </button>
-        <div class="dialog-header">
-          <div class="dialog-icon">
-            <i class="bi bi-headset"></i>
+        <div class="contact2-wrapper">
+          <div class="contact2-left">
+            <h1 class="contact2-title">Contact Us</h1>
+            <p class="contact2-desc">We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!</p>
+            <h3 class="contact2-details-heading">Contact Details</h3>
+            <ul class="contact2-details-list">
+              <li><span class="contact2-detail-label">Phone: </span>Contact us for support</li>
+              <li><span class="contact2-detail-label">Email: </span><a href="mailto:support@ezana.world" class="contact2-link">support@ezana.world</a></li>
+              <li><span class="contact2-detail-label">Web: </span><a href="https://ezana.world" target="_blank" rel="noopener noreferrer" class="contact2-link">ezana.world</a></li>
+            </ul>
           </div>
-          <h3>Contact Support</h3>
-          <p>We typically respond within 24 hours</p>
+          <form class="contact2-form" id="supportForm">
+            <div class="contact2-form-row">
+              <div class="form-group">
+                <label for="supportFirstname">First Name</label>
+                <input type="text" id="supportFirstname" name="firstname" placeholder="First Name" required>
+              </div>
+              <div class="form-group">
+                <label for="supportLastname">Last Name</label>
+                <input type="text" id="supportLastname" name="lastname" placeholder="Last Name" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="supportEmail">Email</label>
+              <input type="email" id="supportEmail" name="email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+              <label for="supportSubject">Subject</label>
+              <input type="text" id="supportSubject" name="subject" placeholder="Subject">
+            </div>
+            <div class="form-group">
+              <label for="supportMessage">Message</label>
+              <textarea id="supportMessage" name="message" rows="5" placeholder="Type your message here." required></textarea>
+            </div>
+            <button type="submit" class="support-submit-btn">
+              <i class="bi bi-send"></i>
+              Send Message
+            </button>
+          </form>
         </div>
-        <form class="support-form" id="supportForm">
-          <div class="form-group">
-            <label for="supportName">Your Name</label>
-            <input type="text" id="supportName" name="name" placeholder="John Doe" required>
-          </div>
-          <div class="form-group">
-            <label for="supportEmail">Email Address</label>
-            <input type="email" id="supportEmail" name="email" placeholder="you@example.com" required>
-          </div>
-          <div class="form-group">
-            <label for="supportCategory">Category</label>
-            <select id="supportCategory" name="category" required>
-              <option value="">Select a category</option>
-              <option value="account">Account & Billing</option>
-              <option value="technical">Technical Issue</option>
-              <option value="data">Data & Accuracy</option>
-              <option value="feature">Feature Request</option>
-              <option value="general">General Question</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="supportMessage">Your Message</label>
-            <textarea id="supportMessage" name="message" rows="6" placeholder="Describe your question or issue in detail..." required></textarea>
-          </div>
-          <button type="submit" class="support-submit-btn">
-            <i class="bi bi-send"></i>
-            Send Message
-          </button>
-        </form>
         <div class="support-success" id="supportSuccess" style="display: none;">
           <div class="success-icon">
             <i class="bi bi-check-circle"></i>
@@ -1025,6 +1091,8 @@
     <script src="components/landing/interactive-globe/interactive-globe.js" defer></script>
     <script src="components/landing/features-section.js" defer></script>
     <script src="components/landing/faq-section.js" defer></script>
+    <script src="components/landing/pricing-module/pricing-module.js" defer></script>
+    <script src="components/landing/footer-section/footer-section.js" defer></script>
     <script defer>
       (function () {
         function initGlobe() {
