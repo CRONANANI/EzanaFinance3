@@ -1,6 +1,6 @@
 /* Watchlist Page Styles */
 
-/* Watchlist: dashboard-main uses body.sidebar-open for margin; ensure flex layout for viewport fit */
+/* Match home dashboard base template: same spacing from sidebar to component cards */
 body.watchlist-page .watchlist-main.dashboard-main {
   display: flex;
   flex-direction: column;
@@ -8,11 +8,16 @@ body.watchlist-page .watchlist-main.dashboard-main {
   min-height: 0;
 }
 
-body.watchlist-page .watchlist-container {
+body.watchlist-page .watchlist-container.dashboard-container {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  padding: 2rem;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 1.5rem;
 }
 
 body.watchlist-page .watchlist-container .page-hero,
@@ -20,11 +25,13 @@ body.watchlist-page .watchlist-container .stats-grid {
   flex-shrink: 0;
 }
 
+/* Match home dashboard .dashboard-grid: same gap and card positioning */
 body.watchlist-page .watchlist-container .watchlist-grid-two-column {
   flex: 1;
   min-height: 0;
   align-items: stretch;
   margin-bottom: 0;
+  gap: 1.5rem;
 }
 
 body.watchlist-page .recent-activity-card {
