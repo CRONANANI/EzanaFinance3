@@ -23,7 +23,6 @@ When making changes to landing page features (hero, FAQ, globe, waitlist form, e
 | Feature | Next.js (React) | Static HTML |
 |---------|-----------------|-------------|
 | Hero + Globe | `LandingHero.js` + `interactive-globe.jsx` | `index.html` + `interactive-globe/interactive-globe.js` |
-| Pricing | `pricing.jsx` + `button.jsx` + `tooltip.jsx` | `index.html` pricing section + `pricing-section.css` + `landing.js` (PricingToggleNew) |
 | FAQ | `faq1.jsx` + `accordion.jsx` | `index.html` FAQ section + `faq-section.js` + `faq-section.css` |
 | Waitlist form | `WaitlistForm.js` | `index.html` legacy-signup + `legacy-signup.js` |
 

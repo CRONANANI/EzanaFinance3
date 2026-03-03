@@ -3,7 +3,6 @@ import '../../app/pages/landing.css';
 import '../../app/components/landing/features-section.css';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { PricingSection } from '@/components/ui/pricing';
 import { Faq1 } from '@/components/ui/faq1';
 
 export default function HomePage() {
@@ -22,10 +21,6 @@ export default function HomePage() {
       <div id="features-section-container">
         <FeaturesSection />
       </div>
-
-      <section id="pricing" className="pricing-section-wrapper py-16">
-        <PricingSection />
-      </section>
 
       <section id="faq" className="faq-section-wrapper">
         <Faq1 heading="Frequently asked questions" />

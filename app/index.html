@@ -24,7 +24,6 @@
     <!-- Defer below-fold CSS for faster first paint -->
     <link rel="stylesheet" href="components/landing/features-section.css" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="components/landing/faq-section.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="components/landing/pricing-section/pricing-section.css" media="print" onload="this.media='all'">
 </head>
 <body>
     <!-- SVG sharpen filter for clearer text in card preview images -->
@@ -679,104 +678,126 @@
         </div>
     </section>
 
-    <!-- Pricing Section (shadcn-style) -->
-    <section class="pricing-section pricing-section-new" id="pricing">
-      <div class="pricing-header">
-        <h2>Simple, Transparent Pricing</h2>
-        <p>Choose the plan that fits your investment strategy</p>
-      </div>
-      <div class="pricing-toggle">
-        <div class="toggle-pill" id="pricingTogglePill">
-          <button type="button" class="active" data-freq="monthly">Monthly</button>
-          <button type="button" data-freq="yearly">Yearly</button>
+    <!-- Pricing Section -->
+    <section class="pricing-section" id="pricing">
+      <div class="section-container">
+        <div class="section-header">
+          <h2>Simple, Transparent Pricing</h2>
+          <p>Choose the plan that fits your investment strategy</p>
         </div>
-      </div>
-      <div class="pricing-grid-new">
-        <div class="pricing-card-new" data-plan="free">
-          <div class="pricing-card-header">
-            <div class="pricing-card-name">Free</div>
-            <p class="pricing-card-info">Perfect for getting started</p>
-            <div class="pricing-card-price">
-              <span class="amount">$0</span>
-              <span class="period"></span>
+        <div class="pricing-toggle">
+          <button type="button" class="toggle-btn active" data-plan="monthly">Monthly</button>
+          <button type="button" class="toggle-btn" data-plan="annual">Annual <span class="save-badge">Save 20%</span></button>
+        </div>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3 class="plan-name">Free</h3>
+              <div class="plan-price">
+                <span class="price">$0</span>
+                <span class="period">/month</span>
+              </div>
+              <p class="plan-description">Perfect for getting started</p>
             </div>
-          </div>
-          <div class="pricing-card-features">
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Connect 1 brokerage account</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Basic portfolio tracking</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Weekly congressional trade alerts</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Limited market data</div>
-          </div>
-          <div class="pricing-card-cta">
-            <a href="pages/sign-up.html" class="pricing-btn">Get Started Free</a>
-          </div>
-        </div>
-        <div class="pricing-card-new featured" data-plan="pro">
-          <div class="pricing-badges">
-            <span class="badge-popular"><i class="bi bi-star-fill"></i> Popular</span>
-            <span class="badge-discount" id="proDiscountBadge" style="display: none;">20% off</span>
-          </div>
-          <div class="pricing-card-header">
-            <div class="pricing-card-name">Pro</div>
-            <p class="pricing-card-info">For serious investors</p>
-            <div class="pricing-card-price">
-              <span class="amount monthly-price">$29</span>
-              <span class="amount yearly-price" style="display: none;">$278</span>
-              <span class="period">/month</span>
-            </div>
-          </div>
-          <div class="pricing-card-features">
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Unlimited brokerage accounts</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Real-time congressional alerts</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Advanced portfolio analytics</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Institutional holdings (13F)</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> AI-powered insights</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Lobbying & contracts data</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Priority support</div>
-          </div>
-          <div class="pricing-card-cta">
-            <a href="pages/sign-up.html" class="pricing-btn">Start Free Trial</a>
-          </div>
-        </div>
-        <div class="pricing-card-new" data-plan="family">
-          <div class="pricing-badges">
-            <span class="badge-discount" id="familyDiscountBadge" style="display: none;">20% off</span>
-          </div>
-          <div class="pricing-card-header">
-            <div class="pricing-card-name">Family</div>
-            <p class="pricing-card-info">For households & shared portfolios</p>
-            <div class="pricing-card-price">
-              <span class="amount monthly-price">$99</span>
-              <span class="amount yearly-price" style="display: none;">$950</span>
-              <span class="period">/month</span>
-            </div>
-          </div>
-          <div class="pricing-card-features">
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Everything in Pro (up to 5 members)</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Shared watchlists & alerts</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Family portfolio dashboard</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Lobbying & contracts data</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> Priority support</div>
-            <div class="pricing-feature"><i class="bi bi-check-circle"></i> 14-day free trial</div>
-          </div>
-          <div class="pricing-card-cta">
-            <a href="pages/sign-up.html" class="pricing-btn">Start Free Trial</a>
-          </div>
-        </div>
-      </div>
-      <div class="enterprise-section">
-        <div class="enterprise-card">
-          <div class="enterprise-content">
-            <h3>Enterprise</h3>
-            <p>Custom solutions for institutions, advisors, and large teams</p>
-            <ul class="enterprise-features">
-              <li>Custom data integrations</li>
-              <li>Team collaboration tools</li>
-              <li>Dedicated infrastructure</li>
-              <li>SLA guarantees</li>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Connect 1 brokerage account</li>
+              <li><i class="bi bi-check-circle"></i> Basic portfolio tracking</li>
+              <li><i class="bi bi-check-circle"></i> Weekly congressional trade alerts</li>
+              <li><i class="bi bi-check-circle"></i> Limited market data</li>
+              <li><i class="bi bi-x-circle"></i> Real-time alerts</li>
+              <li><i class="bi bi-x-circle"></i> Advanced analytics</li>
+              <li><i class="bi bi-x-circle"></i> API access</li>
             </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Get Started Free</a>
           </div>
-          <button type="button" class="plan-btn btn-primary" data-sales-trigger>Contact Sales</button>
+          <div class="pricing-card featured">
+            <div class="popular-badge">Most Popular</div>
+            <div class="plan-header">
+              <h3 class="plan-name">Pro</h3>
+              <div class="plan-price">
+                <span class="price monthly-price">$29</span>
+                <span class="price annual-price" style="display: none;">$23</span>
+                <span class="period">/month</span>
+              </div>
+              <p class="plan-description">For serious investors</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Unlimited brokerage accounts</li>
+              <li><i class="bi bi-check-circle"></i> Real-time congressional alerts</li>
+              <li><i class="bi bi-check-circle"></i> Advanced portfolio analytics</li>
+              <li><i class="bi bi-check-circle"></i> Institutional holdings (13F)</li>
+              <li><i class="bi bi-check-circle"></i> AI-powered insights</li>
+              <li><i class="bi bi-check-circle"></i> Lobbying & contracts data</li>
+              <li><i class="bi bi-check-circle"></i> Priority support</li>
+            </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-primary">Start Free Trial</a>
+            <p class="plan-note">14-day free trial • Cancel anytime</p>
+          </div>
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3 class="plan-name">Family</h3>
+              <div class="plan-price plan-price-family">
+                <div class="plan-tier">
+                  <span class="price monthly-price">$99</span>
+                  <span class="price annual-price" style="display: none;">$79</span>
+                  <span class="period">/mo</span> Pro
+                </div>
+                <div class="plan-tier">
+                  <span class="price monthly-price">$399</span>
+                  <span class="price annual-price" style="display: none;">$319</span>
+                  <span class="period">/mo</span> Elite
+                </div>
+              </div>
+              <p class="plan-description">For households & shared portfolios</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Everything in Pro (up to 5 members)</li>
+              <li><i class="bi bi-check-circle"></i> Shared watchlists & alerts</li>
+              <li><i class="bi bi-check-circle"></i> Family portfolio dashboard</li>
+              <li><i class="bi bi-check-circle"></i> Lobbying & contracts data</li>
+              <li><i class="bi bi-check-circle"></i> Priority support</li>
+              <li><i class="bi bi-check-circle"></i> 14-day free trial</li>
+            </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Start Free Trial</a>
+            <p class="plan-note">14-day free trial • Cancel anytime</p>
+          </div>
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3 class="plan-name">Elite</h3>
+              <div class="plan-price">
+                <span class="price monthly-price">$99</span>
+                <span class="price annual-price" style="display: none;">$79</span>
+                <span class="period">/month</span>
+              </div>
+              <p class="plan-description">Maximum intelligence</p>
+            </div>
+            <ul class="plan-features">
+              <li><i class="bi bi-check-circle"></i> Everything in Pro</li>
+              <li><i class="bi bi-check-circle"></i> API access for automation</li>
+              <li><i class="bi bi-check-circle"></i> Custom watchlists (unlimited)</li>
+              <li><i class="bi bi-check-circle"></i> Advanced pattern detection</li>
+              <li><i class="bi bi-check-circle"></i> Dedicated account manager</li>
+              <li><i class="bi bi-check-circle"></i> Institutional research reports</li>
+              <li><i class="bi bi-check-circle"></i> White-glove onboarding</li>
+            </ul>
+            <a href="pages/sign-up.html" class="plan-btn btn-secondary">Start Free Trial</a>
+            <p class="plan-note">14-day free trial • Cancel anytime</p>
+          </div>
+        </div>
+        <div class="enterprise-section">
+          <div class="enterprise-card">
+            <div class="enterprise-content">
+              <h3>Enterprise</h3>
+              <p>Custom solutions for institutions, advisors, and large teams</p>
+              <ul class="enterprise-features">
+                <li>Custom data integrations</li>
+                <li>Team collaboration tools</li>
+                <li>Dedicated infrastructure</li>
+                <li>SLA guarantees</li>
+              </ul>
+            </div>
+            <button type="button" class="plan-btn btn-primary" data-sales-trigger>Contact Sales</button>
+          </div>
         </div>
       </div>
     </section>
