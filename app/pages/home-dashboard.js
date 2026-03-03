@@ -372,9 +372,61 @@ class PortfolioDashboard {
   }
 
   setupQuickActions() {
+    const brokerageBtn = document.getElementById('connectBrokerageBtn');
+    if (brokerageBtn) {
+      brokerageBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openPlaidLink();
+      });
+    }
     document.querySelectorAll('.quick-action-btn').forEach((btn) => {
+      if (btn.dataset.action === 'brokerage') return;
       btn.addEventListener('click', () => this.handleQuickAction(btn.dataset.action));
     });
+  }
+
+  async openPlaidLink() {
+    const btn = document.getElementById('connectBrokerageBtn');
+    const client = window.firebaseClient;
+    if (!client) {
+      alert('Please sign in to connect your brokerage account.');
+      window.location.href = 'sign-in.html';
+      return;
+    }
+    if (!client.user) {
+      alert('Please sign in to connect your brokerage account.');
+      window.location.href = 'sign-in.html';
+      return;
+    }
+    if (typeof PlaidLink === 'undefined') {
+      alert('Plaid Link is loading. Please try again in a moment.');
+      return;
+    }
+    try {
+      if (btn) { btn.disabled = true; btn.querySelector('span').textContent = 'Connecting...'; }
+      const linkToken = await client.createLinkToken();
+      if (!linkToken) throw new Error('Could not get link token');
+      const handler = PlaidLink.create({
+        token: linkToken,
+        onSuccess: async (publicToken) => {
+          try {
+            await client.exchangePlaidToken(publicToken);
+            alert('Brokerage account connected successfully! Your portfolio will sync shortly.');
+          } catch (err) {
+            alert('Connection failed: ' + (err.message || 'Unknown error'));
+          }
+          if (btn) { btn.disabled = false; btn.querySelector('span').textContent = 'Connect Brokerage'; }
+        },
+        onExit: () => {
+          if (btn) { btn.disabled = false; btn.querySelector('span').textContent = 'Connect Brokerage'; }
+        }
+      });
+      handler.open();
+    } catch (err) {
+      if (btn) { btn.disabled = false; btn.querySelector('span').textContent = 'Connect Brokerage'; }
+      alert('Please sign in to connect your brokerage account.');
+      window.location.href = 'sign-in.html';
+    }
   }
 
   setupTimeRangeButtons() {

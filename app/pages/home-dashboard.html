@@ -67,6 +67,7 @@
 
       <!-- Quick Actions Bar (50% thinner) -->
       <section class="quick-actions-bar compact">
+        <button class="quick-action-btn quick-action-brokerage" id="connectBrokerageBtn" data-action="brokerage"><i class="bi bi-bank"></i><span>Connect Brokerage</span></button>
         <button class="quick-action-btn" data-action="refresh"><i class="bi bi-arrow-clockwise"></i><span>Refresh</span></button>
         <button class="quick-action-btn" data-action="report"><i class="bi bi-file-earmark-text"></i><span>Report</span></button>
         <button class="quick-action-btn" data-action="analysis"><i class="bi bi-graph-up"></i><span>Analysis</span></button>
@@ -569,6 +570,11 @@
     </div>
   </main>
 
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/firebase-client.js"></script>
+  <script src="https://cdn.plaid.com/link/v2/stable/plaid-link.js"></script>
   <script src="../js/api-config.js" defer></script>
   <script src="../assets/js/api-cache.js" defer></script>
   <script src="../assets/js/alpha-vantage-api.js" defer></script>

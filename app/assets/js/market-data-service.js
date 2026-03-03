@@ -108,7 +108,7 @@
 
     async getCompanyProfile(symbol) {
       const s = symbol.toUpperCase();
-      var profile = null, overview = null;
+      var profile = null, overview = null, keyMetrics = null, ratios = null;
       try { profile = fmp() && await fmp().getCompanyProfile(s); } catch (_) {}
       try { overview = av() && await av().getCompanyOverview(s); } catch (_) {}
       if (!profile && !overview) {
@@ -117,6 +117,21 @@
           if (fhp) return { symbol: s, name: fhp.name || s, sector: fhp.finnhubIndustry || '', industry: fhp.finnhubIndustry || '', marketCap: fhp.marketCapitalization || 0, source: 'finnhub' };
         } catch (_) {}
         return null;
+      }
+      var pe = (overview && overview.PERatio && overview.PERatio !== 'None') ? parseFloat(overview.PERatio) : 0;
+      var eps = (overview && overview.EPS && overview.EPS !== 'None') ? parseFloat(overview.EPS) : 0;
+      var dividendYield = (overview && overview.DividendYield && overview.DividendYield !== 'None') ? parseFloat(overview.DividendYield) : 0;
+      if ((!pe || !eps || !dividendYield) && fmp()) {
+        try {
+          keyMetrics = await fmp().getKeyMetrics(s, 'ttm', 1);
+          ratios = await fmp().getFinancialRatios(s, 'ttm', 1);
+        } catch (_) {}
+        var km = keyMetrics && keyMetrics[0] ? keyMetrics[0] : {};
+        var r = ratios && ratios[0] ? ratios[0] : {};
+        if (!pe) pe = km.peRatio != null ? km.peRatio : (r.priceEarningsRatio != null ? r.priceEarningsRatio : 0);
+        if (!eps) eps = km.netIncomePerShare != null ? km.netIncomePerShare : 0;
+        if (!dividendYield) dividendYield = km.dividendYield != null ? km.dividendYield : (r.dividendYield != null ? r.dividendYield : 0);
+        if (!dividendYield && profile && profile.lastDiv) dividendYield = profile.lastDiv;
       }
       return {
         symbol: s,
@@ -134,9 +149,9 @@
         image: (profile && profile.image) || '',
         ipoDate: (profile && profile.ipoDate) || '',
         employees: (profile && profile.fullTimeEmployees) || (overview && overview.FullTimeEmployees) || '',
-        pe: (overview && parseFloat(overview.PERatio)) || 0,
-        eps: (overview && parseFloat(overview.EPS)) || 0,
-        dividendYield: (overview && parseFloat(overview.DividendYield)) || (profile && profile.lastDiv) || 0,
+        pe: pe,
+        eps: eps,
+        dividendYield: dividendYield,
         high52: (overview && parseFloat(overview['52WeekHigh'])) || 0,
         low52: (overview && parseFloat(overview['52WeekLow'])) || 0,
         source: profile ? 'fmp' : 'alphavantage'

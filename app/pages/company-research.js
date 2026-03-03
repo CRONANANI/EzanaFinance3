@@ -855,8 +855,27 @@ class CompanyResearch {
   }
 
   async loadCompanyData(query) {
-    const ticker = /^[A-Z]{1,5}$/i.test(query) ? query.toUpperCase() : null;
-    if (!ticker) return;
+    let ticker = /^[A-Z]{1,5}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
+    if (!ticker) {
+      const svc = window.MarketDataService;
+      if (svc && svc.searchSymbol) {
+        const results = await svc.searchSymbol(query.trim());
+        if (results && results.length) ticker = (results[0].symbol || '').toUpperCase();
+      }
+      if (!ticker && window.FmpAPI && window.FmpAPI.searchSymbol) {
+        try {
+          const results = await window.FmpAPI.searchSymbol(query.trim(), 5);
+          if (results && results.length) ticker = (results[0].symbol || '').toUpperCase();
+        } catch (_) {}
+      }
+      if (!ticker && window.AlphaVantageAPI && window.AlphaVantageAPI.searchSymbol) {
+        try {
+          const results = await window.AlphaVantageAPI.searchSymbol(query.trim());
+          if (results && results.length) ticker = (results[0].symbol || results[0]['1. symbol'] || '').toUpperCase();
+        } catch (_) {}
+      }
+      if (!ticker) return;
+    }
 
     const svc = window.MarketDataService;
     if (svc) {
