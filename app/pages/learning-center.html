@@ -19,9 +19,10 @@
   <link rel="stylesheet" href="../components/navigation/unified-nav.css">
   <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
   <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
+  <link rel="stylesheet" href="home-dashboard.css">
   <link rel="stylesheet" href="learning-center.css">
 </head>
-<body class="dashboard-page sidebar-open">
+<body class="dashboard-page sidebar-open learning-center-page">
 
   <nav class="main-nav" id="mainNav"></nav>
 
@@ -46,57 +47,183 @@
     </div>
   </div>
 
-  <main class="dashboard-main">
-    <div class="dashboard-container page-content">
+  <main class="dashboard-main learning-center-main">
+    <div class="dashboard-container learning-center-container">
 
-      <!-- Learning Stats - dashboard metric-card style -->
-      <div class="stats-grid condensed">
-        <div class="stat-card">
-          <div class="stat-icon members">
-            <i class="bi bi-percent"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">67%</div>
-            <div class="stat-label">Overall Completion</div>
-          </div>
+      <!-- Header Bar: Welcome + Search -->
+      <header class="learning-header-bar">
+        <div class="learning-header-left">
+          <h1 class="learning-welcome">Welcome back!</h1>
+          <p class="learning-tagline">Boost your skills to shine in your investing journey.</p>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon posts">
-            <i class="bi bi-clock"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">28</div>
-            <div class="stat-label">Hours Learned</div>
-          </div>
+        <div class="learning-search-wrap">
+          <i class="bi bi-search"></i>
+          <input type="text" class="learning-search-input" placeholder="Search Courses" id="learningSearchInput">
         </div>
-        <div class="stat-card">
-          <div class="stat-icon engagement">
-            <i class="bi bi-check-circle"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">15</div>
-            <div class="stat-label">Courses Completed</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon experts">
-            <i class="bi bi-fire"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-value">5</div>
-            <div class="stat-label">Active Streak (Days)</div>
-          </div>
-        </div>
-      </div>
+      </header>
 
+      <!-- Tabs -->
       <div class="learning-tabs">
-        <button class="learning-tab active" data-tab="courses"><i class="bi bi-book"></i> My Courses</button>
+        <button class="learning-tab active" data-tab="dashboard"><i class="bi bi-grid"></i> Dashboard</button>
+        <button class="learning-tab" data-tab="courses"><i class="bi bi-book"></i> My Courses</button>
         <button class="learning-tab" data-tab="skills"><i class="bi bi-puzzle"></i> Skills</button>
         <button class="learning-tab" data-tab="badges"><i class="bi bi-award"></i> Badges</button>
         <button class="learning-tab" data-tab="browse"><i class="bi bi-search"></i> Browse All</button>
       </div>
 
-      <div class="tab-content active" data-content="courses">
+      <!-- Dashboard View (shown when Dashboard tab active) -->
+      <div class="tab-content active" data-content="dashboard">
+      <!-- Upper Section: Two-Column Layout -->
+      <section class="learning-upper-section">
+        <div class="learning-course-table-card">
+          <div class="course-table-wrap">
+            <table class="learning-course-table">
+              <thead>
+                <tr>
+                  <th>Course Name</th>
+                  <th>Instructor</th>
+                  <th>Progress</th>
+                  <th>Level</th>
+                  <th>Next Assignment</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Portfolio Management Fundamentals</strong></td>
+                  <td><div class="instructor-cell"><span class="instructor-avatar">WC</span> Warren Chen, CFA</div></td>
+                  <td><div class="progress-cell"><div class="progress-bar-inline"><div class="progress-fill" style="width: 70%"></div></div><span>70%</span></div></td>
+                  <td><span class="level-badge beginner">Beginner</span></td>
+                  <td>Lesson 9 · Apr 27, 2026</td>
+                  <td><button class="btn-icon" title="Settings"><i class="bi bi-gear"></i></button></td>
+                </tr>
+                <tr>
+                  <td><strong>Risk Management Strategies</strong></td>
+                  <td><div class="instructor-cell"><span class="instructor-avatar">SM</span> Sarah Miller, FRM</div></td>
+                  <td><div class="progress-cell"><div class="progress-bar-inline"><div class="progress-fill" style="width: 40%"></div></div><span>40%</span></div></td>
+                  <td><span class="level-badge intermediate">Intermediate</span></td>
+                  <td>Lesson 8 · Apr 28, 2026</td>
+                  <td><button class="btn-icon" title="Settings"><i class="bi bi-gear"></i></button></td>
+                </tr>
+                <tr>
+                  <td><strong>Understanding Volatility</strong></td>
+                  <td><div class="instructor-cell"><span class="instructor-avatar">JM</span> James Mitchell</div></td>
+                  <td><div class="progress-cell"><div class="progress-bar-inline"><div class="progress-fill" style="width: 25%"></div></div><span>25%</span></div></td>
+                  <td><span class="level-badge intermediate">Intermediate</span></td>
+                  <td>Lesson 4 · May 1, 2026</td>
+                  <td><button class="btn-icon" title="Settings"><i class="bi bi-gear"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="learning-achievements-card">
+          <div class="achievement-row">
+            <div class="achievement-icon blue"><i class="bi bi-journal-bookmark"></i></div>
+            <div class="achievement-content">
+              <span class="achievement-value">15</span>
+              <span class="achievement-label">Courses Enrolled</span>
+            </div>
+          </div>
+          <div class="achievement-row">
+            <div class="achievement-icon green"><i class="bi bi-book"></i></div>
+            <div class="achievement-content">
+              <span class="achievement-value">28</span>
+              <span class="achievement-label">Hours Learned</span>
+            </div>
+          </div>
+          <div class="achievement-row">
+            <div class="achievement-icon orange"><i class="bi bi-star-fill"></i></div>
+            <div class="achievement-content">
+              <span class="achievement-value">12</span>
+              <span class="achievement-label">Reviews Earned</span>
+            </div>
+          </div>
+          <div class="achievement-row">
+            <div class="achievement-icon red"><i class="bi bi-fire"></i></div>
+            <div class="achievement-content">
+              <span class="achievement-value">5</span>
+              <span class="achievement-label">Day Streak</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recommended Courses -->
+      <section class="learning-section recommended-courses">
+        <div class="section-header-row">
+          <div>
+            <h2 class="section-title">Recommended Courses</h2>
+            <p class="section-subtitle">Based on your learning activity, we've curated a personalized course list for you.</p>
+          </div>
+          <button class="view-all-btn" onclick="window.learningCenter && window.learningCenter.switchTab('browse')">View All</button>
+        </div>
+        <div class="courses-scroll-wrap">
+          <div class="courses-scroll">
+            <div class="course-card recommended-card">
+              <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span></div>
+              <h4 class="course-title">Portfolio Management Fundamentals</h4>
+              <p class="course-description">Learn the core principles of portfolio construction and asset allocation.</p>
+              <div class="course-tags"><span class="tag beginner">Beginner</span><span class="tag">12 lessons</span></div>
+              <button class="enroll-btn full-width">Enroll Now</button>
+            </div>
+            <div class="course-card recommended-card">
+              <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span></div>
+              <h4 class="course-title">Risk Management Strategies</h4>
+              <p class="course-description">Master advanced risk management techniques and hedging strategies.</p>
+              <div class="course-tags"><span class="tag intermediate">Intermediate</span><span class="tag">18 lessons</span></div>
+              <button class="enroll-btn full-width">Enroll Now</button>
+            </div>
+            <div class="course-card recommended-card">
+              <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 4 hours</span></div>
+              <h4 class="course-title">Technical Analysis Basics</h4>
+              <p class="course-description">Learn to read charts and use technical indicators.</p>
+              <div class="course-tags"><span class="tag beginner">Beginner</span><span class="tag">12 lessons</span></div>
+              <button class="enroll-btn full-width">Enroll Now</button>
+            </div>
+            <div class="course-card recommended-card">
+              <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 5 hours</span></div>
+              <h4 class="course-title">Understanding Options</h4>
+              <p class="course-description">Master options pricing and strategies.</p>
+              <div class="course-tags"><span class="tag intermediate">Intermediate</span><span class="tag">16 lessons</span></div>
+              <button class="enroll-btn full-width">Enroll Now</button>
+            </div>
+            <div class="course-card recommended-card">
+              <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 3 hours</span></div>
+              <h4 class="course-title">Market Psychology</h4>
+              <p class="course-description">Understand behavioral finance and market sentiment.</p>
+              <div class="course-tags"><span class="tag beginner">Beginner</span><span class="tag">10 lessons</span></div>
+              <button class="enroll-btn full-width">Enroll Now</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Popular Course Topics -->
+      <section class="learning-section popular-topics">
+        <div class="section-header-row">
+          <div>
+            <h2 class="section-title">Popular Course Topics</h2>
+            <p class="section-subtitle">Based on your learning activity, we've curated popular topics for you.</p>
+          </div>
+          <button class="view-all-btn" onclick="window.learningCenter && window.learningCenter.switchTab('browse')">View All</button>
+        </div>
+        <div class="topics-scroll-wrap">
+          <div class="topics-scroll">
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-pie-chart"></i></div><span>Portfolio Management</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-shield-check"></i></div><span>Risk Management</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-graph-up"></i></div><span>Technical Analysis</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-calculator"></i></div><span>Quantitative Analysis</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-arrow-left-right"></i></div><span>Options Trading</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-emoji-smile"></i></div><span>Market Psychology</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-currency-dollar"></i></div><span>Economic Indicators</span></div>
+            <div class="topic-card"><div class="topic-icon"><i class="bi bi-bar-chart"></i></div><span>Financial Statements</span></div>
+          </div>
+        </div>
+      </section>
+      </div>
+
+      <div class="tab-content" data-content="courses">
         <h2 class="section-title">Courses In Progress</h2>
         <div class="courses-list">
           <div class="course-item in-progress">
