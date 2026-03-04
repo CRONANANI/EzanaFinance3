@@ -214,7 +214,8 @@ body {
     margin: 0 auto;
     padding: 0 2rem 2rem 2rem;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     gap: 2rem;
     overflow: visible;
@@ -233,14 +234,14 @@ body {
 
 @media (max-width: 1024px) {
     .content-container.hero-container {
-        flex-wrap: wrap;
-        justify-content: flex-start;
+        flex-wrap: nowrap;
+        justify-content: center;
     }
     .hero-visual {
         width: 100%;
         min-width: unset;
         height: 380px;
-        order: 2;
+        order: 1;
     }
 }
 
@@ -257,11 +258,11 @@ body {
 }
 
 .hero-content {
-    max-width: 920px;
+    max-width: 720px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+    align-items: center;
+    text-align: center;
     gap: 0;
     padding: 0;
     margin: 0 0 1.5rem 0;
@@ -269,7 +270,7 @@ body {
 }
 
 .hero-content > * {
-    align-self: flex-start !important;
+    align-self: center !important;
 }
 
 /* Hero Title - "Ezana Finance" (no logo) */
@@ -308,12 +309,12 @@ body {
     font-size: 2.625rem;
     font-size: clamp(1.0125rem, 3.75vw, 2.625rem);
     font-weight: 700;
-    max-width: 900px; /* Ensure "Your Network Is Your Net Worth" fits */
+    max-width: 900px;
     line-height: 1.2;
     letter-spacing: -0.02em;
     margin: 0 0 1.5rem 0;
     padding: 0;
-    text-align: left;
+    text-align: center;
     color: #ffffff;
     background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
     -webkit-background-clip: text;
@@ -331,8 +332,8 @@ body {
     font-weight: var(--font-weight-normal);
     margin: 0 0 0 0;
     padding: 0 0;
-    max-width: 560px;
-    text-align: left;
+    max-width: 640px;
+    text-align: center;
     color: #9ca3af;
     letter-spacing: -0.01em;
 }
@@ -848,8 +849,12 @@ body {
     margin-bottom: 3rem;
     width: 100%;
     max-width: 820px;
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .legacy-signup-inner,
@@ -862,7 +867,7 @@ body {
     box-shadow: var(--shadow-xl);
 }
 
-/* Legacy signup: no card, just text + form, left-aligned */
+/* Legacy signup: no card, just text + form, centered */
 .legacy-signup .legacy-signup-inner {
     background: none;
     backdrop-filter: none;
@@ -870,6 +875,11 @@ body {
     border-radius: 0;
     padding: 0;
     box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
 }
 
 .email-signup-form {
@@ -965,6 +975,7 @@ body {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .legacy-email-input {
