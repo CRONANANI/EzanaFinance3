@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import FloatingInput from '@/components/ui/floating-input';
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState('');
@@ -92,13 +93,12 @@ export default function WaitlistForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <input
+        <div className="flex justify-center">
+          <FloatingInput
+            label="Email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-green-500"
-            placeholder="Enter your email"
             required
             disabled={loading || success}
           />
