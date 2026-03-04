@@ -30,7 +30,7 @@ export default function HomePage() {
         <FeaturesSection />
       </div>
 
-      <section id="pricing">
+      <section id="resources">
         <PricingModule
           title="Simple, Transparent Pricing"
           subtitle="Choose the plan that fits your investment strategy."

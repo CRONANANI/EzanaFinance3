@@ -37,12 +37,6 @@ export function Navbar() {
             <li className="nav-item">
               <a href="#faq" className="nav-link">FAQ</a>
             </li>
-            <li className="nav-item">
-              <Link href="/signin" className="nav-link">Sign In</Link>
-            </li>
-            <li className="nav-item">
-              <Link href="/signup" className="btn-nav-primary">Sign Up</Link>
-            </li>
           </ul>
         </div>
       </nav>
