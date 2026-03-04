@@ -258,7 +258,7 @@ body {
 }
 
 .hero-content {
-    max-width: 720px;
+    max-width: 960px;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -327,14 +327,14 @@ body {
     overflow: visible;
 }
 
-/* Hero Subtitle - Wider for long paragraphs */
+/* Hero Subtitle - Wider for long paragraphs (3 lines) */
 .hero-subtitle {
     font-size: 0.9375rem;
     line-height: 1.7;
     font-weight: var(--font-weight-normal);
     margin: 0 0 0 0;
     padding: 0 0;
-    max-width: 640px;
+    max-width: 960px;
     text-align: center;
     color: #9ca3af;
     letter-spacing: -0.01em;
