@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* GradientButton - rotating gradient with metallic finish and border */
+@keyframes gradient-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-button-metallic {
+  background: linear-gradient(
+    135deg,
+    #10b981 0%,
+    #34d399 20%,
+    rgba(255, 255, 255, 0.25) 40%,
+    #059669 60%,
+    #047857 80%,
+    #10b981 100%
+  );
+  background-size: 400% 400%;
+  animation: gradient-rotate 4s ease infinite;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
 /* Ezana Finance - Theme variables and nav (compatibility) */
 @import '../../app-legacy/assets/css/theme-variables.css';
 @import '../../app-legacy/components/navigation/unified-nav.css';

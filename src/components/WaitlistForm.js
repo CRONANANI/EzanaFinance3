@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AnimatedEmailInput } from '@/components/ui/animated-email-input';
+import GradientButton from '@/components/ui/gradient-button';
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState('');
@@ -104,13 +105,14 @@ export default function WaitlistForm() {
           />
         </div>
 
-        <button
+        <GradientButton
           type="submit"
           disabled={loading || success}
-          className="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition disabled:opacity-50"
+          width="100%"
+          height="56px"
         >
           {loading ? 'Joining...' : success ? "You're on the list!" : 'Join Waitlist'}
-        </button>
+        </GradientButton>
 
         <p className="text-xs text-gray-500 text-center">
           We&apos;ll only email you about launch. Unsubscribe anytime.
