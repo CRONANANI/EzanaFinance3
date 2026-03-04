@@ -44,6 +44,16 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### HTML/CSS Playground (Legacy Pages)
+
+The original HTML/CSS pages are available for testing and recording:
+
+- **Playground:** [http://localhost:3000/app-legacy/playground.html](http://localhost:3000/app-legacy/playground.html)
+- **Main Landing:** [http://localhost:3000/app-legacy/index.html](http://localhost:3000/app-legacy/index.html)
+- **Home Dashboard:** [http://localhost:3000/app-legacy/pages/home-dashboard.html](http://localhost:3000/app-legacy/pages/home-dashboard.html)
+
+On Vercel, use the same paths: `https://your-app.vercel.app/app-legacy/playground.html`
+
 ## Build
 
 ```bash
@@ -68,7 +78,7 @@ ezana-finance/
 │   │   └── ...
 │   ├── components/
 │   └── lib/
-├── app/                     ← Legacy static assets (CSS, images)
+├── app-legacy/              ← Legacy HTML/CSS (copied to public at build)
 ├── package.json
 ├── next.config.js
 ├── vercel.json

@@ -36,3 +36,10 @@ yarn-error.log*
 
 # Vercel
 .vercel
+
+# Legacy app build output (renamed from app/ so Next.js uses src/app)
+app-build/
+app-build-old/
+
+# Copied at build time from app-legacy (do not commit)
+public/app-legacy/

@@ -1,8 +1,36 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export function FeaturesSection() {
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const blocks = section.querySelectorAll('.feature-block');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -100px 0px' }
+    );
+    blocks.forEach((block) => observer.observe(block));
+    // Fallback: show all blocks after 2.5s if not yet visible
+    const fallback = setTimeout(() => {
+      blocks.forEach((block) => block.classList.add('visible'));
+    }, 2500);
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
+  }, []);
+
   return (
-    <section className="features-section" id="features">
+    <section ref={sectionRef} className="features-section" id="features">
       <div className="features-container">
         <div className="feature-block" data-feature="congress">
           <div className="feature-content">

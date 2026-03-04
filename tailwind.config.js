@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{html,js}',
+    './app-legacy/**/*.{html,js}',
   ],
   darkMode: 'class',
   theme: {

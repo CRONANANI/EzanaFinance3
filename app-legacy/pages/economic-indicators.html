@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economic Indicators - Ezana Finance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../assets/css/theme-variables.css">
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/component-cards.css">
+  <link rel="stylesheet" href="../assets/css/unified-component-cards.css">
+  <link rel="stylesheet" href="../assets/css/universal-card-standards.css">
+  <link rel="stylesheet" href="../assets/css/page-layout.css">
+  <link rel="stylesheet" href="../assets/css/pages-common.css">
+  <link rel="stylesheet" href="../assets/css/layout-common.css">
+  <link rel="stylesheet" href="../assets/css/light-mode-fixes.css">
+  <link rel="stylesheet" href="../components/navigation/unified-nav.css">
+  <link rel="stylesheet" href="../components/notifications/notifications-sidebar.css">
+  <link rel="stylesheet" href="../components/learning/learning-opportunities.css">
+  <link rel="stylesheet" href="../components/research-tools/economic-indicators-cards.css">
+  <link rel="stylesheet" href="home-dashboard.css">
+  <link rel="stylesheet" href="economic-indicators.css">
+</head>
+<body class="dashboard-page sidebar-open economic-indicators-page">
+
+  <nav class="main-nav" id="mainNav"></nav>
+
+  <div id="notifications-sidebar" class="notifications-sidebar open">
+    <button id="notifications-toggle" class="notifications-toggle" onclick="toggleNotificationsSidebar()">
+      <i class="bi bi-bell"></i>
+    </button>
+    <div class="notifications-content">
+      <div class="notifications-header">
+        <div class="notifications-title"><h3>Investment Feed</h3></div>
+        <div class="notifications-actions">
+          <button class="notifications-collapse" onclick="toggleSidebarCollapse()" title="Collapse"><i class="bi bi-chevron-double-left"></i></button>
+          <button class="notifications-settings" onclick="openNotificationSettings()" title="Settings"><i class="bi bi-gear"></i></button>
+        </div>
+      </div>
+      <div class="notifications-filters">
+        <button class="filter-btn active" data-filter="all" onclick="filterNotifications('all')">All</button>
+        <button class="filter-btn" data-filter="congress" onclick="filterNotifications('congress')">Congress</button>
+        <button class="filter-btn" data-filter="stocks" onclick="filterNotifications('stocks')">Stocks</button>
+        <button class="filter-btn" data-filter="community" onclick="filterNotifications('community')">Community</button>
+      </div>
+      <div class="notifications-list" id="notifications-list"></div>
+      <div class="notifications-empty" id="notifications-empty" style="display:none;"><i class="bi bi-bell-slash"></i><p>No notifications yet</p><small>We'll notify you when something important happens</small></div>
+    </div>
+  </div>
+
+  <main class="dashboard-main economic-indicators-main">
+    <div class="dashboard-container economic-indicators-container">
+
+      <!-- Stats Grid -->
+      <div class="stats-grid condensed">
+        <div class="stat-card">
+          <div class="stat-icon market"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">3.2%</div>
+            <div class="stat-label">GDP Growth</div>
+            <div class="stat-change positive">Q4 2024</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon performance"><i class="bi bi-currency-dollar"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">5.25%</div>
+            <div class="stat-label">Fed Funds Rate</div>
+            <div class="stat-change">Current</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon volume"><i class="bi bi-percent"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">3.4%</div>
+            <div class="stat-label">CPI YoY</div>
+            <div class="stat-change">Latest</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon trades"><i class="bi bi-people"></i></div>
+          <div class="stat-content">
+            <div class="stat-value">3.7%</div>
+            <div class="stat-label">Unemployment</div>
+            <div class="stat-change positive">Low</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Economic Indicators Grid -->
+      <div class="economic-indicators-grid">
+        <div class="economic-indicator-card">
+          <div class="indicator-icon"><i class="bi bi-graph-up"></i></div>
+          <h3>GDP & Growth</h3>
+          <p>Track GDP, growth rates, and economic output metrics.</p>
+        </div>
+        <div class="economic-indicator-card">
+          <div class="indicator-icon"><i class="bi bi-bank"></i></div>
+          <h3>Interest Rates</h3>
+          <p>Fed funds rate, treasury yields, and central bank policy.</p>
+        </div>
+        <div class="economic-indicator-card">
+          <div class="indicator-icon"><i class="bi bi-inflation"></i></div>
+          <h3>Inflation</h3>
+          <p>CPI, PPI, PCE and inflation expectations.</p>
+        </div>
+        <div class="economic-indicator-card">
+          <div class="indicator-icon"><i class="bi bi-briefcase"></i></div>
+          <h3>Employment</h3>
+          <p>Unemployment, jobless claims, and labor market data.</p>
+        </div>
+        <div class="economic-indicator-card">
+          <div class="indicator-icon"><i class="bi bi-house"></i></div>
+          <h3>Housing</h3>
+          <p>Home sales, building permits, and housing starts.</p>
+        </div>
+        <div class="economic-indicator-card">
+          <div class="indicator-icon"><i class="bi bi-globe2"></i></div>
+          <h3>Consumer Sentiment</h3>
+          <p>Consumer confidence and sentiment indices.</p>
+        </div>
+      </div>
+
+      <!-- Learning Opportunities -->
+      <section class="learning-opportunities">
+        <div class="learning-header">
+          <div class="learning-title-area">
+            <div class="learning-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="learning-title-text">
+              <h3>Economic Data Courses</h3>
+              <p>Learn to interpret and use economic indicators</p>
+            </div>
+          </div>
+          <button class="view-all-btn" onclick="window.location.href='learning-center.html'">View All Courses</button>
+        </div>
+        <div class="courses-grid">
+          <div class="course-card">
+            <div class="course-header"><span class="course-type">Course</span><span class="course-duration"><i class="bi bi-clock"></i> 6 hours</span></div>
+            <h4 class="course-title">Understanding Economic Indicators</h4>
+            <p class="course-description">Learn how GDP, CPI, and employment data impact markets.</p>
+            <div class="course-footer"><span class="course-level intermediate">Intermediate</span><button class="enroll-btn">Enroll Now</button></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="../assets/js/theme-toggle.js" defer></script>
+  <script src="../assets/js/sidebar-toggle.js" defer></script>
+  <script src="../components/navigation/load-nav.js" defer></script>
+  <script src="../components/notifications/notifications-sidebar.js" defer></script>
+</body>
+</html>

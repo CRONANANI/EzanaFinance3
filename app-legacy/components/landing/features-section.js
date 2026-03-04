@@ -463,6 +463,15 @@
     var section = document.querySelector('.features-section');
     if (section) {
       global._featuresSectionInstance = new FeaturesSection(section);
+      // Fallback: ensure feature blocks become visible after 2.5s if IntersectionObserver hasn't fired
+      setTimeout(function () {
+        var blocks = section.querySelectorAll('.feature-block');
+        blocks.forEach(function (block) {
+          if (!block.classList.contains('visible')) {
+            block.classList.add('visible');
+          }
+        });
+      }, 2500);
     }
     if (document.querySelector('.congress-visual')) {
       global.congressFilter = new CongressionalTradingFilter();

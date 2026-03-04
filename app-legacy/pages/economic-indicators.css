@@ -1,0 +1,22 @@
+/* Economic Indicators Page - Dashboard Style
+   Match home dashboard / market analysis layout */
+
+body.economic-indicators-page .economic-indicators-main.dashboard-main {
+  margin-left: 0;
+  padding-top: 64px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+body.economic-indicators-page.sidebar-open .economic-indicators-main.dashboard-main {
+  margin-left: 320px;
+}
+
+body.economic-indicators-page .economic-indicators-container.dashboard-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
