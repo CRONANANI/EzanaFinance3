@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import WaitlistForm from '@/components/WaitlistForm';
 import { InteractiveGlobe } from '@/components/ui/interactive-globe';
 
@@ -16,20 +15,11 @@ export function LandingHero() {
           <span className="hero-badge-dot" />
           First 1,000 users · Lifetime Legacy Access
         </div>
-        <p className="hero-cta-line">Be first. Stay free forever.</p>
         <p className="hero-waitlist-intro">
           Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits.
         </p>
         <div className="hero-waitlist">
           <WaitlistForm />
-        </div>
-        <div className="hero-cta hero-cta-secondary">
-          <Link href="/signin" className="btn-hero-secondary">
-            <span>Sign In</span>
-          </Link>
-          <a href="#features" className="btn-hero-secondary">
-            <span>Learn More</span>
-          </a>
         </div>
       </div>
       <div className="card-preview globe-preview">
