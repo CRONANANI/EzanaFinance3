@@ -201,7 +201,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 120px 2rem 4rem 2rem;
+    padding: 60px 2rem 4rem 2rem;
     background: transparent;
     overflow: visible;
 }
@@ -354,7 +354,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem 4rem 2rem;
+    padding: 2rem 2rem 4rem 2rem;
     position: relative;
     overflow: visible;
 }
@@ -2597,7 +2597,7 @@ body {
     }
 
     .main-content.hero-section {
-        padding: 100px 1.5rem 3rem 1.5rem;
+        padding: 50px 1.5rem 3rem 1.5rem;
     }
 
     .content-container.hero-container {
