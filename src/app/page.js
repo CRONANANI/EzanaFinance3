@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import '../../app/pages/landing.css';
-import '../../app/components/landing/features-section.css';
+import '../../app-legacy/pages/landing.css';
+import '../../app-legacy/components/landing/features-section.css';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { PricingModule } from '@/components/ui/pricing-module';
