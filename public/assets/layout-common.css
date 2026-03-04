@@ -1,0 +1,136 @@
+/**
+ * Ezana Finance - Layout Common
+ * Unified page container, grid, and sidebar-offset behavior.
+ * Depends on: theme-variables.css
+ */
+
+/* Account for fixed nav */
+body {
+    padding-top: var(--nav-height, 64px);
+}
+
+.page-wrapper {
+    min-height: calc(100vh - var(--nav-height, 64px));
+}
+
+/* Unified page container - same on all pages */
+.page-content,
+.dashboard-page-content {
+    max-width: var(--page-max-width, 1400px);
+    margin: 0 auto;
+    padding: var(--space-xl, 2rem) var(--space-lg, 1.5rem);
+    transition: margin-left 0.3s ease;
+}
+
+/* Default: no sidebar offset */
+.page-content,
+.dashboard-page-content {
+    margin-left: 0;
+}
+
+/* When sidebar is open and .page-content is a direct child of body
+   (pages without .page-wrapper like inside-the-capitol, community, financial-analytics),
+   shift content right to match the 320px sidebar.
+   Pages WITH .page-wrapper handle offset via padding-left on the wrapper. */
+body.sidebar-open > .page-content,
+body.sidebar-open > .dashboard-page-content {
+    margin-left: 320px;
+}
+
+/* Standard grid for cards - consistent gap */
+.dashboard-grid,
+.page-content .dashboard-grid,
+.page-content .research-grid,
+.page-content .watchlist-grid,
+.page-content .community-overview-grid,
+.page-content .quant-tools-grid,
+.page-content .market-overview-grid,
+.page-content .component-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-lg, 1.5rem);
+    margin-top: var(--space-xl, 2rem);
+}
+
+/* Responsive: single-column layout, no sidebar offset */
+@media (max-width: 1024px) {
+    body.sidebar-open > .page-content,
+    body.sidebar-open > .dashboard-page-content {
+        margin-left: 0;
+    }
+    .page-content,
+    .dashboard-page-content {
+        padding-left: var(--space-lg, 1.5rem);
+        padding-right: var(--space-lg, 1.5rem);
+    }
+}
+
+/* Mobile */
+@media (max-width: 639px) {
+    .page-content,
+    .dashboard-page-content {
+        padding: var(--space-md, 1rem);
+    }
+
+    .dashboard-grid,
+    .page-content .dashboard-grid,
+    .page-content .research-grid,
+    .page-content .watchlist-grid,
+    .page-content .community-overview-grid,
+    .page-content .quant-tools-grid,
+    .page-content .market-overview-grid,
+    .page-content .component-cards-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-md, 1rem);
+    }
+}
+
+/* Tablet */
+@media (min-width: 640px) and (max-width: 1024px) {
+    .dashboard-grid,
+    .page-content .dashboard-grid,
+    .page-content .research-grid,
+    .page-content .watchlist-grid,
+    .page-content .community-overview-grid,
+    .page-content .quant-tools-grid,
+    .page-content .market-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .dashboard-grid,
+    .page-content .dashboard-grid,
+    .page-content .research-grid,
+    .page-content .watchlist-grid,
+    .page-content .community-overview-grid,
+    .page-content .quant-tools-grid,
+    .page-content .market-overview-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* Chart container - consistent height, padding, border, legend placement */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: var(--chart-height-desktop, 400px);
+    padding: var(--space-md, 1rem);
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: var(--shadow-sm);
+}
+
+.chart-container canvas {
+    max-width: 100% !important;
+    height: 100% !important;
+}
+
+@media (max-width: 639px) {
+    .chart-container {
+        height: var(--chart-height-mobile, 300px);
+    }
+}
+

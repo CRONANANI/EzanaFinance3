@@ -1,0 +1,250 @@
+/* ============================================
+   THEME VARIABLES - TWEAKCN + EZANA FINANCE
+   UI-Template Font System
+   ============================================ */
+
+:root {
+    /* Typography - Inter Font */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'Inter', "SF Mono", Monaco, "Cascadia Code", monospace;
+
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    --font-weight-black: 900;
+
+    /* Font Smoothing */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
+    --radius-sm: 0.5rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
+
+    /* Shadows (Tweakcn) */
+    --shadow-2xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
+    --shadow-xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
+    --shadow-sm: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 1px 2px -5px hsl(0 0% 0% / 0.08);
+    --shadow: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 1px 2px -5px hsl(0 0% 0% / 0.08);
+    --shadow-md: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 2px 4px -5px hsl(0 0% 0% / 0.08);
+    --shadow-lg: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 4px 6px -5px hsl(0 0% 0% / 0.08);
+    --shadow-xl: 0px 8px 16px -4px hsl(0 0% 0% / 0.08), 0px 8px 10px -5px hsl(0 0% 0% / 0.08);
+    --shadow-2xl: 0px 8px 16px -4px hsl(0 0% 0% / 0.20);
+
+    /* DARK MODE - Ezana Finance Green Theme */
+    --background: #0f1419;
+    --foreground: #ffffff;
+    --card: rgba(26, 35, 50, 0.6);
+    --card-foreground: #ffffff;
+    --card-border: rgba(16, 185, 129, 0.1);
+
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+    --primary-hover: #34d399;
+
+    --secondary: #1a2332;
+    --secondary-foreground: #9ca3af;
+
+    --muted: rgba(17, 24, 39, 0.4);
+    --muted-foreground: #6b7280;
+
+    --accent: rgba(16, 185, 129, 0.15);
+    --accent-foreground: #10b981;
+
+    --border: rgba(16, 185, 129, 0.1);
+    --input: rgba(17, 24, 39, 0.6);
+    --ring: #10b981;
+
+    --sidebar-bg: rgba(15, 20, 25, 0.98);
+    --sidebar-border: rgba(16, 185, 129, 0.1);
+    --sidebar-hover: rgba(16, 185, 129, 0.1);
+
+    --nav-bg: rgba(15, 20, 25, 0.95);
+    --nav-border: rgba(16, 185, 129, 0.1);
+
+    /* Legacy aliases */
+    --color-primary: #10b981;
+    --color-primary-dark: #059669;
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a2332;
+    --bg-card: rgba(17, 24, 39, 0.5);
+    --bg-card-hover: rgba(17, 24, 39, 0.7);
+    --border-primary: rgba(16, 185, 129, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --text-tertiary: #6b7280;
+    --spacing: 0.25rem;
+    --radius: 1.5rem;
+    --shadow-2xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
+    --shadow-xs: 0px 8px 16px -4px hsl(0 0% 0% / 0.04);
+    --shadow-card: var(--shadow-sm);
+    --shadow-card-hover: var(--shadow-lg);
+
+    /* Spacing Scale */
+    --space-xs: 0.25rem;   /* 4px */
+    --space-sm: 0.5rem;   /* 8px */
+    --space-md: 1rem;     /* 16px */
+    --space-lg: 1.5rem;   /* 24px */
+    --space-xl: 2rem;     /* 32px */
+    --space-2xl: 3rem;    /* 48px */
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 300ms ease;
+    --transition-slow: 500ms ease;
+
+    /* Z-Index Scale */
+    --z-base: 1;
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-sidebar: 40;
+    --z-nav: 50;
+    --z-modal: 100;
+    --z-toast: 200;
+
+    /* Typography Scale */
+    --font-xs: 0.75rem;      /* 12px */
+    --font-sm: 0.875rem;     /* 14px */
+    --font-base: 1rem;       /* 16px */
+    --font-lg: 1.125rem;     /* 18px */
+    --font-xl: 1.25rem;      /* 20px */
+    --font-2xl: 1.5rem;     /* 24px */
+    --font-3xl: 1.875rem;    /* 30px */
+    --font-4xl: 2.25rem;     /* 36px */
+
+    /* Layout */
+    --nav-height: 64px;
+    --sidebar-width: 320px;
+    --page-max-width: 1400px;
+    --hero-min-height: 120px;
+    --metric-card-min-height: 120px;
+    --chart-height-desktop: 400px;
+    --chart-height-mobile: 300px;
+}
+
+/* LIGHT MODE - Tweakcn Light + Ezana Green */
+body.light-mode {
+  --background: #f5f5f0;
+  --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --card-border: rgba(5, 150, 105, 0.15);
+
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --primary-hover: #047857;
+
+  --secondary: #f3f4f6;
+  --secondary-foreground: #4b5563;
+
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+
+  --accent: rgba(5, 150, 105, 0.1);
+  --accent-foreground: #059669;
+
+  --border: rgba(5, 150, 105, 0.15);
+  --input: #ffffff;
+  --ring: #059669;
+
+  --sidebar-bg: #ffffff;
+  --sidebar-border: rgba(5, 150, 105, 0.15);
+  --sidebar-hover: rgba(5, 150, 105, 0.05);
+
+  --nav-bg: rgba(255, 255, 255, 0.95);
+  --nav-border: rgba(5, 150, 105, 0.15);
+
+  --color-primary: #059669;
+  --bg-primary: #f5f5f0;
+  --bg-card: #ffffff;
+  --border-primary: rgba(5, 150, 105, 0.15);
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+}
+
+/* .dark - Inter font stack (fonts consistent in dark mode) */
+.dark {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Inter', "SF Mono", Monaco, "Cascadia Code", monospace;
+}
+
+/* App-wide default typography */
+html, body {
+  font-family: var(--font-sans);
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+}
+
+/* Apply base styles globally */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-feature-settings: 'cv05' 1, 'cv08' 1, 'cv11' 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 { font-weight: var(--font-weight-extrabold); letter-spacing: -0.03em; }
+h2 { font-weight: var(--font-weight-bold); letter-spacing: -0.025em; }
+h3 { font-weight: var(--font-weight-semibold); letter-spacing: -0.02em; }
+
+h1 { font-size: var(--font-3xl); }
+h2 { font-size: var(--font-2xl); }
+h3 { font-size: var(--font-xl); }
+h4 { font-size: var(--font-lg); font-weight: var(--font-weight-semibold); }
+h5, h6 { font-weight: var(--font-weight-medium); }
+p {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+a { font-weight: var(--font-weight-medium); }
+input, textarea, select {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: -0.01em;
+}
+.stat-value, .price, .amount, .percentage {
+  font-feature-settings: 'tnum' 1;
+}
+
+.portfolio-value {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.025em;
+  font-feature-settings: 'tnum' 1;
+}
+
+.stock-symbol {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0;
+}
+small { font-size: var(--font-sm); line-height: 1.5; }
+strong, b { font-weight: var(--font-weight-semibold); }
+
+/* code, pre, kbd, samp already set above */

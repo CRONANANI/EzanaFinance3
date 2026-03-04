@@ -1,0 +1,102 @@
+/**
+ * Ezana Finance - Metrics Common
+ * Standardized metric cards (Today's P&L, Top Performer, Risk Score, etc.).
+ * Depends on: theme-variables.css
+ */
+
+.metric-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md, 1rem);
+    padding: var(--space-lg, 1.5rem);
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg, 12px);
+    min-height: var(--metric-card-min-height, 120px);
+    transition: all var(--transition-base);
+}
+
+.metric-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.metric-card-icon,
+.metric-header .metric-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md, 8px);
+}
+
+.metric-card-content,
+.metric-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+.metric-card-label,
+.metric-title {
+    font-size: var(--font-xs, 0.75rem);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.metric-card-value,
+.metric-value {
+    font-size: var(--font-xl, 1.25rem);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.metric-card-change,
+.metric-subtitle {
+    font-size: var(--font-sm, 0.875rem);
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Metrics grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-md, 1rem);
+}
+
+@media (max-width: 639px) {
+    .metric-card {
+        min-height: 100px;
+        padding: var(--space-md, 1rem) var(--space-lg, 1.5rem);
+    }
+
+    .metric-card-icon,
+    .metric-header .metric-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .metric-card-value,
+    .metric-value {
+        font-size: var(--font-lg, 1.125rem);
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm, 0.5rem);
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

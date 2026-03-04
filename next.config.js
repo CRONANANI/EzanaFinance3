@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // App Router: all pages are server-rendered by default (SSR)
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**', pathname: '/**' },
+      { protocol: 'http', hostname: '**', pathname: '/**' },
+    ],
+  },
 };
 
 module.exports = nextConfig;

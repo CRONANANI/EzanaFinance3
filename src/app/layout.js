@@ -1,6 +1,8 @@
 import '@/app/globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
+import { CongressProvider } from '@/contexts/CongressContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 import { Navbar } from '@/components/Layout/Navbar';
 
 export const metadata = {
@@ -20,8 +22,12 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider>
           <AuthProvider>
-            <Navbar />
-            {children}
+            <CongressProvider>
+              <SidebarProvider>
+                <Navbar />
+                {children}
+              </SidebarProvider>
+            </CongressProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

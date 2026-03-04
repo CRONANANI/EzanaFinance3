@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { supabase } from '@/lib/supabase';
 
 export function Navbar() {
@@ -11,6 +12,7 @@ export function Navbar() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const { toggleNotifications } = useSidebar();
   const isLanding = pathname === '/';
 
   const handleSignOut = async () => {
@@ -104,7 +106,7 @@ export function Navbar() {
           <button className="nav-action-btn theme-toggle" onClick={toggleTheme} title="Toggle theme" type="button">
             <i className={`bi ${theme === 'dark' ? 'bi-sun-fill light-icon' : 'bi-moon-fill dark-icon'}`}></i>
           </button>
-          <button className="nav-action-btn notification-toggle" title="Notifications" type="button">
+          <button className="nav-action-btn notification-toggle" onClick={toggleNotifications} title="Notifications" type="button">
             <i className="bi bi-bell"></i>
             <span className="notification-badge">3</span>
           </button>

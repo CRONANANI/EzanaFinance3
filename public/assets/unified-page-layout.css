@@ -1,0 +1,151 @@
+/* ============================================
+   UNIFIED PAGE LAYOUT - ALL PAGES
+   Base template matches home-dashboard: dashboard-main + dashboard-container
+   ============================================ */
+
+/* Legacy page-wrapper - deprecated; use dashboard-main as direct child of body */
+.page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: transparent;
+  padding: 0;
+  transition: none;
+}
+
+body.sidebar-open .page-wrapper {
+  padding-left: 0;
+}
+
+/* page-content: when used inside dashboard-main, inherits dashboard-container styling */
+.page-content,
+.dashboard-container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-hero {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-card);
+}
+
+.page-hero h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--color-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-hero p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.component-card {
+  background: var(--card, var(--bg-card));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border, var(--border-primary));
+  border-radius: var(--radius-lg, var(--radius));
+  padding: 2rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-sm, var(--shadow-card));
+  position: relative;
+  overflow: hidden;
+}
+
+.component-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.page-wrapper .card-header,
+.dashboard-main .card-header,
+.dashboard-container .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.page-wrapper .card-header h3,
+.dashboard-main .card-header h3,
+.dashboard-container .card-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground, var(--text-primary));
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-sans);
+}
+
+.page-wrapper .card-header h3 i,
+.dashboard-main .card-header h3 i,
+.dashboard-container .card-header h3 i {
+  color: var(--primary, var(--color-primary));
+  font-size: 1.25rem;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.cards-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.cards-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  body.sidebar-open .page-wrapper {
+    padding-left: 0;
+  }
+
+  .cards-grid-2,
+  .cards-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-content {
+    padding: 1rem;
+  }
+
+  .page-hero {
+    padding: 1.5rem;
+  }
+
+  .page-hero h1 {
+    font-size: 1.5rem;
+  }
+}
