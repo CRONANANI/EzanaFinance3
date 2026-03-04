@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import FloatingInput from '@/components/ui/floating-input';
+import { AnimatedEmailInput } from '@/components/ui/animated-email-input';
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState('');
@@ -94,7 +94,7 @@ export default function WaitlistForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex justify-center">
-          <FloatingInput
+          <AnimatedEmailInput
             label="Email"
             type="email"
             value={email}
