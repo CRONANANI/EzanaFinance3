@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /* Ezana Finance - Theme variables and nav (compatibility) */
-@import '../../app/assets/css/theme-variables.css';
-@import '../../app/components/navigation/unified-nav.css';
-@import '../../app/components/notifications/notifications-sidebar.css';
-@import '../../app/assets/css/page-layout.css';
-@import '../../app/assets/css/universal-card-standards.css';
-@import '../../app/assets/css/component-cards.css';
+@import '../../app-legacy/assets/css/theme-variables.css';
+@import '../../app-legacy/components/navigation/unified-nav.css';
+@import '../../app-legacy/components/notifications/notifications-sidebar.css';
+@import '../../app-legacy/assets/css/page-layout.css';
+@import '../../app-legacy/assets/css/universal-card-standards.css';
+@import '../../app-legacy/assets/css/component-cards.css';
