@@ -4,10 +4,10 @@
    ============================================ */
 
 :root {
-    /* Typography - Inter Font */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: 'Inter', "SF Mono", Monaco, "Cascadia Code", monospace;
+    /* Typography - Plus Jakarta Sans (Envato-style modern font) */
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'Plus Jakarta Sans', "SF Mono", Monaco, "Cascadia Code", monospace;
 
     /* Font Weights */
     --font-weight-light: 300;
@@ -169,11 +169,11 @@ body.light-mode {
   --text-secondary: #4b5563;
 }
 
-/* .dark - Inter font stack (fonts consistent in dark mode) */
+/* .dark - Plus Jakarta Sans font stack (fonts consistent in dark mode) */
 .dark {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'Inter', "SF Mono", Monaco, "Cascadia Code", monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Plus Jakarta Sans', "SF Mono", Monaco, "Cascadia Code", monospace;
 }
 
 /* App-wide default typography */
