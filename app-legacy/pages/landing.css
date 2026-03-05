@@ -740,7 +740,7 @@ body {
     font-size: 0.875rem;
     color: #10b981;
     margin: 0 0 1rem 0;
-    max-width: 480px;
+    white-space: nowrap;
     line-height: 1.5;
 }
 
@@ -963,6 +963,7 @@ body {
     color: #10b981;
     margin: 0 0 0.75rem 0;
     line-height: 1.5;
+    white-space: nowrap;
 }
 
 /* Legacy card body text matches hero subtitle size (0.9375rem) */
