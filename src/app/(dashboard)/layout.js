@@ -8,12 +8,15 @@ export default function DashboardLayout({ children }) {
   const { notificationsOpen } = useSidebar();
 
   useEffect(() => {
+    document.body.classList.add('dashboard-page');
     if (notificationsOpen) {
-      document.body.classList.add('sidebar-open', 'dashboard-page');
+      document.body.classList.add('sidebar-open');
     } else {
       document.body.classList.remove('sidebar-open');
     }
-    return () => document.body.classList.remove('sidebar-open');
+    return () => {
+      document.body.classList.remove('sidebar-open', 'dashboard-page');
+    };
   }, [notificationsOpen]);
 
   return (

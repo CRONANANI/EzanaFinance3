@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './app-legacy/**/*.{html,js}',
+    './app-legacy/**/*.{html,js,css}',
   ],
   darkMode: 'class',
   theme: {
@@ -18,6 +18,8 @@ module.exports = {
         card: 'rgba(26, 35, 50, 0.6)',
         'card-foreground': '#ffffff',
         accent: 'rgba(16, 185, 129, 0.15)',
+        'accent-foreground': '#10b981',
+        destructive: '#ef4444',
         muted: 'rgba(17, 24, 39, 0.4)',
         'muted-foreground': '#6b7280',
         border: 'rgba(16, 185, 129, 0.1)',

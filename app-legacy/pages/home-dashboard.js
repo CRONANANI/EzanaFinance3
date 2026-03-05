@@ -596,10 +596,19 @@ class PortfolioDashboard {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initHomeDashboard() {
+  if (window.portfolioDashboard) return;
   window.portfolioDashboard = new PortfolioDashboard();
   initLiveMarketData();
-});
+}
+
+window.initHomeDashboard = initHomeDashboard;
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHomeDashboard);
+} else {
+  initHomeDashboard();
+}
 
 /**
  * Live Market Data Integration

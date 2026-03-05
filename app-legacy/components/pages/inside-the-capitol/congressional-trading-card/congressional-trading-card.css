@@ -155,7 +155,7 @@
 }
 
 .congressional-expanded-content.hidden {
-    @apply hidden;
+    display: none;
 }
 
 .congressional-expanded-content.visible {
