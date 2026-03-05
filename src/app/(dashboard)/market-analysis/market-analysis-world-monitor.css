@@ -1,0 +1,323 @@
+/* ============================================
+   MARKET ANALYSIS - World Monitor Style
+   Full-height sticky map on left, scrollable cards on right
+   ============================================ */
+
+/* Break out of dashboard container - full viewport below navbar */
+.market-analysis-world-monitor {
+  position: fixed;
+  top: var(--nav-height, 64px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  z-index: 1;
+  background: #0a0e14;
+}
+
+/* When sidebar is open, shift left to account for sidebar */
+body.sidebar-open .market-analysis-world-monitor {
+  left: var(--sidebar-width, 320px);
+}
+
+/* Left: Map panel - full height, sticky */
+.map-panel {
+  flex: 0 0 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+  border-right: 1px solid rgba(16, 185, 129, 0.15);
+  overflow: hidden;
+}
+
+.map-header {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.map-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0 0 0.75rem 0;
+}
+
+.map-title i {
+  color: #10b981;
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.map-layers {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.layer-label {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin-right: 0.25rem;
+}
+
+.layer-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #8b949e;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.layer-btn:hover,
+.layer-btn.active {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.time-range-select {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  color: #f0f6fc;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.map-container {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.world-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.35) contrast(1.15) saturate(0.7) hue-rotate(-5deg);
+}
+
+.map-overlay-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.market-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.9);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.market-dot.usa { top: 38%; left: 22%; }
+.market-dot.europe { top: 32%; left: 48%; }
+.market-dot.asia { top: 35%; left: 78%; }
+.market-dot.uk { top: 28%; left: 46%; }
+.market-dot.china { top: 38%; left: 72%; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+/* Right: Scrollable cards panel */
+.cards-panel {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #0a0e14;
+}
+
+.cards-panel-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+}
+
+.cards-header {
+  margin-bottom: 1.5rem;
+}
+
+.cards-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.25rem 0;
+}
+
+.cards-header p {
+  font-size: 0.875rem;
+  color: #8b949e;
+  margin: 0;
+}
+
+/* Intel/News cards */
+.intel-card {
+  background: rgba(22, 27, 34, 0.8);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.intel-card:hover {
+  background: rgba(22, 27, 34, 0.95);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.intel-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.intel-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.intel-badge.markets { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.intel-badge.asia { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.intel-badge.bonds { background: rgba(168, 85, 247, 0.2); color: #a78bfa; }
+.intel-badge.commodities { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.intel-badge.em { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.intel-badge.fed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.intel-badge.crypto { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+.intel-badge.china { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+.intel-badge.europe { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+
+.intel-time {
+  font-size: 0.75rem;
+  color: #6e7681;
+}
+
+.intel-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.intel-card p {
+  font-size: 0.875rem;
+  color: #8b949e;
+  line-height: 1.55;
+  margin: 0 0 0.75rem 0;
+}
+
+.intel-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #6e7681;
+}
+
+.intel-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.intel-meta i {
+  font-size: 0.875rem;
+  color: #10b981;
+}
+
+.cards-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.view-more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.view-more-link:hover {
+  color: #34d399;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 1024px) {
+  .market-analysis-world-monitor {
+    flex-direction: column;
+    position: relative;
+    margin: 0;
+    padding-top: 0;
+    min-height: 100vh;
+  }
+
+  body.sidebar-open .market-analysis-world-monitor {
+    left: 0;
+  }
+
+  .map-panel {
+    flex: 0 0 auto;
+    height: 45vh;
+    min-height: 280px;
+    border-right: none;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  .cards-panel {
+    flex: 1;
+  }
+
+  .cards-panel-inner {
+    max-width: none;
+    padding: 1.5rem 1rem 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .map-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .map-layers {
+    width: 100%;
+  }
+}
