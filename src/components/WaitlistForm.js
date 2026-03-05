@@ -96,7 +96,7 @@ export default function WaitlistForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex justify-center">
           <AnimatedEmailInput
-            label="Email"
+            label="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

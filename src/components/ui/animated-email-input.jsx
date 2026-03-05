@@ -30,7 +30,7 @@ const letterVariants = {
 };
 
 export function AnimatedEmailInput({
-  label = "Email",
+  label = "email",
   className = "",
   value,
   type = "email",
@@ -44,7 +44,7 @@ export function AnimatedEmailInput({
   return (
     <div className={cn("relative w-full max-w-md", className)}>
       <motion.div
-        className="absolute top-1/2 -translate-y-1/2 pointer-events-none text-zinc-900 dark:text-zinc-100"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-zinc-900 dark:text-zinc-100 text-center"
         variants={containerVariants}
         initial="initial"
         animate={showLabel ? "animate" : "initial"}
