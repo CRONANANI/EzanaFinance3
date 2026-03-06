@@ -342,6 +342,11 @@ body {
   text-shadow: 0 0 20px rgba(203, 213, 225, 0.5);
 }
 
+/* Block elements (bubble, globe, form) - same word-appear animation */
+.animate-in {
+  opacity: 0;
+}
+
 /* Hero Tagline (main title) - Single line, fluid scaling */
 .hero-tagline {
     font-size: 2.625rem;

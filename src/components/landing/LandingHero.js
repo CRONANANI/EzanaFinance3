@@ -8,17 +8,17 @@ import { AnimatedWords } from '@/components/ui/animated-words';
 export function LandingHero() {
   useEffect(() => {
     const timeouts = [];
-    const animateWords = () => {
-      const wordElements = document.querySelectorAll('.word-animate');
-      wordElements.forEach((word) => {
-        const delay = parseInt(word.getAttribute('data-delay'), 10) || 0;
+    const runAnimations = () => {
+      const elements = document.querySelectorAll('.word-animate, .animate-in');
+      elements.forEach((el) => {
+        const delay = parseInt(el.getAttribute('data-delay'), 10) || 0;
         const t = setTimeout(() => {
-          if (word) word.style.animation = 'word-appear 0.8s ease-out forwards';
+          if (el) el.style.animation = 'word-appear 0.8s ease-out forwards';
         }, delay);
         timeouts.push(t);
       });
     };
-    timeouts.push(setTimeout(animateWords, 500));
+    timeouts.push(setTimeout(runAnimations, 500));
     return () => timeouts.forEach(clearTimeout);
   }, []);
 
@@ -35,18 +35,18 @@ export function LandingHero() {
             staggerMs={40}
           />
         </p>
-        <p className="hero-waitlist-intro hero-waitlist-intro-bubble">
+        <p className="hero-waitlist-intro hero-waitlist-intro-bubble animate-in" data-delay="3550">
           <AnimatedWords
             text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits."
             baseDelay={3600}
             staggerMs={50}
           />
         </p>
-        <div className="hero-waitlist">
+        <div className="hero-waitlist animate-in" data-delay="4100">
           <WaitlistForm />
         </div>
       </div>
-      <div className="card-preview globe-preview">
+      <div className="card-preview globe-preview animate-in" data-delay="900">
         <div className="globe-container">
           <InteractiveGlobe size={460} />
         </div>
