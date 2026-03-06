@@ -159,7 +159,6 @@ export default function LearningCenterPage() {
               <div className="topic-card"><div className="topic-icon"><i className="bi bi-calculator" /></div><span>Quantitative Analysis</span></div>
               <div className="topic-card"><div className="topic-icon"><i className="bi bi-arrow-left-right" /></div><span>Options Trading</span></div>
               <div className="topic-card"><div className="topic-icon"><i className="bi bi-emoji-smile" /></div><span>Market Psychology</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-currency-dollar" /></div><span>Economic Indicators</span></div>
               <div className="topic-card"><div className="topic-icon"><i className="bi bi-bar-chart" /></div><span>Financial Statements</span></div>
             </div>
           </div>

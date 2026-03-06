@@ -19,17 +19,29 @@ export default function HomeDashboardPage() {
     if (scriptLoadedRef.current) return;
     scriptLoadedRef.current = true;
 
-    const runInit = () => {
-      if (typeof window !== 'undefined' && window.initHomeDashboard) {
-        window.initHomeDashboard();
+    const loadScript = (src) => new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.body.appendChild(s);
+    });
+
+    const init = async () => {
+      try {
+        await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js');
+        await loadScript('/app-legacy/pages/home-dashboard.js');
+        if (typeof window !== 'undefined' && window.initHomeDashboard) {
+          window.initHomeDashboard();
+        }
+      } catch (e) {
+        console.warn('Home dashboard init:', e);
       }
     };
-
-    const script = document.createElement('script');
-    script.src = '/app-legacy/pages/home-dashboard.js';
-    script.async = true;
-    script.onload = runInit;
-    document.body.appendChild(script);
+    init();
 
     return () => {
       script.remove();

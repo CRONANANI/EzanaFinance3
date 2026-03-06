@@ -47,8 +47,9 @@ export function ContactSupportDialog({ open, onOpenChange }) {
     >
       <div
         className={cn(
-          "relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-2xl",
-          "animate-in fade-in-0 zoom-in-95 duration-200"
+          "relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-border p-6 shadow-2xl",
+          "animate-in fade-in-0 zoom-in-95 duration-200",
+          "!bg-white dark:!bg-zinc-900"
         )}
         onClick={(e) => e.stopPropagation()}
       >

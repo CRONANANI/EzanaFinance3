@@ -178,8 +178,8 @@ export default function MarketAnalysisPage() {
           </article>
 
           <div className="cards-footer">
-            <Link href="/economic-indicators" className="view-more-link">
-              View Economic Indicators <i className="bi bi-arrow-right" />
+            <Link href="/for-the-quants" className="view-more-link">
+              View Quant Tools <i className="bi bi-arrow-right" />
             </Link>
           </div>
         </div>

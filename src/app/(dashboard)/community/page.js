@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -11,7 +12,53 @@ import '../../../../app-legacy/assets/css/metrics-common.css';
 import '../../../../app-legacy/assets/css/research-pages-cards.css';
 import '../../../../app-legacy/pages/community.css';
 
+const TRENDING_DISCUSSIONS = [
+  { id: 1, author: 'AS', name: 'Aakash Sharma', tag: 'Portfolio Tips', title: 'What are some effective strategies to stay productive with market research?', preview: "I've been struggling to keep up with sector rotations...", time: '2 Hrs Ago', likes: 20, comments: 8 },
+  { id: 2, author: 'NR', name: 'Nidhi Rao', tag: 'Congressional Trading', title: 'Best practices for interpreting 13F filings and congressional disclosure data', preview: 'New to following institutional moves...', time: '3 Hrs Ago', likes: 35, comments: 9 },
+  { id: 3, author: 'SP', name: 'Sunita Patil', tag: 'Time Management', title: 'How do you balance fundamental analysis with keeping up to date on market news?', preview: "Finding it hard to allocate time...", time: '5 Hrs Ago', likes: 17, comments: 6 },
+  { id: 4, author: 'AJ', name: 'Alex Johnson', tag: 'Technology', title: 'Q1 2024 Tech Stock Predictions', preview: "What are everyone's thoughts on the tech sector...", time: '6 Hrs Ago', likes: 45, comments: 23 },
+  { id: 5, author: 'SC', name: 'Sarah Chen', tag: 'Dividends', title: 'Best Dividend Stocks for 2024', preview: "Looking for stable dividend-paying stocks...", time: '8 Hrs Ago', likes: 32, comments: 18 },
+];
+const FOLLOWING_DISCUSSIONS = TRENDING_DISCUSSIONS.slice(0, 2);
+const SUGGESTED_DISCUSSIONS = [
+  { id: 6, author: 'MB', name: 'Mike Brown', tag: 'Congress', title: 'Congressional Trading Alert System', preview: "Has anyone set up automated alerts...", time: '1 day ago', likes: 89, comments: 56 },
+  { id: 7, author: 'EW', name: 'Emma Wilson', tag: 'AI Stocks', title: 'AI sector momentum discussion', preview: "The AI rally continues...", time: '2 days ago', likes: 67, comments: 34 },
+];
+const FRIENDS_LIST = [
+  { id: 1, initials: 'EM', name: 'Eric Morrison', streak: 410 },
+  { id: 2, initials: 'JM', name: 'Joseph Morrison', streak: 328 },
+  { id: 3, initials: 'JM', name: 'John Morrison', streak: 256 },
+  { id: 4, initials: 'EM', name: 'Emily Morrison', streak: 142 },
+  { id: 5, initials: 'DL', name: 'Diana Larussa', streak: 354, isYou: true },
+  { id: 6, initials: 'CL', name: 'Cathy Morrison', streak: 89 },
+];
+
 export default function CommunityPage() {
+  const [activeFeed, setActiveFeed] = useState('trending');
+  const [friendsView, setFriendsView] = useState('list');
+  const [addFriendOpen, setAddFriendOpen] = useState(false);
+  const [friendSearch, setFriendSearch] = useState('');
+  const addFriendRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (addFriendRef.current && !addFriendRef.current.contains(e.target)) setAddFriendOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const getFeedDiscussions = () => {
+    if (activeFeed === 'trending') return TRENDING_DISCUSSIONS;
+    if (activeFeed === 'following' || activeFeed === 'followed') return FOLLOWING_DISCUSSIONS;
+    if (activeFeed === 'start') return [];
+    return TRENDING_DISCUSSIONS;
+  };
+
+  const discussions = getFeedDiscussions();
+  const needsSuggested = discussions.length < 4 && activeFeed !== 'start';
+  const displayDiscussions = needsSuggested ? [...discussions, ...SUGGESTED_DISCUSSIONS.slice(0, 4 - discussions.length)] : discussions;
+
   return (
     <>
       <div className="stats-grid condensed">
@@ -33,9 +80,9 @@ export default function CommunityPage() {
             <div className="stat-value">89</div>
             <div className="stat-label">Active Discussions</div>
             <div className="stat-card-buttons">
-              <button type="button" className="stat-card-btn">Start</button>
-              <button type="button" className="stat-card-btn">Following</button>
-              <button type="button" className="stat-card-btn">Trending</button>
+              <button type="button" className={`stat-card-btn ${activeFeed === 'start' ? 'active' : ''}`} onClick={() => setActiveFeed('start')}>Start</button>
+              <button type="button" className={`stat-card-btn ${activeFeed === 'following' ? 'active' : ''}`} onClick={() => setActiveFeed('following')}>Following</button>
+              <button type="button" className={`stat-card-btn ${activeFeed === 'trending' ? 'active' : ''}`} onClick={() => setActiveFeed('trending')}>Trending</button>
             </div>
           </div>
         </div>
@@ -45,9 +92,9 @@ export default function CommunityPage() {
             <div className="stat-value">47</div>
             <div className="stat-label">Your Friends</div>
             <div className="stat-card-buttons">
-              <button type="button" className="stat-card-btn">View All</button>
-              <button type="button" className="stat-card-btn">Add</button>
-              <button type="button" className="stat-card-btn">Activity</button>
+              <button type="button" className={`stat-card-btn ${friendsView === 'all' ? 'active' : ''}`} onClick={() => setFriendsView('all')}>View All</button>
+              <button type="button" className={`stat-card-btn ${addFriendOpen ? 'active' : ''}`} onClick={() => setAddFriendOpen(!addFriendOpen)}>Add</button>
+              <button type="button" className={`stat-card-btn ${friendsView === 'activity' ? 'active' : ''}`} onClick={() => setFriendsView('activity')}>Activity</button>
             </div>
           </div>
         </div>
@@ -70,63 +117,57 @@ export default function CommunityPage() {
           <div className="card-header"><h3><i className="bi bi-chat-square-text" /> Community Feed</h3></div>
           <div className="card-body">
             <div className="community-feed-filters">
-              <button type="button" className="feed-filter-btn active" data-filter="followed">Followed Discussions</button>
-              <button type="button" className="feed-filter-btn" data-filter="topics">Topics</button>
-              <button type="button" className="feed-filter-btn" data-filter="suggestions">Platform Feature Suggestions</button>
-              <button type="button" className="feed-filter-btn" data-filter="trending">Trending</button>
-              <button type="button" className="feed-filter-btn" data-filter="explore">Explore</button>
+              <button type="button" className={`feed-filter-btn ${activeFeed === 'followed' ? 'active' : ''}`} onClick={() => setActiveFeed('following')}>Followed Discussions</button>
+              <button type="button" className={`feed-filter-btn ${activeFeed === 'topics' ? 'active' : ''}`} onClick={() => setActiveFeed('topics')}>Topics</button>
+              <button type="button" className={`feed-filter-btn ${activeFeed === 'suggestions' ? 'active' : ''}`} onClick={() => setActiveFeed('suggestions')}>Platform Feature Suggestions</button>
+              <button type="button" className={`feed-filter-btn ${activeFeed === 'trending' ? 'active' : ''}`} onClick={() => setActiveFeed('trending')}>Trending</button>
+              <button type="button" className={`feed-filter-btn ${activeFeed === 'explore' ? 'active' : ''}`} onClick={() => setActiveFeed('explore')}>Explore</button>
             </div>
             <div className="community-feed-threads" id="community-feed-threads">
-              <article className="feed-thread-card">
-                <div className="thread-meta-top">
-                  <div className="thread-author"><div className="thread-avatar">AS</div><span className="thread-author-name">Aakash Sharma</span></div>
-                  <span className="thread-topic-tag">Portfolio Tips</span>
+              {activeFeed === 'start' ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <i className="bi bi-plus-circle text-4xl mb-4 block" />
+                  <p>Start a new discussion to share your insights with the community.</p>
                 </div>
-                <h4 className="thread-title">What are some effective strategies to stay productive with market research, especially when tracking multiple sectors?</h4>
-                <p className="thread-preview">I&apos;ve been struggling to keep up with sector rotations and earnings cycles. Would love to hear how others structure their research workflow...</p>
-                <div className="thread-engagement">
-                  <div className="thread-avatar-sm">AS</div>
-                  <span className="thread-time">2 Hrs Ago</span>
-                  <span className="thread-stat"><i className="bi bi-heart-fill" /> 20</span>
-                  <span className="thread-stat"><i className="bi bi-chat" /> 8</span>
-                </div>
-              </article>
-              <article className="feed-thread-card">
-                <div className="thread-meta-top">
-                  <div className="thread-author"><div className="thread-avatar">NR</div><span className="thread-author-name">Nidhi Rao</span></div>
-                  <span className="thread-topic-tag">Congressional Trading</span>
-                </div>
-                <h4 className="thread-title">Best practices for interpreting 13F filings and congressional disclosure data</h4>
-                <p className="thread-preview">New to following institutional moves. What metrics do you focus on when analyzing 13F changes? Any tools you recommend?</p>
-                <div className="thread-engagement">
-                  <div className="thread-avatar-sm">NR</div>
-                  <span className="thread-time">3 Hrs Ago</span>
-                  <span className="thread-stat"><i className="bi bi-heart-fill" /> 35</span>
-                  <span className="thread-stat"><i className="bi bi-chat" /> 9</span>
-                </div>
-              </article>
-              <article className="feed-thread-card">
-                <div className="thread-meta-top">
-                  <div className="thread-author"><div className="thread-avatar">SP</div><span className="thread-author-name">Sunita Patil</span></div>
-                  <span className="thread-topic-tag">Time Management</span>
-                </div>
-                <h4 className="thread-title">How do you balance fundamental analysis with keeping up to date on market news?</h4>
-                <p className="thread-preview">Finding it hard to allocate time between deep dives and staying current. What&apos;s your daily routine look like?</p>
-                <div className="thread-engagement">
-                  <div className="thread-avatar-sm">SP</div>
-                  <span className="thread-time">5 Hrs Ago</span>
-                  <span className="thread-stat"><i className="bi bi-heart-fill" /> 17</span>
-                  <span className="thread-stat"><i className="bi bi-chat" /> 6</span>
-                </div>
-              </article>
+              ) : (
+                displayDiscussions.map((d) => (
+                  <article key={d.id} className="feed-thread-card">
+                    <div className="thread-meta-top">
+                      <div className="thread-author"><div className="thread-avatar">{d.author}</div><span className="thread-author-name">{d.name}</span></div>
+                      <span className="thread-topic-tag">{d.tag}</span>
+                    </div>
+                    <h4 className="thread-title">{d.title}</h4>
+                    <p className="thread-preview">{d.preview}</p>
+                    <div className="thread-engagement">
+                      <div className="thread-avatar-sm">{d.author}</div>
+                      <span className="thread-time">{d.time}</span>
+                      <span className="thread-stat"><i className="bi bi-heart-fill" /> {d.likes}</span>
+                      <span className="thread-stat"><i className="bi bi-chat" /> {d.comments}</span>
+                    </div>
+                  </article>
+                ))
+              )}
             </div>
           </div>
         </div>
 
-        <div className="component-card my-friends-card">
+        <div className="component-card my-friends-card" ref={addFriendRef}>
           <div className="card-header">
             <h3><i className="bi bi-people-fill" /> My Friends</h3>
-            <button type="button" className="add-friend-btn"><i className="bi bi-person-plus" /> Add a new friend</button>
+            {addFriendOpen ? (
+              <div className="add-friend-search-wrapper">
+                <input
+                  type="text"
+                  placeholder="Search for friends..."
+                  value={friendSearch}
+                  onChange={(e) => setFriendSearch(e.target.value)}
+                  className="add-friend-search-input"
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <button type="button" className="add-friend-btn" onClick={() => setAddFriendOpen(true)}><i className="bi bi-person-plus" /> Add a new friend</button>
+            )}
           </div>
           <div className="card-body">
             <div className="league-tiers">
@@ -146,38 +187,28 @@ export default function CommunityPage() {
               <div className="user-stat-card"><i className="bi bi-gem" /><span className="user-stat-value">Emerald</span><span className="user-stat-label">League</span></div>
             </div>
             <div className="friends-ranked-list" id="friends-ranked-list">
-              <div className="friend-rank-item">
-                <div className="friend-rank-badge rank-1"><i className="bi bi-trophy-fill" /></div>
-                <div className="friend-avatar">EM</div>
-                <div className="friend-info"><span className="friend-name">Eric Morrison</span><span className="friend-streak"><i className="bi bi-fire" /> 410 days</span></div>
-              </div>
-              <div className="friend-rank-item">
-                <div className="friend-rank-badge rank-2"><i className="bi bi-trophy-fill" /></div>
-                <div className="friend-avatar">JM</div>
-                <div className="friend-info"><span className="friend-name">Joseph Morrison</span><span className="friend-streak"><i className="bi bi-fire" /> 328 days</span></div>
-              </div>
-              <div className="friend-rank-item">
-                <div className="friend-rank-badge rank-3"><i className="bi bi-trophy-fill" /></div>
-                <div className="friend-avatar">JM</div>
-                <div className="friend-info"><span className="friend-name">John Morrison</span><span className="friend-streak"><i className="bi bi-fire" /> 256 days</span></div>
-              </div>
-              <div className="friend-rank-item">
-                <div className="friend-rank-badge">4</div>
-                <div className="friend-avatar">EM</div>
-                <div className="friend-info"><span className="friend-name">Emily Morrison</span><span className="friend-streak"><i className="bi bi-fire" /> 142 days</span></div>
-              </div>
-              <div className="friend-rank-item friend-rank-you">
-                <div className="friend-rank-badge">5</div>
-                <div className="friend-avatar">DL</div>
-                <div className="friend-info"><span className="friend-name">Diana Larussa</span><span className="friend-streak"><i className="bi bi-fire" /> 354 days</span></div>
-              </div>
-              <div className="friend-rank-item">
-                <div className="friend-rank-badge">6</div>
-                <div className="friend-avatar">CL</div>
-                <div className="friend-info"><span className="friend-name">Cathy Morrison</span><span className="friend-streak"><i className="bi bi-fire" /> 89 days</span></div>
-              </div>
+              {(friendsView === 'all' || friendsView === 'list') && FRIENDS_LIST.map((f, i) => (
+                <div key={f.id} className={`friend-rank-item ${f.isYou ? 'friend-rank-you' : ''}`}>
+                  <div className={`friend-rank-badge ${i < 3 ? `rank-${i + 1}` : ''}`}>{i < 3 ? <i className="bi bi-trophy-fill" /> : i + 1}</div>
+                  <div className="friend-avatar">{f.initials}</div>
+                  <div className="friend-info"><span className="friend-name">{f.name}</span><span className="friend-streak"><i className="bi bi-fire" /> {f.streak} days</span></div>
+                </div>
+              ))}
+              {friendsView === 'activity' && (
+                <div className="space-y-3 p-4">
+                  <p className="text-sm text-muted-foreground">Recent friend activity</p>
+                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-xs font-bold">EM</div>
+                    <div><p className="text-sm text-foreground"><span className="font-medium">Eric Morrison</span> made a new investment in <span className="text-primary font-medium">NVDA</span></p><p className="text-xs text-muted-foreground">2 hours ago</p></div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors">
+                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-xs font-bold">JM</div>
+                    <div><p className="text-sm text-foreground"><span className="font-medium">Joseph Morrison</span> liked your post</p><p className="text-xs text-muted-foreground">4 hours ago</p></div>
+                  </div>
+                </div>
+              )}
             </div>
-            <button type="button" className="view-all-friends-btn">View All Friends</button>
+            <button type="button" className="view-all-friends-btn" onClick={() => setFriendsView('all')}>View All Friends</button>
           </div>
         </div>
 
@@ -218,9 +249,9 @@ export default function CommunityPage() {
           <div className="card-header">
             <h3><i className="bi bi-chat-dots" /> Active Discussions</h3>
             <div className="discussion-filter-buttons">
-              <button type="button" className="discussion-filter-btn"><i className="bi bi-plus-circle" /> Start Discussion</button>
-              <button type="button" className="discussion-filter-btn active" data-filter="following"><i className="bi bi-bookmark" /> Following</button>
-              <button type="button" className="discussion-filter-btn" data-filter="trending"><i className="bi bi-fire" /> Trending</button>
+              <button type="button" className={`discussion-filter-btn ${activeFeed === 'start' ? 'active' : ''}`} onClick={() => setActiveFeed('start')}><i className="bi bi-plus-circle" /> Start Discussion</button>
+              <button type="button" className={`discussion-filter-btn ${activeFeed === 'following' ? 'active' : ''}`} onClick={() => setActiveFeed('following')}><i className="bi bi-bookmark" /> Following</button>
+              <button type="button" className={`discussion-filter-btn ${activeFeed === 'trending' ? 'active' : ''}`} onClick={() => setActiveFeed('trending')}><i className="bi bi-fire" /> Trending</button>
             </div>
           </div>
           <div className="card-body">

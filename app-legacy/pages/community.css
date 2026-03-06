@@ -552,6 +552,27 @@
   border-color: var(--primary-hover);
 }
 
+.add-friend-search-wrapper {
+  flex: 1;
+  min-width: 180px;
+}
+
+.add-friend-search-input {
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.add-friend-search-input:focus {
+  border-color: var(--primary);
+}
+
 /* League hexagon tiers */
 .league-tiers {
   display: flex;

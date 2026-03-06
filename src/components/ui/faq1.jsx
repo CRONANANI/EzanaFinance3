@@ -47,7 +47,7 @@ export function Faq1({
 }) {
   return (
     <section className="py-20 md:py-32">
-      <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="mb-4 text-3xl font-semibold text-foreground md:mb-11 md:text-5xl">
           {heading}
         </h2>

@@ -79,17 +79,17 @@ export function FeaturesSection() {
           </div>
         </div>
 
-        {/* 2. Congressional Trading */}
+        {/* 2. Congressional Trading - Ledger-style transactions */}
         <div className="feature-block reverse" data-feature="congress">
           <div className="feature-content">
             <div className="feature-visual">
               <div className="visual-container congress-visual">
                 <div className="trading-feed">
                   <div className="feed-header">
-                    <h4>Congressional Trading Activity</h4>
+                    <h4>Congressional Trading Ledger</h4>
                     <span className="live-indicator"><span className="pulse-dot" /> Live</span>
                   </div>
-                  <div className="feed-items">
+                  <div className="feed-items ledger-style">
                     <div className="trade-item">
                       <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
                       <div className="trade-details">
@@ -112,6 +112,30 @@ export function FeaturesSection() {
                         <div className="trade-header"><span className="politician-name">Josh Gottheimer</span><span className="trade-badge purchase">Purchase</span></div>
                         <div className="trade-info"><span className="ticker">AAPL</span><span className="amount">$100,001 - $250,000</span></div>
                         <div className="trade-meta"><span className="timestamp">8 minutes ago</span><span className="party democrat">Democrat</span></div>
+                      </div>
+                    </div>
+                    <div className="trade-item">
+                      <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
+                      <div className="trade-details">
+                        <div className="trade-header"><span className="politician-name">Mark Warner</span><span className="trade-badge purchase">Purchase</span></div>
+                        <div className="trade-info"><span className="ticker">MSFT</span><span className="amount">$1,001 - $15,000</span></div>
+                        <div className="trade-meta"><span className="timestamp">12 minutes ago</span><span className="party democrat">Democrat</span></div>
+                      </div>
+                    </div>
+                    <div className="trade-item">
+                      <div className="trade-icon"><i className="bi bi-arrow-down-circle-fill text-red" /></div>
+                      <div className="trade-details">
+                        <div className="trade-header"><span className="politician-name">Tommy Tuberville</span><span className="trade-badge sale">Sale</span></div>
+                        <div className="trade-info"><span className="ticker">GOOGL</span><span className="amount">$50,001 - $100,000</span></div>
+                        <div className="trade-meta"><span className="timestamp">18 minutes ago</span><span className="party republican">Republican</span></div>
+                      </div>
+                    </div>
+                    <div className="trade-item">
+                      <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
+                      <div className="trade-details">
+                        <div className="trade-header"><span className="politician-name">Susie Lee</span><span className="trade-badge purchase">Purchase</span></div>
+                        <div className="trade-info"><span className="ticker">META</span><span className="amount">$15,001 - $50,000</span></div>
+                        <div className="trade-meta"><span className="timestamp">25 minutes ago</span><span className="party democrat">Democrat</span></div>
                       </div>
                     </div>
                   </div>

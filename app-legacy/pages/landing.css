@@ -82,6 +82,25 @@ body {
     align-items: center;
 }
 
+/* Centered logo layout for landing */
+.nav-container-centered {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+}
+
+.nav-container-centered .nav-spacer {
+    width: 100%;
+}
+
+.nav-container-centered .logo {
+    justify-self: center;
+}
+
+.nav-container-centered .nav-menu {
+    justify-self: end;
+}
+
 .logo {
     display: flex;
     align-items: center;

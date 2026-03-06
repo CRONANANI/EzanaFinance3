@@ -1209,10 +1209,15 @@ class CompanyResearch {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initCompanyResearch() {
   window.companyResearch = new CompanyResearch();
   window.marketChartWidget = new MarketChartWidget();
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCompanyResearch);
+} else {
+  initCompanyResearch();
+}
 
 class MarketChartWidget {
   constructor() {

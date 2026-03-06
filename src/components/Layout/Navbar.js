@@ -14,6 +14,8 @@ export function Navbar() {
   const { user } = useAuth();
   const { toggleNotifications } = useSidebar();
   const isLanding = pathname === '/';
+  const DASHBOARD_PAGES = ['/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
+  const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -23,9 +25,11 @@ export function Navbar() {
   if (isLanding) {
     return (
       <nav className="navbar">
-        <div className="nav-container">
-          <Link href="/" className="logo">
+        <div className="nav-container nav-container-centered">
+          <div className="nav-spacer" aria-hidden="true" />
+          <Link href="/" className="logo logo-centered">
             <span className="logo-text">Ezana Finance</span>
+            <img src="/app-legacy/assets/images/ezana-logo.png" alt="Ezana Finance" className="logo-img" />
           </Link>
           <ul className="nav-menu">
             <li className="nav-item">
@@ -73,10 +77,6 @@ export function Navbar() {
                 <i className="bi bi-graph-up-arrow"></i>
                 <div><div className="item-title">Market Analysis</div><div className="item-desc">Sector trends</div></div>
               </Link>
-              <Link href="/economic-indicators" className="dropdown-item">
-                <i className="bi bi-currency-dollar"></i>
-                <div><div className="item-title">Economic Indicators</div><div className="item-desc">Fed tracking</div></div>
-              </Link>
               <Link href="/for-the-quants" className="dropdown-item">
                 <i className="bi bi-calculator"></i>
                 <div><div className="item-title">For The Quants</div><div className="item-desc">Quant tools</div></div>
@@ -97,14 +97,18 @@ export function Navbar() {
           </Link>
         </div>
         <div className="nav-actions">
-          <button className="nav-action-btn theme-toggle" onClick={toggleTheme} title="Toggle theme" type="button">
-            <i className={`bi ${theme === 'dark' ? 'bi-sun-fill light-icon' : 'bi-moon-fill dark-icon'}`}></i>
-          </button>
           <button className="nav-action-btn notification-toggle" onClick={toggleNotifications} title="Notifications" type="button">
             <i className="bi bi-bell"></i>
             <span className="notification-badge">3</span>
           </button>
-          {user ? (
+          <button className="nav-action-btn theme-toggle" onClick={toggleTheme} title="Toggle theme" type="button">
+            <i className={`bi ${theme === 'dark' ? 'bi-sun-fill light-icon' : 'bi-moon-fill dark-icon'}`}></i>
+          </button>
+          {isDashboardPage ? (
+            <Link href={user ? "/user-profile-settings" : "/signin"} className="nav-action-btn user-menu-btn" title={user ? "Account" : "Sign in"}>
+              <i className="bi bi-person-circle"></i>
+            </Link>
+          ) : user ? (
             <>
               <Link href="/user-profile-settings" className="nav-action-btn user-menu-btn" title="Account">
                 <i className="bi bi-person-circle"></i>

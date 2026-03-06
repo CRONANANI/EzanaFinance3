@@ -40,7 +40,7 @@ export default function HomePage() {
       </section>
 
       <section id="faq" className="faq-section-wrapper">
-        <Faq1 heading="Frequently asked questions" onContactClick={() => setSupportOpen(true)} />
+        <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
       </section>
 
       <FooterSection onContactClick={() => setSupportOpen(true)} />
