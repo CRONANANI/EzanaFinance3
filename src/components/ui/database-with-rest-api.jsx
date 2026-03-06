@@ -38,7 +38,7 @@ export default function DatabaseWithRestApi({
   return (
     <div
       className={cn(
-        "relative flex h-[350px] w-full max-w-[500px] flex-col items-center",
+        "relative flex h-[350px] w-full max-w-[600px] flex-col items-center",
         className
       )}
     >
@@ -46,7 +46,7 @@ export default function DatabaseWithRestApi({
         className="h-full sm:w-full text-muted"
         width="100%"
         height="100%"
-        viewBox="0 0 200 100"
+        viewBox="0 0 340 100"
       >
         <g
           stroke="currentColor"
@@ -55,10 +55,10 @@ export default function DatabaseWithRestApi({
           strokeDasharray="100 100"
           pathLength="100"
         >
-          <path d="M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 10" />
-          <path d="M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10" />
-          <path d="M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10" />
-          <path d="M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 10" />
+          <path d="M 38 10 v 15 q 0 5 5 5 h 119 q 5 0 5 5 v 10" />
+          <path d="M 118 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10" />
+          <path d="M 198 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10" />
+          <path d="M 301 10 v 15 q 0 5 -5 5 h -141 q -5 0 -5 5 v 10" />
           <animate
             attributeName="stroke-dashoffset"
             from="100"
@@ -108,30 +108,30 @@ export default function DatabaseWithRestApi({
         </g>
         <g stroke="currentColor" fill="none" strokeWidth="0.4">
           <g>
-            <rect fill="#18181B" x="14" y="5" width="34" height="10" rx="5" />
-            <DatabaseIcon x="18" y="7.5" />
-            <text x="28" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500">
+            <rect fill="#18181B" x="5" y="2" width="65" height="16" rx="8" />
+            <DatabaseIcon x="10" y="5" />
+            <text x="42" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
               {badgeTexts?.first || "GET"}
             </text>
           </g>
           <g>
-            <rect fill="#18181B" x="60" y="5" width="34" height="10" rx="5" />
-            <DatabaseIcon x="64" y="7.5" />
-            <text x="74" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500">
+            <rect fill="#18181B" x="85" y="2" width="65" height="16" rx="8" />
+            <DatabaseIcon x="90" y="5" />
+            <text x="117" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
               {badgeTexts?.second || "POST"}
             </text>
           </g>
           <g>
-            <rect fill="#18181B" x="108" y="5" width="34" height="10" rx="5" />
-            <DatabaseIcon x="112" y="7.5" />
-            <text x="122" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500">
+            <rect fill="#18181B" x="165" y="2" width="90" height="16" rx="8" />
+            <DatabaseIcon x="170" y="5" />
+            <text x="210" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
               {badgeTexts?.third || "PUT"}
             </text>
           </g>
           <g>
-            <rect fill="#18181B" x="150" y="5" width="40" height="10" rx="5" />
-            <DatabaseIcon x="154" y="7.5" />
-            <text x="165" y="12" fill="white" stroke="none" fontSize="5" fontWeight="500">
+            <rect fill="#18181B" x="268" y="2" width="67" height="16" rx="8" />
+            <DatabaseIcon x="273" y="5" />
+            <text x="301" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
               {badgeTexts?.fourth || "DELETE"}
             </text>
           </g>
@@ -139,28 +139,28 @@ export default function DatabaseWithRestApi({
         <defs>
           <mask id="db-mask-1">
             <path
-              d="M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 10"
+              d="M 38 10 v 15 q 0 5 5 5 h 119 q 5 0 5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <mask id="db-mask-2">
             <path
-              d="M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10"
+              d="M 118 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <mask id="db-mask-3">
             <path
-              d="M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10"
+              d="M 198 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <mask id="db-mask-4">
             <path
-              d="M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 10"
+              d="M 301 10 v 15 q 0 5 -5 5 h -141 q -5 0 -5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
@@ -175,7 +175,7 @@ export default function DatabaseWithRestApi({
         <div className="absolute -bottom-4 h-[100px] w-[62%] rounded-lg bg-accent/30" />
         <div className="absolute -top-3 z-20 flex items-center justify-center rounded-lg border bg-[#101112] px-2 py-1 sm:-top-4 sm:py-1.5">
           <Sparkles className="size-3" />
-          <span className="ml-2 text-[10px]">
+          <span className="ml-2 text-[15px]">
             {title || "Data exchange using a customized REST API"}
           </span>
         </div>

@@ -14,20 +14,20 @@ export function ResourcesSection() {
             and advanced analytics—all aggregated through our secure REST API.
           </p>
         </div>
-        <div className="flex justify-center p-4 rounded-xl bg-accent/20 w-full max-w-[520px] mx-auto">
+        <div className="flex justify-center p-4 w-full max-w-[640px] mx-auto">
           <DatabaseWithRestApi
             badgeTexts={{
               first: 'Congress',
               second: '13F',
-              third: 'Portfolios',
-              fourth: 'Analytics',
+              third: 'Institutional portfolios',
+              fourth: 'Alternative analytics',
             }}
             buttonTexts={{
               first: 'Alpha Vantage',
               second: 'SEC EDGAR',
             }}
             title="Institutional-grade data from verified sources"
-            circleText="API"
+            circleText="Ezana"
             lightColor="#10b981"
           />
         </div>
