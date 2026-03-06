@@ -16,12 +16,18 @@ body {
 }
 
 /* Consistent background throughout landing page */
+.landing-page .resources-section,
 .landing-page #pricing,
 .landing-page #pricing section,
 .landing-page .faq-section-wrapper,
 .landing-page footer {
     background-color: #0a0a0a !important;
 }
+
+.landing-page .resources-section .bg-background {
+    background-color: #0a0a0a !important;
+}
+
 
 /* Background Elements */
 .background-elements {
