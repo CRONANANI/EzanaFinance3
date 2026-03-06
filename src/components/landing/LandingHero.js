@@ -11,7 +11,7 @@ export function LandingHero() {
         <p className="hero-subtitle">
           The best investors don&apos;t beat the market by luck—they just have better information. Ezana gives you retail institutional-grade data: legendary investor portfolios, real-time congressional trades, hedge fund 13F filings, and advanced market analytics. Connect your brokerage accounts to our platform and receive the same insights that drive billions in Wall Street decisions. This isn&apos;t retail investing. This is how the professionals play.
         </p>
-        <p className="hero-waitlist-intro">
+        <p className="hero-waitlist-intro hero-waitlist-intro-bubble">
           Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits.
         </p>
         <div className="hero-waitlist">
