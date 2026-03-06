@@ -16,7 +16,7 @@ export default function HomePage() {
   const [supportOpen, setSupportOpen] = useState(false);
 
   return (
-    <>
+    <div className="landing-page">
       <div className="background-elements">
         <div className="glow-circle" />
         <div className="glow-circle" />
@@ -48,6 +48,6 @@ export default function HomePage() {
 
       <FooterSection onContactClick={() => setSupportOpen(true)} />
       <ContactSupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
-    </>
+    </div>
   );
 }

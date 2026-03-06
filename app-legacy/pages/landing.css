@@ -15,6 +15,14 @@ body {
     position: relative;
 }
 
+/* Consistent background throughout landing page */
+.landing-page #pricing,
+.landing-page #pricing section,
+.landing-page .faq-section-wrapper,
+.landing-page footer {
+    background-color: #0a0a0a !important;
+}
+
 /* Background Elements */
 .background-elements {
     position: fixed;
@@ -2200,7 +2208,7 @@ body {
 .resources-section {
     width: 100%;
     padding: 120px 0;
-    background: linear-gradient(180deg, #1a2332 0%, #0f1419 100%);
+    background: #0a0a0a;
     position: relative;
     overflow: hidden;
 }
