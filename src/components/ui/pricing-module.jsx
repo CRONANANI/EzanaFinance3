@@ -9,7 +9,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -136,16 +136,11 @@ export function PricingModule({
 
         <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
           <span className="text-sm font-medium text-foreground">Monthly</span>
-          <label htmlFor="billing-toggle" className="cursor-pointer">
-            <div className="rounded-full bg-white dark:bg-zinc-700 p-1 border border-border shadow-md ring-1 ring-black/5 dark:ring-white/10">
-              <Switch
-                id="billing-toggle"
-                checked={isAnnual}
-                onCheckedChange={(checked) => setIsAnnual(checked)}
-                className="bg-zinc-300 dark:bg-zinc-600 data-[state=checked]:bg-primary"
-              />
-            </div>
-          </label>
+          <ToggleSwitch
+            id="billing-toggle"
+            checked={isAnnual}
+            onCheckedChange={(checked) => setIsAnnual(checked)}
+          />
           <span className="text-sm font-medium text-foreground">Annual</span>
           <span className="text-sm text-muted-foreground w-full text-center sm:w-auto">
             {annualBillingLabel}
