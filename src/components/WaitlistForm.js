@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AnimatedEmailInput } from '@/components/ui/animated-email-input';
 import GradientButton from '@/components/ui/gradient-button';
+import { AnimatedWords } from '@/components/ui/animated-words';
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState('');
@@ -115,7 +116,11 @@ export default function WaitlistForm() {
         </GradientButton>
 
         <p className="text-xs text-gray-500 text-center">
-          We&apos;ll only email you about launch. Unsubscribe anytime.
+          <AnimatedWords
+            text="We'll only email you about launch. Unsubscribe anytime."
+            baseDelay={4500}
+            staggerMs={60}
+          />
         </p>
       </form>
     </div>

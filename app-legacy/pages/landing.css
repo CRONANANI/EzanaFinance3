@@ -325,6 +325,23 @@ body {
     display: none !important;
 }
 
+/* Word animation (DigitalSerenity-style) */
+@keyframes word-appear {
+  0% { opacity: 0; transform: translateY(30px) scale(0.8); filter: blur(10px); }
+  50% { opacity: 0.8; transform: translateY(10px) scale(0.95); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.word-animate {
+  display: inline-block;
+  opacity: 0;
+  margin: 0 0.05em 0 0;
+  transition: color 0.3s ease, transform 0.3s ease, text-shadow 0.3s ease;
+}
+.word-animate:hover {
+  transform: translateY(-2px);
+  text-shadow: 0 0 20px rgba(203, 213, 225, 0.5);
+}
+
 /* Hero Tagline (main title) - Single line, fluid scaling */
 .hero-tagline {
     font-size: 2.625rem;
