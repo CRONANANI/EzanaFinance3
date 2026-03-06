@@ -112,6 +112,8 @@ body {
     width: auto;
     object-fit: contain;
     display: block;
+    /* Brand green #10b981 - recolor logo */
+    filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(122deg) brightness(98%) contrast(90%);
 }
 
 .logo-icon {
