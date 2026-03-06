@@ -18,6 +18,7 @@ export default function HomeDashboardPage() {
   useEffect(() => {
     if (scriptLoadedRef.current) return;
     scriptLoadedRef.current = true;
+    let mounted = true;
 
     const loadScript = (src) => new Promise((resolve, reject) => {
       const existing = document.querySelector(`script[src="${src}"]`);
@@ -25,16 +26,18 @@ export default function HomeDashboardPage() {
       const s = document.createElement('script');
       s.src = src;
       s.async = true;
-      s.onload = resolve;
-      s.onerror = reject;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error(`Failed to load ${src}`));
       document.body.appendChild(s);
     });
 
     const init = async () => {
       try {
+        if (!document.getElementById('mainChart')) return;
         await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js');
+        if (!mounted) return;
         await loadScript('/app-legacy/pages/home-dashboard.js');
-        if (typeof window !== 'undefined' && window.initHomeDashboard) {
+        if (mounted && typeof window !== 'undefined' && window.initHomeDashboard) {
           window.initHomeDashboard();
         }
       } catch (e) {
@@ -42,9 +45,8 @@ export default function HomeDashboardPage() {
       }
     };
     init();
-
     return () => {
-      script.remove();
+      mounted = false;
       if (typeof window !== 'undefined' && window.portfolioDashboard) {
         window.portfolioDashboard.stopMarketQuotesPolling?.();
         window.portfolioDashboard = null;

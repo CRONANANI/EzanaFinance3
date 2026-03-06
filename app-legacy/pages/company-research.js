@@ -1210,8 +1210,13 @@ class CompanyResearch {
 }
 
 function initCompanyResearch() {
-  window.companyResearch = new CompanyResearch();
-  window.marketChartWidget = new MarketChartWidget();
+  if (!document.getElementById('companySearchInput') || !document.getElementById('heatmapContainer')) return;
+  try {
+    window.companyResearch = new CompanyResearch();
+    window.marketChartWidget = new MarketChartWidget();
+  } catch (e) {
+    console.warn('Company research init error:', e);
+  }
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initCompanyResearch);

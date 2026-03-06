@@ -13,6 +13,14 @@ import '../../../../app-legacy/components/grpv/snappy-slider.css';
 
 export default function CompanyResearchPage() {
   const scriptLoadedRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (scriptLoadedRef.current) return;
@@ -20,23 +28,31 @@ export default function CompanyResearchPage() {
 
     const loadScript = (src) => new Promise((resolve, reject) => {
       const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) { resolve(); return; }
+      if (existing) {
+        resolve();
+        return;
+      }
       const s = document.createElement('script');
       s.src = src;
       s.async = true;
-      s.onload = resolve;
-      s.onerror = reject;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error(`Failed to load ${src}`));
       document.body.appendChild(s);
     });
 
     const init = async () => {
       try {
+        if (!mountedRef.current) return;
         await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js');
+        if (!mountedRef.current) return;
         await loadScript('/app-legacy/js/api-config.js');
+        if (!mountedRef.current) return;
         await loadScript('/app-legacy/assets/js/alpha-vantage-api.js').catch(() => {});
+        if (!mountedRef.current) return;
+        if (!document.getElementById('heatmapContainer')) return;
         await loadScript('/app-legacy/pages/company-research.js');
-        if (window.marketChartWidget) {
-          window.marketChartWidget.renderHeatmap?.();
+        if (mountedRef.current && window.marketChartWidget?.renderHeatmap) {
+          window.marketChartWidget.renderHeatmap();
         }
       } catch (e) {
         console.warn('Company research init:', e);
