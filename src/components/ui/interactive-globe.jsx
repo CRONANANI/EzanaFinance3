@@ -38,6 +38,29 @@ function latLngToXYZ(lat, lng, radius) {
   ];
 }
 
+/** Sample points along great circle arc between two 3D points on sphere (slerp) */
+function sampleGreatCircle(x1, y1, z1, x2, y2, z2, radius, numSegments = 24) {
+  const r = radius;
+  const u1 = [x1 / r, y1 / r, z1 / r];
+  const u2 = [x2 / r, y2 / r, z2 / r];
+  const dot = u1[0] * u2[0] + u1[1] * u2[1] + u1[2] * u2[2];
+  const omega = Math.acos(Math.max(-1, Math.min(1, dot)));
+  if (omega < 0.001) return [[x1, y1, z1], [x2, y2, z2]];
+  const sinOmega = Math.sin(omega);
+  const points = [];
+  for (let i = 0; i <= numSegments; i++) {
+    const t = i / numSegments;
+    const a = Math.sin((1 - t) * omega) / sinOmega;
+    const b = Math.sin(t * omega) / sinOmega;
+    points.push([
+      r * (a * u1[0] + b * u2[0]),
+      r * (a * u1[1] + b * u2[1]),
+      r * (a * u1[2] + b * u2[2]),
+    ]);
+  }
+  return points;
+}
+
 function rotateY(x, y, z, angle) {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
@@ -165,51 +188,64 @@ export function InteractiveGlobe({
       let [x1, y1, z1] = latLngToXYZ(lat1, lng1, radius);
       let [x2, y2, z2] = latLngToXYZ(lat2, lng2, radius);
 
-      [x1, y1, z1] = rotateX(x1, y1, z1, rx);
-      [x1, y1, z1] = rotateY(x1, y1, z1, ry);
-      [x2, y2, z2] = rotateX(x2, y2, z2, rx);
-      [x2, y2, z2] = rotateY(x2, y2, z2, ry);
+      const arcPoints = sampleGreatCircle(x1, y1, z1, x2, y2, z2, radius, 24);
+      const rotatedArc = arcPoints.map(([x, y, z]) => {
+        let [ax, ay, az] = rotateX(x, y, z, rx);
+        [ax, ay, az] = rotateY(ax, ay, az, ry);
+        return [ax, ay, az];
+      });
 
-      if (z1 > radius * 0.3 && z2 > radius * 0.3) continue;
-
-      const [sx1, sy1] = project(x1, y1, z1, cx, cy, fov);
-      const [sx2, sy2] = project(x2, y2, z2, cx, cy, fov);
-
-      const midX = (x1 + x2) / 2;
-      const midY = (y1 + y2) / 2;
-      const midZ = (z1 + z2) / 2;
-      const midLen = Math.sqrt(midX * midX + midY * midY + midZ * midZ);
-      const arcHeight = radius * 1.25;
-      const elevX = (midX / midLen) * arcHeight;
-      const elevY = (midY / midLen) * arcHeight;
-      const elevZ = (midZ / midLen) * arcHeight;
-      const [scx, scy] = project(elevX, elevY, elevZ, cx, cy, fov);
+      const projectedArc = rotatedArc.map(([x, y, z]) => project(x, y, z, cx, cy, fov));
+      const visibilityThreshold = radius * 0.3;
 
       ctx.beginPath();
-      ctx.moveTo(sx1, sy1);
-      ctx.quadraticCurveTo(scx, scy, sx2, sy2);
-      ctx.strokeStyle = arcColor;
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
+      let started = false;
+      for (let i = 0; i < projectedArc.length - 1; i++) {
+        const z1 = rotatedArc[i][2];
+        const z2 = rotatedArc[i + 1][2];
+        const bothBehind = z1 > visibilityThreshold && z2 > visibilityThreshold;
+        if (bothBehind) {
+          started = false;
+          continue;
+        }
+        const [sx1, sy1] = projectedArc[i];
+        const [sx2, sy2] = projectedArc[i + 1];
+        if (!started) {
+          ctx.moveTo(sx1, sy1);
+          started = true;
+        }
+        ctx.lineTo(sx2, sy2);
+      }
+      if (started) {
+        ctx.strokeStyle = arcColor;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
 
+      const hasVisibleArc = started;
       const t = (Math.sin(time * 1.2 + lat1 * 0.1) + 1) / 2;
-      const tx = (1 - t) * (1 - t) * sx1 + 2 * (1 - t) * t * scx + t * t * sx2;
-      const ty = (1 - t) * (1 - t) * sy1 + 2 * (1 - t) * t * scy + t * t * sy2;
-      const dx = 2 * (1 - t) * (scx - sx1) + 2 * t * (sx2 - scx);
-      const dy = 2 * (1 - t) * (scy - sy1) + 2 * t * (sy2 - scy);
-      const angle = Math.atan2(dy, dx);
-      ctx.save();
-      ctx.translate(tx, ty);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(3.5, 0);
-      ctx.lineTo(-2.5, -2);
-      ctx.lineTo(-1.5, 0);
-      ctx.lineTo(-2.5, 2);
-      ctx.closePath();
-      ctx.fillStyle = markerColor;
-      ctx.fill();
-      ctx.restore();
+      const tNorm = t * (rotatedArc.length - 1);
+      const segIdx = Math.min(Math.floor(tNorm), rotatedArc.length - 2);
+      const localT = Math.min(tNorm - segIdx, 1);
+      const [sx1, sy1] = projectedArc[segIdx];
+      const [sx2, sy2] = projectedArc[segIdx + 1];
+      const tx = sx1 + (sx2 - sx1) * localT;
+      const ty = sy1 + (sy2 - sy1) * localT;
+      const angle = Math.atan2(sy2 - sy1, sx2 - sx1);
+      if (hasVisibleArc) {
+        ctx.save();
+        ctx.translate(tx, ty);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(3.5, 0);
+        ctx.lineTo(-2.5, -2);
+        ctx.lineTo(-1.5, 0);
+        ctx.lineTo(-2.5, 2);
+        ctx.closePath();
+        ctx.fillStyle = markerColor;
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     for (const marker of markers) {
