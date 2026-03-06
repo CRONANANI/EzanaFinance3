@@ -6,6 +6,7 @@ import '../../app-legacy/pages/landing.css';
 import '../../app-legacy/components/landing/features-section.css';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { ResourcesSection } from '@/components/landing/ResourcesSection';
 import { PricingModule } from '@/components/ui/pricing-module';
 import { Faq1 } from '@/components/ui/faq1';
 import { FooterSection } from '@/components/ui/footer-section';
@@ -30,7 +31,9 @@ export default function HomePage() {
         <FeaturesSection />
       </div>
 
-      <section id="resources">
+      <ResourcesSection />
+
+      <section id="pricing">
         <PricingModule
           title="Simple, Transparent Pricing"
           subtitle="Choose the plan that fits your investment strategy."

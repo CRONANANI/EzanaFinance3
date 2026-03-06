@@ -39,6 +39,9 @@ export function Navbar() {
               <a href="#resources" className="nav-link">Resources</a>
             </li>
             <li className="nav-item">
+              <a href="#pricing" className="nav-link">Pricing</a>
+            </li>
+            <li className="nav-item">
               <a href="#faq" className="nav-link">FAQ</a>
             </li>
           </ul>
