@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 
 import { Contact2 } from "@/components/ui/contact-2";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,7 @@ export function ContactSupportDialog({ open, onOpenChange }) {
 
   if (!open) return null;
 
-  return (
+  const dialogContent = (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       role="dialog"
@@ -93,4 +94,8 @@ export function ContactSupportDialog({ open, onOpenChange }) {
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? createPortal(dialogContent, document.body)
+    : null;
 }

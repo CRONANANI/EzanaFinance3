@@ -29,7 +29,6 @@ export function Navbar() {
           <div className="nav-spacer" aria-hidden="true" />
           <Link href="/" className="logo logo-centered">
             <span className="logo-text">Ezana Finance</span>
-            <img src="/app-legacy/assets/images/ezana-logo.png" alt="Ezana Finance" className="logo-img" />
           </Link>
           <ul className="nav-menu">
             <li className="nav-item">

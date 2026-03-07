@@ -4,28 +4,27 @@ import { cn } from "@/lib/utils";
 import { useRef, useEffect, useCallback } from "react";
 
 const DEFAULT_MARKERS = [
-  { lat: 37.78, lng: -122.42, label: "San Francisco" },
+  { lat: 40.71, lng: -74.0, label: "New York" },
   { lat: 51.51, lng: -0.13, label: "London" },
-  { lat: 35.68, lng: 139.69, label: "Tokyo" },
-  { lat: -33.87, lng: 151.21, label: "Sydney" },
+  { lat: 50.11, lng: 8.68, label: "Frankfurt" },
+  { lat: 22.32, lng: 114.17, label: "Hong Kong" },
   { lat: 1.35, lng: 103.82, label: "Singapore" },
-  { lat: 55.76, lng: 37.62, label: "Moscow" },
-  { lat: -23.55, lng: -46.63, label: "São Paulo" },
-  { lat: 19.43, lng: -99.13, label: "Mexico City" },
-  { lat: 28.61, lng: 77.21, label: "Delhi" },
-  { lat: 36.19, lng: 44.01, label: "Erbil" },
+  { lat: 47.38, lng: 8.54, label: "Zurich" },
+  { lat: 35.68, lng: 139.69, label: "Tokyo" },
+  { lat: 37.78, lng: -122.42, label: "San Francisco" },
+  { lat: 37.57, lng: 126.98, label: "Seoul" },
+  { lat: 48.86, lng: 2.35, label: "Paris" },
 ];
 
 const DEFAULT_CONNECTIONS = [
-  { from: [37.78, -122.42], to: [51.51, -0.13] },
+  { from: [40.71, -74.0], to: [51.51, -0.13] },
   { from: [51.51, -0.13], to: [35.68, 139.69] },
-  { from: [35.68, 139.69], to: [-33.87, 151.21] },
   { from: [37.78, -122.42], to: [1.35, 103.82] },
-  { from: [51.51, -0.13], to: [28.61, 77.21] },
-  { from: [37.78, -122.42], to: [-23.55, -46.63] },
-  { from: [1.35, 103.82], to: [-33.87, 151.21] },
-  { from: [28.61, 77.21], to: [36.19, 44.01] },
-  { from: [51.51, -0.13], to: [36.19, 44.01] },
+  { from: [22.32, 114.17], to: [1.35, 103.82] },
+  { from: [50.11, 8.68], to: [47.38, 8.54] },
+  { from: [48.86, 2.35], to: [51.51, -0.13] },
+  { from: [51.51, -0.13], to: [37.57, 126.98] },
+  { from: [40.71, -74.0], to: [37.78, -122.42] },
 ];
 
 function latLngToXYZ(lat, lng, radius) {

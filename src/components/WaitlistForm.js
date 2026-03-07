@@ -118,8 +118,8 @@ export default function WaitlistForm() {
         <p className="text-xs text-gray-500 text-center">
           <AnimatedWords
             text="We'll only email you about launch. Unsubscribe anytime."
-            baseDelay={4500}
-            staggerMs={60}
+            baseDelay={2250}
+            staggerMs={30}
           />
         </p>
       </form>

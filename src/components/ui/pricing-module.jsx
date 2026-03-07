@@ -134,7 +134,7 @@ export function PricingModule({
         <h2 className="text-4xl font-bold tracking-tight mb-2">{title}</h2>
         <p className="text-muted-foreground mb-8">{subtitle}</p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
           <span className="text-sm font-medium text-foreground">Monthly</span>
           <ToggleSwitch
             id="billing-toggle"

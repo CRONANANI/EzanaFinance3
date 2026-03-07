@@ -104,13 +104,13 @@
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu - SOLID BACKGROUND (no transparency) */
+/* Dropdown Menu - OPAQUE BACKGROUND */
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 0.5rem);
   left: 0;
   min-width: 320px;
-  background: var(--card);
+  background: #1a2332;
   backdrop-filter: none;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -129,7 +129,7 @@ body.light-mode .dropdown-menu {
 }
 
 body:not(.light-mode) .dropdown-menu {
-  background: var(--card);
+  background: #1a2332;
   border-color: var(--border);
 }
 
