@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -11,27 +12,78 @@ import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/company-research.css';
 import '../../../../app-legacy/components/grpv/snappy-slider.css';
 
+const TICKER_LIST = [
+  { symbol: 'AAPL', name: 'Apple Inc.' }, { symbol: 'MSFT', name: 'Microsoft' }, { symbol: 'NVDA', name: 'NVIDIA' },
+  { symbol: 'GOOGL', name: 'Alphabet (Google)' }, { symbol: 'META', name: 'Meta Platforms' }, { symbol: 'AMZN', name: 'Amazon' },
+  { symbol: 'TSLA', name: 'Tesla' }, { symbol: 'JPM', name: 'JPMorgan Chase' }, { symbol: 'V', name: 'Visa' },
+  { symbol: 'JNJ', name: 'Johnson & Johnson' }, { symbol: 'WMT', name: 'Walmart' }, { symbol: 'XOM', name: 'Exxon Mobil' },
+];
+
+const MOCK_OVERVIEW = { MarketCapitalization: 2800000000000, PERatio: 28.5, DividendYield: 0.0052, EPS: 6.42 };
+
 export default function CompanyResearchPage() {
   const scriptLoadedRef = useRef(false);
-  const mountedRef = useRef(true);
+  const [selectedStock, setSelectedStock] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+  const [viewMode, setViewMode] = useState('heatmap');
+  const [grpvOpen, setGrpvOpen] = useState(false);
+  const searchRef = useRef(null);
+
+  const updateStats = useCallback((symbol) => {
+    const ov = MOCK_OVERVIEW;
+    const mc = Number(ov.MarketCapitalization);
+    setStats({
+      mcap: mc >= 1e12 ? `$${(mc / 1e12).toFixed(2)}T` : mc >= 1e9 ? `$${(mc / 1e9).toFixed(2)}B` : `$${(mc / 1e6).toFixed(0)}M`,
+      pe: ov.PERatio ? Number(ov.PERatio).toFixed(2) : '--',
+      divYield: ov.DividendYield ? (Number(ov.DividendYield) * 100).toFixed(2) + '%' : '--',
+      eps: ov.EPS ? Number(ov.EPS).toFixed(2) : '--',
+      capType: mc >= 200e9 ? 'Mega Cap' : mc >= 10e9 ? 'Large Cap' : mc >= 2e9 ? 'Mid Cap' : 'Small Cap',
+    });
+  }, []);
+
+  const handleSelectStock = useCallback((symbol) => {
+    setSelectedStock(symbol);
+    setViewMode('stock');
+    updateStats(symbol);
+  }, [updateStats]);
+
+  const handleSearchInput = useCallback((e) => {
+    const q = e.target.value.trim();
+    setSearchQuery(q);
+    if (q.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const ql = q.toLowerCase();
+    const matches = TICKER_LIST.filter(
+      (t) => t.symbol.toLowerCase().includes(ql) || t.name.toLowerCase().includes(ql)
+    );
+    setSuggestions(matches.slice(0, 8));
+    setShowSuggestions(matches.length > 0);
+  }, []);
+
+  const handleSelectSuggestion = useCallback((ticker) => {
+    setSearchQuery(ticker.symbol);
+    setShowSuggestions(false);
+    handleSelectStock(ticker.symbol);
+  }, [handleSelectStock]);
 
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    document.addEventListener('click', (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSuggestions(false);
+    });
   }, []);
 
   useEffect(() => {
     if (scriptLoadedRef.current) return;
     scriptLoadedRef.current = true;
-
     const loadScript = (src) => new Promise((resolve, reject) => {
       const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) {
-        resolve();
-        return;
-      }
+      if (existing) { resolve(); return; }
       const s = document.createElement('script');
       s.src = src;
       s.async = true;
@@ -39,53 +91,53 @@ export default function CompanyResearchPage() {
       s.onerror = () => reject(new Error(`Failed to load ${src}`));
       document.body.appendChild(s);
     });
-
-    const init = async () => {
-      try {
-        if (!mountedRef.current) return;
-        await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js');
-        if (!mountedRef.current) return;
-        await loadScript('/app-legacy/js/api-config.js');
-        if (!mountedRef.current) return;
-        await loadScript('/app-legacy/assets/js/alpha-vantage-api.js').catch(() => {});
-        if (!mountedRef.current) return;
-        if (!document.getElementById('heatmapContainer')) return;
-        await loadScript('/app-legacy/pages/company-research.js');
-        if (mountedRef.current && window.marketChartWidget?.renderHeatmap) {
-          window.marketChartWidget.renderHeatmap();
-        }
-      } catch (e) {
-        console.warn('Company research init:', e);
-      }
-    };
-
-    init();
+    loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js').catch(() => {});
+    loadScript('/app-legacy/pages/company-research.js').catch(() => {});
   }, []);
 
   return (
     <>
-      <div className="company-search-wrapper">
+      <div className="company-search-wrapper" ref={searchRef}>
         <div className="search-container">
           <i className="bi bi-search" />
-          <input type="text" id="companySearchInput" placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)" className="company-search-input" autoComplete="off" />
-          <button className="search-btn" id="searchCompanyBtn" type="button"><i className="bi bi-arrow-right" /></button>
+          <input
+            type="text"
+            placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
+            className="company-search-input"
+            autoComplete="off"
+            value={searchQuery}
+            onChange={handleSearchInput}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          />
+          <button className="search-btn" type="button" onClick={() => searchQuery && handleSelectStock(searchQuery.toUpperCase())}>
+            <i className="bi bi-arrow-right" />
+          </button>
         </div>
-        <div className="search-suggestions" id="searchSuggestions" />
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="search-suggestions">
+            {suggestions.map((t) => (
+              <button key={t.symbol} type="button" className="search-suggestion-item" onClick={() => handleSelectSuggestion(t)}>
+                <span className="suggestion-ticker">{t.symbol}</span>
+                <span className="suggestion-name">{t.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="stats-grid" id="companyStatsGrid">
         <div className="stat-card" id="stat-mcap">
           <div className="stat-icon market"><i className="bi bi-building" /></div>
           <div className="stat-content">
-            <div className="stat-value" id="statMarketCap">--</div>
+            <div className="stat-value" id="statMarketCap">{stats.mcap}</div>
             <div className="stat-label">Market Cap</div>
-            <div className="stat-change" id="statCapType">--</div>
+            <div className="stat-change" id="statCapType">{stats.capType}</div>
           </div>
         </div>
         <div className="stat-card" id="stat-pe">
           <div className="stat-icon performance"><i className="bi bi-trophy" /></div>
           <div className="stat-content">
-            <div className="stat-value" id="statPE">--</div>
+            <div className="stat-value" id="statPE">{stats.pe}</div>
             <div className="stat-label">P/E Ratio</div>
             <div className="stat-change" id="statPELabel">--</div>
           </div>
@@ -93,7 +145,7 @@ export default function CompanyResearchPage() {
         <div className="stat-card" id="stat-divyield">
           <div className="stat-icon stocks"><i className="bi bi-cash-coin" /></div>
           <div className="stat-content">
-            <div className="stat-value" id="statDivYield">--</div>
+            <div className="stat-value" id="statDivYield">{stats.divYield}</div>
             <div className="stat-label">Dividend Yield</div>
             <div className="stat-change" id="statDivYieldLabel">--</div>
           </div>
@@ -101,7 +153,7 @@ export default function CompanyResearchPage() {
         <div className="stat-card" id="stat-eps">
           <div className="stat-icon volume"><i className="bi bi-graph-up-arrow" /></div>
           <div className="stat-content">
-            <div className="stat-value" id="statEPS">--</div>
+            <div className="stat-value" id="statEPS">{stats.eps}</div>
             <div className="stat-label">EPS</div>
             <div className="stat-change" id="statEPSLabel">--</div>
           </div>
@@ -109,7 +161,7 @@ export default function CompanyResearchPage() {
       </div>
 
       <section className="market-chart-section" id="marketChartSection">
-        <div id="heatmapView">
+        <div id="heatmapView" style={{ display: viewMode === 'heatmap' ? '' : 'none' }}>
           <div className="chart-header compact">
             <div className="chart-title-area">
               <h2 className="chart-title">Stock Market Heatmap</h2>
@@ -117,24 +169,21 @@ export default function CompanyResearchPage() {
             </div>
           </div>
           <div className="heatmap-container" id="heatmapContainer">
-            <div className="chart-loading" id="heatmapLoading">
-              <i className="bi bi-arrow-repeat spin" />
-              <span>Loading heatmap...</span>
-            </div>
+            <StockHeatmap onSelectStock={handleSelectStock} />
           </div>
         </div>
 
-        <div id="stockChartView" style={{ display: 'none' }}>
+        <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
           <div className="chart-header compact">
             <div className="chart-title-area">
-              <h2 className="chart-title" id="stockChartTitle">--</h2>
+              <h2 className="chart-title" id="stockChartTitle">{selectedStock || '--'}</h2>
               <div className="market-chart-meta" id="stockChartMeta">
                 <span className="market-price" id="stockPrice">--</span>
                 <span className="market-change" id="stockChange">--</span>
               </div>
             </div>
             <div className="chart-controls">
-              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button"><i className="bi bi-grid-3x3-gap" /> Heatmap</button>
+              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button" onClick={() => { setViewMode('heatmap'); setSelectedStock(null); setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' }); }}><i className="bi bi-grid-3x3-gap" /> Heatmap</button>
               <div className="time-range-selector compact" id="stockTimeRange">
                 <button className="time-btn" type="button" data-range="1D">1D</button>
                 <button className="time-btn" type="button" data-range="1W">1W</button>
@@ -166,7 +215,7 @@ export default function CompanyResearchPage() {
         <button className="carousel-nav prev" id="modelsCarouselPrev" type="button"><i className="bi bi-chevron-left" /></button>
         <div className="models-carousel-container">
           <div className="models-carousel-track" id="modelsCarouselTrack">
-            <div className="model-metric-card model-card grpv-flagship" data-model="grpv">
+            <div className="model-metric-card model-card grpv-flagship" data-model="grpv" onClick={() => setGrpvOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setGrpvOpen(true)}>
               <div className="grpv-brand-logo">
                 <img src="/app-legacy/assets/images/ezana-logo.png" alt="Ezana Finance" className="grpv-logo-img" />
               </div>
@@ -213,13 +262,30 @@ export default function CompanyResearchPage() {
         <button className="carousel-nav next" id="modelsCarouselNext" type="button"><i className="bi bi-chevron-right" /></button>
       </section>
 
-      <section className="model-detail-section" id="modelDetailSection" style={{ display: 'none' }}>
+      <section className="model-detail-section" id="modelDetailSection" style={{ display: grpvOpen ? '' : 'none' }}>
         <div className="component-card model-detail-card">
           <div className="card-header">
-            <h3 id="modelDetailTitle">Financial Analysis Model</h3>
-            <button className="card-action-btn" id="modelDetailClose" type="button"><i className="bi bi-x-lg" /> Close</button>
+            <h3 id="modelDetailTitle">GRPV Analysis</h3>
+            <button className="card-action-btn" id="modelDetailClose" type="button" onClick={() => setGrpvOpen(false)}><i className="bi bi-x-lg" /> Close</button>
           </div>
-          <div className="model-detail-body" id="modelDetailBody" />
+          <div className="model-detail-body" id="modelDetailBody">
+            {grpvOpen && (
+              <div className="grpv-placeholder">
+                <p>GRPV (Growth, Risk, Price, Value) Analysis scores companies across 72 data points.</p>
+                <p>Enter a ticker above to run analysis, or select a company from the heatmap.</p>
+                <div className="grpv-score-preview">
+                  <div className="grpv-score-label">Sample Score</div>
+                  <div className="grpv-score-value">58/72</div>
+                  <div className="grpv-score-breakdown">
+                    <span>Growth: 14/18</span>
+                    <span>Risk: 12/18</span>
+                    <span>Price: 16/18</span>
+                    <span>Value: 16/18</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

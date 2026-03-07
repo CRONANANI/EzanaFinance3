@@ -1496,6 +1496,95 @@ body.light-mode .pie-slice.active {
   display: flex;
 }
 
+/* Dashboard modals (Connect Brokerage, Alerts, Analysis) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
+}
+
+.modal-content {
+  background: var(--card, #1a2332);
+  border: 1px solid var(--border, rgba(16, 185, 129, 0.2));
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 90%;
+  cursor: default;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content-wide { max-width: 640px; }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-header h3 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--foreground, #fff); }
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+  background: transparent;
+  border-radius: 8px;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+
+.modal-content p { margin: 0 0 1rem; color: #9ca3af; font-size: 0.9375rem; }
+
+.modal-content .btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alerts-config {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.alerts-config label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--foreground, #fff);
+  cursor: pointer;
+}
+
+.comparison-index-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
 .comparison-modal-overlay {
   position: absolute;
   top: 0;

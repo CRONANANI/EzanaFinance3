@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { createPortal } from 'react-dom';
 
-// Legacy CSS imports (relative from src)
-// theme-variables, component-cards, universal-card-standards, page-layout are in globals.css
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -12,8 +11,35 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 
+const CAROUSEL_METRICS = [
+  { label: 'Portfolio Value', value: '$158,420', change: '+24.5% YTD' },
+  { label: "Today's P&L", value: '+$1,247', change: '+0.82% today' },
+  { label: 'Top Performer', value: 'NVDA', change: '+12.4%' },
+  { label: 'Risk Score', value: '6.2/10', change: '-0.3 vs last week' },
+  { label: 'Monthly Dividends', value: '$847', change: '+12.0% MoM' },
+  { label: 'Asset Allocation', value: 'Balanced', change: 'Stocks 65% • Bonds 20%' },
+  { label: 'Volatility', value: '4.8/10', change: '-0.4 this month' },
+  { label: 'Beta vs Market', value: '1.05', change: 'Near market sensitivity' },
+  { label: 'Sector Exposure', value: 'Tech 35%', change: 'Top 3 sectors tracked' },
+];
+
 export default function HomeDashboardPage() {
   const scriptLoadedRef = useRef(false);
+  const [brokerageOpen, setBrokerageOpen] = useState(false);
+  const [alertsOpen, setAlertsOpen] = useState(false);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+
+  const exportReport = useCallback(() => {
+    const rows = CAROUSEL_METRICS.map((m) => [m.label, m.value, m.change].join(','));
+    const csv = ['Metric,Value,Change', ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `portfolio-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
 
   useEffect(() => {
     if (scriptLoadedRef.current) return;
@@ -57,36 +83,84 @@ export default function HomeDashboardPage() {
   return (
     <>
       {/* Quick Actions Bar */}
-      <section className="quick-actions-bar compact">
-        <button
-          className="quick-action-btn quick-action-brokerage"
-          id="connectBrokerageBtn"
-          data-action="brokerage"
-        >
+      <section className="quick-actions-bar compact" data-react-controlled>
+        <button className="quick-action-btn quick-action-brokerage" id="connectBrokerageBtn" data-action="brokerage" onClick={() => setBrokerageOpen(true)}>
           <i className="bi bi-bank" />
           <span>Connect Brokerage</span>
         </button>
-        <button className="quick-action-btn" data-action="refresh">
+        <button className="quick-action-btn" data-action="refresh" onClick={() => window.portfolioDashboard?.updateChart?.('portfolio')}>
           <i className="bi bi-arrow-clockwise" />
           <span>Refresh</span>
         </button>
-        <button className="quick-action-btn" data-action="report">
+        <button className="quick-action-btn" data-action="report" onClick={exportReport}>
           <i className="bi bi-file-earmark-text" />
           <span>Report</span>
         </button>
-        <button className="quick-action-btn" data-action="analysis">
+        <button className="quick-action-btn" data-action="analysis" onClick={() => setAnalysisOpen(true)}>
           <i className="bi bi-graph-up" />
           <span>Analysis</span>
         </button>
-        <button className="quick-action-btn" data-action="alerts">
+        <button className="quick-action-btn" data-action="alerts" onClick={() => setAlertsOpen(true)}>
           <i className="bi bi-bell" />
           <span>Alerts</span>
         </button>
-        <button className="quick-action-btn" data-action="watchlist">
-          <i className="bi bi-bookmark" />
-          <span>Watchlist</span>
-        </button>
       </section>
+
+      {brokerageOpen && createPortal(
+        <div className="modal-overlay" onClick={() => setBrokerageOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Connect Brokerage Account</h3>
+              <button type="button" className="modal-close" onClick={() => setBrokerageOpen(false)}><i className="bi bi-x-lg" /></button>
+            </div>
+            <p>Connect your brokerage via Plaid to sync your portfolio automatically. You&apos;ll be redirected to a secure Plaid flow.</p>
+            <button type="button" className="btn-primary" onClick={() => { setBrokerageOpen(false); if (typeof window !== 'undefined' && window.portfolioDashboard?.openPlaidLink) window.portfolioDashboard.openPlaidLink(); }}>
+              <i className="bi bi-bank" /> Connect with Plaid
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {alertsOpen && createPortal(
+        <div className="modal-overlay" onClick={() => setAlertsOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Portfolio Alerts</h3>
+              <button type="button" className="modal-close" onClick={() => setAlertsOpen(false)}><i className="bi bi-x-lg" /></button>
+            </div>
+            <p>Configure alerts for your portfolio. Toggle the options below.</p>
+            <div className="alerts-config">
+              <label><input type="checkbox" defaultChecked /> Portfolio value changes</label>
+              <label><input type="checkbox" defaultChecked /> Rebalancing suggestions</label>
+              <label><input type="checkbox" /> Dividend payments</label>
+              <label><input type="checkbox" defaultChecked /> Price alerts for holdings</label>
+            </div>
+            <button type="button" className="btn-primary" onClick={() => setAlertsOpen(false)}>Save</button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {analysisOpen && createPortal(
+        <div className="modal-overlay" onClick={() => setAnalysisOpen(false)}>
+          <div className="modal-content modal-content-wide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Portfolio vs Market Indices</h3>
+              <button type="button" className="modal-close" onClick={() => setAnalysisOpen(false)}><i className="bi bi-x-lg" /></button>
+            </div>
+            <p>Compare your portfolio performance against S&P 500, NASDAQ, and Dow Jones.</p>
+            <div className="comparison-index-legend">
+              <span><i className="bi bi-circle-fill" style={{ color: '#10b981' }} /> Your Portfolio</span>
+              <span><i className="bi bi-circle-fill" style={{ color: '#3b82f6' }} /> S&P 500</span>
+              <span><i className="bi bi-circle-fill" style={{ color: '#8b5cf6' }} /> NASDAQ</span>
+              <span><i className="bi bi-circle-fill" style={{ color: '#f59e0b' }} /> Dow Jones</span>
+            </div>
+            <p className="text-muted">Chart will display when market data is available.</p>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Metrics Carousel */}
       <section className="metrics-carousel-section compact">

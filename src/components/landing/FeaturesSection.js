@@ -1,10 +1,69 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+
+const PORTFOLIO_METRICS = {
+  '1D': [
+    { label: "Today's P&L", value: '+$1,247', unit: '' },
+    { label: 'Top Performer', value: 'NVDA', unit: '+12.4%' },
+    { label: 'Market Performance', value: '+8.4%', unit: ' vs S&P 500' },
+    { label: 'Volatility Score', value: '4.8', unit: '/10' },
+  ],
+  '1W': [
+    { label: 'Risk Score', value: '6.2', unit: '/10' },
+    { label: 'Sharpe Ratio', value: '1.45', unit: '' },
+    { label: 'Dividends', value: '$847', unit: '/mo' },
+    { label: 'Asset Allocation', value: 'Balanced', unit: '' },
+  ],
+  '1M': [
+    { label: 'Beta vs Market', value: '1.05', unit: '' },
+    { label: 'Sector Exposure', value: 'Tech', unit: ' 35%' },
+    { label: 'Monthly Dividends', value: '$847', unit: '' },
+    { label: 'Risk Score', value: '6.2', unit: '/10' },
+  ],
+  '1Y': [
+    { label: 'YTD Return', value: '+18.2%', unit: '' },
+    { label: 'Max Drawdown', value: '-4.3%', unit: '' },
+    { label: 'Alpha vs S&P', value: '+2.1%', unit: '' },
+    { label: 'Dividend Yield', value: '2.4%', unit: '' },
+  ],
+};
+
+const INTEL_DATA = {
+  contracts: [
+    { agency: 'Department of Defense', company: 'Lockheed Martin', amount: '$450M Contract Award', date: '2 days ago', impact: 'high' },
+    { agency: 'NASA', company: 'SpaceX', amount: '$1.2B Contract Award', date: '1 week ago', impact: 'high' },
+    { agency: 'Department of Energy', company: 'Tesla', amount: '$85M Contract Award', date: '2 weeks ago', impact: 'medium' },
+  ],
+  lobbying: [
+    { agency: 'Meta Platforms', company: 'Lobbying Expenditure', amount: '$5.2M spent in Q4 2025', date: 'Tech Policy, Privacy', impact: 'high' },
+    { agency: 'Amazon', company: 'Lobbying Expenditure', amount: '$4.8M spent in Q4 2025', date: 'Cloud Computing, Labor', impact: 'high' },
+    { agency: 'Google', company: 'Lobbying Expenditure', amount: '$3.9M spent in Q4 2025', date: 'AI Regulation, Antitrust', impact: 'medium' },
+  ],
+  patents: [
+    { agency: 'Apple', company: 'Consumer Electronics', amount: '1247 patents filed in Q4 2025', date: 'Trend: ↑ Increasing', impact: 'high' },
+    { agency: 'Tesla', company: 'Automotive AI', amount: '892 patents filed in Q4 2025', date: 'Trend: ↑ Increasing', impact: 'high' },
+    { agency: 'Nvidia', company: 'AI Hardware', amount: '743 patents filed in Q4 2025', date: 'Trend: ↑ Increasing', impact: 'medium' },
+  ],
+};
+
+const COMMUNITY_DATA = {
+  trending: [
+    { author: 'JD', name: 'John Doe', badge: 'expert', content: 'Just noticed a pattern in semiconductor congressional trades. NVDA purchases up 40% this week among tech committee members...', stats: { likes: 124, comments: 38, bookmarks: 56 } },
+    { author: 'AS', name: 'Alex Smith', badge: 'verified', content: 'Defense contract awards correlating strongly with recent lobbying spend. Check out my detailed analysis...', stats: { likes: 89, comments: 22, bookmarks: 43 } },
+  ],
+  recent: [
+    { author: 'MK', name: 'Maria Kim', badge: 'verified', content: 'New congressional trade alert: Senator just disclosed a large purchase in renewable energy sector. Interesting timing with upcoming legislation...', stats: { likes: 45, comments: 12, bookmarks: 23 } },
+    { author: 'RP', name: 'Robert Park', badge: 'expert', content: 'Anyone else tracking the unusual patent filing activity from major tech companies this quarter? Something big might be coming...', stats: { likes: 67, comments: 18, bookmarks: 34 } },
+  ],
+};
 
 export function FeaturesSection() {
   const sectionRef = useRef(null);
+  const [portfolioRange, setPortfolioRange] = useState('1W');
+  const [intelTab, setIntelTab] = useState('contracts');
+  const [communityView, setCommunityView] = useState('trending');
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -28,6 +87,10 @@ export function FeaturesSection() {
     };
   }, []);
 
+  const portfolioMetrics = PORTFOLIO_METRICS[portfolioRange] || PORTFOLIO_METRICS['1W'];
+  const intelItems = INTEL_DATA[intelTab] || INTEL_DATA.contracts;
+  const communityPosts = COMMUNITY_DATA[communityView] || COMMUNITY_DATA.trending;
+
   return (
     <section ref={sectionRef} className="features-section" id="features">
       <div className="features-container">
@@ -40,10 +103,9 @@ export function FeaturesSection() {
                   <div className="dashboard-header">
                     <h4>Portfolio Performance</h4>
                     <div className="time-range">
-                      <button type="button" className="time-btn">1D</button>
-                      <button type="button" className="time-btn active">1W</button>
-                      <button type="button" className="time-btn">1M</button>
-                      <button type="button" className="time-btn">1Y</button>
+                      {['1D', '1W', '1M', '1Y'].map((r) => (
+                        <button key={r} type="button" className={`time-btn ${portfolioRange === r ? 'active' : ''}`} onClick={() => setPortfolioRange(r)}>{r}</button>
+                      ))}
                     </div>
                   </div>
                   <div className="portfolio-value">
@@ -58,10 +120,12 @@ export function FeaturesSection() {
                     </svg>
                   </div>
                   <div className="metrics-mini-grid">
-                    <div className="metric-mini"><span className="metric-label">Risk Score</span><span className="metric-value">6.2<span className="metric-unit">/10</span></span></div>
-                    <div className="metric-mini"><span className="metric-label">Sharpe Ratio</span><span className="metric-value">1.45</span></div>
-                    <div className="metric-mini"><span className="metric-label">Dividends</span><span className="metric-value">$847<span className="metric-unit">/mo</span></span></div>
-                    <div className="metric-mini"><span className="metric-label">Asset Allocation</span><span className="metric-value">Balanced</span></div>
+                    {portfolioMetrics.map((m, i) => (
+                      <div key={i} className="metric-mini">
+                        <span className="metric-label">{m.label}</span>
+                        <span className="metric-value">{m.value}{m.unit ? <span className="metric-unit">{m.unit}</span> : null}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -79,11 +143,11 @@ export function FeaturesSection() {
           </div>
         </div>
 
-        {/* 2. Congressional Trading - Ledger-style transactions */}
+        {/* 2. Congressional Trading - Ledger-style transactions (same size as other cards) */}
         <div className="feature-block reverse" data-feature="congress">
           <div className="feature-content">
             <div className="feature-visual">
-              <div className="visual-container congress-visual">
+              <div className="visual-container congress-visual congress-visual-compact">
                 <div className="trading-feed">
                   <div className="feed-header">
                     <h4>Congressional Trading Ledger</h4>
@@ -122,22 +186,6 @@ export function FeaturesSection() {
                         <div className="trade-meta"><span className="timestamp">12 minutes ago</span><span className="party democrat">Democrat</span></div>
                       </div>
                     </div>
-                    <div className="trade-item">
-                      <div className="trade-icon"><i className="bi bi-arrow-down-circle-fill text-red" /></div>
-                      <div className="trade-details">
-                        <div className="trade-header"><span className="politician-name">Tommy Tuberville</span><span className="trade-badge sale">Sale</span></div>
-                        <div className="trade-info"><span className="ticker">GOOGL</span><span className="amount">$50,001 - $100,000</span></div>
-                        <div className="trade-meta"><span className="timestamp">18 minutes ago</span><span className="party republican">Republican</span></div>
-                      </div>
-                    </div>
-                    <div className="trade-item">
-                      <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
-                      <div className="trade-details">
-                        <div className="trade-header"><span className="politician-name">Susie Lee</span><span className="trade-badge purchase">Purchase</span></div>
-                        <div className="trade-info"><span className="ticker">META</span><span className="amount">$15,001 - $50,000</span></div>
-                        <div className="trade-meta"><span className="timestamp">25 minutes ago</span><span className="party democrat">Democrat</span></div>
-                      </div>
-                    </div>
                   </div>
                   <div className="feed-filters">
                     <button type="button" className="filter-pill active">All Trades</button>
@@ -162,45 +210,33 @@ export function FeaturesSection() {
           </div>
         </div>
 
-        {/* 3. Market Intelligence */}
+        {/* 3. Market Intelligence - tabs switch data */}
         <div className="feature-block" data-feature="intelligence">
           <div className="feature-content">
             <div className="feature-visual">
               <div className="visual-container intelligence-visual">
                 <div className="intelligence-dashboard">
                   <div className="intelligence-tabs">
-                    <button type="button" className="intel-tab active">Contracts</button>
-                    <button type="button" className="intel-tab">Lobbying</button>
-                    <button type="button" className="intel-tab">Patents</button>
+                    {['contracts', 'lobbying', 'patents'].map((tab) => (
+                      <button key={tab} type="button" className={`intel-tab ${intelTab === tab ? 'active' : ''}`} onClick={() => setIntelTab(tab)}>
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      </button>
+                    ))}
                   </div>
                   <div className="intel-panel">
-                    <div className="intel-item">
-                      <div className="intel-icon contracts"><i className="bi bi-file-earmark-text" /></div>
-                      <div className="intel-content">
-                        <div className="intel-title">Department of Defense</div>
-                        <div className="intel-company">Lockheed Martin</div>
-                        <div className="intel-amount">$450M Contract Award</div>
-                        <div className="intel-meta"><span className="intel-date">2 days ago</span><span className="intel-impact high">High Impact</span></div>
+                    {intelItems.map((item, i) => (
+                      <div key={i} className="intel-item">
+                        <div className={`intel-icon ${intelTab}`}>
+                          <i className={`bi ${intelTab === 'contracts' ? 'bi-file-earmark-text' : intelTab === 'lobbying' ? 'bi-megaphone' : 'bi-lightbulb'}`} />
+                        </div>
+                        <div className="intel-content">
+                          <div className="intel-title">{item.agency}</div>
+                          <div className="intel-company">{item.company}</div>
+                          <div className="intel-amount">{item.amount}</div>
+                          <div className="intel-meta"><span className="intel-date">{item.date}</span><span className={`intel-impact ${item.impact}`}>{item.impact === 'high' ? 'High' : 'Medium'} Impact</span></div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="intel-item">
-                      <div className="intel-icon contracts"><i className="bi bi-file-earmark-text" /></div>
-                      <div className="intel-content">
-                        <div className="intel-title">NASA</div>
-                        <div className="intel-company">SpaceX</div>
-                        <div className="intel-amount">$1.2B Contract Award</div>
-                        <div className="intel-meta"><span className="intel-date">1 week ago</span><span className="intel-impact high">High Impact</span></div>
-                      </div>
-                    </div>
-                    <div className="intel-item">
-                      <div className="intel-icon contracts"><i className="bi bi-file-earmark-text" /></div>
-                      <div className="intel-content">
-                        <div className="intel-title">Department of Energy</div>
-                        <div className="intel-company">Tesla</div>
-                        <div className="intel-amount">$85M Contract Award</div>
-                        <div className="intel-meta"><span className="intel-date">2 weeks ago</span><span className="intel-impact medium">Medium Impact</span></div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -237,27 +273,21 @@ export function FeaturesSection() {
                   <div className="feed-header">
                     <h4>Community Insights</h4>
                     <div className="feed-actions">
-                      <button type="button" className="feed-action"><i className="bi bi-fire" /> Trending</button>
-                      <button type="button" className="feed-action"><i className="bi bi-clock" /> Recent</button>
+                      <button type="button" className={`feed-action ${communityView === 'trending' ? 'active' : ''}`} onClick={() => setCommunityView('trending')}><i className="bi bi-fire" /> Trending</button>
+                      <button type="button" className={`feed-action ${communityView === 'recent' ? 'active' : ''}`} onClick={() => setCommunityView('recent')}><i className="bi bi-clock" /> Recent</button>
                     </div>
                   </div>
                   <div className="community-items">
-                    <div className="community-post">
-                      <div className="post-author">
-                        <div className="author-avatar">JD</div>
-                        <div className="author-info"><span className="author-name">John Doe</span><span className="author-badge expert">Expert Trader</span></div>
+                    {communityPosts.map((post, i) => (
+                      <div key={i} className="community-post">
+                        <div className="post-author">
+                          <div className="author-avatar">{post.author}</div>
+                          <div className="author-info"><span className="author-name">{post.name}</span><span className={`author-badge ${post.badge}`}>{post.badge === 'expert' ? 'Expert Trader' : 'Verified'}</span></div>
+                        </div>
+                        <div className="post-content"><p>{post.content}</p></div>
+                        <div className="post-stats"><span className="stat"><i className="bi bi-hand-thumbs-up" /> {post.stats.likes}</span><span className="stat"><i className="bi bi-chat" /> {post.stats.comments}</span><span className="stat"><i className="bi bi-bookmark" /> {post.stats.bookmarks}</span></div>
                       </div>
-                      <div className="post-content"><p>Just noticed a pattern in semiconductor congressional trades. NVDA purchases up 40% this week among tech committee members...</p></div>
-                      <div className="post-stats"><span className="stat"><i className="bi bi-hand-thumbs-up" /> 124</span><span className="stat"><i className="bi bi-chat" /> 38</span><span className="stat"><i className="bi bi-bookmark" /> 56</span></div>
-                    </div>
-                    <div className="community-post">
-                      <div className="post-author">
-                        <div className="author-avatar">AS</div>
-                        <div className="author-info"><span className="author-name">Alex Smith</span><span className="author-badge verified">Verified</span></div>
-                      </div>
-                      <div className="post-content"><p>Defense contract awards correlating strongly with recent lobbying spend. Check out my detailed analysis...</p></div>
-                      <div className="post-stats"><span className="stat"><i className="bi bi-hand-thumbs-up" /> 89</span><span className="stat"><i className="bi bi-chat" /> 22</span><span className="stat"><i className="bi bi-bookmark" /> 43</span></div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>

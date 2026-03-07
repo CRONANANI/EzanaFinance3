@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
@@ -13,9 +14,19 @@ export function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
   const { toggleNotifications } = useSidebar();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsRef = useRef(null);
   const isLanding = pathname === '/';
   const DASHBOARD_PAGES = ['/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
   const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) setSettingsOpen(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -103,11 +114,25 @@ export function Navbar() {
             <i className="bi bi-bell"></i>
             <span className="notification-badge">3</span>
           </button>
-          <button className="nav-action-btn theme-toggle" onClick={toggleTheme} title="Toggle theme" type="button">
-            <i className={`bi ${theme === 'dark' ? 'bi-sun-fill light-icon' : 'bi-moon-fill dark-icon'}`}></i>
-          </button>
+          <div className="nav-settings-dropdown" ref={settingsRef}>
+            <button className="nav-action-btn settings-toggle" onClick={() => setSettingsOpen(!settingsOpen)} title="App settings" type="button">
+              <i className="bi bi-gear"></i>
+            </button>
+            {settingsOpen && (
+              <div className="settings-dropdown-menu">
+                <div className="settings-dropdown-item">
+                  <span>Theme</span>
+                  <button type="button" className="settings-theme-btn" onClick={toggleTheme} title="Toggle theme">
+                    <i className={`bi ${theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill'}`}></i>
+                    <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
+                  </button>
+                </div>
+                <div className="settings-dropdown-item muted">More options coming soon</div>
+              </div>
+            )}
+          </div>
           {isDashboardPage ? (
-            <Link href={user ? "/user-profile-settings" : "/signin"} className="nav-action-btn user-menu-btn" title={user ? "Account" : "Sign in"}>
+            <Link href={user ? "/user-profile-settings" : "/signin"} className="nav-action-btn user-menu-btn" title={user ? "Account & preferences" : "Sign in"}>
               <i className="bi bi-person-circle"></i>
             </Link>
           ) : user ? (

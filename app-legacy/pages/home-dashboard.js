@@ -372,6 +372,7 @@ class PortfolioDashboard {
   }
 
   setupQuickActions() {
+    if (document.querySelector('.quick-actions-bar[data-react-controlled]')) return;
     const brokerageBtn = document.getElementById('connectBrokerageBtn');
     if (brokerageBtn) {
       brokerageBtn.addEventListener('click', (e) => {

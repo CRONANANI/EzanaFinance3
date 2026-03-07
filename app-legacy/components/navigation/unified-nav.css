@@ -48,7 +48,7 @@
 
 .nav-links {
   display: flex;
-  gap: 0.5rem;
+  gap: 1.5rem;
   align-items: center;
 }
 
@@ -267,4 +267,59 @@ body.light-mode .dark-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Settings dropdown */
+.nav-settings-dropdown {
+  position: relative;
+}
+
+.settings-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 220px;
+  background: #1a2332;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  box-shadow: var(--shadow-2xl);
+  z-index: 1001;
+}
+
+body.light-mode .settings-dropdown-menu {
+  background: #ffffff;
+  border-color: rgba(5, 150, 105, 0.15);
+}
+
+.settings-dropdown-item {
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.settings-dropdown-item.muted {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.settings-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.875rem;
+  width: 100%;
+  margin-top: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.settings-theme-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -8,10 +9,39 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 
+const MAP_EVENTS = [
+  { id: 'usa', region: 'usa', title: 'Fed Policy', desc: 'Federal Reserve signals data-dependent approach. Markets pricing 2 cuts in 2026.', impact: 'Moderate impact on global risk sentiment. USD strength may persist.' },
+  { id: 'europe', region: 'europe', title: 'ECB Rate Cut', desc: 'ECB signals potential rate cut in June as eurozone inflation cools.', impact: 'EUR weakness expected. European equities may benefit from lower rates.' },
+  { id: 'asia', region: 'asia', title: 'BOJ Policy', desc: 'Bank of Japan maintains ultra-loose policy; yen weakens to 34-year low.', impact: 'Yen carry trade flows. Japanese exporters benefit from weak currency.' },
+  { id: 'uk', region: 'uk', title: 'BoE Dovish Pivot', desc: 'UK gilt yields fall as BoE signals dovish pivot.', impact: 'UK bonds rally. Sterling may face pressure.' },
+  { id: 'china', region: 'china', title: 'PBOC Stimulus', desc: 'PBOC cuts reserve ratio to support economy; Shanghai Composite gains.', impact: 'Chinese equities rally. Commodity demand outlook improves.' },
+];
+
+const MOCK_ARTICLES = [
+  { title: 'Fed Chair Powell Testifies Before Congress', source: 'Reuters', url: '#' },
+  { title: 'Markets React to Central Bank Signals', source: 'Bloomberg', url: '#' },
+  { title: 'Global Rate Outlook Shifts', source: 'Financial Times', url: '#' },
+];
+
+const CONVEYER_CARDS = [
+  { badge: 'Markets', title: 'ECB signals potential rate cut in June', time: '2h ago', location: 'Frankfurt' },
+  { badge: 'Asia', title: 'Bank of Japan maintains ultra-loose policy', time: '4h ago', location: 'Tokyo' },
+  { badge: 'Bonds', title: 'US Treasury yields rise on strong jobs data', time: '5h ago', location: 'New York' },
+  { badge: 'Commodities', title: 'Oil prices surge on Middle East tensions', time: '6h ago', location: 'London' },
+  { badge: 'Emerging Markets', title: "India's Sensex hits record high", time: '8h ago', location: 'Mumbai' },
+  { badge: 'Fed', title: 'Fed Chair Powell: Policy appropriately restrictive', time: '10h ago', location: 'Washington' },
+  { badge: 'Crypto', title: 'Bitcoin ETF inflows reach $12B', time: '12h ago', location: 'Global' },
+  { badge: 'China', title: 'PBOC cuts reserve ratio to support economy', time: '14h ago', location: 'Beijing' },
+  { badge: 'Europe', title: 'UK gilt yields fall as BoE signals dovish pivot', time: '16h ago', location: 'London' },
+];
+
 export default function MarketAnalysisPage() {
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [activeLayer, setActiveLayer] = useState('markets');
+
   return (
-    <div className="market-analysis-world-monitor">
-      {/* Left: Full-height sticky world map */}
+    <div className={`market-analysis-world-monitor ${selectedEvent ? 'has-news-panel' : ''}`}>
+      {/* Map - 60% top */}
       <aside className="map-panel">
         <div className="map-header">
           <h2 className="map-title">
@@ -21,10 +51,9 @@ export default function MarketAnalysisPage() {
           <div className="map-controls">
             <div className="map-layers">
               <span className="layer-label">Layers</span>
-              <button type="button" className="layer-btn active">Markets</button>
-              <button type="button" className="layer-btn">Central Banks</button>
-              <button type="button" className="layer-btn">Indices</button>
-              <button type="button" className="layer-btn">Commodities</button>
+              {['Markets', 'Central Banks', 'Indices', 'Commodities'].map((l) => (
+                <button key={l} type="button" className={`layer-btn ${activeLayer === l.toLowerCase().replace(' ', '') ? 'active' : ''}`} onClick={() => setActiveLayer(l.toLowerCase().replace(' ', ''))}>{l}</button>
+              ))}
             </div>
             <div className="map-time-range">
               <select className="time-range-select">
@@ -42,17 +71,63 @@ export default function MarketAnalysisPage() {
             className="world-map-img"
           />
           <div className="map-overlay-dots">
-            <div className="market-dot usa" title="United States - S&P 500" />
-            <div className="market-dot europe" title="Europe - STOXX 600" />
-            <div className="market-dot asia" title="Asia - Nikkei 225" />
-            <div className="market-dot uk" title="UK - FTSE 100" />
-            <div className="market-dot china" title="China - Shanghai Composite" />
+            {MAP_EVENTS.map((ev) => (
+              <div
+                key={ev.id}
+                className={`market-dot ${ev.region}`}
+                title={ev.title}
+                onClick={() => setSelectedEvent(ev)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedEvent(ev)}
+              />
+            ))}
           </div>
         </div>
       </aside>
 
-      {/* Right: Scrollable news/component cards */}
-      <div className="cards-panel">
+      {/* Horizontal conveyer belt */}
+      <section className="conveyer-section">
+        <div className="conveyer-track">
+          {[...CONVEYER_CARDS, ...CONVEYER_CARDS].map((card, i) => (
+            <div key={i} className="conveyer-card">
+              <div className="intel-card-header">
+                <span className={`intel-badge ${card.badge.toLowerCase().replace(/\s/g, '')}`}>{card.badge}</span>
+                <span className="intel-time">{card.time}</span>
+              </div>
+              <h4>{card.title}</h4>
+              <div className="intel-meta">
+                <span><i className="bi bi-geo-alt" /> {card.location}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* News panel - slides in from right when event selected */}
+      <div className={`news-panel ${selectedEvent ? 'open' : ''}`}>
+        <div className="news-panel-header">
+          <h3>{selectedEvent?.title || 'Event'}</h3>
+          <button type="button" className="news-panel-close" onClick={() => setSelectedEvent(null)} aria-label="Close"><i className="bi bi-x-lg" /></button>
+        </div>
+        {selectedEvent && (
+          <div className="news-panel-body">
+            <p>{selectedEvent.desc}</p>
+            <div className="ai-impact-metrics">
+              <strong>AI Impact Assessment:</strong> {selectedEvent.impact}
+            </div>
+            <p><strong>Read more:</strong></p>
+            {MOCK_ARTICLES.map((a, i) => (
+              <div key={i} className="news-article-item">
+                <a href={a.url} target="_blank" rel="noopener noreferrer">{a.title}</a> — {a.source}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Legacy cards panel - hidden when using new layout */}
+      <div className="cards-panel" style={{ display: 'none' }}>
         <div className="cards-panel-inner">
           <div className="cards-header">
             <h3>International Capital Markets Intelligence</h3>

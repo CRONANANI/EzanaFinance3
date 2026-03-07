@@ -1,9 +1,8 @@
 /* ============================================
    MARKET ANALYSIS - World Monitor Style
-   Full-height sticky map on left, scrollable cards on right
+   Map 60% top, horizontal conveyer belt below
    ============================================ */
 
-/* Break out of dashboard container - full viewport below navbar */
 .market-analysis-world-monitor {
   position: fixed;
   top: var(--nav-height, 64px);
@@ -11,24 +10,29 @@
   right: 0;
   bottom: 0;
   display: flex;
+  flex-direction: column;
   z-index: 1;
   background: #0a0e14;
 }
 
-/* When sidebar is open, shift left to account for sidebar */
 body.sidebar-open .market-analysis-world-monitor {
   left: var(--sidebar-width, 320px);
 }
 
-/* Left: Map panel - full height, sticky */
+.market-analysis-world-monitor.has-news-panel .map-panel {
+  flex: 0 0 calc(100% - 360px);
+}
+
+/* Map panel - 60% of viewport height */
 .map-panel {
-  flex: 0 0 50%;
-  min-width: 0;
+  flex: 0 0 60%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
-  border-right: 1px solid rgba(16, 185, 129, 0.15);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
   overflow: hidden;
+  transition: flex 0.3s ease;
 }
 
 .map-header {
@@ -136,6 +140,11 @@ body.sidebar-open .market-analysis-world-monitor {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
+.market-dot {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .market-dot.usa { top: 38%; left: 22%; }
 .market-dot.europe { top: 32%; left: 48%; }
 .market-dot.asia { top: 35%; left: 78%; }
@@ -147,7 +156,128 @@ body.sidebar-open .market-analysis-world-monitor {
   50% { opacity: 0.7; transform: scale(1.2); }
 }
 
-/* Right: Scrollable cards panel */
+/* Horizontal conveyer belt - intel cards */
+.conveyer-section {
+  flex: 0 0 auto;
+  height: 220px;
+  background: #0a0e14;
+  border-top: 1px solid rgba(16, 185, 129, 0.15);
+  overflow: hidden;
+}
+
+.conveyer-track {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+}
+
+.conveyer-track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.conveyer-track::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+}
+
+@keyframes conveyer-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.conveyer-card {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+  background: rgba(22, 27, 34, 0.9);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  overflow: hidden;
+}
+
+/* News panel (slides in from right when event selected) */
+.news-panel {
+  position: fixed;
+  top: var(--nav-height, 64px);
+  right: 0;
+  width: 360px;
+  height: calc(100vh - var(--nav-height, 64px));
+  background: #0d1117;
+  border-left: 1px solid rgba(16, 185, 129, 0.2);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.news-panel.open {
+  transform: translateX(0);
+}
+
+.news-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.news-panel-header h3 { margin: 0; font-size: 1rem; font-weight: 600; color: #f0f6fc; }
+
+.news-panel-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #8b949e;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.news-panel-close:hover { color: #f87171; background: rgba(239, 68, 68, 0.1); }
+
+.news-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.news-article-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+  font-size: 0.875rem;
+}
+
+.news-article-item:last-child { border-bottom: none; }
+
+.news-article-item a {
+  color: #10b981;
+  text-decoration: none;
+}
+
+.news-article-item a:hover { text-decoration: underline; }
+
+.ai-impact-metrics {
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.8125rem;
+  color: #8b949e;
+}
+
+.ai-impact-metrics strong { color: #10b981; }
+
+/* Right: Scrollable cards panel (legacy fallback) */
 .cards-panel {
   flex: 1;
   min-width: 0;
