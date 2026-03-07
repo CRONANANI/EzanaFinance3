@@ -27,13 +27,14 @@ const DEFAULT_CONNECTIONS = [
   { from: [40.71, -74.0], to: [37.78, -122.42] },
 ];
 
+/** Convert lat/lng (degrees) to 3D Cartesian on sphere. Y-up, standard geographic convention. */
 function latLngToXYZ(lat, lng, radius) {
-  const phi = ((90 - lat) * Math.PI) / 180;
-  const theta = ((lng + 180) * Math.PI) / 180;
+  const latRad = (lat * Math.PI) / 180;
+  const lngRad = (lng * Math.PI) / 180;
   return [
-    -(radius * Math.sin(phi) * Math.cos(theta)),
-    radius * Math.cos(phi),
-    radius * Math.sin(phi) * Math.sin(theta),
+    radius * Math.cos(latRad) * Math.sin(lngRad),
+    radius * Math.sin(latRad),
+    radius * Math.cos(latRad) * Math.cos(lngRad),
   ];
 }
 
@@ -258,20 +259,20 @@ export function InteractiveGlobe({
 
       const pulse = Math.sin(time * 2 + marker.lat) * 0.5 + 0.5;
       ctx.beginPath();
-      ctx.arc(sx, sy, 4 + pulse * 4, 0, Math.PI * 2);
+      ctx.arc(sx, sy, 3 + pulse * 2, 0, Math.PI * 2);
       ctx.strokeStyle = markerColor.replace("1)", `${0.2 + pulse * 0.15})`);
       ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+      ctx.arc(sx, sy, 1.8, 0, Math.PI * 2);
       ctx.fillStyle = markerColor;
       ctx.fill();
 
       if (marker.label) {
-        ctx.font = "10px system-ui, sans-serif";
-        ctx.fillStyle = markerColor.replace("1)", "0.6)");
-        ctx.fillText(marker.label, sx + 8, sy + 3);
+        ctx.font = "9px system-ui, sans-serif";
+        ctx.fillStyle = markerColor.replace("1)", "0.7)");
+        ctx.fillText(marker.label, sx + 6, sy + 2);
       }
     }
 
