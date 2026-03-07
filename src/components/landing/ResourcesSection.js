@@ -38,7 +38,6 @@ const DATA_SOURCES = [
     id: 'analytics',
     label: 'Alternative Analytics',
     details: [
-      'Alpha Vantage – real-time and historical market data',
       'FRED – economic indicators and macro data',
       'Finnhub – news, fundamentals, and sentiment',
       'Custom analytics and derived metrics',
@@ -78,11 +77,7 @@ export function ResourcesSection() {
               first: 'Congress',
               second: '13F',
               third: 'Institutional',
-              fourth: 'Analytics',
-            }}
-            buttonTexts={{
-              first: 'Alpha Vantage',
-              second: 'SEC EDGAR',
+              fourth: 'Alternative Analytics',
             }}
             title="Institutional-grade data from verified sources"
             circleText="Ezana"
