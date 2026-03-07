@@ -11,8 +11,8 @@ function DatabaseIcon({ x = "0", y = "0" }) {
       x={x}
       y={y}
       xmlns="http://www.w3.org/2000/svg"
-      width="5"
-      height="5"
+      width="4"
+      height="4"
       viewBox="0 0 24 24"
       fill="none"
       stroke="white"
@@ -34,11 +34,19 @@ export default function DatabaseWithRestApi({
   buttonTexts,
   title,
   lightColor,
+  onBadgeClick,
 }) {
+  const badges = [
+    { key: "first", id: "congress" },
+    { key: "second", id: "13f" },
+    { key: "third", id: "institutional" },
+    { key: "fourth", id: "analytics" },
+  ];
+
   return (
     <div
       className={cn(
-        "relative flex h-[350px] w-full max-w-[600px] flex-col items-center",
+        "relative flex h-[175px] w-full max-w-[500px] flex-col items-center",
         className
       )}
     >
@@ -46,7 +54,7 @@ export default function DatabaseWithRestApi({
         className="h-full sm:w-full text-muted"
         width="100%"
         height="100%"
-        viewBox="0 0 340 100"
+        viewBox="0 0 200 100"
       >
         <g
           stroke="currentColor"
@@ -55,10 +63,10 @@ export default function DatabaseWithRestApi({
           strokeDasharray="100 100"
           pathLength="100"
         >
-          <path d="M 38 10 v 15 q 0 5 5 5 h 119 q 5 0 5 5 v 10" />
-          <path d="M 118 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10" />
-          <path d="M 198 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10" />
-          <path d="M 301 10 v 15 q 0 5 -5 5 h -141 q -5 0 -5 5 v 10" />
+          <path d="M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 10" />
+          <path d="M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10" />
+          <path d="M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10" />
+          <path d="M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 10" />
           <animate
             attributeName="stroke-dashoffset"
             from="100"
@@ -75,7 +83,7 @@ export default function DatabaseWithRestApi({
             className="database db-light-1"
             cx="0"
             cy="0"
-            r="12"
+            r="8"
             fill="url(#db-blue-grad)"
           />
         </g>
@@ -84,7 +92,7 @@ export default function DatabaseWithRestApi({
             className="database db-light-2"
             cx="0"
             cy="0"
-            r="12"
+            r="8"
             fill="url(#db-blue-grad)"
           />
         </g>
@@ -93,7 +101,7 @@ export default function DatabaseWithRestApi({
             className="database db-light-3"
             cx="0"
             cy="0"
-            r="12"
+            r="8"
             fill="url(#db-blue-grad)"
           />
         </g>
@@ -102,112 +110,156 @@ export default function DatabaseWithRestApi({
             className="database db-light-4"
             cx="0"
             cy="0"
-            r="12"
+            r="8"
             fill="url(#db-blue-grad)"
           />
         </g>
         <g stroke="currentColor" fill="none" strokeWidth="0.4">
-          <g>
-            <rect fill="#18181B" x="5" y="2" width="65" height="16" rx="8" />
-            <DatabaseIcon x="10" y="5" />
-            <text x="42" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
-              {badgeTexts?.first || "GET"}
+          <g
+            className={onBadgeClick ? "cursor-pointer" : ""}
+            onClick={() => onBadgeClick?.("congress")}
+          >
+            <rect fill="#18181B" x="14" y="5" width="34" height="10" rx="5" />
+            <DatabaseIcon x="18" y="7.5" />
+            <text
+              x="31"
+              y="12"
+              fill="white"
+              stroke="none"
+              fontSize="5"
+              fontWeight="500"
+              textAnchor="middle"
+            >
+              {badgeTexts?.first || "Congress"}
             </text>
           </g>
-          <g>
-            <rect fill="#18181B" x="85" y="2" width="65" height="16" rx="8" />
-            <DatabaseIcon x="90" y="5" />
-            <text x="117" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
-              {badgeTexts?.second || "POST"}
+          <g
+            className={onBadgeClick ? "cursor-pointer" : ""}
+            onClick={() => onBadgeClick?.("13f")}
+          >
+            <rect fill="#18181B" x="60" y="5" width="34" height="10" rx="5" />
+            <DatabaseIcon x="64" y="7.5" />
+            <text
+              x="77"
+              y="12"
+              fill="white"
+              stroke="none"
+              fontSize="5"
+              fontWeight="500"
+              textAnchor="middle"
+            >
+              {badgeTexts?.second || "13F"}
             </text>
           </g>
-          <g>
-            <rect fill="#18181B" x="165" y="2" width="90" height="16" rx="8" />
-            <DatabaseIcon x="170" y="5" />
-            <text x="210" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
-              {badgeTexts?.third || "PUT"}
+          <g
+            className={onBadgeClick ? "cursor-pointer" : ""}
+            onClick={() => onBadgeClick?.("institutional")}
+          >
+            <rect fill="#18181B" x="108" y="5" width="34" height="10" rx="5" />
+            <DatabaseIcon x="112" y="7.5" />
+            <text
+              x="122"
+              y="12"
+              fill="white"
+              stroke="none"
+              fontSize="4"
+              fontWeight="500"
+              textAnchor="middle"
+            >
+              {badgeTexts?.third || "Institutional"}
             </text>
           </g>
-          <g>
-            <rect fill="#18181B" x="268" y="2" width="67" height="16" rx="8" />
-            <DatabaseIcon x="273" y="5" />
-            <text x="301" y="13" fill="white" stroke="none" fontSize="10" fontWeight="500" textAnchor="middle">
-              {badgeTexts?.fourth || "DELETE"}
+          <g
+            className={onBadgeClick ? "cursor-pointer" : ""}
+            onClick={() => onBadgeClick?.("analytics")}
+          >
+            <rect fill="#18181B" x="150" y="5" width="40" height="10" rx="5" />
+            <DatabaseIcon x="154" y="7.5" />
+            <text
+              x="165"
+              y="12"
+              fill="white"
+              stroke="none"
+              fontSize="4"
+              fontWeight="500"
+              textAnchor="middle"
+            >
+              {badgeTexts?.fourth || "Analytics"}
             </text>
           </g>
         </g>
         <defs>
           <mask id="db-mask-1">
             <path
-              d="M 38 10 v 15 q 0 5 5 5 h 119 q 5 0 5 5 v 10"
+              d="M 31 10 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <mask id="db-mask-2">
             <path
-              d="M 118 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10"
+              d="M 77 10 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <mask id="db-mask-3">
             <path
-              d="M 198 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10"
+              d="M 124 10 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <mask id="db-mask-4">
             <path
-              d="M 301 10 v 15 q 0 5 -5 5 h -141 q -5 0 -5 5 v 10"
+              d="M 170 10 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 10"
               strokeWidth="0.5"
               stroke="white"
             />
           </mask>
           <radialGradient id="db-blue-grad" fx="1">
-            <stop offset="0%" stopColor={lightColor || "#00A6F5"} />
+            <stop offset="0%" stopColor={lightColor || "#10b981"} />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
         </defs>
       </svg>
-      <div className="absolute bottom-10 flex w-full flex-col items-center">
-        <div className="absolute -bottom-4 h-[100px] w-[62%] rounded-lg bg-accent/30" />
-        <div className="absolute -top-3 z-20 flex items-center justify-center rounded-lg border bg-[#101112] px-2 py-1 sm:-top-4 sm:py-1.5">
-          <Sparkles className="size-3" />
-          <span className="ml-2 text-[15px]">
-            {title || "Data exchange using a customized REST API"}
+      <div className="absolute bottom-5 flex w-full flex-col items-center">
+        <div className="absolute -bottom-2 h-[50px] w-[62%] rounded-lg bg-accent/30" />
+        <div className="absolute -top-1.5 z-20 flex items-center justify-center rounded-lg border bg-[#101112] px-2 py-0.5 sm:-top-2 sm:py-1">
+          <Sparkles className="size-2.5" />
+          <span className="ml-1.5 text-[10px]">
+            {title || "Institutional-grade data from verified sources"}
           </span>
         </div>
-        <div className="absolute -bottom-8 z-30 grid h-[60px] w-[60px] place-items-center rounded-full border-t bg-[#141516] font-semibold text-xs">
-          {circleText || "SVG"}
+        <div className="absolute -bottom-4 z-30 grid h-[30px] w-[30px] place-items-center rounded-full border-t bg-[#141516] font-semibold text-[10px]">
+          {circleText || "Ezana"}
         </div>
-        <div className="relative z-10 flex h-[150px] w-full items-center justify-center overflow-hidden rounded-lg border bg-background shadow-md">
-          <div className="absolute bottom-8 left-12 z-10 flex h-7 items-center gap-2 rounded-full border bg-[#101112] px-3 text-xs">
-            <HeartHandshake className="size-4" />
-            <span>{buttonTexts?.first || "LegionDev"}</span>
+        <div className="relative z-10 flex h-[75px] w-full items-center justify-center overflow-hidden rounded-lg border bg-background shadow-md">
+          <div className="absolute bottom-4 left-6 z-10 flex h-5 items-center gap-1.5 rounded-full border bg-[#101112] px-2 text-[8px]">
+            <HeartHandshake className="size-3" />
+            <span>{buttonTexts?.first || "Alpha Vantage"}</span>
           </div>
-          <div className="absolute right-16 z-10 hidden h-7 items-center gap-2 rounded-full border bg-[#101112] px-3 text-xs sm:flex">
-            <Folder className="size-4" />
-            <span>{buttonTexts?.second || "v2_updates"}</span>
+          <div className="absolute right-8 z-10 hidden h-5 items-center gap-1.5 rounded-full border bg-[#101112] px-2 text-[8px] sm:flex">
+            <Folder className="size-3" />
+            <span>{buttonTexts?.second || "SEC EDGAR"}</span>
           </div>
           <motion.div
-            className="absolute -bottom-14 h-[100px] w-[100px] rounded-full border-t bg-accent/5"
+            className="absolute -bottom-7 h-[50px] w-[50px] rounded-full border-t bg-accent/5"
             animate={{ scale: [0.98, 1.02, 0.98, 1, 1, 1, 1, 1, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <motion.div
-            className="absolute -bottom-20 h-[145px] w-[145px] rounded-full border-t bg-accent/5"
+            className="absolute -bottom-10 h-[72px] w-[72px] rounded-full border-t bg-accent/5"
             animate={{ scale: [1, 1, 1, 0.98, 1.02, 0.98, 1, 1, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <motion.div
-            className="absolute -bottom-[100px] h-[190px] w-[190px] rounded-full border-t bg-accent/5"
+            className="absolute -bottom-[50px] h-[95px] w-[95px] rounded-full border-t bg-accent/5"
             animate={{ scale: [1, 1, 1, 1, 1, 0.98, 1.02, 0.98, 1, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <motion.div
-            className="absolute -bottom-[120px] h-[235px] w-[235px] rounded-full border-t bg-accent/5"
+            className="absolute -bottom-[60px] h-[118px] w-[118px] rounded-full border-t bg-accent/5"
             animate={{ scale: [1, 1, 1, 1, 1, 1, 0.98, 1.02, 0.98, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           />

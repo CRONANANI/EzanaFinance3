@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import DatabaseWithRestApi from '@/components/ui/database-with-rest-api';
 
 const DATA_SOURCES = [
   {
     id: 'congress',
     label: 'Congress',
-    icon: 'bi-building',
     details: [
       'Capitol Trades API – real-time congressional financial disclosures',
       'House & Senate periodic transaction reports (PTRs)',
@@ -17,7 +17,6 @@ const DATA_SOURCES = [
   {
     id: '13f',
     label: '13F',
-    icon: 'bi-file-earmark-bar-graph',
     details: [
       'SEC EDGAR 13F filings – institutional holdings',
       'Quarterly holdings of $100M+ investment managers',
@@ -28,7 +27,6 @@ const DATA_SOURCES = [
   {
     id: 'institutional',
     label: 'Institutional Portfolios',
-    icon: 'bi-briefcase',
     details: [
       'Legendary investor portfolios (Buffett, Ackman, etc.)',
       '13F-derived institutional ownership tracking',
@@ -39,7 +37,6 @@ const DATA_SOURCES = [
   {
     id: 'analytics',
     label: 'Alternative Analytics',
-    icon: 'bi-graph-up-arrow',
     details: [
       'Alpha Vantage – real-time and historical market data',
       'FRED – economic indicators and macro data',
@@ -59,6 +56,10 @@ const TRUSTED_LOGOES = [
 export function ResourcesSection() {
   const [selectedSource, setSelectedSource] = useState(null);
 
+  const handleBadgeClick = (id) => {
+    setSelectedSource(selectedSource === id ? null : id);
+  };
+
   return (
     <section className="resources-section" id="resources">
       <div className="resources-container">
@@ -71,20 +72,23 @@ export function ResourcesSection() {
           </p>
         </div>
 
-        <div className="data-sources-grid">
-          {DATA_SOURCES.map((source) => (
-            <button
-              key={source.id}
-              type="button"
-              className={`data-source-card ${selectedSource === source.id ? 'active' : ''}`}
-              onClick={() => setSelectedSource(selectedSource === source.id ? null : source.id)}
-            >
-              <div className="data-source-icon">
-                <i className={`bi ${source.icon}`} />
-              </div>
-              <span className="data-source-label">{source.label}</span>
-            </button>
-          ))}
+        <div className="flex justify-center p-4 w-full max-w-[640px] mx-auto">
+          <DatabaseWithRestApi
+            badgeTexts={{
+              first: 'Congress',
+              second: '13F',
+              third: 'Institutional',
+              fourth: 'Analytics',
+            }}
+            buttonTexts={{
+              first: 'Alpha Vantage',
+              second: 'SEC EDGAR',
+            }}
+            title="Institutional-grade data from verified sources"
+            circleText="Ezana"
+            lightColor="#10b981"
+            onBadgeClick={handleBadgeClick}
+          />
         </div>
 
         {selectedSource && (
