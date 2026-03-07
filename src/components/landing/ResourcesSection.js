@@ -105,7 +105,7 @@ export function ResourcesSection() {
         )}
 
         <div className="data-trusted-section">
-          <h3>Data Trusted by Industry Leaders</h3>
+          <h3>Trusted by Industry Leaders</h3>
           <div className="trusted-logos">
             {TRUSTED_LOGOES.map((logo) => (
               <div key={logo.name} className="trusted-logo-item">
