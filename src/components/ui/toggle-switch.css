@@ -28,11 +28,13 @@
   cursor: pointer;
   display: block;
   height: 20px;
+  position: relative;
   text-indent: -9999px;
   width: 56px;
   user-select: none;
 }
 
+/* Monthly dot: halfway between end of "Monthly" and beginning of switch */
 .toggle-switch-label::before {
   background: radial-gradient(circle at 45%, #10b981 0%, #34d399 100%);
   border-radius: 5px;
@@ -41,7 +43,7 @@
   content: "";
   display: block;
   height: 5px;
-  left: 2px;
+  left: -10px;
   position: absolute;
   top: 9px;
   transition: all 0.2s;
@@ -50,6 +52,7 @@
   user-select: none;
 }
 
+/* Annual dot: halfway between end of switch and beginning of "Annual" */
 .toggle-switch-label::after {
   background: radial-gradient(circle at 45%, rgba(60, 60, 60, 0.6) 0%, rgba(151, 151, 151, 0.6) 100%);
   border-radius: 5px;
@@ -58,7 +61,7 @@
   content: "";
   display: block;
   height: 5px;
-  right: 2px;
+  right: -10px;
   position: absolute;
   top: 9px;
   transition: all 0.2s;
