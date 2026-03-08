@@ -78,7 +78,7 @@ export function Contact2({
       <form
         onSubmit={handleSubmit}
         className={cn(
-          "flex flex-col gap-4 rounded-lg border border-border bg-card/50 p-6",
+          "flex flex-col gap-4 rounded-lg border border-zinc-600/20 p-6",
           compact ? "p-6" : "p-8"
         )}
       >
@@ -87,32 +87,32 @@ export function Contact2({
             <Label htmlFor="firstname" className="text-foreground">
               First Name
             </Label>
-            <Input type="text" id="firstname" name="firstname" placeholder="First Name" required />
+            <Input type="text" id="firstname" name="firstname" placeholder="First Name" required className={inputClassName} />
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label htmlFor="lastname" className="text-foreground">
               Last Name
             </Label>
-            <Input type="text" id="lastname" name="lastname" placeholder="Last Name" required />
+            <Input type="text" id="lastname" name="lastname" placeholder="Last Name" required className={inputClassName} />
           </div>
         </div>
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="email" className="text-foreground">
             Email
           </Label>
-          <Input type="email" id="email" name="email" placeholder="Email" required />
+          <Input type="email" id="email" name="email" placeholder="Email" required className={inputClassName} />
         </div>
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="subject" className="text-foreground">
             Subject
           </Label>
-          <Input type="text" id="subject" name="subject" placeholder="Subject" />
+          <Input type="text" id="subject" name="subject" placeholder="Subject" className={inputClassName} />
         </div>
         <div className="grid w-full gap-1.5">
           <Label htmlFor="message" className="text-foreground">
             Message
           </Label>
-          <Textarea placeholder="Type your message here." id="message" name="message" rows={5} required />
+          <Textarea placeholder="Type your message here." id="message" name="message" rows={5} required className={inputClassName} />
         </div>
         <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
           Send Message
