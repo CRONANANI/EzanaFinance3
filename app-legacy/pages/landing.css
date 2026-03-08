@@ -361,8 +361,8 @@ body {
   text-shadow: 0 0 20px rgba(203, 213, 225, 0.5);
 }
 
-/* Block elements (bubble, globe, form) - same word-appear animation */
-.animate-in {
+/* Block elements (bubble, globe, form) - same word-appear animation. Scoped to landing only so portaled dialogs (e.g. Contact Support) are not affected. */
+.landing-page .animate-in {
   opacity: 0;
 }
 
