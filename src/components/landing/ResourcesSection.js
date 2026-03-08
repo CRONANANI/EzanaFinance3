@@ -4,58 +4,6 @@ import { useState } from 'react';
 import DatabaseWithRestApi from '@/components/ui/database-with-rest-api';
 import { TestimonialsSection } from '@/components/ui/testimonials-with-marquee';
 
-const DATA_SOURCES = [
-  {
-    id: 'congress',
-    label: 'Congress',
-    details: [
-      'Capitol Trades API – real-time congressional financial disclosures',
-      'House & Senate periodic transaction reports (PTRs)',
-      'Senate Stock Act compliance filings',
-      'Congressional financial disclosure database',
-    ],
-  },
-  {
-    id: '13f',
-    label: '13F',
-    details: [
-      'SEC EDGAR 13F filings – institutional holdings',
-      'Quarterly holdings of $100M+ investment managers',
-      'Hedge fund and asset manager positions',
-      '13F-HR and 13F-HR/A amendment filings',
-    ],
-  },
-  {
-    id: 'institutional',
-    label: 'Institutional Portfolios',
-    details: [
-      'Legendary investor portfolios (Buffett, Ackman, etc.)',
-      '13F-derived institutional ownership tracking',
-      'Portfolio overlap and concentration analysis',
-      'Historical position changes and new stakes',
-    ],
-  },
-  {
-    id: 'analytics',
-    label: 'Alternative Analytics',
-    details: [
-      'FRED – economic indicators and macro data',
-      'Finnhub – news, fundamentals, and sentiment',
-      'Custom analytics and derived metrics',
-    ],
-  },
-  {
-    id: 'community',
-    label: 'Community',
-    details: [
-      'Crowdsourced investment insights and analysis',
-      'Expert trader recommendations and watchlists',
-      'Real-time discussion threads and alerts',
-      'Sentiment analysis from community activity',
-    ],
-  },
-];
-
 const TRUSTED_TESTIMONIALS = [
   {
     author: {
@@ -123,21 +71,36 @@ export function ResourcesSection() {
             circleText="Ezana"
             lightColor="#10b981"
             onBadgeClick={handleBadgeClick}
+            selectedSource={selectedSource}
+            sourceDetails={{
+              congress: [
+                'Capitol Trades API',
+                'House & Senate PTRs',
+                'STOCK Act filings',
+              ],
+              '13f': [
+                'SEC EDGAR 13F filings',
+                'Institutional holdings',
+                'Hedge fund positions',
+              ],
+              institutional: [
+                'Legendary investor portfolios',
+                'Ownership tracking',
+                'Position changes',
+              ],
+              analytics: [
+                'FRED economic data',
+                'News & sentiment',
+                'Custom metrics',
+              ],
+              community: [
+                'Crowdsourced insights',
+                'Expert recommendations',
+                'Sentiment analysis',
+              ],
+            }}
           />
         </div>
-
-        {selectedSource && (
-          <div className="data-source-details">
-            <div className="data-source-details-content">
-              <h4>{DATA_SOURCES.find((s) => s.id === selectedSource)?.label} – Data Sources</h4>
-              <ul>
-                {DATA_SOURCES.find((s) => s.id === selectedSource)?.details.map((d, i) => (
-                  <li key={i}>{d}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
 
         <TestimonialsSection
           title="Trusted by Industry Leaders"

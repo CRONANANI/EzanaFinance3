@@ -26,6 +26,39 @@ function DatabaseIcon({ className }) {
   );
 }
 
+const PATH_CONFIG = [
+  {
+    id: "congress",
+    path: "M 90 60 L 90 200 Q 90 220 110 220 L 430 220 Q 450 220 450 260",
+    left: "10%",
+    detailTop: "130px",
+  },
+  {
+    id: "13f",
+    path: "M 270 60 L 270 200 Q 270 220 290 220 L 430 220 Q 450 220 450 260",
+    left: "30%",
+    detailTop: "130px",
+  },
+  {
+    id: "institutional",
+    path: "M 450 60 L 450 260",
+    left: "50%",
+    detailTop: "160px",
+  },
+  {
+    id: "analytics",
+    path: "M 630 60 L 630 200 Q 630 220 610 220 L 470 220 Q 450 220 450 260",
+    left: "70%",
+    detailTop: "130px",
+  },
+  {
+    id: "community",
+    path: "M 810 60 L 810 200 Q 810 220 790 220 L 470 220 Q 450 220 450 260",
+    left: "90%",
+    detailTop: "130px",
+  },
+];
+
 export default function DatabaseWithRestApi({
   className,
   circleText,
@@ -33,6 +66,8 @@ export default function DatabaseWithRestApi({
   title,
   lightColor,
   onBadgeClick,
+  selectedSource,
+  sourceDetails = {},
 }) {
   const accentColor = lightColor || "#10b981";
 
@@ -49,11 +84,11 @@ export default function DatabaseWithRestApi({
       </h3>
 
       {/* Diagram area */}
-      <div className="relative w-full" style={{ minHeight: "320px" }}>
+      <div className="relative w-full" style={{ minHeight: "420px" }}>
         {/* SVG: Connection lines with animated pulses */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 900 320"
+          viewBox="0 0 900 420"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
@@ -71,72 +106,40 @@ export default function DatabaseWithRestApi({
             </filter>
           </defs>
 
-          {/* Static connection lines - center hub at 450 */}
-          <g stroke="rgba(16,185,129,0.2)" strokeWidth="2" fill="none" strokeLinecap="round">
-            <path d="M 90 60 L 90 120 Q 90 140 110 140 L 430 140 Q 450 140 450 160 L 450 175" />
-            <path d="M 270 60 L 270 100 Q 270 120 290 120 L 430 120 Q 450 120 450 140 L 450 175" />
-            <path d="M 450 60 L 450 175" />
-            <path d="M 630 60 L 630 120 Q 630 140 610 140 L 470 140 Q 450 140 450 160 L 450 175" />
-            <path d="M 810 60 L 810 120 Q 810 140 790 140 L 470 140 Q 450 140 450 160 L 450 175" />
-          </g>
-
-          {/* Animated pulse 1 - Congress */}
-          <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion
-              dur="2.5s"
-              repeatCount="indefinite"
-              path="M 90 60 L 90 120 Q 90 140 110 140 L 430 140 Q 450 140 450 160 L 450 175"
+          {/* Connection lines - default (low opacity) and highlighted (when selected) */}
+          {PATH_CONFIG.map(({ id, path }) => (
+            <path
+              key={id}
+              d={path}
+              stroke={selectedSource === id ? accentColor : "rgba(16,185,129,0.2)"}
+              strokeWidth={selectedSource === id ? "2.5" : "2"}
+              fill="none"
+              strokeLinecap="round"
             />
-            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" />
-          </circle>
+          ))}
 
-          {/* Animated pulse 2 - 13F */}
-          <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion
-              dur="2.5s"
-              repeatCount="indefinite"
-              begin="0.6s"
-              path="M 270 60 L 270 100 Q 270 120 290 120 L 430 120 Q 450 120 450 140 L 450 175"
-            />
-            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="0.6s" />
-          </circle>
-
-          {/* Animated pulse 3 - Institutional */}
-          <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion
-              dur="2.5s"
-              repeatCount="indefinite"
-              begin="1.2s"
-              path="M 450 60 L 450 175"
-            />
-            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.2s" />
-          </circle>
-
-          {/* Animated pulse 4 - Alternative Analytics */}
-          <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion
-              dur="2.5s"
-              repeatCount="indefinite"
-              begin="1.8s"
-              path="M 630 60 L 630 120 Q 630 140 610 140 L 470 140 Q 450 140 450 160 L 450 175"
-            />
-            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.8s" />
-          </circle>
-
-          {/* Animated pulse 5 - Community */}
-          <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion
-              dur="2.5s"
-              repeatCount="indefinite"
-              begin="2.4s"
-              path="M 810 60 L 810 120 Q 810 140 790 140 L 470 140 Q 450 140 450 160 L 450 175"
-            />
-            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="2.4s" />
-          </circle>
+          {/* Animated pulses */}
+          {PATH_CONFIG.map(({ id, path }, i) => (
+            <circle key={`pulse-${id}`} r="4" fill={accentColor} filter="url(#glow)">
+              <animateMotion
+                dur="2.5s"
+                repeatCount="indefinite"
+                begin={`${i * 0.6}s`}
+                path={path}
+              />
+              <animate
+                attributeName="opacity"
+                values="0;1;1;0"
+                dur="2.5s"
+                repeatCount="indefinite"
+                begin={`${i * 0.6}s`}
+              />
+            </circle>
+          ))}
 
           {/* Line from Ezana hub to output */}
           <path
-            d="M 450 220 L 450 265"
+            d="M 450 320 L 450 400"
             stroke="rgba(16,185,129,0.3)"
             strokeWidth="2"
             fill="none"
@@ -145,10 +148,27 @@ export default function DatabaseWithRestApi({
 
           {/* Animated pulse from Ezana to output */}
           <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 450 220 L 450 265" />
+            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 450 320 L 450 400" />
             <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" repeatCount="indefinite" />
           </circle>
         </svg>
+
+        {/* Inline source details - positioned along vertical line when selected */}
+        {PATH_CONFIG.map(({ id, left, detailTop }) =>
+          selectedSource === id && sourceDetails[id]?.length ? (
+            <div
+              key={`details-${id}`}
+              className="absolute -translate-x-1/2 max-w-[140px] text-center z-10 px-2 py-1.5 rounded-md bg-black/40"
+              style={{ left, top: detailTop }}
+            >
+              <ul className="text-[11px] text-muted-foreground/80 space-y-1">
+                {sourceDetails[id].map((detail, i) => (
+                  <li key={i}>{detail}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null
+        )}
 
         {/* 5 data source cards */}
         {[
@@ -163,19 +183,22 @@ export default function DatabaseWithRestApi({
             type="button"
             onClick={() => onBadgeClick?.(id)}
             className={cn(
-              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-3 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
+              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border px-3 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
+              selectedSource === id
+                ? "border-emerald-500/60 bg-emerald-500/5"
+                : "border-zinc-700/50 bg-[#18181B]",
               wider ? "min-w-[160px]" : "min-w-[100px]",
               onBadgeClick && "cursor-pointer"
             )}
             style={{ left }}
           >
             <DatabaseIcon />
-            <span className="text-xs font-medium whitespace-nowrap">{label}</span>
+            <span className="text-sm font-medium whitespace-nowrap">{label}</span>
           </button>
         ))}
 
         {/* Ezana hub - center with transformation effect */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[175px] z-20 flex flex-col items-center">
+        <div className="absolute left-1/2 -translate-x-1/2 top-[260px] z-20 flex flex-col items-center">
           {/* Outer glow ring */}
           <motion.div
             className="absolute w-16 h-16 rounded-full"
