@@ -3,14 +3,14 @@
 import { cn } from "@/lib/utils";
 import { useRef, useEffect, useCallback } from "react";
 
-// Major financial centers with accurate coordinates
+// Major financial centers (spread for visibility - London, Frankfurt, Zurich offset to avoid clustering)
 const DEFAULT_MARKERS = [
   { lat: 40.71, lng: -74.0, label: "New York" },
-  { lat: 51.51, lng: -0.13, label: "London" },
-  { lat: 50.11, lng: 8.68, label: "Frankfurt" },
+  { lat: 52.0, lng: -2.0, label: "London" },
+  { lat: 50.5, lng: 4.0, label: "Frankfurt" },
   { lat: 22.32, lng: 114.17, label: "Hong Kong" },
   { lat: 1.35, lng: 103.82, label: "Singapore" },
-  { lat: 47.38, lng: 8.54, label: "Zurich" },
+  { lat: 46.5, lng: 11.0, label: "Zurich" },
   { lat: 35.68, lng: 139.69, label: "Tokyo" },
   { lat: 37.78, lng: -122.42, label: "San Francisco" },
   { lat: 37.57, lng: 126.98, label: "Seoul" },
@@ -20,11 +20,11 @@ const DEFAULT_MARKERS = [
 // Clean, strategic connections between major financial hubs
 const DEFAULT_CONNECTIONS = [
   // Trans-Atlantic corridor
-  { from: [40.71, -74.0], to: [51.51, -0.13] }, // New York - London
+  { from: [40.71, -74.0], to: [52.0, -2.0] }, // New York - London
   // European connections
-  { from: [51.51, -0.13], to: [48.86, 2.35] }, // London - Paris
-  { from: [51.51, -0.13], to: [50.11, 8.68] }, // London - Frankfurt
-  { from: [47.38, 8.54], to: [50.11, 8.68] }, // Zurich - Frankfurt
+  { from: [52.0, -2.0], to: [48.86, 2.35] }, // London - Paris
+  { from: [52.0, -2.0], to: [50.5, 4.0] }, // London - Frankfurt
+  { from: [46.5, 11.0], to: [50.5, 4.0] }, // Zurich - Frankfurt
   // Asia-Pacific connections
   { from: [35.68, 139.69], to: [37.57, 126.98] }, // Tokyo - Seoul
   { from: [35.68, 139.69], to: [22.32, 114.17] }, // Tokyo - Hong Kong
@@ -34,7 +34,7 @@ const DEFAULT_CONNECTIONS = [
   // US domestic
   { from: [40.71, -74.0], to: [37.78, -122.42] }, // New York - San Francisco
   // Europe to Asia
-  { from: [51.51, -0.13], to: [22.32, 114.17] }, // London - Hong Kong
+  { from: [52.0, -2.0], to: [22.32, 114.17] }, // London - Hong Kong
 ];
 
 /** Convert lat/lng (degrees) to 3D Cartesian on sphere. Y-up, standard geographic convention. */
