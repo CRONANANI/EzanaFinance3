@@ -54,6 +54,17 @@
   100% { offset-distance: 100%; }
 }
 
+/* Data flow lines - prominent pulse animation */
+.db-pulse-line {
+  stroke-dasharray: 12 16;
+  animation: db-pulse-flow 2s linear infinite;
+}
+@keyframes db-pulse-flow {
+  0% { stroke-dashoffset: 0; opacity: 0.9; }
+  50% { opacity: 1; }
+  100% { stroke-dashoffset: 28; opacity: 0.9; }
+}
+
 @import '../../app-legacy/assets/css/theme-variables.css';
 @import '../../app-legacy/components/navigation/unified-nav.css';
 @import '../../app-legacy/components/notifications/notifications-sidebar.css';
