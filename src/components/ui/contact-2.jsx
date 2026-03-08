@@ -17,6 +17,7 @@ export function Contact2({
   onSubmit,
   className,
   compact = false,
+  inputClassName,
 }) {
   const handleSubmit = (e) => {
     e.preventDefault();
