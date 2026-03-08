@@ -44,6 +44,16 @@ const DATA_SOURCES = [
       'Custom analytics and derived metrics',
     ],
   },
+  {
+    id: 'community',
+    label: 'Community',
+    details: [
+      'Crowdsourced investment insights and analysis',
+      'Expert trader recommendations and watchlists',
+      'Real-time discussion threads and alerts',
+      'Sentiment analysis from community activity',
+    ],
+  },
 ];
 
 const TRUSTED_TESTIMONIALS = [
@@ -100,13 +110,14 @@ export function ResourcesSection() {
           </p>
         </div>
 
-        <div className="flex justify-center p-4 w-full max-w-[800px] mx-auto">
+        <div className="flex justify-center p-4 w-full max-w-[900px] mx-auto">
           <DatabaseWithRestApi
             badgeTexts={{
               first: 'Congress',
               second: '13F',
               third: 'Institutional',
               fourth: 'Alternative Analytics',
+              fifth: 'Community',
             }}
             title="Institutional-grade data from verified sources"
             circleText="Ezana"

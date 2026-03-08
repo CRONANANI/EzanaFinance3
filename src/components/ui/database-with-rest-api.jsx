@@ -39,7 +39,7 @@ export default function DatabaseWithRestApi({
   return (
     <div
       className={cn(
-        "relative flex w-full max-w-[800px] flex-col items-center gap-0",
+        "relative flex w-full max-w-[900px] flex-col items-center gap-0",
         className
       )}
     >
@@ -53,7 +53,7 @@ export default function DatabaseWithRestApi({
         {/* SVG: Connection lines with animated pulses */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 800 320"
+          viewBox="0 0 900 320"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
@@ -71,12 +71,13 @@ export default function DatabaseWithRestApi({
             </filter>
           </defs>
 
-          {/* Static connection lines */}
+          {/* Static connection lines - center hub at 450 */}
           <g stroke="rgba(16,185,129,0.2)" strokeWidth="2" fill="none" strokeLinecap="round">
-            <path d="M 100 60 L 100 120 Q 100 140 120 140 L 380 140 Q 400 140 400 160 L 400 175" />
-            <path d="M 300 60 L 300 100 Q 300 120 320 120 L 380 120 Q 400 120 400 140 L 400 175" />
-            <path d="M 500 60 L 500 100 Q 500 120 480 120 L 420 120 Q 400 120 400 140 L 400 175" />
-            <path d="M 700 60 L 700 120 Q 700 140 680 140 L 420 140 Q 400 140 400 160 L 400 175" />
+            <path d="M 90 60 L 90 120 Q 90 140 110 140 L 430 140 Q 450 140 450 160 L 450 175" />
+            <path d="M 270 60 L 270 100 Q 270 120 290 120 L 430 120 Q 450 120 450 140 L 450 175" />
+            <path d="M 450 60 L 450 175" />
+            <path d="M 630 60 L 630 120 Q 630 140 610 140 L 470 140 Q 450 140 450 160 L 450 175" />
+            <path d="M 810 60 L 810 120 Q 810 140 790 140 L 470 140 Q 450 140 450 160 L 450 175" />
           </g>
 
           {/* Animated pulse 1 - Congress */}
@@ -84,7 +85,7 @@ export default function DatabaseWithRestApi({
             <animateMotion
               dur="2.5s"
               repeatCount="indefinite"
-              path="M 100 60 L 100 120 Q 100 140 120 140 L 380 140 Q 400 140 400 160 L 400 175"
+              path="M 90 60 L 90 120 Q 90 140 110 140 L 430 140 Q 450 140 450 160 L 450 175"
             />
             <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" />
           </circle>
@@ -95,7 +96,7 @@ export default function DatabaseWithRestApi({
               dur="2.5s"
               repeatCount="indefinite"
               begin="0.6s"
-              path="M 300 60 L 300 100 Q 300 120 320 120 L 380 120 Q 400 120 400 140 L 400 175"
+              path="M 270 60 L 270 100 Q 270 120 290 120 L 430 120 Q 450 120 450 140 L 450 175"
             />
             <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="0.6s" />
           </circle>
@@ -106,7 +107,7 @@ export default function DatabaseWithRestApi({
               dur="2.5s"
               repeatCount="indefinite"
               begin="1.2s"
-              path="M 500 60 L 500 100 Q 500 120 480 120 L 420 120 Q 400 120 400 140 L 400 175"
+              path="M 450 60 L 450 175"
             />
             <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.2s" />
           </circle>
@@ -117,14 +118,25 @@ export default function DatabaseWithRestApi({
               dur="2.5s"
               repeatCount="indefinite"
               begin="1.8s"
-              path="M 700 60 L 700 120 Q 700 140 680 140 L 420 140 Q 400 140 400 160 L 400 175"
+              path="M 630 60 L 630 120 Q 630 140 610 140 L 470 140 Q 450 140 450 160 L 450 175"
             />
             <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.8s" />
           </circle>
 
+          {/* Animated pulse 5 - Community */}
+          <circle r="4" fill={accentColor} filter="url(#glow)">
+            <animateMotion
+              dur="2.5s"
+              repeatCount="indefinite"
+              begin="2.4s"
+              path="M 810 60 L 810 120 Q 810 140 790 140 L 470 140 Q 450 140 450 160 L 450 175"
+            />
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="2.4s" />
+          </circle>
+
           {/* Line from Ezana hub to output */}
           <path
-            d="M 400 220 L 400 265"
+            d="M 450 220 L 450 265"
             stroke="rgba(16,185,129,0.3)"
             strokeWidth="2"
             fill="none"
@@ -133,17 +145,18 @@ export default function DatabaseWithRestApi({
 
           {/* Animated pulse from Ezana to output */}
           <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 400 220 L 400 265" />
+            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 450 220 L 450 265" />
             <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" repeatCount="indefinite" />
           </circle>
         </svg>
 
-        {/* 4 data source cards */}
+        {/* 5 data source cards */}
         {[
-          { id: "congress", label: badgeTexts?.first || "Congress", left: "12.5%" },
-          { id: "13f", label: badgeTexts?.second || "13F", left: "37.5%" },
-          { id: "institutional", label: badgeTexts?.third || "Institutional", left: "62.5%" },
-          { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics", left: "87.5%", wider: true },
+          { id: "congress", label: badgeTexts?.first || "Congress", left: "10%" },
+          { id: "13f", label: badgeTexts?.second || "13F", left: "30%" },
+          { id: "institutional", label: badgeTexts?.third || "Institutional", left: "50%" },
+          { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics", left: "70%", wider: true },
+          { id: "community", label: badgeTexts?.fifth || "Community", left: "90%" },
         ].map(({ id, label, left, wider }) => (
           <button
             key={id}
@@ -213,14 +226,10 @@ export default function DatabaseWithRestApi({
           </motion.div>
         </div>
 
-        {/* Output card - Personalized Intelligence */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90%] max-w-[500px]">
-          <div className="flex h-[60px] items-center justify-center rounded-lg border border-zinc-700/50 bg-[#18181B]/90 shadow-md">
-            <div className="flex items-center gap-2 text-sm">
-              <User className="size-4 text-emerald-500" />
-              <span className="text-foreground/80">Personalized Intelligence Dashboard</span>
-            </div>
-          </div>
+        {/* Output - Personalized Intelligence (plain text, no card) */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 text-sm">
+          <User className="size-4 text-emerald-500" />
+          <span className="text-foreground/80">Personalized Intelligence Dashboard</span>
         </div>
       </div>
     </div>
