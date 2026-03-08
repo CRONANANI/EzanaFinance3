@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { Sparkles, User } from "lucide-react";
+import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function DatabaseIcon({ className }) {
@@ -39,82 +39,150 @@ export default function DatabaseWithRestApi({
   return (
     <div
       className={cn(
-        "relative flex w-full max-w-[720px] flex-col items-center gap-0",
+        "relative flex w-full max-w-[800px] flex-col items-center gap-0",
         className
       )}
     >
-      {/* 1. Title card - ABOVE the 4 data source cards (unchanged) */}
-      <div className="mb-6 flex w-full items-center justify-center rounded-lg border bg-[#101112] px-4 py-3 shadow-md">
-        <Sparkles className="size-4 shrink-0 text-emerald-500" />
-        <span className="ml-2 text-center text-sm font-medium">
-          {title || "Institutional-grade data from verified sources"}
-        </span>
-      </div>
+      {/* Title - no bubble, just text */}
+      <h3 className="mb-8 text-center text-lg font-semibold text-foreground/90">
+        {title || "Institutional-grade data from verified sources"}
+      </h3>
 
-      {/* 2. Diagram area: 4 spread cards + connection lines + Ezana hub */}
-      <div className="relative w-full min-h-[280px]">
-        {/* SVG: 4 connection lines with pulse animation */}
+      {/* Diagram area */}
+      <div className="relative w-full" style={{ minHeight: "320px" }}>
+        {/* SVG: Connection lines with animated pulses */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 720 280"
+          viewBox="0 0 800 320"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <linearGradient id="db-lineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={accentColor} stopOpacity="0.5" />
+            <linearGradient id="pulse-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={accentColor} stopOpacity="0" />
               <stop offset="50%" stopColor={accentColor} stopOpacity="1" />
-              <stop offset="100%" stopColor={accentColor} stopOpacity="0.5" />
+              <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
             </linearGradient>
-            <filter id="db-glow">
-              <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
               <feMerge>
                 <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
-          {/* 4 paths from card centers to Ezana hub - base lines (visible structure) */}
-          <g stroke="rgba(16,185,129,0.4)" strokeWidth="2.5" fill="none" strokeLinecap="round">
-            <path d="M 90 55 Q 90 140 360 165" />
-            <path d="M 270 55 Q 270 140 360 165" />
-            <path d="M 450 55 Q 450 140 360 165" />
-            <path d="M 630 55 Q 630 140 360 165" />
+
+          {/* Static connection lines */}
+          <g stroke="rgba(16,185,129,0.2)" strokeWidth="2" fill="none" strokeLinecap="round">
+            <path d="M 100 60 L 100 120 Q 100 140 120 140 L 380 140 Q 400 140 400 160 L 400 175" />
+            <path d="M 300 60 L 300 100 Q 300 120 320 120 L 380 120 Q 400 120 400 140 L 400 175" />
+            <path d="M 500 60 L 500 100 Q 500 120 480 120 L 420 120 Q 400 120 400 140 L 400 175" />
+            <path d="M 700 60 L 700 120 Q 700 140 680 140 L 420 140 Q 400 140 400 160 L 400 175" />
           </g>
-          {/* 4 animated pulse lines - prominent flowing effect */}
-          <g stroke="url(#db-lineGrad)" strokeWidth="3" fill="none" strokeLinecap="round" filter="url(#db-glow)">
-            <path d="M 90 55 Q 90 140 360 165" className="db-pulse-line" style={{ animationDelay: "0s" }} />
-            <path d="M 270 55 Q 270 140 360 165" className="db-pulse-line" style={{ animationDelay: "0.4s" }} />
-            <path d="M 450 55 Q 450 140 360 165" className="db-pulse-line" style={{ animationDelay: "0.8s" }} />
-            <path d="M 630 55 Q 630 140 360 165" className="db-pulse-line" style={{ animationDelay: "1.2s" }} />
-          </g>
+
+          {/* Animated pulse 1 - Congress */}
+          <circle r="4" fill={accentColor} filter="url(#glow)">
+            <animateMotion
+              dur="2.5s"
+              repeatCount="indefinite"
+              path="M 100 60 L 100 120 Q 100 140 120 140 L 380 140 Q 400 140 400 160 L 400 175"
+            />
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" />
+          </circle>
+
+          {/* Animated pulse 2 - 13F */}
+          <circle r="4" fill={accentColor} filter="url(#glow)">
+            <animateMotion
+              dur="2.5s"
+              repeatCount="indefinite"
+              begin="0.6s"
+              path="M 300 60 L 300 100 Q 300 120 320 120 L 380 120 Q 400 120 400 140 L 400 175"
+            />
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="0.6s" />
+          </circle>
+
+          {/* Animated pulse 3 - Institutional */}
+          <circle r="4" fill={accentColor} filter="url(#glow)">
+            <animateMotion
+              dur="2.5s"
+              repeatCount="indefinite"
+              begin="1.2s"
+              path="M 500 60 L 500 100 Q 500 120 480 120 L 420 120 Q 400 120 400 140 L 400 175"
+            />
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.2s" />
+          </circle>
+
+          {/* Animated pulse 4 - Alternative Analytics */}
+          <circle r="4" fill={accentColor} filter="url(#glow)">
+            <animateMotion
+              dur="2.5s"
+              repeatCount="indefinite"
+              begin="1.8s"
+              path="M 700 60 L 700 120 Q 700 140 680 140 L 420 140 Q 400 140 400 160 L 400 175"
+            />
+            <animate attributeName="opacity" values="0;1;1;0" dur="2.5s" repeatCount="indefinite" begin="1.8s" />
+          </circle>
+
+          {/* Line from Ezana hub to output */}
+          <path
+            d="M 400 220 L 400 265"
+            stroke="rgba(16,185,129,0.3)"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+          />
+
+          {/* Animated pulse from Ezana to output */}
+          <circle r="4" fill={accentColor} filter="url(#glow)">
+            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 400 220 L 400 265" />
+            <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" repeatCount="indefinite" />
+          </circle>
         </svg>
 
-        {/* 4 data source cards - spread out, aligned with connection lines */}
+        {/* 4 data source cards */}
         {[
           { id: "congress", label: badgeTexts?.first || "Congress", left: "12.5%" },
           { id: "13f", label: badgeTexts?.second || "13F", left: "37.5%" },
           { id: "institutional", label: badgeTexts?.third || "Institutional", left: "62.5%" },
-          { id: "analytics", label: badgeTexts?.fourth || "Analytics", left: "87.5%" },
-        ].map(({ id, label, left }) => (
+          { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics", left: "87.5%", wider: true },
+        ].map(({ id, label, left, wider }) => (
           <button
             key={id}
             type="button"
             onClick={() => onBadgeClick?.(id)}
             className={cn(
-              "absolute top-0 flex w-[20%] min-w-[100px] max-w-[140px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border bg-[#18181B] px-3 py-3 transition-colors hover:bg-[#27272a]",
+              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-3 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
+              wider ? "min-w-[160px]" : "min-w-[100px]",
               onBadgeClick && "cursor-pointer"
             )}
             style={{ left }}
           >
             <DatabaseIcon />
-            <span className="text-xs font-medium">{label}</span>
+            <span className="text-xs font-medium whitespace-nowrap">{label}</span>
           </button>
         ))}
 
-        {/* Ezana hub - center */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[155px] z-20 flex flex-col items-center">
+        {/* Ezana hub - center with transformation effect */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[175px] z-20 flex flex-col items-center">
+          {/* Outer glow ring */}
+          <motion.div
+            className="absolute w-16 h-16 rounded-full"
+            style={{
+              background: `radial-gradient(circle, ${accentColor}20 0%, transparent 70%)`,
+            }}
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
+          {/* Main hub circle */}
           <div
-            className="grid h-[44px] w-[44px] place-items-center rounded-full border-2 bg-[#141516] font-semibold text-sm shadow-lg"
+            className="relative grid h-[48px] w-[48px] place-items-center rounded-full border-2 bg-[#141516] font-semibold text-sm shadow-lg z-10"
             style={{
               borderColor: accentColor,
               boxShadow: `0 0 20px ${accentColor}40, 0 0 40px ${accentColor}20`,
@@ -122,32 +190,37 @@ export default function DatabaseWithRestApi({
           >
             {circleText || "Ezana"}
           </div>
-          <span className="mt-2 text-[10px] text-muted-foreground/80">
-            filters & creates
-          </span>
+
+          {/* Downward arrow indicator */}
+          <motion.div
+            className="mt-2"
+            animate={{
+              y: [0, 4, 0],
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
+              <path
+                d="M10 12L0 2L2 0L10 8L18 0L20 2L10 12Z"
+                fill={accentColor}
+                fillOpacity="0.6"
+              />
+            </svg>
+          </motion.div>
         </div>
 
-        {/* Output card - bottom */}
-        <div className="absolute bottom-0 left-0 right-0 flex h-[70px] items-center justify-center overflow-hidden rounded-lg border bg-background shadow-md">
-          <div className="flex items-center gap-2 rounded-full border bg-[#101112] px-4 py-2 text-xs">
-            <User className="size-3.5 text-emerald-500" />
-            <span>Feeds & metrics tailored for you</span>
+        {/* Output card - Personalized Intelligence */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[90%] max-w-[500px]">
+          <div className="flex h-[60px] items-center justify-center rounded-lg border border-zinc-700/50 bg-[#18181B]/90 shadow-md">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="size-4 text-emerald-500" />
+              <span className="text-foreground/80">Personalized Intelligence Dashboard</span>
+            </div>
           </div>
-          <motion.div
-            className="absolute -bottom-7 h-[50px] w-[50px] rounded-full border-t bg-accent/5"
-            animate={{ scale: [0.98, 1.02, 0.98, 1, 1, 1, 1, 1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute -bottom-10 h-[72px] w-[72px] rounded-full border-t bg-accent/5"
-            animate={{ scale: [1, 1, 1, 0.98, 1.02, 0.98, 1, 1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute -bottom-[50px] h-[95px] w-[95px] rounded-full border-t bg-accent/5"
-            animate={{ scale: [1, 1, 1, 1, 1, 0.98, 1.02, 0.98, 1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
         </div>
       </div>
     </div>

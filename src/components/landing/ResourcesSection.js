@@ -100,7 +100,7 @@ export function ResourcesSection() {
           </p>
         </div>
 
-        <div className="flex justify-center p-4 w-full max-w-[760px] mx-auto">
+        <div className="flex justify-center p-4 w-full max-w-[800px] mx-auto">
           <DatabaseWithRestApi
             badgeTexts={{
               first: 'Congress',

@@ -30,6 +30,38 @@ const PORTFOLIO_METRICS = {
   ],
 };
 
+// Mock congressional trading data
+const CONGRESS_TRADES = {
+  all: [
+    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1,000,001 - $5,000,000', time: '2 hours ago' },
+    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15,001 - $50,000', time: '5 hours ago' },
+    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100,001 - $250,000', time: '8 hours ago' },
+    { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1,001 - $15,000', time: '12 hours ago' },
+    { id: 5, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50,001 - $100,000', time: '1 day ago' },
+    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Purchase', amount: '$15,001 - $50,000', time: '1 day ago' },
+  ],
+  purchases: [
+    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1,000,001 - $5,000,000', time: '2 hours ago' },
+    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100,001 - $250,000', time: '8 hours ago' },
+    { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1,001 - $15,000', time: '12 hours ago' },
+    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Purchase', amount: '$15,001 - $50,000', time: '1 day ago' },
+  ],
+  sales: [
+    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15,001 - $50,000', time: '5 hours ago' },
+    { id: 5, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50,001 - $100,000', time: '1 day ago' },
+  ],
+  house: [
+    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1,000,001 - $5,000,000', time: '2 hours ago' },
+    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15,001 - $50,000', time: '5 hours ago' },
+    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100,001 - $250,000', time: '8 hours ago' },
+    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Purchase', amount: '$15,001 - $50,000', time: '1 day ago' },
+  ],
+  senate: [
+    { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1,001 - $15,000', time: '12 hours ago' },
+    { id: 5, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50,001 - $100,000', time: '1 day ago' },
+  ],
+};
+
 const INTEL_DATA = {
   contracts: [
     { agency: 'Department of Defense', company: 'Lockheed Martin', amount: '$450M Contract Award', date: '2 days ago', impact: 'high' },
@@ -62,6 +94,7 @@ const COMMUNITY_DATA = {
 export function FeaturesSection() {
   const sectionRef = useRef(null);
   const [portfolioRange, setPortfolioRange] = useState('1W');
+  const [congressFilter, setCongressFilter] = useState('all');
   const [intelTab, setIntelTab] = useState('contracts');
   const [communityView, setCommunityView] = useState('trending');
 
@@ -88,6 +121,7 @@ export function FeaturesSection() {
   }, []);
 
   const portfolioMetrics = PORTFOLIO_METRICS[portfolioRange] || PORTFOLIO_METRICS['1W'];
+  const congressTrades = CONGRESS_TRADES[congressFilter] || CONGRESS_TRADES.all;
   const intelItems = INTEL_DATA[intelTab] || INTEL_DATA.contracts;
   const communityPosts = COMMUNITY_DATA[communityView] || COMMUNITY_DATA.trending;
 
@@ -143,56 +177,60 @@ export function FeaturesSection() {
           </div>
         </div>
 
-        {/* 2. Congressional Trading - Ledger-style transactions (same size as other cards) */}
+        {/* 2. Congressional Trading - Interactive Ledger */}
         <div className="feature-block reverse" data-feature="congress">
           <div className="feature-content">
             <div className="feature-visual">
-              <div className="visual-container congress-visual congress-visual-compact">
-                <div className="trading-feed">
-                  <div className="feed-header">
+              <div className="visual-container congress-visual">
+                <div className="congress-ledger">
+                  <div className="ledger-header">
                     <h4>Congressional Trading Ledger</h4>
-                    <span className="live-indicator"><span className="pulse-dot" /> Live</span>
+                    <span className="live-badge"><span className="pulse-dot" /> Live</span>
                   </div>
-                  <div className="feed-items ledger-style">
-                    <div className="trade-item">
-                      <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
-                      <div className="trade-details">
-                        <div className="trade-header"><span className="politician-name">Nancy Pelosi</span><span className="trade-badge purchase">Purchase</span></div>
-                        <div className="trade-info"><span className="ticker">NVDA</span><span className="amount">$50,001 - $100,000</span></div>
-                        <div className="trade-meta"><span className="timestamp">2 minutes ago</span><span className="party democrat">Democrat</span></div>
-                      </div>
+
+                  <div className="ledger-filters">
+                    {['all', 'purchases', 'sales', 'house', 'senate'].map((filter) => (
+                      <button
+                        key={filter}
+                        type="button"
+                        className={`filter-pill ${congressFilter === filter ? 'active' : ''}`}
+                        onClick={() => setCongressFilter(filter)}
+                      >
+                        {filter === 'all' ? 'All Trades' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="ledger-table">
+                    <div className="ledger-table-header">
+                      <span className="col-type">Type</span>
+                      <span className="col-member">Member</span>
+                      <span className="col-ticker">Ticker</span>
+                      <span className="col-amount">Amount</span>
+                      <span className="col-time">Time</span>
                     </div>
-                    <div className="trade-item">
-                      <div className="trade-icon"><i className="bi bi-arrow-down-circle-fill text-red" /></div>
-                      <div className="trade-details">
-                        <div className="trade-header"><span className="politician-name">Dan Crenshaw</span><span className="trade-badge sale">Sale</span></div>
-                        <div className="trade-info"><span className="ticker">TSLA</span><span className="amount">$15,001 - $50,000</span></div>
-                        <div className="trade-meta"><span className="timestamp">5 minutes ago</span><span className="party republican">Republican</span></div>
-                      </div>
-                    </div>
-                    <div className="trade-item">
-                      <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
-                      <div className="trade-details">
-                        <div className="trade-header"><span className="politician-name">Josh Gottheimer</span><span className="trade-badge purchase">Purchase</span></div>
-                        <div className="trade-info"><span className="ticker">AAPL</span><span className="amount">$100,001 - $250,000</span></div>
-                        <div className="trade-meta"><span className="timestamp">8 minutes ago</span><span className="party democrat">Democrat</span></div>
-                      </div>
-                    </div>
-                    <div className="trade-item">
-                      <div className="trade-icon"><i className="bi bi-arrow-up-circle-fill text-green" /></div>
-                      <div className="trade-details">
-                        <div className="trade-header"><span className="politician-name">Mark Warner</span><span className="trade-badge purchase">Purchase</span></div>
-                        <div className="trade-info"><span className="ticker">MSFT</span><span className="amount">$1,001 - $15,000</span></div>
-                        <div className="trade-meta"><span className="timestamp">12 minutes ago</span><span className="party democrat">Democrat</span></div>
-                      </div>
+                    <div className="ledger-table-body">
+                      {congressTrades.map((trade) => (
+                        <div key={trade.id} className="ledger-row">
+                          <span className={`col-type ${trade.type.toLowerCase()}`}>
+                            <i className={`bi ${trade.type === 'Purchase' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'}`} />
+                          </span>
+                          <span className="col-member">
+                            <span className="member-name">{trade.name}</span>
+                            <span className={`party-badge ${trade.party.toLowerCase()}`}>{trade.party.charAt(0)}</span>
+                            <span className="chamber-badge">{trade.chamber}</span>
+                          </span>
+                          <span className="col-ticker">{trade.ticker}</span>
+                          <span className="col-amount">{trade.amount}</span>
+                          <span className="col-time">{trade.time}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="feed-filters">
-                    <button type="button" className="filter-pill active">All Trades</button>
-                    <button type="button" className="filter-pill">Purchases</button>
-                    <button type="button" className="filter-pill">Sales</button>
-                    <button type="button" className="filter-pill">House</button>
-                    <button type="button" className="filter-pill">Senate</button>
+
+                  <div className="ledger-footer">
+                    <span className="trade-count">{congressTrades.length} trades</span>
+                    <span className="view-more">View all trades →</span>
                   </div>
                 </div>
               </div>
