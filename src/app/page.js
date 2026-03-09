@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import '../../app-legacy/pages/landing.css';
 import '../../app-legacy/components/landing/features-section.css';
+import '../../app-legacy/components/landing/pricing-section.css';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ResourcesSection } from '@/components/landing/ResourcesSection';
-import { PricingModule } from '@/components/ui/pricing-module';
+import { PricingSection } from '@/components/landing/PricingSection';
 import { Faq1 } from '@/components/ui/faq1';
 import { FooterSection } from '@/components/ui/footer-section';
 import { ContactSupportDialog } from '@/components/ui/contact-support-dialog';
@@ -33,14 +34,7 @@ export default function HomePage() {
 
       <ResourcesSection />
 
-      <section id="pricing">
-        <PricingModule
-          title="Simple, Transparent Pricing"
-          subtitle="Choose the plan that fits your investment strategy."
-          annualBillingLabel="Pay annually and save 20%"
-          buttonLabel="Get started"
-        />
-      </section>
+      <PricingSection />
 
       <section id="faq" className="faq-section-wrapper">
         <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />
