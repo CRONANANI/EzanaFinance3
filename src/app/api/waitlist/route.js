@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -77,19 +75,22 @@ export async function POST(request) {
     const isLegacy = data.legacy_user;
     const legacyNumber = data.legacy_number;
 
-    // Send confirmation email using Resend
-    try {
-      await resend.emails.send({
-        from: 'Ezana Finance <waitlist@ezanafinance.com>', // Update with your verified domain
-        to: normalizedEmail,
-        subject: isLegacy
-          ? `You're Legacy Member #${legacyNumber}! 🎉`
-          : "You're on the Ezana Finance Waitlist! 🎉",
-        html: generateWaitlistEmail(normalizedEmail, isLegacy, legacyNumber),
-      });
-    } catch (emailError) {
-      console.error('Email send error:', emailError);
-      // Don't fail the request if email fails - user is still on waitlist
+    // Send confirmation email using Resend - initialize lazily at request time
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: 'Ezana Finance <waitlist@ezanafinance.com>',
+          to: normalizedEmail,
+          subject: isLegacy
+            ? `You're Legacy Member #${legacyNumber}! 🎉`
+            : "You're on the Ezana Finance Waitlist! 🎉",
+          html: generateWaitlistEmail(normalizedEmail, isLegacy, legacyNumber),
+        });
+      } catch (emailError) {
+        console.error('Email send error:', emailError);
+        // Don't fail the request if email fails - user is still on waitlist
+      }
     }
 
     return NextResponse.json(
