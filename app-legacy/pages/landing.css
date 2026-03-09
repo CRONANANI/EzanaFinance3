@@ -828,6 +828,69 @@ body {
     align-items: center;
 }
 
+/* Waitlist Status Messages */
+.waitlist-message {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.waitlist-message.error {
+    color: #f87171;
+}
+
+.waitlist-message.success {
+    color: #10b981;
+}
+
+/* Legacy Badge */
+.legacy-badge {
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 16px;
+    padding: 1.25rem 2rem;
+    text-align: center;
+    display: inline-block;
+    animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.legacy-label {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #10b981;
+    margin-bottom: 0.25rem;
+}
+
+.legacy-number {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #f0f6fc;
+    line-height: 1;
+}
+
+.legacy-note {
+    display: block;
+    font-size: 0.75rem;
+    color: #6e7681;
+    margin-top: 0.5rem;
+}
+
 .globe-preview {
     display: flex;
     align-items: center;

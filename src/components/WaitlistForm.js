@@ -1,100 +1,70 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { AnimatedEmailInput } from '@/components/ui/animated-email-input';
 import GradientButton from '@/components/ui/gradient-button';
 import { AnimatedWords } from '@/components/ui/animated-words';
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-  const [legacyNumber, setLegacyNumber] = useState(null);
+  const [status, setStatus] = useState('idle'); // idle, loading, success, error
+  const [message, setMessage] = useState('');
+  const [legacyInfo, setLegacyInfo] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const handleWaitlistSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
+
+    if (!email || !email.includes('@')) {
+      setStatus('error');
+      setMessage('Please enter a valid email address');
+      return;
+    }
+
+    setStatus('loading');
+    setMessage('');
+    setLegacyInfo(null);
 
     try {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        throw new Error('Please enter a valid email address');
-      }
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          referralSource: 'landing_page',
+        }),
+      });
 
-      const { data: existing, error: checkError } = await supabase
-        .from('waitlist')
-        .select('email, legacy_number')
-        .eq('email', email.toLowerCase().trim())
-        .maybeSingle();
+      const data = await response.json();
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      if (existing) {
-        setSuccess(true);
-        setLegacyNumber(existing.legacy_number);
+      if (!response.ok) {
+        setStatus('error');
+        setMessage(data.error || 'Something went wrong. Please try again.');
         return;
       }
 
-      const { data, error: insertError } = await supabase
-        .from('waitlist')
-        .insert([
-          {
-            email: email.toLowerCase().trim(),
-            full_name: '',
-            user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-          },
-        ])
-        .select()
-        .single();
+      setStatus('success');
+      setMessage(data.message || "You're on the waitlist!");
 
-      if (insertError) throw insertError;
+      if (data.legacyUser) {
+        setLegacyInfo({
+          isLegacy: true,
+          number: data.legacyNumber,
+        });
+      }
 
-      setSuccess(true);
-      setLegacyNumber(data.legacy_number);
       setEmail('');
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Waitlist submission error:', error);
+      setStatus('error');
+      setMessage('Network error. Please check your connection and try again.');
     }
   };
 
   return (
     <div className="w-full max-w-md">
-      {success && (
-        <div className="mb-6 p-4 bg-green-500/10 border border-green-500 rounded-lg">
-          <div className="flex items-start">
-            <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <div>
-              <h3 className="text-green-500 font-semibold mb-1">You&apos;re on the list!</h3>
-              {legacyNumber && legacyNumber <= 1000 ? (
-                <p className="text-green-400 text-sm">
-                  You&apos;re legacy user <span className="font-bold">#{legacyNumber}</span> of 1,000.
-                  You&apos;ll get lifetime free access when we launch!
-                </p>
-              ) : (
-                <p className="text-green-400 text-sm">We&apos;ll email you when we launch.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500 rounded-lg">
-          <p className="text-red-500 text-sm">{error}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleWaitlistSubmit} className="space-y-4">
         <div className="flex justify-center">
           <AnimatedEmailInput
             label="email"
@@ -102,17 +72,17 @@ export default function WaitlistForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            disabled={loading || success}
+            disabled={status === 'loading' || status === 'success'}
           />
         </div>
 
         <GradientButton
           type="submit"
-          disabled={loading || success}
+          disabled={status === 'loading' || status === 'success'}
           width="100%"
           height="56px"
         >
-          {loading ? 'Joining...' : success ? "You're on the list!" : 'Join Waitlist'}
+          {status === 'loading' ? 'Joining...' : status === 'success' ? '✓ Joined!' : 'Join Waitlist'}
         </GradientButton>
 
         <p className="text-xs text-gray-500 text-center">
@@ -123,6 +93,20 @@ export default function WaitlistForm() {
           />
         </p>
       </form>
+
+      {status === 'success' && legacyInfo?.isLegacy && (
+        <div className="legacy-badge">
+          <span className="legacy-label">Legacy Member</span>
+          <span className="legacy-number">#{legacyInfo.number}</span>
+          <span className="legacy-note">of the first 1,000</span>
+        </div>
+      )}
+
+      {message && (
+        <p className={`waitlist-message ${status === 'error' ? 'error' : 'success'}`}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }
