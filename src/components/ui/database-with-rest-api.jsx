@@ -38,30 +38,35 @@ export default function DatabaseWithRestApi({
 }) {
   const accentColor = lightColor || "#10b981";
 
-  // Position configurations - paths split for text gap
+  // fullPath = unbroken line (default), pathStart + pathEnd = split with gap (when selected)
   const sourcePositions = {
     congress: {
       left: "10%",
+      fullPath: "M 90 55 L 90 200 Q 90 240 130 240 L 430 240 Q 450 240 450 270 L 450 290",
       pathStart: "M 90 55 L 90 95",
       pathEnd: "M 90 155 L 90 200 Q 90 240 130 240 L 430 240 Q 450 240 450 270 L 450 290",
     },
     "13f": {
       left: "28%",
+      fullPath: "M 252 55 L 252 180 Q 252 220 290 220 L 430 220 Q 450 220 450 250 L 450 290",
       pathStart: "M 252 55 L 252 95",
       pathEnd: "M 252 155 L 252 180 Q 252 220 290 220 L 430 220 Q 450 220 450 250 L 450 290",
     },
     institutional: {
       left: "46%",
+      fullPath: "M 450 55 L 450 290",
       pathStart: "M 450 55 L 450 95",
       pathEnd: "M 450 155 L 450 290",
     },
     analytics: {
       left: "68%",
+      fullPath: "M 612 55 L 612 180 Q 612 220 610 220 L 470 220 Q 450 220 450 250 L 450 290",
       pathStart: "M 612 55 L 612 95",
       pathEnd: "M 612 155 L 612 180 Q 612 220 610 220 L 470 220 Q 450 220 450 250 L 450 290",
     },
     community: {
       left: "88%",
+      fullPath: "M 792 55 L 792 200 Q 792 240 750 240 L 470 240 Q 450 240 450 270 L 450 290",
       pathStart: "M 792 55 L 792 95",
       pathEnd: "M 792 155 L 792 200 Q 792 240 750 240 L 470 240 Q 450 240 450 270 L 450 290",
     },
@@ -105,8 +110,8 @@ export default function DatabaseWithRestApi({
             </filter>
           </defs>
 
-          {/* Connection lines with gaps for text */}
-          {sourceConfigs.map(({ id }) => {
+          {/* Connection lines - continuous by default, split only when selected */}
+          {sourceConfigs.map(({ id }, index) => {
             const pos = sourcePositions[id];
             const isSelected = selectedSource === id;
             const strokeColor = isSelected ? "rgba(16,185,129,0.8)" : "rgba(16,185,129,0.25)";
@@ -114,33 +119,45 @@ export default function DatabaseWithRestApi({
 
             return (
               <g key={id}>
-                <path
-                  d={pos.pathStart}
-                  stroke={strokeColor}
-                  strokeWidth={strokeWidth}
-                  fill="none"
-                  strokeLinecap="round"
-                />
-                <path
-                  d={pos.pathEnd}
-                  stroke={strokeColor}
-                  strokeWidth={strokeWidth}
-                  fill="none"
-                  strokeLinecap="round"
-                />
+                {isSelected ? (
+                  <>
+                    <path
+                      d={pos.pathStart}
+                      stroke={strokeColor}
+                      strokeWidth={strokeWidth}
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d={pos.pathEnd}
+                      stroke={strokeColor}
+                      strokeWidth={strokeWidth}
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </>
+                ) : (
+                  <path
+                    d={pos.fullPath}
+                    stroke={strokeColor}
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                )}
                 <circle r="4" fill={accentColor} filter="url(#glow)" opacity="0.8">
                   <animateMotion
                     dur="3s"
                     repeatCount="indefinite"
-                    begin={`${sourceConfigs.findIndex((s) => s.id === id) * 0.5}s`}
-                    path={`${pos.pathStart} ${pos.pathEnd.replace(/^M\s*/, "L ")}`}
+                    begin={`${index * 0.5}s`}
+                    path={pos.fullPath}
                   />
                   <animate
                     attributeName="opacity"
                     values="0;0.8;0.8;0"
                     dur="3s"
                     repeatCount="indefinite"
-                    begin={`${sourceConfigs.findIndex((s) => s.id === id) * 0.5}s`}
+                    begin={`${index * 0.5}s`}
                   />
                 </circle>
               </g>
@@ -204,26 +221,50 @@ export default function DatabaseWithRestApi({
           </div>
         </div>
 
-        {/* Pulsating Half-Rings */}
+        {/* WiFi-style Signal Waves from Ezana to Dashboard */}
         <div className="absolute left-1/2 -translate-x-1/2 top-[350px] flex flex-col items-center z-10">
-          <div className="relative w-32 h-16 overflow-hidden">
+          <div className="relative w-40 h-20 flex items-start justify-center">
             <motion.div
-              className="absolute left-1/2 -translate-x-1/2 top-0 w-28 h-14 border-2 border-emerald-500/20 rounded-b-full"
+              className="absolute left-1/2 -translate-x-1/2 top-0 w-10 h-5 border-b-2 border-l-2 border-r-2 border-emerald-500 rounded-b-full"
               style={{ borderTop: "none" }}
-              animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.5, 0.2] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              animate={{
+                opacity: [0.9, 0.3, 0.9],
+                scale: [1, 1.15, 1],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeOut",
+                times: [0, 0.5, 1],
+              }}
             />
             <motion.div
-              className="absolute left-1/2 -translate-x-1/2 top-1 w-20 h-10 border-2 border-emerald-500/35 rounded-b-full"
+              className="absolute left-1/2 -translate-x-1/2 top-2 w-20 h-10 border-b-2 border-l-2 border-r-2 border-emerald-500/60 rounded-b-full"
               style={{ borderTop: "none" }}
-              animate={{ scale: [1, 1.12, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.25 }}
+              animate={{
+                opacity: [0, 0.7, 0],
+                scale: [0.95, 1.1, 0.95],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeOut",
+                delay: 0.25,
+              }}
             />
             <motion.div
-              className="absolute left-1/2 -translate-x-1/2 top-2 w-12 h-6 border-2 border-emerald-500/50 rounded-b-full"
+              className="absolute left-1/2 -translate-x-1/2 top-4 w-32 h-16 border-b-2 border-l-2 border-r-2 border-emerald-500/35 rounded-b-full"
               style={{ borderTop: "none" }}
-              animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              animate={{
+                opacity: [0, 0.5, 0],
+                scale: [0.9, 1.05, 0.9],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeOut",
+                delay: 0.5,
+              }}
             />
           </div>
         </div>
