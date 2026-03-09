@@ -30,35 +30,47 @@ const PORTFOLIO_METRICS = {
   ],
 };
 
-// Mock congressional trading data
+// Mock congressional trading data - EXACTLY 6 trades per filter for consistent sizing
 const CONGRESS_TRADES = {
   all: [
-    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1,000,001 - $5,000,000', time: '2 hours ago' },
-    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15,001 - $50,000', time: '5 hours ago' },
-    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100,001 - $250,000', time: '8 hours ago' },
-    { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1,001 - $15,000', time: '12 hours ago' },
-    { id: 5, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50,001 - $100,000', time: '1 day ago' },
-    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Purchase', amount: '$15,001 - $50,000', time: '1 day ago' },
+    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1M - $5M', time: '2 hours ago' },
+    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15K - $50K', time: '5 hours ago' },
+    { id: 3, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1K - $15K', time: '8 hours ago' },
+    { id: 4, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50K - $100K', time: '12 hours ago' },
+    { id: 5, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100K - $250K', time: '1 day ago' },
+    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Sale', amount: '$15K - $50K', time: '1 day ago' },
   ],
   purchases: [
-    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1,000,001 - $5,000,000', time: '2 hours ago' },
-    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100,001 - $250,000', time: '8 hours ago' },
-    { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1,001 - $15,000', time: '12 hours ago' },
-    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Purchase', amount: '$15,001 - $50,000', time: '1 day ago' },
+    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1M - $5M', time: '2 hours ago' },
+    { id: 2, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1K - $15K', time: '5 hours ago' },
+    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100K - $250K', time: '8 hours ago' },
+    { id: 4, name: 'Michael McCaul', party: 'Republican', chamber: 'House', ticker: 'RTX', type: 'Purchase', amount: '$50K - $100K', time: '12 hours ago' },
+    { id: 5, name: 'John Hickenlooper', party: 'Democrat', chamber: 'Senate', ticker: 'XOM', type: 'Purchase', amount: '$15K - $50K', time: '1 day ago' },
+    { id: 6, name: 'Kevin Hern', party: 'Republican', chamber: 'House', ticker: 'CVX', type: 'Purchase', amount: '$1K - $15K', time: '2 days ago' },
   ],
   sales: [
-    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15,001 - $50,000', time: '5 hours ago' },
-    { id: 5, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50,001 - $100,000', time: '1 day ago' },
+    { id: 1, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15K - $50K', time: '2 hours ago' },
+    { id: 2, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50K - $100K', time: '5 hours ago' },
+    { id: 3, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Sale', amount: '$15K - $50K', time: '8 hours ago' },
+    { id: 4, name: 'Shelley Moore Capito', party: 'Republican', chamber: 'Senate', ticker: 'JPM', type: 'Sale', amount: '$100K - $250K', time: '12 hours ago' },
+    { id: 5, name: 'Pete Sessions', party: 'Republican', chamber: 'House', ticker: 'BAC', type: 'Sale', amount: '$1K - $15K', time: '1 day ago' },
+    { id: 6, name: 'Debbie Wasserman Schultz', party: 'Democrat', chamber: 'House', ticker: 'DIS', type: 'Sale', amount: '$15K - $50K', time: '2 days ago' },
   ],
   house: [
-    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1,000,001 - $5,000,000', time: '2 hours ago' },
-    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15,001 - $50,000', time: '5 hours ago' },
-    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100,001 - $250,000', time: '8 hours ago' },
-    { id: 6, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Purchase', amount: '$15,001 - $50,000', time: '1 day ago' },
+    { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', ticker: 'NVDA', type: 'Purchase', amount: '$1M - $5M', time: '2 hours ago' },
+    { id: 2, name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', ticker: 'TSLA', type: 'Sale', amount: '$15K - $50K', time: '5 hours ago' },
+    { id: 3, name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', ticker: 'AAPL', type: 'Purchase', amount: '$100K - $250K', time: '8 hours ago' },
+    { id: 4, name: 'Ro Khanna', party: 'Democrat', chamber: 'House', ticker: 'GOOGL', type: 'Sale', amount: '$15K - $50K', time: '12 hours ago' },
+    { id: 5, name: 'Michael McCaul', party: 'Republican', chamber: 'House', ticker: 'RTX', type: 'Purchase', amount: '$50K - $100K', time: '1 day ago' },
+    { id: 6, name: 'Pete Sessions', party: 'Republican', chamber: 'House', ticker: 'BAC', type: 'Sale', amount: '$1K - $15K', time: '2 days ago' },
   ],
   senate: [
-    { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1,001 - $15,000', time: '12 hours ago' },
-    { id: 5, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50,001 - $100,000', time: '1 day ago' },
+    { id: 1, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', ticker: 'MSFT', type: 'Purchase', amount: '$1K - $15K', time: '2 hours ago' },
+    { id: 2, name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', ticker: 'META', type: 'Sale', amount: '$50K - $100K', time: '5 hours ago' },
+    { id: 3, name: 'John Hickenlooper', party: 'Democrat', chamber: 'Senate', ticker: 'XOM', type: 'Purchase', amount: '$15K - $50K', time: '8 hours ago' },
+    { id: 4, name: 'Shelley Moore Capito', party: 'Republican', chamber: 'Senate', ticker: 'JPM', type: 'Sale', amount: '$100K - $250K', time: '12 hours ago' },
+    { id: 5, name: 'Gary Peters', party: 'Democrat', chamber: 'Senate', ticker: 'F', type: 'Purchase', amount: '$1K - $15K', time: '1 day ago' },
+    { id: 6, name: 'Bill Hagerty', party: 'Republican', chamber: 'Senate', ticker: 'GS', type: 'Sale', amount: '$15K - $50K', time: '2 days ago' },
   ],
 };
 
