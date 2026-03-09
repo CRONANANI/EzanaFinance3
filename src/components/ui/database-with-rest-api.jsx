@@ -221,52 +221,37 @@ export default function DatabaseWithRestApi({
           </div>
         </div>
 
-        {/* WiFi-style Signal Waves from Ezana to Dashboard */}
+        {/* WiFi-style Signal - Straight horizontal arcs like WiFi symbol */}
         <div className="absolute left-1/2 -translate-x-1/2 top-[350px] flex flex-col items-center z-10">
-          <div className="relative w-40 h-20 flex items-start justify-center">
-            <motion.div
-              className="absolute left-1/2 -translate-x-1/2 top-0 w-10 h-5 border-b-2 border-l-2 border-r-2 border-emerald-500 rounded-b-full"
-              style={{ borderTop: "none" }}
-              animate={{
-                opacity: [0.9, 0.3, 0.9],
-                scale: [1, 1.15, 1],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeOut",
-                times: [0, 0.5, 1],
-              }}
+          <svg width="100" height="50" viewBox="0 0 100 50" className="overflow-visible">
+            <motion.path
+              d="M 40 20 Q 50 10 60 20"
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="5"
+              strokeLinecap="round"
+              animate={{ opacity: [1, 0.4, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             />
-            <motion.div
-              className="absolute left-1/2 -translate-x-1/2 top-2 w-20 h-10 border-b-2 border-l-2 border-r-2 border-emerald-500/60 rounded-b-full"
-              style={{ borderTop: "none" }}
-              animate={{
-                opacity: [0, 0.7, 0],
-                scale: [0.95, 1.1, 0.95],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeOut",
-                delay: 0.25,
-              }}
+            <motion.path
+              d="M 28 32 Q 50 8 72 32"
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="5"
+              strokeLinecap="round"
+              animate={{ opacity: [0.7, 0.25, 0.7] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
             />
-            <motion.div
-              className="absolute left-1/2 -translate-x-1/2 top-4 w-32 h-16 border-b-2 border-l-2 border-r-2 border-emerald-500/35 rounded-b-full"
-              style={{ borderTop: "none" }}
-              animate={{
-                opacity: [0, 0.5, 0],
-                scale: [0.9, 1.05, 0.9],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeOut",
-                delay: 0.5,
-              }}
+            <motion.path
+              d="M 16 44 Q 50 6 84 44"
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="5"
+              strokeLinecap="round"
+              animate={{ opacity: [0.5, 0.15, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
             />
-          </div>
+          </svg>
         </div>
 
         {/* Personalized Intelligence Dashboard - Glowing Bubble */}
