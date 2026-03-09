@@ -38,37 +38,37 @@ export default function DatabaseWithRestApi({
 }) {
   const accentColor = lightColor || "#10b981";
 
-  // fullPath = unbroken line (default), pathStart + pathEnd = split with gap (when selected)
+  // Evenly distributed: 10%, 30%, 50%, 70%, 90% → x: 90, 270, 450, 630, 810
   const sourcePositions = {
     congress: {
       left: "10%",
-      fullPath: "M 90 55 L 90 200 Q 90 240 130 240 L 430 240 Q 450 240 450 270 L 450 290",
+      fullPath: "M 90 55 L 90 180 Q 90 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
       pathStart: "M 90 55 L 90 95",
-      pathEnd: "M 90 155 L 90 200 Q 90 240 130 240 L 430 240 Q 450 240 450 270 L 450 290",
+      pathEnd: "M 90 155 L 90 180 Q 90 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
     },
     "13f": {
-      left: "28%",
-      fullPath: "M 252 55 L 252 180 Q 252 220 290 220 L 430 220 Q 450 220 450 250 L 450 290",
-      pathStart: "M 252 55 L 252 95",
-      pathEnd: "M 252 155 L 252 180 Q 252 220 290 220 L 430 220 Q 450 220 450 250 L 450 290",
+      left: "30%",
+      fullPath: "M 270 55 L 270 180 Q 270 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
+      pathStart: "M 270 55 L 270 95",
+      pathEnd: "M 270 155 L 270 180 Q 270 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
     },
     institutional: {
-      left: "46%",
+      left: "50%",
       fullPath: "M 450 55 L 450 290",
       pathStart: "M 450 55 L 450 95",
       pathEnd: "M 450 155 L 450 290",
     },
     analytics: {
-      left: "68%",
-      fullPath: "M 612 55 L 612 180 Q 612 220 610 220 L 470 220 Q 450 220 450 250 L 450 290",
-      pathStart: "M 612 55 L 612 95",
-      pathEnd: "M 612 155 L 612 180 Q 612 220 610 220 L 470 220 Q 450 220 450 250 L 450 290",
+      left: "70%",
+      fullPath: "M 630 55 L 630 180 Q 630 210 590 210 L 470 210 Q 450 210 450 240 L 450 290",
+      pathStart: "M 630 55 L 630 95",
+      pathEnd: "M 630 155 L 630 180 Q 630 210 590 210 L 470 210 Q 450 210 450 240 L 450 290",
     },
     community: {
-      left: "88%",
-      fullPath: "M 792 55 L 792 200 Q 792 240 750 240 L 470 240 Q 450 240 450 270 L 450 290",
-      pathStart: "M 792 55 L 792 95",
-      pathEnd: "M 792 155 L 792 200 Q 792 240 750 240 L 470 240 Q 450 240 450 270 L 450 290",
+      left: "90%",
+      fullPath: "M 810 55 L 810 180 Q 810 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
+      pathStart: "M 810 55 L 810 95",
+      pathEnd: "M 810 155 L 810 180 Q 810 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
     },
   };
 
@@ -165,7 +165,7 @@ export default function DatabaseWithRestApi({
           })}
         </svg>
 
-        {/* 5 Data Source Cards */}
+        {/* 5 Data Source Cards - evenly distributed */}
         {sourceConfigs.map(({ id, label, wider }) => (
           <button
             key={id}
@@ -191,7 +191,7 @@ export default function DatabaseWithRestApi({
             <div
               key={`details-${id}`}
               className="absolute -translate-x-1/2 flex flex-col items-center z-10"
-              style={{ left: sourcePositions[id].left, top: "110px" }}
+              style={{ left: sourcePositions[id].left, top: "100px" }}
             >
               <ul className="text-[10px] text-emerald-400/90 space-y-1 text-center">
                 {sourceDetails[id].map((detail, i) => (
@@ -202,7 +202,7 @@ export default function DatabaseWithRestApi({
           );
         })}
 
-        {/* Ezana Hub */}
+        {/* Ezana Hub - centered at 50% */}
         <div className="absolute left-1/2 -translate-x-1/2 top-[290px] z-20 flex flex-col items-center">
           <motion.div
             className="absolute w-20 h-20 rounded-full"
