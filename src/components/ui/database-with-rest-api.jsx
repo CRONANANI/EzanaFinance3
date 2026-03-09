@@ -26,39 +26,6 @@ function DatabaseIcon({ className }) {
   );
 }
 
-const PATH_CONFIG = [
-  {
-    id: "congress",
-    path: "M 90 60 L 90 200 Q 90 220 110 220 L 430 220 Q 450 220 450 260",
-    left: "10%",
-    detailTop: "130px",
-  },
-  {
-    id: "13f",
-    path: "M 270 60 L 270 200 Q 270 220 290 220 L 430 220 Q 450 220 450 260",
-    left: "30%",
-    detailTop: "130px",
-  },
-  {
-    id: "institutional",
-    path: "M 450 60 L 450 260",
-    left: "50%",
-    detailTop: "160px",
-  },
-  {
-    id: "analytics",
-    path: "M 630 60 L 630 200 Q 630 220 610 220 L 470 220 Q 450 220 450 260",
-    left: "70%",
-    detailTop: "130px",
-  },
-  {
-    id: "community",
-    path: "M 810 60 L 810 200 Q 810 220 790 220 L 470 220 Q 450 220 450 260",
-    left: "90%",
-    detailTop: "130px",
-  },
-];
-
 export default function DatabaseWithRestApi({
   className,
   circleText,
@@ -67,9 +34,46 @@ export default function DatabaseWithRestApi({
   lightColor,
   onBadgeClick,
   selectedSource,
-  sourceDetails = {},
+  sourceDetails,
 }) {
   const accentColor = lightColor || "#10b981";
+
+  // Position configurations - paths split for text gap
+  const sourcePositions = {
+    congress: {
+      left: "10%",
+      pathStart: "M 90 55 L 90 95",
+      pathEnd: "M 90 155 L 90 200 Q 90 240 130 240 L 430 240 Q 450 240 450 270 L 450 290",
+    },
+    "13f": {
+      left: "28%",
+      pathStart: "M 252 55 L 252 95",
+      pathEnd: "M 252 155 L 252 180 Q 252 220 290 220 L 430 220 Q 450 220 450 250 L 450 290",
+    },
+    institutional: {
+      left: "46%",
+      pathStart: "M 450 55 L 450 95",
+      pathEnd: "M 450 155 L 450 290",
+    },
+    analytics: {
+      left: "68%",
+      pathStart: "M 612 55 L 612 95",
+      pathEnd: "M 612 155 L 612 180 Q 612 220 610 220 L 470 220 Q 450 220 450 250 L 450 290",
+    },
+    community: {
+      left: "88%",
+      pathStart: "M 792 55 L 792 95",
+      pathEnd: "M 792 155 L 792 200 Q 792 240 750 240 L 470 240 Q 450 240 450 270 L 450 290",
+    },
+  };
+
+  const sourceConfigs = [
+    { id: "congress", label: badgeTexts?.first || "Congress" },
+    { id: "13f", label: badgeTexts?.second || "13F" },
+    { id: "institutional", label: badgeTexts?.third || "Institutional" },
+    { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics", wider: true },
+    { id: "community", label: badgeTexts?.fifth || "Community" },
+  ];
 
   return (
     <div
@@ -78,25 +82,20 @@ export default function DatabaseWithRestApi({
         className
       )}
     >
-      {/* Title - no bubble, just text */}
-      <h3 className="mb-8 text-center text-lg font-semibold text-foreground/90">
+      {/* Title in brand green */}
+      <h3 className="mb-8 text-center text-lg font-semibold text-emerald-500">
         {title || "Institutional-grade data from verified sources"}
       </h3>
 
       {/* Diagram area */}
-      <div className="relative w-full" style={{ minHeight: "420px" }}>
-        {/* SVG: Connection lines with animated pulses */}
+      <div className="relative w-full" style={{ minHeight: "480px" }}>
+        {/* SVG Connection Lines */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 900 420"
+          viewBox="0 0 900 480"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <linearGradient id="pulse-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={accentColor} stopOpacity="0" />
-              <stop offset="50%" stopColor={accentColor} stopOpacity="1" />
-              <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
-            </linearGradient>
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="3" result="coloredBlur" />
               <feMerge>
@@ -106,153 +105,151 @@ export default function DatabaseWithRestApi({
             </filter>
           </defs>
 
-          {/* Connection lines - default (low opacity) and highlighted (when selected) */}
-          {PATH_CONFIG.map(({ id, path }) => (
-            <path
-              key={id}
-              d={path}
-              stroke={selectedSource === id ? accentColor : "rgba(16,185,129,0.2)"}
-              strokeWidth={selectedSource === id ? "2.5" : "2"}
-              fill="none"
-              strokeLinecap="round"
-            />
-          ))}
+          {/* Connection lines with gaps for text */}
+          {sourceConfigs.map(({ id }) => {
+            const pos = sourcePositions[id];
+            const isSelected = selectedSource === id;
+            const strokeColor = isSelected ? "rgba(16,185,129,0.8)" : "rgba(16,185,129,0.25)";
+            const strokeWidth = isSelected ? "2.5" : "2";
 
-          {/* Animated pulses */}
-          {PATH_CONFIG.map(({ id, path }, i) => (
-            <circle key={`pulse-${id}`} r="4" fill={accentColor} filter="url(#glow)">
-              <animateMotion
-                dur="2.5s"
-                repeatCount="indefinite"
-                begin={`${i * 0.6}s`}
-                path={path}
-              />
-              <animate
-                attributeName="opacity"
-                values="0;1;1;0"
-                dur="2.5s"
-                repeatCount="indefinite"
-                begin={`${i * 0.6}s`}
-              />
-            </circle>
-          ))}
-
-          {/* Line from Ezana hub to output */}
-          <path
-            d="M 450 320 L 450 400"
-            stroke="rgba(16,185,129,0.3)"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-          />
-
-          {/* Animated pulse from Ezana to output */}
-          <circle r="4" fill={accentColor} filter="url(#glow)">
-            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 450 320 L 450 400" />
-            <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" repeatCount="indefinite" />
-          </circle>
+            return (
+              <g key={id}>
+                <path
+                  d={pos.pathStart}
+                  stroke={strokeColor}
+                  strokeWidth={strokeWidth}
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <path
+                  d={pos.pathEnd}
+                  stroke={strokeColor}
+                  strokeWidth={strokeWidth}
+                  fill="none"
+                  strokeLinecap="round"
+                />
+                <circle r="4" fill={accentColor} filter="url(#glow)" opacity="0.8">
+                  <animateMotion
+                    dur="3s"
+                    repeatCount="indefinite"
+                    begin={`${sourceConfigs.findIndex((s) => s.id === id) * 0.5}s`}
+                    path={`${pos.pathStart} ${pos.pathEnd.replace(/^M\s*/, "L ")}`}
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0;0.8;0.8;0"
+                    dur="3s"
+                    repeatCount="indefinite"
+                    begin={`${sourceConfigs.findIndex((s) => s.id === id) * 0.5}s`}
+                  />
+                </circle>
+              </g>
+            );
+          })}
         </svg>
 
-        {/* Inline source details - positioned along vertical line when selected */}
-        {PATH_CONFIG.map(({ id, left, detailTop }) =>
-          selectedSource === id && sourceDetails[id]?.length ? (
-            <div
-              key={`details-${id}`}
-              className="absolute -translate-x-1/2 max-w-[140px] text-center z-10 px-2 py-1.5 rounded-md bg-black/40"
-              style={{ left, top: detailTop }}
-            >
-              <ul className="text-[11px] text-muted-foreground/80 space-y-1">
-                {sourceDetails[id].map((detail, i) => (
-                  <li key={i}>{detail}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null
-        )}
-
-        {/* 5 data source cards */}
-        {[
-          { id: "congress", label: badgeTexts?.first || "Congress", left: "10%" },
-          { id: "13f", label: badgeTexts?.second || "13F", left: "30%" },
-          { id: "institutional", label: badgeTexts?.third || "Institutional", left: "50%" },
-          { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics", left: "70%", wider: true },
-          { id: "community", label: badgeTexts?.fifth || "Community", left: "90%" },
-        ].map(({ id, label, left, wider }) => (
+        {/* 5 Data Source Cards */}
+        {sourceConfigs.map(({ id, label, wider }) => (
           <button
             key={id}
             type="button"
             onClick={() => onBadgeClick?.(id)}
             className={cn(
-              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border px-3 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
-              selectedSource === id
-                ? "border-emerald-500/60 bg-emerald-500/5"
-                : "border-zinc-700/50 bg-[#18181B]",
-              wider ? "min-w-[160px]" : "min-w-[100px]",
+              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-4 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
+              wider ? "min-w-[150px]" : "min-w-[90px]",
+              selectedSource === id && "border-emerald-500/50 bg-emerald-500/10",
               onBadgeClick && "cursor-pointer"
             )}
-            style={{ left }}
+            style={{ left: sourcePositions[id].left }}
           >
             <DatabaseIcon />
             <span className="text-sm font-medium whitespace-nowrap">{label}</span>
           </button>
         ))}
 
-        {/* Ezana hub - center with transformation effect */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-[260px] z-20 flex flex-col items-center">
-          {/* Outer glow ring */}
-          <motion.div
-            className="absolute w-16 h-16 rounded-full"
-            style={{
-              background: `radial-gradient(circle, ${accentColor}20 0%, transparent 70%)`,
-            }}
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.5, 0.8, 0.5],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
+        {/* Inline Details - no bubble, uniform position */}
+        {sourceConfigs.map(({ id }) => {
+          if (selectedSource !== id || !sourceDetails?.[id]) return null;
+          return (
+            <div
+              key={`details-${id}`}
+              className="absolute -translate-x-1/2 flex flex-col items-center z-10"
+              style={{ left: sourcePositions[id].left, top: "110px" }}
+            >
+              <ul className="text-[10px] text-emerald-400/90 space-y-1 text-center">
+                {sourceDetails[id].map((detail, i) => (
+                  <li key={i} className="whitespace-nowrap">{detail}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
 
-          {/* Main hub circle */}
+        {/* Ezana Hub */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[290px] z-20 flex flex-col items-center">
+          <motion.div
+            className="absolute w-20 h-20 rounded-full"
+            style={{ background: `radial-gradient(circle, ${accentColor}15 0%, transparent 70%)` }}
+            animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          />
           <div
-            className="relative grid h-[48px] w-[48px] place-items-center rounded-full border-2 bg-[#141516] font-semibold text-sm shadow-lg z-10"
+            className="relative grid h-[52px] w-[52px] place-items-center rounded-full border-2 bg-[#141516] font-semibold text-sm shadow-lg z-10"
             style={{
               borderColor: accentColor,
-              boxShadow: `0 0 20px ${accentColor}40, 0 0 40px ${accentColor}20`,
+              boxShadow: `0 0 25px ${accentColor}50, 0 0 50px ${accentColor}25`,
             }}
           >
             {circleText || "Ezana"}
           </div>
-
-          {/* Downward arrow indicator */}
-          <motion.div
-            className="mt-2"
-            animate={{
-              y: [0, 4, 0],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
-              <path
-                d="M10 12L0 2L2 0L10 8L18 0L20 2L10 12Z"
-                fill={accentColor}
-                fillOpacity="0.6"
-              />
-            </svg>
-          </motion.div>
         </div>
 
-        {/* Output - Personalized Intelligence (plain text, no card) */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 text-sm">
-          <User className="size-4 text-emerald-500" />
-          <span className="text-foreground/80">Personalized Intelligence Dashboard</span>
+        {/* Pulsating Half-Rings */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-[350px] flex flex-col items-center z-10">
+          <div className="relative w-32 h-16 overflow-hidden">
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 top-0 w-28 h-14 border-2 border-emerald-500/20 rounded-b-full"
+              style={{ borderTop: "none" }}
+              animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.5, 0.2] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 top-1 w-20 h-10 border-2 border-emerald-500/35 rounded-b-full"
+              style={{ borderTop: "none" }}
+              animate={{ scale: [1, 1.12, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.25 }}
+            />
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 top-2 w-12 h-6 border-2 border-emerald-500/50 rounded-b-full"
+              style={{ borderTop: "none" }}
+              animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            />
+          </div>
+        </div>
+
+        {/* Personalized Intelligence Dashboard - Glowing Bubble */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <div className="relative group">
+            <motion.div
+              className="absolute -inset-1 rounded-xl blur-md"
+              style={{ background: `linear-gradient(90deg, ${accentColor}20, ${accentColor}35, ${accentColor}20)` }}
+              animate={{ opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div
+              className="relative flex items-center gap-2.5 px-6 py-3.5 rounded-xl border bg-[#0a0f0a]/95 backdrop-blur-sm"
+              style={{
+                borderColor: `${accentColor}50`,
+                boxShadow: `0 0 30px ${accentColor}20, inset 0 1px 0 ${accentColor}15`,
+              }}
+            >
+              <User className="size-4 text-emerald-400" />
+              <span className="text-emerald-100 font-medium text-sm">
+                Personalized Intelligence Dashboard
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
