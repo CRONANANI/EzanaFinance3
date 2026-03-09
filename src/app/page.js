@@ -6,6 +6,7 @@ import '../../app-legacy/pages/landing.css';
 import '../../app-legacy/components/landing/features-section.css';
 import '../../app-legacy/components/landing/pricing-section.css';
 import { LandingHero } from '@/components/landing/LandingHero';
+import { TestimonialsHero } from '@/components/landing/TestimonialsHero';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ResourcesSection } from '@/components/landing/ResourcesSection';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -27,6 +28,8 @@ export default function HomePage() {
       <main className="main-content hero-section" id="heroSection">
         <LandingHero />
       </main>
+
+      <TestimonialsHero />
 
       <div id="features-section-container">
         <FeaturesSection />
