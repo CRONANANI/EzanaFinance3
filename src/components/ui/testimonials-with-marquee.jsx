@@ -1,7 +1,48 @@
 "use client";
 
+import React from "react";
 import { cn } from "@/lib/utils";
-import { TestimonialCard } from "@/components/ui/testimonial-card";
+
+function TestimonialCard({ testimonial }) {
+  return (
+    <div className="flex-shrink-0 w-[350px] mx-3 p-6 rounded-xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
+      <div className="flex items-center gap-3 mb-4">
+        <img
+          src={testimonial.author.avatar}
+          alt={testimonial.author.name}
+          className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500/30"
+        />
+        <div>
+          <p className="font-semibold text-white">{testimonial.author.name}</p>
+          <p className="text-sm text-emerald-400">{testimonial.author.handle}</p>
+        </div>
+      </div>
+      <p className="text-zinc-300 text-sm leading-relaxed">{testimonial.text}</p>
+    </div>
+  );
+}
+
+function Marquee({ children, reverse = false, pauseOnHover = true, className }) {
+  return (
+    <div
+      className={cn(
+        "group flex overflow-hidden [--duration:40s] [--gap:1.5rem]",
+        className
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-[--gap] animate-marquee shrink-0",
+          pauseOnHover && "group-hover:[animation-play-state:paused]",
+          reverse && "[animation-direction:reverse]"
+        )}
+      >
+        {children}
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export function TestimonialsSection({
   title,
@@ -9,38 +50,29 @@ export function TestimonialsSection({
   testimonials,
   className,
 }) {
+  const midpoint = Math.ceil(testimonials.length / 2);
+  const firstRow = testimonials.slice(0, midpoint);
+  const secondRow = testimonials.slice(midpoint);
+
   return (
-    <section
-      className={cn(
-        "bg-background text-foreground",
-        "py-12 sm:py-24 md:py-32 px-0",
-        className
-      )}
-    >
-      <div className="mx-auto flex max-w-container flex-col items-center gap-4 text-center sm:gap-16">
-        <div className="flex flex-col items-center gap-4 px-4 sm:gap-8">
-          <h2 className="max-w-[720px] text-3xl font-semibold leading-tight sm:text-5xl sm:leading-tight">
-            {title}
-          </h2>
-          <p className="text-md max-w-[600px] font-medium text-muted-foreground sm:text-xl">
-            {description}
-          </p>
-        </div>
+    <section className={cn("py-16 overflow-hidden", className)}>
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-bold text-white mb-4">{title}</h2>
+        <p className="text-zinc-400 max-w-2xl mx-auto">{description}</p>
+      </div>
 
-        <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
-          <div className="group flex overflow-hidden p-2 [--gap:1rem] [gap:var(--gap)] flex-row [--duration:40s]">
-            <div className="flex shrink-0 justify-around [gap:var(--gap)] animate-marquee flex-row group-hover:[animation-play-state:paused]">
-              {[...Array(4)].map((_, setIndex) =>
-                testimonials.map((testimonial, i) => (
-                  <TestimonialCard key={`${setIndex}-${i}`} {...testimonial} />
-                ))
-              )}
-            </div>
-          </div>
+      <div className="flex flex-col gap-6">
+        <Marquee pauseOnHover>
+          {firstRow.map((testimonial, index) => (
+            <TestimonialCard key={`row1-${index}`} testimonial={testimonial} />
+          ))}
+        </Marquee>
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/3 bg-gradient-to-r from-background sm:block" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-background sm:block" />
-        </div>
+        <Marquee reverse pauseOnHover>
+          {secondRow.map((testimonial, index) => (
+            <TestimonialCard key={`row2-${index}`} testimonial={testimonial} />
+          ))}
+        </Marquee>
       </div>
     </section>
   );

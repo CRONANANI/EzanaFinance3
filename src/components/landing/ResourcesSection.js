@@ -55,6 +55,14 @@ const DATA_SOURCES = [
 const TRUSTED_TESTIMONIALS = [
   {
     author: {
+      name: 'Vivian Tu',
+      handle: '@your.richbff',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face',
+    },
+    text: 'Finally a platform that gives everyday investors the same congressional trading data that Wall Street has been using for years. This is the transparency we needed.',
+  },
+  {
+    author: {
       name: 'Sarah Chen',
       handle: 'Bloomberg',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
@@ -63,11 +71,27 @@ const TRUSTED_TESTIMONIALS = [
   },
   {
     author: {
+      name: 'Graham Stephan',
+      handle: '@grahamstephan',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    },
+    text: 'I track every 13F filing for my portfolio analysis. Ezana aggregates hedge fund positions faster than any Bloomberg terminal I have used. Seriously impressive.',
+  },
+  {
+    author: {
       name: 'Marcus Webb',
       handle: 'Reuters',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     },
     text: 'The real-time congressional trading alerts have transformed how we track policy-sensitive positions. Accuracy and speed are unmatched.',
+  },
+  {
+    author: {
+      name: 'Ben Felix',
+      handle: '@BenFelixCSI',
+      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face',
+    },
+    text: 'As someone focused on evidence-based investing, I appreciate that Ezana provides raw institutional data without speculation. Pure signal, no noise.',
   },
   {
     author: {

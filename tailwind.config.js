@@ -11,14 +11,14 @@ module.exports = {
         container: "1280px",
       },
       animation: {
-        marquee: "marquee var(--duration) linear infinite",
+        marquee: "marquee var(--duration, 40s) linear infinite",
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       keyframes: {
         marquee: {
           from: { transform: "translateX(0)" },
-          to: { transform: "translateX(calc(-100% - var(--gap)))" },
+          to: { transform: "translateX(calc(-50% - var(--gap, 1rem) / 2))" },
         },
         'accordion-down': {
           from: { height: '0' },
