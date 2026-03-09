@@ -194,56 +194,54 @@ export function FeaturesSection() {
           <div className="feature-content">
             <div className="feature-visual">
               <div className="visual-container congress-visual">
-                <div className="congress-ledger">
-                  <div className="ledger-header">
-                    <h4>Congressional Trading Ledger</h4>
-                    <span className="live-badge"><span className="pulse-dot" /> Live</span>
-                  </div>
+                <div className="ledger-header">
+                  <h4>Congressional Trading Ledger</h4>
+                  <span className="live-badge"><span className="pulse-dot" /> Live</span>
+                </div>
 
-                  <div className="ledger-filters">
-                    {['all', 'purchases', 'sales', 'house', 'senate'].map((filter) => (
-                      <button
-                        key={filter}
-                        type="button"
-                        className={`filter-pill ${congressFilter === filter ? 'active' : ''}`}
-                        onClick={() => setCongressFilter(filter)}
-                      >
-                        {filter === 'all' ? 'All Trades' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                      </button>
+                <div className="ledger-filters">
+                  {['all', 'purchases', 'sales', 'house', 'senate'].map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      className={`filter-pill ${congressFilter === filter ? 'active' : ''}`}
+                      onClick={() => setCongressFilter(filter)}
+                    >
+                      {filter === 'all' ? 'All Trades' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="ledger-table">
+                  <div className="ledger-table-header">
+                    <span className="col-type">Type</span>
+                    <span className="col-member">Member</span>
+                    <span className="col-ticker">Ticker</span>
+                    <span className="col-amount">Amount</span>
+                    <span className="col-time">Time</span>
+                  </div>
+                  <div className="ledger-table-body">
+                    {congressTrades.map((trade) => (
+                      <div key={trade.id} className="ledger-row">
+                        <span className={`col-type ${trade.type.toLowerCase()}`}>
+                          <i className={`bi ${trade.type === 'Purchase' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'}`} />
+                        </span>
+                        <span className="col-member">
+                          <span className="member-name">{trade.name}</span>
+                          <span className={`party-badge ${trade.party.toLowerCase()}`}>{trade.party.charAt(0)}</span>
+                          <span className="chamber-badge">{trade.chamber}</span>
+                        </span>
+                        <span className="col-ticker">{trade.ticker}</span>
+                        <span className="col-amount">{trade.amount}</span>
+                        <span className="col-time">{trade.time}</span>
+                      </div>
                     ))}
                   </div>
+                </div>
 
-                  <div className="ledger-table">
-                    <div className="ledger-table-header">
-                      <span className="col-type">Type</span>
-                      <span className="col-member">Member</span>
-                      <span className="col-ticker">Ticker</span>
-                      <span className="col-amount">Amount</span>
-                      <span className="col-time">Time</span>
-                    </div>
-                    <div className="ledger-table-body">
-                      {congressTrades.map((trade) => (
-                        <div key={trade.id} className="ledger-row">
-                          <span className={`col-type ${trade.type.toLowerCase()}`}>
-                            <i className={`bi ${trade.type === 'Purchase' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'}`} />
-                          </span>
-                          <span className="col-member">
-                            <span className="member-name">{trade.name}</span>
-                            <span className={`party-badge ${trade.party.toLowerCase()}`}>{trade.party.charAt(0)}</span>
-                            <span className="chamber-badge">{trade.chamber}</span>
-                          </span>
-                          <span className="col-ticker">{trade.ticker}</span>
-                          <span className="col-amount">{trade.amount}</span>
-                          <span className="col-time">{trade.time}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="ledger-footer">
-                    <span className="trade-count">{congressTrades.length} trades</span>
-                    <span className="view-more">View all trades →</span>
-                  </div>
+                <div className="ledger-footer">
+                  <span className="trade-count">{congressTrades.length} trades</span>
+                  <span className="view-more">View all trades →</span>
                 </div>
               </div>
             </div>
