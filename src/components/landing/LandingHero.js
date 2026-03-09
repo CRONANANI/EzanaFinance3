@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import WaitlistForm from '@/components/WaitlistForm';
+import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { InteractiveGlobe } from '@/components/ui/interactive-globe';
 import { AnimatedWords } from '@/components/ui/animated-words';
 
@@ -35,7 +35,7 @@ export function LandingHero() {
             staggerMs={20}
           />
         </p>
-        <p className="hero-waitlist-intro hero-waitlist-intro-bubble animate-in" data-delay="1750">
+        <p className="hero-waitlist-intro hero-waitlist-intro-plain animate-in" data-delay="1750">
           <AnimatedWords
             text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits."
             baseDelay={1800}
@@ -43,7 +43,7 @@ export function LandingHero() {
           />
         </p>
         <div className="hero-waitlist animate-in" data-delay="2050">
-          <WaitlistForm />
+          <AnimatedWaitlistForm />
         </div>
       </div>
       <div className="card-preview globe-preview animate-in" data-delay="450">

@@ -819,6 +819,23 @@ body {
     line-height: 1.5;
 }
 
+/* Plain text - no bubble/border for early access text */
+.hero-waitlist-intro-plain {
+    color: #8b949e;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 540px;
+    margin: 0 auto 1.5rem;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-weight: 400;
+    white-space: normal;
+}
+
 .hero-waitlist {
     margin: 0 auto 0 auto;
     width: 100%;
