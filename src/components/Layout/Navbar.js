@@ -54,6 +54,11 @@ export function Navbar() {
             <li className="nav-item">
               <a href="#faq" className="nav-link">FAQ</a>
             </li>
+            <li className="nav-item">
+              <Link href="/auth/signin" className="sign-in-btn">
+                Sign In
+              </Link>
+            </li>
           </ul>
         </div>
       </nav>
