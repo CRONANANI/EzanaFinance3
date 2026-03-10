@@ -17,20 +17,16 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [debugInfo, setDebugInfo] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     const checkSession = async () => {
       try {
-        // Debug: Log the full URL
         console.log('Full URL:', window.location.href);
         console.log('Hash:', window.location.hash);
         console.log('Search:', window.location.search);
 
-        setDebugInfo(`URL: ${window.location.href}`);
-
-        // Method 1: Check if there's already a session
+        // Method 1: Check for existing session first
         const { data: { session: existingSession } } = await supabase.auth.getSession();
 
         if (existingSession) {
@@ -40,90 +36,98 @@ export default function ResetPasswordPage() {
           return;
         }
 
-        // Method 2: Check URL hash (Supabase default format)
-        // Format: #access_token=xxx&refresh_token=xxx&type=recovery
+        // Method 2: Check URL query params for 'code' (PKCE flow)
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const type = urlParams.get('type');
+
+        if (code) {
+          console.log('Found code in query params, exchanging...');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+          if (data?.session) {
+            console.log('Session established from code');
+            setIsValidSession(true);
+            setIsCheckingSession(false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          } else {
+            console.error('Code exchange failed:', error);
+          }
+        }
+
+        // Method 3: Check URL hash for tokens
         if (window.location.hash) {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
-          const type = hashParams.get('type');
+          const hashType = hashParams.get('type');
 
-          console.log('Hash params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+          console.log('Hash params:', {
+            hasAccessToken: !!accessToken,
+            accessTokenLength: accessToken?.length,
+            hasRefreshToken: !!refreshToken,
+            type: hashType
+          });
 
-          if (accessToken && (type === 'recovery' || type === 'signup' || !type)) {
-            const { data, error: sessionError } = await supabase.auth.setSession({
+          // Check if it's a proper JWT (should be very long)
+          if (accessToken && accessToken.length > 50) {
+            const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken || '',
             });
 
             if (data?.session) {
-              console.log('Session set from hash');
+              console.log('Session set from hash tokens');
               setIsValidSession(true);
               setIsCheckingSession(false);
-              // Clean up the URL
               window.history.replaceState({}, document.title, window.location.pathname);
               return;
             } else {
-              console.error('Failed to set session from hash:', sessionError);
+              console.error('Failed to set session from hash:', error);
+            }
+          } else if (accessToken && hashType === 'recovery') {
+            // Short token - try verifyOtp
+            console.log('Short token detected, trying verifyOtp...');
+            const { data, error } = await supabase.auth.verifyOtp({
+              token_hash: accessToken,
+              type: 'recovery',
+            });
+
+            if (data?.session) {
+              console.log('Session set via verifyOtp');
+              setIsValidSession(true);
+              setIsCheckingSession(false);
+              window.history.replaceState({}, document.title, window.location.pathname);
+              return;
+            } else {
+              console.error('verifyOtp failed:', error);
             }
           }
         }
 
-        // Method 3: Check URL query params (alternative format)
-        // Format: ?token=xxx or ?code=xxx
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const code = urlParams.get('code');
+        // Method 4: Check for token_hash in query params
         const tokenHash = urlParams.get('token_hash');
-        const type = urlParams.get('type');
-
-        console.log('Query params:', { token: !!token, code: !!code, tokenHash: !!tokenHash, type });
-
-        if (code) {
-          // Exchange code for session
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-
-          if (data?.session) {
-            console.log('Session set from code exchange');
-            setIsValidSession(true);
-            setIsCheckingSession(false);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return;
-          } else {
-            console.error('Failed to exchange code:', exchangeError);
-          }
-        }
-
-        if (tokenHash && type === 'recovery') {
-          // Verify OTP with token hash
-          const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        if (tokenHash) {
+          console.log('Found token_hash, verifying...');
+          const { data, error } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type: 'recovery',
           });
 
           if (data?.session) {
-            console.log('Session set from token hash verification');
+            console.log('Session set from token_hash');
             setIsValidSession(true);
             setIsCheckingSession(false);
             window.history.replaceState({}, document.title, window.location.pathname);
             return;
           } else {
-            console.error('Failed to verify token hash:', verifyError);
+            console.error('token_hash verification failed:', error);
           }
         }
 
-        // Method 4: Let Supabase handle the URL automatically
-        const { data: urlSession, error: urlError } = await supabase.auth.getSession();
-
-        if (urlSession?.session) {
-          console.log('Session found after URL processing');
-          setIsValidSession(true);
-          setIsCheckingSession(false);
-          return;
-        }
-
-        // No valid session found
-        console.log('No valid session found');
+        // No valid method worked
+        console.log('No valid session could be established');
         setError('Invalid or expired reset link. Please request a new one.');
         setIsCheckingSession(false);
 
@@ -134,7 +138,7 @@ export default function ResetPasswordPage() {
       }
     };
 
-    // Small delay to ensure the page is fully loaded
+    // Small delay to ensure page is loaded
     const timer = setTimeout(checkSession, 100);
     return () => clearTimeout(timer);
   }, []);
@@ -261,10 +265,6 @@ export default function ResetPasswordPage() {
           <p className="text-gray-400 mb-6">
             {error || 'This password reset link is invalid or has expired. Please request a new one.'}
           </p>
-          {/* Debug info - remove in production */}
-          {debugInfo && (
-            <p className="text-xs text-gray-600 mb-4 break-all">{debugInfo}</p>
-          )}
           <Link
             href="/auth/forgot-password"
             className="inline-flex items-center justify-center w-full h-11 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all"
