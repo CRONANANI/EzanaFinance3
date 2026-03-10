@@ -56,18 +56,19 @@ export function Navbar() {
             <li className="nav-item">
               <a href="#faq" className="nav-link">FAQ</a>
             </li>
-            <li className="nav-item">
-              {isAuthenticated ? (
-                <Link href="/home-dashboard" className="sign-in-btn">
-                  Dashboard
-                </Link>
-              ) : (
-                <Link href="/auth/signin" className="sign-in-btn">
-                  Sign In
-                </Link>
-              )}
-            </li>
           </ul>
+          <div className="nav-sign-in-spacer" aria-hidden="true" />
+          <div className="nav-sign-in-wrap">
+            {isAuthenticated ? (
+              <Link href="/home-dashboard" className="sign-in-btn">
+                Dashboard
+              </Link>
+            ) : (
+              <Link href="/auth/signin" className="sign-in-btn">
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
     );
