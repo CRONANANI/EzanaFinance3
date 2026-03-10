@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 export function AnimatedWaitlistForm({ className = '' }) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, loading, success, error
+  const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
   const [legacyInfo, setLegacyInfo] = useState(null);
 
@@ -61,75 +61,75 @@ export function AnimatedWaitlistForm({ className = '' }) {
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
-      {/* Main Form Container */}
+      {/* Main Form Container - DOUBLED WIDTH, REDUCED HEIGHT */}
       <div className="relative flex items-center justify-center">
         <div className="absolute z-[-1] w-full"></div>
 
-        <div className="relative flex items-center justify-center group">
-          {/* Glow Layer 1 - Outer - Reduced size */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[70px] max-w-[260px] rounded-xl blur-[3px]
+        <div id="poda" className="relative flex items-center justify-center group">
+          {/* Glow Layer 1 - Outer - WIDER */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-[520px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[999px] before:h-[999px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[60deg]
                           before:bg-[conic-gradient(#000,#10b981_5%,#000_38%,#000_50%,#059669_60%,#000_87%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-120deg] group-focus-within:before:rotate-[420deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 2 - Reduced size */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[65px] max-w-[258px] rounded-xl blur-[3px]
+          {/* Glow Layer 2 - WIDER */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[518px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 3 - Reduced size */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[65px] max-w-[258px] rounded-xl blur-[3px]
+          {/* Glow Layer 3 - WIDER */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[518px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 4 - Inner bright - Reduced size */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[63px] max-w-[255px] rounded-lg blur-[2px]
+          {/* Glow Layer 4 - Inner bright - WIDER */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[52px] max-w-[515px] rounded-lg blur-[2px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[83deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0)_0%,#34d399,rgba(0,0,0,0)_8%,rgba(0,0,0,0)_50%,#6ee7b7,rgba(0,0,0,0)_58%)]
                           before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-97deg] group-focus-within:before:rotate-[443deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 5 - Border - Reduced size */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[59px] max-w-[251px] rounded-xl blur-[0.5px]
+          {/* Glow Layer 5 - Border - WIDER */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[50px] max-w-[512px] rounded-xl blur-[0.5px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[70deg]
                           before:bg-[conic-gradient(#0a0f0a,#10b981_5%,#0a0f0a_14%,#0a0f0a_50%,#059669_60%,#0a0f0a_64%)]
                           before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-110deg] group-focus-within:before:rotate-[430deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Form - Reduced width (~40% shorter: 388 -> 240) */}
-          <form onSubmit={handleSubmit} className="relative group">
+          {/* Form - DOUBLED WIDTH (508px), REDUCED HEIGHT (45px = 20% less than 56px) */}
+          <form onSubmit={handleSubmit} id="main" className="relative group">
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email..."
+              placeholder="Enter your email for early access..."
               disabled={status === 'loading' || status === 'success'}
-              className="bg-[#0a0f0a] border-none w-[240px] h-[56px] rounded-lg text-white px-[44px] pr-[52px] text-sm focus:outline-none placeholder-gray-500 disabled:opacity-60"
+              className="bg-[#0a0f0a] border-none w-full max-w-[508px] min-w-[280px] h-[45px] rounded-lg text-white px-[50px] pr-[60px] text-sm focus:outline-none placeholder-gray-500 disabled:opacity-60"
             />
 
             {/* Input fade mask */}
-            <div className="pointer-events-none w-[50px] h-[20px] absolute bg-gradient-to-r from-transparent to-[#0a0f0a] top-[18px] left-[44px] group-focus-within:hidden"></div>
+            <div className="pointer-events-none w-[80px] h-[18px] absolute bg-gradient-to-r from-transparent to-[#0a0f0a] top-[14px] left-[50px] group-focus-within:hidden"></div>
 
             {/* Green glow accent */}
-            <div className="pointer-events-none w-[24px] h-[20px] absolute bg-[#10b981] top-[10px] left-[4px] blur-2xl opacity-80 transition-all duration-[2000ms] group-hover:opacity-0"></div>
+            <div className="pointer-events-none w-[30px] h-[18px] absolute bg-[#10b981] top-[8px] left-[5px] blur-2xl opacity-80 transition-all duration-[2000ms] group-hover:opacity-0"></div>
 
-            {/* Submit button spinning border - Compact */}
-            <div className="absolute h-[40px] w-[42px] overflow-hidden top-[8px] right-[5px] rounded-lg
+            {/* Submit button spinning border */}
+            <div className="absolute h-[35px] w-[42px] overflow-hidden top-[5px] right-[5px] rounded-lg
                             before:absolute before:content-[''] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-90
                             before:bg-[conic-gradient(rgba(0,0,0,0),#064e3b,rgba(0,0,0,0)_50%,rgba(0,0,0,0)_50%,#064e3b,rgba(0,0,0,0)_100%)]
                             before:animate-spin-slow">
             </div>
 
-            {/* Submit button - Compact */}
+            {/* Submit button - ADJUSTED FOR NEW HEIGHT */}
             <button
               type="submit"
               disabled={status === 'loading' || status === 'success'}
-              className="absolute top-[9px] right-[6px] flex items-center justify-center z-[2] h-[38px] w-[40px] overflow-hidden rounded-lg bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] border border-emerald-900/50 hover:border-emerald-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed px-2"
+              className="absolute top-[6px] right-[6px] flex items-center justify-center z-[2] h-[33px] w-[40px] overflow-hidden rounded-lg bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] border border-emerald-900/50 hover:border-emerald-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {status === 'loading' ? (
                 <svg className="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24">
@@ -147,11 +147,17 @@ export function AnimatedWaitlistForm({ className = '' }) {
               )}
             </button>
 
-            {/* Email icon */}
-            <div className="absolute left-4 top-[17px] pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {/* Email icon - ADJUSTED POSITION */}
+            <div className="absolute left-4 top-[13px] pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#emailGradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="20" height="16" x="2" y="4" rx="2" />
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                <defs>
+                  <linearGradient id="emailGradient" gradientTransform="rotate(50)">
+                    <stop offset="0%" stopColor="#6ee7b7" />
+                    <stop offset="100%" stopColor="#10b981" />
+                  </linearGradient>
+                </defs>
               </svg>
             </div>
           </form>

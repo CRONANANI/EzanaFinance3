@@ -383,17 +383,24 @@ body {
     overflow: visible;
 }
 
-/* Hero Subtitle - Wider for long paragraphs (3 lines) */
+/* Hero Subtitle - 2 lines max: wider container, slightly smaller font */
 .hero-subtitle {
     font-size: 0.9375rem;
-    line-height: 1.7;
+    line-height: 1.65;
     font-weight: var(--font-weight-normal);
     margin: 0 0 0 0;
     padding: 0 0;
-    max-width: 960px;
+    max-width: 1100px;
     text-align: center;
     color: #9ca3af;
     letter-spacing: -0.01em;
+}
+
+@media (min-width: 1024px) {
+    .hero-subtitle {
+        font-size: 1rem;
+        max-width: 1200px;
+    }
 }
 
 /* Hero Description (landing page) */
@@ -819,13 +826,13 @@ body {
     line-height: 1.5;
 }
 
-/* Plain text - no bubble/border for early access text */
+/* Plain text - no bubble/border for early access text - BRAND GREEN */
 .hero-waitlist-intro-plain {
-    color: #8b949e;
+    color: #10b981 !important;
     font-size: 0.9375rem;
     line-height: 1.6;
     text-align: center;
-    max-width: 540px;
+    max-width: 580px;
     margin: 0 auto 1.5rem;
     background: none !important;
     border: none !important;
@@ -836,10 +843,16 @@ body {
     white-space: normal;
 }
 
+@media (min-width: 768px) {
+    .hero-waitlist-intro-plain {
+        font-size: 1rem;
+    }
+}
+
 .hero-waitlist {
     margin: 0 auto 0 auto;
     width: 100%;
-    max-width: 480px;
+    max-width: 560px;
     display: flex;
     flex-direction: column;
     align-items: center;
