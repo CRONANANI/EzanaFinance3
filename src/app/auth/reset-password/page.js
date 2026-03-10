@@ -17,47 +17,126 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [debugInfo, setDebugInfo] = useState('');
   const router = useRouter();
 
-  // Check if user has a valid recovery session
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Debug: Log the full URL
+        console.log('Full URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        console.log('Search:', window.location.search);
 
-        if (session) {
+        setDebugInfo(`URL: ${window.location.href}`);
+
+        // Method 1: Check if there's already a session
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+
+        if (existingSession) {
+          console.log('Found existing session');
           setIsValidSession(true);
-        } else {
-          // Try to get session from URL hash (Supabase sends tokens in hash)
+          setIsCheckingSession(false);
+          return;
+        }
+
+        // Method 2: Check URL hash (Supabase default format)
+        // Format: #access_token=xxx&refresh_token=xxx&type=recovery
+        if (window.location.hash) {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
           const type = hashParams.get('type');
 
-          if (accessToken && type === 'recovery') {
-            const { data, error: setSessionError } = await supabase.auth.setSession({
+          console.log('Hash params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+
+          if (accessToken && (type === 'recovery' || type === 'signup' || !type)) {
+            const { data, error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
-              refresh_token: refreshToken,
+              refresh_token: refreshToken || '',
             });
 
-            if (data.session) {
+            if (data?.session) {
+              console.log('Session set from hash');
               setIsValidSession(true);
+              setIsCheckingSession(false);
+              // Clean up the URL
+              window.history.replaceState({}, document.title, window.location.pathname);
+              return;
             } else {
-              setError('Invalid or expired reset link. Please request a new one.');
+              console.error('Failed to set session from hash:', sessionError);
             }
-          } else {
-            setError('Invalid or expired reset link. Please request a new one.');
           }
         }
+
+        // Method 3: Check URL query params (alternative format)
+        // Format: ?token=xxx or ?code=xxx
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const code = urlParams.get('code');
+        const tokenHash = urlParams.get('token_hash');
+        const type = urlParams.get('type');
+
+        console.log('Query params:', { token: !!token, code: !!code, tokenHash: !!tokenHash, type });
+
+        if (code) {
+          // Exchange code for session
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+          if (data?.session) {
+            console.log('Session set from code exchange');
+            setIsValidSession(true);
+            setIsCheckingSession(false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          } else {
+            console.error('Failed to exchange code:', exchangeError);
+          }
+        }
+
+        if (tokenHash && type === 'recovery') {
+          // Verify OTP with token hash
+          const { data, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery',
+          });
+
+          if (data?.session) {
+            console.log('Session set from token hash verification');
+            setIsValidSession(true);
+            setIsCheckingSession(false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          } else {
+            console.error('Failed to verify token hash:', verifyError);
+          }
+        }
+
+        // Method 4: Let Supabase handle the URL automatically
+        const { data: urlSession, error: urlError } = await supabase.auth.getSession();
+
+        if (urlSession?.session) {
+          console.log('Session found after URL processing');
+          setIsValidSession(true);
+          setIsCheckingSession(false);
+          return;
+        }
+
+        // No valid session found
+        console.log('No valid session found');
+        setError('Invalid or expired reset link. Please request a new one.');
+        setIsCheckingSession(false);
+
       } catch (err) {
         console.error('Session check error:', err);
         setError('Something went wrong. Please try again.');
-      } finally {
         setIsCheckingSession(false);
       }
     };
 
-    checkSession();
+    // Small delay to ensure the page is fully loaded
+    const timer = setTimeout(checkSession, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   // Password strength checker
@@ -80,7 +159,6 @@ export default function ResetPasswordPage() {
     setError('');
     setIsLoading(true);
 
-    // Validation
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
       setIsLoading(false);
@@ -100,7 +178,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
+      const { data, error: updateError } = await supabase.auth.updateUser({
         password: password,
       });
 
@@ -110,8 +188,6 @@ export default function ResetPasswordPage() {
       }
 
       setSuccess(true);
-
-      // Redirect to dashboard after 3 seconds
       setTimeout(() => {
         router.push('/home-dashboard');
       }, 3000);
@@ -124,7 +200,7 @@ export default function ResetPasswordPage() {
     }
   };
 
-  // Loading state while checking session
+  // Loading state
   if (isCheckingSession) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
@@ -144,7 +220,6 @@ export default function ResetPasswordPage() {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
         </div>
-
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -155,11 +230,11 @@ export default function ResetPasswordPage() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Password Reset Successful!</h2>
           <p className="text-gray-400 mb-6">
-            Your password has been updated. You will be redirected to your dashboard shortly.
+            Your password has been updated. Redirecting to dashboard...
           </p>
           <div className="flex items-center justify-center gap-2 text-emerald-500">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-sm">Redirecting to dashboard...</span>
+            <span className="text-sm">Redirecting...</span>
           </div>
         </motion.div>
       </div>
@@ -174,7 +249,6 @@ export default function ResetPasswordPage() {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
         </div>
-
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -187,6 +261,10 @@ export default function ResetPasswordPage() {
           <p className="text-gray-400 mb-6">
             {error || 'This password reset link is invalid or has expired. Please request a new one.'}
           </p>
+          {/* Debug info - remove in production */}
+          {debugInfo && (
+            <p className="text-xs text-gray-600 mb-4 break-all">{debugInfo}</p>
+          )}
           <Link
             href="/auth/forgot-password"
             className="inline-flex items-center justify-center w-full h-11 rounded-lg font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white transition-all"
@@ -210,7 +288,6 @@ export default function ResetPasswordPage() {
   // Main reset password form
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
-      {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
@@ -223,7 +300,6 @@ export default function ResetPasswordPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md overflow-hidden rounded-2xl bg-[#0d1117] border border-emerald-500/20 shadow-2xl shadow-emerald-500/10 p-8"
         >
-          {/* Logo */}
           <div className="flex items-center justify-center mb-8">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
               <TrendingUp className="text-white h-6 w-6" />
@@ -234,7 +310,6 @@ export default function ResetPasswordPage() {
           <h1 className="text-2xl font-bold mb-1 text-white text-center">Reset Your Password</h1>
           <p className="text-gray-500 mb-8 text-center">Enter your new password below</p>
 
-          {/* Error message */}
           {error && (
             <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -243,7 +318,6 @@ export default function ResetPasswordPage() {
           )}
 
           <form onSubmit={handleResetPassword} className="space-y-5">
-            {/* New Password */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 New Password <span className="text-emerald-500">*</span>
@@ -266,7 +340,6 @@ export default function ResetPasswordPage() {
                 </button>
               </div>
 
-              {/* Password strength indicator */}
               {password && (
                 <div className="mt-2">
                   <div className="flex gap-1 mb-1">
@@ -274,20 +347,17 @@ export default function ResetPasswordPage() {
                       <div
                         key={i}
                         className={`h-1 flex-1 rounded-full transition-all ${
-                          i < passwordStrength ? strengthColors[Math.max(0, passwordStrength - 1)] : 'bg-gray-700'
+                          i < passwordStrength ? strengthColors[passwordStrength - 1] : 'bg-gray-700'
                         }`}
                       />
                     ))}
                   </div>
-                  <p className={`text-xs ${
-                    passwordStrength < 3 ? 'text-orange-400' : 'text-emerald-400'
-                  }`}>
+                  <p className={`text-xs ${passwordStrength < 3 ? 'text-orange-400' : 'text-emerald-400'}`}>
                     {strengthLabels[passwordStrength - 1] || 'Too short'}
                   </p>
                 </div>
               )}
 
-              {/* Password requirements */}
               <div className="mt-3 space-y-1">
                 {[
                   { check: password.length >= 8, text: 'At least 8 characters' },
@@ -309,7 +379,6 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Confirm Password <span className="text-emerald-500">*</span>
@@ -347,7 +416,6 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading || !password || !confirmPassword || password !== confirmPassword}
@@ -370,7 +438,6 @@ export default function ResetPasswordPage() {
             </button>
           </form>
 
-          {/* Back to Sign In */}
           <div className="mt-8 text-center">
             <Link
               href="/auth/signin"
