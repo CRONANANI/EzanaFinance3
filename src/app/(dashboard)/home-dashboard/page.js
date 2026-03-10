@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
+import PortfolioDashboard from '@/components/dashboard/PortfolioDashboard';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -161,6 +162,11 @@ export default function HomeDashboardPage() {
         </div>,
         document.body
       )}
+
+      {/* Portfolio Dashboard (Plaid/Supabase) */}
+      <section className="portfolio-dashboard-section" style={{ marginBottom: '2rem' }}>
+        <PortfolioDashboard />
+      </section>
 
       {/* Metrics Carousel */}
       <section className="metrics-carousel-section compact">

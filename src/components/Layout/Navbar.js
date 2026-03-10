@@ -6,13 +6,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
 import { useSidebar } from '@/contexts/SidebarContext';
-import { supabase } from '@/lib/supabase';
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
   const { toggleNotifications } = useSidebar();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
@@ -30,7 +29,7 @@ export function Navbar() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     router.push('/');
   };
 
@@ -58,9 +57,15 @@ export function Navbar() {
               <a href="#faq" className="nav-link">FAQ</a>
             </li>
             <li className="nav-item">
-              <Link href="/auth/signin" className="sign-in-btn">
-                Sign In
-              </Link>
+              {isAuthenticated ? (
+                <Link href="/home-dashboard" className="sign-in-btn">
+                  Dashboard
+                </Link>
+              ) : (
+                <Link href="/auth/signin" className="sign-in-btn">
+                  Sign In
+                </Link>
+              )}
             </li>
           </ul>
         </div>
@@ -159,8 +164,8 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/signin" className="nav-link">Sign In</Link>
-              <Link href="/signup" className="btn-nav-primary">Sign Up</Link>
+              <Link href="/auth/signin" className="nav-link">Sign In</Link>
+              <Link href="/auth/signup" className="btn-nav-primary">Sign Up</Link>
             </>
           )}
         </div>
