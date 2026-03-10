@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
+import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -50,8 +51,8 @@ export default function CompanyResearchPage() {
     updateStats(symbol);
   }, [updateStats]);
 
-  const handleSearchInput = useCallback((e) => {
-    const q = e.target.value.trim();
+  const handleSearchInput = useCallback((eOrValue) => {
+    const q = typeof eOrValue === 'string' ? eOrValue.trim() : eOrValue.target.value.trim();
     setSearchQuery(q);
     if (q.length < 2) {
       setSuggestions([]);
@@ -97,32 +98,17 @@ export default function CompanyResearchPage() {
 
   return (
     <>
-      <div className="company-search-wrapper" ref={searchRef}>
-        <div className="search-container">
-          <i className="bi bi-search" />
-          <input
-            type="text"
-            placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
-            className="company-search-input"
-            autoComplete="off"
-            value={searchQuery}
-            onChange={handleSearchInput}
-            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-          />
-          <button className="search-btn" type="button" onClick={() => searchQuery && handleSelectStock(searchQuery.toUpperCase())}>
-            <i className="bi bi-arrow-right" />
-          </button>
-        </div>
-        {showSuggestions && suggestions.length > 0 && (
-          <div className="search-suggestions">
-            {suggestions.map((t) => (
-              <button key={t.symbol} type="button" className="search-suggestion-item" onClick={() => handleSelectSuggestion(t)}>
-                <span className="suggestion-ticker">{t.symbol}</span>
-                <span className="suggestion-name">{t.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="company-search-wrapper flex justify-center" ref={searchRef}>
+        <AnimatedGlowingSearchBar
+          value={searchQuery}
+          onChange={handleSearchInput}
+          onSearch={(q) => q && handleSelectStock(q.toUpperCase())}
+          placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
+          suggestions={suggestions}
+          onSelectSuggestion={handleSelectSuggestion}
+          showSuggestions={showSuggestions}
+          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+        />
       </div>
 
       <div className="stats-grid" id="companyStatsGrid">
