@@ -98,7 +98,7 @@ export default function CompanyResearchPage() {
 
   return (
     <>
-      <div className="company-search-wrapper flex justify-center" ref={searchRef}>
+      <div className="company-search-wrapper" ref={searchRef}>
         <AnimatedGlowingSearchBar
           value={searchQuery}
           onChange={handleSearchInput}
