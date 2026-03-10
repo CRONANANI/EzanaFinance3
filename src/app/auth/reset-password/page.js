@@ -22,6 +22,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log('=== Reset Password Debug ===');
         console.log('Full URL:', window.location.href);
         console.log('Hash:', window.location.hash);
         console.log('Search:', window.location.search);
@@ -39,11 +40,14 @@ export default function ResetPasswordPage() {
         // Method 2: Check URL query params for 'code' (PKCE flow)
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
-        const type = urlParams.get('type');
+        const queryType = urlParams.get('type');
+        const tokenHash = urlParams.get('token_hash');
+
+        console.log('Query params:', { code: !!code, type: queryType, tokenHash: !!tokenHash });
 
         if (code) {
           console.log('Found code in query params, exchanging...');
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          const { data, error: codeError } = await supabase.auth.exchangeCodeForSession(code);
 
           if (data?.session) {
             console.log('Session established from code');
@@ -52,12 +56,31 @@ export default function ResetPasswordPage() {
             window.history.replaceState({}, document.title, window.location.pathname);
             return;
           } else {
-            console.error('Code exchange failed:', error);
+            console.error('Code exchange failed:', codeError);
           }
         }
 
-        // Method 3: Check URL hash for tokens
-        if (window.location.hash) {
+        // Method 3: Check for token_hash in query params
+        if (tokenHash) {
+          console.log('Found token_hash, verifying...');
+          const { data, error: tokenError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery',
+          });
+
+          if (data?.session) {
+            console.log('Session set from token_hash');
+            setIsValidSession(true);
+            setIsCheckingSession(false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          } else {
+            console.error('token_hash verification failed:', tokenError);
+          }
+        }
+
+        // Method 4: Check URL hash for tokens
+        if (window.location.hash && window.location.hash.length > 1) {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const accessToken = hashParams.get('access_token');
           const refreshToken = hashParams.get('refresh_token');
@@ -70,60 +93,70 @@ export default function ResetPasswordPage() {
             type: hashType
           });
 
-          // Check if it's a proper JWT (should be very long)
-          if (accessToken && accessToken.length > 50) {
-            const { data, error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || '',
-            });
+          if (accessToken) {
+            // Check if it's a proper JWT (should be very long, 100+ chars)
+            if (accessToken.length > 100) {
+              console.log('Long JWT token detected, setting session...');
+              const { data, error: sessionError } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken || '',
+              });
 
-            if (data?.session) {
-              console.log('Session set from hash tokens');
-              setIsValidSession(true);
-              setIsCheckingSession(false);
-              window.history.replaceState({}, document.title, window.location.pathname);
-              return;
+              if (data?.session) {
+                console.log('Session set from hash JWT tokens');
+                setIsValidSession(true);
+                setIsCheckingSession(false);
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+              } else {
+                console.error('Failed to set session from hash:', sessionError);
+              }
             } else {
-              console.error('Failed to set session from hash:', error);
-            }
-          } else if (accessToken && hashType === 'recovery') {
-            // Short token - try verifyOtp
-            console.log('Short token detected, trying verifyOtp...');
-            const { data, error } = await supabase.auth.verifyOtp({
-              token_hash: accessToken,
-              type: 'recovery',
-            });
+              // Short token - try verifyOtp with it as token_hash
+              console.log('Short token detected, trying verifyOtp...');
+              const { data, error: otpError } = await supabase.auth.verifyOtp({
+                token_hash: accessToken,
+                type: 'recovery',
+              });
 
-            if (data?.session) {
-              console.log('Session set via verifyOtp');
-              setIsValidSession(true);
-              setIsCheckingSession(false);
-              window.history.replaceState({}, document.title, window.location.pathname);
-              return;
-            } else {
-              console.error('verifyOtp failed:', error);
+              if (data?.session) {
+                console.log('Session set via verifyOtp with short token');
+                setIsValidSession(true);
+                setIsCheckingSession(false);
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+              } else {
+                console.error('verifyOtp with short token failed:', otpError);
+
+                // Try one more method - maybe it's a magic link token
+                const { data: magicData, error: magicError } = await supabase.auth.verifyOtp({
+                  token_hash: accessToken,
+                  type: 'magiclink',
+                });
+
+                if (magicData?.session) {
+                  console.log('Session set via magiclink verifyOtp');
+                  setIsValidSession(true);
+                  setIsCheckingSession(false);
+                  window.history.replaceState({}, document.title, window.location.pathname);
+                  return;
+                } else {
+                  console.error('magiclink verifyOtp also failed:', magicError);
+                }
+              }
             }
           }
         }
 
-        // Method 4: Check for token_hash in query params
-        const tokenHash = urlParams.get('token_hash');
-        if (tokenHash) {
-          console.log('Found token_hash, verifying...');
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: 'recovery',
-          });
+        // Method 5: Final attempt - refresh session in case tokens were auto-processed
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: { session: refreshedSession } } = await supabase.auth.getSession();
 
-          if (data?.session) {
-            console.log('Session set from token_hash');
-            setIsValidSession(true);
-            setIsCheckingSession(false);
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return;
-          } else {
-            console.error('token_hash verification failed:', error);
-          }
+        if (refreshedSession) {
+          console.log('Session found after delay');
+          setIsValidSession(true);
+          setIsCheckingSession(false);
+          return;
         }
 
         // No valid method worked
@@ -138,8 +171,8 @@ export default function ResetPasswordPage() {
       }
     };
 
-    // Small delay to ensure page is loaded
-    const timer = setTimeout(checkSession, 100);
+    // Small delay to ensure page is fully loaded
+    const timer = setTimeout(checkSession, 150);
     return () => clearTimeout(timer);
   }, []);
 
@@ -208,7 +241,11 @@ export default function ResetPasswordPage() {
   if (isCheckingSession) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">
-        <div className="flex flex-col items-center gap-4">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
+        </div>
+        <div className="flex flex-col items-center gap-4 relative z-10">
           <div className="w-10 h-10 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
           <p className="text-gray-400">Verifying reset link...</p>
         </div>
