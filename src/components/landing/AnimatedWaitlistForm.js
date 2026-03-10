@@ -66,42 +66,42 @@ export function AnimatedWaitlistForm({ className = '' }) {
         <div className="absolute z-[-1] w-full"></div>
 
         <div id="poda" className="relative flex items-center justify-center group">
-          {/* Glow Layer 1 - Outer - WIDER */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-[520px] rounded-xl blur-[3px]
+          {/* Glow Layer 1 - Outer */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-[552px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[999px] before:h-[999px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[60deg]
                           before:bg-[conic-gradient(#000,#10b981_5%,#000_38%,#000_50%,#059669_60%,#000_87%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-120deg] group-focus-within:before:rotate-[420deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 2 - WIDER */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[518px] rounded-xl blur-[3px]
+          {/* Glow Layer 2 */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[550px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 3 - WIDER */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[518px] rounded-xl blur-[3px]
+          {/* Glow Layer 3 */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[550px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 4 - Inner bright - WIDER */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[52px] max-w-[515px] rounded-lg blur-[2px]
+          {/* Glow Layer 4 - Inner bright */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[52px] max-w-[547px] rounded-lg blur-[2px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[83deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0)_0%,#34d399,rgba(0,0,0,0)_8%,rgba(0,0,0,0)_50%,#6ee7b7,rgba(0,0,0,0)_58%)]
                           before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-97deg] group-focus-within:before:rotate-[443deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Glow Layer 5 - Border - WIDER */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[50px] max-w-[512px] rounded-xl blur-[0.5px]
+          {/* Glow Layer 5 - Border */}
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[50px] max-w-[544px] rounded-xl blur-[0.5px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[70deg]
                           before:bg-[conic-gradient(#0a0f0a,#10b981_5%,#0a0f0a_14%,#0a0f0a_50%,#059669_60%,#0a0f0a_64%)]
                           before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-110deg] group-focus-within:before:rotate-[430deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
-          {/* Form - DOUBLED WIDTH (508px), REDUCED HEIGHT (45px = 20% less than 56px) */}
+          {/* Form - 540px width to fit full placeholder text */}
           <form onSubmit={handleSubmit} id="main" className="relative group">
             <input
               type="email"
@@ -109,11 +109,10 @@ export function AnimatedWaitlistForm({ className = '' }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email for early access..."
               disabled={status === 'loading' || status === 'success'}
-              className="bg-[#0a0f0a] border-none w-full max-w-[508px] min-w-[280px] h-[45px] rounded-lg text-white px-[50px] pr-[60px] text-sm focus:outline-none placeholder-gray-500 disabled:opacity-60"
+              className="bg-[#0a0f0a] border-none w-full max-w-[540px] min-w-[320px] h-[45px] rounded-lg text-white px-[50px] pr-[60px] text-sm focus:outline-none placeholder-gray-500 disabled:opacity-60"
             />
 
-            {/* Input fade mask */}
-            <div className="pointer-events-none w-[80px] h-[18px] absolute bg-gradient-to-r from-transparent to-[#0a0f0a] top-[14px] left-[50px] group-focus-within:hidden"></div>
+            {/* Input fade mask - removed so full placeholder text is visible */}
 
             {/* Green glow accent */}
             <div className="pointer-events-none w-[30px] h-[18px] absolute bg-[#10b981] top-[8px] left-[5px] blur-2xl opacity-80 transition-all duration-[2000ms] group-hover:opacity-0"></div>
