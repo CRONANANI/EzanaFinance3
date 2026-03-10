@@ -17,6 +17,7 @@ export function Navbar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
   const isLanding = pathname === '/';
+  const isAuthPage = pathname?.startsWith('/auth');
   const DASHBOARD_PAGES = ['/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
   const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
 
@@ -32,6 +33,8 @@ export function Navbar() {
     await supabase.auth.signOut();
     router.push('/');
   };
+
+  if (isAuthPage) return null;
 
   if (isLanding) {
     return (
