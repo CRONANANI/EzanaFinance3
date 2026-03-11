@@ -4,6 +4,16 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
+import {
+  CompanyOverview,
+  StockQuote,
+  KeyMetrics,
+  AnalystRecommendations,
+  CompanyNews,
+  EarningsCard,
+  CompetitorsCard,
+} from '@/components/research';
+import { useCompanySearchFinnhub, useCompanyProfile, useStockMetric } from '@/hooks/useFinnhub';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -13,71 +23,74 @@ import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/company-research.css';
 import '../../../../app-legacy/components/grpv/snappy-slider.css';
 
-const TICKER_LIST = [
-  { symbol: 'AAPL', name: 'Apple Inc.' }, { symbol: 'MSFT', name: 'Microsoft' }, { symbol: 'NVDA', name: 'NVIDIA' },
-  { symbol: 'GOOGL', name: 'Alphabet (Google)' }, { symbol: 'META', name: 'Meta Platforms' }, { symbol: 'AMZN', name: 'Amazon' },
-  { symbol: 'TSLA', name: 'Tesla' }, { symbol: 'JPM', name: 'JPMorgan Chase' }, { symbol: 'V', name: 'Visa' },
-  { symbol: 'JNJ', name: 'Johnson & Johnson' }, { symbol: 'WMT', name: 'Walmart' }, { symbol: 'XOM', name: 'Exxon Mobil' },
-];
-
-const MOCK_OVERVIEW = { MarketCapitalization: 2800000000000, PERatio: 28.5, DividendYield: 0.0052, EPS: 6.42 };
-
 export default function CompanyResearchPage() {
   const scriptLoadedRef = useRef(false);
   const [selectedStock, setSelectedStock] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
   const [viewMode, setViewMode] = useState('heatmap');
   const [grpvOpen, setGrpvOpen] = useState(false);
   const searchRef = useRef(null);
 
-  const updateStats = useCallback((symbol) => {
-    const ov = MOCK_OVERVIEW;
-    const mc = Number(ov.MarketCapitalization);
-    setStats({
-      mcap: mc >= 1e12 ? `$${(mc / 1e12).toFixed(2)}T` : mc >= 1e9 ? `$${(mc / 1e9).toFixed(2)}B` : `$${(mc / 1e6).toFixed(0)}M`,
-      pe: ov.PERatio ? Number(ov.PERatio).toFixed(2) : '--',
-      divYield: ov.DividendYield ? (Number(ov.DividendYield) * 100).toFixed(2) + '%' : '--',
-      eps: ov.EPS ? Number(ov.EPS).toFixed(2) : '--',
-      capType: mc >= 200e9 ? 'Mega Cap' : mc >= 10e9 ? 'Large Cap' : mc >= 2e9 ? 'Mid Cap' : 'Small Cap',
-    });
-  }, []);
+  const {
+    query,
+    setQuery,
+    suggestions,
+    loading: searchLoading,
+    clearSuggestions,
+  } = useCompanySearchFinnhub();
 
-  const handleSelectStock = useCallback((symbol) => {
-    setSelectedStock(symbol);
-    setViewMode('stock');
-    updateStats(symbol);
-  }, [updateStats]);
+  const { data: profile } = useCompanyProfile(selectedStock);
+  const { data: metricData } = useStockMetric(selectedStock);
 
-  const handleSearchInput = useCallback((eOrValue) => {
-    const q = typeof eOrValue === 'string' ? eOrValue.trim() : eOrValue.target.value.trim();
-    setSearchQuery(q);
-    if (q.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    const ql = q.toLowerCase();
-    const matches = TICKER_LIST.filter(
-      (t) => t.symbol.toLowerCase().includes(ql) || t.name.toLowerCase().includes(ql)
-    );
-    setSuggestions(matches.slice(0, 8));
-    setShowSuggestions(matches.length > 0);
-  }, []);
-
-  const handleSelectSuggestion = useCallback((ticker) => {
-    setSearchQuery(ticker.symbol);
-    setShowSuggestions(false);
-    handleSelectStock(ticker.symbol);
-  }, [handleSelectStock]);
+  const showSuggestions = suggestions.length > 0;
 
   useEffect(() => {
-    document.addEventListener('click', (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSuggestions(false);
+    if (!profile && !metricData) return;
+    const mc = profile?.marketCapitalization ?? metricData?.metric?.marketCapitalization;
+    const mcNum = mc != null ? Number(mc) : null;
+    const pe = metricData?.metric?.peBasicExclExtraTTM ?? metricData?.metric?.peTTM;
+    const divYield = metricData?.metric?.dividendYieldIndicatedAnnual ?? metricData?.metric?.dividendYield;
+    const eps = metricData?.metric?.epsBasicExclExtraTTM ?? metricData?.metric?.epsTTM;
+
+    setStats({
+      mcap: mcNum != null
+        ? (mcNum >= 1e12 ? `$${(mcNum / 1e12).toFixed(2)}T` : mcNum >= 1e9 ? `$${(mcNum / 1e9).toFixed(2)}B` : `$${(mcNum / 1e6).toFixed(0)}M`)
+        : '--',
+      pe: pe != null ? Number(pe).toFixed(2) : '--',
+      divYield: divYield != null ? (Number(divYield) * 100).toFixed(2) + '%' : '--',
+      eps: eps != null ? Number(eps).toFixed(2) : '--',
+      capType: mcNum != null
+        ? (mcNum >= 200e9 ? 'Mega Cap' : mcNum >= 10e9 ? 'Large Cap' : mcNum >= 2e9 ? 'Mid Cap' : 'Small Cap')
+        : '--',
     });
-  }, []);
+  }, [profile, metricData]);
+
+  const handleSelectStock = useCallback((symbol) => {
+    const sym = symbol?.toUpperCase?.() ?? symbol;
+    setSelectedStock(sym);
+    setViewMode('stock');
+    setQuery(sym);
+    clearSuggestions();
+  }, [setQuery, clearSuggestions]);
+
+  const handleSearchInput = useCallback((eOrValue) => {
+    const q = typeof eOrValue === 'string' ? eOrValue : eOrValue?.target?.value ?? '';
+    setQuery(q);
+  }, [setQuery]);
+
+  const handleSelectSuggestion = useCallback((item) => {
+    setQuery(item.symbol);
+    clearSuggestions();
+    handleSelectStock(item.symbol);
+  }, [handleSelectStock, setQuery, clearSuggestions]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) clearSuggestions();
+    };
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [clearSuggestions]);
 
   useEffect(() => {
     if (scriptLoadedRef.current) return;
@@ -96,18 +109,21 @@ export default function CompanyResearchPage() {
     loadScript('/app-legacy/pages/company-research.js').catch(() => {});
   }, []);
 
+  const resetStats = () => setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+
   return (
     <>
-      <div className="company-search-wrapper" ref={searchRef}>
+      <div className="company-search-wrapper relative" ref={searchRef}>
         <AnimatedGlowingSearchBar
-          value={searchQuery}
+          value={query}
           onChange={handleSearchInput}
           onSearch={(q) => q && handleSelectStock(q.toUpperCase())}
           placeholder="Search company or ticker (e.g., NVDA, Apple Inc.)"
           suggestions={suggestions}
           onSelectSuggestion={handleSelectSuggestion}
           showSuggestions={showSuggestions}
-          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          onFocus={() => {}}
+          loading={searchLoading}
         />
       </div>
 
@@ -169,7 +185,9 @@ export default function CompanyResearchPage() {
               </div>
             </div>
             <div className="chart-controls">
-              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button" onClick={() => { setViewMode('heatmap'); setSelectedStock(null); setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' }); }}><i className="bi bi-grid-3x3-gap" /> Heatmap</button>
+              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button" onClick={() => { setViewMode('heatmap'); setSelectedStock(null); resetStats(); }}>
+                <i className="bi bi-grid-3x3-gap" /> Heatmap
+              </button>
               <div className="time-range-selector compact" id="stockTimeRange">
                 <button className="time-btn" type="button" data-range="1D">1D</button>
                 <button className="time-btn" type="button" data-range="1W">1W</button>
@@ -196,6 +214,21 @@ export default function CompanyResearchPage() {
           </div>
         </div>
       </section>
+
+      {selectedStock && (
+        <section className="research-cards-section mt-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Company Research · {selectedStock}</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CompanyOverview symbol={selectedStock} />
+            <StockQuote symbol={selectedStock} />
+            <KeyMetrics symbol={selectedStock} />
+            <AnalystRecommendations symbol={selectedStock} />
+            <CompanyNews symbol={selectedStock} className="lg:col-span-2" />
+            <EarningsCard symbol={selectedStock} />
+            <CompetitorsCard symbol={selectedStock} onSelectPeer={handleSelectStock} />
+          </div>
+        </section>
+      )}
 
       <section className="models-carousel-section compact">
         <button className="carousel-nav prev" id="modelsCarouselPrev" type="button"><i className="bi bi-chevron-left" /></button>
@@ -274,40 +307,6 @@ export default function CompanyResearchPage() {
           </div>
         </div>
       </section>
-
-      <div id="companyInfoPanel" style={{ display: 'none' }} className="company-info-panel">
-        <div className="company-info-grid">
-          <div className="company-info-main">
-            <div className="company-header-row">
-              <img id="companyLogo" src="" alt="" className="company-logo" style={{ display: 'none' }} />
-              <div>
-                <h2 id="companyName">--</h2>
-                <span id="companySector" className="company-sector-badge">--</span>
-                <span id="companyExchange" className="company-exchange-badge">--</span>
-              </div>
-            </div>
-            <p id="companyDescription" className="company-description">Search for a company to see its details.</p>
-          </div>
-          <div className="company-info-sidebar">
-            <div className="info-row"><span className="info-label">CEO</span><span id="companyCEO" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">Employees</span><span id="companyEmployees" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">IPO Date</span><span id="companyIPODate" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">52W High</span><span id="company52High" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">52W Low</span><span id="company52Low" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">Div Yield</span><span id="companyDivYield" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">DCF Value</span><span id="companyDCF" className="info-value">--</span></div>
-            <div className="info-row"><span className="info-label">Analyst Rating</span><span id="companyRating" className="info-value">--</span></div>
-          </div>
-        </div>
-        <div id="companyFinancials" className="company-financials-section" style={{ display: 'none' }}>
-          <h3><i className="bi bi-table" /> Key Financial Metrics</h3>
-          <div className="financials-table-wrap" id="financialsTableWrap" />
-        </div>
-        <div id="companyPeers" className="company-peers-section" style={{ display: 'none' }}>
-          <h3><i className="bi bi-people" /> Peer Companies</h3>
-          <div className="peers-list" id="peersList" />
-        </div>
-      </div>
 
       <section className="learning-opportunities">
         <div className="learning-header">

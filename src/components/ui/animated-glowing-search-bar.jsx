@@ -18,6 +18,7 @@ export function AnimatedGlowingSearchBar({
   onBlur,
   inputRef,
   className = '',
+  loading = false,
 }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && value.trim()) {
@@ -48,6 +49,11 @@ export function AnimatedGlowingSearchBar({
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
             <Search className="w-5 h-5 text-gray-400" strokeWidth={2} />
           </div>
+          {loading && (
+            <div className="absolute right-14 top-1/2 -translate-y-1/2">
+              <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
+            </div>
+          )}
         </div>
       </div>
 
