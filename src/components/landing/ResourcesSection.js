@@ -15,7 +15,7 @@ const DATA_SOURCES = [
   },
   {
     id: '13f',
-    label: '13F',
+    label: '13F Filings',
     details: [
       'SEC EDGAR filings',
       'Institutional holdings',
@@ -77,8 +77,8 @@ export function ResourcesSection() {
           <DatabaseWithRestApi
             badgeTexts={{
               first: 'Congress',
-              second: '13F',
-              third: 'Institutional',
+              second: '13F Filings',
+              third: 'Institutional Portfolios',
               fourth: 'Alternative Analytics',
               fifth: 'Community',
             }}
