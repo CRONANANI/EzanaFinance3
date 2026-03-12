@@ -2,7 +2,6 @@
 
 import { usePeers } from '@/hooks/useFinnhub';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 
 export function CompetitorsCard({ symbol, onSelectPeer }) {
   const { data, loading, error } = usePeers(symbol);

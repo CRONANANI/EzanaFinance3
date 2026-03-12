@@ -1,3 +1,4 @@
+export { CompanySearch } from './CompanySearch';
 export { CompanyOverview } from './CompanyOverview';
 export { StockQuote } from './StockQuote';
 export { KeyMetrics } from './KeyMetrics';

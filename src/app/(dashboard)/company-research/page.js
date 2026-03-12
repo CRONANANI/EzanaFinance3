@@ -13,6 +13,7 @@ import {
   EarningsCard,
   CompetitorsCard,
 } from '@/components/research';
+import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub, useCompanyProfile, useStockMetric } from '@/hooks/useFinnhub';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -38,10 +39,8 @@ export default function CompanyResearchPage() {
     loading: searchLoading,
     clearSuggestions,
   } = useCompanySearchFinnhub();
-
   const { data: profile } = useCompanyProfile(selectedStock);
   const { data: metricData } = useStockMetric(selectedStock);
-
   const showSuggestions = suggestions.length > 0;
 
   useEffect(() => {
@@ -65,8 +64,8 @@ export default function CompanyResearchPage() {
     });
   }, [profile, metricData]);
 
-  const handleSelectStock = useCallback((symbol) => {
-    const sym = symbol?.toUpperCase?.() ?? symbol;
+  const handleSelectStock = useCallback((item) => {
+    const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
     setSelectedStock(sym);
     setViewMode('stock');
     setQuery(sym);
@@ -164,15 +163,17 @@ export default function CompanyResearchPage() {
 
       <section className="market-chart-section" id="marketChartSection">
         <div id="heatmapView" style={{ display: viewMode === 'heatmap' ? '' : 'none' }}>
-          <div className="chart-header compact">
-            <div className="chart-title-area">
-              <h2 className="chart-title">Stock Market Heatmap</h2>
-              <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Market Cap</span>
+          <PinnableCard cardId="stock-heatmap" title="Stock Market Heatmap" sourcePage="/company-research" sourceLabel="Company Research" defaultW={4} defaultH={3}>
+            <div className="chart-header compact">
+              <div className="chart-title-area">
+                <h2 className="chart-title">Stock Market Heatmap</h2>
+                <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Market Cap</span>
+              </div>
             </div>
-          </div>
-          <div className="heatmap-container" id="heatmapContainer">
-            <StockHeatmap onSelectStock={handleSelectStock} />
-          </div>
+            <div className="heatmap-container" id="heatmapContainer">
+              <StockHeatmap onSelectStock={handleSelectStock} />
+            </div>
+          </PinnableCard>
         </div>
 
         <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
@@ -219,13 +220,27 @@ export default function CompanyResearchPage() {
         <section className="research-cards-section mt-8">
           <h2 className="text-xl font-semibold text-white mb-4">Company Research · {selectedStock}</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CompanyOverview symbol={selectedStock} />
-            <StockQuote symbol={selectedStock} />
-            <KeyMetrics symbol={selectedStock} />
-            <AnalystRecommendations symbol={selectedStock} />
-            <CompanyNews symbol={selectedStock} className="lg:col-span-2" />
-            <EarningsCard symbol={selectedStock} />
-            <CompetitorsCard symbol={selectedStock} onSelectPeer={handleSelectStock} />
+            <PinnableCard cardId="company-overview" title="Company Overview" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+              <CompanyOverview symbol={selectedStock} />
+            </PinnableCard>
+            <PinnableCard cardId="stock-quote" title="Stock Quote" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={1}>
+              <StockQuote symbol={selectedStock} />
+            </PinnableCard>
+            <PinnableCard cardId="key-metrics" title="Key Metrics" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+              <KeyMetrics symbol={selectedStock} />
+            </PinnableCard>
+            <PinnableCard cardId="analyst-recommendations" title="Analyst Recommendations" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={1}>
+              <AnalystRecommendations symbol={selectedStock} />
+            </PinnableCard>
+            <PinnableCard cardId="company-news" title="Company News" sourcePage="/company-research" sourceLabel="Company Research" defaultW={4} defaultH={2}>
+              <CompanyNews symbol={selectedStock} className="lg:col-span-2" />
+            </PinnableCard>
+            <PinnableCard cardId="earnings-card" title="Earnings" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+              <EarningsCard symbol={selectedStock} />
+            </PinnableCard>
+            <PinnableCard cardId="competitors-card" title="Competitors" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+              <CompetitorsCard symbol={selectedStock} onSelectPeer={handleSelectStock} />
+            </PinnableCard>
           </div>
         </section>
       )}

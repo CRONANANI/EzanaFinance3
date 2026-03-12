@@ -14,8 +14,15 @@ module.exports = {
         marquee: "marquee var(--duration, 40s) linear infinite",
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'spin-slow': 'spin 4s linear infinite',
+        'fadeInScale': 'fadeInScale 0.5s ease-out',
+        'spin-glow': 'spin-glow 4s linear infinite',
       },
       keyframes: {
+        'spin-glow': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
         marquee: {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(calc(-50% - var(--gap, 1rem) / 2))" },
@@ -27,6 +34,10 @@ module.exports = {
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
+        },
+        fadeInScale: {
+          '0%': { opacity: '0', transform: 'scale(0.9)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
       colors: {

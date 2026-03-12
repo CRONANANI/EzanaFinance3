@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -42,6 +43,7 @@ export default function MarketAnalysisPage() {
   return (
     <div className={`market-analysis-world-monitor ${selectedEvent ? 'has-news-panel' : ''}`}>
       {/* Map - 60% top */}
+      <PinnableCard cardId="global-capital-markets" title="Global Capital Markets" sourcePage="/market-analysis" sourceLabel="Market Analysis" defaultW={4} defaultH={3}>
       <aside className="map-panel">
         <div className="map-header">
           <h2 className="map-title">
@@ -85,6 +87,7 @@ export default function MarketAnalysisPage() {
           </div>
         </div>
       </aside>
+      </PinnableCard>
 
       {/* Horizontal conveyer belt */}
       <section className="conveyer-section">

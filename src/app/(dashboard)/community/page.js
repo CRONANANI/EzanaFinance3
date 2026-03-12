@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { PinnableCard } from '@/components/ui/PinnableCard';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -113,6 +114,7 @@ export default function CommunityPage() {
       </div>
 
       <div className="dashboard-grid community-features-grid">
+        <PinnableCard cardId="community-feed" title="Community Feed" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={3}>
         <div className="component-card community-feed-card">
           <div className="card-header"><h3><i className="bi bi-chat-square-text" /> Community Feed</h3></div>
           <div className="card-body">
@@ -150,7 +152,9 @@ export default function CommunityPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
+        <PinnableCard cardId="my-friends" title="My Friends" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={3}>
         <div className="component-card my-friends-card" ref={addFriendRef}>
           <div className="card-header">
             <h3><i className="bi bi-people-fill" /> My Friends</h3>
@@ -211,7 +215,9 @@ export default function CommunityPage() {
             <button type="button" className="view-all-friends-btn" onClick={() => setFriendsView('all')}>View All Friends</button>
           </div>
         </div>
+        </PinnableCard>
 
+        <PinnableCard cardId="friends-activity" title="Friends Activity" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={1}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-activity" /> Friends Activity</h3></div>
           <div className="card-body">
@@ -242,9 +248,11 @@ export default function CommunityPage() {
             <button type="button" className="w-full bg-chart-5 text-chart-2 py-3 rounded-xl hover:bg-opacity-90 transition-colors text-sm font-medium mt-4">View Full Activity</button>
           </div>
         </div>
+        </PinnableCard>
       </div>
 
       <div className="dashboard-grid community-discussions-grid">
+        <PinnableCard cardId="active-discussions" title="Active Discussions" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
         <div className="component-card">
           <div className="card-header">
             <h3><i className="bi bi-chat-dots" /> Active Discussions</h3>
@@ -312,7 +320,9 @@ export default function CommunityPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
+        <PinnableCard cardId="leaderboard" title="Leaderboard" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={2}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-trophy" /> Leaderboard</h3></div>
           <div className="card-body">
@@ -338,8 +348,10 @@ export default function CommunityPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
       </div>
 
+      <PinnableCard cardId="community-insights" title="Community Insights" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={1}>
       <div className="component-card">
         <div className="card-header"><h3><i className="bi bi-bar-chart" /> Community Insights</h3></div>
         <div className="card-body">
@@ -365,6 +377,7 @@ export default function CommunityPage() {
           </div>
         </div>
       </div>
+      </PinnableCard>
     </>
   );
 }

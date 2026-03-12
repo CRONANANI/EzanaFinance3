@@ -17,7 +17,7 @@ export function Navbar() {
   const settingsRef = useRef(null);
   const isLanding = pathname === '/';
   const isAuthPage = pathname?.startsWith('/auth');
-  const DASHBOARD_PAGES = ['/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
+  const DASHBOARD_PAGES = ['/home', '/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
   const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
@@ -69,8 +69,8 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav">
       <div className="nav-container">
-        <Link href="/" className="nav-brand">
-          <span className="brand-text">Ezana Finance</span>
+        <Link href="/home" className="nav-brand nav-home-btn" title="Home">
+          <i className="bi bi-house-door-fill" />
         </Link>
         <div className="nav-links">
           <Link href="/home-dashboard" className={`nav-link ${pathname.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard">

@@ -1,5 +1,6 @@
 'use client';
 
+import { PinnableCard } from '@/components/ui/PinnableCard';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -42,6 +43,7 @@ export default function WatchlistPage() {
       </div>
 
       <div className="dashboard-grid watchlist-grid-two-column">
+        <PinnableCard cardId="recent-activity" title="Recent Activity" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={4} defaultH={3}>
         <div className="component-card recent-activity-card">
           <div className="card-header">
             <h3><i className="bi bi-activity" /> Recent Activity</h3>
@@ -159,7 +161,9 @@ export default function WatchlistPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
+        <PinnableCard cardId="stock-watchlist" title="Watchlist" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={2} defaultH={3}>
         <div className="component-card stock-watchlist-card stock-watchlist-template">
           <div className="stock-watchlist-header">
             <h3 className="stock-watchlist-title">Watchlist</h3>
@@ -282,7 +286,9 @@ export default function WatchlistPage() {
             <button type="button" className="watchlist-create-btn"><i className="bi bi-plus-lg" /> Create new watchlist</button>
           </div>
         </div>
+        </PinnableCard>
 
+        <PinnableCard cardId="price-alerts" title="Active Price Alerts" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={4} defaultH={1}>
         <div className="component-card full-width">
           <div className="card-header">
             <h3><i className="bi bi-bell-fill" /> Active Price Alerts</h3>
@@ -317,6 +323,7 @@ export default function WatchlistPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
       </div>
     </div>
   );

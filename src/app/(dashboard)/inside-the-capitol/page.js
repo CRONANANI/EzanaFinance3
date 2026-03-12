@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -23,6 +24,7 @@ export default function InsideTheCapitolPage() {
     <div className="page-content">
       <div className="component-cards-grid">
         {/* Congressional Trading Card */}
+        <PinnableCard cardId="congressional-trading" title="Congressional Trading" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2}>
         <div id="historicalCongressTradingCard" className="congressional-trading-card">
           <div className="congressional-trading-header">
             <h3 className="congressional-trading-title">Congressional Trading</h3>
@@ -90,8 +92,10 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
         {/* Government Contracts Card */}
+        <PinnableCard cardId="government-contracts" title="Government Contracts" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={1} defaultH={1}>
         <div id="governmentContractsCard" className="government-contracts-card">
           <div className="government-contracts-header">
             <h3 className="government-contracts-title">Government Contracts</h3>
@@ -118,8 +122,10 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
         {/* House Trading Card */}
+        <PinnableCard cardId="house-trading" title="House Trading" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={1} defaultH={1}>
         <div id="houseTradingCard" className="house-trading-card">
           <div className="house-trading-header">
             <h3 className="house-trading-title">House Trading</h3>
@@ -146,8 +152,10 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
         {/* Lobbying Activity Card */}
+        <PinnableCard cardId="lobbying-activity" title="Lobbying Activity" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={1} defaultH={1}>
         <div id="lobbyingActivityCard" className="lobbying-activity-card">
           <div className="lobbying-activity-header">
             <h3 className="lobbying-activity-title">Lobbying Activity</h3>
@@ -174,8 +182,10 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
         {/* Senator Trading Card */}
+        <PinnableCard cardId="senator-trading" title="Senator Trading" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={1} defaultH={1}>
         <div id="senatorTradingCard" className="senator-trading-card">
           <div className="senator-trading-header">
             <h3 className="senator-trading-title">Senator Trading</h3>
@@ -202,8 +212,10 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
         {/* Patent Momentum Card */}
+        <PinnableCard cardId="patent-momentum" title="Patent Momentum" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={1} defaultH={1}>
         <div id="patentMomentumCard" className="patent-momentum-card">
           <div className="patent-momentum-header">
             <h3 className="patent-momentum-title">Patent Momentum</h3>
@@ -230,8 +242,10 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
 
         {/* Market Sentiment Card */}
+        <PinnableCard cardId="market-sentiment" title="Market Sentiment" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={1} defaultH={1}>
         <div id="marketSentimentCard" className="market-sentiment-card">
           <div className="market-sentiment-header">
             <h3 className="market-sentiment-title">Market Sentiment</h3>
@@ -258,6 +272,7 @@ export default function InsideTheCapitolPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
       </div>
 
       <div className="insights-section">

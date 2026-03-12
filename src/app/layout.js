@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
 import { CongressProvider } from '@/contexts/CongressContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
+import { PinProvider } from '@/contexts/PinContext';
 import { Navbar } from '@/components/Layout/Navbar';
 
 export const metadata = {
@@ -30,12 +31,14 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             <CongressProvider>
-              <SidebarProvider>
+              <PinProvider>
+                <SidebarProvider>
                 <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
                   <Navbar />
                 </Suspense>
                 {children}
-              </SidebarProvider>
+                </SidebarProvider>
+              </PinProvider>
             </CongressProvider>
           </AuthProvider>
         </ThemeProvider>

@@ -6,10 +6,11 @@ import { motion } from 'framer-motion';
 function formatMarketCap(val) {
   if (val == null || val === 0) return '--';
   const n = Number(val);
-  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
-  return `$${n.toLocaleString()}`;
+  const cap = n >= 1e3 && n < 1e9 ? n * 1e6 : n;
+  if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
+  if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
+  if (cap >= 1e6) return `$${(cap / 1e6).toFixed(2)}M`;
+  return `$${cap.toLocaleString()}`;
 }
 
 export function CompanyOverview({ symbol }) {

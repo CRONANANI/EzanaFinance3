@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -48,6 +49,7 @@ export default function ForTheQuantsPage() {
         </div>
       </div>
 
+      <PinnableCard cardId="quant-model" title="Quantitative Model Analysis" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={4} defaultH={3}>
       <div className="component-card full-width quant-model-card">
         <div className="card-header">
           <h3><i className="bi bi-graph-up" /> Quantitative Model Analysis</h3>
@@ -100,8 +102,10 @@ export default function ForTheQuantsPage() {
           </div>
         </div>
       </div>
+      </PinnableCard>
 
       <div className="page-grid-3">
+        <PinnableCard cardId="backtesting-engine" title="Backtesting Engine" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-clock-history" /> Backtesting Engine</h3></div>
           <div className="card-body">
@@ -113,6 +117,8 @@ export default function ForTheQuantsPage() {
           </div>
           <div className="card-footer"><button className="card-action-btn" type="button">Launch Tool</button></div>
         </div>
+        </PinnableCard>
+        <PinnableCard cardId="statistical-analysis" title="Statistical Analysis" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-bar-chart" /> Statistical Analysis</h3></div>
           <div className="card-body">
@@ -124,6 +130,8 @@ export default function ForTheQuantsPage() {
           </div>
           <div className="card-footer"><button className="card-action-btn" type="button">Launch Tool</button></div>
         </div>
+        </PinnableCard>
+        <PinnableCard cardId="ml-predictions" title="ML Predictions" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-cpu" /> ML Predictions</h3></div>
           <div className="card-body">
@@ -135,9 +143,11 @@ export default function ForTheQuantsPage() {
           </div>
           <div className="card-footer"><button className="card-action-btn" type="button">Launch Tool</button></div>
         </div>
+        </PinnableCard>
       </div>
 
       <div className="page-grid-2">
+        <PinnableCard cardId="portfolio-optimization" title="Portfolio Optimization" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={2}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-pie-chart" /> Portfolio Optimization</h3></div>
           <div className="card-body">
@@ -155,6 +165,8 @@ export default function ForTheQuantsPage() {
             </table>
           </div>
         </div>
+        </PinnableCard>
+        <PinnableCard cardId="risk-analytics" title="Risk Analytics" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={2}>
         <div className="component-card">
           <div className="card-header"><h3><i className="bi bi-shield-check" /> Risk Analytics</h3></div>
           <div className="card-body">
@@ -167,6 +179,7 @@ export default function ForTheQuantsPage() {
             </div>
           </div>
         </div>
+        </PinnableCard>
       </div>
 
       <section className="learning-opportunities">

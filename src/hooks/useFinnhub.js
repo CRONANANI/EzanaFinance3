@@ -84,37 +84,36 @@ export function useCompanyProfile(symbol) {
   return { data, loading, error };
 }
 
-/** Real-time quote */
+/** Real-time quote - auto-refreshes every 30 seconds */
 export function useQuote(symbol) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const fetchQuote = useCallback(() => {
+    if (!symbol) return;
+    setLoading(true);
+    setError(null);
+    FinnhubAPI.getQuote(symbol)
+      .then((res) => setData(res))
+      .catch((err) => {
+        setError(err);
+        setData(null);
+      })
+      .finally(() => setLoading(false));
+  }, [symbol]);
 
   useEffect(() => {
     if (!symbol) {
       setData(null);
       return;
     }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    FinnhubAPI.getQuote(symbol)
-      .then((res) => {
-        if (!cancelled) setData(res);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err);
-          setData(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [symbol]);
+    fetchQuote();
+    const interval = setInterval(fetchQuote, 30000);
+    return () => clearInterval(interval);
+  }, [symbol, fetchQuote]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch: fetchQuote };
 }
 
 /** Company news */
@@ -253,6 +252,82 @@ export function useEarnings(symbol) {
   }, [symbol]);
 
   return { data, loading, error };
+}
+
+/** Price target (premium - may be limited on free tier) */
+export function usePriceTarget(symbol) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!symbol) {
+      setData(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    FinnhubAPI.getPriceTarget(symbol)
+      .then((res) => {
+        if (!cancelled) setData(res);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err);
+          setData(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [symbol]);
+
+  return { data, loading, error };
+}
+
+/** Symbol search - returns raw Finnhub results filtered by type */
+export function useSymbolSearch(query) {
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const debouncedQuery = useDebounce(query, 300);
+
+  useEffect(() => {
+    if (!debouncedQuery || debouncedQuery.trim().length < 1) {
+      setResults([]);
+      setIsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setIsLoading(true);
+    setError(null);
+    FinnhubAPI.searchRaw(debouncedQuery.trim())
+      .then((raw) => {
+        if (cancelled) return;
+        const filtered = raw.filter(
+          (r) =>
+            r.type === 'Common Stock' ||
+            r.type === 'ADR' ||
+            r.type === 'ETF' ||
+            r.type === 'REIT'
+        );
+        setResults(filtered.slice(0, 15));
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err);
+          setResults([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [debouncedQuery]);
+
+  return { results, isLoading, error };
 }
 
 /** Peers / competitors */

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import PortfolioDashboard from '@/components/dashboard/PortfolioDashboard';
+import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -175,6 +176,7 @@ export default function HomeDashboardPage() {
         </button>
         <div className="metrics-carousel-container">
           <div className="metrics-carousel-track" id="metricsCarousel">
+            <PinnableCard cardId="portfolio-value" title="Portfolio Value" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={1}>
             <div className="metric-card active" data-metric="portfolio">
               <div className="metric-icon portfolio">
                 <i className="bi bi-wallet2" />
@@ -185,6 +187,7 @@ export default function HomeDashboardPage() {
                 <span className="metric-change positive">+24.5% YTD</span>
               </div>
             </div>
+            </PinnableCard>
             <div className="metric-card" data-metric="pnl">
               <div className="metric-icon pnl">
                 <i className="bi bi-graph-up" />
@@ -437,6 +440,7 @@ export default function HomeDashboardPage() {
 
       {/* Additional Component Cards */}
       <div className="additional-components-grid">
+        <PinnableCard cardId="recent-transactions" title="Recent Transactions" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
         <section className="component-card transactions-card">
           <div className="card-header">
             <h3>Recent Transactions</h3>
@@ -491,6 +495,8 @@ export default function HomeDashboardPage() {
             </div>
           </div>
         </section>
+        </PinnableCard>
+        <PinnableCard cardId="top-holdings" title="Top Holdings" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
         <section className="component-card holdings-card">
           <div className="card-header">
             <h3>Top Holdings</h3>
@@ -584,6 +590,8 @@ export default function HomeDashboardPage() {
             </div>
           </div>
         </section>
+        </PinnableCard>
+        <PinnableCard cardId="performance-summary" title="Performance Summary" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
         <section className="component-card performance-card">
           <div className="card-header">
             <h3>Performance Summary</h3>
@@ -622,6 +630,8 @@ export default function HomeDashboardPage() {
             </div>
           </div>
         </section>
+        </PinnableCard>
+        <PinnableCard cardId="alerts-recommendations" title="Alerts & Recommendations" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
         <section className="component-card alerts-card">
           <div className="card-header">
             <h3>Alerts &amp; Recommendations</h3>
@@ -681,6 +691,7 @@ export default function HomeDashboardPage() {
             </div>
           </div>
         </section>
+        </PinnableCard>
       </div>
 
       {/* Market Movers Section */}

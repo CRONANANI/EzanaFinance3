@@ -163,3 +163,22 @@
   flex-shrink: 0;
   margin-left: auto;
 }
+
+/* Dashboard nav: home icon replaces Ezana Finance brand */
+.main-nav .nav-home-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--primary);
+  transition: all 0.2s ease;
+}
+.main-nav .nav-home-btn:hover {
+  background: var(--accent);
+  color: var(--primary);
+}
+.main-nav .nav-home-btn i {
+  font-size: 1.5rem;
+}

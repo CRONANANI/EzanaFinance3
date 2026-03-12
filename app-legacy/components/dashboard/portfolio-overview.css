@@ -1,0 +1,179 @@
+/* Portfolio Overview Styles */
+.portfolio-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.portfolio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(22, 27, 34, 0.95) 0%, rgba(13, 17, 23, 0.98) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 16px;
+}
+
+.portfolio-value .label {
+  display: block;
+  font-size: 0.875rem;
+  color: #6e7681;
+  margin-bottom: 0.5rem;
+}
+
+.portfolio-value .value {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.portfolio-value .change {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.portfolio-value .change.positive {
+  color: #10b981;
+}
+
+.portfolio-value .change.negative {
+  color: #f87171;
+}
+
+.portfolio-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.sync-btn,
+.add-account-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sync-btn {
+  color: #8b949e;
+  background: rgba(110, 118, 129, 0.1);
+  border: 1px solid rgba(110, 118, 129, 0.2);
+}
+
+.sync-btn:hover {
+  color: #f0f6fc;
+  background: rgba(110, 118, 129, 0.2);
+}
+
+.connect-brokerage-btn,
+.add-account-btn {
+  color: #0d1117;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+}
+
+.connect-brokerage-btn:hover,
+.add-account-btn:hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+.connect-brokerage-btn:disabled,
+.add-account-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Holdings */
+.holdings-section,
+.transactions-section,
+.accounts-section {
+  padding: 1.5rem;
+  background: rgba(22, 27, 34, 0.5);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 12px;
+}
+
+.holdings-section h3,
+.transactions-section h3,
+.accounts-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 1rem;
+}
+
+.holding-item,
+.transaction-item,
+.account-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+}
+
+.holding-item:last-child,
+.transaction-item:last-child,
+.account-item:last-child {
+  border-bottom: none;
+}
+
+.ticker {
+  font-weight: 600;
+  color: #10b981;
+  margin-right: 0.5rem;
+}
+
+.name,
+.tx-name,
+.account-name {
+  color: #8b949e;
+  font-size: 0.875rem;
+}
+
+.holding-value,
+.tx-amount,
+.account-balance {
+  text-align: right;
+}
+
+.holding-value .value,
+.account-balance {
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.gain.positive,
+.positive {
+  color: #10b981;
+}
+
+.gain.negative,
+.negative {
+  color: #f87171;
+}
+
+/* Empty State */
+.portfolio-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.empty-state {
+  text-align: center;
+  max-width: 400px;
+}
+
+.plaid-link-container {
+  display: inline-block;
+}

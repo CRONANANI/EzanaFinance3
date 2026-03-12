@@ -1,5 +1,6 @@
 'use client';
 
+import { PinnableCard } from '@/components/ui/PinnableCard';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -32,6 +33,7 @@ export default function LearningCenterPage() {
 
       <div className="tab-content active" data-content="dashboard">
         <section className="learning-upper-section">
+          <PinnableCard cardId="learning-course-table" title="My Courses" sourcePage="/learning-center" sourceLabel="Learning Center" defaultW={4} defaultH={2}>
           <div className="learning-course-table-card">
             <div className="course-table-wrap">
               <table className="learning-course-table">
@@ -74,6 +76,8 @@ export default function LearningCenterPage() {
               </table>
             </div>
           </div>
+          </PinnableCard>
+          <PinnableCard cardId="learning-achievements" title="Achievements" sourcePage="/learning-center" sourceLabel="Learning Center" defaultW={2} defaultH={1}>
           <div className="learning-achievements-card">
             <div className="achievement-row">
               <div className="achievement-icon blue"><i className="bi bi-journal-bookmark" /></div>
@@ -92,6 +96,7 @@ export default function LearningCenterPage() {
               <div className="achievement-content"><span className="achievement-value">5</span><span className="achievement-label">Day Streak</span></div>
             </div>
           </div>
+          </PinnableCard>
         </section>
 
         <section className="learning-section recommended-courses">

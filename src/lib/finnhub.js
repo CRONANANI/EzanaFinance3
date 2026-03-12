@@ -19,7 +19,7 @@ export async function finnhubFetch(endpoint, params = {}) {
 export const FinnhubAPI = {
   /** Symbol lookup / autocomplete - /search?q= */
   async search(query, exchange = 'US') {
-    if (!query || query.trim().length < 2) return { count: 0, result: [] };
+    if (!query || query.trim().length < 2) return [];
     const data = await finnhubFetch('search', { q: query.trim(), exchange });
     const results = Array.isArray(data?.result) ? data.result : [];
     return results.slice(0, 15).map((r) => ({
@@ -27,6 +27,13 @@ export const FinnhubAPI = {
       name: r.description || r.displaySymbol || r.symbol,
       type: r.type,
     }));
+  },
+
+  /** Raw search results (for CompanySearch with type filter) */
+  async searchRaw(query, exchange = 'US') {
+    if (!query || query.trim().length < 1) return [];
+    const data = await finnhubFetch('search', { q: query.trim(), exchange });
+    return Array.isArray(data?.result) ? data.result : [];
   },
 
   /** Company profile - /stock/profile2?symbol= */
@@ -77,5 +84,11 @@ export const FinnhubAPI = {
     if (!symbol) return [];
     const data = await finnhubFetch('stock/peers', { symbol: symbol.toUpperCase() });
     return Array.isArray(data) ? data : [];
+  },
+
+  /** Price target (premium - may return limited data on free tier) */
+  async getPriceTarget(symbol) {
+    if (!symbol) return null;
+    return finnhubFetch('stock/price-target', { symbol: symbol.toUpperCase() });
   },
 };
