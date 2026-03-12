@@ -71,53 +71,55 @@ const SignInCard = ({ variant = "user" }) => {
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a0f0a] via-[#0d1117] to-[#061212]">
             <AuthDotMap />
 
-            {/* Logo and text overlay */}
+            {/* Logo and text overlay - 70% white transparent bg for readability over green lines */}
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10">
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="mb-6"
-              >
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                  <TrendingUp className="text-white h-8 w-8" />
-                </div>
-              </motion.div>
-              <motion.h2
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600"
-              >
-                Ezana Finance
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="text-sm text-center text-gray-400 max-w-xs"
-              >
-                Access institutional-grade market intelligence and track the moves that matter
-              </motion.p>
-
-              {/* Feature highlights */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="mt-8 space-y-3"
-              >
-                {[
-                  "Real-time congressional trades",
-                  "Hedge fund 13F filings",
-                  "Legendary investor portfolios",
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-gray-500 text-sm">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    {feature}
+              <div className="bg-white/70 rounded-2xl px-8 py-6 max-w-sm">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                  className="mb-6 flex justify-center"
+                >
+                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                    <TrendingUp className="text-white h-8 w-8" />
                   </div>
-                ))}
-              </motion.div>
+                </motion.div>
+                <motion.h2
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600"
+                >
+                  Ezana Finance
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="text-sm text-center text-gray-600 max-w-xs"
+                >
+                  Access institutional-grade market intelligence and track the moves that matter
+                </motion.p>
+
+                {/* Feature highlights */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="mt-8 space-y-3"
+                >
+                  {[
+                    "Real-time congressional trades",
+                    "Hedge fund 13F filings",
+                    "Legendary investor portfolios",
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-gray-600 text-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                      {feature}
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>
