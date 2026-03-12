@@ -88,7 +88,7 @@ const SignInCard = ({ variant = "user" }) => {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7, duration: 0.5 }}
-                  className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600"
+                  className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-800"
                 >
                   Ezana Finance
                 </motion.h2>
@@ -96,7 +96,7 @@ const SignInCard = ({ variant = "user" }) => {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.5 }}
-                  className="text-sm text-center text-gray-600 max-w-xs"
+                  className="text-sm text-center text-gray-800 max-w-xs"
                 >
                   Access institutional-grade market intelligence and track the moves that matter
                 </motion.p>
@@ -113,7 +113,7 @@ const SignInCard = ({ variant = "user" }) => {
                     "Hedge fund 13F filings",
                     "Legendary investor portfolios",
                   ].map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2 text-gray-600 text-sm">
+                    <div key={index} className="flex items-center gap-2 text-gray-800 text-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                       {feature}
                     </div>
