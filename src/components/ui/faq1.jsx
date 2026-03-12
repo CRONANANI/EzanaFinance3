@@ -73,7 +73,7 @@ export function Faq1({
           </Link>
         </p>
         {onContactClick && (
-          <div className="mt-12 rounded-xl border border-border bg-card/30 p-8 text-center">
+          <div className="mt-12 rounded-xl border border-border/50 bg-transparent p-8 text-center">
             <h3 className="mb-2 text-xl font-semibold text-foreground">Still have questions?</h3>
             <p className="mb-4 text-muted-foreground">
               Can&apos;t find the answer you&apos;re looking for? Our support team is here to help.
