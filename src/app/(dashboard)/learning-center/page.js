@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -9,7 +10,17 @@ import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/pages/learning-center.css';
 
+const TABS = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'bi-grid' },
+  { id: 'courses', label: 'My Courses', icon: 'bi-book' },
+  { id: 'skills', label: 'Skills', icon: 'bi-puzzle' },
+  { id: 'badges', label: 'Badges', icon: 'bi-award' },
+  { id: 'browse', label: 'Browse All', icon: 'bi-search' },
+];
+
 export default function LearningCenterPage() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
   return (
     <div className="learning-center-container">
       <header className="learning-header-bar">
@@ -24,14 +35,20 @@ export default function LearningCenterPage() {
       </header>
 
       <div className="learning-tabs">
-        <button className="learning-tab active" data-tab="dashboard" type="button"><i className="bi bi-grid" /> Dashboard</button>
-        <button className="learning-tab" data-tab="courses" type="button"><i className="bi bi-book" /> My Courses</button>
-        <button className="learning-tab" data-tab="skills" type="button"><i className="bi bi-puzzle" /> Skills</button>
-        <button className="learning-tab" data-tab="badges" type="button"><i className="bi bi-award" /> Badges</button>
-        <button className="learning-tab" data-tab="browse" type="button"><i className="bi bi-search" /> Browse All</button>
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            className={`learning-tab ${activeTab === tab.id ? 'active' : ''}`}
+            data-tab={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+          >
+            <i className={`bi ${tab.icon}`} /> {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="tab-content active" data-content="dashboard">
+      <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`} data-content="dashboard">
         <section className="learning-upper-section">
           <PinnableCard cardId="learning-course-table" title="My Courses" sourcePage="/learning-center" sourceLabel="Learning Center" defaultW={4} defaultH={2}>
           <div className="learning-course-table-card">
@@ -170,7 +187,7 @@ export default function LearningCenterPage() {
         </section>
       </div>
 
-      <div className="tab-content" data-content="courses">
+      <div className={`tab-content ${activeTab === 'courses' ? 'active' : ''}`} data-content="courses">
         <h2 className="section-title">Courses In Progress</h2>
         <div className="courses-list">
           <div className="course-item in-progress">
@@ -248,7 +265,7 @@ export default function LearningCenterPage() {
         </div>
       </div>
 
-      <div className="tab-content" data-content="skills">
+      <div className={`tab-content ${activeTab === 'skills' ? 'active' : ''}`} data-content="skills">
         <h2 className="section-title">Your Skills</h2>
         <div className="skills-grid">
           <div className="skill-card mastered">
@@ -278,7 +295,7 @@ export default function LearningCenterPage() {
         </div>
       </div>
 
-      <div className="tab-content" data-content="badges">
+      <div className={`tab-content ${activeTab === 'badges' ? 'active' : ''}`} data-content="badges">
         <h2 className="section-title">Your Badges (12 Earned)</h2>
         <div className="badges-grid">
           <div className="badge-card earned">
@@ -323,7 +340,7 @@ export default function LearningCenterPage() {
         </div>
       </div>
 
-      <div className="tab-content" data-content="browse">
+      <div className={`tab-content ${activeTab === 'browse' ? 'active' : ''}`} data-content="browse">
         <h2 className="section-title">Browse All Courses</h2>
         <p className="muted-text">Explore our full catalog of courses. Use the Learning Opportunities sections on each research page to see topic-specific recommendations.</p>
         <div className="courses-grid">
