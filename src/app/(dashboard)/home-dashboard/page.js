@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import PortfolioDashboard from '@/components/dashboard/PortfolioDashboard';
+import { PortfolioChart } from '@/components/dashboard/PortfolioChart';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -279,48 +280,14 @@ export default function HomeDashboardPage() {
       <div className="dashboard-grid">
         {/* Main Chart Section */}
         <section className="main-chart-section">
-          <div className="chart-header compact">
-            <div className="chart-title-area">
-              <h2 className="chart-title" id="chartTitle">
-                Total Portfolio Value
-              </h2>
-            </div>
-            <div className="chart-controls" id="chartControls">
-              <div className="time-range-selector compact" id="timeRangeSelector">
-                <button className="time-btn" type="button" data-range="1D">
-                  1D
-                </button>
-                <button className="time-btn" type="button" data-range="1W">
-                  1W
-                </button>
-                <button className="time-btn" type="button" data-range="1M">
-                  1M
-                </button>
-                <button className="time-btn active" type="button" data-range="3M">
-                  3M
-                </button>
-                <button className="time-btn" type="button" data-range="6M">
-                  6M
-                </button>
-                <button className="time-btn" type="button" data-range="1Y">
-                  1Y
-                </button>
-              </div>
-              <select
-                className="filter-select allocation-timeframe-select"
-                id="allocationTimeframe"
-                style={{ display: 'none' }}
-              >
-                <option value="current">Current</option>
-                <option value="1m">1 Month Ago</option>
-                <option value="3m">3 Months Ago</option>
-                <option value="1y">1 Year Ago</option>
-              </select>
-            </div>
+          <div id="lineChartContainer">
+            <PortfolioChart />
           </div>
-          <div className="chart-container compact" id="lineChartContainer">
-            <canvas id="mainChart" />
-          </div>
+          <select
+            className="filter-select allocation-timeframe-select"
+            id="allocationTimeframe"
+            style={{ display: 'none' }}
+          />
           {/* Asset Allocation pie chart */}
           <div
             className="allocation-chart-view"
