@@ -73,7 +73,7 @@ const SignInCard = ({ variant = "user" }) => {
 
             {/* Logo and text overlay - 70% white transparent bg for readability over green lines */}
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10">
-              <div className="bg-white/70 rounded-2xl px-8 py-6 max-w-sm">
+              <div className="bg-white/35 rounded-2xl px-8 py-6 max-w-sm">
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
