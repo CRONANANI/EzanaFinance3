@@ -57,8 +57,11 @@ export function Navbar() {
             </li>
           </ul>
           <div className="nav-sign-in-wrap">
-            <Link href="/auth/signin" className="sign-in-btn">
-              Sign In
+            <Link href="/auth/signin" className="sign-in-btn sign-in-btn-primary">
+              User Sign In
+            </Link>
+            <Link href="/auth/partner/signin" className="sign-in-btn sign-in-btn-partner">
+              Partner Login
             </Link>
           </div>
         </div>

@@ -15,17 +15,54 @@ body {
     position: relative;
 }
 
-/* Consistent background throughout landing page */
+/* ============================================
+   UNIFIED BACKGROUND - Same as features section
+   No breaks or changes throughout entire landing
+   ============================================ */
+.landing-page {
+    background: #0a0a0a;
+    position: relative;
+}
+
+.landing-page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
 .landing-page .resources-section,
 .landing-page #pricing,
+.landing-page .pricing-section,
 .landing-page #pricing section,
 .landing-page .faq-section-wrapper,
-.landing-page footer {
+.landing-page .testimonials-section,
+.landing-page .testimonials-below-hero,
+.landing-page footer,
+.landing-page .features-section {
+    background-color: #0a0a0a !important;
+    background-image: none !important;
+}
+
+.landing-page .resources-section .bg-background,
+.landing-page footer.bg-background {
     background-color: #0a0a0a !important;
 }
 
-.landing-page .resources-section .bg-background {
-    background-color: #0a0a0a !important;
+/* Testimonials carousel fade edges - match page background */
+.landing-page .testimonials-carousel::before {
+    background: linear-gradient(to right, #0a0a0a 0%, transparent 100%) !important;
+}
+
+.landing-page .testimonials-carousel::after {
+    background: linear-gradient(to left, #0a0a0a 0%, transparent 100%) !important;
 }
 
 
@@ -121,6 +158,9 @@ body {
 
 .nav-sign-in-wrap {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .logo {
@@ -192,9 +232,30 @@ body {
 }
 
 .sign-in-btn:hover {
-    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
     transform: translateY(-1px);
+}
+
+.sign-in-btn-primary,
+.sign-in-btn:not(.sign-in-btn-partner) {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #0d1117;
+}
+
+.sign-in-btn-primary:hover,
+.sign-in-btn:not(.sign-in-btn-partner):hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.sign-in-btn-partner {
+    background: transparent;
+    color: #10b981;
+    border: 2px solid #10b981;
+}
+
+.sign-in-btn-partner:hover {
+    background: rgba(16, 185, 129, 0.1);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
 .btn-nav-primary {
