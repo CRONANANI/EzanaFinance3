@@ -137,9 +137,41 @@ export function FeaturesSection() {
   const intelItems = INTEL_DATA[intelTab] || INTEL_DATA.contracts;
   const communityPosts = COMMUNITY_DATA[communityView] || COMMUNITY_DATA.trending;
 
+  const FEATURE_CARDS = [
+    { title: 'Congressional Trading', desc: 'Track real-time congressional stock trades with alerts, filters, and portfolio analysis. See exactly what politicians are buying and selling.', href: '/inside-the-capitol', icon: 'bi-building' },
+    { title: 'Portfolio Analytics', desc: 'Real-time portfolio tracking with P&L, risk scoring, dividend tracking, and benchmark comparison against S&P 500 and NASDAQ.', href: '/home-dashboard', icon: 'bi-graph-up-arrow' },
+    { title: 'Market Intelligence', desc: 'Government contracts, lobbying activity, and patent momentum data correlated with stock movements for insider-level insights.', href: '/company-research', icon: 'bi-activity' },
+    { title: 'Real-Time Alerts', desc: 'Instant notifications when politicians you follow make trades or when your portfolio triggers risk alerts and price targets.', href: '/watchlist', icon: 'bi-bell' },
+    { title: 'Community Insights', desc: 'Connect with investors following similar strategies. Share analysis, discuss trades, and learn from the community\'s collective intelligence.', href: '/community', icon: 'bi-people' },
+    { title: 'Advanced Analytics', desc: 'Professional-grade metrics including Sharpe ratio, beta analysis, volatility scoring, and sector exposure with export capabilities.', href: '/for-the-quants', icon: 'bi-bar-chart' },
+  ];
+
   return (
     <section ref={sectionRef} className="features-section" id="features">
       <div className="features-container">
+        {/* Feature Cards Grid - Uniform Dimensions */}
+        <div className="features-grid-header">
+          <h2>Why Ezana Finance</h2>
+          <p className="section-subtitle">
+            Professional-grade tools designed for serious investors who want transparency and intelligence.
+          </p>
+        </div>
+        <div className="features-grid">
+          {FEATURE_CARDS.map((card, i) => (
+            <div key={i} className="feature-card">
+              <div className="feature-card-icon">
+                <i className={`bi ${card.icon}`} />
+              </div>
+              <h3 className="feature-card-title">{card.title}</h3>
+              <p className="feature-card-description">{card.desc}</p>
+              <Link href={card.href} className="feature-card-link">
+                Explore
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </Link>
+            </div>
+          ))}
+        </div>
+
         {/* 1. Portfolio - matches legacy order */}
         <div className="feature-block" data-feature="portfolio">
           <div className="feature-content">

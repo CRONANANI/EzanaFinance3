@@ -33,6 +33,190 @@
 }
 
 /* ============================================
+   FEATURE CARDS GRID - Uniform Dimensions
+   Why Ezana Finance
+   ============================================ */
+
+.features-section .features-grid-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.features-section .features-grid-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.features-section .features-grid-header .section-subtitle {
+  font-size: 1.125rem;
+  color: #9ca3af;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 6rem;
+}
+
+@media (min-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+}
+
+.feature-card {
+  min-height: 320px;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 8px 16px rgba(16, 185, 129, 0.15);
+}
+
+.feature-card-icon {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.feature-card-icon svg,
+.feature-card-icon i {
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+  color: #10b981;
+}
+
+.feature-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  height: 1.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.feature-card-description {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #9ca3af;
+  height: 4.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.feature-card-link {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #10b981;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: gap 0.3s ease;
+}
+
+.feature-card-link:hover {
+  gap: 0.75rem;
+  color: #34d399;
+}
+
+.feature-card-link svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.feature-card-link:hover svg {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .feature-card {
+    min-height: 280px;
+    height: 280px;
+    padding: 1.5rem;
+  }
+
+  .feature-card-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card-icon svg,
+  .feature-card-icon i {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+  }
+
+  .feature-card-title {
+    font-size: 1.125rem;
+  }
+
+  .feature-card-description {
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
    FEATURE BLOCK
    ============================================ */
 
