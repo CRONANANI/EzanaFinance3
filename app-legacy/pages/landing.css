@@ -475,7 +475,7 @@ body {
     font-size: 0.9375rem;
     line-height: 1.65;
     font-weight: var(--font-weight-normal);
-    margin: 0 0 3rem 0;
+    margin: 0 0 1.5rem 0;
     padding: 0 0;
     max-width: 1150px;
     text-align: center;
@@ -920,7 +920,7 @@ body {
     line-height: 1.6;
     text-align: center;
     max-width: none;
-    margin: 3rem auto 1.5rem;
+    margin: 1.5rem auto 1.5rem;
     background: none !important;
     border: none !important;
     padding: 0 !important;
