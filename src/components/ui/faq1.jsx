@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Accordion,
   AccordionContent,
@@ -63,6 +64,14 @@ export function Faq1({
             </AccordionItem>
           ))}
         </Accordion>
+        <p className="mt-6 text-center">
+          <Link
+            href="/help-center"
+            className="text-[11px] text-muted-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
+          >
+            view our more in depth help center
+          </Link>
+        </p>
         {onContactClick && (
           <div className="mt-12 rounded-xl border border-border bg-card/30 p-8 text-center">
             <h3 className="mb-2 text-xl font-semibold text-foreground">Still have questions?</h3>
