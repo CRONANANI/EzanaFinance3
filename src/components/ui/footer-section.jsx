@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,6 +71,12 @@ export function FooterSection({ onContactClick }) {
               <a href="#faq" className="block transition-colors hover:text-primary">
                 FAQ
               </a>
+              <Link
+                href="/help-center"
+                className="block transition-colors hover:text-primary"
+              >
+                Help Center
+              </Link>
               <a
                 href="#"
                 className="block transition-colors hover:text-primary"
@@ -165,7 +172,10 @@ export function FooterSection({ onContactClick }) {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Ezana Finance. All rights reserved.
           </p>
-          <nav className="flex gap-4 text-sm">
+          <nav className="flex flex-wrap justify-center gap-4 text-sm md:justify-end">
+            <Link href="/help-center" className="transition-colors hover:text-primary">
+              Help Center
+            </Link>
             <a href="#" className="transition-colors hover:text-primary">
               Privacy Policy
             </a>
