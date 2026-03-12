@@ -6,34 +6,24 @@ const AuthDotMap = () => {
   const canvasRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  // Financial network routes
-  const routes = [
-    {
-      start: { x: 100, y: 150, delay: 0 },
-      end: { x: 200, y: 80, delay: 2 },
-      color: "#10b981",
-    },
-    {
-      start: { x: 200, y: 80, delay: 2 },
-      end: { x: 260, y: 120, delay: 4 },
-      color: "#10b981",
-    },
-    {
-      start: { x: 50, y: 50, delay: 1 },
-      end: { x: 150, y: 180, delay: 3 },
-      color: "#059669",
-    },
-    {
-      start: { x: 280, y: 60, delay: 0.5 },
-      end: { x: 180, y: 180, delay: 2.5 },
-      color: "#34d399",
-    },
-    {
-      start: { x: 220, y: 200, delay: 1.5 },
-      end: { x: 120, y: 100, delay: 3.5 },
-      color: "#10b981",
-    },
-  ];
+  // Financial network routes - top (above Ezana Finance) + bottom (beside feature list)
+  const getRoutes = (width, height) => {
+    if (!width || !height) return [];
+    return [
+      // Top area - above logo/text
+      { start: { x: width * 0.22, y: height * 0.25, delay: 0 }, end: { x: width * 0.45, y: height * 0.13, delay: 2 }, color: "#10b981" },
+      { start: { x: width * 0.45, y: height * 0.13, delay: 2 }, end: { x: width * 0.58, y: height * 0.2, delay: 4 }, color: "#10b981" },
+      { start: { x: width * 0.11, y: height * 0.08, delay: 1 }, end: { x: width * 0.33, y: height * 0.3, delay: 3 }, color: "#059669" },
+      { start: { x: width * 0.62, y: height * 0.1, delay: 0.5 }, end: { x: width * 0.4, y: height * 0.3, delay: 2.5 }, color: "#34d399" },
+      { start: { x: width * 0.49, y: height * 0.33, delay: 1.5 }, end: { x: width * 0.27, y: height * 0.17, delay: 3.5 }, color: "#10b981" },
+      // Bottom area - beside Real-time congressional trades, 13F filings, Legendary portfolios
+      { start: { x: width * 0.15, y: height * 0.62, delay: 0.5 }, end: { x: width * 0.35, y: height * 0.55, delay: 2.5 }, color: "#10b981" },
+      { start: { x: width * 0.35, y: height * 0.55, delay: 2.5 }, end: { x: width * 0.5, y: height * 0.68, delay: 4.5 }, color: "#059669" },
+      { start: { x: width * 0.7, y: height * 0.58, delay: 1 }, end: { x: width * 0.55, y: height * 0.72, delay: 3 }, color: "#34d399" },
+      { start: { x: width * 0.25, y: height * 0.78, delay: 1.5 }, end: { x: width * 0.45, y: height * 0.65, delay: 3.5 }, color: "#10b981" },
+      { start: { x: width * 0.6, y: height * 0.82, delay: 2 }, end: { x: width * 0.75, y: height * 0.68, delay: 4 }, color: "#059669" },
+    ];
+  };
 
   // Generate dots for financial network visualization
   const generateDots = (width, height) => {
@@ -43,12 +33,14 @@ const AuthDotMap = () => {
 
     for (let x = 0; x < width; x += gap) {
       for (let y = 0; y < height; y += gap) {
-        // Create network-like pattern
+        // Create network-like pattern - top (above Ezana Finance) + bottom (beside feature list)
         const isInPattern =
           ((x < width * 0.3 && x > width * 0.05) && (y < height * 0.5 && y > height * 0.1)) ||
           ((x < width * 0.5 && x > width * 0.25) && (y < height * 0.7 && y > height * 0.3)) ||
           ((x < width * 0.75 && x > width * 0.45) && (y < height * 0.6 && y > height * 0.15)) ||
-          ((x < width * 0.95 && x > width * 0.7) && (y < height * 0.85 && y > height * 0.4));
+          ((x < width * 0.95 && x > width * 0.7) && (y < height * 0.85 && y > height * 0.4)) ||
+          ((x < width * 0.5 && x > width * 0.1) && (y < height * 0.9 && y > height * 0.52)) ||
+          ((x < width * 0.9 && x > width * 0.5) && (y < height * 0.88 && y > height * 0.55));
 
         if (isInPattern && Math.random() > 0.4) {
           dots.push({
@@ -88,6 +80,7 @@ const AuthDotMap = () => {
     if (!ctx) return;
 
     const dots = generateDots(dimensions.width, dimensions.height);
+    const routes = getRoutes(dimensions.width, dimensions.height);
     let animationFrameId;
     let startTime = Date.now();
 
