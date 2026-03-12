@@ -76,12 +76,12 @@ body {
     50% { transform: translateY(-20px) scale(1.1); }
 }
 
-/* Navigation */
+/* Navigation - seamless background to match landing page */
 .navbar {
     position: relative;
     z-index: 100;
-    background: #0a0a0a !important;
-    backdrop-filter: blur(10px);
+    background: transparent !important;
+    backdrop-filter: none;
     padding: 1rem 0;
 }
 
@@ -99,13 +99,9 @@ body {
 /* Centered logo and nav layout for landing */
 .nav-container-centered {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 3rem;
-}
-
-.nav-container-centered .nav-spacer {
-    display: none;
+    justify-content: center;
+    gap: 2rem;
 }
 
 .nav-container-centered .logo {
@@ -114,14 +110,13 @@ body {
 
 .nav-container-centered .nav-menu {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
     margin: 0;
     padding: 0;
-}
-
-/* Spacer between nav links and Sign In - pushes Sign In to far right */
-.nav-sign-in-spacer {
-    flex: 1;
-    min-width: 2rem;
+    list-style: none;
+    flex: 0 1 auto;
 }
 
 .nav-sign-in-wrap {
