@@ -556,7 +556,7 @@ export function PinnedCardContent({ cardId }) {
 
     case 'price-alerts':
       return (
-        <div className="component-card full-width">
+        <div className="component-card full-width price-alerts-card">
           <div className="card-header"><h3><i className="bi bi-bell-fill" /> Active Price Alerts</h3><button className="card-action-btn" type="button">New Alert</button></div>
           <div className="card-body">
             <div className="alerts-list">
@@ -633,7 +633,7 @@ export function PinnedCardContent({ cardId }) {
 
     case 'friends-activity':
       return (
-        <div className="component-card">
+        <div className="component-card friends-activity-card">
           <div className="card-header"><h3><i className="bi bi-activity" /> Friends Activity</h3></div>
           <div className="card-body">
             <p className="text-muted-foreground mb-6">Track your friends&apos; investment activities and engagement</p>
@@ -654,7 +654,7 @@ export function PinnedCardContent({ cardId }) {
 
     case 'active-discussions':
       return (
-        <div className="component-card">
+        <div className="component-card active-discussions-card">
           <div className="card-header"><h3><i className="bi bi-chat-dots" /> Active Discussions</h3></div>
           <div className="card-body">
             <div className="space-y-4">
@@ -677,7 +677,7 @@ export function PinnedCardContent({ cardId }) {
 
     case 'leaderboard':
       return (
-        <div className="component-card">
+        <div className="component-card leaderboard-card">
           <div className="card-header"><h3><i className="bi bi-trophy" /> Leaderboard</h3></div>
           <div className="card-body">
             <p className="text-muted-foreground mb-4 text-sm">Top performers this month</p>
@@ -702,7 +702,7 @@ export function PinnedCardContent({ cardId }) {
 
     case 'community-insights':
       return (
-        <div className="component-card">
+        <div className="component-card community-insights-card">
           <div className="card-header"><h3><i className="bi bi-bar-chart" /> Community Insights</h3></div>
           <div className="card-body">
             <div className="community-insights-grid">

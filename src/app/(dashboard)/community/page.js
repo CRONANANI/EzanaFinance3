@@ -218,7 +218,7 @@ export default function CommunityPage() {
         </PinnableCard>
 
         <PinnableCard cardId="friends-activity" title="Friends Activity" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={1}>
-        <div className="component-card">
+        <div className="component-card friends-activity-card">
           <div className="card-header"><h3><i className="bi bi-activity" /> Friends Activity</h3></div>
           <div className="card-body">
             <p className="text-muted-foreground mb-6">Track your friends&apos; investment activities and engagement</p>
@@ -253,7 +253,7 @@ export default function CommunityPage() {
 
       <div className="dashboard-grid community-discussions-grid">
         <PinnableCard cardId="active-discussions" title="Active Discussions" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
-        <div className="component-card">
+        <div className="component-card active-discussions-card">
           <div className="card-header">
             <h3><i className="bi bi-chat-dots" /> Active Discussions</h3>
             <div className="discussion-filter-buttons">
@@ -323,7 +323,7 @@ export default function CommunityPage() {
         </PinnableCard>
 
         <PinnableCard cardId="leaderboard" title="Leaderboard" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={2}>
-        <div className="component-card">
+        <div className="component-card leaderboard-card">
           <div className="card-header"><h3><i className="bi bi-trophy" /> Leaderboard</h3></div>
           <div className="card-body">
             <p className="text-muted-foreground mb-4 text-sm">Top performers this month</p>
@@ -352,7 +352,7 @@ export default function CommunityPage() {
       </div>
 
       <PinnableCard cardId="community-insights" title="Community Insights" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={1}>
-      <div className="component-card">
+      <div className="component-card community-insights-card">
         <div className="card-header"><h3><i className="bi bi-bar-chart" /> Community Insights</h3></div>
         <div className="card-body">
           <div className="community-insights-grid">

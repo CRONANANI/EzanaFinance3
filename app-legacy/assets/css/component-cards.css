@@ -101,3 +101,48 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Compact spacing - reduce space between title and content for specific cards */
+.transactions-card .card-header,
+.holdings-card .card-header,
+.performance-card .card-header,
+.alerts-card .card-header,
+.community-feed-card .card-header,
+.my-friends-card .card-header,
+.recent-activity-card .card-header,
+.friends-activity-card .card-header,
+.active-discussions-card .card-header,
+.leaderboard-card .card-header,
+.community-insights-card .card-header,
+.price-alerts-card .card-header {
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.transactions-card .card-description,
+.holdings-card .card-description,
+.performance-card .card-description,
+.alerts-card .card-description {
+  margin: -0.25rem 0 0.35rem 0;
+  font-size: 0.8125rem;
+}
+
+.transactions-card,
+.holdings-card,
+.performance-card,
+.alerts-card,
+.community-feed-card,
+.my-friends-card,
+.recent-activity-card,
+.friends-activity-card,
+.active-discussions-card,
+.leaderboard-card,
+.community-insights-card,
+.price-alerts-card {
+  padding: 1rem 1.25rem;
+}
+
+.friends-activity-card .card-body > p:first-child,
+.leaderboard-card .card-body > p:first-child {
+  margin-bottom: 0.5rem !important;
+}

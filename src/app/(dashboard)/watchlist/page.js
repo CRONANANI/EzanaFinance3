@@ -289,7 +289,7 @@ export default function WatchlistPage() {
         </PinnableCard>
 
         <PinnableCard cardId="price-alerts" title="Active Price Alerts" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={4} defaultH={1}>
-        <div className="component-card full-width">
+        <div className="component-card full-width price-alerts-card">
           <div className="card-header">
             <h3><i className="bi bi-bell-fill" /> Active Price Alerts</h3>
             <button className="card-action-btn" type="button">New Alert</button>
