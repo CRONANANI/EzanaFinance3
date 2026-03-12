@@ -38,37 +38,38 @@ export default function DatabaseWithRestApi({
 }) {
   const accentColor = lightColor || "#10b981";
 
-  // Uniform spacing: 8%, 26%, 44%, 62%, 80% to prevent overlap between Institutional Portfolios and Alternative Analytics
+  // Original uniform layout: 10%, 30%, 50%, 70%, 90% with wider container (1100px) for adequate spacing
+  // Paths converge to center (550, 290) - Ezana hub
   const sourcePositions = {
     congress: {
-      left: "8%",
-      fullPath: "M 72 55 L 72 180 Q 72 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
-      pathStart: "M 72 55 L 72 95",
-      pathEnd: "M 72 155 L 72 180 Q 72 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
+      left: "10%",
+      fullPath: "M 110 55 L 110 180 Q 110 220 170 220 L 530 220 Q 550 220 550 250 L 550 290",
+      pathStart: "M 110 55 L 110 95",
+      pathEnd: "M 110 155 L 110 180 Q 110 220 170 220 L 530 220 Q 550 220 550 250 L 550 290",
     },
     "13f": {
-      left: "26%",
-      fullPath: "M 234 55 L 234 180 Q 234 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
-      pathStart: "M 234 55 L 234 95",
-      pathEnd: "M 234 155 L 234 180 Q 234 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
+      left: "30%",
+      fullPath: "M 330 55 L 330 180 Q 330 210 390 210 L 530 210 Q 550 210 550 240 L 550 290",
+      pathStart: "M 330 55 L 330 95",
+      pathEnd: "M 330 155 L 330 180 Q 330 210 390 210 L 530 210 Q 550 210 550 240 L 550 290",
     },
     institutional: {
-      left: "44%",
-      fullPath: "M 396 55 L 396 180 Q 396 210 420 210 L 440 210 Q 450 210 450 240 L 450 290",
-      pathStart: "M 396 55 L 396 95",
-      pathEnd: "M 396 155 L 396 180 Q 396 210 420 210 L 440 210 Q 450 210 450 240 L 450 290",
+      left: "50%",
+      fullPath: "M 550 55 L 550 290",
+      pathStart: "M 550 55 L 550 95",
+      pathEnd: "M 550 155 L 550 290",
     },
     analytics: {
-      left: "62%",
-      fullPath: "M 558 55 L 558 180 Q 558 210 480 210 L 460 210 Q 450 210 450 240 L 450 290",
-      pathStart: "M 558 55 L 558 95",
-      pathEnd: "M 558 155 L 558 180 Q 558 210 480 210 L 460 210 Q 450 210 450 240 L 450 290",
+      left: "70%",
+      fullPath: "M 770 55 L 770 180 Q 770 210 710 210 L 570 210 Q 550 210 550 240 L 550 290",
+      pathStart: "M 770 55 L 770 95",
+      pathEnd: "M 770 155 L 770 180 Q 770 210 710 210 L 570 210 Q 550 210 550 240 L 550 290",
     },
     community: {
-      left: "80%",
-      fullPath: "M 720 55 L 720 180 Q 720 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
-      pathStart: "M 720 55 L 720 95",
-      pathEnd: "M 720 155 L 720 180 Q 720 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
+      left: "90%",
+      fullPath: "M 990 55 L 990 180 Q 990 220 930 220 L 570 220 Q 550 220 550 250 L 550 290",
+      pathStart: "M 990 55 L 990 95",
+      pathEnd: "M 990 155 L 990 180 Q 990 220 930 220 L 570 220 Q 550 220 550 250 L 550 290",
     },
   };
 
@@ -83,7 +84,7 @@ export default function DatabaseWithRestApi({
   return (
     <div
       className={cn(
-        "relative flex w-full max-w-[900px] flex-col items-center gap-0",
+        "relative flex w-full max-w-[1100px] flex-col items-center gap-0",
         className
       )}
     >
@@ -97,7 +98,7 @@ export default function DatabaseWithRestApi({
         {/* SVG Connection Lines */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none"
-          viewBox="0 0 900 480"
+          viewBox="0 0 1100 480"
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
@@ -172,15 +173,15 @@ export default function DatabaseWithRestApi({
             type="button"
             onClick={() => onBadgeClick?.(id)}
             className={cn(
-              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-3 py-2.5 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
-              "min-w-[100px] max-w-[155px]",
+              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-4 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30 overflow-hidden",
+              "min-w-[100px] max-w-[180px]",
               selectedSource === id && "border-emerald-500/50 bg-emerald-500/10",
               onBadgeClick && "cursor-pointer"
             )}
             style={{ left: sourcePositions[id].left }}
           >
-            <DatabaseIcon />
-            <span className="text-sm font-medium whitespace-nowrap">{label}</span>
+            <DatabaseIcon className="flex-shrink-0" />
+            <span className="text-sm font-medium min-w-0 break-words text-center leading-tight" style={{ maxWidth: '140px' }}>{label}</span>
           </button>
         ))}
 
