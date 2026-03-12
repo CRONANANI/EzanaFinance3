@@ -453,7 +453,7 @@ body {
   opacity: 0;
 }
 
-/* Hero Tagline (main title) - Single line, fluid scaling */
+/* Hero Tagline (main title) - Single line, fluid scaling - same green as waitlist intro */
 .hero-tagline {
     font-size: 2.625rem;
     font-size: clamp(1.0125rem, 3.75vw, 2.625rem);
@@ -464,7 +464,10 @@ body {
     margin: 0 0 1.5rem 0;
     padding: 0;
     text-align: center;
-    color: #10b981;
+    color: #10b981 !important;
+    -webkit-text-fill-color: #10b981 !important;
+    background: none !important;
+    background-clip: unset !important;
     white-space: normal;
     display: inline-block;
     overflow: visible;
