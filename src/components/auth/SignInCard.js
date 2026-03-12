@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import AuthDotMap from "./AuthDotMap";
 import { supabase } from "@/lib/supabase";
 
-const SignInCard = () => {
+const SignInCard = ({ variant = "user" }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -283,15 +283,29 @@ const SignInCard = () => {
               </div>
             </form>
 
-            {/* Sign Up Link */}
+            {/* Sign Up Link / Partner CTA */}
             <div className="mt-8 text-center text-sm text-gray-500">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors"
-              >
-                Sign up
-              </Link>
+              {variant === "partner" ? (
+                <>
+                  Not a partner but interested in becoming one? Reach out to{" "}
+                  <a
+                    href="mailto:partnersupport@ezana.world"
+                    className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors"
+                  >
+                    partnersupport@ezana.world
+                  </a>
+                </>
+              ) : (
+                <>
+                  Don&apos;t have an account?{" "}
+                  <Link
+                    href="/auth/signup"
+                    className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors"
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         </div>

@@ -14,7 +14,7 @@ export default function PartnerSignInPage() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
       </div>
 
-      <SignInCard />
+      <SignInCard variant="partner" />
     </div>
   );
 }
