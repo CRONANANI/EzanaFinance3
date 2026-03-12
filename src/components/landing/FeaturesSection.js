@@ -302,19 +302,9 @@ export function FeaturesSection() {
           </div>
         </div>
 
-        {/* 4. Community - was missing from Next.js */}
+        {/* 4. Community - text on LEFT, visual on RIGHT (reverse) — follows alternating pattern */}
         <div className="feature-block reverse" data-feature="community">
           <div className="feature-content">
-            <div className="feature-description">
-              <h2 className="feature-title">Learn from collective intelligence</h2>
-              <p className="feature-text">Join a thriving community of informed investors. Share research, discuss strategies, and learn from collective market intelligence. Build your reputation and connect with traders who share your investment philosophy.</p>
-              <div className="feature-stats">
-                <div className="stat-item"><span className="stat-value">10,000+</span><span className="stat-label">Active Users</span></div>
-                <div className="stat-item"><span className="stat-value">50K+</span><span className="stat-label">Shared Insights</span></div>
-                <div className="stat-item"><span className="stat-value">Daily</span><span className="stat-label">Discussions</span></div>
-              </div>
-              <Link href="#heroSection" className="feature-cta"><span>Join the Community</span><i className="bi bi-arrow-right" /></Link>
-            </div>
             <div className="feature-visual">
               <div className="visual-container community-visual">
                 <div className="community-feed">
@@ -339,6 +329,16 @@ export function FeaturesSection() {
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="feature-description">
+              <h2 className="feature-title">Learn from collective intelligence</h2>
+              <p className="feature-text">Join a thriving community of informed investors. Share research, discuss strategies, and learn from collective market intelligence. Build your reputation and connect with traders who share your investment philosophy.</p>
+              <div className="feature-stats">
+                <div className="stat-item"><span className="stat-value">10,000+</span><span className="stat-label">Active Users</span></div>
+                <div className="stat-item"><span className="stat-value">50K+</span><span className="stat-label">Shared Insights</span></div>
+                <div className="stat-item"><span className="stat-value">Daily</span><span className="stat-label">Discussions</span></div>
+              </div>
+              <Link href="#heroSection" className="feature-cta"><span>Join the Community</span><i className="bi bi-arrow-right" /></Link>
             </div>
           </div>
         </div>
