@@ -38,37 +38,37 @@ export default function DatabaseWithRestApi({
 }) {
   const accentColor = lightColor || "#10b981";
 
-  // Evenly distributed: 10%, 30%, 50%, 70%, 90% → x: 90, 270, 450, 630, 810
+  // Uniform spacing: 8%, 26%, 44%, 62%, 80% to prevent overlap between Institutional Portfolios and Alternative Analytics
   const sourcePositions = {
     congress: {
-      left: "10%",
-      fullPath: "M 90 55 L 90 180 Q 90 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
-      pathStart: "M 90 55 L 90 95",
-      pathEnd: "M 90 155 L 90 180 Q 90 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
+      left: "8%",
+      fullPath: "M 72 55 L 72 180 Q 72 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
+      pathStart: "M 72 55 L 72 95",
+      pathEnd: "M 72 155 L 72 180 Q 72 220 140 220 L 420 220 Q 450 220 450 250 L 450 290",
     },
     "13f": {
-      left: "30%",
-      fullPath: "M 270 55 L 270 180 Q 270 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
-      pathStart: "M 270 55 L 270 95",
-      pathEnd: "M 270 155 L 270 180 Q 270 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
+      left: "26%",
+      fullPath: "M 234 55 L 234 180 Q 234 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
+      pathStart: "M 234 55 L 234 95",
+      pathEnd: "M 234 155 L 234 180 Q 234 210 310 210 L 430 210 Q 450 210 450 240 L 450 290",
     },
     institutional: {
-      left: "50%",
-      fullPath: "M 450 55 L 450 290",
-      pathStart: "M 450 55 L 450 95",
-      pathEnd: "M 450 155 L 450 290",
+      left: "44%",
+      fullPath: "M 396 55 L 396 180 Q 396 210 420 210 L 440 210 Q 450 210 450 240 L 450 290",
+      pathStart: "M 396 55 L 396 95",
+      pathEnd: "M 396 155 L 396 180 Q 396 210 420 210 L 440 210 Q 450 210 450 240 L 450 290",
     },
     analytics: {
-      left: "70%",
-      fullPath: "M 630 55 L 630 180 Q 630 210 590 210 L 470 210 Q 450 210 450 240 L 450 290",
-      pathStart: "M 630 55 L 630 95",
-      pathEnd: "M 630 155 L 630 180 Q 630 210 590 210 L 470 210 Q 450 210 450 240 L 450 290",
+      left: "62%",
+      fullPath: "M 558 55 L 558 180 Q 558 210 480 210 L 460 210 Q 450 210 450 240 L 450 290",
+      pathStart: "M 558 55 L 558 95",
+      pathEnd: "M 558 155 L 558 180 Q 558 210 480 210 L 460 210 Q 450 210 450 240 L 450 290",
     },
     community: {
-      left: "90%",
-      fullPath: "M 810 55 L 810 180 Q 810 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
-      pathStart: "M 810 55 L 810 95",
-      pathEnd: "M 810 155 L 810 180 Q 810 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
+      left: "80%",
+      fullPath: "M 720 55 L 720 180 Q 720 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
+      pathStart: "M 720 55 L 720 95",
+      pathEnd: "M 720 155 L 720 180 Q 720 220 760 220 L 480 220 Q 450 220 450 250 L 450 290",
     },
   };
 
@@ -76,7 +76,7 @@ export default function DatabaseWithRestApi({
     { id: "congress", label: badgeTexts?.first || "Congress" },
     { id: "13f", label: badgeTexts?.second || "13F" },
     { id: "institutional", label: badgeTexts?.third || "Institutional" },
-    { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics", wider: true },
+    { id: "analytics", label: badgeTexts?.fourth || "Alternative Analytics" },
     { id: "community", label: badgeTexts?.fifth || "Community" },
   ];
 
@@ -166,14 +166,14 @@ export default function DatabaseWithRestApi({
         </svg>
 
         {/* 5 Data Source Cards - evenly distributed */}
-        {sourceConfigs.map(({ id, label, wider }) => (
+        {sourceConfigs.map(({ id, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => onBadgeClick?.(id)}
             className={cn(
-              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-4 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
-              wider ? "min-w-[150px]" : "min-w-[90px]",
+              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-3 py-2.5 transition-all hover:bg-[#27272a] hover:border-emerald-500/30",
+              "min-w-[100px] max-w-[155px]",
               selectedSource === id && "border-emerald-500/50 bg-emerald-500/10",
               onBadgeClick && "cursor-pointer"
             )}
