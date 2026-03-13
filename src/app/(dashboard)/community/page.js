@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { ProfileCarousel } from '@/components/ui/profile-carousel';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -12,6 +13,7 @@ import '../../../../app-legacy/assets/css/cards-common.css';
 import '../../../../app-legacy/assets/css/metrics-common.css';
 import '../../../../app-legacy/assets/css/research-pages-cards.css';
 import '../../../../app-legacy/pages/community.css';
+import '../../../../app-legacy/components/profile-carousel/profile-carousel.css';
 
 const TRENDING_DISCUSSIONS = [
   { id: 1, author: 'AS', name: 'Aakash Sharma', tag: 'Portfolio Tips', title: 'What are some effective strategies to stay productive with market research?', preview: "I've been struggling to keep up with sector rotations...", time: '2 Hrs Ago', likes: 20, comments: 8 },
@@ -32,6 +34,16 @@ const FRIENDS_LIST = [
   { id: 4, initials: 'EM', name: 'Emily Morrison', streak: 142 },
   { id: 5, initials: 'DL', name: 'Diana Larussa', streak: 354, isYou: true },
   { id: 6, initials: 'CL', name: 'Cathy Morrison', streak: 89 },
+];
+
+const LEGENDARY_INVESTORS = [
+  { name: 'Paul Tudor Jones', designation: '8.1B Net Worth', description: 'Founder of Tudor Investment Corporation. Known for macro trading and predicting the 1987 crash. Pioneer of trend-following and risk parity strategies.', profileImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Christopher Hohn', designation: '11.4B Net Worth', description: 'Founder of TCI Fund Management. Activist investor focused on corporate governance and value creation. Known for concentrated, high-conviction positions.', profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Ray Dalio', designation: '14B Net Worth', description: 'Founder of Bridgewater Associates, the world\'s largest hedge fund. Creator of the "All Weather" portfolio and principles-based investing. Author of "Principles."', profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Israel Englander', designation: '14.5B Net Worth', description: 'Founder of Millennium Management. Built one of the largest multi-strategy hedge funds. Known for quantitative and systematic approaches across asset classes.', profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Steve Cohen', designation: '21.3B Net Worth', description: 'Founder of Point72 and former SAC Capital. Legendary stock picker with a discretionary, research-driven approach. Major art collector and sports team owner.', profileImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'David Tepper', designation: '23.7B Net Worth', description: 'Founder of Appaloosa Management. Distressed debt and equity specialist. Known for bold bets during market crises, including the 2009 financial crisis.', profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Ken Griffin', designation: '51.2B Net Worth', description: 'Founder of Citadel and Citadel Securities. Built a market-making and multi-strategy empire. One of the most successful hedge fund managers in history.', profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
 ];
 
 export default function CommunityPage() {
@@ -205,6 +217,18 @@ export default function CommunityPage() {
           </div>
         </div>
       </div>
+
+      <PinnableCard cardId="legendary-investors" title="Legendary Investors" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
+      <div className="component-card">
+        <div className="card-header card-header-with-subtitle">
+          <h3><i className="bi bi-trophy-fill" /> Legendary Investors</h3>
+          <p className="card-subtitle">Explore public profiles of iconic investors — scroll to analyze their strategies and track records</p>
+        </div>
+        <div className="card-body">
+          <ProfileCarousel items={LEGENDARY_INVESTORS} variant="investor" />
+        </div>
+      </div>
+      </PinnableCard>
 
       <div className="dashboard-grid community-features-grid">
         <PinnableCard cardId="community-feed" title="Community Feed" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={3}>

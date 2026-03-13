@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
-import { InteractiveGlobe } from '@/components/ui/interactive-globe';
+import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
 
 export function LandingHero() {
@@ -47,9 +47,7 @@ export function LandingHero() {
         </div>
       </div>
       <div className="card-preview globe-preview animate-in" data-delay="450">
-        <div className="globe-container">
-          <InteractiveGlobe size={460} />
-        </div>
+        <GlobeWithNotificationCards size={460} />
       </div>
     </div>
   );

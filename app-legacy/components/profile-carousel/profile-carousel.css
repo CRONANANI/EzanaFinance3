@@ -1,0 +1,31 @@
+/* Profile Carousel - scrollbar hide for horizontal scroll */
+.profile-carousel-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.profile-carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.card-header-with-subtitle {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.5rem;
+}
+.card-header-with-subtitle .card-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* Card header with subtitle stacked */
+.card-header-with-subtitle {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.5rem;
+}
+.card-header-with-subtitle .card-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}

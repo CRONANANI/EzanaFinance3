@@ -1023,6 +1023,105 @@ body:has(.landing-page) {
     position: relative;
 }
 
+/* Globe with notification cards - wrapper */
+.globe-with-cards-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.globe-with-cards-wrapper .globe-container {
+    flex-shrink: 0;
+}
+
+.globe-notification-cards {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 120px;
+}
+
+.globe-notification-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(26, 35, 50, 0.85);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    max-width: 280px;
+}
+
+.globe-card-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.globe-card-icon.congress {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+}
+
+.globe-card-icon.market_news {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+}
+
+.globe-card-icon.portfolio_alerts {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+}
+
+.globe-card-icon.community {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+.globe-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.globe-card-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #10b981;
+}
+
+.globe-card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.globe-card-text {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    line-height: 1.35;
+}
+
+.globe-card-time {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+}
+
 @media (max-width: 1024px) {
     .globe-preview {
         min-height: 360px;
@@ -1032,12 +1131,26 @@ body:has(.landing-page) {
         height: 360px;
         max-width: 360px;
     }
+    .globe-with-cards-wrapper {
+        flex-direction: column;
+    }
+    .globe-notification-card {
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 768px) {
     .globe-container {
         height: 320px;
         max-width: 320px;
+    }
+    .globe-with-cards-wrapper {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .globe-notification-card {
+        max-width: 100%;
+        padding: 0.875rem 1rem;
     }
 }
 

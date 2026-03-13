@@ -97,6 +97,8 @@ export function InteractiveGlobe({
   autoRotateSpeed = 0.0015,
   connections = DEFAULT_CONNECTIONS,
   markers = DEFAULT_MARKERS,
+  showConnections = true,
+  showMarkers = true,
 }) {
   const canvasRef = useRef(null);
   const rotYRef = useRef(0.4);
@@ -195,7 +197,8 @@ export function InteractiveGlobe({
       ctx.fill();
     }
 
-    // Draw connection arcs (great circles)
+    // Draw connection arcs (great circles) - optional
+    if (showConnections) {
     for (const conn of connections) {
       const [lat1, lng1] = conn.from;
       const [lat2, lng2] = conn.to;
@@ -271,8 +274,10 @@ export function InteractiveGlobe({
         }
       }
     }
+    }
 
-    // Draw city markers
+    // Draw city markers - optional
+    if (showMarkers) {
     for (const marker of markers) {
       let [x, y, z] = latLngToXYZ(marker.lat, marker.lng, radius);
       [x, y, z] = rotateX(x, y, z, rx);
@@ -313,9 +318,10 @@ export function InteractiveGlobe({
         ctx.fillText(marker.label, sx + 8, sy + 3);
       }
     }
+    }
 
     animRef.current = requestAnimationFrame(draw);
-  }, [dotColor, arcColor, markerColor, autoRotateSpeed, connections, markers]);
+  }, [dotColor, arcColor, markerColor, autoRotateSpeed, connections, markers, showConnections, showMarkers]);
 
   useEffect(() => {
     animRef.current = requestAnimationFrame(draw);

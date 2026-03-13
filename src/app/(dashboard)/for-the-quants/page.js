@@ -2,6 +2,17 @@
 
 import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { ProfileCarousel } from '@/components/ui/profile-carousel';
+
+const TRADING_FIRMS = [
+  { name: 'Optiver', designation: '2B Revenue', description: 'Global market maker and liquidity provider. Specializes in options, ETFs, and equities. Known for low-latency trading and risk management across derivatives.', profileImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'DRW Trading Group', designation: '2-3B Revenue', description: 'Diversified trading firm across equities, fixed income, commodities, and crypto. Combines quantitative research with market-making and proprietary strategies.', profileImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Virtu Financial', designation: '2.8B Revenue', description: 'Electronic market maker and liquidity provider. Operates across global equities, options, futures, and FX. Known for technology-driven execution.', profileImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'XTX Markets', designation: '3-4B Revenue', description: 'Algorithmic trading firm and market maker. Focus on FX, commodities, and equities. One of the largest non-bank FX market makers globally.', profileImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Hudson River Trading', designation: '8B Revenue', description: 'Quantitative trading firm using technology and research. Focus on equities, options, and crypto. Emphasizes scientific approach and engineering culture.', profileImage: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Citadel Securities', designation: '9.7B Revenue', description: 'Leading market maker in equities and options. Executes a significant share of US retail order flow. Part of Ken Griffin\'s Citadel ecosystem.', profileImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+  { name: 'Jane Street', designation: '20.5B Revenue', description: 'Global quantitative trading firm. Market maker in ETFs, equities, options, and crypto. Known for functional programming (OCaml) and rigorous risk management.', profileImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+];
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -10,6 +21,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/pages/for-the-quants.css';
+import '../../../../app-legacy/components/profile-carousel/profile-carousel.css';
 
 export default function ForTheQuantsPage() {
   return (
@@ -48,6 +60,18 @@ export default function ForTheQuantsPage() {
           </div>
         </div>
       </div>
+
+      <PinnableCard cardId="trading-firms" title="Trading Firms" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={4} defaultH={2}>
+      <div className="component-card">
+        <div className="card-header card-header-with-subtitle">
+          <h3><i className="bi bi-building" /> Trading Firms — Patterns & Revenue</h3>
+          <p className="card-subtitle">Swap through leading quantitative and market-making firms — analyze their trading patterns and revenue profiles</p>
+        </div>
+        <div className="card-body">
+          <ProfileCarousel items={TRADING_FIRMS} variant="firm" />
+        </div>
+      </div>
+      </PinnableCard>
 
       <PinnableCard cardId="quant-model" title="Quantitative Model Analysis" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={4} defaultH={3}>
       <div className="component-card full-width quant-model-card">
