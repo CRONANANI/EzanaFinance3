@@ -224,7 +224,7 @@ body:has(.landing-page) {
     transform: translateY(-2px);
 }
 
-/* Sign In Button in Navigation */
+/* Sign In Button in Navigation - unified design (Partner Login style) */
 .sign-in-btn {
     display: inline-flex;
     align-items: center;
@@ -232,8 +232,6 @@ body:has(.landing-page) {
     padding: 0.5rem 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #0d1117;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     border-radius: 8px;
     transition: all 0.2s ease;
     text-decoration: none;
@@ -243,25 +241,14 @@ body:has(.landing-page) {
     transform: translateY(-1px);
 }
 
-.sign-in-btn-primary,
-.sign-in-btn:not(.sign-in-btn-partner) {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #0d1117;
-}
-
-.sign-in-btn-primary:hover,
-.sign-in-btn:not(.sign-in-btn-partner):hover {
-    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.sign-in-btn-partner {
+/* All nav buttons use Partner Login style: transparent bg, green border */
+.sign-in-btn-nav {
     background: transparent;
     color: #10b981;
     border: 2px solid #10b981;
 }
 
-.sign-in-btn-partner:hover {
+.sign-in-btn-nav:hover {
     background: rgba(16, 185, 129, 0.1);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
