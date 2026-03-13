@@ -64,6 +64,55 @@ const ARTICLES = {
       </>
     ),
   },
+  'hedge-funds-3y-performance': {
+    title: 'Hedge funds with the highest 3Y performance (2023–2026)',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '6 min read',
+    content: (
+      <>
+        <p className="ezana-article-lead">
+          Based on 13F filings and performance data from 2023–2026, these seven hedge funds delivered the strongest three-year returns. From concentrated Tiger Cubs to global macro strategies, here are the top performers and what drives their edge.
+        </p>
+
+        <h2>1. Ratan Capital — ~277.8%</h2>
+        <p>
+          Concentrated Tiger-Cub hedge fund running a catalyst-driven equity strategy with large positions in companies such as NVIDIA, Amazon, Meta and Microsoft. The firm was founded by Nehal Chopra, a former Tiger Management analyst.
+        </p>
+
+        <h2>2. Duquesne Family Office — ~242.3%</h2>
+        <p>
+          Global macro strategy investing across equities, sectors and macro themes with positions such as Natera, XLF and Insmed. The firm traces back to Duquesne Capital, the hedge fund Stanley Druckenmiller ran for George Soros.
+        </p>
+
+        <h2>3. NWI Management — ~227.3%</h2>
+        <p>
+          Growth-focused equity hedge fund concentrating capital in leaders like MercadoLibre and Microsoft. The firm is known for maintaining a small number of high-conviction positions rather than a diversified portfolio.
+        </p>
+
+        <h2>4. Coatue Management — ~219.1%</h2>
+        <p>
+          Technology-focused hedge fund investing across public stocks and venture capital, with major holdings such as Amazon, Meta, Microsoft and TSMC. Founded in 1999 by Philippe Laffont, a former Tiger Management analyst.
+        </p>
+
+        <h2>5. Peconic Partners — ~204.1%</h2>
+        <p>
+          Highly concentrated fundamental hedge fund focusing on companies like Quanta Services and Freeport-McMoRan. The fund was founded by William Harnisch and became known for running extremely concentrated portfolios.
+        </p>
+
+        <h2>6. Tiger Global — ~184.9%</h2>
+        <p>
+          Global growth hedge fund with major holdings including Alphabet, Amazon, Microsoft and NVIDIA. The firm is one of the most famous Tiger Management spin-offs and an early investor in companies like Facebook, JD.com and Stripe.
+        </p>
+
+        <h2>7. Point72 — ~184.2%</h2>
+        <p>
+          Massive multi-manager hedge fund with large exposure to AI and semiconductor companies. The firm was created by Steven Cohen after SAC Capital, one of the most successful trading firms in hedge fund history.
+        </p>
+      </>
+    ),
+  },
 };
 
 function PermianBasinMap() {

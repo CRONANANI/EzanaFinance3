@@ -30,6 +30,17 @@ const ARTICLES = [
     featured: false,
   },
   {
+    slug: 'hedge-funds-3y-performance',
+    title: 'Hedge funds with the highest 3Y performance (2023–2026)',
+    excerpt: 'Top-performing hedge funds by 3-year returns, sourced from 13F filings. From Ratan Capital to Point72.',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '6 min read',
+    image: '/api/placeholder/400/250',
+    featured: false,
+  },
+  {
     slug: 'hedge-fund-13f-preview',
     title: 'Hedge fund 13F filings: What to watch this quarter',
     excerpt: 'Major institutional investors are due to report. Here’s how to interpret the data.',

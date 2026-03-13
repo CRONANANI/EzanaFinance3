@@ -10,4 +10,11 @@ export const ARTICLES_META = {
     date: '2 Mar 2025',
     readTime: '8 min read',
   },
+  'hedge-funds-3y-performance': {
+    title: 'Hedge funds with the highest 3Y performance (2023–2026)',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '6 min read',
+  },
 };
