@@ -16,20 +16,39 @@ const HERO_NOTIFICATIONS = [
 
 const TIME_AGOS = ["2m ago", "8m ago", "1h ago", "2h ago", "4h ago", "6h ago", "1d ago"];
 
+const SIDES = ["left", "right"];
+const VERTICAL_POSITIONS = [0, 1, 2];
+
+function pickRandomPosition(prevSide, prevVPos) {
+  const candidates = [];
+  for (const s of SIDES) {
+    for (const v of VERTICAL_POSITIONS) {
+      if (s !== prevSide || v !== prevVPos) {
+        candidates.push({ side: s, vPos: v });
+      }
+    }
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
 export function GlobeWithNotificationCards({ size = 460 }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [position, setPosition] = useState(() => pickRandomPosition(null, null));
 
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveIndex((i) => (i + 1) % HERO_NOTIFICATIONS.length);
+      setPosition((prev) => {
+        const next = pickRandomPosition(prev.side, prev.vPos);
+        return next;
+      });
     }, 5000);
     return () => clearInterval(interval);
   }, []);
 
   const item = HERO_NOTIFICATIONS[activeIndex];
   const timeAgo = TIME_AGOS[activeIndex % TIME_AGOS.length];
-  const side = activeIndex % 2 === 0 ? "left" : "right";
-  const verticalPos = activeIndex % 3;
+  const { side, vPos: verticalPos } = position;
 
   const Alert = ({ cardItem, cardTimeAgo, cardSide, vPos }) => (
     <motion.div
