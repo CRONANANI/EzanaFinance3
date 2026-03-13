@@ -20,7 +20,8 @@ export function Navbar() {
   const isHelpCenter = pathname?.startsWith('/help-center');
   const DASHBOARD_PAGES = ['/home', '/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
   const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
-  const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated);
+  const isEzanaEcho = pathname?.startsWith('/ezana-echo');
+  const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated) || isEzanaEcho;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -53,6 +54,9 @@ export function Navbar() {
             </li>
             <li className="nav-item">
               <a href="/#pricing" className="nav-link">Pricing</a>
+            </li>
+            <li className="nav-item">
+              <Link href="/ezana-echo" className="nav-link">Ezana Echo</Link>
             </li>
             <li className="nav-item">
               <a href="/#faq" className="nav-link">FAQ</a>
