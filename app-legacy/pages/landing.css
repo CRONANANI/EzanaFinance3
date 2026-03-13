@@ -1041,7 +1041,7 @@ body:has(.landing-page) {
 
 .globe-notification-cards {
     position: relative;
-    width: 320px;
+    width: 380px;
     min-width: 200px;
     height: 460px;
     display: flex;
@@ -1057,18 +1057,12 @@ body:has(.landing-page) {
     justify-content: flex-start;
 }
 
-.globe-notification-card {
+.globe-notification-alert {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
-    padding: 0.5rem 0.6rem;
-    background: rgba(26, 35, 50, 0.85);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    border-radius: 10px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
     width: max-content;
-    max-width: 320px;
+    max-width: 380px;
     flex-shrink: 0;
 }
 
@@ -1076,39 +1070,39 @@ body:has(.landing-page) {
 .globe-card-v-1 { align-self: center; }
 .globe-card-v-2 { align-self: flex-end; }
 
-.globe-card-icon {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    border-radius: 8px;
+.globe-alert-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     flex-shrink: 0;
 }
 
-.globe-card-icon.congress {
+.globe-alert-icon.congress {
     background: linear-gradient(135deg, #dc2626, #991b1b);
     color: white;
 }
 
-.globe-card-icon.market_news {
+.globe-alert-icon.market_news {
     background: linear-gradient(135deg, #06b6d4, #0891b2);
     color: white;
 }
 
-.globe-card-icon.portfolio_alerts {
+.globe-alert-icon.portfolio_alerts {
     background: linear-gradient(135deg, #14b8a6, #0d9488);
     color: white;
 }
 
-.globe-card-icon.community {
+.globe-alert-icon.community {
     background: linear-gradient(135deg, #8b5cf6, #7c3aed);
     color: white;
 }
 
-.globe-card-content {
+.globe-alert-content {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
@@ -1116,32 +1110,19 @@ body:has(.landing-page) {
     min-width: 0;
 }
 
-.globe-card-badge {
-    font-size: 0.6rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #10b981;
-}
-
-.globe-card-title {
+.globe-alert-title {
     font-size: 0.8rem;
     font-weight: 600;
     color: #f8fafc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-.globe-card-text {
+.globe-alert-text {
     font-size: 0.75rem;
     color: #94a3b8;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.4;
 }
 
-.globe-card-time {
+.globe-alert-time {
     font-size: 0.65rem;
     color: #64748b;
 }
@@ -1169,7 +1150,7 @@ body:has(.landing-page) {
     .globe-cards-right {
         justify-content: center;
     }
-    .globe-notification-card {
+    .globe-notification-alert {
         width: max-content;
         max-width: 100%;
     }
@@ -1184,10 +1165,9 @@ body:has(.landing-page) {
         flex-direction: column;
         gap: 0.5rem;
     }
-    .globe-notification-card {
+    .globe-notification-alert {
         width: max-content;
         max-width: 100%;
-        padding: 0.4rem 0.5rem;
     }
 }
 
