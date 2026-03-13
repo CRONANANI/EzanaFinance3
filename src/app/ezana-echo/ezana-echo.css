@@ -255,6 +255,14 @@
   background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
 }
 
+.ezana-echo-card-image-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .ezana-echo-card-image-placeholder {
   position: absolute;
   inset: 0;

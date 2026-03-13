@@ -37,7 +37,7 @@ const ARTICLES = [
     author: 'Ezana Research',
     date: '2 Mar 2025',
     readTime: '5 min read',
-    image: '/api/placeholder/400/250',
+    image: '/images/ezana-echo/sp500-returns-preview.png',
     featured: false,
   },
   {
@@ -180,9 +180,17 @@ export default function EzanaEchoPage() {
                 className="ezana-echo-card"
               >
                 <div className="ezana-echo-card-image">
-                  <div className="ezana-echo-card-image-placeholder">
-                    <i className="bi bi-newspaper text-4xl text-emerald-500/30" />
-                  </div>
+                  {article.image && !article.image.startsWith('/api/placeholder') ? (
+                    <img
+                      src={article.image}
+                      alt={article.title}
+                      className="ezana-echo-card-image-img"
+                    />
+                  ) : (
+                    <div className="ezana-echo-card-image-placeholder">
+                      <i className="bi bi-newspaper text-4xl text-emerald-500/30" />
+                    </div>
+                  )}
                   <span className="ezana-echo-card-category">{article.category}</span>
                 </div>
                 <div className="ezana-echo-card-body">
