@@ -244,13 +244,14 @@ export default function HomeDashboardPage() {
                   const qty = tx.quantity ? ` ${Number(tx.quantity)} shares` : '';
                   const desc = (tx.subtype || tx.type || (isBuy ? 'Buy' : 'Sell')).replace(/_/g, ' ');
                   const dateStr = tx.date ? new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                  const displayName = tx.metadata?.ticker || tx.name || tx.security_id || 'Transaction';
                   return (
-                    <div key={tx.id || tx.transaction_id || `${tx.date}-${tx.name}`} className={`transaction-item ${isBuy ? 'buy' : 'sell'}`}>
+                    <div key={tx.id || tx.transaction_id || `${tx.date}-${tx.name}-${tx.amount}`} className={`transaction-item ${isBuy ? 'buy' : 'sell'}`}>
                       <div className="transaction-icon">
                         <i className={isBuy ? 'bi bi-arrow-up-circle' : 'bi bi-arrow-down-circle'} />
                       </div>
                       <div className="transaction-details">
-                        <div className="transaction-name">{tx.name || tx.security_id || 'Transaction'}</div>
+                        <div className="transaction-name">{displayName}</div>
                         <div className="transaction-meta">{desc}{qty}</div>
                       </div>
                       <div className="transaction-amount">

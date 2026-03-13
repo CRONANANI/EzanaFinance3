@@ -326,6 +326,8 @@ body.sidebar-open .dashboard-main {
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 0.75rem;
+  min-height: 52px;
+  align-items: center;
 }
 
 .quick-action-btn {
@@ -358,6 +360,7 @@ body.sidebar-open .dashboard-main {
    CONSOLIDATED PORTFOLIO METRICS (same as quick actions bar)
    ============================================ */
 
+/* Match quick-actions-bar dimensions: same height, full width */
 .portfolio-metrics-consolidated {
   display: flex;
   gap: 0.75rem;
@@ -367,6 +370,9 @@ body.sidebar-open .dashboard-main {
   border-radius: 8px;
   padding: 0.75rem;
   flex-wrap: wrap;
+  min-height: 52px;
+  align-items: center;
+  width: 100%;
 }
 
 .portfolio-metrics-consolidated .metric-item {
@@ -730,7 +736,7 @@ body.sidebar-open .dashboard-main {
   margin-top: 1rem;
 }
 
-/* Recent Transactions - full width */
+/* Recent Transactions - full width within container margins */
 .recent-transactions-full-width {
   margin-top: 1rem;
   width: 100%;
@@ -738,6 +744,7 @@ body.sidebar-open .dashboard-main {
 
 .recent-transactions-full-width .transactions-card-full {
   width: 100%;
+  max-width: 100%;
 }
 
 .card-header-tight {
@@ -751,6 +758,22 @@ body.sidebar-open .dashboard-main {
 
 .transactions-card .card-body-tight .transaction-list {
   margin-top: 0;
+  padding-top: 0;
+}
+
+/* Remove gap between card and first transaction row */
+.recent-transactions-full-width .transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.recent-transactions-full-width .transaction-item {
+  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+}
+
+.recent-transactions-full-width .transaction-item:last-child {
+  border-bottom: none;
 }
 
 .transactions-card .card-description {

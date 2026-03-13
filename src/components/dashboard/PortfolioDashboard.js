@@ -144,22 +144,21 @@ export default function PortfolioDashboard() {
                 <button
                   type="button"
                   onClick={() => toggleAccount(account.id || account.account_id)}
-                  className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-800/30 transition-colors"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-800/30 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-gray-500">
+                    <span className="text-gray-500 flex-shrink-0">
                       {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </span>
-                    <div>
-                      <h4 className="font-medium text-white">{account.name}</h4>
-                      <p className="text-sm text-gray-500 capitalize">{account.subtype || 'Investment'} • ****{account.mask}</p>
-                    </div>
+                    <h4 className="font-medium text-white">{account.name}</h4>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-white">{formatCurrency(account.totalValue)}</p>
-                    <p className={`text-sm ${account.gainLoss >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {formatCurrency(account.gainLoss)} ({formatPercent(account.gainLossPercent)})
-                    </p>
+                    {isExpanded && (
+                      <p className={`text-sm ${account.gainLoss >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                        {formatCurrency(account.gainLoss)} ({formatPercent(account.gainLossPercent)})
+                      </p>
+                    )}
                   </div>
                 </button>
                 {isExpanded && (
@@ -229,7 +228,7 @@ export default function PortfolioDashboard() {
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-emerald-500">{formatPercent(topPerformers[0].gainLossPercent)}</p>
-                  <p className="text-xs text-gray-500">{formatCurrency(topPerformers[0].gainLoss)}</p>
+                  <p className="text-xs text-white font-medium">{formatCurrency(topPerformers[0].currentValue || (Number(topPerformers[0].quantity) * Number(topPerformers[0].institution_price || topPerformers[0].institution_value || 0)))}</p>
                 </div>
               </div>
             )}
