@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import PortfolioDashboard from '@/components/dashboard/PortfolioDashboard';
 import { PortfolioChart } from '@/components/dashboard/PortfolioChart';
-import { PinnableCard } from '@/components/ui/PinnableCard';
+import { PortfolioNews } from '@/components/dashboard/PortfolioNews';
+import { usePortfolio } from '@/hooks/usePortfolio';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -26,11 +27,15 @@ const CAROUSEL_METRICS = [
   { label: 'Sector Exposure', value: 'Tech 35%', change: 'Top 3 sectors tracked' },
 ];
 
+const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(v);
+
 export default function HomeDashboardPage() {
   const scriptLoadedRef = useRef(false);
   const [brokerageOpen, setBrokerageOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
+  const { portfolio } = usePortfolio();
+  const transactions = portfolio?.recentTransactions || [];
 
   const exportReport = useCallback(() => {
     const rows = CAROUSEL_METRICS.map((m) => [m.label, m.value, m.change].join(','));
@@ -170,112 +175,6 @@ export default function HomeDashboardPage() {
         <PortfolioDashboard />
       </section>
 
-      {/* Metrics Carousel */}
-      <section className="metrics-carousel-section compact">
-        <button className="carousel-nav prev" id="carouselPrev" type="button">
-          <i className="bi bi-chevron-left" />
-        </button>
-        <div className="metrics-carousel-container">
-          <div className="metrics-carousel-track" id="metricsCarousel">
-            <PinnableCard cardId="portfolio-value" title="Portfolio Value" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={1}>
-            <div className="metric-card active" data-metric="portfolio">
-              <div className="metric-icon portfolio">
-                <i className="bi bi-wallet2" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Portfolio Value</span>
-                <span className="metric-value">$158,420</span>
-                <span className="metric-change positive">+24.5% YTD</span>
-              </div>
-            </div>
-            </PinnableCard>
-            <div className="metric-card" data-metric="pnl">
-              <div className="metric-icon pnl">
-                <i className="bi bi-graph-up" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Today&apos;s P&L</span>
-                <span className="metric-value">+$1,247</span>
-                <span className="metric-change positive">+0.82% today</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="performer" data-symbol="NVDA">
-              <div className="metric-icon performer">
-                <i className="bi bi-star" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Top Performer</span>
-                <span className="metric-value performer-value">NVDA</span>
-                <span className="metric-change performer-change positive">—</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="risk">
-              <div className="metric-icon risk">
-                <i className="bi bi-shield-exclamation" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Risk Score</span>
-                <span className="metric-value">6.2/10</span>
-                <span className="metric-change negative">-0.3 vs last week</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="dividends">
-              <div className="metric-icon dividends">
-                <i className="bi bi-cash-coin" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Monthly Dividends</span>
-                <span className="metric-value">$847</span>
-                <span className="metric-change positive">+12.0% MoM</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="allocation">
-              <div className="metric-icon allocation">
-                <i className="bi bi-pie-chart" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Asset Allocation</span>
-                <span className="metric-value">Balanced</span>
-                <span className="metric-change positive">Stocks 65% • Bonds 20%</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="volatility">
-              <div className="metric-icon volatility">
-                <i className="bi bi-activity" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Volatility</span>
-                <span className="metric-value">4.8/10</span>
-                <span className="metric-change positive">-0.4 this month</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="beta">
-              <div className="metric-icon beta">
-                <i className="bi bi-arrow-down-up" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Beta vs Market</span>
-                <span className="metric-value">1.05</span>
-                <span className="metric-change">Near market sensitivity</span>
-              </div>
-            </div>
-            <div className="metric-card" data-metric="sector">
-              <div className="metric-icon sector">
-                <i className="bi bi-building" />
-              </div>
-              <div className="metric-content">
-                <span className="metric-label">Sector Exposure</span>
-                <span className="metric-value">Tech 35%</span>
-                <span className="metric-change">Top 3 sectors tracked</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button className="carousel-nav next" id="carouselNext" type="button">
-          <i className="bi bi-chevron-right" />
-        </button>
-      </section>
-
       {/* Main Content Grid */}
       <div className="dashboard-grid">
         {/* Main Chart Section */}
@@ -320,345 +219,51 @@ export default function HomeDashboardPage() {
           </div>
         </section>
 
-        {/* Portfolio News Sidebar */}
-        <section className="portfolio-news-sidebar">
-          <div className="news-header">
-            <h3>Relevant Portfolio News</h3>
-            <i className="bi bi-newspaper" />
-          </div>
-          <div className="news-ticker-wrapper">
-            <div className="news-ticker" id="newsTicker">
-              <div className="news-insight">
-                <div className="insight-icon positive">
-                  <i className="bi bi-arrow-up-circle" />
-                </div>
-                <div className="insight-content">
-                  <p className="insight-text">
-                    Yesterday your portfolio jumped by 0.45%. That&apos;s the 10th
-                    highest one-day jump ever.
-                  </p>
-                  <span className="insight-time">Yesterday</span>
-                </div>
-              </div>
-              <div className="news-insight">
-                <div className="insight-icon warning">
-                  <i className="bi bi-exclamation-triangle" />
-                </div>
-                <div className="insight-content">
-                  <p className="insight-text">
-                    Your portfolio&apos;s tech exposure increased to 35% this
-                    week. Consider rebalancing.
-                  </p>
-                  <span className="insight-time">2 days ago</span>
-                </div>
-              </div>
-              <div className="news-insight">
-                <div className="insight-icon info">
-                  <i className="bi bi-lightbulb" />
-                </div>
-                <div className="insight-content">
-                  <p className="insight-text">
-                    NVDA has gained 12.4% this week. It&apos;s now your top
-                    performer for Q4.
-                  </p>
-                  <span className="insight-time">3 days ago</span>
-                </div>
-              </div>
-              <div className="news-insight">
-                <div className="insight-icon positive">
-                  <i className="bi bi-trophy" />
-                </div>
-                <div className="insight-content">
-                  <p className="insight-text">
-                    Your portfolio beat the S&P 500 by 2.2% this quarter. Great
-                    job!
-                  </p>
-                  <span className="insight-time">1 week ago</span>
-                </div>
-              </div>
-              <div className="news-insight">
-                <div className="insight-icon warning">
-                  <i className="bi bi-cash-stack" />
-                </div>
-                <div className="insight-content">
-                  <p className="insight-text">
-                    You&apos;ll receive $847 in dividend payments next week from
-                    5 holdings.
-                  </p>
-                  <span className="insight-time">1 week ago</span>
-                </div>
-              </div>
-              <div className="news-insight">
-                <div className="insight-icon info">
-                  <i className="bi bi-graph-down" />
-                </div>
-                <div className="insight-content">
-                  <p className="insight-text">
-                    Your portfolio volatility decreased to 4.8. You&apos;re below
-                    market average.
-                  </p>
-                  <span className="insight-time">2 weeks ago</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Portfolio News - real data from holdings */}
+        <PortfolioNews />
       </div>
 
-      {/* Additional Component Cards */}
-      <div className="additional-components-grid">
-        <PinnableCard cardId="recent-transactions" title="Recent Transactions" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
-        <section className="component-card transactions-card">
-          <div className="card-header">
+      {/* Recent Transactions - full width, real data */}
+      <div className="recent-transactions-full-width">
+        <section className="component-card transactions-card transactions-card-full">
+          <div className="card-header card-header-tight">
             <h3>Recent Transactions</h3>
-            <button className="card-action-btn" type="button">
-              View All
-            </button>
+            <button className="card-action-btn" type="button">View All</button>
           </div>
-          <p className="card-description">
-            Track your latest buys and sells with timestamps and amounts.
-          </p>
-          <div className="card-body">
+          <div className="card-body card-body-tight">
             <div className="transaction-list">
-              <div className="transaction-item buy">
-                <div className="transaction-icon">
-                  <i className="bi bi-arrow-up-circle" />
+              {transactions.length === 0 ? (
+                <div className="transaction-empty text-gray-500 py-4 text-center">
+                  No recent transactions. Connect your brokerage to sync your activity.
                 </div>
-                <div className="transaction-details">
-                  <div className="transaction-name">NVDA</div>
-                  <div className="transaction-meta">Bought 10 shares</div>
-                </div>
-                <div className="transaction-amount">
-                  <div className="amount">$4,850.00</div>
-                  <div className="date">Today, 2:30 PM</div>
-                </div>
-              </div>
-              <div className="transaction-item sell">
-                <div className="transaction-icon">
-                  <i className="bi bi-arrow-down-circle" />
-                </div>
-                <div className="transaction-details">
-                  <div className="transaction-name">TSLA</div>
-                  <div className="transaction-meta">Sold 5 shares</div>
-                </div>
-                <div className="transaction-amount">
-                  <div className="amount">$1,245.50</div>
-                  <div className="date">Yesterday, 10:15 AM</div>
-                </div>
-              </div>
-              <div className="transaction-item buy">
-                <div className="transaction-icon">
-                  <i className="bi bi-arrow-up-circle" />
-                </div>
-                <div className="transaction-details">
-                  <div className="transaction-name">AAPL</div>
-                  <div className="transaction-meta">Bought 15 shares</div>
-                </div>
-                <div className="transaction-amount">
-                  <div className="amount">$2,730.00</div>
-                  <div className="date">2 days ago</div>
-                </div>
-              </div>
+              ) : (
+                transactions.slice(0, 10).map((tx) => {
+                  const typeStr = (tx.type || tx.subtype || '').toLowerCase();
+                  const isBuy = typeStr.includes('buy') || typeStr.includes('purchase');
+                  const amount = Math.abs(Number(tx.amount) || 0);
+                  const qty = tx.quantity ? ` ${Number(tx.quantity)} shares` : '';
+                  const desc = (tx.subtype || tx.type || (isBuy ? 'Buy' : 'Sell')).replace(/_/g, ' ');
+                  const dateStr = tx.date ? new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                  return (
+                    <div key={tx.id || tx.transaction_id || `${tx.date}-${tx.name}`} className={`transaction-item ${isBuy ? 'buy' : 'sell'}`}>
+                      <div className="transaction-icon">
+                        <i className={isBuy ? 'bi bi-arrow-up-circle' : 'bi bi-arrow-down-circle'} />
+                      </div>
+                      <div className="transaction-details">
+                        <div className="transaction-name">{tx.name || tx.security_id || 'Transaction'}</div>
+                        <div className="transaction-meta">{desc}{qty}</div>
+                      </div>
+                      <div className="transaction-amount">
+                        <div className="amount">{formatCurrency(amount)}</div>
+                        <div className="date">{dateStr}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>
-        </PinnableCard>
-        <PinnableCard cardId="top-holdings" title="Top Holdings" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
-        <section className="component-card holdings-card">
-          <div className="card-header">
-            <h3>Top Holdings</h3>
-            <button className="card-action-btn" type="button">
-              Manage
-            </button>
-          </div>
-          <p className="card-description">
-            Your largest positions ranked by portfolio allocation percentage.
-          </p>
-          <div className="card-body">
-            <div className="holdings-list">
-              <div
-                className="holding-item"
-                data-symbol="NVDA"
-                data-shares="150"
-              >
-                <div className="holding-rank">1</div>
-                <div className="holding-info">
-                  <div className="holding-name">NVDA</div>
-                  <div className="holding-shares">150 shares</div>
-                </div>
-                <div className="holding-value">
-                  <div className="value holding-value-display">$72,850</div>
-                  <div className="change holding-change-display positive">
-                    +12.4%
-                  </div>
-                </div>
-                <div className="holding-allocation">
-                  <div className="allocation-bar">
-                    <div
-                      className="allocation-fill"
-                      style={{ width: '28%' }}
-                    />
-                  </div>
-                  <span className="allocation-percent">28%</span>
-                </div>
-              </div>
-              <div
-                className="holding-item"
-                data-symbol="AAPL"
-                data-shares="200"
-              >
-                <div className="holding-rank">2</div>
-                <div className="holding-info">
-                  <div className="holding-name">AAPL</div>
-                  <div className="holding-shares">200 shares</div>
-                </div>
-                <div className="holding-value">
-                  <div className="value holding-value-display">$36,400</div>
-                  <div className="change holding-change-display positive">
-                    +5.2%
-                  </div>
-                </div>
-                <div className="holding-allocation">
-                  <div className="allocation-bar">
-                    <div
-                      className="allocation-fill"
-                      style={{ width: '18%' }}
-                    />
-                  </div>
-                  <span className="allocation-percent">18%</span>
-                </div>
-              </div>
-              <div
-                className="holding-item"
-                data-symbol="MSFT"
-                data-shares="85"
-              >
-                <div className="holding-rank">3</div>
-                <div className="holding-info">
-                  <div className="holding-name">MSFT</div>
-                  <div className="holding-shares">85 shares</div>
-                </div>
-                <div className="holding-value">
-                  <div className="value holding-value-display">$32,045</div>
-                  <div className="change holding-change-display positive">
-                    +3.8%
-                  </div>
-                </div>
-                <div className="holding-allocation">
-                  <div className="allocation-bar">
-                    <div
-                      className="allocation-fill"
-                      style={{ width: '15%' }}
-                    />
-                  </div>
-                  <span className="allocation-percent">15%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        </PinnableCard>
-        <PinnableCard cardId="performance-summary" title="Performance Summary" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
-        <section className="component-card performance-card">
-          <div className="card-header">
-            <h3>Performance Summary</h3>
-            <select className="time-select">
-              <option>This Month</option>
-              <option>This Quarter</option>
-              <option>This Year</option>
-            </select>
-          </div>
-          <p className="card-description">
-            See how your portfolio performed over different time periods with
-            key metrics.
-          </p>
-          <div className="card-body">
-            <div className="performance-metrics">
-              <div className="perf-metric">
-                <div className="perf-label">Total Return</div>
-                <div className="perf-value positive">+8.4%</div>
-                <div className="perf-comparison">vs S&P 500: +6.2%</div>
-              </div>
-              <div className="perf-metric">
-                <div className="perf-label">Total Gain/Loss</div>
-                <div className="perf-value positive">+$12,847</div>
-                <div className="perf-comparison">+6.8% of initial investment</div>
-              </div>
-              <div className="perf-metric">
-                <div className="perf-label">Best Day</div>
-                <div className="perf-value">+$2,145</div>
-                <div className="perf-comparison">December 15, 2025</div>
-              </div>
-              <div className="perf-metric">
-                <div className="perf-label">Dividend Income</div>
-                <div className="perf-value">$2,541</div>
-                <div className="perf-comparison">+12% vs last period</div>
-              </div>
-            </div>
-          </div>
-        </section>
-        </PinnableCard>
-        <PinnableCard cardId="alerts-recommendations" title="Alerts & Recommendations" sourcePage="/home-dashboard" sourceLabel="Dashboard" defaultW={2} defaultH={2}>
-        <section className="component-card alerts-card">
-          <div className="card-header">
-            <h3>Alerts &amp; Recommendations</h3>
-            <span className="alert-count">3 New</span>
-          </div>
-          <p className="card-description">
-            Smart notifications for rebalancing, opportunities, and important
-            events.
-          </p>
-          <div className="card-body">
-            <div className="alerts-list">
-              <div className="alert-item high">
-                <div className="alert-priority">
-                  <i className="bi bi-exclamation-circle" />
-                </div>
-                <div className="alert-content">
-                  <div className="alert-title">Rebalancing Suggested</div>
-                  <div className="alert-message">
-                    Your tech allocation (35%) exceeds target (30%). Consider
-                    reducing exposure.
-                  </div>
-                </div>
-                <button className="alert-action" type="button">
-                  Review
-                </button>
-              </div>
-              <div className="alert-item medium">
-                <div className="alert-priority">
-                  <i className="bi bi-lightbulb" />
-                </div>
-                <div className="alert-content">
-                  <div className="alert-title">Buy Opportunity</div>
-                  <div className="alert-message">
-                    AAPL is down 3.2% today. Good entry point based on your
-                    strategy.
-                  </div>
-                </div>
-                <button className="alert-action" type="button">
-                  View
-                </button>
-              </div>
-              <div className="alert-item low">
-                <div className="alert-priority">
-                  <i className="bi bi-info-circle" />
-                </div>
-                <div className="alert-content">
-                  <div className="alert-title">Dividend Payment</div>
-                  <div className="alert-message">
-                    You&apos;ll receive $847 in dividends on October 15th from
-                    5 holdings.
-                  </div>
-                </div>
-                <button className="alert-action" type="button">
-                  Details
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-        </PinnableCard>
       </div>
 
       {/* Market Movers Section */}

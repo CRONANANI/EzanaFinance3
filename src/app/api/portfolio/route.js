@@ -64,6 +64,18 @@ export async function GET(request) {
       console.error('Securities error:', securitiesError);
     }
 
+    // Fetch transactions
+    const { data: transactions, error: transactionsError } = await supabase
+      .from('plaid_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(50);
+
+    if (transactionsError) {
+      console.error('Transactions error:', transactionsError);
+    }
+
     // If no data, return empty state
     if (!accounts || accounts.length === 0) {
       return NextResponse.json({
@@ -80,6 +92,7 @@ export async function GET(request) {
         topPerformers: [],
         worstPerformers: [],
         allocation: {},
+        recentTransactions: [],
         message: 'No portfolio data found'
       });
     }
@@ -154,6 +167,7 @@ export async function GET(request) {
       topPerformers,
       worstPerformers: [...holdingsWithGains].sort((a, b) => a.gainLossPercent - b.gainLossPercent).slice(0, 5),
       allocation,
+      recentTransactions: transactions || [],
       securities: securities || [],
     });
 
