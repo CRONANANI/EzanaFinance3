@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Sp500Chart } from '@/components/ezana-echo/Sp500Chart';
 import './article.css';
 
 const ARTICLES = {
@@ -113,6 +114,21 @@ const ARTICLES = {
       </>
     ),
   },
+  'sp500-returns-by-president': {
+    title: 'S&P 500 returns under different presidents',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '5 min read',
+    content: (
+      <>
+        <p className="ezana-article-lead">
+          S&P 500 total returns vary significantly by presidential term, driven by economic cycles, Fed policy, and global events. Hover over each point to see the context behind the numbers—from the dot-com boom and bust to the financial crisis rebound and beyond.
+        </p>
+        <Sp500Chart />
+      </>
+    ),
+  },
 };
 
 function PermianBasinMap() {
@@ -181,7 +197,7 @@ export default function ArticlePage() {
   return (
     <div className="ezana-article-page">
       <div className="ezana-echo-bg" />
-      <div className="ezana-article-container">
+      <div className={`ezana-article-container ${slug === 'sp500-returns-by-president' ? 'ezana-article-wide' : ''}`}>
         <Link href="/ezana-echo" className="ezana-article-back">
           <i className="bi bi-arrow-left" />
           Back to Articles

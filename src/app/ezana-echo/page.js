@@ -30,6 +30,17 @@ const ARTICLES = [
     featured: false,
   },
   {
+    slug: 'sp500-returns-by-president',
+    title: 'S&P 500 returns under different presidents',
+    excerpt: 'Interactive chart of S&P 500 returns by presidential term from 1989 to 2025. Hover over each term for context.',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '5 min read',
+    image: '/api/placeholder/400/250',
+    featured: false,
+  },
+  {
     slug: 'hedge-funds-3y-performance',
     title: 'Hedge funds with the highest 3Y performance (2023–2026)',
     excerpt: 'Top-performing hedge funds by 3-year returns, sourced from 13F filings. From Ratan Capital to Point72.',

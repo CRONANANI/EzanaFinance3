@@ -1,0 +1,313 @@
+'use client';
+
+import { useState } from 'react';
+
+const PRESIDENT_DATA = [
+  {
+    id: 'ghwb',
+    name: 'George H.W. Bush',
+    term: '1989-1993',
+    midYear: 1991,
+    return: 51,
+    context: 'The early 1990s recession saw GDP contract in 1990-1991 while oil prices spiked during the Gulf War. The Fed cut rates aggressively from ~8% to near 3%, helping equities recover strongly after the 1990 downturn.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/George_H._W._Bush%2C_President_of_the_United_States%2C_1989_official_portrait.jpg',
+  },
+  {
+    id: 'clinton1',
+    name: 'Bill Clinton',
+    term: '1st term, 1993-1997',
+    midYear: 1995,
+    return: 79,
+    context: 'Inflation declined toward ~2-3%, long-term Treasury yields fell, and deficit reduction helped fiscal credibility. Rapid technology adoption and corporate earnings powered one of the strongest mid-cycle market expansions of the 1990s.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Bill_Clinton.jpg',
+  },
+  {
+    id: 'clinton2',
+    name: 'Bill Clinton',
+    term: '2nd term, 1997-2001',
+    midYear: 1999,
+    return: 65,
+    context: 'The late-stage dot-com expansion drove Nasdaq gains above 400% from 1995-2000. Federal budget surpluses emerged in 1998-2001, unemployment fell below 4%, and equity valuations expanded before the 2000 peak.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Bill_Clinton.jpg',
+  },
+  {
+    id: 'gwb1',
+    name: 'George W. Bush',
+    term: '1st term, 2001-2005',
+    midYear: 2003,
+    return: -12,
+    context: 'The dot-com collapse erased roughly $5T in tech market value between 2000-2002, pushing the Nasdaq down nearly 78% from its peak. The 9/11 attacks further shocked markets, early equity losses left the term negative overall.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/George-W-Bush.jpeg',
+  },
+  {
+    id: 'gwb2',
+    name: 'George W. Bush',
+    term: '2nd term, 2005-2009',
+    midYear: 2007,
+    return: -27,
+    context: 'The housing bubble burst as subprime mortgage defaults surged, leading to the failure of Lehman Brothers and a global credit freeze in 2008. The S&P fell ~57% peak-to-trough, GDP contracted, and unemployment surged to 10%.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/George-W-Bush.jpeg',
+  },
+  {
+    id: 'obama1',
+    name: 'Barack Obama',
+    term: '1st term, 2009-2013',
+    midYear: 2011,
+    return: 119,
+    context: 'The term began with the S&P near 667 after a ~57% collapse during the financial crisis. The Fed launched QE1 and QE2 totaling trillions in asset purchases, triggering one of the strongest four-year equity rebounds on record.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/President_Barack_Obama.jpg',
+  },
+  {
+    id: 'obama2',
+    name: 'Barack Obama',
+    term: '2nd term, 2013-2017',
+    midYear: 2015,
+    return: 61,
+    context: 'Unemployment declined from ~8% in 2012 to 4.7% by 2016, inflation remained near 1-2%. Corporate profit margins reached record levels above 10%, and steady GDP growth around 2-2.5% supported consistent equity gains.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/President_Barack_Obama.jpg',
+  },
+  {
+    id: 'trump1',
+    name: 'Donald Trump',
+    term: '1st term, 2017-2021',
+    midYear: 2019,
+    return: 66,
+    context: 'The 2017 Tax Cuts and Jobs Act reduced corporate tax from 35% to 21%, boosting S&P EPS growth above 20% in 2018. The market fell ~34% during the COVID crash in early 2020 but rebounded sharply after the Fed cut rates to zero.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg',
+  },
+  {
+    id: 'biden',
+    name: 'Joe Biden',
+    term: '2021-2025',
+    midYear: 2023,
+    return: 56,
+    context: 'The term began with ~$1.9T fiscal stimulus and 2021 GDP growth of 5.9%, the fastest since 1984. Inflation peaked above 9% in 2022, prompting the Fed to raise rates from 0% to 5.25-5.50%, yet mega-cap tech and AI-led earnings.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/6/68/Joe_Biden_presidential_portrait.jpg',
+  },
+  {
+    id: 'trump2',
+    name: 'Donald Trump',
+    term: 'current term',
+    midYear: 2025,
+    return: 14,
+    context: 'Markets entered 2025 near all-time highs after a ~24% gain in 2024, supported by AI-driven earnings growth above 15% YoY and inflation cooling toward ~3%. Rate-cut expectations, tariff rhetoric and regional conflicts increased volatility.',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg',
+  },
+];
+
+const CHART_WIDTH = 900;
+const CHART_HEIGHT = 480;
+const PADDING = { top: 60, right: 60, bottom: 60, left: 70 };
+const DOT_RADIUS = 28;
+const Y_MIN = -40;
+const Y_MAX = 140;
+const X_MIN = 1989;
+const X_MAX = 2026;
+
+function getX(midYear) {
+  const innerWidth = CHART_WIDTH - PADDING.left - PADDING.right;
+  return PADDING.left + ((midYear - X_MIN) / (X_MAX - X_MIN)) * innerWidth;
+}
+
+function getY(returnVal) {
+  const innerHeight = CHART_HEIGHT - PADDING.top - PADDING.bottom;
+  const range = Y_MAX - Y_MIN;
+  return PADDING.top + innerHeight - ((returnVal - Y_MIN) / range) * innerHeight;
+}
+
+export function Sp500Chart() {
+  const [hoveredId, setHoveredId] = useState(null);
+  const hovered = PRESIDENT_DATA.find((d) => d.id === hoveredId);
+
+  const innerWidth = CHART_WIDTH - PADDING.left - PADDING.right;
+  const innerHeight = CHART_HEIGHT - PADDING.top - PADDING.bottom;
+
+  const yTicks = [-40, -20, 0, 20, 40, 60, 80, 100, 120];
+  const xTicks = [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025];
+
+  return (
+    <div className="sp500-chart-wrapper">
+      <svg
+        viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+        className="sp500-chart-svg"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          <clipPath id="dotClip">
+            <circle r={DOT_RADIUS} cx={DOT_RADIUS} cy={DOT_RADIUS} />
+          </clipPath>
+          <filter id="dotShadow">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10b981" floodOpacity="0.4" />
+          </filter>
+        </defs>
+
+        {/* Grid lines */}
+        {yTicks.map((tick) => (
+          <g key={tick}>
+            <line
+              x1={PADDING.left}
+              y1={getY(tick)}
+              x2={CHART_WIDTH - PADDING.right}
+              y2={getY(tick)}
+              stroke="rgba(16, 185, 129, 0.15)"
+              strokeWidth="1"
+              strokeDasharray="4 4"
+            />
+          </g>
+        ))}
+        {xTicks.map((tick) => (
+          <g key={tick}>
+            <line
+              x1={getX(tick)}
+              y1={PADDING.top}
+              x2={getX(tick)}
+              y2={CHART_HEIGHT - PADDING.bottom}
+              stroke="rgba(16, 185, 129, 0.15)"
+              strokeWidth="1"
+              strokeDasharray="4 4"
+            />
+          </g>
+        ))}
+
+        {/* Y-axis labels */}
+        {yTicks.map((tick) => (
+          <text
+            key={tick}
+            x={PADDING.left - 12}
+            y={getY(tick)}
+            textAnchor="end"
+            dominantBaseline="middle"
+            fill="#94a3b8"
+            fontSize="12"
+          >
+            {tick}%
+          </text>
+        ))}
+
+        {/* X-axis labels */}
+        {xTicks.map((tick) => (
+          <text
+            key={tick}
+            x={getX(tick)}
+            y={CHART_HEIGHT - PADDING.bottom + 24}
+            textAnchor="middle"
+            fill="#94a3b8"
+            fontSize="12"
+          >
+            {tick}
+          </text>
+        ))}
+
+        {/* Axis lines */}
+        <line
+          x1={PADDING.left}
+          y1={PADDING.top}
+          x2={PADDING.left}
+          y2={CHART_HEIGHT - PADDING.bottom}
+          stroke="rgba(16, 185, 129, 0.4)"
+          strokeWidth="1"
+        />
+        <line
+          x1={PADDING.left}
+          y1={CHART_HEIGHT - PADDING.bottom}
+          x2={CHART_WIDTH - PADDING.right}
+          y2={CHART_HEIGHT - PADDING.bottom}
+          stroke="rgba(16, 185, 129, 0.4)"
+          strokeWidth="1"
+        />
+
+        {/* Zero line */}
+        <line
+          x1={PADDING.left}
+          y1={getY(0)}
+          x2={CHART_WIDTH - PADDING.right}
+          y2={getY(0)}
+          stroke="rgba(16, 185, 129, 0.25)"
+          strokeWidth="1"
+        />
+
+        {/* Data points - green circles with president faces */}
+        {PRESIDENT_DATA.map((d) => {
+          const cx = getX(d.midYear);
+          const cy = getY(d.return);
+          const isHovered = hoveredId === d.id;
+
+          return (
+            <g
+              key={d.id}
+              onMouseEnter={() => setHoveredId(d.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Green ring */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={DOT_RADIUS + 4}
+                fill="none"
+                stroke="#10b981"
+                strokeWidth={isHovered ? 4 : 2}
+                filter="url(#dotShadow)"
+                opacity={isHovered ? 1 : 0.8}
+              />
+              {/* Face image - use foreignObject for HTML img */}
+              <foreignObject
+                x={cx - DOT_RADIUS}
+                y={cy - DOT_RADIUS}
+                width={DOT_RADIUS * 2}
+                height={DOT_RADIUS * 2}
+                clipPath="url(#dotClip)"
+              >
+                <div
+                  xmlns="http://www.w3.org/1999/xhtml"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '3px solid #10b981',
+                    background: '#0f1419',
+                  }}
+                >
+                  <img
+                    src={d.avatar}
+                    alt={d.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name)}&background=10b981&color=fff&size=64`;
+                    }}
+                  />
+                </div>
+              </foreignObject>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Tooltip */}
+      {hovered && (
+        <div
+          className="sp500-chart-tooltip"
+          style={{
+            left: `${Math.min(Math.max((getX(hovered.midYear) / CHART_WIDTH) * 100, 18), 72)}%`,
+            top: `${Math.max((getY(hovered.return) / CHART_HEIGHT) * 100 - 22, 5)}%`,
+            transform: 'translate(-50%, 0)',
+          }}
+        >
+          <div className="sp500-tooltip-header">
+            {hovered.name} ({hovered.term})
+          </div>
+          <div className="sp500-tooltip-return">
+            {hovered.return >= 0 ? '~' : ''}{hovered.return}% RETURN{hovered.return !== 1 ? 'S' : ''}
+          </div>
+          <div className="sp500-tooltip-context">{hovered.context}</div>
+        </div>
+      )}
+    </div>
+  );
+}

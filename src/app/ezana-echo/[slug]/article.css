@@ -144,6 +144,55 @@
   display: block;
 }
 
+/* S&P 500 Chart */
+.sp500-chart-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+}
+
+.sp500-chart-svg {
+  width: 100%;
+  height: auto;
+}
+
+.sp500-chart-tooltip {
+  position: absolute;
+  width: 280px;
+  padding: 1rem 1.25rem;
+  background: rgba(15, 20, 25, 0.98);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.sp500-tooltip-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}
+
+.sp500-tooltip-return {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.sp500-tooltip-context {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.ezana-article-container.ezana-article-wide {
+  max-width: 960px;
+}
+
 @media (max-width: 768px) {
   .ezana-article {
     padding: 1.5rem 1.5rem;
