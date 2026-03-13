@@ -14,7 +14,7 @@ function DatabaseIcon({ className }) {
       viewBox="0 0 24 24"
       className={className}
       fill="none"
-      stroke="white"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -166,22 +166,27 @@ export default function DatabaseWithRestApi({
           })}
         </svg>
 
-        {/* 5 Data Source Cards - evenly distributed */}
+        {/* 5 Data Source Cards - same design as Personalized Intelligence Dashboard, no glow */}
         {sourceConfigs.map(({ id, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => onBadgeClick?.(id)}
             className={cn(
-              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-1.5 rounded-lg border border-zinc-700/50 bg-[#18181B] px-4 py-3 transition-all hover:bg-[#27272a] hover:border-emerald-500/30 overflow-hidden",
-              "min-w-[100px] max-w-[180px]",
-              selectedSource === id && "border-emerald-500/50 bg-emerald-500/10",
+              "absolute top-0 flex -translate-x-1/2 items-center justify-center gap-2 rounded-xl border px-4 py-3.5 transition-all overflow-hidden backdrop-blur-sm",
+              "min-w-[100px] max-w-[180px] bg-[#0a0f0a]/95",
+              "hover:border-emerald-500/40 hover:bg-emerald-500/5",
+              selectedSource === id && "border-emerald-500/60 bg-emerald-500/15",
               onBadgeClick && "cursor-pointer"
             )}
-            style={{ left: sourcePositions[id].left }}
+            style={{
+              left: sourcePositions[id].left,
+              borderColor: selectedSource === id ? undefined : `${accentColor}50`,
+              boxShadow: selectedSource === id ? `inset 0 1px 0 ${accentColor}20` : `inset 0 1px 0 ${accentColor}15`,
+            }}
           >
-            <DatabaseIcon className="flex-shrink-0" />
-            <span className="text-sm font-medium min-w-0 break-words text-center leading-tight" style={{ maxWidth: '140px' }}>{label}</span>
+            <DatabaseIcon className="flex-shrink-0 text-emerald-400" />
+            <span className="text-sm font-medium min-w-0 break-words text-center leading-tight text-emerald-100" style={{ maxWidth: "140px" }}>{label}</span>
           </button>
         ))}
 
