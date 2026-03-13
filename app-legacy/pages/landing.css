@@ -1041,11 +1041,12 @@ body:has(.landing-page) {
 
 .globe-notification-cards {
     position: relative;
-    flex: 1;
-    min-width: 0;
+    width: 480px;
+    min-width: 480px;
     min-height: 60px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .globe-cards-left {
@@ -1066,9 +1067,8 @@ body:has(.landing-page) {
     border-radius: 10px;
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    max-width: 420px;
-    min-width: 200px;
+    width: 480px;
+    flex-shrink: 0;
 }
 
 .globe-card-icon {
@@ -1107,9 +1107,8 @@ body:has(.landing-page) {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
-    min-width: 0;
     flex: 1;
-    overflow: hidden;
+    min-width: 0;
 }
 
 .globe-card-badge {
@@ -1155,12 +1154,17 @@ body:has(.landing-page) {
         flex-direction: column;
         gap: 0.75rem;
     }
+    .globe-notification-cards {
+        width: 100%;
+        min-width: 0;
+    }
     .globe-cards-left,
     .globe-cards-right {
         justify-content: center;
     }
     .globe-notification-card {
-        max-width: 420px;
+        width: 100%;
+        max-width: 480px;
     }
 }
 
@@ -1174,6 +1178,7 @@ body:has(.landing-page) {
         gap: 0.5rem;
     }
     .globe-notification-card {
+        width: 100%;
         max-width: 100%;
         padding: 0.4rem 0.6rem;
     }

@@ -5,8 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { InteractiveGlobe } from "@/components/ui/interactive-globe";
 
 const HERO_NOTIFICATIONS = [
-  { id: "n1", type: "congress", title: "Congressional Trade Alert", content: "Nancy Pelosi disclosed new NVIDIA purchases worth $1.2M", badge: "Congress", icon: "bi-building" },
-  { id: "n2", type: "market_news", title: "AAPL Breaking News", content: "Apple announces record Q4 earnings, stock up 5% in after-hours", badge: "Earnings", icon: "bi-graph-up" },
+  { id: "n1", type: "congress", title: "Congressional Trade Alert", content: "Nancy Pelosi disclosed new NVDA purchases worth $1.2M", badge: "Congress", icon: "bi-building" },
+  { id: "n2", type: "market_news", title: "AAPL Breaking News", content: "Apple record Q4 earnings, stock up 5% after-hours", badge: "Earnings", icon: "bi-graph-up" },
   { id: "n3", type: "portfolio_alerts", title: "Portfolio Alert", content: "Your portfolio gained $2,847 today (+2.26%)", badge: "Portfolio", icon: "bi-graph-up" },
   { id: "n4", type: "congress", title: "Senate Trading Activity", content: "Sen. Richard Burr sold $1.8M in airline stocks", badge: "Congress", icon: "bi-building" },
   { id: "n5", type: "market_news", title: "Market Volatility Alert", content: "S&P 500 dropped 2.3% — consider rebalancing", badge: "Market", icon: "bi-graph-down" },
@@ -35,17 +35,16 @@ export function GlobeWithNotificationCards({ size = 460 }) {
       className="globe-notification-card"
       initial={{
         opacity: 0,
-        x: cardSide === "left" ? 40 : -40,
+        x: cardSide === "left" ? 24 : -24,
       }}
       animate={{
         opacity: 1,
         x: 0,
-        transition: { duration: 1, ease: [0.25, 0.46, 0.45, 0.94] },
+        transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
       }}
       exit={{
         opacity: 0,
-        x: cardSide === "left" ? -30 : 30,
-        transition: { duration: 1, ease: [0.55, 0.09, 0.68, 0.53] },
+        transition: { duration: 0.8, ease: [0.55, 0.09, 0.68, 0.53] },
       }}
     >
       <div className={`globe-card-icon ${cardItem.type}`}>
