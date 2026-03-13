@@ -182,6 +182,108 @@ export default function ForTheQuantsPage() {
         </PinnableCard>
       </div>
 
+      <section className="quant-formulas-section">
+        <div className="quant-formulas-header">
+          <h3><i className="bi bi-calculator-fill" /> Quant Formulas Library</h3>
+          <p>Essential mathematical models for quantitative finance</p>
+        </div>
+        <div className="quant-formulas-grid">
+          <PinnableCard cardId="formula-var" title="Value at Risk" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-shield-exclamation" /> Value at Risk (VaR)</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Portfolio loss metric — maximum expected loss at a given confidence level.</p>
+              <div className="formula-block">
+                <span className="formula-main">VaR<sub>α</sub> = μ − z<sub>α</sub>σ</span>
+                <span className="formula-note">Parametric (normal): μ = mean return, σ = volatility, z<sub>α</sub> = quantile</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+
+          <PinnableCard cardId="formula-gbm" title="Geometric Brownian Motion" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-graph-up-arrow" /> Geometric Brownian Motion</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Price process model — continuous-time stochastic process for asset prices.</p>
+              <div className="formula-block">
+                <span className="formula-main">dS = μS dt + σS dW</span>
+                <span className="formula-alt">S<sub>t</sub> = S<sub>0</sub> exp((μ − σ²/2)t + σW<sub>t</sub>)</span>
+                <span className="formula-note">μ = drift, σ = volatility, W = Wiener process</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+
+          <PinnableCard cardId="formula-meanvar" title="Mean-Variance Optimization" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-pie-chart-fill" /> Mean-Variance Optimization</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Portfolio optimization — maximize return for given risk (Markowitz).</p>
+              <div className="formula-block">
+                <span className="formula-main">min w′Σw  s.t.  w′μ = r<sub>target</sub></span>
+                <span className="formula-note">w = weights, Σ = covariance matrix, μ = expected returns</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+
+          <PinnableCard cardId="formula-kelly" title="Kelly Criterion" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-percent" /> Kelly Criterion</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Optimal betting fraction — maximizes long-term growth rate.</p>
+              <div className="formula-block">
+                <span className="formula-main">f* = (bp − q) / b = p − q/b</span>
+                <span className="formula-note">p = win probability, q = 1−p, b = odds (payoff per unit bet)</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+
+          <PinnableCard cardId="formula-sharpe" title="Sharpe Ratio" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-graph-up" /> Sharpe Ratio</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Risk-adjusted return — excess return per unit of risk.</p>
+              <div className="formula-block">
+                <span className="formula-main">SR = (R<sub>p</sub> − R<sub>f</sub>) / σ<sub>p</sub></span>
+                <span className="formula-note">R<sub>p</sub> = portfolio return, R<sub>f</sub> = risk-free rate, σ<sub>p</sub> = portfolio volatility</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+
+          <PinnableCard cardId="formula-capm" title="CAPM" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-bullseye" /> CAPM</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Capital Asset Pricing Model — risk-return relationship.</p>
+              <div className="formula-block">
+                <span className="formula-main">E[R<sub>i</sub>] = R<sub>f</sub> + β<sub>i</sub>(E[R<sub>m</sub>] − R<sub>f</sub>)</span>
+                <span className="formula-note">β<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>)</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+
+          <PinnableCard cardId="formula-blackscholes" title="Black-Scholes" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
+          <div className="component-card formula-card">
+            <div className="card-header"><h4><i className="bi bi-currency-exchange" /> Black-Scholes</h4></div>
+            <div className="card-body">
+              <p className="formula-desc">Option pricing model — European call option value.</p>
+              <div className="formula-block">
+                <span className="formula-main">C = S<sub>0</sub>N(d<sub>1</sub>) − Ke<sup>−rT</sup>N(d<sub>2</sub>)</span>
+                <span className="formula-alt">d<sub>1</sub> = [ln(S<sub>0</sub>/K) + (r + σ²/2)T] / (σ√T)</span>
+                <span className="formula-alt">d<sub>2</sub> = d<sub>1</sub> − σ√T</span>
+                <span className="formula-note">S<sub>0</sub> = spot, K = strike, r = rate, T = time, σ = vol, N = CDF</span>
+              </div>
+            </div>
+          </div>
+          </PinnableCard>
+        </div>
+      </section>
+
       <section className="learning-opportunities">
         <div className="learning-header">
           <div className="learning-title-area">
