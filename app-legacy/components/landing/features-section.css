@@ -5,12 +5,12 @@
 .features-section {
   width: 100%;
   padding: 80px 0 60px 0;
-  background: #0a0a0a;
+  background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
   position: relative;
   overflow: hidden;
 }
 
-/* Background effects */
+/* Background effects - subtle overlay, matches landing-page::before */
 .features-section::before {
   content: '';
   position: absolute;

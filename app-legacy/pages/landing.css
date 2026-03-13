@@ -8,7 +8,6 @@
 
 body {
     font-family: var(--font-sans);
-    background: #0a0a0a; /* Dark base for Prism effect */
     color: white;
     overflow-x: hidden;
     min-height: 100vh;
@@ -16,12 +15,14 @@ body {
 }
 
 /* ============================================
-   UNIFIED BACKGROUND - Same as features section
-   No breaks or changes throughout entire landing
+   UNIFIED BACKGROUND - Same as hero, pricing, FAQ
+   No breaks throughout entire landing (including navbar)
+   Uses pricing/FAQ gradient: #0d1117 -> #161b22
    ============================================ */
 .landing-page {
-    background: #0a0a0a;
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
     position: relative;
+    min-height: 100vh;
 }
 
 .landing-page::before {
@@ -46,23 +47,30 @@ body {
 .landing-page .testimonials-section,
 .landing-page .testimonials-below-hero,
 .landing-page footer,
-.landing-page .features-section {
-    background-color: #0a0a0a !important;
-    background-image: none !important;
+.landing-page .features-section,
+.landing-page #features-section-container,
+.landing-page .data-partners-section {
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%) !important;
+    background-color: transparent !important;
 }
 
 .landing-page .resources-section .bg-background,
 .landing-page footer.bg-background {
-    background-color: #0a0a0a !important;
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%) !important;
 }
 
 /* Testimonials carousel fade edges - match page background */
 .landing-page .testimonials-carousel::before {
-    background: linear-gradient(to right, #0a0a0a 0%, transparent 100%) !important;
+    background: linear-gradient(to right, #0d1117 0%, transparent 100%) !important;
 }
 
 .landing-page .testimonials-carousel::after {
-    background: linear-gradient(to left, #0a0a0a 0%, transparent 100%) !important;
+    background: linear-gradient(to left, #161b22 0%, transparent 100%) !important;
+}
+
+/* Body matches landing when on homepage - no breaks at edges */
+body:has(.landing-page) {
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%) !important;
 }
 
 
@@ -2397,11 +2405,11 @@ body {
 .support-success h3 { font-size: 1.5rem; font-weight: 700; color: var(--foreground); margin-bottom: 1rem; }
 .support-success p { font-size: 1rem; color: var(--muted-foreground); line-height: 1.6; margin-bottom: 2rem; }
 
-/* Resources Section - Keep for backwards compatibility */
+/* Resources Section - matches hero, pricing, FAQ */
 .resources-section {
     width: 100%;
     padding: 60px 0;
-    background: #0a0a0a;
+    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
     position: relative;
     overflow: hidden;
 }
