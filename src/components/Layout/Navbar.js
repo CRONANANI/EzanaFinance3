@@ -17,8 +17,10 @@ export function Navbar() {
   const settingsRef = useRef(null);
   const isLanding = pathname === '/';
   const isAuthPage = pathname?.startsWith('/auth');
+  const isHelpCenter = pathname?.startsWith('/help-center');
   const DASHBOARD_PAGES = ['/home', '/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
   const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
+  const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -35,7 +37,7 @@ export function Navbar() {
 
   if (isAuthPage) return null;
 
-  if (isLanding) {
+  if (showLandingNav) {
     return (
       <nav className="navbar">
         <div className="nav-container nav-container-centered">
@@ -44,16 +46,19 @@ export function Navbar() {
           </Link>
           <ul className="nav-menu">
             <li className="nav-item">
-              <a href="#features" className="nav-link">Features</a>
+              <a href="/#features" className="nav-link">Features</a>
             </li>
             <li className="nav-item">
-              <a href="#resources" className="nav-link">Resources</a>
+              <a href="/#resources" className="nav-link">Resources</a>
             </li>
             <li className="nav-item">
-              <a href="#pricing" className="nav-link">Pricing</a>
+              <a href="/#pricing" className="nav-link">Pricing</a>
             </li>
             <li className="nav-item">
-              <a href="#faq" className="nav-link">FAQ</a>
+              <a href="/#faq" className="nav-link">FAQ</a>
+            </li>
+            <li className="nav-item">
+              <Link href="/help-center" className="nav-link">Help Center</Link>
             </li>
           </ul>
           <div className="nav-sign-in-wrap">
