@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
         />
       </head>
-      <body className="app-body">
+      <body className="app-body" style={{ backgroundColor: '#0f1419', color: '#ffffff' }}>
         <ThemeProvider>
           <AuthProvider>
             <CongressProvider>
