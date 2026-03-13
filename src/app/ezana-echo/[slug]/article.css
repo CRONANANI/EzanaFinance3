@@ -207,6 +207,81 @@
   max-width: 960px;
 }
 
+/* Strategy blocks - hedge fund strategies article */
+.ezana-strategy-block {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 0.75rem;
+}
+
+.ezana-strategy-block:first-of-type {
+  margin-top: 0;
+}
+
+.ezana-strategy-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}
+
+.ezana-strategy-link {
+  color: #10b981;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.ezana-strategy-link:hover {
+  color: #34d399;
+}
+
+.ezana-strategy-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+}
+
+.ezana-strategy-block p {
+  margin-bottom: 0.75rem;
+}
+
+.ezana-backtest-formula {
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  background: rgba(15, 20, 25, 0.5);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border-left: 3px solid #10b981;
+}
+
+.ezana-article-cta {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+.ezana-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0.75rem;
+  transition: all 0.2s;
+}
+
+.ezana-cta-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
 @media (max-width: 768px) {
   .ezana-article {
     padding: 1.5rem 1.5rem;

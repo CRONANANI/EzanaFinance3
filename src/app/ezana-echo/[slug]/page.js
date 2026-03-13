@@ -114,6 +114,90 @@ const ARTICLES = {
       </>
     ),
   },
+  'hedge-fund-strategies-backtest': {
+    title: 'Top 7 beginner Hedge Fund strategies you can backtest',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '8 min read',
+    content: (
+      <>
+        <p className="ezana-article-lead">
+          These seven institutional strategies can be backtested with the formulas below. Click any strategy title to sign in and run backtests in our For The Quants backtesting engine.
+        </p>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">1. Earnings Beat + Confirmed Move</Link>
+          </h2>
+          <span className="ezana-strategy-category">Earnings Confirmation</span>
+          <p>Funds like Renaissance, Two Sigma trade earnings where profits beat estimates and price rises next day (or misses and falls), as confirmed surprises tend to drift 1–3 months.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Surprise = Actual EPS - Estimate and Move = NextClose ÷ EarningsClose - 1, trade if signs match, hold ~60 days.</p>
+        </div>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">2. IPO Lock-Up Expiration</Link>
+          </h2>
+          <span className="ezana-strategy-category">IPO</span>
+          <p>Hedge funds track IPO lock-ups because insider selling becoming legal often increases float and historically produces short-term negative returns and heavy volume around expiration.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Short 5 trading days before expiration, cover 3 trading days after, compute Return = Entry ÷ Exit - 1, exclude earnings weeks.</p>
+        </div>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">3. Time-Series Momentum Futures</Link>
+          </h2>
+          <span className="ezana-strategy-category">Momentum</span>
+          <p>Man AHL, Winton, AQR run global trend portfolios long assets above their level 12 months ago and short those below, a rule validated across equities, bonds, FX, and commodities for decades.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Monthly with ETFs: Signal = Price today ÷ Price 12m ago - 1, go Long if &gt;0, Short/Flat if &lt;0, rebalance monthly.</p>
+        </div>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">4. VIX Term-Structure Carry</Link>
+          </h2>
+          <span className="ezana-strategy-category">Volatility Trading</span>
+          <p>Volatility hedge funds trade the slope between near-term and current volatility because calm markets usually show higher future volatility pricing, favoring short-volatility exposure until stress flips the curve.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Weekly with Slope = FutureVIX ÷ CurrentVIX - 1, stay ShortVol if Slope&gt;0, reduce or exit if Slope&lt;0 or VIX spikes.</p>
+        </div>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">5. Index-vs-Stock Volatility Dispersion</Link>
+          </h2>
+          <span className="ezana-strategy-category">Volatility Dispersion</span>
+          <p>Citadel and Millennium sell index volatility while buying single-stock volatility to monetize correlation risk, profiting when individual stocks move differently instead of in one direction.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Simulate Sell SPY volatility + Buy volatility on 10–20 large stocks, keep exposure balanced, track Profit = Premium received - Premium paid - payouts.</p>
+        </div>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">6. Merger Arbitrage Spread</Link>
+          </h2>
+          <span className="ezana-strategy-category">M&A</span>
+          <p>Event funds such as Elliott, Paulson, Citadel buy takeover targets trading below the agreed deal price, focusing on larger spreads that compensate for time and failure risk.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Gap = DealPrice ÷ MarketPrice - 1, buy when gap is clearly positive and deal expected &lt;1 year, exit at completion or break, track win rate and drawdowns.</p>
+        </div>
+
+        <div className="ezana-strategy-block">
+          <h2 className="ezana-strategy-title">
+            <Link href="/auth/signin/backtest" className="ezana-strategy-link">7. Short-Horizon Reversal</Link>
+          </h2>
+          <span className="ezana-strategy-category">Liquidity Stat-Arb</span>
+          <p>Renaissance / DE Shaw tradition buy stocks with the worst recent returns because extreme short-term losses often reverse once selling pressure fades.</p>
+          <p className="ezana-backtest-formula"><strong>Backtest:</strong> Daily with Return5d = Price today ÷ Price 5d ago - 1, buy lowest 10%, hold 5 trading days, include trading costs.</p>
+        </div>
+
+        <div className="ezana-article-cta">
+          <Link href="/auth/signin/backtest" className="ezana-cta-btn">
+            <i className="bi bi-calculator" />
+            Backtest These Strategies in For The Quants
+          </Link>
+        </div>
+      </>
+    ),
+  },
   'sp500-returns-by-president': {
     title: 'S&P 500 returns under different presidents',
     category: 'Markets',

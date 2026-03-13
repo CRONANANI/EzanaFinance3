@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import AuthDotMap from "./AuthDotMap";
 import { supabase } from "@/lib/supabase";
 
-const SignInCard = ({ variant = "user" }) => {
+const SignInCard = ({ variant = "user", redirectTo }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,6 +16,7 @@ const SignInCard = ({ variant = "user" }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const destination = redirectTo || "/home-dashboard";
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -33,7 +34,7 @@ const SignInCard = ({ variant = "user" }) => {
         return;
       }
 
-      router.push("/home-dashboard");
+      router.push(destination);
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
@@ -46,7 +47,7 @@ const SignInCard = ({ variant = "user" }) => {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destination)}`,
         },
       });
 

@@ -19,6 +19,17 @@ const ARTICLES = [
     featured: true,
   },
   {
+    slug: 'hedge-fund-strategies-backtest',
+    title: 'Top 7 beginner Hedge Fund strategies you can backtest',
+    excerpt: 'Seven institutional strategies with backtesting formulas—from earnings confirmation to merger arbitrage.',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '8 min read',
+    image: '/api/placeholder/400/250',
+    featured: false,
+  },
+  {
     slug: 'sp500-returns-by-president',
     title: 'S&P 500 returns under different presidents',
     excerpt: 'Interactive chart of S&P 500 returns by presidential term from 1989 to 2025. Hover over each term for context.',

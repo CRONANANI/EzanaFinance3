@@ -17,6 +17,13 @@ export const ARTICLES_META = {
     date: '2 Mar 2025',
     readTime: '6 min read',
   },
+  'hedge-fund-strategies-backtest': {
+    title: 'Top 7 beginner Hedge Fund strategies you can backtest',
+    category: 'Markets',
+    author: 'Ezana Research',
+    date: '2 Mar 2025',
+    readTime: '8 min read',
+  },
   'sp500-returns-by-president': {
     title: 'S&P 500 returns under different presidents',
     category: 'Markets',
