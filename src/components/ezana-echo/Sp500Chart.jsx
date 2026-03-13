@@ -133,13 +133,44 @@ export function Sp500Chart() {
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          <clipPath id="dotClip">
-            <circle r={DOT_RADIUS} cx={DOT_RADIUS} cy={DOT_RADIUS} />
+          <clipPath id="dotClip" clipPathUnits="objectBoundingBox">
+            <circle cx="0.5" cy="0.5" r="0.5" />
           </clipPath>
           <filter id="dotShadow">
             <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10b981" floodOpacity="0.4" />
           </filter>
         </defs>
+
+        {/* Pulsating connecting line - path through all dots */}
+        <path
+          d={PRESIDENT_DATA.reduce((acc, d, i) => {
+            const x = getX(d.midYear);
+            const y = getY(d.return);
+            return acc + (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+          }, '')}
+          fill="none"
+          stroke="#10b981"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.6"
+          className="sp500-connector-line"
+        />
+        <path
+          d={PRESIDENT_DATA.reduce((acc, d, i) => {
+            const x = getX(d.midYear);
+            const y = getY(d.return);
+            return acc + (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+          }, '')}
+          fill="none"
+          stroke="#10b981"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength="100"
+          strokeDasharray="3 97"
+          className="sp500-pulse-line"
+        />
 
         {/* Grid lines */}
         {yTicks.map((tick) => (
@@ -226,11 +257,12 @@ export function Sp500Chart() {
           strokeWidth="1"
         />
 
-        {/* Data points - green circles with president faces */}
+        {/* Data points - dots filled with president faces */}
         {PRESIDENT_DATA.map((d) => {
           const cx = getX(d.midYear);
           const cy = getY(d.return);
           const isHovered = hoveredId === d.id;
+          const hitRadius = DOT_RADIUS + 12;
 
           return (
             <g
@@ -239,51 +271,36 @@ export function Sp500Chart() {
               onMouseLeave={() => setHoveredId(null)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Green ring */}
+              {/* Green ring/border */}
               <circle
                 cx={cx}
                 cy={cy}
-                r={DOT_RADIUS + 4}
+                r={DOT_RADIUS + 3}
                 fill="none"
                 stroke="#10b981"
                 strokeWidth={isHovered ? 4 : 2}
                 filter="url(#dotShadow)"
-                opacity={isHovered ? 1 : 0.8}
+                opacity={isHovered ? 1 : 0.9}
               />
-              {/* Face image - use foreignObject for HTML img */}
-              <foreignObject
-                x={cx - DOT_RADIUS}
-                y={cy - DOT_RADIUS}
-                width={DOT_RADIUS * 2}
-                height={DOT_RADIUS * 2}
-                clipPath="url(#dotClip)"
-              >
-                <div
-                  xmlns="http://www.w3.org/1999/xhtml"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    border: '3px solid #10b981',
-                    background: '#0f1419',
-                  }}
-                >
-                  <img
-                    src={d.avatar}
-                    alt={d.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name)}&background=10b981&color=fff&size=64`;
-                    }}
-                  />
-                </div>
-              </foreignObject>
+              {/* Face image - fills the circle, clipped to circle */}
+              <g clipPath="url(#dotClip)">
+                <image
+                  href={d.avatar}
+                  x={cx - DOT_RADIUS}
+                  y={cy - DOT_RADIUS}
+                  width={DOT_RADIUS * 2}
+                  height={DOT_RADIUS * 2}
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              </g>
+              {/* Invisible hit area on top - ensures hover works over entire dot */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={hitRadius}
+                fill="transparent"
+                style={{ pointerEvents: 'all' }}
+              />
             </g>
           );
         })}

@@ -152,6 +152,20 @@
   margin: 2rem auto;
 }
 
+/* Pulsating line animation - travels left to right */
+.sp500-pulse-line {
+  animation: sp500-pulse-travel 2.5s ease-in-out infinite;
+}
+
+@keyframes sp500-pulse-travel {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
 .sp500-chart-svg {
   width: 100%;
   height: auto;
