@@ -76,7 +76,8 @@
   margin-top: 0.35rem;
   max-height: 360px;
   overflow-y: auto;
-  background: var(--card);
+  background: var(--background);
+  background-color: var(--background);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
