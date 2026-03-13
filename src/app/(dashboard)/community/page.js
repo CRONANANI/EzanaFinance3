@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -41,9 +41,45 @@ export default function CommunityPage() {
   const [friendSearch, setFriendSearch] = useState('');
   const addFriendRef = useRef(null);
 
+  const [communitySearchQuery, setCommunitySearchQuery] = useState('');
+  const [communitySearchType, setCommunitySearchType] = useState('all');
+  const [communitySearchResults, setCommunitySearchResults] = useState({ users: [], partners: [], total: 0 });
+  const [communitySearchLoading, setCommunitySearchLoading] = useState(false);
+  const [communitySearchOpen, setCommunitySearchOpen] = useState(false);
+  const communitySearchRef = useRef(null);
+  const communitySearchDebounceRef = useRef(null);
+
+  const fetchCommunitySearch = useCallback(async (q, type) => {
+    setCommunitySearchLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (type && type !== 'all') params.set('type', type);
+      const res = await fetch(`/api/community/search?${params.toString()}`);
+      const data = await res.json();
+      setCommunitySearchResults({ users: data.users || [], partners: data.partners || [], total: data.total || 0 });
+    } catch {
+      setCommunitySearchResults({ users: [], partners: [], total: 0 });
+    } finally {
+      setCommunitySearchLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!communitySearchOpen) return;
+    if (communitySearchDebounceRef.current) clearTimeout(communitySearchDebounceRef.current);
+    communitySearchDebounceRef.current = setTimeout(() => {
+      fetchCommunitySearch(communitySearchQuery, communitySearchType);
+    }, 250);
+    return () => {
+      if (communitySearchDebounceRef.current) clearTimeout(communitySearchDebounceRef.current);
+    };
+  }, [communitySearchQuery, communitySearchType, communitySearchOpen, fetchCommunitySearch]);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (addFriendRef.current && !addFriendRef.current.contains(e.target)) setAddFriendOpen(false);
+      if (communitySearchRef.current && !communitySearchRef.current.contains(e.target)) setCommunitySearchOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -62,6 +98,63 @@ export default function CommunityPage() {
 
   return (
     <>
+      <div className="community-search-wrapper" ref={communitySearchRef}>
+        <div className="community-search-bar">
+          <i className="bi bi-search community-search-icon" />
+          <input
+            type="text"
+            placeholder="Search users, partners, creators, or money managers..."
+            value={communitySearchQuery}
+            onChange={(e) => { setCommunitySearchQuery(e.target.value); setCommunitySearchOpen(true); }}
+            onFocus={() => setCommunitySearchOpen(true)}
+            className="community-search-input"
+          />
+          <div className="community-search-type-tabs">
+            <button type="button" className={`community-search-type-btn ${communitySearchType === 'all' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('all'); setCommunitySearchOpen(true); }}>All</button>
+            <button type="button" className={`community-search-type-btn ${communitySearchType === 'users' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('users'); setCommunitySearchOpen(true); }}>Users</button>
+            <button type="button" className={`community-search-type-btn ${communitySearchType === 'partners' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('partners'); setCommunitySearchOpen(true); }}>Partners & Creators</button>
+          </div>
+        </div>
+        {communitySearchOpen && (
+          <div className="community-search-results">
+            {communitySearchLoading ? (
+              <div className="community-search-loading"><i className="bi bi-arrow-repeat spin" /> Searching...</div>
+            ) : (
+              <>
+                {communitySearchResults.total === 0 ? (
+                  <div className="community-search-empty">No results found. Try a different search or filter.</div>
+                ) : (
+                  <div className="community-search-results-list">
+                    {(communitySearchType === 'all' || communitySearchType === 'users') && communitySearchResults.users.map((u) => (
+                      <div key={u.id} className="community-search-result-item">
+                        <div className="community-search-result-avatar">{u.initials}</div>
+                        <div className="community-search-result-info">
+                          <span className="community-search-result-name">{u.name}</span>
+                          <span className="community-search-result-tag">{u.tag}</span>
+                          <span className="community-search-result-bio">{u.bio}</span>
+                        </div>
+                        <button type="button" className="community-search-result-btn"><i className="bi bi-person-plus" /> Follow</button>
+                      </div>
+                    ))}
+                    {(communitySearchType === 'all' || communitySearchType === 'partners') && communitySearchResults.partners.map((p) => (
+                      <div key={p.id} className="community-search-result-item partner">
+                        <div className="community-search-result-avatar partner">{p.initials}</div>
+                        <div className="community-search-result-info">
+                          <span className="community-search-result-name">{p.name}</span>
+                          <span className="community-search-result-tag">{p.tag}</span>
+                          <span className="community-search-result-bio">{p.bio}</span>
+                        </div>
+                        <button type="button" className="community-search-result-btn"><i className="bi bi-link-45deg" /> Connect</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="stats-grid condensed">
         <div className="stat-card stat-card-with-buttons">
           <div className="stat-icon members"><i className="bi bi-people" /></div>
