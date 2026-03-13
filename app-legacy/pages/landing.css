@@ -1041,9 +1041,9 @@ body:has(.landing-page) {
 
 .globe-notification-cards {
     position: relative;
-    width: 480px;
-    min-width: 480px;
-    min-height: 60px;
+    width: 320px;
+    min-width: 200px;
+    height: 460px;
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -1061,15 +1061,20 @@ body:has(.landing-page) {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.6rem;
     background: rgba(26, 35, 50, 0.85);
     border: 1px solid rgba(16, 185, 129, 0.25);
     border-radius: 10px;
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-    width: 480px;
+    width: max-content;
+    max-width: 320px;
     flex-shrink: 0;
 }
+
+.globe-card-v-0 { align-self: flex-start; }
+.globe-card-v-1 { align-self: center; }
+.globe-card-v-2 { align-self: flex-end; }
 
 .globe-card-icon {
     width: 28px;
@@ -1107,7 +1112,7 @@ body:has(.landing-page) {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
 }
 
@@ -1157,14 +1162,16 @@ body:has(.landing-page) {
     .globe-notification-cards {
         width: 100%;
         min-width: 0;
+        height: auto;
+        min-height: 60px;
     }
     .globe-cards-left,
     .globe-cards-right {
         justify-content: center;
     }
     .globe-notification-card {
-        width: 100%;
-        max-width: 480px;
+        width: max-content;
+        max-width: 100%;
     }
 }
 
@@ -1178,9 +1185,9 @@ body:has(.landing-page) {
         gap: 0.5rem;
     }
     .globe-notification-card {
-        width: 100%;
+        width: max-content;
         max-width: 100%;
-        padding: 0.4rem 0.6rem;
+        padding: 0.4rem 0.5rem;
     }
 }
 

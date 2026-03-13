@@ -29,10 +29,11 @@ export function GlobeWithNotificationCards({ size = 460 }) {
   const item = HERO_NOTIFICATIONS[activeIndex];
   const timeAgo = TIME_AGOS[activeIndex % TIME_AGOS.length];
   const side = activeIndex % 2 === 0 ? "left" : "right";
+  const verticalPos = activeIndex % 3;
 
-  const Card = ({ cardItem, cardTimeAgo, cardSide }) => (
+  const Card = ({ cardItem, cardTimeAgo, cardSide, vPos }) => (
     <motion.div
-      className="globe-notification-card"
+      className={`globe-notification-card globe-card-v-${vPos}`}
       initial={{
         opacity: 0,
         x: cardSide === "left" ? 24 : -24,
@@ -63,7 +64,7 @@ export function GlobeWithNotificationCards({ size = 460 }) {
     <div className="globe-with-cards-wrapper">
       <div className="globe-notification-cards globe-cards-left">
         <AnimatePresence mode="wait">
-          {side === "left" && item && <Card key={item.id} cardItem={item} cardTimeAgo={timeAgo} cardSide="left" />}
+          {side === "left" && item && <Card key={item.id} cardItem={item} cardTimeAgo={timeAgo} cardSide="left" vPos={verticalPos} />}
         </AnimatePresence>
       </div>
 
@@ -73,7 +74,7 @@ export function GlobeWithNotificationCards({ size = 460 }) {
 
       <div className="globe-notification-cards globe-cards-right">
         <AnimatePresence mode="wait">
-          {side === "right" && item && <Card key={item.id} cardItem={item} cardTimeAgo={timeAgo} cardSide="right" />}
+          {side === "right" && item && <Card key={item.id} cardItem={item} cardTimeAgo={timeAgo} cardSide="right" vPos={verticalPos} />}
         </AnimatePresence>
       </div>
     </div>
