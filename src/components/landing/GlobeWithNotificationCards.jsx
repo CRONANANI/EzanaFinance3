@@ -31,54 +31,61 @@ export function GlobeWithNotificationCards({ size = 460 }) {
     return () => clearInterval(interval);
   }, []);
 
-  const item = HERO_NOTIFICATIONS[activeIndex];
-  const timeAgo = TIME_AGOS[activeIndex % TIME_AGOS.length];
+  const leftItem = HERO_NOTIFICATIONS[activeIndex];
+  const rightItem = HERO_NOTIFICATIONS[(activeIndex + 1) % HERO_NOTIFICATIONS.length];
+  const leftTimeAgo = TIME_AGOS[activeIndex % TIME_AGOS.length];
+  const rightTimeAgo = TIME_AGOS[(activeIndex + 1) % TIME_AGOS.length];
+
+  const Card = ({ item, timeAgo, side }) => (
+    <motion.div
+      className="globe-notification-card"
+      initial={{
+        opacity: 0,
+        scale: 0.4,
+        x: side === "left" ? 80 : -80,
+        filter: "blur(6px)",
+      }}
+      animate={{
+        opacity: isVisible ? 1 : 0.6,
+        scale: isVisible ? 1 : 0.95,
+        x: 0,
+        filter: "blur(0px)",
+        transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.9,
+        filter: "blur(2px)",
+        transition: { duration: 0.5, ease: "easeIn" },
+      }}
+    >
+      <div className={`globe-card-icon ${item.type}`}>
+        <i className={`bi ${item.icon}`} />
+      </div>
+      <div className="globe-card-content">
+        <span className="globe-card-badge">{item.badge}</span>
+        <span className="globe-card-title">{item.title}</span>
+        <span className="globe-card-text">{item.content}</span>
+        <span className="globe-card-time">{timeAgo}</span>
+      </div>
+    </motion.div>
+  );
 
   return (
     <div className="globe-with-cards-wrapper">
+      <div className="globe-notification-cards globe-cards-left">
+        <AnimatePresence mode="wait">
+          {leftItem && <Card key={leftItem.id} item={leftItem} timeAgo={leftTimeAgo} side="left" />}
+        </AnimatePresence>
+      </div>
+
       <div className="globe-container">
         <InteractiveGlobe size={size} showConnections={false} showMarkers={false} />
       </div>
 
-      <div className="globe-notification-cards">
+      <div className="globe-notification-cards globe-cards-right">
         <AnimatePresence mode="wait">
-          {item && (
-            <motion.div
-              key={item.id}
-              className="globe-notification-card"
-              initial={{
-                opacity: 0,
-                scale: 0.4,
-                x: -120,
-                y: (activeIndex % 3 - 1) * 15,
-                filter: "blur(6px)",
-              }}
-              animate={{
-                opacity: isVisible ? 1 : 0.6,
-                scale: isVisible ? 1 : 0.95,
-                x: 0,
-                y: 0,
-                filter: "blur(0px)",
-                transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.9,
-                filter: "blur(2px)",
-                transition: { duration: 0.5, ease: "easeIn" },
-              }}
-            >
-              <div className={`globe-card-icon ${item.type}`}>
-                <i className={`bi ${item.icon}`} />
-              </div>
-              <div className="globe-card-content">
-                <span className="globe-card-badge">{item.badge}</span>
-                <span className="globe-card-title">{item.title}</span>
-                <span className="globe-card-text">{item.content}</span>
-                <span className="globe-card-time">{timeAgo}</span>
-              </div>
-            </motion.div>
-          )}
+          {rightItem && <Card key={rightItem.id} item={rightItem} timeAgo={rightTimeAgo} side="right" />}
         </AnimatePresence>
       </div>
     </div>
