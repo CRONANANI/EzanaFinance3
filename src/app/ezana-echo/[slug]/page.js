@@ -1,5 +1,7 @@
+'use client';
+
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import './article.css';
 
 const ARTICLES = {
@@ -115,20 +117,17 @@ function PermianBasinMap() {
   );
 }
 
-export async function generateMetadata({ params }) {
-  const { slug } = await params;
-  const article = ARTICLES[slug];
-  if (!article) return { title: 'Article | Ezana Echo' };
-  return {
-    title: `${article.title} | Ezana Echo`,
-    description: `Ezana Echo - ${article.title}. Market insights and analysis from Ezana Finance.`,
-  };
-}
+export default function ArticlePage() {
+  const params = useParams();
+  const router = useRouter();
+  const slug = params?.slug;
+  const article = slug ? ARTICLES[slug] : null;
 
-export default async function ArticlePage({ params }) {
-  const { slug } = await params;
-  const article = ARTICLES[slug];
-  if (!article) notFound();
+  if (!slug) return null;
+  if (!article) {
+    if (typeof window !== 'undefined') router.replace('/ezana-echo');
+    return null;
+  }
 
   return (
     <div className="ezana-article-page">
