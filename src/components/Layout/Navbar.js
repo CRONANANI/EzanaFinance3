@@ -62,7 +62,7 @@ export function Navbar() {
             </li>
           </ul>
           <div className="nav-sign-in-wrap">
-            <Link href="/auth/signin" className="nav-link nav-link-text">
+            <Link href="/auth/login" className="nav-link nav-link-text">
               Login
             </Link>
             <Link href="/auth/partner/apply" className="nav-link nav-link-text">
