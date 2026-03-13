@@ -10,7 +10,7 @@ const PRESIDENT_DATA = [
     midYear: 1991,
     return: 51,
     context: 'The early 1990s recession saw GDP contract in 1990-1991 while oil prices spiked during the Gulf War. The Fed cut rates aggressively from ~8% to near 3%, helping equities recover strongly after the 1990 downturn.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/George_H._W._Bush%2C_President_of_the_United_States%2C_1989_official_portrait.jpg',
+    avatar: '/images/ezana-echo/george-hw-bush.png',
   },
   {
     id: 'clinton1',
