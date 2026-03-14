@@ -22,7 +22,7 @@ export default function SignInPage() {
 
       if (signInError) throw signInError;
 
-      router.push('/home-dashboard');
+      router.push('/home');
     } catch (err) {
       setError(err.message);
     } finally {

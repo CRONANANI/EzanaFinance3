@@ -1,0 +1,637 @@
+/* ============================================
+   EZANA TERMINAL - Dense Financial Dashboard
+   ============================================ */
+
+.ezana-terminal {
+  --t-bg: #0a0e14;
+  --t-panel: rgba(13, 17, 23, 0.95);
+  --t-border: rgba(16, 185, 129, 0.15);
+  --t-border-bright: rgba(16, 185, 129, 0.35);
+  --t-green: #10b981;
+  --t-green-dim: rgba(16, 185, 129, 0.7);
+  --t-red: #ef4444;
+  --t-blue: #3b82f6;
+  --t-yellow: #fbbf24;
+  --t-purple: #a78bfa;
+  --t-cyan: #22d3ee;
+  --t-text: #e6edf3;
+  --t-text-dim: #8b949e;
+  --t-text-bright: #f0f6fc;
+  --t-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+  --t-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+  background: var(--t-bg);
+  min-height: calc(100vh - 64px);
+  font-family: var(--t-mono);
+  font-size: 12px;
+  color: var(--t-text);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-x: hidden;
+}
+
+/* ── TOP TICKER BAR ── */
+.t-ticker-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(180deg, #0d1117 0%, #0a0e14 100%);
+  border-bottom: 1px solid var(--t-border);
+  height: 36px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.t-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border-right: 1px solid var(--t-border);
+  height: 100%;
+  flex-shrink: 0;
+  font-family: var(--t-sans);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--t-green);
+  letter-spacing: -0.02em;
+}
+
+.t-brand-icon {
+  width: 22px;
+  height: 22px;
+  background: var(--t-green);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0e14;
+  font-weight: 800;
+  font-size: 11px;
+  font-family: var(--t-sans);
+}
+
+.t-portfolio-value {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  border-right: 1px solid var(--t-border);
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.t-pv-label {
+  color: var(--t-text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.t-pv-amount {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--t-text-bright);
+}
+
+.t-pv-change {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.t-indices-scroll {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  height: 100%;
+}
+
+.t-indices-scroll::-webkit-scrollbar { display: none; }
+
+.t-index-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border-right: 1px solid rgba(16, 185, 129, 0.08);
+  height: 100%;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.t-index-name {
+  color: var(--t-text-dim);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.t-index-val {
+  color: var(--t-text);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.t-market-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 1rem;
+  border-left: 1px solid var(--t-border);
+  height: 100%;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.t-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: t-pulse-dot 2s ease-in-out infinite;
+}
+
+.t-status-dot.open { background: var(--t-green); box-shadow: 0 0 8px var(--t-green); }
+.t-status-dot.closed { background: var(--t-red); }
+
+@keyframes t-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── MAIN GRID ── */
+.t-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr 1fr 280px;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: var(--t-border);
+  min-height: 0;
+}
+
+/* ── PANEL BASE ── */
+.t-panel {
+  background: var(--t-panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.t-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--t-border);
+  flex-shrink: 0;
+}
+
+.t-panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--t-green);
+}
+
+.t-panel-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.t-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+}
+
+.t-panel-body::-webkit-scrollbar { width: 4px; }
+.t-panel-body::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 2px; }
+
+/* ── HOLDINGS TABLE ── */
+.t-holdings { grid-row: 1 / 3; }
+
+.t-holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.t-holdings-table th {
+  text-align: right;
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--t-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--t-border);
+  position: sticky;
+  top: 0;
+  background: var(--t-panel);
+  z-index: 1;
+}
+
+.t-holdings-table th:first-child { text-align: left; }
+
+.t-holdings-table td {
+  text-align: right;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  white-space: nowrap;
+}
+
+.t-holdings-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+  color: var(--t-text-bright);
+}
+
+.t-holdings-table tr:hover {
+  background: rgba(16, 185, 129, 0.06);
+}
+
+/* ── CHART PANEL ── */
+.t-chart-area {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0.5rem;
+}
+
+.t-chart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.t-chart-legend {
+  display: flex;
+  gap: 1rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 10px;
+}
+
+.t-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.t-legend-line {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.t-perf-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--t-border);
+}
+
+.t-perf-stat {
+  padding: 0.4rem 0.5rem;
+  border-right: 1px solid var(--t-border);
+  text-align: center;
+}
+
+.t-perf-stat:last-child { border-right: none; }
+
+.t-perf-stat-label {
+  font-size: 8px;
+  color: var(--t-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.t-perf-stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+/* ── RISK ANALYSIS ── */
+.t-risk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--t-border);
+}
+
+.t-risk-metric {
+  background: var(--t-panel);
+  padding: 0.5rem 0.6rem;
+}
+
+.t-risk-metric-label {
+  font-size: 9px;
+  color: var(--t-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.t-risk-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--t-text-bright);
+}
+
+.t-risk-metric-sub {
+  font-size: 9px;
+  color: var(--t-text-dim);
+  margin-top: 1px;
+}
+
+/* ── SUGGESTIONS ── */
+.t-suggestions { grid-row: 1 / 3; }
+
+.t-suggestion-card {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--t-border);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.t-suggestion-card:last-child { border-bottom: none; }
+
+.t-sug-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.t-sug-icon.warn { background: rgba(251, 191, 36, 0.2); color: var(--t-yellow); }
+.t-sug-icon.danger { background: rgba(239, 68, 68, 0.2); color: var(--t-red); }
+.t-sug-icon.info { background: rgba(59, 130, 246, 0.2); color: var(--t-blue); }
+.t-sug-icon.ok { background: rgba(16, 185, 129, 0.2); color: var(--t-green); }
+
+.t-sug-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--t-text-bright);
+  margin-bottom: 2px;
+  font-family: var(--t-sans);
+}
+
+.t-sug-desc {
+  font-size: 10px;
+  color: var(--t-text-dim);
+  line-height: 1.4;
+}
+
+/* ── DONUT CHART ── */
+.t-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.t-donut-svg {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.t-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.t-donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.t-donut-color {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.t-donut-pct {
+  color: var(--t-text-bright);
+  font-weight: 600;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── HEATMAP (CORRELATION / VOLATILITY) ── */
+.t-heatmap-grid {
+  display: grid;
+  gap: 2px;
+  padding: 0.25rem;
+}
+
+.t-heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.t-heatmap-label {
+  font-size: 9px;
+  color: var(--t-text-dim);
+  text-align: center;
+  padding: 2px;
+}
+
+/* ── EARNINGS CALENDAR ── */
+.t-earnings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  font-size: 11px;
+}
+
+.t-earnings-ticker {
+  font-weight: 700;
+  color: var(--t-text-bright);
+  min-width: 40px;
+}
+
+.t-earnings-date {
+  color: var(--t-text-dim);
+  font-size: 10px;
+  min-width: 60px;
+}
+
+.t-earnings-est {
+  color: var(--t-text-dim);
+  font-size: 10px;
+  margin-left: auto;
+}
+
+/* ── TOP MOVERS ── */
+.t-mover-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  font-size: 11px;
+}
+
+.t-mover-ticker {
+  font-weight: 700;
+  color: var(--t-text-bright);
+  min-width: 44px;
+}
+
+.t-mover-price {
+  color: var(--t-text);
+  min-width: 60px;
+  text-align: right;
+}
+
+.t-mover-change {
+  font-weight: 600;
+  min-width: 55px;
+  text-align: right;
+}
+
+/* ── NEWS TICKER (bottom bar) ── */
+.t-news-bar {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(180deg, #0a0e14 0%, #0d1117 100%);
+  border-top: 1px solid var(--t-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.t-news-label {
+  padding: 0 0.75rem;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--t-green);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-right: 1px solid var(--t-border);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.t-news-scroll {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.t-news-track {
+  display: flex;
+  gap: 3rem;
+  animation: t-scroll-news 60s linear infinite;
+  white-space: nowrap;
+  padding-left: 100%;
+}
+
+.t-news-track:hover {
+  animation-play-state: paused;
+}
+
+.t-news-item {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--t-text-dim);
+}
+
+.t-news-item strong {
+  color: var(--t-green);
+  font-weight: 600;
+}
+
+@keyframes t-scroll-news {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* ── COLOR UTILITIES ── */
+.t-green { color: var(--t-green); }
+.t-red { color: var(--t-red); }
+.t-blue { color: var(--t-blue); }
+.t-yellow { color: var(--t-yellow); }
+.t-dim { color: var(--t-text-dim); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1200px) {
+  .t-grid {
+    grid-template-columns: 220px 1fr 1fr 240px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .t-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .t-holdings { grid-row: auto; }
+  .t-suggestions { grid-row: auto; }
+}
+
+@media (max-width: 768px) {
+  .t-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .t-ticker-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .t-panel-body { padding: 0.5rem; }
+
+  .t-perf-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .t-brand span { display: none; }
+
+  .t-portfolio-value {
+    padding: 0 0.5rem;
+  }
+
+  .t-pv-label { display: none; }
+
+  .t-risk-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -226,7 +226,7 @@ export default function ResetPasswordPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/home-dashboard');
+        router.push('/home');
       }, 3000);
 
     } catch (err) {

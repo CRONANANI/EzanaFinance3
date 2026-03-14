@@ -35,7 +35,7 @@ export default function SignUpPage() {
       setSuccess(true);
 
       setTimeout(() => {
-        router.push('/home-dashboard');
+        router.push('/home');
       }, 2000);
     } catch (err) {
       setError(err.message);
