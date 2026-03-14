@@ -66,28 +66,28 @@ export default function LearningCenterPage() {
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Portfolio Management Fundamentals</strong></td>
-                    <td><div className="instructor-cell"><span className="instructor-avatar">WC</span> Warren Chen, CFA</div></td>
-                    <td><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '70%' }} /></div><span>70%</span></div></td>
-                    <td><span className="level-badge beginner">Beginner</span></td>
-                    <td>Lesson 9 · Apr 27, 2026</td>
-                    <td><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
+                    <td data-label="Course"><strong>Portfolio Management Fundamentals</strong></td>
+                    <td data-label="Instructor"><div className="instructor-cell"><span className="instructor-avatar">WC</span> Warren Chen, CFA</div></td>
+                    <td data-label="Progress"><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '70%' }} /></div><span>70%</span></div></td>
+                    <td data-label="Level"><span className="level-badge beginner">Beginner</span></td>
+                    <td data-label="Next">Lesson 9 · Apr 27, 2026</td>
+                    <td data-label=""><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
                   </tr>
                   <tr>
-                    <td><strong>Risk Management Strategies</strong></td>
-                    <td><div className="instructor-cell"><span className="instructor-avatar">SM</span> Sarah Miller, FRM</div></td>
-                    <td><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '40%' }} /></div><span>40%</span></div></td>
-                    <td><span className="level-badge intermediate">Intermediate</span></td>
-                    <td>Lesson 8 · Apr 28, 2026</td>
-                    <td><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
+                    <td data-label="Course"><strong>Risk Management Strategies</strong></td>
+                    <td data-label="Instructor"><div className="instructor-cell"><span className="instructor-avatar">SM</span> Sarah Miller, FRM</div></td>
+                    <td data-label="Progress"><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '40%' }} /></div><span>40%</span></div></td>
+                    <td data-label="Level"><span className="level-badge intermediate">Intermediate</span></td>
+                    <td data-label="Next">Lesson 8 · Apr 28, 2026</td>
+                    <td data-label=""><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
                   </tr>
                   <tr>
-                    <td><strong>Understanding Volatility</strong></td>
-                    <td><div className="instructor-cell"><span className="instructor-avatar">JM</span> James Mitchell</div></td>
-                    <td><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '25%' }} /></div><span>25%</span></div></td>
-                    <td><span className="level-badge intermediate">Intermediate</span></td>
-                    <td>Lesson 4 · May 1, 2026</td>
-                    <td><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
+                    <td data-label="Course"><strong>Understanding Volatility</strong></td>
+                    <td data-label="Instructor"><div className="instructor-cell"><span className="instructor-avatar">JM</span> James Mitchell</div></td>
+                    <td data-label="Progress"><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '25%' }} /></div><span>25%</span></div></td>
+                    <td data-label="Level"><span className="level-badge intermediate">Intermediate</span></td>
+                    <td data-label="Next">Lesson 4 · May 1, 2026</td>
+                    <td data-label=""><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
                   </tr>
                 </tbody>
               </table>

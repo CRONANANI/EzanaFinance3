@@ -441,13 +441,98 @@ body.sidebar-open .market-analysis-world-monitor {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .market-analysis-world-monitor {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    min-height: auto;
+  }
+
+  body.sidebar-open .market-analysis-world-monitor {
+    left: 0;
+  }
+
+  .map-panel {
+    flex: 0 0 auto;
+    height: 35vh;
+    min-height: 220px;
+  }
+
+  .conveyer-section {
+    height: auto;
+    min-height: 180px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .news-panel {
+    width: 100%;
+    top: 0;
+    height: 100vh;
+    z-index: 200;
+  }
+
+  .map-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .map-title {
+    font-size: 1rem;
+  }
+
   .map-controls {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.5rem;
   }
 
   .map-layers {
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .layer-btn {
+    min-height: 44px;
+  }
+
+  .cards-panel-inner {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-panel {
+    height: 30vh;
+    min-height: 200px;
+  }
+
+  .conveyer-section {
+    min-height: 160px;
+  }
+
+  .conveyer-card {
+    flex: 0 0 260px;
+    padding: 0.75rem 1rem;
+  }
+
+  .intel-card {
+    padding: 1rem;
+  }
+
+  .intel-card h4 {
+    font-size: 0.9375rem;
+  }
+
+  .map-controls {
+    gap: 0.5rem;
+  }
+
+  .map-layers {
+    gap: 0.35rem;
   }
 }
