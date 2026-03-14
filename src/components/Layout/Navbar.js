@@ -14,6 +14,7 @@ export function Navbar() {
   const { user, isAuthenticated, signOut } = useAuth();
   const { toggleNotifications } = useSidebar();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const settingsRef = useRef(null);
   const isLanding = pathname === '/';
   const isAuthPage = pathname?.startsWith('/auth');
@@ -31,6 +32,19 @@ export function Navbar() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
@@ -45,24 +59,38 @@ export function Navbar() {
           <Link href="/" className="logo logo-centered">
             <span className="logo-text">Ezana Finance</span>
           </Link>
-          <ul className="nav-menu">
+          <button
+            className="mobile-hamburger"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            type="button"
+            aria-label="Toggle menu"
+          >
+            <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
+          </button>
+          <ul className={`nav-menu ${mobileMenuOpen ? 'nav-menu-open' : ''}`}>
             <li className="nav-item">
-              <a href="/#features" className="nav-link">Features</a>
+              <a href="/#features" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Features</a>
             </li>
             <li className="nav-item">
-              <a href="/#resources" className="nav-link">Resources</a>
+              <a href="/#resources" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Resources</a>
             </li>
             <li className="nav-item">
-              <a href="/#pricing" className="nav-link">Pricing</a>
+              <a href="/#pricing" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             </li>
             <li className="nav-item">
-              <Link href="/ezana-echo" className="nav-link">Ezana Echo</Link>
+              <Link href="/ezana-echo" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Ezana Echo</Link>
             </li>
             <li className="nav-item">
-              <a href="/#faq" className="nav-link">FAQ</a>
+              <a href="/#faq" className="nav-link" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
             </li>
             <li className="nav-item">
-              <Link href="/help-center" className="nav-link">Help Center</Link>
+              <Link href="/help-center" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Help Center</Link>
+            </li>
+            <li className="nav-item mobile-menu-auth">
+              <Link href="/auth/login" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+            </li>
+            <li className="nav-item mobile-menu-auth">
+              <Link href="/auth/partner/apply" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Apply to Become a Partner</Link>
             </li>
           </ul>
           <div className="nav-sign-in-wrap">
@@ -74,6 +102,7 @@ export function Navbar() {
             </Link>
           </div>
         </div>
+        {mobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />}
       </nav>
     );
   }
@@ -84,12 +113,44 @@ export function Navbar() {
         <Link href="/home" className="nav-brand nav-home-btn" title="Home">
           <i className="bi bi-house-door-fill" />
         </Link>
-        <div className="nav-links">
-          <Link href="/home-dashboard" className={`nav-link ${pathname.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard">
+        <button
+          className="mobile-hamburger"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          type="button"
+          aria-label="Toggle menu"
+        >
+          <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
+        </button>
+        <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
+          <Link href="/home-dashboard" className={`nav-link ${pathname.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-speedometer2"></i>
             <span>Dashboard</span>
           </Link>
-          <div className="nav-dropdown">
+          <div className="nav-dropdown mobile-dropdown-flat">
+            <span className="nav-link mobile-dropdown-label">
+              <i className="bi bi-search"></i>
+              <span>Research Tools</span>
+            </span>
+            <div className="mobile-dropdown-items">
+              <Link href="/inside-the-capitol" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-building"></i>
+                <div><div className="item-title">Inside The Capitol</div></div>
+              </Link>
+              <Link href="/company-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-bar-chart-line"></i>
+                <div><div className="item-title">Company Research</div></div>
+              </Link>
+              <Link href="/market-analysis" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-graph-up-arrow"></i>
+                <div><div className="item-title">Market Analysis</div></div>
+              </Link>
+              <Link href="/for-the-quants" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-calculator"></i>
+                <div><div className="item-title">For The Quants</div></div>
+              </Link>
+            </div>
+          </div>
+          <div className="nav-dropdown desktop-dropdown-only">
             <button className="nav-link dropdown-trigger" type="button">
               <i className="bi bi-search"></i>
               <span>Research Tools</span>
@@ -114,15 +175,15 @@ export function Navbar() {
               </Link>
             </div>
           </div>
-          <Link href="/watchlist" className={`nav-link ${pathname.includes('watchlist') ? 'active' : ''}`} data-page="watchlist">
+          <Link href="/watchlist" className={`nav-link ${pathname.includes('watchlist') ? 'active' : ''}`} data-page="watchlist" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-bookmark"></i>
             <span>Watchlist</span>
           </Link>
-          <Link href="/community" className={`nav-link ${pathname.includes('community') ? 'active' : ''}`} data-page="community">
+          <Link href="/community" className={`nav-link ${pathname.includes('community') ? 'active' : ''}`} data-page="community" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-people"></i>
             <span>Community</span>
           </Link>
-          <Link href="/learning-center" className={`nav-link ${pathname.includes('learning-center') ? 'active' : ''}`} data-page="learning-center">
+          <Link href="/learning-center" className={`nav-link ${pathname.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
           </Link>
@@ -175,6 +236,7 @@ export function Navbar() {
           )}
         </div>
       </div>
+      {mobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />}
     </nav>
   );
 }

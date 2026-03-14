@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -9,6 +10,8 @@ import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/pages/watchlist.css';
 
 export default function WatchlistPage() {
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   return (
     <div className="watchlist-container">
       <div className="stats-grid condensed">
@@ -50,7 +53,15 @@ export default function WatchlistPage() {
             <button className="card-action-btn" id="addMemberBtn" type="button">Add Source</button>
           </div>
           <div className="card-body recent-activity-body">
-            <aside className="filters-sidebar" id="filtersSidebar">
+            <button
+              type="button"
+              className="mobile-filter-toggle"
+              onClick={() => setFiltersOpen(!filtersOpen)}
+            >
+              <i className={`bi ${filtersOpen ? 'bi-x-lg' : 'bi-funnel'}`} />
+              {filtersOpen ? 'Close Filters' : 'Filters'}
+            </button>
+            <aside className={`filters-sidebar ${filtersOpen ? 'filters-open' : ''}`} id="filtersSidebar">
               <div className="filters-header">
                 <span className="filters-title">Filters</span>
                 <button type="button" className="filters-clear-btn" id="clearAllFilters" title="Clear all">Clear all</button>
