@@ -581,6 +581,17 @@
   100% { transform: translateX(-100%); }
 }
 
+/* ── LOADING ── */
+.t-loading-pulse {
+  font-size: 11px;
+  animation: t-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes t-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* ── COLOR UTILITIES ── */
 .t-green { color: var(--t-green); }
 .t-red { color: var(--t-red); }
