@@ -19,7 +19,7 @@ export function Navbar() {
   const isLanding = pathname === '/';
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
-  const DASHBOARD_PAGES = ['/home', '/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators'];
+  const DASHBOARD_PAGES = ['/home', '/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators', '/betting-markets'];
   const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
   const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated) || isEzanaEcho;
@@ -148,6 +148,10 @@ export function Navbar() {
                 <i className="bi bi-calculator"></i>
                 <div><div className="item-title">For The Quants</div></div>
               </Link>
+              <Link href="/betting-markets" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-bullseye"></i>
+                <div><div className="item-title">Betting Markets</div></div>
+              </Link>
             </div>
           </div>
           <div className="nav-dropdown desktop-dropdown-only">
@@ -172,6 +176,10 @@ export function Navbar() {
               <Link href="/for-the-quants" className="dropdown-item">
                 <i className="bi bi-calculator"></i>
                 <div><div className="item-title">For The Quants</div><div className="item-desc">Quant tools</div></div>
+              </Link>
+              <Link href="/betting-markets" className="dropdown-item">
+                <i className="bi bi-bullseye"></i>
+                <div><div className="item-title">Betting Markets</div><div className="item-desc">Odds & predictions</div></div>
               </Link>
             </div>
           </div>
