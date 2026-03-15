@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import '../../../../app-legacy/assets/css/theme-variables.css';
+import '../../../../app-legacy/assets/css/theme.css';
 import './terminal.css';
 
 const INDEX_SYMBOLS = [
@@ -66,10 +68,10 @@ function DonutChart({ data }) {
           />
         );
       })}
-      <text x="60" y="56" textAnchor="middle" fill="#f0f6fc" fontSize="14" fontWeight="700" fontFamily="inherit">
+      <text x="60" y="56" textAnchor="middle" fill="#f0f6fc" fontSize="14" fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">
         {total > 0 ? ((topLabel.value / total) * 100).toFixed(0) : 0}%
       </text>
-      <text x="60" y="70" textAnchor="middle" fill="#8b949e" fontSize="8" fontFamily="inherit">
+      <text x="60" y="70" textAnchor="middle" fill="#8b949e" fontSize="8" fontFamily="Plus Jakarta Sans, sans-serif">
         {topLabel.label?.toUpperCase() || ''}
       </text>
     </svg>
