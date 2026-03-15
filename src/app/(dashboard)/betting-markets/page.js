@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -11,17 +11,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/pages/betting-markets.css';
 
-const POLYMARKET_TRENDING = [
-  { title: 'Will the Fed cut rates at the June 2026 FOMC meeting?', category: 'economics', yesPrice: 68, volume: '$14.2M', endDate: 'Jun 18, 2026', traders: '12.4K' },
-  { title: 'Will Bitcoin exceed $100,000 before July 2026?', category: 'crypto', yesPrice: 42, volume: '$28.7M', endDate: 'Jun 30, 2026', traders: '31.2K' },
-  { title: 'Will AI-generated content be regulated by the US by end of 2026?', category: 'tech', yesPrice: 34, volume: '$6.8M', endDate: 'Dec 31, 2026', traders: '8.1K' },
-  { title: 'Will the US enter a recession in 2026?', category: 'economics', yesPrice: 29, volume: '$18.4M', endDate: 'Dec 31, 2026', traders: '22.7K' },
-  { title: 'Will a Democrat win the 2028 Presidential Election?', category: 'politics', yesPrice: 51, volume: '$42.1M', endDate: 'Nov 5, 2028', traders: '67.3K' },
-  { title: 'Will Ethereum flip Bitcoin market cap in 2026?', category: 'crypto', yesPrice: 8, volume: '$4.1M', endDate: 'Dec 31, 2026', traders: '6.9K' },
-  { title: 'Will SpaceX land humans on Mars by 2030?', category: 'tech', yesPrice: 12, volume: '$9.3M', endDate: 'Dec 31, 2030', traders: '15.2K' },
-  { title: 'Will S&P 500 close above 6,000 by Dec 2026?', category: 'economics', yesPrice: 55, volume: '$11.6M', endDate: 'Dec 31, 2026', traders: '18.9K' },
-];
-
+/* ── Static data (sports) ── */
 const SPORTS_ODDS = [
   {
     sport: 'NBA',
@@ -98,12 +88,165 @@ const CATEGORY_ICONS = {
   culture: 'bi-music-note-beamed',
 };
 
+const LEADERBOARD_WINDOWS = [
+  { label: '1D', value: '1d' },
+  { label: '7D', value: '7d' },
+  { label: '30D', value: '30d' },
+  { label: 'All', value: 'all' },
+];
+
+function formatMoney(n) {
+  if (n == null || isNaN(n)) return '$0';
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `${n < 0 ? '-' : ''}$${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${n < 0 ? '-' : ''}$${(abs / 1_000).toFixed(1)}K`;
+  return `${n < 0 ? '-' : ''}$${abs.toFixed(2)}`;
+}
+
+function formatVolume(v) {
+  if (!v) return '$0';
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+  return `$${v.toFixed(0)}`;
+}
+
+function parseYesPrice(market) {
+  try {
+    const prices = typeof market.outcomePrices === 'string'
+      ? JSON.parse(market.outcomePrices)
+      : market.outcomePrices;
+    if (Array.isArray(prices) && prices.length > 0) {
+      return Math.round(parseFloat(prices[0]) * 100);
+    }
+  } catch { /* fallback */ }
+  return 50;
+}
+
+function guessCategory(market) {
+  const q = (market.question + ' ' + (market.category || '')).toLowerCase();
+  if (q.includes('president') || q.includes('election') || q.includes('congress') || q.includes('trump') || q.includes('biden') || q.includes('democrat') || q.includes('republican')) return 'politics';
+  if (q.includes('bitcoin') || q.includes('ethereum') || q.includes('crypto') || q.includes('btc') || q.includes('eth')) return 'crypto';
+  if (q.includes('rate') || q.includes('gdp') || q.includes('recession') || q.includes('fed') || q.includes('inflation') || q.includes('s&p') || q.includes('market')) return 'economics';
+  if (q.includes('ai') || q.includes('tesla') || q.includes('apple') || q.includes('spacex') || q.includes('tech') || q.includes('openai') || q.includes('google')) return 'tech';
+  if (q.includes('nba') || q.includes('nfl') || q.includes('mlb') || q.includes('soccer') || q.includes('sport') || q.includes('super bowl') || q.includes('champion')) return 'sports';
+  return 'culture';
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function SkeletonRows({ count = 5 }) {
+  return Array.from({ length: count }).map((_, i) => (
+    <div key={i} className="bm-skeleton-row">
+      <div className="bm-skeleton bm-skeleton-circle" />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="bm-skeleton bm-skeleton-line w-3-4" />
+        <div className="bm-skeleton bm-skeleton-line w-1-2" />
+      </div>
+    </div>
+  ));
+}
+
 export default function BettingMarketsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const filteredMarkets = activeCategory === 'All'
-    ? POLYMARKET_TRENDING
-    : POLYMARKET_TRENDING.filter((m) => m.category.toLowerCase() === activeCategory.toLowerCase());
+  /* ── Live markets state ── */
+  const [liveMarkets, setLiveMarkets] = useState([]);
+  const [marketsLoading, setMarketsLoading] = useState(true);
+
+  /* ── Leaderboard state ── */
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [lbWindow, setLbWindow] = useState('7d');
+  const [lbLoading, setLbLoading] = useState(true);
+
+  /* ── Trader profile state ── */
+  const [traderQuery, setTraderQuery] = useState('');
+  const [traderProfile, setTraderProfile] = useState(null);
+  const [traderLoading, setTraderLoading] = useState(false);
+  const [traderError, setTraderError] = useState('');
+
+  /* ── Fetch live markets ── */
+  const fetchMarkets = useCallback(async (tag) => {
+    setMarketsLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '20', active: 'true' });
+      if (tag && tag !== 'All') params.set('tag', tag.toLowerCase());
+      const res = await fetch(`/api/polymarket/markets?${params.toString()}`);
+      if (!res.ok) throw new Error('Failed to load markets');
+      const data = await res.json();
+      setLiveMarkets(data);
+    } catch (err) {
+      console.error(err);
+      setLiveMarkets([]);
+    } finally {
+      setMarketsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchMarkets(activeCategory); }, [activeCategory, fetchMarkets]);
+
+  /* ── Fetch leaderboard ── */
+  const fetchLeaderboard = useCallback(async (window) => {
+    setLbLoading(true);
+    try {
+      const res = await fetch(`/api/polymarket/leaderboard?window=${window}&sort=profit&limit=25`);
+      if (!res.ok) throw new Error('Failed to load leaderboard');
+      const data = await res.json();
+      setLeaderboard(data);
+    } catch (err) {
+      console.error(err);
+      setLeaderboard([]);
+    } finally {
+      setLbLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchLeaderboard(lbWindow); }, [lbWindow, fetchLeaderboard]);
+
+  /* ── Look up trader ── */
+  const lookupTrader = useCallback(async () => {
+    if (!traderQuery.trim()) return;
+    setTraderLoading(true);
+    setTraderError('');
+    setTraderProfile(null);
+    try {
+      const res = await fetch(`/api/polymarket/profile?username=${encodeURIComponent(traderQuery.trim())}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Not found (${res.status})`);
+      }
+      const data = await res.json();
+      setTraderProfile(data);
+    } catch (err) {
+      setTraderError(err.message);
+    } finally {
+      setTraderLoading(false);
+    }
+  }, [traderQuery]);
+
+  const handleLeaderboardClick = (username) => {
+    setTraderQuery(username);
+    setTraderLoading(true);
+    setTraderError('');
+    setTraderProfile(null);
+    fetch(`/api/polymarket/profile?username=${encodeURIComponent(username)}`)
+      .then((r) => r.ok ? r.json() : r.json().then((b) => { throw new Error(b.error || 'Not found'); }))
+      .then(setTraderProfile)
+      .catch((e) => setTraderError(e.message))
+      .finally(() => setTraderLoading(false));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  /* ── Derived stats ── */
+  const totalVolume = liveMarkets.reduce((s, m) => s + (m.volume24hr || 0), 0);
+  const activeMarketsCount = liveMarkets.length;
 
   return (
     <div className="betting-markets-container">
@@ -114,9 +257,9 @@ export default function BettingMarketsPage() {
             <i className="bi bi-graph-up-arrow" />
           </div>
           <div className="stat-content">
-            <div className="stat-value">248</div>
+            <div className="stat-value">{marketsLoading ? '—' : activeMarketsCount}</div>
             <div className="stat-label">Active Markets</div>
-            <div className="stat-change positive">+18 today</div>
+            <div className="stat-change positive">LIVE</div>
           </div>
         </div>
         <div className="stat-card">
@@ -124,19 +267,19 @@ export default function BettingMarketsPage() {
             <i className="bi bi-cash-stack" />
           </div>
           <div className="stat-content">
-            <div className="stat-value">$134M</div>
+            <div className="stat-value">{marketsLoading ? '—' : formatVolume(totalVolume)}</div>
             <div className="stat-label">24h Volume</div>
-            <div className="stat-change positive">+12.4% vs avg</div>
+            <div className="stat-change positive">Polymarket</div>
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-icon" style={{ background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
-            <i className="bi bi-bullseye" />
+            <i className="bi bi-people" />
           </div>
           <div className="stat-content">
-            <div className="stat-value">78.4%</div>
-            <div className="stat-label">Resolution Accuracy</div>
-            <div className="stat-change">Markets &gt;50% YES</div>
+            <div className="stat-value">{lbLoading ? '—' : leaderboard.length}</div>
+            <div className="stat-label">Top Traders</div>
+            <div className="stat-change">{lbWindow} window</div>
           </div>
         </div>
         <div className="stat-card">
@@ -144,20 +287,152 @@ export default function BettingMarketsPage() {
             <i className="bi bi-lightning" />
           </div>
           <div className="stat-content">
-            <div className="stat-value">6</div>
+            <div className="stat-value">{VALUE_OPPORTUNITIES.filter((v) => v.type === 'positive').length}</div>
             <div className="stat-label">Value Opportunities</div>
             <div className="stat-change positive">EV+ detected</div>
           </div>
         </div>
       </div>
 
-      {/* Row 1: Polymarket + Sports Odds */}
+      {/* ── Trader Lookup (full-width) ── */}
+      <PinnableCard cardId="trader-lookup" title="Polymarket Trader Lookup" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={12} defaultH={3}>
+        <div className="component-card">
+          <div className="card-header">
+            <h3><i className="bi bi-person-badge" /> Polymarket Trader Lookup</h3>
+            <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Search any trader</span>
+          </div>
+          <div className="card-body">
+            <div className="bm-trader-search">
+              <input
+                type="text"
+                placeholder="Enter Polymarket username (e.g. ColdMath)"
+                value={traderQuery}
+                onChange={(e) => setTraderQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && lookupTrader()}
+              />
+              <button onClick={lookupTrader} disabled={traderLoading || !traderQuery.trim()}>
+                {traderLoading ? 'Searching…' : 'Look Up'}
+              </button>
+            </div>
+
+            {traderLoading && <SkeletonRows count={4} />}
+
+            {traderError && (
+              <div className="bm-empty-state">
+                <i className="bi bi-exclamation-triangle" />
+                <p>{traderError}</p>
+              </div>
+            )}
+
+            {traderProfile && !traderLoading && (
+              <div className="bm-trader-profile">
+                {/* Profile header */}
+                <div className="bm-profile-header">
+                  <div className="bm-profile-avatar">
+                    {traderProfile.profile?.profileImage ? (
+                      <img src={traderProfile.profile.profileImage} alt="" />
+                    ) : (
+                      <span className="avatar-fallback">{(traderProfile.profile?.username || '?')[0].toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="bm-profile-info">
+                    <div className="bm-profile-name">{traderProfile.profile?.username || traderProfile.profile?.name}</div>
+                    {traderProfile.profile?.bio && <div className="bm-profile-bio">{traderProfile.profile.bio}</div>}
+                  </div>
+                </div>
+
+                <div className="bm-profile-stats-row">
+                  <div className="bm-profile-stat">
+                    <div className="bm-profile-stat-value">{traderProfile.stats?.openPositions || 0}</div>
+                    <div className="bm-profile-stat-label">Open Positions</div>
+                  </div>
+                  <div className="bm-profile-stat">
+                    <div className="bm-profile-stat-value">{formatMoney(traderProfile.stats?.totalPositionsValue)}</div>
+                    <div className="bm-profile-stat-label">Positions Value</div>
+                  </div>
+                  <div className="bm-profile-stat">
+                    <div className="bm-profile-stat-value">{traderProfile.stats?.totalTrades || 0}</div>
+                    <div className="bm-profile-stat-label">Recent Trades</div>
+                  </div>
+                </div>
+
+                {/* Positions */}
+                {traderProfile.positions?.length > 0 && (
+                  <>
+                    <div className="bm-section-label">Open Positions</div>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="bm-positions-table">
+                        <thead>
+                          <tr>
+                            <th>Market</th>
+                            <th>Side</th>
+                            <th>Size</th>
+                            <th>Avg Price</th>
+                            <th>Cur Price</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {traderProfile.positions.slice(0, 20).map((p, i) => (
+                            <tr key={i}>
+                              <td className="market-title">{p.title || p.market || p.conditionId?.slice(0, 12) || '—'}</td>
+                              <td><span className={p.outcome === 'Yes' || p.side === 'YES' ? 'bm-side-yes' : 'bm-side-no'}>{p.outcome || p.side || '—'}</span></td>
+                              <td>{parseFloat(p.size || 0).toFixed(2)}</td>
+                              <td>{parseFloat(p.avgPrice || 0).toFixed(2)}¢</td>
+                              <td>{parseFloat(p.curPrice || p.price || 0).toFixed(2)}¢</td>
+                              <td>{formatMoney(parseFloat(p.currentValue || 0))}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+
+                {/* Recent Trades */}
+                {traderProfile.trades?.length > 0 && (
+                  <>
+                    <div className="bm-section-label">Recent Trades</div>
+                    <div className="bm-trades-list">
+                      {traderProfile.trades.slice(0, 20).map((t, i) => (
+                        <div key={i} className="bm-trade-item">
+                          <span className={`bm-trade-side ${t.side?.toLowerCase() === 'buy' ? 'buy' : 'sell'}`}>{t.side || '—'}</span>
+                          <span className="bm-trade-market">{t.title || t.market || t.conditionId?.slice(0, 12) || '—'}</span>
+                          <span className="bm-trade-amount">{parseFloat(t.size || 0).toFixed(2)} shares</span>
+                          <span className="bm-trade-price">@ {parseFloat(t.price || 0).toFixed(2)}¢</span>
+                          <span className="bm-trade-time">{timeAgo(t.timestamp || t.createdAt)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {!traderProfile.positions?.length && !traderProfile.trades?.length && (
+                  <div className="bm-empty-state">
+                    <i className="bi bi-inbox" />
+                    <p>No open positions or recent trades found for this trader.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!traderProfile && !traderLoading && !traderError && (
+              <div className="bm-empty-state">
+                <i className="bi bi-search" />
+                <p>Enter a Polymarket username above to view their profile, positions, and trade history.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </PinnableCard>
+
+      {/* Row 1: Live Prediction Markets + Sports Odds */}
       <div className="bm-grid-2">
-        {/* Polymarket Trending Markets */}
-        <PinnableCard cardId="polymarket-trending" title="Polymarket — Trending Markets" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
+        {/* Live Prediction Markets */}
+        <PinnableCard cardId="polymarket-trending" title="Live Prediction Markets" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
           <div className="component-card">
             <div className="card-header">
-              <h3><i className="bi bi-bar-chart-line" /> Polymarket — Prediction Markets</h3>
+              <h3><i className="bi bi-bar-chart-line" /> Live Prediction Markets</h3>
               <span className="bm-value-badge positive">LIVE</span>
             </div>
             <div className="card-body">
@@ -173,30 +448,44 @@ export default function BettingMarketsPage() {
                   </button>
                 ))}
               </div>
-              <div className="bm-prediction-list">
-                {filteredMarkets.map((m, i) => (
-                  <div key={i} className="bm-prediction-card">
-                    <div className={`bm-prediction-icon ${m.category}`}>
-                      <i className={`bi ${CATEGORY_ICONS[m.category] || 'bi-question-circle'}`} />
-                    </div>
-                    <div className="bm-prediction-body">
-                      <div className="bm-prediction-title">{m.title}</div>
-                      <div className="bm-prediction-meta">
-                        <span className="bm-prediction-volume">{m.volume} volume</span>
-                        <span>{m.traders} traders</span>
-                        <span>Ends {m.endDate}</span>
-                      </div>
-                      <div className="bm-prediction-bar-wrap">
-                        <div className="bm-yes-no"><span className="t-green">YES</span></div>
-                        <div className="bm-prediction-bar">
-                          <div className="bm-prediction-bar-fill" style={{ width: `${m.yesPrice}%` }} />
+
+              {marketsLoading ? (
+                <SkeletonRows count={6} />
+              ) : liveMarkets.length === 0 ? (
+                <div className="bm-empty-state">
+                  <i className="bi bi-inbox" />
+                  <p>No markets found for this category.</p>
+                </div>
+              ) : (
+                <div className="bm-prediction-list">
+                  {liveMarkets.map((m, i) => {
+                    const cat = guessCategory(m);
+                    const yesPrice = parseYesPrice(m);
+                    return (
+                      <div key={m.id || i} className="bm-prediction-card">
+                        <div className={`bm-prediction-icon ${cat}`}>
+                          <i className={`bi ${CATEGORY_ICONS[cat] || 'bi-question-circle'}`} />
                         </div>
-                        <div className="bm-prediction-pct">{m.yesPrice}¢</div>
+                        <div className="bm-prediction-body">
+                          <div className="bm-prediction-title">{m.question}</div>
+                          <div className="bm-prediction-meta">
+                            <span className="bm-prediction-volume">{formatVolume(m.volume)} volume</span>
+                            <span>{formatVolume(m.liquidity)} liquidity</span>
+                            {m.endDate && <span>Ends {new Date(m.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>}
+                          </div>
+                          <div className="bm-prediction-bar-wrap">
+                            <div className="bm-yes-no"><span className="t-green">YES</span></div>
+                            <div className="bm-prediction-bar">
+                              <div className="bm-prediction-bar-fill" style={{ width: `${yesPrice}%` }} />
+                            </div>
+                            <div className="bm-prediction-pct">{yesPrice}¢</div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </PinnableCard>
@@ -242,7 +531,117 @@ export default function BettingMarketsPage() {
         </PinnableCard>
       </div>
 
-      {/* Row 2: Line Movement + EV Finder */}
+      {/* Row 2: Leaderboard + Expected Value */}
+      <div className="bm-grid-2">
+        {/* Polymarket Leaderboard */}
+        <PinnableCard cardId="polymarket-leaderboard" title="Polymarket Leaderboard" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
+          <div className="component-card">
+            <div className="card-header">
+              <h3><i className="bi bi-award" /> Polymarket Leaderboard</h3>
+              <span className="bm-value-badge positive">LIVE</span>
+            </div>
+            <div className="card-body">
+              <div className="bm-window-tabs">
+                {LEADERBOARD_WINDOWS.map((w) => (
+                  <button
+                    key={w.value}
+                    className={`bm-window-tab ${lbWindow === w.value ? 'active' : ''}`}
+                    onClick={() => setLbWindow(w.value)}
+                    type="button"
+                  >
+                    {w.label}
+                  </button>
+                ))}
+              </div>
+
+              {lbLoading ? (
+                <SkeletonRows count={8} />
+              ) : leaderboard.length === 0 ? (
+                <div className="bm-empty-state">
+                  <i className="bi bi-inbox" />
+                  <p>No leaderboard data available.</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="bm-leaderboard-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Trader</th>
+                        <th>Profit</th>
+                        <th>Volume</th>
+                        <th>Markets</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaderboard.map((t, i) => {
+                        const rank = i + 1;
+                        const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : 'default';
+                        const username = t.pseudonym || t.username || t.name || `0x…${(t.proxyWallet || t.userAddress || '').slice(-4)}`;
+                        const profit = parseFloat(t.profit || t.pnl || 0);
+                        const volume = parseFloat(t.volume || 0);
+                        const numMarkets = t.numMarkets || t.markets || '—';
+
+                        return (
+                          <tr key={i} onClick={() => handleLeaderboardClick(username)} title={`View ${username}'s profile`}>
+                            <td><span className={`bm-leaderboard-rank ${rankClass}`}>{rank}</span></td>
+                            <td>
+                              <div className="bm-leaderboard-user">
+                                <div className="bm-leaderboard-user-avatar">
+                                  {t.profileImage ? <img src={t.profileImage} alt="" /> : username[0]?.toUpperCase()}
+                                </div>
+                                <span className="bm-leaderboard-username">{username}</span>
+                              </div>
+                            </td>
+                            <td><span className={profit >= 0 ? 'bm-profit-positive' : 'bm-profit-negative'}>{formatMoney(profit)}</span></td>
+                            <td>{formatVolume(volume)}</td>
+                            <td>{numMarkets}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </PinnableCard>
+
+        {/* Expected Value Finder */}
+        <PinnableCard cardId="ev-finder" title="Expected Value Finder" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
+          <div className="component-card">
+            <div className="card-header">
+              <h3><i className="bi bi-bullseye" /> Expected Value Finder</h3>
+              <span className="bm-value-badge positive">{VALUE_OPPORTUNITIES.filter((v) => v.type === 'positive').length} EV+ BETS</span>
+            </div>
+            <div className="card-body">
+              <div className="bm-prediction-list">
+                {VALUE_OPPORTUNITIES.map((v, i) => (
+                  <div key={i} className="bm-prediction-card">
+                    <div className={`bm-prediction-icon ${v.type === 'positive' ? 'economics' : 'sports'}`}>
+                      <i className={`bi ${v.type === 'positive' ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
+                    </div>
+                    <div className="bm-prediction-body">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 4 }}>
+                        <span className="bm-prediction-title" style={{ marginBottom: 0 }}>{v.market}</span>
+                        <span className={`bm-value-badge ${v.type === 'positive' ? 'positive' : ''}`} style={v.type !== 'positive' ? { background: 'rgba(239,68,68,0.15)', color: '#ef4444' } : {}}>
+                          EV {v.ev}
+                        </span>
+                      </div>
+                      <div className="bm-prediction-meta">
+                        <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{v.source}</span>
+                      </div>
+                      <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{v.reason}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </PinnableCard>
+      </div>
+
+      {/* Row 3: Line Movement + Resolved Markets */}
       <div className="bm-grid-2">
         {/* Line Movement Tracker */}
         <PinnableCard cardId="line-movement" title="Line Movement Tracker" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
@@ -290,31 +689,28 @@ export default function BettingMarketsPage() {
           </div>
         </PinnableCard>
 
-        {/* Expected Value Finder */}
-        <PinnableCard cardId="ev-finder" title="Expected Value Finder" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
+        {/* Resolved Markets */}
+        <PinnableCard cardId="resolved-markets" title="Recently Resolved Markets" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
           <div className="component-card">
             <div className="card-header">
-              <h3><i className="bi bi-bullseye" /> Expected Value Finder</h3>
-              <span className="bm-value-badge positive">6 EV+ BETS</span>
+              <h3><i className="bi bi-check2-circle" /> Recently Resolved Markets</h3>
+              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Polymarket</span>
             </div>
             <div className="card-body">
-              <div className="bm-prediction-list">
-                {VALUE_OPPORTUNITIES.map((v, i) => (
-                  <div key={i} className="bm-prediction-card">
-                    <div className={`bm-prediction-icon ${v.type === 'positive' ? 'economics' : 'sports'}`}>
-                      <i className={`bi ${v.type === 'positive' ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
+              <div className="bm-resolved-list">
+                {RESOLVED_MARKETS.map((r, i) => (
+                  <div key={i} className={`bm-resolved-item ${r.outcome === 'yes' ? 'correct' : 'incorrect'}`}>
+                    <div className={`bm-resolved-outcome ${r.outcome}`}>
+                      <i className={`bi ${r.outcome === 'yes' ? 'bi-check-lg' : 'bi-x-lg'}`} />
                     </div>
-                    <div className="bm-prediction-body">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 4 }}>
-                        <span className="bm-prediction-title" style={{ marginBottom: 0 }}>{v.market}</span>
-                        <span className={`bm-value-badge ${v.type === 'positive' ? 'positive' : ''}`} style={v.type !== 'positive' ? { background: 'rgba(239,68,68,0.15)', color: '#ef4444' } : {}}>
-                          EV {v.ev}
+                    <div style={{ flex: 1 }}>
+                      <div className="bm-resolved-text">{r.title}</div>
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
+                        <span className="bm-resolved-date">{r.date}</span>
+                        <span style={{ fontSize: '0.625rem', fontWeight: 700, color: r.outcome === 'yes' ? '#10b981' : '#ef4444' }}>
+                          Resolved {r.outcome.toUpperCase()} at {r.finalPrice}¢
                         </span>
                       </div>
-                      <div className="bm-prediction-meta">
-                        <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{v.source}</span>
-                      </div>
-                      <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{v.reason}</div>
                     </div>
                   </div>
                 ))}
@@ -323,36 +719,6 @@ export default function BettingMarketsPage() {
           </div>
         </PinnableCard>
       </div>
-
-      {/* Row 3: Resolved Markets */}
-      <PinnableCard cardId="resolved-markets" title="Recently Resolved Markets" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={12} defaultH={2}>
-        <div className="component-card">
-          <div className="card-header">
-            <h3><i className="bi bi-check2-circle" /> Recently Resolved Markets</h3>
-            <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Polymarket</span>
-          </div>
-          <div className="card-body">
-            <div className="bm-grid-3">
-              {RESOLVED_MARKETS.map((r, i) => (
-                <div key={i} className={`bm-resolved-item ${r.outcome === 'yes' ? 'correct' : 'incorrect'}`}>
-                  <div className={`bm-resolved-outcome ${r.outcome}`}>
-                    <i className={`bi ${r.outcome === 'yes' ? 'bi-check-lg' : 'bi-x-lg'}`} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div className="bm-resolved-text">{r.title}</div>
-                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
-                      <span className="bm-resolved-date">{r.date}</span>
-                      <span style={{ fontSize: '0.625rem', fontWeight: 700, color: r.outcome === 'yes' ? '#10b981' : '#ef4444' }}>
-                        Resolved {r.outcome.toUpperCase()} at {r.finalPrice}¢
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </PinnableCard>
     </div>
   );
 }
