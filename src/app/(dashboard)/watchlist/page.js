@@ -47,11 +47,7 @@ export default function WatchlistPage() {
 
       <div className="dashboard-grid watchlist-grid-two-column">
         <PinnableCard cardId="recent-activity" title="Recent Activity" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={4} defaultH={3}>
-        <div className="component-card recent-activity-card">
-          <div className="card-header">
-            <h3><i className="bi bi-activity" /> Recent Activity</h3>
-            <button className="card-action-btn" id="addMemberBtn" type="button">Add Source</button>
-          </div>
+        <div className="component-card recent-activity-card recent-activity-compact">
           <div className="card-body recent-activity-body">
             <button
               type="button"
@@ -61,6 +57,8 @@ export default function WatchlistPage() {
               <i className={`bi ${filtersOpen ? 'bi-x-lg' : 'bi-funnel'}`} />
               {filtersOpen ? 'Close Filters' : 'Filters'}
             </button>
+
+            {/* Filters + Members inline at top */}
             <aside className={`filters-sidebar ${filtersOpen ? 'filters-open' : ''}`} id="filtersSidebar">
               <div className="filters-header">
                 <span className="filters-title">Filters</span>
@@ -175,7 +173,7 @@ export default function WatchlistPage() {
         </PinnableCard>
 
         <PinnableCard cardId="stock-watchlist" title="Watchlist" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={2} defaultH={3}>
-        <div className="component-card stock-watchlist-card stock-watchlist-template">
+        <div className="component-card stock-watchlist-card stock-watchlist-template watchlist-tall">
           <div className="stock-watchlist-header">
             <h3 className="stock-watchlist-title">Watchlist</h3>
             <div className="stock-watchlist-header-actions">
@@ -190,6 +188,12 @@ export default function WatchlistPage() {
                   <button type="button" className="watchlist-dropdown-item" data-watchlist="healthcare" role="menuitem"><i className="bi bi-heart-pulse" /><span>Healthcare</span></button>
                   <button type="button" className="watchlist-dropdown-item" data-watchlist="finance" role="menuitem"><i className="bi bi-bank" /><span>Financial Services</span></button>
                   <button type="button" className="watchlist-dropdown-item" data-watchlist="energy" role="menuitem"><i className="bi bi-lightning-charge" /><span>Energy</span></button>
+                  <button type="button" className="watchlist-dropdown-item" data-watchlist="consumer" role="menuitem"><i className="bi bi-cart3" /><span>Consumer</span></button>
+                  <button type="button" className="watchlist-dropdown-item" data-watchlist="industrials" role="menuitem"><i className="bi bi-gear" /><span>Industrials</span></button>
+                  <button type="button" className="watchlist-dropdown-item" data-watchlist="realestate" role="menuitem"><i className="bi bi-building" /><span>Real Estate</span></button>
+                  <button type="button" className="watchlist-dropdown-item" data-watchlist="utilities" role="menuitem"><i className="bi bi-plug" /><span>Utilities</span></button>
+                  <button type="button" className="watchlist-dropdown-item" data-watchlist="materials" role="menuitem"><i className="bi bi-gem" /><span>Materials</span></button>
+                  <button type="button" className="watchlist-dropdown-item" data-watchlist="telecom" role="menuitem"><i className="bi bi-broadcast" /><span>Telecom</span></button>
                 </div>
               </div>
               <button className="stock-watchlist-info-btn" title="Info" type="button"><i className="bi bi-info-circle" /></button>
@@ -215,7 +219,7 @@ export default function WatchlistPage() {
             <div className="watchlist-categories">
               <div className="watchlist-category expanded" data-category="all">
                 <button type="button" className="watchlist-category-toggle">
-                  <span className="category-title">Top 10 hot</span>
+                  <span className="category-title">Top 10 Hot</span>
                   <span className="category-count">6 items</span>
                   <i className="bi bi-chevron-up" />
                 </button>
@@ -272,7 +276,7 @@ export default function WatchlistPage() {
               </div>
               <div className="watchlist-category" data-category="technology">
                 <button type="button" className="watchlist-category-toggle">
-                  <span className="category-title">Technology</span>
+                  <span className="category-title"><i className="bi bi-cpu" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Technology</span>
                   <span className="category-count">4 items</span>
                   <i className="bi bi-chevron-down" />
                 </button>
@@ -285,12 +289,92 @@ export default function WatchlistPage() {
               </div>
               <div className="watchlist-category" data-category="healthcare">
                 <button type="button" className="watchlist-category-toggle">
-                  <span className="category-title">Healthcare</span>
+                  <span className="category-title"><i className="bi bi-heart-pulse" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Healthcare</span>
                   <span className="category-count">0 items</span>
                   <i className="bi bi-chevron-down" />
                 </button>
                 <div className="watchlist-category-items">
-                  <p className="watchlist-empty-hint">No stocks in this sector yet. Add stocks to your watchlist to see them here.</p>
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="finance">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-bank" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Financial Services</span>
+                  <span className="category-count">1 item</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <div className="watchlist-stock-item" data-symbol="JPM"><div className="stock-item-icon insight-icon positive"><i className="bi bi-graph-up-arrow" /></div><div className="stock-item-info"><span className="stock-item-symbol">JPM</span></div><div className="stock-item-price"><span className="watchlist-price">$198.40</span><span className="watchlist-change positive">+$2.95</span></div></div>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="energy">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-lightning-charge" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Energy</span>
+                  <span className="category-count">1 item</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <div className="watchlist-stock-item" data-symbol="XOM"><div className="stock-item-icon insight-icon negative"><i className="bi bi-graph-down-arrow" /></div><div className="stock-item-info"><span className="stock-item-symbol">XOM</span></div><div className="stock-item-price"><span className="watchlist-price">$108.20</span><span className="watchlist-change negative">-$1.32</span></div></div>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="consumer">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-cart3" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Consumer</span>
+                  <span className="category-count">0 items</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="industrials">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-gear" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Industrials</span>
+                  <span className="category-count">0 items</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="realestate">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-building" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Real Estate</span>
+                  <span className="category-count">0 items</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="utilities">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-plug" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Utilities</span>
+                  <span className="category-count">0 items</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="materials">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-gem" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Materials</span>
+                  <span className="category-count">0 items</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
+                </div>
+              </div>
+              <div className="watchlist-category" data-category="telecom">
+                <button type="button" className="watchlist-category-toggle">
+                  <span className="category-title"><i className="bi bi-broadcast" style={{ marginRight: '0.375rem', opacity: 0.7 }} />Telecom</span>
+                  <span className="category-count">0 items</span>
+                  <i className="bi bi-chevron-down" />
+                </button>
+                <div className="watchlist-category-items">
+                  <p className="watchlist-empty-hint">No stocks in this sector yet.</p>
                 </div>
               </div>
             </div>
@@ -300,7 +384,7 @@ export default function WatchlistPage() {
         </PinnableCard>
 
         <PinnableCard cardId="price-alerts" title="Active Price Alerts" sourcePage="/watchlist" sourceLabel="Watchlist" defaultW={4} defaultH={1}>
-        <div className="component-card full-width price-alerts-card">
+        <div className="component-card full-width price-alerts-card price-alerts-compact">
           <div className="card-header">
             <h3><i className="bi bi-bell-fill" /> Active Price Alerts</h3>
             <button className="card-action-btn" type="button">New Alert</button>

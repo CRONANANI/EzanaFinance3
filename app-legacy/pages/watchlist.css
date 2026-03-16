@@ -1182,8 +1182,65 @@ body.watchlist-page .stock-watchlist-card {
   .watchlist-grid-two-column { grid-template-columns: 1fr; }
 }
 
+/* ============================================
+   COMPACT RECENT ACTIVITY (no card header)
+   ============================================ */
+.recent-activity-compact .card-header {
+  display: none !important;
+}
+
+.recent-activity-compact .recent-activity-body {
+  border-radius: var(--radius-lg, 1.5rem);
+}
+
+.recent-activity-compact {
+  max-height: 740px;
+}
+
+/* ============================================
+   WATCHLIST TALL (40% taller)
+   ============================================ */
+.watchlist-tall {
+  min-height: 740px;
+}
+
+.watchlist-tall .stock-watchlist-body {
+  max-height: 640px;
+}
+
+.stock-watchlist-card {
+  max-width: none;
+}
+
+/* ============================================
+   PRICE ALERTS COMPACT (less spacing)
+   ============================================ */
+.price-alerts-compact .card-header {
+  padding: 0.875rem 1.25rem;
+}
+
+.price-alerts-compact .card-body {
+  padding: 0.5rem 1.25rem 0.875rem;
+}
+
+.price-alerts-compact .alerts-list {
+  gap: 0.5rem;
+}
+
+.price-alerts-compact .alert-item {
+  padding: 0.625rem 0.875rem;
+  gap: 0.75rem;
+}
+
 @media (max-width: 767px) {
   .stats-grid { grid-template-columns: 1fr; }
   .page-content { padding: 1rem; }
   .member-stats { display: none; }
+
+  .watchlist-tall {
+    min-height: auto;
+  }
+  .recent-activity-compact {
+    max-height: none;
+  }
 }

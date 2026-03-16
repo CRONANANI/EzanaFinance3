@@ -26,6 +26,14 @@
     color: #ffffff !important;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   }
+  /* Override for light mode */
+  body.light-mode {
+    background-color: #f8f9fb !important;
+    color: #111827 !important;
+  }
+  html:has(body.light-mode) {
+    background-color: #f8f9fb !important;
+  }
 }
 
 /* Fallback: show animated content immediately for reduced motion, or after 6s if JS fails */
