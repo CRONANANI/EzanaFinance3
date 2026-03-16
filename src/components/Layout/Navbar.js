@@ -58,8 +58,8 @@ export function Navbar() {
       <nav className="navbar">
         <div className="nav-container nav-container-centered">
           <Link href="/" className="logo logo-centered" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span className="logo-text" style={{ color: '#10b981' }}>Ezana Finance</span>
             <Image src="/ezana-logo.png" alt="Ezana Finance" width={28} height={28} style={{ objectFit: 'contain' }} />
-            <span className="logo-text">Ezana Finance</span>
           </Link>
           <button
             className="mobile-hamburger"
@@ -113,8 +113,8 @@ export function Navbar() {
     <nav className="main-nav" id="mainNav">
       <div className="nav-container">
         <Link href="/home" className="nav-brand nav-home-btn" title="Home" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-          <Image src="/ezana-logo.png" alt="Ezana Finance" width={24} height={24} style={{ objectFit: 'contain' }} />
           <i className="bi bi-house-door-fill" />
+          <Image src="/ezana-logo.png" alt="Ezana Finance" width={24} height={24} style={{ objectFit: 'contain' }} />
         </Link>
         <button
           className="mobile-hamburger"
