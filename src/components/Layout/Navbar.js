@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
@@ -56,7 +57,8 @@ export function Navbar() {
     return (
       <nav className="navbar">
         <div className="nav-container nav-container-centered">
-          <Link href="/" className="logo logo-centered">
+          <Link href="/" className="logo logo-centered" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Image src="/ezana-logo.png" alt="Ezana Finance" width={28} height={28} style={{ objectFit: 'contain' }} />
             <span className="logo-text">Ezana Finance</span>
           </Link>
           <button
@@ -110,7 +112,8 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav">
       <div className="nav-container">
-        <Link href="/home" className="nav-brand nav-home-btn" title="Home">
+        <Link href="/home" className="nav-brand nav-home-btn" title="Home" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+          <Image src="/ezana-logo.png" alt="Ezana Finance" width={24} height={24} style={{ objectFit: 'contain' }} />
           <i className="bi bi-house-door-fill" />
         </Link>
         <button
