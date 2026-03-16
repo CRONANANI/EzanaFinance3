@@ -12,7 +12,7 @@ export function Contact2({
   title = "Contact Us",
   description = "We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!",
   phone = "Contact us for support",
-  email = "support@ezana.world",
+  email = "contact@ezana.world",
   web = { label: "ezana.world", url: "https://ezana.world" },
   onSubmit,
   className,

@@ -50,7 +50,7 @@ const FAQ_ITEMS = [
   { q: 'How do I connect my brokerage account?', a: 'Go to the Dashboard and click "Connect Brokerage". You\'ll be guided through Plaid\'s secure linking flow. We support most major US brokerages including Fidelity, Schwab, TD Ameritrade, and more.' },
   { q: 'What is congressional trading data?', a: 'Ezana tracks publicly disclosed trades by members of Congress. This data is required by the STOCK Act and provides insight into how lawmakers invest based on their legislative work.' },
   { q: 'Can I export my portfolio data?', a: 'Yes. From your Dashboard, use the Report button to export your portfolio summary as CSV. Full export options are available in Account Settings.' },
-  { q: 'How do I contact support?', a: 'Email us at support@ezana.world or use the Contact button in the footer. We typically respond within 24 hours on business days.' },
+  { q: 'How do I contact support?', a: 'Email us at contact@ezana.world or use the Contact button in the footer. We typically respond within 24 hours on business days.' },
 ];
 
 export default function UserHelpCenterPage() {
@@ -124,7 +124,7 @@ export default function UserHelpCenterPage() {
           <h2 className="mb-2 text-xl font-semibold text-white">Still need help?</h2>
           <p className="mb-6 text-[#9ca3af]">Our support team is here for you. Reach out and we&apos;ll get back to you as soon as possible.</p>
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Link href="mailto:support@ezana.world" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#10b981] px-6 py-3 font-medium text-white transition-colors hover:bg-[#059669]">Contact Support <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="mailto:contact@ezana.world" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#10b981] px-6 py-3 font-medium text-white transition-colors hover:bg-[#059669]">Contact Support <ArrowRight className="h-4 w-4" /></Link>
             <Link href="/help-center" className="inline-flex items-center justify-center gap-2 rounded-lg border border-[rgba(16,185,129,0.3)] px-6 py-3 font-medium text-[#10b981] transition-colors hover:bg-[rgba(16,185,129,0.1)]">Back to Help Center</Link>
           </div>
         </div>

@@ -90,7 +90,7 @@ export function Navbar() {
               <Link href="/auth/login" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Login</Link>
             </li>
             <li className="nav-item mobile-menu-auth">
-              <Link href="/auth/partner/apply" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Apply to Become a Partner</Link>
+              <Link href="/auth/partner/apply" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Become a Partner</Link>
             </li>
           </ul>
           <div className="nav-sign-in-wrap">
@@ -98,7 +98,7 @@ export function Navbar() {
               Login
             </Link>
             <Link href="/auth/partner/apply" className="nav-link nav-link-text">
-              Apply to Become a Partner
+              Become a Partner
             </Link>
           </div>
         </div>

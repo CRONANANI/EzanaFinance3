@@ -175,7 +175,7 @@ function SupportDialog() {
             message: form.message?.value || ''
         };
         var bodyText = 'Name: ' + data.firstname + ' ' + data.lastname + '\nEmail: ' + data.email + '\nSubject: ' + data.subject + '\n\nMessage:\n' + data.message;
-        var mailto = 'mailto:support@ezana.world?subject=' + encodeURIComponent(data.subject || 'Support Request') + '&body=' + encodeURIComponent(bodyText);
+        var mailto = 'mailto:contact@ezana.world?subject=' + encodeURIComponent(data.subject || 'Support Request') + '&body=' + encodeURIComponent(bodyText);
         window.location.href = mailto;
         if (wrapper) wrapper.style.display = 'none';
         if (successEl) successEl.style.display = 'block';

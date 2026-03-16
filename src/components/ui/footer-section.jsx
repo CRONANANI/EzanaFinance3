@@ -96,7 +96,7 @@ export function FooterSection({ onContactClick }) {
             <h3 className="mb-4 text-lg font-semibold">Contact Us</h3>
             <address className="space-y-2 text-sm not-italic">
               <p>Ezana Finance</p>
-              <p>support@ezana.world</p>
+              <p>contact@ezana.world</p>
               <p>Contact us for enterprise inquiries</p>
             </address>
           </div>

@@ -26,7 +26,7 @@ export function ContactSupportDialog({ open, onOpenChange }) {
 
   const handleSubmit = (data, form) => {
     const bodyText = `Name: ${data.firstname} ${data.lastname}\nEmail: ${data.email}\nSubject: ${data.subject || "Support"}\n\nMessage:\n${data.message}`;
-    const mailto = `mailto:support@ezana.world?subject=${encodeURIComponent(data.subject || "Support Request")}&body=${encodeURIComponent(bodyText)}`;
+    const mailto = `mailto:contact@ezana.world?subject=${encodeURIComponent(data.subject || "Support Request")}&body=${encodeURIComponent(bodyText)}`;
     window.location.href = mailto;
     setSuccess(true);
     setTimeout(() => {
@@ -89,7 +89,7 @@ export function ContactSupportDialog({ open, onOpenChange }) {
             title="Contact Us"
             description="We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!"
             phone="Contact us for support"
-            email="support@ezana.world"
+            email="contact@ezana.world"
             web={{ label: "ezana.world", url: "https://ezana.world" }}
             onSubmit={handleSubmit}
             compact
