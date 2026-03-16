@@ -192,3 +192,57 @@
 .main-nav .nav-home-btn i {
   font-size: 1.5rem;
 }
+
+/* =====================================================
+   GLOBAL FIX: Remove excessive spacing between card
+   headers and card body/content in all component cards
+   ===================================================== */
+
+.component-card .card-header {
+  padding-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+.component-card .card-body {
+  padding-top: 0.5rem !important;
+}
+
+.component-card .card-header + .card-body {
+  margin-top: 0 !important;
+  padding-top: 0.5rem !important;
+}
+
+/* Tighten PinnableCard wrapper spacing */
+.pinnable-card-wrapper > .component-card {
+  gap: 0;
+}
+
+/* Remove double-header spacing when PinnableCard wraps a component-card */
+.pinnable-card-wrapper .component-card .card-header {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Betting markets specific cards */
+.bm-grid-2 .component-card .card-header,
+.betting-markets-container .component-card .card-header {
+  padding-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Card header with subtitle variant */
+.card-header.card-header-with-subtitle {
+  padding-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+.card-header-with-subtitle + .card-body {
+  padding-top: 0.25rem !important;
+}
+
+/* Ensure card-description doesn't add extra top gap */
+.component-card .card-description {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
