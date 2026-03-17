@@ -13,8 +13,10 @@ import {
   EarningsCard,
   CompetitorsCard,
 } from '@/components/research';
+import { AIAnalysisPanel } from '@/components/research/AIAnalysisPanel';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub, useCompanyProfile, useStockMetric } from '@/hooks/useFinnhub';
+import { getCarouselModels } from '@/lib/ai/analysis-prompts';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -23,13 +25,17 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/company-research.css';
 import '../../../../app-legacy/components/grpv/snappy-slider.css';
+import '@/components/research/ai-analysis-panel.css';
+
+/* ── Carousel model configs from the prompts library ── */
+const CAROUSEL_MODELS = getCarouselModels();
 
 export default function CompanyResearchPage() {
   const scriptLoadedRef = useRef(false);
   const [selectedStock, setSelectedStock] = useState(null);
   const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
   const [viewMode, setViewMode] = useState('heatmap');
-  const [grpvOpen, setGrpvOpen] = useState(false);
+  const [activeModel, setActiveModel] = useState(null);
   const searchRef = useRef(null);
 
   const {
@@ -82,6 +88,18 @@ export default function CompanyResearchPage() {
     clearSuggestions();
     handleSelectStock(item.symbol);
   }, [handleSelectStock, setQuery, clearSuggestions]);
+
+  const handleModelClick = useCallback((modelId) => {
+    if (activeModel === modelId) {
+      setActiveModel(null);
+    } else {
+      setActiveModel(modelId);
+    }
+  }, [activeModel]);
+
+  const handleCloseAnalysis = useCallback(() => {
+    setActiveModel(null);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -186,7 +204,7 @@ export default function CompanyResearchPage() {
               </div>
             </div>
             <div className="chart-controls">
-              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button" onClick={() => { setViewMode('heatmap'); setSelectedStock(null); resetStats(); }}>
+              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button" onClick={() => { setViewMode('heatmap'); setSelectedStock(null); resetStats(); setActiveModel(null); }}>
                 <i className="bi bi-grid-3x3-gap" /> Heatmap
               </button>
               <div className="time-range-selector compact" id="stockTimeRange">
@@ -245,83 +263,71 @@ export default function CompanyResearchPage() {
         </section>
       )}
 
+      {/* ═══ AI Analysis Models Carousel ═══ */}
       <section className="models-carousel-section compact">
         <button className="carousel-nav prev" id="modelsCarouselPrev" type="button"><i className="bi bi-chevron-left" /></button>
         <div className="models-carousel-container">
           <div className="models-carousel-track" id="modelsCarouselTrack">
-            <div className="model-metric-card model-card grpv-flagship" data-model="grpv" onClick={() => setGrpvOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setGrpvOpen(true)}>
-              <div className="grpv-brand-logo">
-                <img src="/app-legacy/assets/images/ezana-logo.png" alt="Ezana Finance" className="grpv-logo-img" />
+            {CAROUSEL_MODELS.map((model) => (
+              <div
+                key={model.id}
+                className={`model-metric-card model-card ai-model-card ${model.flagship ? 'grpv-flagship' : ''} ${activeModel === model.id ? 'active' : ''}`}
+                data-model={model.id}
+                onClick={() => handleModelClick(model.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
+              >
+                {model.flagship ? (
+                  <div className="grpv-brand-logo">
+                    <img src="/app-legacy/assets/images/ezana-logo.png" alt="Ezana Finance" className="grpv-logo-img" />
+                  </div>
+                ) : (
+                  <div className={`model-metric-icon ${model.id}`} style={{ background: `${model.color}20`, color: model.color }}>
+                    <i className={`bi ${model.icon}`} />
+                  </div>
+                )}
+                <div className="model-metric-content">
+                  <span className="model-metric-label">{model.name}</span>
+                  <span className="model-metric-value">{model.description}</span>
+                  <span className="model-metric-change">
+                    {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
+                  </span>
+                </div>
               </div>
-              <div className="model-metric-content">
-                <span className="model-metric-label">GRPV Analysis</span>
-                <span className="model-metric-value">Score out of 72</span>
-                <span className="model-metric-change">Flagship · Select to run</span>
-              </div>
-            </div>
-            <div className="model-metric-card model-card" data-model="dcf">
-              <div className="model-metric-icon dcf"><i className="bi bi-cash-stack" /></div>
-              <div className="model-metric-content">
-                <span className="model-metric-label">DCF Valuation</span>
-                <span className="model-metric-value">5-year projections</span>
-                <span className="model-metric-change">Select to run</span>
-              </div>
-            </div>
-            <div className="model-metric-card model-card" data-model="three-statement">
-              <div className="model-metric-icon three-statement"><i className="bi bi-file-earmark-spreadsheet" /></div>
-              <div className="model-metric-content">
-                <span className="model-metric-label">Three-Statement</span>
-                <span className="model-metric-value">Linked statements</span>
-                <span className="model-metric-change">Select to run</span>
-              </div>
-            </div>
-            <div className="model-metric-card model-card" data-model="comps">
-              <div className="model-metric-icon comps"><i className="bi bi-list-check" /></div>
-              <div className="model-metric-content">
-                <span className="model-metric-label">Comparable Cos</span>
-                <span className="model-metric-value">Trading multiples</span>
-                <span className="model-metric-change">Select to run</span>
-              </div>
-            </div>
-            <div className="model-metric-card model-card" data-model="lbo">
-              <div className="model-metric-icon lbo"><i className="bi bi-diagram-3" /></div>
-              <div className="model-metric-content">
-                <span className="model-metric-label">LBO Model</span>
-                <span className="model-metric-value">Leveraged buyout</span>
-                <span className="model-metric-change">Select to run</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
         <button className="carousel-nav next" id="modelsCarouselNext" type="button"><i className="bi bi-chevron-right" /></button>
       </section>
 
-      <section className="model-detail-section" id="modelDetailSection" style={{ display: grpvOpen ? '' : 'none' }}>
-        <div className="component-card model-detail-card">
-          <div className="card-header">
-            <h3 id="modelDetailTitle">GRPV Analysis</h3>
-            <button className="card-action-btn" id="modelDetailClose" type="button" onClick={() => setGrpvOpen(false)}><i className="bi bi-x-lg" /> Close</button>
-          </div>
-          <div className="model-detail-body" id="modelDetailBody">
-            {grpvOpen && (
-              <div className="grpv-placeholder">
-                <p>GRPV (Growth, Risk, Price, Value) Analysis scores companies across 72 data points.</p>
-                <p>Enter a ticker above to run analysis, or select a company from the heatmap.</p>
-                <div className="grpv-score-preview">
-                  <div className="grpv-score-label">Sample Score</div>
-                  <div className="grpv-score-value">58/72</div>
-                  <div className="grpv-score-breakdown">
-                    <span>Growth: 14/18</span>
-                    <span>Risk: 12/18</span>
-                    <span>Price: 16/18</span>
-                    <span>Value: 16/18</span>
-                  </div>
-                </div>
+      {/* ═══ AI Analysis Detail Panel ═══ */}
+      {activeModel && (
+        <section className="model-detail-section" id="modelDetailSection">
+          {selectedStock ? (
+            <AIAnalysisPanel
+              modelId={activeModel}
+              symbol={selectedStock}
+              onClose={handleCloseAnalysis}
+            />
+          ) : (
+            <div className="component-card model-detail-card">
+              <div className="card-header">
+                <h3>{CAROUSEL_MODELS.find(m => m.id === activeModel)?.name || 'Analysis'}</h3>
+                <button className="card-action-btn" type="button" onClick={handleCloseAnalysis}>
+                  <i className="bi bi-x-lg" /> Close
+                </button>
               </div>
-            )}
-          </div>
-        </div>
-      </section>
+              <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+                <i className="bi bi-search" style={{ fontSize: '2rem', color: '#6b7280', display: 'block', marginBottom: '1rem' }} />
+                <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
+                  Search for a company or select a stock from the heatmap above to run this analysis.
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="learning-opportunities">
         <div className="learning-header">
