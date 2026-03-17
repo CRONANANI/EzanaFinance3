@@ -6,8 +6,7 @@ import { createPortal } from 'react-dom';
 import PortfolioDashboard from '@/components/dashboard/PortfolioDashboard';
 import { PortfolioChart } from '@/components/dashboard/PortfolioChart';
 import { PortfolioNews } from '@/components/dashboard/PortfolioNews';
-import { PortfolioSummaryCard } from '@/components/portfolio/PortfolioSummaryCard';
-import { usePortfolio } from '@/contexts/PortfolioContext';
+import { usePortfolio } from '@/hooks/usePortfolio';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -36,7 +35,7 @@ export default function HomeDashboardPage() {
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const { portfolio } = usePortfolio();
-  const transactions = portfolio?.recentTransactions ?? [];
+  const transactions = portfolio?.recentTransactions || [];
 
   const exportReport = useCallback(() => {
     const rows = CAROUSEL_METRICS.map((m) => [m.label, m.value, m.change].join(','));
@@ -178,8 +177,6 @@ export default function HomeDashboardPage() {
 
       {/* Main Content Grid */}
       <div className="dashboard-grid">
-        {/* Portfolio Summary Card */}
-        <PortfolioSummaryCard />
         {/* Main Chart Section */}
         <section className="main-chart-section">
           <div id="lineChartContainer">
