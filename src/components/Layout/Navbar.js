@@ -6,14 +6,13 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
-import { useSidebar } from '@/contexts/SidebarContext';
+import { NavNotifications } from '@/components/NavNotifications';
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
-  const { toggleNotifications } = useSidebar();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const settingsRef = useRef(null);
@@ -208,9 +207,15 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav">
       <div className="nav-container">
-        <Link href="/home" className="nav-brand nav-home-btn" title="Home">
-          <Image src="/ezana-logo.png" alt="Ezana Finance" width={48} height={48} style={{ objectFit: 'contain', display: 'block' }} />
-        </Link>
+        {/* ── LEFT ZONE: Notifications bell + Raven logo ── */}
+        <div className="nav-left-zone">
+          <div className="nn-wrapper">
+            <NavNotifications />
+          </div>
+          <Link href="/home" className="nav-brand nav-home-btn" title="Home">
+            <Image src="/ezana-logo.png" alt="Ezana Finance" width={48} height={48} style={{ objectFit: 'contain', display: 'block' }} />
+          </Link>
+        </div>
         <button
           className="mobile-hamburger"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -295,10 +300,6 @@ export function Navbar() {
           </Link>
         </div>
         <div className="nav-actions">
-          <button className="nav-action-btn notification-toggle" onClick={toggleNotifications} title="Notifications" type="button">
-            <i className="bi bi-bell"></i>
-            <span className="notification-badge">3</span>
-          </button>
           <div className="nav-settings-dropdown" ref={settingsRef}>
             <button className="nav-action-btn settings-toggle" onClick={() => setSettingsOpen(!settingsOpen)} title="App settings" type="button">
               <i className="bi bi-gear"></i>

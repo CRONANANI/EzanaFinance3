@@ -162,22 +162,22 @@ export default function WatchlistPage() {
                     {item.type === 'institution' && <>{item.revenue || '13F Portfolio'}</>}
                     {item.type === 'index' && <>{item.ticker}</>}
                   </span>
-                </div>
-              </div>
+          </div>
+        </div>
               <div className="wl-strip-bottom">
                 <div>
                   <span className="wl-strip-price">{fmtPrice(item.price)}</span>
                   <span className={`wl-strip-chg ${up?'up':'dn'}`}>{fmtPct(item.pct)}</span>
-                </div>
+          </div>
                 <Spark seed={item.id.charCodeAt(0)+item.id.charCodeAt(item.id.length-1)} up={up}/>
-              </div>
+        </div>
               <div className="wl-strip-assets">
                 {item.topAssets.slice(0,3).map(a => <span key={a} className="wl-strip-asset">{a}</span>)}
-              </div>
+          </div>
             </button>
           );
         })}
-      </div>
+        </div>
 
       {/* ═══ COMMODITIES ROW ═══ */}
       <div className="wl-comm-strip">
@@ -213,7 +213,7 @@ export default function WatchlistPage() {
             <div>
               <div className="wl-big-price">{fmtPrice(selected.price)}</div>
               <div className="wl-price-meta">{selected.name} · {selected.ticker}</div>
-            </div>
+              </div>
             <div className={`wl-big-chg ${isUp?'up':'dn'}`}>
               <i className={`bi ${isUp?'bi-arrow-up-right':'bi-arrow-down-right'}`}/>
               {fmtPct(selected.pct)}
@@ -222,7 +222,7 @@ export default function WatchlistPage() {
 
           <div className="wl-tr-row">
             {TIME_RANGES.map(t => <button key={t} type="button" className={`wl-tr ${timeRange===t?'on':''}`} onClick={()=>setTimeRange(t)}>{t}</button>)}
-          </div>
+        </div>
 
           <Chart item={selected} timeRange={timeRange}/>
 
@@ -253,8 +253,8 @@ export default function WatchlistPage() {
                 <Spark seed={item.id.charCodeAt(0)*3} up={item.change>=0} w={48} h={16}/>
               </button>
             ))}
-          </div>
-        </div>
+              </div>
+            </div>
 
         {/* ── RIGHT: Sidebar ── */}
         <aside className="wl-side">
@@ -266,11 +266,11 @@ export default function WatchlistPage() {
           <div className="wl-side-search">
             <i className="bi bi-search"/>
             <input type="text" placeholder="Search stocks, portfolios, funds…" value={search} onChange={e => setSearch(e.target.value)}/>
-          </div>
+                    </div>
 
           <div className="wl-side-tabs">
             {SIDEBAR_TABS.map(t => <button key={t} type="button" className={`wl-st ${sideTab===t?'on':''}`} onClick={()=>setSideTab(t)}>{t}</button>)}
-          </div>
+                  </div>
 
           <div className="wl-side-list">
             {sideItems.map(item => {

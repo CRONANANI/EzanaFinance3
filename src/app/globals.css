@@ -1,7 +1,6 @@
 /* @import must come first - otherwise browsers ignore these stylesheets */
 @import 'app-legacy/assets/css/theme-variables.css';
 @import 'app-legacy/components/navigation/unified-nav.css';
-@import 'app-legacy/components/notifications/notifications-sidebar.css';
 @import 'app-legacy/assets/css/page-layout.css';
 @import 'app-legacy/assets/css/universal-card-standards.css';
 @import 'app-legacy/assets/css/component-cards.css';
@@ -12,10 +11,23 @@
 
 @import './mobile-responsive.css';
 @import './mobile-nav-fix.css';
+@import './nav-notifications.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Nav left zone — Bell + Logo grouped left in dashboard nav */
+.nav-left-zone {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+@media (max-width: 768px) {
+  .nav-left-zone { gap: 0.25rem; }
+  .nav-left-zone .nn-wrapper { order: -1; }
+}
 
 /* Ensure dark theme base - prevents white flash / unstyled pages */
 @layer base {
