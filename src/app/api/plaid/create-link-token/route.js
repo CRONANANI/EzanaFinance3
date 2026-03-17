@@ -1,41 +1,35 @@
+/**
+ * POST /api/plaid/create-link-token
+ * Requires: authenticated user (Bearer token in Authorization header)
+ * Returns: { link_token }
+ */
 import { NextResponse } from 'next/server';
-import { plaidClient } from '@/lib/plaid';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { plaidClient, PLAID_PRODUCTS, PLAID_COUNTRY_CODES } from '@/lib/plaid';
+import { getAuthUser } from '@/lib/auth-helpers';
 
 export async function POST(request) {
   try {
-    const supabase = createServerSupabaseClient();
-
-    // Get user from session (you'll need to implement auth)
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const createTokenResponse = await plaidClient.linkTokenCreate({
-      user: {
-        client_user_id: user.id,
-      },
+    const response = await plaidClient.linkTokenCreate({
+      user: { client_user_id: user.id },
       client_name: 'Ezana Finance',
-      products: ['investments', 'transactions'],
-      country_codes: ['US'],
+      products: PLAID_PRODUCTS,
+      country_codes: PLAID_COUNTRY_CODES,
       language: 'en',
-      // Optional: Enable account filtering
-      account_filters: {
-        investment: {
-          account_subtypes: ['401k', 'ira', 'brokerage', 'roth', 'roth 401k'],
-        },
-      },
     });
 
     return NextResponse.json({
-      link_token: createTokenResponse.data.link_token,
+      link_token: response.data.link_token,
+      expiration: response.data.expiration,
     });
   } catch (error) {
-    console.error('Error creating link token:', error);
+    console.error('[Plaid] create-link-token error:', error?.response?.data || error.message);
     return NextResponse.json(
-      { error: 'Failed to create link token' },
+      { error: 'Failed to create link token', details: error?.response?.data?.error_message || error.message },
       { status: 500 }
     );
   }

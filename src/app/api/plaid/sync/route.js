@@ -1,220 +1,106 @@
+/**
+ * POST /api/plaid/sync
+ * Requires: authenticated user
+ *
+ * Re-syncs all holdings from Plaid for the user's connected accounts.
+ * Call this when user clicks "Refresh" or on a schedule.
+ */
 import { NextResponse } from 'next/server';
-import { plaidClient } from '@/lib/plaid';
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { plaidClient, supabaseAdmin } from '@/lib/plaid';
+import { getAuthUser } from '@/lib/auth-helpers';
 
 export async function POST(request) {
   try {
-    const supabase = createServerSupabaseClient();
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all user's plaid items
-    const { data: plaidItems, error: itemsError } = await supabase
+    const { data: items } = await supabaseAdmin
       .from('plaid_items')
-      .select('*')
+      .select('id, item_id, access_token, institution_name')
       .eq('user_id', user.id)
       .eq('status', 'active');
 
-    if (itemsError) {
-      throw itemsError;
+    if (!items || items.length === 0) {
+      return NextResponse.json({ synced: 0, message: 'No connected brokerages' });
     }
 
-    let syncedAccounts = 0;
-    let syncedHoldings = 0;
+    let totalHoldings = 0;
+    const errors = [];
 
-    for (const item of plaidItems || []) {
+    for (const item of items) {
       try {
-        // Sync accounts and balances
-        const accountsResponse = await plaidClient.accountsGet({
-          access_token: item.access_token,
-        });
-
-        for (const account of accountsResponse.data.accounts) {
-          await supabase
+        const acctRes = await plaidClient.accountsGet({ access_token: item.access_token });
+        for (const a of acctRes.data.accounts) {
+          await supabaseAdmin
             .from('plaid_accounts')
             .update({
-              current_balance: account.balances.current,
-              available_balance: account.balances.available,
-              updated_at: new Date().toISOString(),
+              balance_current: a.balances.current,
+              balance_available: a.balances.available,
             })
-            .eq('account_id', account.account_id);
-
-          syncedAccounts++;
+            .eq('account_id', a.account_id);
         }
 
-        // Sync holdings
-        const holdingsCount = await syncHoldings(user.id, item.access_token, supabase);
-        syncedHoldings += holdingsCount;
+        const holdingsRes = await plaidClient.investmentsHoldingsGet({ access_token: item.access_token });
+        const { holdings, securities } = holdingsRes.data;
 
-        // Sync transactions
-        await syncTransactions(user.id, item.access_token, supabase);
+        const secMap = {};
+        for (const s of securities) {
+          secMap[s.security_id] = { ticker: s.ticker_symbol, name: s.name, type: s.type };
+        }
 
-        // Update last synced timestamp
-        await supabase
-          .from('plaid_items')
-          .update({ last_synced_at: new Date().toISOString() })
-          .eq('id', item.id);
-      } catch (itemError) {
-        console.error(`Error syncing item ${item.id}:`, itemError);
+        const accountIds = [...new Set(holdings.map((h) => h.account_id))];
+        if (accountIds.length > 0) {
+          await supabaseAdmin
+            .from('plaid_holdings')
+            .delete()
+            .eq('user_id', user.id)
+            .in('account_id', accountIds);
+        }
 
-        // Update item status if there's an auth error
-        const errorCode = itemError.response?.data?.error_code || itemError.error?.error_code;
-        if (errorCode === 'ITEM_LOGIN_REQUIRED') {
-          await supabase
+        const rows = holdings.map((h) => ({
+          user_id: user.id,
+          account_id: h.account_id,
+          security_id: h.security_id,
+          ticker: secMap[h.security_id]?.ticker || null,
+          name: secMap[h.security_id]?.name || null,
+          type: secMap[h.security_id]?.type || null,
+          quantity: h.quantity,
+          price: h.institution_price,
+          value: h.institution_value,
+          cost_basis: h.cost_basis,
+          synced_at: new Date().toISOString(),
+        }));
+
+        if (rows.length > 0) {
+          await supabaseAdmin.from('plaid_holdings').insert(rows);
+          totalHoldings += rows.length;
+        }
+      } catch (err) {
+        console.error(`[Plaid] Sync error for ${item.institution_name}:`, err.message);
+        errors.push({ institution: item.institution_name, error: err.message });
+
+        if (err?.response?.data?.error_code === 'ITEM_LOGIN_REQUIRED') {
+          await supabaseAdmin
             .from('plaid_items')
-            .update({
-              status: 'error',
-              error_code: 'ITEM_LOGIN_REQUIRED',
-              error_message: 'Please reconnect your account',
-            })
+            .update({ status: 'error', error_code: 'ITEM_LOGIN_REQUIRED' })
             .eq('id', item.id);
         }
       }
     }
 
     return NextResponse.json({
-      success: true,
-      synced_accounts: syncedAccounts,
-      synced_holdings: syncedHoldings,
-      message: 'Portfolio data synced successfully',
+      synced: totalHoldings,
+      institutions: items.length,
+      errors: errors.length > 0 ? errors : undefined,
+      synced_at: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error syncing data:', error);
+    console.error('[Plaid] sync error:', error);
     return NextResponse.json(
-      { error: 'Failed to sync data' },
+      { error: 'Sync failed', details: error.message },
       { status: 500 }
     );
-  }
-}
-
-async function syncHoldings(userId, accessToken, supabase) {
-  let count = 0;
-  try {
-    const holdingsResponse = await plaidClient.investmentsHoldingsGet({
-      access_token: accessToken,
-    });
-
-    const { holdings, securities } = holdingsResponse.data;
-
-    for (const security of securities) {
-      await supabase.from('plaid_securities').upsert({
-        security_id: security.security_id,
-        ticker_symbol: security.ticker_symbol,
-        name: security.name,
-        type: security.type,
-        close_price: security.close_price,
-        close_price_as_of: security.close_price_as_of,
-        iso_currency_code: security.iso_currency_code,
-        cusip: security.cusip,
-        isin: security.isin,
-        sedol: security.sedol,
-      }, { onConflict: 'security_id' });
-    }
-
-    const { data: dbAccounts } = await supabase
-      .from('plaid_accounts')
-      .select('id, account_id')
-      .eq('user_id', userId);
-
-    const accountMap = {};
-    dbAccounts?.forEach(acc => {
-      accountMap[acc.account_id] = acc.id;
-    });
-
-    for (const holding of holdings) {
-      const security = securities.find(s => s.security_id === holding.security_id);
-      const dbAccountId = accountMap[holding.account_id];
-
-      if (!dbAccountId) continue;
-
-      const costBasis = holding.cost_basis || 0;
-      const currentValue = holding.institution_value || 0;
-      const unrealizedGainLoss = currentValue - costBasis;
-      const unrealizedGainLossPercent = costBasis > 0
-        ? (unrealizedGainLoss / costBasis) * 100
-        : 0;
-
-      await supabase.from('plaid_holdings').upsert({
-        user_id: userId,
-        account_id: dbAccountId,
-        security_id: holding.security_id,
-        ticker_symbol: security?.ticker_symbol,
-        name: security?.name,
-        type: security?.type,
-        quantity: holding.quantity,
-        cost_basis: holding.cost_basis,
-        institution_price: holding.institution_price,
-        institution_price_as_of: holding.institution_price_as_of,
-        institution_value: holding.institution_value,
-        iso_currency_code: holding.iso_currency_code,
-        unrealized_gain_loss: unrealizedGainLoss,
-        unrealized_gain_loss_percent: unrealizedGainLossPercent,
-      }, {
-        onConflict: 'user_id,account_id,security_id',
-      });
-      count++;
-    }
-  } catch (error) {
-    console.error('Error syncing holdings:', error);
-  }
-  return count;
-}
-
-async function syncTransactions(userId, accessToken, supabase) {
-  try {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-
-    const transactionsResponse = await plaidClient.investmentsTransactionsGet({
-      access_token: accessToken,
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-    });
-
-    const { investment_transactions, securities } = transactionsResponse.data;
-
-    const { data: dbAccounts } = await supabase
-      .from('plaid_accounts')
-      .select('id, account_id')
-      .eq('user_id', userId);
-
-    const accountMap = {};
-    dbAccounts?.forEach(acc => {
-      accountMap[acc.account_id] = acc.id;
-    });
-
-    for (const transaction of investment_transactions) {
-      const dbAccountId = accountMap[transaction.account_id];
-      if (!dbAccountId) continue;
-
-      const security = securities?.find(s => s.security_id === transaction.security_id);
-
-      await supabase.from('plaid_transactions').upsert({
-        user_id: userId,
-        account_id: dbAccountId,
-        transaction_id: transaction.investment_transaction_id,
-        name: transaction.name,
-        amount: transaction.amount,
-        iso_currency_code: transaction.iso_currency_code,
-        date: transaction.date,
-        type: transaction.type,
-        subtype: transaction.subtype,
-        quantity: transaction.quantity,
-        price: transaction.price,
-        fees: transaction.fees,
-        pending: false,
-        metadata: {
-          security_id: transaction.security_id,
-          ticker: security?.ticker_symbol,
-        },
-      }, { onConflict: 'transaction_id' });
-    }
-  } catch (error) {
-    console.error('Error syncing transactions:', error);
   }
 }

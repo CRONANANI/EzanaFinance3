@@ -2,18 +2,33 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
+import { supabase } from '@/lib/supabase';
 
 export function PlaidLinkButton({ onSuccess, className = '' }) {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch link token on mount
+  const getToken = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  }, []);
+
   useEffect(() => {
     const fetchLinkToken = async () => {
       try {
+        const token = await getToken();
+        if (!token) {
+          setError('Please sign in to connect brokerage');
+          return;
+        }
+
         const response = await fetch('/api/plaid/create-link-token', {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
@@ -29,17 +44,21 @@ export function PlaidLinkButton({ onSuccess, className = '' }) {
     };
 
     fetchLinkToken();
-  }, []);
+  }, [getToken]);
 
   const handleOnSuccess = useCallback(async (public_token, metadata) => {
     setLoading(true);
     setError(null);
 
     try {
+      const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
+
       const response = await fetch('/api/plaid/exchange-token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ public_token, metadata }),
       });

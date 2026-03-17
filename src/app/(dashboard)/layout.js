@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { PortfolioProvider } from '@/contexts/PortfolioContext';
 
 export default function DashboardLayout({ children }) {
   useEffect(() => {
@@ -11,8 +12,10 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   return (
-    <main className="dashboard-main">
-      <div className="dashboard-container">{children}</div>
-    </main>
+    <PortfolioProvider>
+      <main className="dashboard-main">
+        <div className="dashboard-container">{children}</div>
+      </main>
+    </PortfolioProvider>
   );
 }
