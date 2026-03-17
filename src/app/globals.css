@@ -11,6 +11,7 @@
 @import '../components/ui/testimonials.css';
 
 @import './mobile-responsive.css';
+@import './mobile-nav-fix.css';
 
 @tailwind base;
 @tailwind components;

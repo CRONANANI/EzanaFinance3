@@ -1,0 +1,291 @@
+/* =============================================
+   MOBILE NAV FIX — Landing Page
+   Fixes: hamburger menu not showing options
+   Root cause: desktop .nav-container-centered .nav-menu
+   had higher specificity than mobile .navbar .nav-menu,
+   so display:none never applied.
+   
+   Solution: Separate mobile menu into its own DOM element
+   (mobile-nav-overlay + mobile-nav-menu) that doesn't
+   conflict with desktop nav-menu positioning at all.
+   ============================================= */
+
+/* ── Hide desktop nav elements on mobile ── */
+@media (max-width: 768px) {
+  /* Hide the desktop centered nav-menu entirely on mobile */
+  .navbar .nav-container-centered .nav-menu.nav-menu-desktop {
+    display: none !important;
+  }
+
+  /* Hide desktop sign-in wrap on mobile */
+  .navbar .nav-container-centered .nav-sign-in-wrap {
+    display: none !important;
+  }
+}
+
+/* ── Mobile Nav Overlay (fullscreen backdrop) ── */
+.mobile-nav-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-overlay {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: mobileNavFadeIn 0.2s ease-out;
+  }
+
+  @keyframes mobileNavFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* ── Mobile Nav Menu Panel ── */
+.mobile-nav-menu {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 85%;
+    max-width: 360px;
+    height: 100vh;
+    height: 100dvh;
+    background: linear-gradient(180deg, #0d1117 0%, #0a0f14 100%);
+    border-left: 1px solid rgba(16, 185, 129, 0.15);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 10000;
+    animation: mobileNavSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1rem 0;
+  }
+
+  @keyframes mobileNavSlideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+}
+
+/* ── Auth Buttons (Login + Become a Partner) at top ── */
+.mobile-nav-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem 0.75rem;
+}
+
+.mobile-nav-auth-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.mobile-nav-login {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.mobile-nav-login:hover,
+.mobile-nav-login:active {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.mobile-nav-login i {
+  font-size: 1.125rem;
+}
+
+.mobile-nav-partner {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.mobile-nav-partner:hover,
+.mobile-nav-partner:active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.mobile-nav-partner i {
+  font-size: 1.125rem;
+}
+
+/* ── Divider ── */
+.mobile-nav-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.2) 20%,
+    rgba(16, 185, 129, 0.2) 80%,
+    transparent 100%
+  );
+  margin: 0.5rem 1.25rem;
+}
+
+/* ── Navigation Links ── */
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 0.75rem;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  min-height: 48px;
+  position: relative;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link:active {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+}
+
+.mobile-nav-link i:first-child {
+  font-size: 1.125rem;
+  color: #6b7280;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+}
+
+.mobile-nav-link:hover i:first-child,
+.mobile-nav-link:active i:first-child {
+  color: #10b981;
+}
+
+.mobile-nav-link span {
+  flex: 1;
+}
+
+.mobile-nav-chevron {
+  font-size: 0.75rem !important;
+  color: #4b5563 !important;
+  width: auto !important;
+  transition: transform 0.15s ease, color 0.15s ease !important;
+}
+
+.mobile-nav-link:hover .mobile-nav-chevron,
+.mobile-nav-link:active .mobile-nav-chevron {
+  color: #10b981 !important;
+  transform: translateX(2px);
+}
+
+/* ── Footer branding ── */
+.mobile-nav-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.25rem 1rem;
+  margin-top: auto;
+}
+
+.mobile-nav-brand {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #10b981;
+  letter-spacing: -0.01em;
+}
+
+.mobile-nav-tagline {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ── Hamburger button z-index fix ── */
+@media (max-width: 768px) {
+  .navbar .mobile-hamburger {
+    z-index: 10001;
+    position: relative;
+  }
+}
+
+/* ── Hide mobile-only elements on desktop ── */
+@media (min-width: 769px) {
+  .mobile-nav-overlay,
+  .mobile-nav-menu {
+    display: none !important;
+  }
+}
+
+/* ── Light mode ── */
+@media (max-width: 768px) {
+  body.light-mode .mobile-nav-menu {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+    border-left-color: rgba(16, 185, 129, 0.15);
+  }
+
+  body.light-mode .mobile-nav-link {
+    color: #1f2937;
+  }
+
+  body.light-mode .mobile-nav-link:hover,
+  body.light-mode .mobile-nav-link:active {
+    background: rgba(16, 185, 129, 0.06);
+    color: #059669;
+  }
+
+  body.light-mode .mobile-nav-link i:first-child {
+    color: #9ca3af;
+  }
+
+  body.light-mode .mobile-nav-partner {
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.25);
+  }
+
+  body.light-mode .mobile-nav-brand {
+    color: #059669;
+  }
+
+  body.light-mode .mobile-nav-tagline {
+    color: #9ca3af;
+  }
+
+  body.light-mode .mobile-nav-divider {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(16, 185, 129, 0.15) 20%,
+      rgba(16, 185, 129, 0.15) 80%,
+      transparent 100%
+    );
+  }
+}
