@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { getAllCourseSummaries } from '@/lib/courses';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -17,6 +19,8 @@ const TABS = [
   { id: 'badges', label: 'Badges', icon: 'bi-award' },
   { id: 'browse', label: 'Browse All', icon: 'bi-search' },
 ];
+
+const COURSE_SUMMARIES = getAllCourseSummaries();
 
 export default function LearningCenterPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -126,41 +130,15 @@ export default function LearningCenterPage() {
           </div>
           <div className="courses-scroll-wrap">
             <div className="courses-scroll">
-              <div className="course-card recommended-card">
-                <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 4 hours</span></div>
-                <h4 className="course-title">Portfolio Management Fundamentals</h4>
-                <p className="course-description">Learn the core principles of portfolio construction and asset allocation.</p>
-                <div className="course-tags"><span className="tag beginner">Beginner</span><span className="tag">12 lessons</span></div>
-                <button className="enroll-btn full-width" type="button">Enroll Now</button>
-              </div>
-              <div className="course-card recommended-card">
-                <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 6 hours</span></div>
-                <h4 className="course-title">Risk Management Strategies</h4>
-                <p className="course-description">Master advanced risk management techniques and hedging strategies.</p>
-                <div className="course-tags"><span className="tag intermediate">Intermediate</span><span className="tag">18 lessons</span></div>
-                <button className="enroll-btn full-width" type="button">Enroll Now</button>
-              </div>
-              <div className="course-card recommended-card">
-                <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 4 hours</span></div>
-                <h4 className="course-title">Technical Analysis Basics</h4>
-                <p className="course-description">Learn to read charts and use technical indicators.</p>
-                <div className="course-tags"><span className="tag beginner">Beginner</span><span className="tag">12 lessons</span></div>
-                <button className="enroll-btn full-width" type="button">Enroll Now</button>
-              </div>
-              <div className="course-card recommended-card">
-                <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 5 hours</span></div>
-                <h4 className="course-title">Understanding Options</h4>
-                <p className="course-description">Master options pricing and strategies.</p>
-                <div className="course-tags"><span className="tag intermediate">Intermediate</span><span className="tag">16 lessons</span></div>
-                <button className="enroll-btn full-width" type="button">Enroll Now</button>
-              </div>
-              <div className="course-card recommended-card">
-                <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 3 hours</span></div>
-                <h4 className="course-title">Market Psychology</h4>
-                <p className="course-description">Understand behavioral finance and market sentiment.</p>
-                <div className="course-tags"><span className="tag beginner">Beginner</span><span className="tag">10 lessons</span></div>
-                <button className="enroll-btn full-width" type="button">Enroll Now</button>
-              </div>
+              {COURSE_SUMMARIES.map((course) => (
+                <Link key={course.id} href={`/learning-center/${course.id}`} className="course-card recommended-card">
+                  <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> {course.stats.duration}</span></div>
+                  <h4 className="course-title">{course.title}</h4>
+                  <p className="course-description">{course.subtitle}</p>
+                  <div className="course-tags"><span className="tag">{course.category}</span><span className="tag">{course.stats.materials} lessons</span></div>
+                  <span className="enroll-btn full-width">View Course</span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
@@ -344,18 +322,14 @@ export default function LearningCenterPage() {
         <h2 className="section-title">Browse All Courses</h2>
         <p className="muted-text">Explore our full catalog of courses. Use the Learning Opportunities sections on each research page to see topic-specific recommendations.</p>
         <div className="courses-grid">
-          <div className="course-card">
-            <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 4 hours</span></div>
-            <h4 className="course-title">Portfolio Management Fundamentals</h4>
-            <p className="course-description">Learn the core principles of portfolio construction and asset allocation.</p>
-            <div className="course-footer"><span className="course-level beginner">Beginner</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-          </div>
-          <div className="course-card">
-            <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 6 hours</span></div>
-            <h4 className="course-title">Risk Management Strategies</h4>
-            <p className="course-description">Master advanced risk management techniques.</p>
-            <div className="course-footer"><span className="course-level intermediate">Intermediate</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-          </div>
+          {COURSE_SUMMARIES.map((course) => (
+            <Link key={course.id} href={`/learning-center/${course.id}`} className="course-card">
+              <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> {course.stats.duration}</span></div>
+              <h4 className="course-title">{course.title}</h4>
+              <p className="course-description">{course.subtitle}</p>
+              <div className="course-footer"><span className="course-level">{course.category}</span><span className="enroll-btn">View Course</span></div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
