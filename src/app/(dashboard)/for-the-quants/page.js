@@ -1,18 +1,9 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { ProfileCarousel } from '@/components/ui/profile-carousel';
-
-const TRADING_FIRMS = [
-  { name: 'Optiver', designation: '2B Revenue', description: 'Global market maker and liquidity provider. Specializes in options, ETFs, and equities. Known for low-latency trading and risk management across derivatives.', profileImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'DRW Trading Group', designation: '2-3B Revenue', description: 'Diversified trading firm across equities, fixed income, commodities, and crypto. Combines quantitative research with market-making and proprietary strategies.', profileImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Virtu Financial', designation: '2.8B Revenue', description: 'Electronic market maker and liquidity provider. Operates across global equities, options, futures, and FX. Known for technology-driven execution.', profileImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'XTX Markets', designation: '3-4B Revenue', description: 'Algorithmic trading firm and market maker. Focus on FX, commodities, and equities. One of the largest non-bank FX market makers globally.', profileImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Hudson River Trading', designation: '8B Revenue', description: 'Quantitative trading firm using technology and research. Focus on equities, options, and crypto. Emphasizes scientific approach and engineering culture.', profileImage: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Citadel Securities', designation: '9.7B Revenue', description: 'Leading market maker in equities and options. Executes a significant share of US retail order flow. Part of Ken Griffin\'s Citadel ecosystem.', profileImage: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Jane Street', designation: '20.5B Revenue', description: 'Global quantitative trading firm. Market maker in ETFs, equities, options, and crypto. Known for functional programming (OCaml) and rigorous risk management.', profileImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-];
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -20,294 +11,523 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
-import '../../../../app-legacy/pages/for-the-quants.css';
-import '../../../../app-legacy/components/profile-carousel/profile-carousel.css';
+import './for-the-quants-strategies.css';
 
-export default function ForTheQuantsPage() {
+/* ── Strategy data ── */
+const ACTIVE_STRATEGIES = [
+  {
+    id: 'apple',
+    name: 'Apple Inc.',
+    ticker: 'AAPL',
+    icon: '🍎',
+    liveSince: 'Feb 12th',
+    status: 'LIVE',
+    capital: 7579.52,
+    gains: 756.34,
+    price: 1134.86,
+    priceChange: 3.36,
+    color: '#10b981',
+    metrics: { capitalInvested: 15000, netProfit: 12000, annualReturn: 50.37, monthlyReturn: 3.45, maxDrawdown: 12.07, tradefyScore: 4.5 },
+  },
+  {
+    id: 'eurusd',
+    name: 'EUR/USD',
+    ticker: 'EUR/USD',
+    icon: '💱',
+    liveSince: 'Feb 13th',
+    status: 'LIVE',
+    capital: 8738.40,
+    gains: 938.85,
+    price: 1.0847,
+    priceChange: 0.12,
+    color: '#3b82f6',
+    metrics: { capitalInvested: 12000, netProfit: 8500, annualReturn: 42.18, monthlyReturn: 2.89, maxDrawdown: 8.43, tradefyScore: 4.2 },
+  },
+  {
+    id: 'google',
+    name: 'Google',
+    ticker: 'GOOG',
+    icon: '🔍',
+    liveSince: 'Feb 12th',
+    status: 'LIVE',
+    capital: 10297.87,
+    gains: 1250.74,
+    price: 178.42,
+    priceChange: 2.14,
+    color: '#fbbf24',
+    metrics: { capitalInvested: 18000, netProfit: 14200, annualReturn: 62.31, monthlyReturn: 4.12, maxDrawdown: 9.87, tradefyScore: 4.7 },
+  },
+];
+
+const DRAFT_STRATEGIES = [
+  {
+    id: 'tesla',
+    name: 'Tesla Inc.',
+    ticker: 'TSLA',
+    icon: '⚡',
+    liveSince: 'Feb 12th',
+    status: 'DRAFT',
+    capital: 9425.12,
+    tradefyScore: 4.5,
+    price: 248.50,
+    priceChange: -1.24,
+    color: '#ef4444',
+    metrics: { capitalInvested: 9425, netProfit: 0, annualReturn: 0, monthlyReturn: 0, maxDrawdown: 0, tradefyScore: 4.5 },
+  },
+  {
+    id: 'microsoft',
+    name: 'Microsoft',
+    ticker: 'MSFT',
+    icon: '🪟',
+    liveSince: 'Feb 12th',
+    status: 'DRAFT',
+    capital: 3975.45,
+    tradefyScore: 4.5,
+    price: 428.75,
+    priceChange: 0.78,
+    color: '#a78bfa',
+    metrics: { capitalInvested: 3975, netProfit: 0, annualReturn: 0, monthlyReturn: 0, maxDrawdown: 0, tradefyScore: 4.5 },
+  },
+];
+
+const ALLOCATION_DATA = [
+  { label: 'Google', pct: 15, color: '#fbbf24' },
+  { label: 'Apple Inc', pct: 20, color: '#10b981' },
+  { label: 'Tesla', pct: 24, color: '#ef4444' },
+  { label: 'S&P 500', pct: 20, color: '#3b82f6' },
+  { label: 'Others', pct: 12, color: '#6b7280' },
+];
+
+/* ── Chart helpers ── */
+function generateChartPoints(seed, count, min, max, trend = 0.5) {
+  const pts = [];
+  let v = min + (max - min) * 0.3;
+  for (let i = 0; i < count; i++) {
+    v += Math.sin(i * 0.4 + seed) * ((max - min) * 0.06) + trend * ((max - min) * 0.008);
+    v += (Math.random() - 0.45) * ((max - min) * 0.03);
+    v = Math.max(min, Math.min(max, v));
+    pts.push(v);
+  }
+  return pts;
+}
+
+function pointsToPath(pts, width, height, padTop = 10, padBottom = 10) {
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
+  const range = max - min || 1;
+  const step = width / (pts.length - 1);
+  return pts.map((p, i) => {
+    const x = i * step;
+    const y = padTop + (height - padTop - padBottom) * (1 - (p - min) / range);
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function pointsToArea(pts, width, height, padTop = 10, padBottom = 10) {
+  const line = pointsToPath(pts, width, height, padTop, padBottom);
+  return `${line} L${width},${height} L0,${height} Z`;
+}
+
+/* ── Mini Spark Chart ── */
+function SparkChart({ seed = 1, color = '#10b981', width = 200, height = 80 }) {
+  const pts = useMemo(() => generateChartPoints(seed, 30, 100, 600, 0.8), [seed]);
+  const line = pointsToPath(pts, width, height);
+  const area = pointsToArea(pts, width, height);
   return (
-    <div className="for-the-quants-container">
-      <div className="stats-grid condensed">
-        <div className="stat-card">
-          <div className="stat-icon quants"><i className="bi bi-calculator" /></div>
-          <div className="stat-content">
-            <div className="stat-value">12</div>
-            <div className="stat-label">Active Models</div>
-            <div className="stat-change">Running</div>
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+      <defs>
+        <linearGradient id={`sg-${seed}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#sg-${seed})`} />
+      <path d={line} fill="none" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
+/* ── Donut Chart ── */
+function DonutChart({ data }) {
+  const total = data.reduce((s, d) => s + d.pct, 0);
+  let cumulative = 0;
+  const r = 52, cx = 64, cy = 64, circ = 2 * Math.PI * r;
+  return (
+    <div className="ftq-donut-wrap">
+      <svg viewBox="0 0 128 128" className="ftq-donut-svg">
+        {data.map((d, i) => {
+          const offset = (cumulative / total) * circ;
+          const length = (d.pct / total) * circ;
+          cumulative += d.pct;
+          return (
+            <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={d.color}
+              strokeWidth="14" strokeDasharray={`${length} ${circ - length}`}
+              strokeDashoffset={-offset} transform={`rotate(-90 ${cx} ${cy})`}
+              style={{ transition: 'stroke-dasharray 0.5s' }}
+            />
+          );
+        })}
+      </svg>
+      <div className="ftq-donut-legend">
+        {data.map((d, i) => (
+          <div key={i} className="ftq-donut-item">
+            <span className="ftq-donut-color" style={{ background: d.color }} />
+            <span className="ftq-donut-label">{d.label}</span>
+            <span className="ftq-donut-pct">{d.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Performance Chart (for strategy detail) ── */
+function PerformanceChart({ strategy }) {
+  const W = 800, H = 340;
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'];
+  const yLabels = [200, 400, 600, 800, 1000];
+
+  const seed = strategy.id.charCodeAt(0);
+  const strategyPts = useMemo(() => generateChartPoints(seed, 60, 250, 950, 1.2), [seed]);
+  const benchmarkPts = useMemo(() => generateChartPoints(seed + 50, 60, 200, 500, 0.3), [seed]);
+
+  const strategyLine = pointsToPath(strategyPts, W, H - 60, 20, 40);
+  const strategyArea = pointsToArea(strategyPts, W, H - 60, 20, 40);
+  const benchmarkLine = pointsToPath(benchmarkPts, W, H - 60, 20, 40);
+
+  const [hoverIdx, setHoverIdx] = useState(null);
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const relX = x / rect.width;
+    const idx = Math.min(Math.floor(relX * strategyPts.length), strategyPts.length - 1);
+    setHoverIdx(idx);
+    setHoverPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div className="ftq-perf-chart">
+      <h3 className="ftq-perf-title">Strategy Performance</h3>
+      <div className="ftq-perf-chart-wrap"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoverIdx(null)}
+      >
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="ftq-perf-svg">
+          <defs>
+            <linearGradient id="perfGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
+            </linearGradient>
+          </defs>
+          {yLabels.map(v => {
+            const y = 20 + (H - 60) * (1 - (v - 200) / 800);
+            return <line key={v} x1="0" y1={y} x2={W} y2={y} stroke="rgba(16,185,129,0.08)" strokeWidth="1" />;
+          })}
+          <path d={strategyArea} fill="url(#perfGrad)" />
+          <path d={strategyLine} fill="none" stroke="#10b981" strokeWidth="2.5" />
+          <path d={benchmarkLine} fill="none" stroke="#f97316" strokeWidth="2" strokeDasharray="4 3" />
+          {hoverIdx !== null && (
+            <>
+              <line
+                x1={(hoverIdx / (strategyPts.length - 1)) * W}
+                y1="0"
+                x2={(hoverIdx / (strategyPts.length - 1)) * W}
+                y2={H - 40}
+                stroke="rgba(16,185,129,0.4)"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+              />
+              <circle
+                cx={(hoverIdx / (strategyPts.length - 1)) * W}
+                cy={20 + (H - 60) * (1 - (strategyPts[hoverIdx] - 200) / 800)}
+                r="5" fill="#10b981" stroke="#0d1117" strokeWidth="2"
+              />
+              <circle
+                cx={(hoverIdx / (strategyPts.length - 1)) * W}
+                cy={20 + (H - 60) * (1 - (benchmarkPts[hoverIdx] - 200) / 800)}
+                r="5" fill="#f97316" stroke="#0d1117" strokeWidth="2"
+              />
+            </>
+          )}
+        </svg>
+        <div className="ftq-perf-y-axis">
+          {yLabels.reverse().map(v => (
+            <span key={v}>${v.toLocaleString()}</span>
+          ))}
+        </div>
+        <div className="ftq-perf-x-axis">
+          {days.map((d, i) => <span key={i}>{d}</span>)}
+        </div>
+        {hoverIdx !== null && (
+          <div className="ftq-perf-tooltip" style={{ left: Math.min(hoverPos.x, 600), top: Math.max(hoverPos.y - 90, 10) }}>
+            <div className="ftq-tooltip-row">
+              <span className="ftq-tooltip-dot green" />
+              <span>${strategyPts[hoverIdx].toFixed(2)}</span>
+            </div>
+            <div className="ftq-tooltip-row">
+              <span className="ftq-tooltip-dot orange" />
+              <span>${benchmarkPts[hoverIdx].toFixed(2)}</span>
+            </div>
+            <div className="ftq-tooltip-date">
+              {days[Math.floor((hoverIdx / strategyPts.length) * 7)]}, {Math.floor(Math.random() * 28 + 1)} Mar 2023
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="ftq-benchmark-tag">
+        <span className="ftq-benchmark-icon">S&P</span>
+        <span className="ftq-benchmark-dot" />
+        <span>S&P 500</span>
+        <button type="button" className="ftq-benchmark-remove">&times;</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Strategy Detail View ── */
+function StrategyDetail({ strategy, onBack }) {
+  const isLive = strategy.status === 'LIVE';
+  const m = strategy.metrics;
+  return (
+    <div className="ftq-detail">
+      <div className="ftq-detail-header">
+        <div className="ftq-detail-header-left">
+          <button type="button" className="ftq-back-btn" onClick={onBack}>
+            <i className="bi bi-arrow-left" />
+          </button>
+          <div>
+            <div className="ftq-detail-title-row">
+              <h2>New Generated Strategy</h2>
+              <button type="button" className="ftq-rename-btn">
+                <i className="bi bi-pencil" /> Rename
+              </button>
+            </div>
+            <div className="ftq-detail-subtitle">
+              {strategy.ticker}, Created 15 mins ago
+              <span className={`ftq-badge ${strategy.status.toLowerCase()}`}>{strategy.status}</span>
+            </div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon performance"><i className="bi bi-graph-up-arrow" /></div>
-          <div className="stat-content">
-            <div className="stat-value">+24.3%</div>
-            <div className="stat-label">Avg Returns</div>
-            <div className="stat-change positive">vs +12% Market</div>
+        <div className="ftq-detail-header-right">
+          <button type="button" className="ftq-data-btn">
+            Full Data <i className="bi bi-chevron-down" />
+          </button>
+          <div className="ftq-detail-stock">
+            <div className="ftq-detail-stock-icon">{strategy.icon}</div>
+            <div>
+              <div className="ftq-detail-stock-name">{strategy.name}</div>
+              <div className="ftq-detail-stock-ticker">{strategy.ticker}</div>
+            </div>
           </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon volume"><i className="bi bi-lightning" /></div>
-          <div className="stat-content">
-            <div className="stat-value">1.8</div>
-            <div className="stat-label">Sharpe Ratio</div>
-            <div className="stat-change positive">Excellent</div>
+          <div className="ftq-detail-price-block">
+            <span className="ftq-detail-price-label">Price</span>
+            <span className="ftq-detail-price">${strategy.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
+          <span className={`ftq-price-change-badge ${strategy.priceChange >= 0 ? 'positive' : 'negative'}`}>
+            {strategy.priceChange >= 0 ? '+' : ''}{strategy.priceChange.toFixed(2)}%
+          </span>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon trades"><i className="bi bi-arrow-repeat" /></div>
-          <div className="stat-content">
-            <div className="stat-value">847</div>
-            <div className="stat-label">Backtests Run</div>
-            <div className="stat-change">This Month</div>
+      </div>
+
+      <div className="ftq-metrics-row">
+        <div className="ftq-metric-card">
+          <div className="ftq-metric-value">$ {m.capitalInvested.toLocaleString()}</div>
+          <div className="ftq-metric-label"><span className="ftq-metric-dot green" /> Capital</div>
+        </div>
+        <div className="ftq-metric-card">
+          <div className="ftq-metric-value">$ {m.netProfit.toLocaleString()}</div>
+          <div className="ftq-metric-label"><span className="ftq-metric-dot green" /> Net Profit</div>
+        </div>
+        <div className="ftq-metric-card">
+          <div className="ftq-metric-value">{m.annualReturn.toFixed(2)}%</div>
+          <div className="ftq-metric-label"><span className="ftq-metric-dot orange" /> Annual Return</div>
+        </div>
+        <div className="ftq-metric-card">
+          <div className="ftq-metric-value">{m.monthlyReturn.toFixed(2)}%</div>
+          <div className="ftq-metric-label"><span className="ftq-metric-dot orange" /> Monthly Return</div>
+        </div>
+        <div className="ftq-metric-card">
+          <div className="ftq-metric-value">{m.maxDrawdown.toFixed(2)}%</div>
+          <div className="ftq-metric-label"><span className="ftq-metric-dot orange" /> Max Drawdown</div>
+        </div>
+        <div className="ftq-metric-card">
+          <div className="ftq-metric-value">
+            <i className="bi bi-star-fill" style={{ color: '#fbbf24', marginRight: 6, fontSize: '0.9em' }} />
+            {m.tradefyScore}
+          </div>
+          <div className="ftq-metric-label">
+            <span className="ftq-metric-dot orange" /> Tradefy Score
+          </div>
+          <div className="ftq-score-bar">
+            <div className="ftq-score-bar-fill" style={{ width: `${(m.tradefyScore / 5) * 100}%` }} />
           </div>
         </div>
       </div>
 
-      <PinnableCard cardId="trading-firms" title="Trading Firms" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={4} defaultH={2}>
-      <div className="component-card">
-        <div className="card-header card-header-with-subtitle">
-          <h3><i className="bi bi-building" /> Trading Firms — Patterns & Revenue</h3>
-          <p className="card-subtitle">Swap through leading quantitative and market-making firms — analyze their trading patterns and revenue profiles</p>
-        </div>
-        <div className="card-body">
-          <ProfileCarousel items={TRADING_FIRMS} variant="firm" />
-        </div>
-      </div>
-      </PinnableCard>
+      <PerformanceChart strategy={strategy} />
+    </div>
+  );
+}
 
-      <PinnableCard cardId="quant-model" title="Quantitative Model Analysis" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={4} defaultH={3}>
-      <div className="component-card full-width quant-model-card">
-        <div className="card-header">
-          <h3><i className="bi bi-graph-up" /> Quantitative Model Analysis</h3>
-          <div className="model-controls">
-            <select className="model-selector" id="quantModelSelect">
-              <option value="momentum">Momentum Strategy</option>
-              <option value="mean-reversion">Mean Reversion</option>
-              <option value="statistical-arbitrage">Statistical Arbitrage</option>
-              <option value="machine-learning">Machine Learning Model</option>
-              <option value="pairs-trading">Pairs Trading</option>
-              <option value="factor-investing">Multi-Factor Model</option>
-              <option value="volatility">Volatility Trading</option>
-              <option value="sentiment">Sentiment Analysis</option>
-            </select>
-            <button className="card-action-btn" type="button"><i className="bi bi-play-circle" /> Run Backtest</button>
+/* ── Main Page ── */
+export default function ForTheQuantsPage() {
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+
+  const totalCapital = ACTIVE_STRATEGIES.reduce((s, st) => s + st.capital, 0) +
+    DRAFT_STRATEGIES.reduce((s, st) => s + st.capital, 0);
+  const totalGains = ACTIVE_STRATEGIES.reduce((s, st) => s + (st.gains || 0), 0);
+
+  if (selectedStrategy) {
+    const all = [...ACTIVE_STRATEGIES, ...DRAFT_STRATEGIES];
+    const strat = all.find(s => s.id === selectedStrategy);
+    if (strat) {
+      return (
+        <div className="ftq-page">
+          <StrategyDetail strategy={strat} onBack={() => setSelectedStrategy(null)} />
+        </div>
+      );
+    }
+  }
+
+  return (
+    <div className="ftq-page">
+      {/* ── Top Section: 3 cards ── */}
+      <div className="ftq-top-grid">
+        <div className="ftq-top-card ftq-trading-card">
+          <div className="ftq-trading-chart-bg">
+            <SparkChart seed={42} color="#10b981" width={400} height={160} />
+          </div>
+          <div className="ftq-trading-content">
+            <div className="ftq-trading-label">
+              <i className="bi bi-graph-up-arrow" style={{ marginRight: 6 }} />
+              Currently Trading
+            </div>
+            <div className="ftq-trading-value">
+              ${totalCapital.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div className="ftq-trading-stats">
+              <div>
+                <span className="ftq-trading-stat-label">Live Strategies</span>
+                <span className="ftq-trading-stat-value">{ACTIVE_STRATEGIES.length}</span>
+              </div>
+              <div>
+                <span className="ftq-trading-stat-label">Assets</span>
+                <span className="ftq-trading-stat-value">{ACTIVE_STRATEGIES.length}</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="card-body">
-          <div className="model-chart-container">
-            <div className="chart-placeholder">
-              <div className="chart-header">
-                <div className="chart-title">
-                  <span className="model-name">Momentum Strategy</span>
-                  <span className="model-status active">Active</span>
+
+        <div className="ftq-top-card ftq-balance-card">
+          <div className="ftq-balance-header">
+            <span className="ftq-balance-name">Balance</span>
+            <span className="ftq-balance-gain">+$250.22 <span className="ftq-balance-period">/pm</span></span>
+          </div>
+          <div className="ftq-balance-chart">
+            <SparkChart seed={77} color="#10b981" width={300} height={100} />
+          </div>
+          <div className="ftq-balance-x-axis">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+              <span key={d}>{d}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="ftq-top-card ftq-allocation-card">
+          <DonutChart data={ALLOCATION_DATA} />
+        </div>
+      </div>
+
+      {/* ── Active Strategies ── */}
+      <div className="ftq-section">
+        <h3 className="ftq-section-title">ACTIVE STRATEGIES</h3>
+        <div className="ftq-strategies-grid">
+          {ACTIVE_STRATEGIES.map(strat => (
+            <button
+              key={strat.id}
+              type="button"
+              className="ftq-strategy-card live"
+              onClick={() => setSelectedStrategy(strat.id)}
+            >
+              <div className="ftq-strat-header">
+                <div className="ftq-strat-icon">{strat.icon}</div>
+                <div className="ftq-strat-info">
+                  <span className="ftq-strat-name">{strat.name}</span>
+                  <span className="ftq-strat-meta">
+                    {strat.ticker}, Live since {strat.liveSince}
+                    <span className="ftq-badge live">LIVE</span>
+                  </span>
                 </div>
-                <div className="chart-metrics">
-                  <div className="metric-pill"><span className="metric-label">Returns:</span><span className="metric-value positive">+32.4%</span></div>
-                  <div className="metric-pill"><span className="metric-label">Sharpe:</span><span className="metric-value">2.1</span></div>
-                  <div className="metric-pill"><span className="metric-label">Max DD:</span><span className="metric-value negative">-8.3%</span></div>
+              </div>
+              <div className="ftq-strat-numbers">
+                <div>
+                  <span className="ftq-strat-num-label">Capital</span>
+                  <span className="ftq-strat-num-value">${strat.capital.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="ftq-strat-num-label">Gains</span>
+                  <span className="ftq-strat-num-value positive">${strat.gains.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
-              <div className="chart-area">
-                <svg viewBox="0 0 800 300" className="performance-chart">
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: 'var(--primary)', stopOpacity: 0.3 }} />
-                      <stop offset="100%" style={{ stopColor: 'var(--primary)', stopOpacity: 0 }} />
-                    </linearGradient>
-                  </defs>
-                  <path d="M 0 250 L 100 240 L 200 200 L 300 180 L 400 150 L 500 120 L 600 100 L 700 80 L 800 50" fill="url(#chartGradient)" stroke="var(--primary)" strokeWidth="2" />
-                </svg>
-              </div>
-              <div className="model-parameters">
-                <div className="param-group"><span className="param-label">Lookback Period:</span><span className="param-value">20 days</span></div>
-                <div className="param-group"><span className="param-label">Rebalance Frequency:</span><span className="param-value">Weekly</span></div>
-                <div className="param-group"><span className="param-label">Universe Size:</span><span className="param-value">500 stocks</span></div>
-                <div className="param-group"><span className="param-label">Position Size:</span><span className="param-value">Equal Weight</span></div>
-              </div>
+            </button>
+          ))}
+          <button type="button" className="ftq-strategy-card ftq-create-card">
+            <div className="ftq-create-icon">
+              <svg viewBox="0 0 48 48" width="48" height="48">
+                <polygon points="24,4 44,24 24,44 4,24" fill="none" stroke="#10b981" strokeWidth="2" />
+                <polygon points="24,10 38,24 24,38 10,24" fill="rgba(16,185,129,0.15)" stroke="#10b981" strokeWidth="1.5" />
+                <line x1="24" y1="18" x2="24" y2="30" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+                <line x1="18" y1="24" x2="30" y2="24" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </div>
-          </div>
+            <span className="ftq-create-label">Create New Strategy</span>
+          </button>
         </div>
       </div>
-      </PinnableCard>
 
-      <div className="page-grid-3">
-        <PinnableCard cardId="backtesting-engine" title="Backtesting Engine" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-        <div className="component-card">
-          <div className="card-header"><h3><i className="bi bi-clock-history" /> Backtesting Engine</h3></div>
-          <div className="card-body">
-            <p>Test your strategies on historical data with transaction costs and slippage.</p>
-            <div className="tool-stats">
-              <div className="tool-stat"><span className="stat-label">Tests Run:</span><span className="stat-value">847</span></div>
-              <div className="tool-stat"><span className="stat-label">Avg Time:</span><span className="stat-value">2.3s</span></div>
-            </div>
-          </div>
-          <div className="card-footer"><button className="card-action-btn" type="button">Launch Tool</button></div>
+      {/* ── Draft Strategies ── */}
+      <div className="ftq-section">
+        <h3 className="ftq-section-title">DRAFT STRATEGIES</h3>
+        <div className="ftq-strategies-grid">
+          {DRAFT_STRATEGIES.map(strat => (
+            <button
+              key={strat.id}
+              type="button"
+              className="ftq-strategy-card draft"
+              onClick={() => setSelectedStrategy(strat.id)}
+            >
+              <div className="ftq-strat-header">
+                <div className="ftq-strat-icon">{strat.icon}</div>
+                <div className="ftq-strat-info">
+                  <span className="ftq-strat-name">{strat.name}</span>
+                  <span className="ftq-strat-meta">
+                    {strat.ticker}, live since {strat.liveSince}
+                    <span className="ftq-badge draft">DRAFT</span>
+                  </span>
+                </div>
+              </div>
+              <div className="ftq-strat-numbers">
+                <div>
+                  <span className="ftq-strat-num-label">Capital</span>
+                  <span className="ftq-strat-num-value">${strat.capital.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div>
+                  <span className="ftq-strat-num-label">Tradefy Score</span>
+                  <span className="ftq-strat-num-value">
+                    <i className="bi bi-star-fill" style={{ color: '#fbbf24', marginRight: 4 }} />
+                    {strat.tradefyScore}
+                  </span>
+                </div>
+              </div>
+              <div className="ftq-strat-broker-link">Connect a broker to go live &rarr;</div>
+            </button>
+          ))}
         </div>
-        </PinnableCard>
-        <PinnableCard cardId="statistical-analysis" title="Statistical Analysis" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-        <div className="component-card">
-          <div className="card-header"><h3><i className="bi bi-bar-chart" /> Statistical Analysis</h3></div>
-          <div className="card-body">
-            <p>Advanced statistical tests, correlation analysis, and time series modeling.</p>
-            <div className="tool-stats">
-              <div className="tool-stat"><span className="stat-label">Datasets:</span><span className="stat-value">12</span></div>
-              <div className="tool-stat"><span className="stat-label">Variables:</span><span className="stat-value">48</span></div>
-            </div>
-          </div>
-          <div className="card-footer"><button className="card-action-btn" type="button">Launch Tool</button></div>
-        </div>
-        </PinnableCard>
-        <PinnableCard cardId="ml-predictions" title="ML Predictions" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-        <div className="component-card">
-          <div className="card-header"><h3><i className="bi bi-cpu" /> ML Predictions</h3></div>
-          <div className="card-body">
-            <p>Train machine learning models on market data for price predictions.</p>
-            <div className="tool-stats">
-              <div className="tool-stat"><span className="stat-label">Accuracy:</span><span className="stat-value">68.4%</span></div>
-              <div className="tool-stat"><span className="stat-label">Models:</span><span className="stat-value">5</span></div>
-            </div>
-          </div>
-          <div className="card-footer"><button className="card-action-btn" type="button">Launch Tool</button></div>
-        </div>
-        </PinnableCard>
       </div>
 
-      <div className="page-grid-2">
-        <PinnableCard cardId="portfolio-optimization" title="Portfolio Optimization" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={2}>
-        <div className="component-card">
-          <div className="card-header"><h3><i className="bi bi-pie-chart" /> Portfolio Optimization</h3></div>
-          <div className="card-body">
-            <p>Efficient frontier analysis, risk parity, and mean-variance optimization.</p>
-            <table className="data-table compact">
-              <thead>
-                <tr><th>Asset</th><th>Weight</th><th>Return</th><th>Risk</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>SPY</td><td>35%</td><td className="positive">+12.3%</td><td>14.2%</td></tr>
-                <tr><td>QQQ</td><td>30%</td><td className="positive">+18.7%</td><td>18.9%</td></tr>
-                <tr><td>TLT</td><td>20%</td><td className="positive">+3.2%</td><td>8.1%</td></tr>
-                <tr><td>GLD</td><td>15%</td><td className="positive">+7.8%</td><td>12.4%</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        </PinnableCard>
-        <PinnableCard cardId="risk-analytics" title="Risk Analytics" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={2}>
-        <div className="component-card">
-          <div className="card-header"><h3><i className="bi bi-shield-check" /> Risk Analytics</h3></div>
-          <div className="card-body">
-            <p>VaR, CVaR, stress testing, and scenario analysis for portfolio risk management.</p>
-            <div className="risk-metrics">
-              <div className="risk-metric"><span className="metric-name">Value at Risk (95%):</span><span className="metric-value negative">-2.4%</span></div>
-              <div className="risk-metric"><span className="metric-name">Conditional VaR:</span><span className="metric-value negative">-3.8%</span></div>
-              <div className="risk-metric"><span className="metric-name">Beta:</span><span className="metric-value">0.92</span></div>
-              <div className="risk-metric"><span className="metric-name">Correlation to S&amp;P:</span><span className="metric-value">0.87</span></div>
-            </div>
-          </div>
-        </div>
-        </PinnableCard>
-      </div>
-
-      <section className="quant-formulas-section">
-        <div className="quant-formulas-header">
-          <h3><i className="bi bi-calculator-fill" /> Quant Formulas Library</h3>
-          <p>Essential mathematical models for quantitative finance</p>
-        </div>
-        <div className="quant-formulas-grid">
-          <PinnableCard cardId="formula-var" title="Value at Risk" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-shield-exclamation" /> Value at Risk (VaR)</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Portfolio loss metric — maximum expected loss at a given confidence level.</p>
-              <div className="formula-block">
-                <span className="formula-main">VaR<sub>α</sub> = μ − z<sub>α</sub>σ</span>
-                <span className="formula-note">Parametric (normal): μ = mean return, σ = volatility, z<sub>α</sub> = quantile</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-
-          <PinnableCard cardId="formula-gbm" title="Geometric Brownian Motion" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-graph-up-arrow" /> Geometric Brownian Motion</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Price process model — continuous-time stochastic process for asset prices.</p>
-              <div className="formula-block">
-                <span className="formula-main">dS = μS dt + σS dW</span>
-                <span className="formula-alt">S<sub>t</sub> = S<sub>0</sub> exp((μ − σ²/2)t + σW<sub>t</sub>)</span>
-                <span className="formula-note">μ = drift, σ = volatility, W = Wiener process</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-
-          <PinnableCard cardId="formula-meanvar" title="Mean-Variance Optimization" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-pie-chart-fill" /> Mean-Variance Optimization</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Portfolio optimization — maximize return for given risk (Markowitz).</p>
-              <div className="formula-block">
-                <span className="formula-main">min w′Σw  s.t.  w′μ = r<sub>target</sub></span>
-                <span className="formula-note">w = weights, Σ = covariance matrix, μ = expected returns</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-
-          <PinnableCard cardId="formula-kelly" title="Kelly Criterion" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-percent" /> Kelly Criterion</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Optimal betting fraction — maximizes long-term growth rate.</p>
-              <div className="formula-block">
-                <span className="formula-main">f* = (bp − q) / b = p − q/b</span>
-                <span className="formula-note">p = win probability, q = 1−p, b = odds (payoff per unit bet)</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-
-          <PinnableCard cardId="formula-sharpe" title="Sharpe Ratio" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-graph-up" /> Sharpe Ratio</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Risk-adjusted return — excess return per unit of risk.</p>
-              <div className="formula-block">
-                <span className="formula-main">SR = (R<sub>p</sub> − R<sub>f</sub>) / σ<sub>p</sub></span>
-                <span className="formula-note">R<sub>p</sub> = portfolio return, R<sub>f</sub> = risk-free rate, σ<sub>p</sub> = portfolio volatility</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-
-          <PinnableCard cardId="formula-capm" title="CAPM" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-bullseye" /> CAPM</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Capital Asset Pricing Model — risk-return relationship.</p>
-              <div className="formula-block">
-                <span className="formula-main">E[R<sub>i</sub>] = R<sub>f</sub> + β<sub>i</sub>(E[R<sub>m</sub>] − R<sub>f</sub>)</span>
-                <span className="formula-note">β<sub>i</sub> = Cov(R<sub>i</sub>, R<sub>m</sub>) / Var(R<sub>m</sub>)</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-
-          <PinnableCard cardId="formula-blackscholes" title="Black-Scholes" sourcePage="/for-the-quants" sourceLabel="For the Quants" defaultW={2} defaultH={1}>
-          <div className="component-card formula-card">
-            <div className="card-header"><h4><i className="bi bi-currency-exchange" /> Black-Scholes</h4></div>
-            <div className="card-body">
-              <p className="formula-desc">Option pricing model — European call option value.</p>
-              <div className="formula-block">
-                <span className="formula-main">C = S<sub>0</sub>N(d<sub>1</sub>) − Ke<sup>−rT</sup>N(d<sub>2</sub>)</span>
-                <span className="formula-alt">d<sub>1</sub> = [ln(S<sub>0</sub>/K) + (r + σ²/2)T] / (σ√T)</span>
-                <span className="formula-alt">d<sub>2</sub> = d<sub>1</sub> − σ√T</span>
-                <span className="formula-note">S<sub>0</sub> = spot, K = strike, r = rate, T = time, σ = vol, N = CDF</span>
-              </div>
-            </div>
-          </div>
-          </PinnableCard>
-        </div>
-      </section>
-
+      {/* ── Learning ── */}
       <section className="learning-opportunities">
         <div className="learning-header">
           <div className="learning-title-area">
