@@ -1,0 +1,639 @@
+/* ═══════════════════════════════════════════════════════════
+   HOME DASHBOARD — Ezana Finance
+   Redesigned to match uploaded reference with Ezana branding.
+   Dark theme: #0a0e13 bg, #10b981 emerald accent
+   ═══════════════════════════════════════════════════════════ */
+
+.db-page {
+  padding: 1.5rem 2rem 3rem;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* ══════════════════════════════
+   GREETING
+   ══════════════════════════════ */
+.db-greeting-section {
+  margin-bottom: 1.5rem;
+}
+
+.db-greeting {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.db-greeting-emoji {
+  display: inline-block;
+  animation: dbWave 1.5s ease-in-out 0.5s 2;
+  transform-origin: 70% 70%;
+}
+
+@keyframes dbWave {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(14deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(10deg); }
+}
+
+.db-greeting-sub {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+  line-height: 1.5;
+}
+
+.db-greeting-highlight {
+  color: #10b981;
+  font-weight: 800;
+}
+
+
+/* ══════════════════════════════
+   SHARED CARD STYLES
+   ══════════════════════════════ */
+.db-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.db-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+}
+
+.db-card-header h3 {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.db-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.db-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  color: #6b7280;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.db-icon-btn:hover { color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+
+
+/* ══════════════════════════════
+   TIMEFRAME BUTTONS
+   ══════════════════════════════ */
+.db-tf-group-sm { display: flex; gap: 2px; }
+
+.db-tf-btn, .db-tf-btn-sm {
+  padding: 0.3rem 0.625rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #6b7280;
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.db-tf-btn:hover, .db-tf-btn-sm:hover { color: #e2e8f0; }
+.db-tf-btn.active, .db-tf-btn-sm.active {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+
+/* ══════════════════════════════
+   HERO CARD (Portfolio Value)
+   ══════════════════════════════ */
+.db-hero-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 18px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-end;
+  overflow: hidden;
+  position: relative;
+}
+
+.db-hero-left { flex: 1; min-width: 0; }
+
+.db-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.db-hero-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.375rem;
+}
+.db-hero-label i { font-size: 0.5625rem; color: #10b981; }
+
+.db-hero-value {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #f0f6fc;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.db-hero-change {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.db-hero-change.positive { color: #10b981; }
+.db-hero-change.negative { color: #ef4444; }
+.db-hero-change-amt { font-weight: 500; opacity: 0.7; }
+
+.db-hero-timeframes {
+  display: flex;
+  gap: 3px;
+}
+
+/* Hero stats */
+.db-hero-stats {
+  display: flex;
+  gap: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.db-hero-stat { display: flex; flex-direction: column; }
+.db-hero-stat-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.db-hero-stat-label i { font-size: 0.5rem; color: #10b981; }
+.db-hero-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+
+/* Chart */
+.db-hero-chart {
+  width: 45%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.db-sparkline-svg {
+  width: 100%;
+  height: 120px;
+}
+
+.db-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.375rem 0.25rem 0;
+  font-size: 0.5625rem;
+  color: #4b5563;
+}
+
+
+/* ══════════════════════════════
+   ROW 2: Portfolios + Watchlist
+   ══════════════════════════════ */
+.db-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── My Portfolios ── */
+.db-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.db-holding-card {
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.06);
+  border-radius: 12px;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.db-holding-card:hover {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.db-holding-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.db-holding-ticker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.db-holding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.db-holding-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.db-holding-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin-bottom: 0.375rem;
+}
+
+.db-holding-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.db-holding-change {
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+.db-holding-change.positive { color: #10b981; }
+.db-holding-change.negative { color: #ef4444; }
+
+.db-holding-qty {
+  font-size: 0.5625rem;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+
+/* ── Watchlist ── */
+.db-watchlist-list {
+  padding: 0.25rem 0;
+}
+
+.db-watchlist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+  transition: background 0.1s;
+  cursor: pointer;
+}
+.db-watchlist-item:hover { background: rgba(16, 185, 129, 0.03); }
+.db-watchlist-item:last-child { border-bottom: none; }
+
+.db-watchlist-left {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.db-watchlist-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #10b981;
+}
+
+.db-watchlist-ticker {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  display: block;
+}
+
+.db-watchlist-name {
+  font-size: 0.5625rem;
+  color: #6b7280;
+  display: block;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.db-watchlist-right { text-align: right; }
+
+.db-watchlist-price {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  display: block;
+}
+
+.db-watchlist-change {
+  font-size: 0.625rem;
+  font-weight: 700;
+  display: block;
+}
+.db-watchlist-change.positive { color: #10b981; }
+.db-watchlist-change.negative { color: #ef4444; }
+
+
+/* ══════════════════════════════
+   ROW 3: Profits + Sectors + Transactions
+   ══════════════════════════════ */
+.db-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+}
+
+/* ── Total Profits (Donut) ── */
+.db-profits-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem;
+  gap: 1rem;
+}
+
+.db-donut-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.db-donut-svg { display: block; }
+.db-donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+.db-donut-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+.db-donut-label {
+  font-size: 0.5rem;
+  color: #6b7280;
+  max-width: 80px;
+  line-height: 1.3;
+}
+
+.db-profits-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.db-profits-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.db-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+}
+.db-legend-label { font-size: 0.6875rem; color: #8b949e; }
+.db-legend-pct { font-size: 0.6875rem; font-weight: 700; color: #e2e8f0; }
+
+
+/* ── Sector Distribution ── */
+.db-sector-bar-mini {
+  display: flex;
+  width: 80px;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  gap: 1px;
+}
+.db-sector-bar-seg {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.db-sector-list { padding: 0.5rem 0; }
+
+.db-sector-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+}
+.db-sector-item:last-child { border-bottom: none; }
+
+.db-sector-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.db-sector-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.db-sector-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  display: block;
+}
+
+.db-sector-pct {
+  font-size: 0.5625rem;
+  color: #6b7280;
+  display: block;
+}
+
+.db-sector-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+
+/* ── Recent Transactions ── */
+.db-tx-table-header {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.8fr;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+}
+
+.db-tx-list { padding: 0; }
+
+.db-tx-item {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.8fr;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.03);
+  transition: background 0.1s;
+}
+.db-tx-item:hover { background: rgba(16, 185, 129, 0.02); }
+
+.db-tx-company {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.db-tx-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(16, 185, 129, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 800;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.db-tx-name { font-size: 0.75rem; font-weight: 700; color: #e2e8f0; display: block; }
+.db-tx-date { font-size: 0.5625rem; color: #4b5563; display: block; }
+
+.db-tx-amount { font-size: 0.75rem; font-weight: 700; }
+.db-tx-amount.positive { color: #10b981; }
+.db-tx-amount.negative { color: #ef4444; }
+
+.db-tx-id { font-size: 0.6875rem; color: #6b7280; font-weight: 500; }
+
+
+/* ══════════════════════════════
+   MOBILE
+   ══════════════════════════════ */
+@media (max-width: 1024px) {
+  .db-row-2 { grid-template-columns: 1fr; }
+  .db-row-3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .db-page { padding: 1rem; }
+  .db-greeting { font-size: 1.25rem; }
+
+  .db-hero-card { flex-direction: column; padding: 1.25rem; }
+  .db-hero-chart { width: 100%; }
+  .db-hero-value { font-size: 2rem; }
+  .db-hero-stats { flex-wrap: wrap; gap: 1rem; }
+  .db-hero-top { flex-direction: column; gap: 0.75rem; }
+
+  .db-portfolio-grid { grid-template-columns: 1fr 1fr; }
+
+  .db-row-3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .db-portfolio-grid { grid-template-columns: 1fr; }
+  .db-hero-stats { flex-direction: column; gap: 0.75rem; }
+}
+
+
+/* ══════════════════════════════
+   LIGHT MODE
+   ══════════════════════════════ */
+body.light-mode .db-greeting { color: #111827; }
+body.light-mode .db-greeting-sub { color: #6b7280; }
+body.light-mode .db-greeting-highlight { color: #059669; }
+
+body.light-mode .db-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+body.light-mode .db-card-header { border-bottom-color: rgba(0, 0, 0, 0.04); }
+body.light-mode .db-card-header h3 { color: #111827; }
+
+body.light-mode .db-hero-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+body.light-mode .db-hero-value { color: #111827; }
+body.light-mode .db-hero-stat-value { color: #111827; }
+
+body.light-mode .db-holding-card {
+  background: rgba(0, 0, 0, 0.01);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .db-holding-card:hover { background: rgba(0, 0, 0, 0.02); }
+body.light-mode .db-holding-value { color: #111827; }
+
+body.light-mode .db-watchlist-ticker { color: #111827; }
+body.light-mode .db-watchlist-price { color: #111827; }
+
+body.light-mode .db-donut-value { color: #111827; }
+body.light-mode .db-sector-name { color: #111827; }
+body.light-mode .db-sector-value { color: #111827; }
+body.light-mode .db-tx-name { color: #111827; }

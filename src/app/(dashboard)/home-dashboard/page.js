@@ -1,472 +1,358 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import Link from 'next/link';
-import { createPortal } from 'react-dom';
-import PortfolioDashboard from '@/components/dashboard/PortfolioDashboard';
-import { PortfolioChart } from '@/components/dashboard/PortfolioChart';
-import { PortfolioNews } from '@/components/dashboard/PortfolioNews';
-import { usePortfolio } from '@/hooks/usePortfolio';
+import { useState, useMemo } from 'react';
+import { useAuth } from '@/components/AuthProvider';
+import './home-dashboard.css';
 
-import '../../../../app-legacy/assets/css/theme.css';
-import '../../../../app-legacy/assets/css/unified-component-cards.css';
-import '../../../../app-legacy/assets/css/pages-common.css';
-import '../../../../app-legacy/assets/css/light-mode-fixes.css';
-import '../../../../app-legacy/components/learning/learning-opportunities.css';
-import '../../../../app-legacy/pages/home-dashboard.css';
+/* ═══════════════════════════════════════════════════════════
+   SAMPLE DATA — Replace with real data from usePortfolio()
+   once Plaid integration is live.
+   ═══════════════════════════════════════════════════════════ */
+const PORTFOLIO_VALUE = 220360.0;
+const PORTFOLIO_CHANGE_PCT = 4.9;
+const PORTFOLIO_CHANGE_AMT = 10297.64;
+const TOTAL_COMPANIES = 26;
+const CASH_BALANCE = 10250.0;
+const COMMITTED_CASH = 7000.0;
 
-const CAROUSEL_METRICS = [
-  { label: 'Portfolio Value', value: '$158,420', change: '+24.5% YTD' },
-  { label: "Today's P&L", value: '+$1,247', change: '+0.82% today' },
-  { label: 'Top Performer', value: 'NVDA', change: '+12.4%' },
-  { label: 'Risk Score', value: '6.2/10', change: '-0.3 vs last week' },
-  { label: 'Monthly Dividends', value: '$847', change: '+12.0% MoM' },
-  { label: 'Asset Allocation', value: 'Balanced', change: 'Stocks 65% • Bonds 20%' },
-  { label: 'Volatility', value: '4.8/10', change: '-0.4 this month' },
-  { label: 'Beta vs Market', value: '1.05', change: 'Near market sensitivity' },
-  { label: 'Sector Exposure', value: 'Tech 35%', change: 'Top 3 sectors tracked' },
+const MY_HOLDINGS = [
+  { ticker: 'MSFT', name: 'Microsoft', value: 1120.0, change: 3.25, changeAmt: 35.4, qty: 10, color: '#4cc9f0' },
+  { ticker: 'NFLX', name: 'Netflix', value: 980.0, change: -1.12, changeAmt: -11.0, qty: 6, color: '#ef4444' },
+  { ticker: 'META', name: 'Meta', value: 740.0, change: 2.85, changeAmt: 20.45, qty: 9, color: '#3b82f6' },
+  { ticker: 'GOOGL', name: 'Google', value: 1320.0, change: 4.12, changeAmt: 52.4, qty: 7, color: '#10b981' },
+  { ticker: 'TSLA', name: 'Tesla', value: 760.0, change: -0.85, changeAmt: -6.5, qty: 5, color: '#ef4444' },
+  { ticker: 'SHOP', name: 'Shopify', value: 610.0, change: 6.4, changeAmt: 36.2, qty: 11, color: '#10b981' },
 ];
 
-const formatCurrency = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(v);
+const WATCHLIST = [
+  { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 954.7, change: 3.12 },
+  { ticker: 'AAPL', name: 'Apple Inc.', price: 198.32, change: 1.27 },
+  { ticker: 'AMZN', name: 'Amazon.com Inc.', price: 174.66, change: 0.84 },
+  { ticker: 'UBER', name: 'Uber Technologies', price: 954.7, change: 3.12 },
+  { ticker: 'SONY', name: 'Sony Group Corp.', price: 954.7, change: 3.12 },
+];
 
-export default function HomeDashboardPage() {
-  const scriptLoadedRef = useRef(false);
-  const [brokerageOpen, setBrokerageOpen] = useState(false);
-  const [alertsOpen, setAlertsOpen] = useState(false);
-  const [analysisOpen, setAnalysisOpen] = useState(false);
-  const { portfolio } = usePortfolio();
-  const transactions = portfolio?.recentTransactions || [];
+const SECTOR_DATA = [
+  { name: 'Energy', pct: 45, value: 38096.0, color: '#10b981' },
+  { name: 'Technology', pct: 20, value: 18404.0, color: '#3b82f6' },
+  { name: 'Telecom', pct: 25, value: 30200.0, color: '#a78bfa' },
+  { name: 'Healthcare', pct: 10, value: 9202.0, color: '#fbbf24' },
+];
 
-  const exportReport = useCallback(() => {
-    const rows = CAROUSEL_METRICS.map((m) => [m.label, m.value, m.change].join(','));
-    const csv = ['Metric,Value,Change', ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `portfolio-report-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, []);
+const PROFIT_BREAKDOWN = [
+  { label: 'Stocks', pct: 45, color: '#10b981' },
+  { label: 'Funds', pct: 20, color: '#3b82f6' },
+  { label: 'ETFs', pct: 25, color: '#a78bfa' },
+  { label: 'Crypto', pct: 10, color: '#fbbf24' },
+];
 
-  useEffect(() => {
-    if (scriptLoadedRef.current) return;
-    scriptLoadedRef.current = true;
-    let mounted = true;
+const RECENT_TRANSACTIONS = [
+  { company: 'Meta', date: '10 Dec 2025', amount: 954.7, positive: true, txId: '#784512372' },
+  { company: 'UBER', date: '10 Dec 2025', amount: 954.7, positive: false, txId: '#784512371' },
+  { company: 'NVDA', date: '09 Dec 2025', amount: 954.7, positive: true, txId: '#784512370' },
+  { company: 'Apple', date: '08 Dec 2025', amount: 1240.5, positive: true, txId: '#784512369' },
+  { company: 'MSFT', date: '07 Dec 2025', amount: 980.75, positive: true, txId: '#784512368' },
+];
 
-    const loadScript = (src) => new Promise((resolve, reject) => {
-      const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) { resolve(); return; }
-      const s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error(`Failed to load ${src}`));
-      document.body.appendChild(s);
-    });
+// Generate a simple sparkline path (upward trend)
+function generateSparkline(width, height, points = 40) {
+  let y = height * 0.7;
+  const step = width / points;
+  const coords = [];
+  for (let i = 0; i <= points; i++) {
+    y += (Math.random() - 0.35) * (height * 0.06);
+    y = Math.max(height * 0.2, Math.min(height * 0.85, y));
+    if (i > points * 0.7) y -= Math.random() * (height * 0.04);
+    coords.push(`${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${y.toFixed(1)}`);
+  }
+  return coords.join(' ');
+}
 
-    const init = async () => {
-      try {
-        if (!document.getElementById('mainChart')) return;
-        await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js');
-        if (!mounted) return;
-        await loadScript('/app-legacy/pages/home-dashboard.js');
-        if (mounted && typeof window !== 'undefined' && window.initHomeDashboard) {
-          window.initHomeDashboard();
-        }
-      } catch (e) {
-        console.warn('Home dashboard init:', e);
-      }
-    };
-    init();
-    return () => {
-      mounted = false;
-      if (typeof window !== 'undefined' && window.portfolioDashboard) {
-        window.portfolioDashboard.stopMarketQuotesPolling?.();
-        window.portfolioDashboard = null;
-      }
-    };
-  }, []);
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning';
+  if (hour < 17) return 'Good Afternoon';
+  return 'Good Evening';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DONUT CHART COMPONENT
+   ═══════════════════════════════════════════════════════════ */
+function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, centerLabel }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  let offset = 0;
 
   return (
-    <>
-      {/* Quick Actions Bar */}
-      <section className="quick-actions-bar compact" data-react-controlled>
-        <button className="quick-action-btn quick-action-brokerage" id="connectBrokerageBtn" data-action="brokerage" onClick={() => setBrokerageOpen(true)}>
-          <i className="bi bi-bank" />
-          <span>Connect Brokerage</span>
-        </button>
-        <button className="quick-action-btn" data-action="refresh" onClick={() => window.portfolioDashboard?.updateChart?.('portfolio')}>
-          <i className="bi bi-arrow-clockwise" />
-          <span>Refresh</span>
-        </button>
-        <button className="quick-action-btn" data-action="report" onClick={exportReport}>
-          <i className="bi bi-file-earmark-text" />
-          <span>Report</span>
-        </button>
-        <button className="quick-action-btn" data-action="analysis" onClick={() => setAnalysisOpen(true)}>
-          <i className="bi bi-graph-up" />
-          <span>Analysis</span>
-        </button>
-        <button className="quick-action-btn" data-action="alerts" onClick={() => setAlertsOpen(true)}>
-          <i className="bi bi-bell" />
-          <span>Alerts</span>
-        </button>
-      </section>
+    <div className="db-donut-wrap" style={{ width: size, height: size }}>
+      <svg viewBox={`0 0 ${size} ${size}`} className="db-donut-svg">
+        {segments.map((seg, i) => {
+          const dash = (seg.pct / 100) * circumference;
+          const currentOffset = offset;
+          offset += dash;
+          return (
+            <circle
+              key={i}
+              cx={size / 2} cy={size / 2} r={radius}
+              fill="none" stroke={seg.color} strokeWidth={strokeWidth}
+              strokeDasharray={`${dash} ${circumference - dash}`}
+              strokeDashoffset={-currentOffset}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+            />
+          );
+        })}
+      </svg>
+      <div className="db-donut-center">
+        <span className="db-donut-value">{centerValue}</span>
+        {centerLabel && <span className="db-donut-label">{centerLabel}</span>}
+      </div>
+    </div>
+  );
+}
 
-      {brokerageOpen && createPortal(
-        <div className="modal-overlay" onClick={() => setBrokerageOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Connect Brokerage Account</h3>
-              <button type="button" className="modal-close" onClick={() => setBrokerageOpen(false)}><i className="bi bi-x-lg" /></button>
-            </div>
-            <p>Connect your brokerage via Plaid to sync your portfolio automatically. You&apos;ll be redirected to a secure Plaid flow.</p>
-            <button type="button" className="btn-primary" onClick={() => { setBrokerageOpen(false); if (typeof window !== 'undefined' && window.portfolioDashboard?.openPlaidLink) window.portfolioDashboard.openPlaidLink(); }}>
-              <i className="bi bi-bank" /> Connect with Plaid
-            </button>
-          </div>
-        </div>,
-        document.body
-      )}
+/* ═══════════════════════════════════════════════════════════
+   MAIN DASHBOARD PAGE
+   ═══════════════════════════════════════════════════════════ */
+export default function HomeDashboardPage() {
+  const { user } = useAuth();
+  const [heroTimeframe, setHeroTimeframe] = useState('1Y');
+  const [portfolioTimeframe, setPortfolioTimeframe] = useState('1Y');
 
-      {alertsOpen && createPortal(
-        <div className="modal-overlay" onClick={() => setAlertsOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Portfolio Alerts</h3>
-              <button type="button" className="modal-close" onClick={() => setAlertsOpen(false)}><i className="bi bi-x-lg" /></button>
-            </div>
-            <p>Configure alerts for your portfolio. Toggle the options below.</p>
-            <div className="alerts-config">
-              <label><input type="checkbox" defaultChecked /> Portfolio value changes</label>
-              <label><input type="checkbox" defaultChecked /> Rebalancing suggestions</label>
-              <label><input type="checkbox" /> Dividend payments</label>
-              <label><input type="checkbox" defaultChecked /> Price alerts for holdings</label>
-            </div>
-            <button type="button" className="btn-primary" onClick={() => setAlertsOpen(false)}>Save</button>
-          </div>
-        </div>,
-        document.body
-      )}
+  const userName = user?.user_metadata?.first_name
+    || user?.user_metadata?.full_name?.split(' ')[0]
+    || user?.email?.split('@')[0]
+    || 'Investor';
 
-      {analysisOpen && createPortal(
-        <div className="modal-overlay" onClick={() => setAnalysisOpen(false)}>
-          <div className="modal-content modal-content-wide" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Portfolio vs Market Indices</h3>
-              <button type="button" className="modal-close" onClick={() => setAnalysisOpen(false)}><i className="bi bi-x-lg" /></button>
-            </div>
-            <p>Compare your portfolio performance against S&P 500, NASDAQ, and Dow Jones.</p>
-            <div className="comparison-index-legend">
-              <span><i className="bi bi-circle-fill" style={{ color: '#10b981' }} /> Your Portfolio</span>
-              <span><i className="bi bi-circle-fill" style={{ color: '#3b82f6' }} /> S&P 500</span>
-              <span><i className="bi bi-circle-fill" style={{ color: '#8b5cf6' }} /> NASDAQ</span>
-              <span><i className="bi bi-circle-fill" style={{ color: '#f59e0b' }} /> Dow Jones</span>
-            </div>
-            <p className="text-muted">Chart will display when market data is available.</p>
-          </div>
-        </div>,
-        document.body
-      )}
+  const greeting = getGreeting();
 
-      {/* Portfolio Dashboard (Plaid/Supabase) */}
-      <section className="portfolio-dashboard-section" style={{ marginBottom: '2rem' }}>
-        <PortfolioDashboard />
-      </section>
+  const sparklinePath = useMemo(() => generateSparkline(500, 120), []);
 
-      {/* Main Content Grid */}
-      <div className="dashboard-grid">
-        {/* Main Chart Section */}
-        <section className="main-chart-section">
-          <div id="lineChartContainer">
-            <PortfolioChart />
-          </div>
-          <select
-            className="filter-select allocation-timeframe-select"
-            id="allocationTimeframe"
-            style={{ display: 'none' }}
-          />
-          {/* Asset Allocation pie chart */}
-          <div
-            className="allocation-chart-view"
-            id="allocationChartView"
-            style={{ display: 'none' }}
-          >
-            <div className="allocation-chart-container">
-              <svg
-                id="allocationPieChart"
-                viewBox="0 0 400 400"
-                className="allocation-pie-chart"
-              />
-              <div className="chart-center-label">
-                <div className="total-label">Total Portfolio</div>
-                <div className="total-value">$158,420</div>
-              </div>
-              <div className="sector-tooltip" id="sectorTooltip">
-                <div className="tooltip-header">
-                  <div className="sector-name" />
-                  <div className="sector-percentage" />
-                </div>
-                <div className="tooltip-body">
-                  <div className="sector-value" />
-                  <div className="holdings-title">Top 5 Holdings:</div>
-                  <div className="holdings-list" />
-                </div>
-              </div>
-            </div>
-            <div className="allocation-legend" id="allocationLegend" />
-          </div>
-        </section>
-
-        {/* Portfolio News - real data from holdings */}
-        <PortfolioNews />
+  return (
+    <div className="db-page">
+      {/* ═══ GREETING ═══ */}
+      <div className="db-greeting-section">
+        <div>
+          <h1 className="db-greeting">{greeting}, {userName} <span className="db-greeting-emoji">👋</span></h1>
+          <p className="db-greeting-sub">
+            Today you amassed a <strong className="db-greeting-highlight">+{PORTFOLIO_CHANGE_PCT}% increase</strong> in your portfolio holdings
+          </p>
+        </div>
       </div>
 
-      {/* Recent Transactions - full width, real data */}
-      <div className="recent-transactions-full-width">
-        <section className="component-card transactions-card transactions-card-full">
-          <div className="card-header card-header-tight">
+      {/* ═══ HERO: Portfolio Value Card ═══ */}
+      <div className="db-hero-card">
+        <div className="db-hero-left">
+          <div className="db-hero-top">
+            <div>
+              <span className="db-hero-label">Current Value <i className="bi bi-arrow-up-right" /></span>
+              <div className="db-hero-value">
+                ${PORTFOLIO_VALUE.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </div>
+              <span className="db-hero-change positive">
+                +{PORTFOLIO_CHANGE_PCT}%
+                <span className="db-hero-change-amt">+${PORTFOLIO_CHANGE_AMT.toLocaleString()}</span>
+              </span>
+            </div>
+            <div className="db-hero-timeframes">
+              {['1D', '1M', '6M', '1Y'].map((tf) => (
+                <button
+                  key={tf}
+                  className={`db-tf-btn ${heroTimeframe === tf ? 'active' : ''}`}
+                  onClick={() => setHeroTimeframe(tf)}
+                >{tf}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Mini stats row */}
+          <div className="db-hero-stats">
+            <div className="db-hero-stat">
+              <span className="db-hero-stat-label">Total Companies <i className="bi bi-arrow-up-right" /></span>
+              <span className="db-hero-stat-value">{TOTAL_COMPANIES}</span>
+            </div>
+            <div className="db-hero-stat">
+              <span className="db-hero-stat-label">Cash Balance <i className="bi bi-arrow-up-right" /></span>
+              <span className="db-hero-stat-value">${CASH_BALANCE.toLocaleString()}</span>
+            </div>
+            <div className="db-hero-stat">
+              <span className="db-hero-stat-label">Committed Cash <i className="bi bi-arrow-up-right" /></span>
+              <span className="db-hero-stat-value">${COMMITTED_CASH.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart area */}
+        <div className="db-hero-chart">
+          <svg viewBox="0 0 500 120" preserveAspectRatio="none" className="db-sparkline-svg">
+            <defs>
+              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* Fill area */}
+            <path d={`${sparklinePath} L500,120 L0,120 Z`} fill="url(#sparkGrad)" />
+            {/* Line */}
+            <path d={sparklinePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div className="db-chart-axis">
+            <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
+      <div className="db-row-2">
+        {/* My Portfolios */}
+        <div className="db-card db-portfolios-card">
+          <div className="db-card-header">
+            <h3>My Portfolios</h3>
+            <div className="db-card-header-right">
+              <div className="db-tf-group-sm">
+                {['1D', '1M', '6M', '1Y'].map((tf) => (
+                  <button key={tf} className={`db-tf-btn-sm ${portfolioTimeframe === tf ? 'active' : ''}`} onClick={() => setPortfolioTimeframe(tf)}>{tf}</button>
+                ))}
+              </div>
+              <button className="db-icon-btn" title="Export"><i className="bi bi-box-arrow-up-right" /></button>
+            </div>
+          </div>
+          <div className="db-portfolio-grid">
+            {MY_HOLDINGS.map((h) => (
+              <div key={h.ticker} className="db-holding-card">
+                <div className="db-holding-top">
+                  <div className="db-holding-ticker-wrap">
+                    <span className="db-holding-dot" style={{ background: h.change >= 0 ? '#10b981' : '#ef4444' }} />
+                    <span className="db-holding-label">{h.name} ({h.ticker})</span>
+                  </div>
+                </div>
+                <div className="db-holding-value">${h.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                <div className="db-holding-bottom">
+                  <span className={`db-holding-change ${h.change >= 0 ? 'positive' : 'negative'}`}>
+                    {h.change >= 0 ? '+' : ''}{h.change}% (${Math.abs(h.changeAmt).toFixed(2)})
+                  </span>
+                  <span className="db-holding-qty">Quantity: {h.qty}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Watchlist */}
+        <div className="db-card db-watchlist-card">
+          <div className="db-card-header">
+            <h3>Watchlist</h3>
+            <button className="db-icon-btn" title="Add"><i className="bi bi-plus-lg" /></button>
+          </div>
+          <div className="db-watchlist-list">
+            {WATCHLIST.map((w) => (
+              <div key={w.ticker} className="db-watchlist-item">
+                <div className="db-watchlist-left">
+                  <div className="db-watchlist-avatar">
+                    <span>{w.ticker[0]}</span>
+                  </div>
+                  <div>
+                    <span className="db-watchlist-ticker">{w.ticker}</span>
+                    <span className="db-watchlist-name">{w.name}</span>
+                  </div>
+                </div>
+                <div className="db-watchlist-right">
+                  <span className="db-watchlist-price">${w.price.toLocaleString()}</span>
+                  <span className={`db-watchlist-change ${w.change >= 0 ? 'positive' : 'negative'}`}>
+                    {w.change >= 0 ? '+' : ''}{w.change}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ ROW 3: Profits + Sectors + Transactions ═══ */}
+      <div className="db-row-3">
+        {/* Total Profits */}
+        <div className="db-card db-profits-card">
+          <div className="db-card-header">
+            <h3>Total Profits</h3>
+            <button className="db-icon-btn"><i className="bi bi-box-arrow-up-right" /></button>
+          </div>
+          <div className="db-profits-body">
+            <DonutChart
+              segments={PROFIT_BREAKDOWN}
+              size={150}
+              strokeWidth={20}
+              centerValue="$4,030"
+              centerLabel="-$150.20 from last month"
+            />
+            <div className="db-profits-legend">
+              {PROFIT_BREAKDOWN.map((p) => (
+                <div key={p.label} className="db-profits-legend-item">
+                  <span className="db-legend-dot" style={{ background: p.color }} />
+                  <span className="db-legend-label">{p.label}</span>
+                  <span className="db-legend-pct">{p.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sector Distribution */}
+        <div className="db-card db-sector-card">
+          <div className="db-card-header">
+            <h3>Sector Distribution</h3>
+            <div className="db-sector-bar-mini">
+              {SECTOR_DATA.map((s) => (
+                <div key={s.name} className="db-sector-bar-seg" style={{ width: `${s.pct}%`, background: s.color }} />
+              ))}
+            </div>
+          </div>
+          <div className="db-sector-list">
+            {SECTOR_DATA.map((s) => (
+              <div key={s.name} className="db-sector-item">
+                <div className="db-sector-item-left">
+                  <span className="db-sector-dot" style={{ background: s.color }} />
+                  <div>
+                    <span className="db-sector-name">{s.name}</span>
+                    <span className="db-sector-pct">{s.pct}%</span>
+                  </div>
+                </div>
+                <span className="db-sector-value">${s.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="db-card db-transactions-card">
+          <div className="db-card-header">
             <h3>Recent Transactions</h3>
-            <button className="card-action-btn" type="button">View All</button>
+            <button className="db-icon-btn"><i className="bi bi-box-arrow-up-right" /></button>
           </div>
-          <div className="card-body card-body-tight">
-            <div className="transaction-list">
-              {transactions.length === 0 ? (
-                <div className="transaction-empty text-gray-500 py-4 text-center">
-                  No recent transactions. Connect your brokerage to sync your activity.
+          <div className="db-tx-table-header">
+            <span>Companies</span>
+            <span>Amount</span>
+            <span>Transaction ID</span>
+          </div>
+          <div className="db-tx-list">
+            {RECENT_TRANSACTIONS.map((tx) => (
+              <div key={tx.txId} className="db-tx-item">
+                <div className="db-tx-company">
+                  <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
+                  <div>
+                    <span className="db-tx-name">{tx.company}</span>
+                    <span className="db-tx-date">{tx.date}</span>
+                  </div>
                 </div>
-              ) : (
-                transactions.slice(0, 10).map((tx) => {
-                  const typeStr = (tx.type || tx.subtype || '').toLowerCase();
-                  const isBuy = typeStr.includes('buy') || typeStr.includes('purchase');
-                  const amount = Math.abs(Number(tx.amount) || 0);
-                  const qty = tx.quantity ? ` ${Number(tx.quantity)} shares` : '';
-                  const desc = (tx.subtype || tx.type || (isBuy ? 'Buy' : 'Sell')).replace(/_/g, ' ');
-                  const dateStr = tx.date ? new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-                  const displayName = tx.metadata?.ticker || tx.name || tx.security_id || 'Transaction';
-                  return (
-                    <div key={tx.id || tx.transaction_id || `${tx.date}-${tx.name}-${tx.amount}`} className={`transaction-item ${isBuy ? 'buy' : 'sell'}`}>
-                      <div className="transaction-icon">
-                        <i className={isBuy ? 'bi bi-arrow-up-circle' : 'bi bi-arrow-down-circle'} />
-                      </div>
-                      <div className="transaction-details">
-                        <div className="transaction-name">{displayName}</div>
-                        <div className="transaction-meta">{desc}{qty}</div>
-                      </div>
-                      <div className="transaction-amount">
-                        <div className="amount">{formatCurrency(amount)}</div>
-                        <div className="date">{dateStr}</div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* Market Movers Section */}
-      <div
-        className="additional-components-grid"
-        id="marketMoversSection"
-        style={{ display: 'none' }}
-      >
-        <section className="component-card">
-          <div className="card-header">
-            <h3>
-              <i className="bi bi-graph-up-arrow" /> Top Gainers
-            </h3>
-            <span className="badge-live">LIVE</span>
-          </div>
-          <div className="card-body">
-            <div className="movers-list" id="topGainersList">
-              <div className="loading-placeholder">Loading market data...</div>
-            </div>
-          </div>
-        </section>
-        <section className="component-card">
-          <div className="card-header">
-            <h3>
-              <i className="bi bi-graph-down-arrow" /> Top Losers
-            </h3>
-            <span className="badge-live">LIVE</span>
-          </div>
-          <div className="card-body">
-            <div className="movers-list" id="topLosersList">
-              <div className="loading-placeholder">Loading market data...</div>
-            </div>
-          </div>
-        </section>
-        <section className="component-card">
-          <div className="card-header">
-            <h3>
-              <i className="bi bi-lightning-charge" /> Most Active
-            </h3>
-            <span className="badge-live">LIVE</span>
-          </div>
-          <div className="card-body">
-            <div className="movers-list" id="mostActiveList">
-              <div className="loading-placeholder">Loading market data...</div>
-            </div>
-          </div>
-        </section>
-        <section className="component-card" style={{ gridColumn: 'span 1' }}>
-          <div className="card-header">
-            <h3>
-              <i className="bi bi-newspaper" /> Market News
-            </h3>
-            <button
-              className="card-action-btn"
-              id="refreshNewsBtn"
-              type="button"
-            >
-              Refresh
-            </button>
-          </div>
-          <div className="card-body">
-            <div className="live-news-list" id="liveNewsList">
-              <div className="loading-placeholder">Loading news...</div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* Learning Opportunities */}
-      <section className="learning-opportunities">
-        <div className="learning-header">
-          <div className="learning-title-area">
-            <div className="learning-icon">
-              <i className="bi bi-mortarboard-fill" />
-            </div>
-            <div className="learning-title-text">
-              <h3>Portfolio Management Courses</h3>
-              <p>
-                Master the skills to optimize your portfolio performance
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/learning-center"
-            className="view-all-btn"
-          >
-            View All Courses <i className="bi bi-arrow-right" />
-          </Link>
-        </div>
-        <div className="courses-grid">
-          <div className="course-card">
-            <div className="course-header">
-              <span className="course-type">Course</span>
-              <span className="course-duration">
-                <i className="bi bi-clock" /> 4 hours
-              </span>
-            </div>
-            <h4 className="course-title">
-              Portfolio Management Fundamentals
-            </h4>
-            <p className="course-description">
-              Learn the core principles of portfolio construction, asset
-              allocation, and rebalancing strategies.
-            </p>
-            <div className="course-meta">
-              <div className="meta-item">
-                <i className="bi bi-book" /> <span>12 lessons</span>
+                <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
+                  {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
+                </span>
+                <span className="db-tx-id">{tx.txId}</span>
               </div>
-              <div className="meta-item">
-                <i className="bi bi-people" /> <span>2,341 enrolled</span>
-              </div>
-            </div>
-            <div className="course-footer">
-              <span className="course-level beginner">Beginner</span>
-              <button className="enroll-btn" type="button">
-                Enroll Now
-              </button>
-            </div>
-          </div>
-          <div className="course-card">
-            <div className="course-header">
-              <span className="course-type">Course</span>
-              <span className="course-duration">
-                <i className="bi bi-clock" /> 6 hours
-              </span>
-            </div>
-            <h4 className="course-title">Risk Management Strategies</h4>
-            <p className="course-description">
-              Master advanced risk management techniques including hedging,
-              stop-losses, and portfolio insurance.
-            </p>
-            <div className="course-meta">
-              <div className="meta-item">
-                <i className="bi bi-book" /> <span>18 lessons</span>
-              </div>
-              <div className="meta-item">
-                <i className="bi bi-people" /> <span>1,847 enrolled</span>
-              </div>
-            </div>
-            <div className="course-footer">
-              <span className="course-level intermediate">Intermediate</span>
-              <button className="enroll-btn" type="button">
-                Enroll Now
-              </button>
-            </div>
-          </div>
-          <div className="course-card">
-            <div className="course-header">
-              <span className="course-type">Skill</span>
-              <span className="course-duration">
-                <i className="bi bi-clock" /> 3 hours
-              </span>
-            </div>
-            <h4 className="course-title">Understanding Volatility</h4>
-            <p className="course-description">
-              Deep dive into market volatility, VIX analysis, and how to profit
-              from volatile markets.
-            </p>
-            <div className="course-meta">
-              <div className="meta-item">
-                <i className="bi bi-book" /> <span>8 lessons</span>
-              </div>
-              <div className="meta-item">
-                <i className="bi bi-people" /> <span>1,523 enrolled</span>
-              </div>
-            </div>
-            <div className="course-footer">
-              <span className="course-level intermediate">Intermediate</span>
-              <button className="enroll-btn" type="button">
-                Enroll Now
-              </button>
-            </div>
-          </div>
-          <div className="course-card">
-            <div className="course-header">
-              <span className="course-type">Skill</span>
-              <span className="course-duration">
-                <i className="bi bi-clock" /> 5 hours
-              </span>
-            </div>
-            <h4 className="course-title">Sector Rotation &amp; Allocation</h4>
-            <p className="course-description">
-              Learn how to rotate between sectors based on economic cycles and
-              market conditions.
-            </p>
-            <div className="course-meta">
-              <div className="meta-item">
-                <i className="bi bi-book" /> <span>15 lessons</span>
-              </div>
-              <div className="meta-item">
-                <i className="bi bi-people" /> <span>1,289 enrolled</span>
-              </div>
-            </div>
-            <div className="course-footer">
-              <span className="course-level advanced">Advanced</span>
-              <button className="enroll-btn" type="button">
-                Enroll Now
-              </button>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }
