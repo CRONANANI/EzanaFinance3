@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 
@@ -35,14 +35,167 @@ const LATEST_TRADES = [
   { id: 8, type: 'SELL', ticker: 'CLX', company: 'The Clorox Co', exchange: 'CLX:US', member: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', amount: '15K–50K', date: 'Yesterday', flagged: false },
 ];
 
-const LATEST_INSIGHTS = [
-  { id: 1, time: 'Today, 10:09', title: 'Northrop Grumman Considers Tank Ammo Production in Pol…', emoji: '🏭', cat: 'Defense' },
-  { id: 2, time: 'Yesterday', title: 'Bath & Body Revises Sales Forecast Amidst Economic Head…', emoji: '📊', cat: 'Consumer' },
-  { id: 3, time: 'Yesterday', title: 'Cisco Adjusts Projections Amid Networking Equipment Dem…', emoji: '🌐', cat: 'Tech' },
-  { id: 4, time: '2 days ago', title: 'Investors Show Interest in Weight-Loss; Drug Makers Surge …', emoji: '💊', cat: 'Healthcare' },
-  { id: 5, time: '2 days ago', title: 'Exxon Aims To Become a Lithium Producing Company by 20…', emoji: '⚡', cat: 'Energy' },
-  { id: 6, time: '3 days ago', title: 'Federal Reserve Signals Data-Dependent Approach to Rate…', emoji: '🏦', cat: 'Economics' },
+/* ── Politician Performance Data ── */
+const PERF_WINDOWS = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y'];
+const PERF_LABELS = { '1W': '1 Week', '1M': '1 Month', '3M': '3 Months', '6M': '6 Months', '1Y': '1 Year', '3Y': '3 Years', '5Y': '5 Years', '10Y': '10 Years' };
+
+const POLITICIAN_PERF = [
+  { name: 'Nancy Pelosi', initials: 'NP', party: 'Democrat', chamber: 'House', state: 'CA',
+    topHoldings: ['NVDA', 'AAPL', 'MSFT'],
+    returns: { '1W': 3.2, '1M': 8.1, '3M': 18.4, '6M': 32.7, '1Y': 54.3, '3Y': 142.5, '5Y': 221.8, '10Y': 487.2 } },
+  { name: 'Dan Crenshaw', initials: 'DC', party: 'Republican', chamber: 'House', state: 'TX',
+    topHoldings: ['AAPL', 'MSFT', 'XOM'],
+    returns: { '1W': 2.1, '1M': 5.9, '3M': 12.1, '6M': 19.8, '1Y': 38.7, '3Y': 89.4, '5Y': 156.3, '10Y': 298.1 } },
+  { name: 'Mark Warner', initials: 'MW', party: 'Democrat', chamber: 'Senate', state: 'VA',
+    topHoldings: ['META', 'CRM', 'SNOW'],
+    returns: { '1W': 1.8, '1M': 6.3, '3M': 14.2, '6M': 24.5, '1Y': 41.2, '3Y': 98.7, '5Y': 178.9, '10Y': 356.4 } },
+  { name: 'Tommy Tuberville', initials: 'TT', party: 'Republican', chamber: 'Senate', state: 'AL',
+    topHoldings: ['KMB', 'HPQ', 'CLX'],
+    returns: { '1W': -0.8, '1M': 1.2, '3M': 3.5, '6M': 7.8, '1Y': 12.4, '3Y': 28.6, '5Y': 45.2, '10Y': 89.3 } },
+  { name: 'Josh Gottheimer', initials: 'JG', party: 'Democrat', chamber: 'House', state: 'NJ',
+    topHoldings: ['MSFT', 'GOOGL', 'JPM'],
+    returns: { '1W': 2.7, '1M': 7.4, '3M': 16.8, '6M': 28.3, '1Y': 46.1, '3Y': 118.3, '5Y': 195.7, '10Y': 412.6 } },
+  { name: 'Michael McCaul', initials: 'MM', party: 'Republican', chamber: 'House', state: 'TX',
+    topHoldings: ['LMT', 'RTX', 'MSFT'],
+    returns: { '1W': 1.4, '1M': 4.2, '3M': 9.8, '6M': 16.2, '1Y': 29.5, '3Y': 67.8, '5Y': 112.4, '10Y': 234.7 } },
+  { name: 'Shelley Capito', initials: 'SC', party: 'Republican', chamber: 'Senate', state: 'WV',
+    topHoldings: ['JNJ', 'PFE', 'UNH'],
+    returns: { '1W': 0.9, '1M': 3.1, '3M': 7.6, '6M': 13.4, '1Y': 22.8, '3Y': 52.1, '5Y': 88.6, '10Y': 178.3 } },
+  { name: 'Ro Khanna', initials: 'RK', party: 'Democrat', chamber: 'House', state: 'CA',
+    topHoldings: ['TSLA', 'PLTR', 'COIN'],
+    returns: { '1W': 4.1, '1M': 9.8, '3M': 21.3, '6M': 35.9, '1Y': 62.7, '3Y': 158.4, '5Y': 248.1, '10Y': 523.9 } },
+  { name: 'Pat Fallon', initials: 'PF', party: 'Republican', chamber: 'House', state: 'TX',
+    topHoldings: ['AMZN', 'NVDA', 'AMD'],
+    returns: { '1W': 2.9, '1M': 7.8, '3M': 17.5, '6M': 30.1, '1Y': 51.8, '3Y': 134.2, '5Y': 210.5, '10Y': 445.8 } },
+  { name: 'John Curtis', initials: 'JC', party: 'Republican', chamber: 'House', state: 'UT',
+    topHoldings: ['AVGO', 'QCOM', 'TXN'],
+    returns: { '1W': 1.1, '1M': 3.6, '3M': 8.4, '6M': 14.9, '1Y': 26.3, '3Y': 61.4, '5Y': 102.8, '10Y': 210.5 } },
 ];
+
+/* ── Politician Performance Chart ── */
+const PC_W = 780;
+const PC_H = 380;
+const PC_PAD = { top: 50, right: 40, bottom: 50, left: 60 };
+const PC_DOT_R = 22;
+
+function PoliticianPerfChart({ window: tw }) {
+  const [hoveredId, setHoveredId] = useState(null);
+
+  const sorted = useMemo(
+    () => [...POLITICIAN_PERF].sort((a, b) => b.returns[tw] - a.returns[tw]),
+    [tw]
+  );
+
+  const returns = sorted.map((p) => p.returns[tw]);
+  const yMax = Math.ceil((Math.max(...returns) + 10) / 10) * 10;
+  const yMin = Math.min(Math.floor((Math.min(...returns) - 5) / 10) * 10, 0);
+  const innerW = PC_W - PC_PAD.left - PC_PAD.right;
+  const innerH = PC_H - PC_PAD.top - PC_PAD.bottom;
+
+  const getX = (i) => PC_PAD.left + (i / (sorted.length - 1)) * innerW;
+  const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+
+  const yStep = yMax - yMin > 100 ? 50 : yMax - yMin > 40 ? 20 : 10;
+  const yTicks = [];
+  for (let t = yMin; t <= yMax; t += yStep) yTicks.push(t);
+
+  const linePath = sorted.map((p, i) => `${i === 0 ? 'M' : 'L'}${getX(i)},${getY(p.returns[tw])}`).join(' ');
+  const areaPath = `${linePath} L${getX(sorted.length - 1)},${PC_PAD.top + innerH} L${getX(0)},${PC_PAD.top + innerH} Z`;
+
+  const hovered = hoveredId != null ? sorted[hoveredId] : null;
+
+  return (
+    <div className="itc-perf-chart-wrap">
+      <svg viewBox={`0 0 ${PC_W} ${PC_H}`} preserveAspectRatio="xMidYMid meet" className="itc-perf-svg">
+        <defs>
+          <linearGradient id="itcPerfGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+          </linearGradient>
+          <filter id="itcDotGlow">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10b981" floodOpacity="0.35" />
+          </filter>
+          {sorted.map((_, i) => (
+            <clipPath key={i} id={`itcClip${i}`}>
+              <circle cx={getX(i)} cy={getY(sorted[i].returns[tw])} r={PC_DOT_R} />
+            </clipPath>
+          ))}
+        </defs>
+
+        {yTicks.map((t) => (
+          <g key={t}>
+            <line x1={PC_PAD.left} y1={getY(t)} x2={PC_W - PC_PAD.right} y2={getY(t)} stroke="rgba(16,185,129,.12)" strokeWidth="1" strokeDasharray="4 4" />
+            <text x={PC_PAD.left - 10} y={getY(t)} textAnchor="end" dominantBaseline="middle" fill="#6b7280" fontSize="11" fontFamily="Plus Jakarta Sans, sans-serif">
+              {t}%
+            </text>
+          </g>
+        ))}
+
+        {yMin <= 0 && yMax >= 0 && (
+          <line x1={PC_PAD.left} y1={getY(0)} x2={PC_W - PC_PAD.right} y2={getY(0)} stroke="rgba(16,185,129,.25)" strokeWidth="1" />
+        )}
+
+        <line x1={PC_PAD.left} y1={PC_PAD.top} x2={PC_PAD.left} y2={PC_PAD.top + innerH} stroke="rgba(16,185,129,.3)" strokeWidth="1" />
+        <line x1={PC_PAD.left} y1={PC_PAD.top + innerH} x2={PC_W - PC_PAD.right} y2={PC_PAD.top + innerH} stroke="rgba(16,185,129,.3)" strokeWidth="1" />
+
+        <path d={areaPath} fill="url(#itcPerfGrad)" />
+        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
+        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pathLength="100" strokeDasharray="3 97" className="itc-perf-pulse" />
+
+        {sorted.map((p, i) => {
+          const cx = getX(i);
+          const cy = getY(p.returns[tw]);
+          const isHov = hoveredId === i;
+          const borderColor = p.party === 'Democrat' ? '#3b82f6' : '#ef4444';
+          const bgColor = p.party === 'Democrat' ? '#2563eb' : '#dc2626';
+
+          return (
+            <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} style={{ cursor: 'pointer' }}>
+              <circle cx={cx} cy={cy} r={PC_DOT_R + 3} fill="none" stroke={borderColor} strokeWidth={isHov ? 3.5 : 2} filter="url(#itcDotGlow)" opacity={isHov ? 1 : 0.85} />
+              <circle cx={cx} cy={cy} r={PC_DOT_R} fill={bgColor} />
+              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="10" fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
+              <text x={cx} y={cy + PC_DOT_R + 16} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize="10" fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
+                {p.returns[tw] >= 0 ? '+' : ''}{p.returns[tw]}%
+              </text>
+              <circle cx={cx} cy={cy} r={PC_DOT_R + 14} fill="transparent" style={{ pointerEvents: 'all' }} />
+            </g>
+          );
+        })}
+      </svg>
+
+      {hovered && (() => {
+        const idx = hoveredId;
+        const xPct = (getX(idx) / PC_W) * 100;
+        const yPct = (getY(hovered.returns[tw]) / PC_H) * 100;
+        const alignRight = xPct > 65;
+        return (
+          <div className="itc-perf-tooltip" style={{
+            left: alignRight ? undefined : `${Math.max(xPct, 8)}%`,
+            right: alignRight ? `${Math.max(100 - xPct, 8)}%` : undefined,
+            top: `${Math.max(yPct - 28, 2)}%`,
+            transform: alignRight ? 'translateX(50%)' : 'translateX(-50%)',
+          }}>
+            <div className="itc-perf-tip-hdr">
+              <span className={`itc-avatar-sm ${hovered.party.toLowerCase()}`}>{hovered.initials}</span>
+              <div>
+                <div className="itc-perf-tip-name">{hovered.name}</div>
+                <div className="itc-perf-tip-meta"><span className={`itc-dot ${hovered.party.toLowerCase()}`} />{hovered.party} · {hovered.chamber} · {hovered.state}</div>
+              </div>
+            </div>
+            <div className={`itc-perf-tip-return ${hovered.returns[tw] >= 0 ? 'pos' : 'neg'}`}>
+              {hovered.returns[tw] >= 0 ? '+' : ''}{hovered.returns[tw]}% return ({PERF_LABELS[tw]})
+            </div>
+            <div className="itc-perf-tip-hold">
+              <span className="itc-perf-tip-hold-lbl">Top Holdings:</span>
+              {hovered.topHoldings.map((t) => <span key={t} className="itc-perf-tip-tk">${t}</span>)}
+            </div>
+            <div className="itc-perf-tip-rank">Rank #{idx + 1} of {sorted.length}</div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
 
 const FEATURED_POLITICIANS = [
   { id: 1, name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', trades: 312, filings: 8, issuers: 47, volume: '24.8M', seed: 1 },
@@ -103,6 +256,7 @@ export default function InsideTheCapitolPage() {
   const [assetFilter, setAssetFilter] = useState('Stocks Only');
   const [typeFilter, setTypeFilter] = useState('All');
   const [activePolIdx, setActivePolIdx] = useState(0);
+  const [perfWindow, setPerfWindow] = useState('1Y');
 
   const trades = LATEST_TRADES.filter((t) => {
     if (typeFilter === 'Buy') return t.type === 'BUY';
@@ -178,26 +332,22 @@ export default function InsideTheCapitolPage() {
           </div>
         </PinnableCard>
 
-        {/* TOP RIGHT — Latest Insights */}
-        <PinnableCard cardId="itc-latest-insights" title="Latest Insights" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3}>
+        {/* TOP RIGHT — Top Performing Politicians */}
+        <PinnableCard cardId="itc-top-performers" title="Top Performers" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3}>
           <div className="itc-card">
             <div className="itc-hdr">
-              <h3>LATEST INSIGHTS</h3>
-              <Link href="/ezana-echo" className="itc-va">VIEW ALL</Link>
+              <div className="itc-hdr-left">
+                <h3>TOP PERFORMING POLITICIANS</h3>
+              </div>
+              <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
             </div>
-            <div className="itc-body">
-              {LATEST_INSIGHTS.map((ins) => (
-                <div key={ins.id} className="itc-ins">
-                  <div className="itc-ins-img">{ins.emoji}</div>
-                  <div className="itc-ins-content">
-                    <div className="itc-ins-meta">
-                      <span className="itc-ins-time">{ins.time}</span>
-                      <span className={`itc-ins-cat ${ins.cat.toLowerCase()}`}>{ins.cat}</span>
-                    </div>
-                    <div className="itc-ins-title">{ins.title}</div>
-                  </div>
-                </div>
+            <div className="itc-perf-windows">
+              {PERF_WINDOWS.map((w) => (
+                <button key={w} type="button" className={`itc-pw ${perfWindow === w ? 'on' : ''}`} onClick={() => setPerfWindow(w)}>{w}</button>
               ))}
+            </div>
+            <div className="itc-body" style={{ overflow: 'visible' }}>
+              <PoliticianPerfChart window={perfWindow} />
             </div>
           </div>
         </PinnableCard>
