@@ -188,14 +188,14 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav">
       <div className="nav-container">
-        {/* ── LEFT ZONE: Notifications bell + Raven logo ── */}
+        {/* ── LEFT ZONE: Raven logo + Notifications bell ── */}
         <div className="nav-left-zone">
-          <div className="nn-wrapper">
-            <NavNotifications />
-          </div>
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
             <Image src="/ezana-logo.png" alt="Ezana Finance" width={48} height={48} style={{ objectFit: 'contain', display: 'block' }} />
           </Link>
+          <div className="nn-wrapper">
+            <NavNotifications />
+          </div>
         </div>
         <button
           className="mobile-hamburger"

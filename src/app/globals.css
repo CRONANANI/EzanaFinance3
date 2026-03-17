@@ -17,7 +17,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Nav left zone — Bell + Logo grouped left in dashboard nav */
+/* Nav left zone — Logo + Bell grouped left in dashboard nav */
 .nav-left-zone {
   display: flex;
   align-items: center;
@@ -26,7 +26,6 @@
 }
 @media (max-width: 768px) {
   .nav-left-zone { gap: 0.25rem; }
-  .nav-left-zone .nn-wrapper { order: -1; }
 }
 
 /* Ensure dark theme base - prevents white flash / unstyled pages */
