@@ -19,7 +19,7 @@ const PRESIDENT_DATA = [
     midYear: 1995,
     return: 79,
     context: 'Inflation declined toward ~2-3%, long-term Treasury yields fell, and deficit reduction helped fiscal credibility. Rapid technology adoption and corporate earnings powered one of the strongest mid-cycle market expansions of the 1990s.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Bill_Clinton.jpg',
+    avatar: '/images/ezana-echo/bill-clinton.png',
   },
   {
     id: 'clinton2',
@@ -28,7 +28,7 @@ const PRESIDENT_DATA = [
     midYear: 1999,
     return: 65,
     context: 'The late-stage dot-com expansion drove Nasdaq gains above 400% from 1995-2000. Federal budget surpluses emerged in 1998-2001, unemployment fell below 4%, and equity valuations expanded before the 2000 peak.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Bill_Clinton.jpg',
+    avatar: '/images/ezana-echo/bill-clinton.png',
   },
   {
     id: 'gwb1',
@@ -37,7 +37,7 @@ const PRESIDENT_DATA = [
     midYear: 2003,
     return: -12,
     context: 'The dot-com collapse erased roughly $5T in tech market value between 2000-2002, pushing the Nasdaq down nearly 78% from its peak. The 9/11 attacks further shocked markets, early equity losses left the term negative overall.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/George-W-Bush.jpeg',
+    avatar: '/images/ezana-echo/george-w-bush.png',
   },
   {
     id: 'gwb2',
@@ -46,7 +46,7 @@ const PRESIDENT_DATA = [
     midYear: 2007,
     return: -27,
     context: 'The housing bubble burst as subprime mortgage defaults surged, leading to the failure of Lehman Brothers and a global credit freeze in 2008. The S&P fell ~57% peak-to-trough, GDP contracted, and unemployment surged to 10%.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/d/d4/George-W-Bush.jpeg',
+    avatar: '/images/ezana-echo/george-w-bush.png',
   },
   {
     id: 'obama1',
@@ -55,7 +55,7 @@ const PRESIDENT_DATA = [
     midYear: 2011,
     return: 119,
     context: 'The term began with the S&P near 667 after a ~57% collapse during the financial crisis. The Fed launched QE1 and QE2 totaling trillions in asset purchases, triggering one of the strongest four-year equity rebounds on record.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/President_Barack_Obama.jpg',
+    avatar: '/images/ezana-echo/barack-obama.png',
   },
   {
     id: 'obama2',
@@ -64,7 +64,7 @@ const PRESIDENT_DATA = [
     midYear: 2015,
     return: 61,
     context: 'Unemployment declined from ~8% in 2012 to 4.7% by 2016, inflation remained near 1-2%. Corporate profit margins reached record levels above 10%, and steady GDP growth around 2-2.5% supported consistent equity gains.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/8/8d/President_Barack_Obama.jpg',
+    avatar: '/images/ezana-echo/barack-obama.png',
   },
   {
     id: 'trump1',
@@ -73,7 +73,7 @@ const PRESIDENT_DATA = [
     midYear: 2019,
     return: 66,
     context: 'The 2017 Tax Cuts and Jobs Act reduced corporate tax from 35% to 21%, boosting S&P EPS growth above 20% in 2018. The market fell ~34% during the COVID crash in early 2020 but rebounded sharply after the Fed cut rates to zero.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg',
+    avatar: '/images/ezana-echo/donald-trump.png',
   },
   {
     id: 'biden',
@@ -82,7 +82,7 @@ const PRESIDENT_DATA = [
     midYear: 2023,
     return: 56,
     context: 'The term began with ~$1.9T fiscal stimulus and 2021 GDP growth of 5.9%, the fastest since 1984. Inflation peaked above 9% in 2022, prompting the Fed to raise rates from 0% to 5.25-5.50%, yet mega-cap tech and AI-led earnings.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/6/68/Joe_Biden_presidential_portrait.jpg',
+    avatar: '/images/ezana-echo/joe-biden.png',
   },
   {
     id: 'trump2',
@@ -91,7 +91,7 @@ const PRESIDENT_DATA = [
     midYear: 2025,
     return: 14,
     context: 'Markets entered 2025 near all-time highs after a ~24% gain in 2024, supported by AI-driven earnings growth above 15% YoY and inflation cooling toward ~3%. Rate-cut expectations, tariff rhetoric and regional conflicts increased volatility.',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Donald_Trump_official_portrait.jpg',
+    avatar: '/images/ezana-echo/donald-trump.png',
   },
 ];
 
