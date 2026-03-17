@@ -1,0 +1,174 @@
+/* =============================================
+   INSIDE THE CAPITOL — Main Dashboard
+   Ezana Finance · #10b981 primary
+   ============================================= */
+
+.itc-page { display: flex; flex-direction: column; gap: 1.25rem; padding-bottom: 2rem; }
+
+/* ── Stats strip ── */
+.itc-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; }
+.itc-stat { display: flex; align-items: center; gap: .875rem; padding: 1rem 1.25rem; background: var(--card, rgba(22,27,34,.6)); border: 1px solid var(--card-border, rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); transition: border-color .3s, box-shadow .3s; }
+.itc-stat:hover { border-color: rgba(16,185,129,.25); box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+.itc-stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; flex-shrink: 0; }
+.itc-stat-val { font-size: 1.375rem; font-weight: 800; color: var(--foreground,#f0f6fc); letter-spacing: -.03em; font-feature-settings: 'tnum' 1; line-height: 1.1; }
+.itc-stat-lbl { font-size: .6875rem; font-weight: 500; color: var(--muted-foreground,#8b949e); text-transform: uppercase; letter-spacing: .04em; margin-top: 1px; }
+.itc-stat-chg { font-size: .6875rem; font-weight: 600; margin-top: 2px; }
+.itc-stat-chg.positive { color: #10b981; }
+.itc-stat-chg.neutral { color: var(--muted-foreground,#8b949e); }
+
+/* ── Grids ── */
+.itc-grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.itc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+
+/* ── Card shell ── */
+.itc-card { background: var(--card, rgba(22,27,34,.6)); border: 1px solid var(--card-border, rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); display: flex; flex-direction: column; overflow: hidden; transition: border-color .3s; }
+.itc-card:hover { border-color: rgba(16,185,129,.2); }
+
+/* header */
+.itc-hdr { display: flex; align-items: center; justify-content: space-between; padding: .875rem 1.25rem .5rem; flex-shrink: 0; }
+.itc-hdr-left { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.itc-hdr h3 { font-size: .75rem; font-weight: 800; color: var(--foreground,#f0f6fc); text-transform: uppercase; letter-spacing: .06em; margin: 0; white-space: nowrap; }
+.itc-va { font-size: .6875rem; font-weight: 700; color: var(--muted-foreground,#6b7280); text-transform: uppercase; letter-spacing: .06em; text-decoration: none; flex-shrink: 0; transition: color .2s; }
+.itc-va:hover { color: #10b981; }
+
+/* filter chips */
+.itc-chips { display: flex; gap: .375rem; }
+.itc-chip { padding: .2rem .6rem; font-size: .6rem; font-weight: 600; color: var(--muted-foreground,#6b7280); background: transparent; border: 1px solid rgba(16,185,129,.15); border-radius: 14px; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: .2rem; text-transform: uppercase; letter-spacing: .04em; }
+.itc-chip:hover { color: #10b981; border-color: rgba(16,185,129,.35); }
+.itc-chip.on { color: #10b981; background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.4); }
+.itc-chip i { font-size: .5rem; }
+
+/* sub-filters */
+.itc-sub-filters { display: flex; gap: .375rem; padding: 0 1.25rem .5rem; }
+.itc-sf { padding: .2rem .7rem; font-size: .6875rem; font-weight: 600; color: var(--muted-foreground,#6b7280); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: all .2s; }
+.itc-sf:hover { color: var(--foreground,#f0f6fc); background: rgba(16,185,129,.06); }
+.itc-sf.on { color: #10b981; background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); }
+
+/* body scroll area */
+.itc-body { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(16,185,129,.12) transparent; }
+.itc-body::-webkit-scrollbar { width: 3px; }
+.itc-body::-webkit-scrollbar-thumb { background: rgba(16,185,129,.12); border-radius: 2px; }
+.itc-body-pad { padding: 0 1.25rem .75rem; }
+
+/* ── Trade rows ── */
+.itc-tr { display: grid; grid-template-columns: 72px 1.2fr 1.2fr auto; align-items: center; gap: .6rem; padding: .55rem 1.25rem; border-bottom: 1px solid rgba(16,185,129,.05); transition: background .15s; }
+.itc-tr:last-child { border-bottom: none; }
+.itc-tr:hover { background: rgba(16,185,129,.04); }
+
+.itc-tr-type { font-size: .7rem; font-weight: 800; letter-spacing: .04em; display: block; }
+.itc-tr-type.buy { color: #10b981; }
+.itc-tr-type.sell { color: #ef4444; }
+.itc-tr-date { font-size: .5625rem; color: var(--muted-foreground,#6b7280); display: block; }
+
+.itc-tr-co-name { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.itc-tr-co-exch { font-size: .6rem; color: var(--muted-foreground,#6b7280); }
+
+.itc-tr-mem { text-decoration: none; display: block; }
+.itc-tr-mem-name { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); display: block; transition: color .2s; }
+.itc-tr-mem:hover .itc-tr-mem-name { color: #10b981; }
+.itc-tr-mem-meta { font-size: .6rem; color: var(--muted-foreground,#6b7280); display: flex; align-items: center; gap: .25rem; }
+
+.itc-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+.itc-dot.democrat { background: #3b82f6; }
+.itc-dot.republican { background: #ef4444; }
+
+.itc-tr-right { text-align: right; }
+.itc-tr-amt { font-size: .75rem; font-weight: 700; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; }
+.itc-tr-flag i { color: #fbbf24; font-size: .7rem; margin-left: .35rem; }
+
+/* ── Insights ── */
+.itc-ins { display: flex; align-items: flex-start; gap: .8rem; padding: .65rem 1.25rem; border-bottom: 1px solid rgba(16,185,129,.05); transition: background .15s; cursor: pointer; }
+.itc-ins:last-child { border-bottom: none; }
+.itc-ins:hover { background: rgba(16,185,129,.04); }
+.itc-ins-img { width: 52px; height: 52px; border-radius: 10px; background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.1); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+.itc-ins-meta { display: flex; align-items: center; gap: .4rem; margin-bottom: 3px; }
+.itc-ins-time { font-size: .6rem; color: var(--muted-foreground,#6b7280); }
+.itc-ins-cat { font-size: .55rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.itc-ins-cat.defense { background: rgba(239,68,68,.12); color: #f87171; }
+.itc-ins-cat.consumer { background: rgba(251,191,36,.12); color: #fbbf24; }
+.itc-ins-cat.tech { background: rgba(167,139,250,.12); color: #a78bfa; }
+.itc-ins-cat.healthcare { background: rgba(16,185,129,.12); color: #10b981; }
+.itc-ins-cat.energy { background: rgba(249,115,22,.12); color: #fb923c; }
+.itc-ins-cat.economics { background: rgba(59,130,246,.12); color: #60a5fa; }
+.itc-ins-title { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Politicians ── */
+.itc-pol-tabs { display: flex; gap: .4rem; padding: 0 1.25rem .6rem; overflow-x: auto; scrollbar-width: none; }
+.itc-pol-tabs::-webkit-scrollbar { display: none; }
+.itc-pol-tab { display: flex; align-items: center; gap: .4rem; padding: .3rem .65rem; background: transparent; border: 1px solid rgba(16,185,129,.1); border-radius: 10px; cursor: pointer; transition: all .2s; flex-shrink: 0; }
+.itc-pol-tab:hover { border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.04); }
+.itc-pol-tab.on { border-color: rgba(16,185,129,.5); background: rgba(16,185,129,.1); }
+.itc-pol-tab-name { font-size: .6875rem; font-weight: 600; color: var(--foreground,#f0f6fc); }
+
+.itc-avatar-sm { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .6rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+.itc-avatar-sm.democrat { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+.itc-avatar-sm.republican { background: linear-gradient(135deg,#ef4444,#dc2626); }
+.itc-avatar-lg { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .875rem; font-weight: 800; color: #fff; flex-shrink: 0; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+.itc-avatar-lg:hover { transform: scale(1.08); box-shadow: 0 0 16px rgba(16,185,129,.3); }
+.itc-avatar-lg.democrat { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+.itc-avatar-lg.republican { background: linear-gradient(135deg,#ef4444,#dc2626); }
+
+.itc-pol-detail { padding: 0 1.25rem 1rem; }
+.itc-pol-top { display: flex; align-items: center; gap: .875rem; margin-bottom: .875rem; }
+.itc-pol-name { font-size: 1rem; font-weight: 700; color: var(--foreground,#f0f6fc); text-decoration: none; display: block; transition: color .2s; }
+.itc-pol-name:hover { color: #10b981; }
+.itc-pol-meta { font-size: .6875rem; color: var(--muted-foreground,#6b7280); display: flex; align-items: center; gap: .3rem; margin-top: 2px; }
+.itc-pol-nums { display: grid; grid-template-columns: repeat(4,1fr); gap: .5rem; margin-bottom: .875rem; }
+.itc-pol-num { text-align: center; padding: .45rem; background: var(--muted,rgba(17,24,39,.4)); border-radius: 8px; border: 1px solid rgba(16,185,129,.05); }
+.itc-pol-num-v { font-size: .95rem; font-weight: 800; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; display: block; }
+.itc-pol-num-l { font-size: .5625rem; font-weight: 600; color: var(--muted-foreground,#6b7280); text-transform: uppercase; letter-spacing: .05em; }
+.itc-pol-chart { position: relative; height: 72px; background: var(--muted,rgba(17,24,39,.3)); border-radius: 10px; border: 1px solid rgba(16,185,129,.05); overflow: hidden; }
+.itc-pol-chart-lbl { position: absolute; top: 5px; left: 8px; font-size: .5625rem; font-weight: 600; color: var(--muted-foreground,#6b7280); text-transform: uppercase; letter-spacing: .04em; z-index: 1; }
+.itc-spark { width: 100%; height: 100%; display: block; }
+
+/* ── Buzz ── */
+.itc-bz { display: flex; gap: .75rem; padding: .75rem 1.25rem; border-bottom: 1px solid rgba(16,185,129,.05); transition: background .15s; }
+.itc-bz:last-child { border-bottom: none; }
+.itc-bz:hover { background: rgba(16,185,129,.04); }
+.itc-bz-left { display: flex; flex-direction: column; align-items: center; gap: .25rem; flex-shrink: 0; min-width: 60px; }
+.itc-bz-time { font-size: .6rem; color: var(--muted-foreground,#6b7280); text-align: center; white-space: nowrap; }
+.itc-bz-plat { font-size: .875rem; }
+.itc-bz-text { font-size: .8rem; color: var(--foreground,#f0f6fc); line-height: 1.5; margin-bottom: 5px; }
+.itc-bz-tickers { display: flex; flex-wrap: wrap; gap: .3rem; }
+.itc-bz-tk { font-size: .6rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; font-feature-settings: 'tnum' 1; }
+.itc-bz-tk.bullish { background: rgba(16,185,129,.1); color: #10b981; }
+.itc-bz-tk.bearish { background: rgba(239,68,68,.1); color: #f87171; }
+.itc-bz-tk.neutral { background: rgba(107,114,128,.12); color: #9ca3af; }
+
+/* ── Sectors ── */
+.itc-sec { margin-bottom: .65rem; }
+.itc-sec:last-child { margin-bottom: 0; }
+.itc-sec-info { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.itc-sec-name { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); }
+.itc-sec-meta { font-size: .6rem; color: var(--muted-foreground,#6b7280); }
+.itc-sec-bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; }
+.itc-sec-buy { background: rgba(16,185,129,.45); display: flex; align-items: center; justify-content: center; font-size: .55rem; font-weight: 700; color: #10b981; transition: width .5s; }
+.itc-sec-sell { background: rgba(239,68,68,.35); display: flex; align-items: center; justify-content: center; font-size: .55rem; font-weight: 700; color: #f87171; transition: width .5s; }
+
+/* ── Filings ── */
+.itc-fil { display: flex; align-items: center; justify-content: space-between; padding: .65rem 1.25rem; border-bottom: 1px solid rgba(16,185,129,.05); transition: background .15s; }
+.itc-fil:last-child { border-bottom: none; }
+.itc-fil:hover { background: rgba(16,185,129,.04); }
+.itc-fil-left { display: flex; align-items: center; gap: .65rem; }
+.itc-fil-dot { width: 7px; height: 7px; border-radius: 50%; background: #4b5563; flex-shrink: 0; }
+.itc-fil-dot.new { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,.5); }
+.itc-fil-name { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); text-decoration: none; display: block; transition: color .2s; }
+.itc-fil-name:hover { color: #10b981; }
+.itc-fil-meta { font-size: .6rem; color: var(--muted-foreground,#6b7280); display: block; }
+.itc-fil-tickers { display: flex; gap: .3rem; }
+.itc-fil-tk { font-size: .6rem; font-weight: 700; color: #10b981; background: rgba(16,185,129,.08); padding: 2px 7px; border-radius: 4px; }
+
+/* ── Responsive ── */
+@media (max-width:1024px) { .itc-stats { grid-template-columns: repeat(2,1fr); } }
+@media (max-width:768px) {
+  .itc-stats { grid-template-columns: 1fr; }
+  .itc-grid-2x2, .itc-grid-2 { grid-template-columns: 1fr; }
+  .itc-tr { grid-template-columns: 56px 1fr auto; }
+  .itc-tr-mem { display: none; }
+  .itc-pol-nums { grid-template-columns: repeat(2,1fr); }
+}
+
+/* ── Light mode ── */
+body.light-mode .itc-stat, body.light-mode .itc-card { background: #fff; border-color: rgba(16,185,129,.12); }
+body.light-mode .itc-stat-val, body.light-mode .itc-hdr h3, body.light-mode .itc-tr-co-name, body.light-mode .itc-tr-mem-name, body.light-mode .itc-ins-title, body.light-mode .itc-pol-name, body.light-mode .itc-pol-num-v, body.light-mode .itc-bz-text, body.light-mode .itc-sec-name, body.light-mode .itc-fil-name, body.light-mode .itc-tr-amt { color: #111827; }
+body.light-mode .itc-pol-num, body.light-mode .itc-pol-chart { background: #f3f4f6; border-color: rgba(16,185,129,.06); }

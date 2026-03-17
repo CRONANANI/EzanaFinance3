@@ -1,0 +1,139 @@
+/* =============================================
+   POLITICIAN PROFILE PAGE
+   Ezana Finance · Sidebar + Dashboard layout
+   Matches reference: photo left, charts right
+   ============================================= */
+
+.pp-page { min-height: calc(100vh - 64px); padding-bottom: 3rem; }
+
+/* Back link */
+.pp-back { display: inline-flex; align-items: center; gap: .5rem; font-size: .875rem; font-weight: 600; color: #10b981; text-decoration: none; margin-bottom: 1.25rem; transition: opacity .2s; }
+.pp-back:hover { opacity: .8; }
+
+/* Not found */
+.pp-not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; text-align: center; }
+.pp-not-found i { font-size: 3rem; color: #6b7280; margin-bottom: 1rem; }
+.pp-not-found h2 { font-size: 1.5rem; font-weight: 700; color: var(--foreground,#f0f6fc); margin-bottom: .5rem; }
+.pp-not-found p { color: var(--muted-foreground,#8b949e); margin-bottom: 1.5rem; }
+.pp-back-btn { display: inline-flex; align-items: center; gap: .5rem; padding: .625rem 1.25rem; background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); border-radius: 10px; color: #10b981; font-weight: 600; text-decoration: none; transition: all .2s; }
+.pp-back-btn:hover { background: rgba(16,185,129,.2); }
+
+/* ── Sidebar + Main layout ── */
+.pp-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.25rem; align-items: start; }
+
+/* ── SIDEBAR ── */
+.pp-sidebar { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: calc(var(--nav-height,64px) + 1rem); }
+
+.pp-avatar-section { display: flex; flex-direction: column; align-items: center; padding: 1.75rem 1.25rem 1.25rem; background: var(--card,rgba(22,27,34,.6)); border: 1px solid var(--card-border,rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); text-align: center; }
+
+.pp-avatar-xl { width: 96px; height: 96px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+.pp-avatar-xl.democrat { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.pp-avatar-xl.republican { background: linear-gradient(135deg,#ef4444,#b91c1c); }
+
+.pp-name { font-size: 1.25rem; font-weight: 800; color: var(--foreground,#f0f6fc); margin-bottom: .5rem; }
+
+.pp-badges { display: flex; gap: .5rem; margin-bottom: .5rem; flex-wrap: wrap; justify-content: center; }
+.pp-party-badge { padding: .25rem .75rem; border-radius: 6px; font-size: .6875rem; font-weight: 700; }
+.pp-party-badge.democrat { background: rgba(59,130,246,.15); color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
+.pp-party-badge.republican { background: rgba(239,68,68,.15); color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+.pp-state-badge { padding: .25rem .75rem; border-radius: 6px; font-size: .6875rem; font-weight: 600; background: var(--muted,rgba(17,24,39,.4)); color: var(--foreground,#f0f6fc); border: 1px solid rgba(16,185,129,.08); }
+
+.pp-role { font-size: .8125rem; color: var(--muted-foreground,#8b949e); }
+
+/* Info cards */
+.pp-info-card { padding: 1rem 1.25rem; background: var(--card,rgba(22,27,34,.6)); border: 1px solid var(--card-border,rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); }
+.pp-info-card h4 { font-size: .75rem; font-weight: 700; color: var(--foreground,#f0f6fc); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 .75rem; padding-bottom: .5rem; border-bottom: 1px solid rgba(16,185,129,.08); }
+
+.pp-info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .35rem 0; }
+.pp-info-lbl { font-size: .75rem; color: var(--muted-foreground,#6b7280); }
+.pp-info-val { font-size: .75rem; font-weight: 600; color: var(--foreground,#f0f6fc); text-align: right; }
+.pp-info-link { font-size: .7rem; color: #10b981; text-decoration: none; text-align: right; max-width: 160px; word-break: break-all; }
+.pp-info-link:hover { text-decoration: underline; }
+
+.pp-timeliness { font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.pp-timeliness.good { background: rgba(16,185,129,.12); color: #10b981; }
+.pp-timeliness.late { background: rgba(239,68,68,.12); color: #f87171; }
+
+/* ── MAIN AREA ── */
+.pp-main { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Portfolio Overview card */
+.pp-overview-card { padding: 1.25rem 1.5rem; background: var(--card,rgba(22,27,34,.6)); border: 1px solid var(--card-border,rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); }
+.pp-ov-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.pp-ov-header h3 { font-size: 1.125rem; font-weight: 700; color: var(--foreground,#f0f6fc); margin: 0; }
+.pp-ov-badge { font-size: .6875rem; font-weight: 600; padding: .3rem .75rem; border-radius: 8px; background: var(--muted,rgba(17,24,39,.4)); color: var(--muted-foreground,#8b949e); border: 1px solid rgba(16,185,129,.08); }
+.pp-ov-stats { display: flex; gap: 3rem; }
+.pp-ov-label { font-size: .6875rem; color: var(--muted-foreground,#6b7280); text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 2px; }
+.pp-ov-value { font-size: 1.75rem; font-weight: 800; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; letter-spacing: -.02em; }
+.pp-ov-change { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: .3rem; font-feature-settings: 'tnum' 1; }
+.pp-ov-change.up { color: #10b981; }
+.pp-ov-change.down { color: #ef4444; }
+
+/* Performance chart */
+.pp-perf { padding: 1.25rem 1.5rem; background: var(--card,rgba(22,27,34,.6)); border: 1px solid var(--card-border,rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); }
+.pp-perf-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+.pp-perf-header h3 { font-size: 1rem; font-weight: 700; color: var(--foreground,#f0f6fc); margin: 0; }
+.pp-perf-badge { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: .25rem; }
+.pp-perf-timerange { display: flex; gap: .25rem; margin-bottom: .75rem; }
+.pp-tr-btn { padding: .25rem .6rem; font-size: .6875rem; font-weight: 600; color: var(--muted-foreground,#6b7280); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: all .2s; }
+.pp-tr-btn:hover { color: var(--foreground,#f0f6fc); background: rgba(16,185,129,.06); }
+.pp-tr-btn.on { color: #10b981; background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.3); }
+.pp-perf-svg { width: 100%; height: 180px; display: block; border-radius: 8px; }
+
+/* Bottom grid: holdings + trades */
+.pp-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+
+.pp-card { padding: 1.25rem; background: var(--card,rgba(22,27,34,.6)); border: 1px solid var(--card-border,rgba(16,185,129,.1)); border-radius: var(--radius-md,1rem); backdrop-filter: blur(12px); }
+.pp-card-title { font-size: .875rem; font-weight: 700; color: var(--foreground,#f0f6fc); margin: 0 0 1rem; }
+
+/* Donut */
+.pp-donut-wrap { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1rem; }
+.pp-donut-svg { width: 100px; height: 100px; flex-shrink: 0; }
+.pp-donut-seg { transition: stroke-dasharray .5s; }
+.pp-donut-legend { display: flex; flex-direction: column; gap: 4px; }
+.pp-donut-item { display: flex; align-items: center; gap: .5rem; font-size: .6875rem; }
+.pp-donut-color { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.pp-donut-tk { font-weight: 700; color: var(--foreground,#f0f6fc); min-width: 40px; }
+.pp-donut-pct { color: var(--muted-foreground,#6b7280); font-feature-settings: 'tnum' 1; }
+
+/* Holdings table */
+.pp-holdings-table { display: flex; flex-direction: column; }
+.pp-holding-row { display: flex; justify-content: space-between; align-items: center; padding: .4rem 0; border-bottom: 1px solid rgba(16,185,129,.05); }
+.pp-holding-row:last-child { border-bottom: none; }
+.pp-hold-tk { font-size: .8rem; font-weight: 700; color: var(--foreground,#f0f6fc); margin-right: .5rem; }
+.pp-hold-name { font-size: .6875rem; color: var(--muted-foreground,#6b7280); }
+.pp-hold-val { font-size: .75rem; font-weight: 600; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; margin-right: .5rem; }
+.pp-hold-chg { font-size: .6875rem; font-weight: 700; font-feature-settings: 'tnum' 1; }
+.pp-hold-chg.up { color: #10b981; }
+.pp-hold-chg.down { color: #ef4444; }
+
+/* Trades table */
+.pp-trades-table { display: flex; flex-direction: column; }
+.pp-trades-hdr { display: grid; grid-template-columns: 1.2fr .8fr .6fr 1fr; padding: .35rem 0; border-bottom: 1px solid rgba(16,185,129,.1); }
+.pp-trades-hdr span { font-size: .6rem; font-weight: 700; color: var(--muted-foreground,#6b7280); text-transform: uppercase; letter-spacing: .06em; }
+.pp-trade-row { display: grid; grid-template-columns: 1.2fr .8fr .6fr 1fr; padding: .5rem 0; border-bottom: 1px solid rgba(16,185,129,.04); align-items: center; transition: background .15s; }
+.pp-trade-row:hover { background: rgba(16,185,129,.03); }
+.pp-trade-date { font-size: .75rem; color: var(--muted-foreground,#6b7280); }
+.pp-trade-tk { font-size: .8rem; font-weight: 700; color: var(--foreground,#f0f6fc); display: flex; align-items: center; gap: .35rem; }
+.pp-trade-dot { width: 6px; height: 6px; border-radius: 50%; }
+.pp-trade-dot.buy { background: #10b981; }
+.pp-trade-dot.sell { background: #ef4444; }
+.pp-trade-type { font-size: .7rem; font-weight: 800; letter-spacing: .04em; }
+.pp-trade-type.buy { color: #10b981; }
+.pp-trade-type.sell { color: #ef4444; }
+.pp-trade-amt { font-size: .75rem; font-weight: 600; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; text-align: right; }
+
+/* ── Responsive ── */
+@media (max-width:1024px) {
+  .pp-layout { grid-template-columns: 260px 1fr; }
+}
+@media (max-width:768px) {
+  .pp-layout { grid-template-columns: 1fr; }
+  .pp-sidebar { position: static; }
+  .pp-bottom-grid { grid-template-columns: 1fr; }
+  .pp-ov-stats { flex-direction: column; gap: 1rem; }
+}
+
+/* ── Light mode ── */
+body.light-mode .pp-avatar-section, body.light-mode .pp-info-card, body.light-mode .pp-overview-card, body.light-mode .pp-perf, body.light-mode .pp-card { background: #fff; border-color: rgba(16,185,129,.12); }
+body.light-mode .pp-name, body.light-mode .pp-ov-header h3, body.light-mode .pp-perf-header h3, body.light-mode .pp-card-title, body.light-mode .pp-ov-value, body.light-mode .pp-info-val, body.light-mode .pp-hold-tk, body.light-mode .pp-hold-val, body.light-mode .pp-trade-tk, body.light-mode .pp-trade-amt { color: #111827; }
