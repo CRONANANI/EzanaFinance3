@@ -98,7 +98,7 @@ const PRESIDENT_DATA = [
 const CHART_WIDTH = 900;
 const CHART_HEIGHT = 480;
 const PADDING = { top: 60, right: 60, bottom: 60, left: 70 };
-const DOT_RADIUS = 10; /* reduced by 65% from 28 */
+const DOT_RADIUS = 12.5; /* 25% larger than 10 */
 // Render images at 2x resolution for crisp display on retina/high-DPI screens
 const IMAGE_PIXELS = DOT_RADIUS * 4;
 const Y_MIN = -40;
