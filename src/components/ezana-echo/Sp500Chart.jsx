@@ -99,6 +99,8 @@ const CHART_WIDTH = 900;
 const CHART_HEIGHT = 480;
 const PADDING = { top: 60, right: 60, bottom: 60, left: 70 };
 const DOT_RADIUS = 28;
+// Render images at 2x resolution for crisp display on retina/high-DPI screens
+const IMAGE_PIXELS = DOT_RADIUS * 4;
 const Y_MIN = -40;
 const Y_MAX = 140;
 const X_MIN = 1989;
@@ -282,14 +284,14 @@ export function Sp500Chart() {
                 filter="url(#dotShadow)"
                 opacity={isHovered ? 1 : 0.9}
               />
-              {/* Face image - fills the circle, clipped to circle */}
+              {/* Face image - rendered at 2x resolution for retina clarity, clipped to circle */}
               <g clipPath="url(#dotClip)">
                 <image
                   href={d.avatar}
-                  x={cx - DOT_RADIUS}
-                  y={cy - DOT_RADIUS}
-                  width={DOT_RADIUS * 2}
-                  height={DOT_RADIUS * 2}
+                  x={cx - IMAGE_PIXELS / 2}
+                  y={cy - IMAGE_PIXELS / 2}
+                  width={IMAGE_PIXELS}
+                  height={IMAGE_PIXELS}
                   preserveAspectRatio="xMidYMid slice"
                 />
               </g>

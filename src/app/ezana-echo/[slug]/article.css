@@ -150,6 +150,13 @@
   width: 100%;
   max-width: 900px;
   margin: 2rem auto;
+  overflow-x: auto;
+}
+
+/* Crisp image rendering for presidential photos in chart (retina/high-DPI) */
+.sp500-chart-svg image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
 }
 
 /* Pulsating line animation - travels left to right */
@@ -168,7 +175,9 @@
 
 .sp500-chart-svg {
   width: 100%;
+  min-width: 600px;
   height: auto;
+  display: block;
 }
 
 .sp500-chart-tooltip {
