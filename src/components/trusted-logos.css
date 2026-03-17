@@ -1,0 +1,112 @@
+/* ═══════════════════════════════════════════════════════════
+   TRUSTED LOGOS — Infinite Scroll Carousel
+   Replaces the old placeholder rectangles.
+   ═══════════════════════════════════════════════════════════ */
+
+.tl-section {
+  padding: 4rem 2rem;
+  text-align: center;
+  overflow: hidden;
+  border-top: 1px solid rgba(16, 185, 129, 0.05);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+}
+
+.tl-heading {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.tl-subheading {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 2.5rem;
+}
+
+/* ── Carousel mask with fade edges ── */
+.tl-carousel-mask {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  /* Fade edges */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+/* ── Track: infinite scroll ── */
+.tl-carousel-track {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  width: max-content;
+  animation: tlScroll 25s linear infinite;
+}
+
+.tl-carousel-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes tlScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Individual logo ── */
+.tl-logo-item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  min-width: 160px;
+  height: 70px;
+}
+
+.tl-logo-img {
+  opacity: 0.5;
+  filter: grayscale(100%) brightness(1.8);
+  transition: all 0.3s ease;
+  max-height: 55px;
+  width: auto;
+}
+
+.tl-logo-item:hover .tl-logo-img {
+  opacity: 1;
+  filter: grayscale(0%) brightness(1);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .tl-section { padding: 3rem 1rem; }
+  .tl-heading { font-size: 1.25rem; }
+  .tl-carousel-track { gap: 2.5rem; }
+  .tl-logo-item { min-width: 120px; padding: 0.5rem 1rem; }
+  .tl-logo-img { max-height: 40px; }
+}
+
+/* ── Light mode ── */
+body.light-mode .tl-heading { color: #111827; }
+body.light-mode .tl-logo-img {
+  opacity: 0.4;
+  filter: grayscale(100%) brightness(0.4);
+}
+body.light-mode .tl-logo-item:hover .tl-logo-img {
+  opacity: 0.9;
+  filter: grayscale(0%) brightness(1);
+}

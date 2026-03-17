@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { TestimonialsHero } from '@/components/landing/TestimonialsHero';
+import { TrustedLogos } from '@/components/TrustedLogos';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ResourcesSection } from '@/components/landing/ResourcesSection';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -26,7 +26,7 @@ export default function HomePage() {
         <LandingHero />
       </main>
 
-      <TestimonialsHero />
+      <TrustedLogos />
 
       <div id="features-section-container">
         <FeaturesSection />
