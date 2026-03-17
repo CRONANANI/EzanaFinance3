@@ -1,36 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { useTheme } from '@/components/ThemeProvider';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { NavNotifications } from '@/components/NavNotifications';
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
-  const { user, isAuthenticated, signOut } = useAuth();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const settingsRef = useRef(null);
+  const isSettings = pathname?.startsWith('/settings');
   const isLanding = pathname === '/';
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
-  const DASHBOARD_PAGES = ['/home', '/home-dashboard', '/watchlist', '/community', '/learning-center', '/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/economic-indicators', '/betting-markets'];
-  const isDashboardPage = DASHBOARD_PAGES.some((p) => pathname.startsWith(p));
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
   const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated) || isEzanaEcho;
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (settingsRef.current && !settingsRef.current.contains(e.target)) setSettingsOpen(false);
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -45,12 +31,7 @@ export function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [mobileMenuOpen]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  };
-
-  if (isAuthPage) return null;
+  if (isAuthPage || isSettings) return null;
 
   if (showLandingNav) {
     return (
@@ -300,47 +281,9 @@ export function Navbar() {
           </Link>
         </div>
         <div className="nav-actions">
-          <div className="nav-settings-dropdown" ref={settingsRef}>
-            <button className="nav-action-btn settings-toggle" onClick={() => setSettingsOpen(!settingsOpen)} title="App settings" type="button">
-              <i className="bi bi-gear"></i>
-            </button>
-            {settingsOpen && (
-              <div className="settings-dropdown-menu">
-                <div className="settings-dropdown-item">
-                  <span>Theme</span>
-                  <button type="button" className="settings-theme-btn" onClick={toggleTheme} title="Toggle theme">
-                    <i className={`bi ${theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-fill'}`}></i>
-                    <span>{theme === 'dark' ? 'Light' : 'Dark'} mode</span>
-                  </button>
-                </div>
-                <div className="settings-dropdown-item muted">More options coming soon</div>
-              </div>
-            )}
-          </div>
-          {isDashboardPage ? (
-            <Link href={user ? "/user-profile-settings" : "/signin"} className="nav-action-btn user-menu-btn" title={user ? "Account & preferences" : "Sign in"}>
-              <i className="bi bi-person-circle"></i>
-            </Link>
-          ) : user ? (
-            <>
-              <Link href="/user-profile-settings" className="nav-action-btn user-menu-btn" title="Account">
-                <i className="bi bi-person-circle"></i>
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="nav-action-btn"
-                title="Sign out"
-                type="button"
-              >
-                <i className="bi bi-box-arrow-right"></i>
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/auth/signin" className="nav-link">Sign In</Link>
-              <Link href="/auth/signup" className="btn-nav-primary">Sign Up</Link>
-            </>
-          )}
+          <Link href="/settings" className="nav-action-btn" title="Settings" aria-label="Settings">
+            <i className="bi bi-gear"></i>
+          </Link>
         </div>
       </div>
       {mobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />}
