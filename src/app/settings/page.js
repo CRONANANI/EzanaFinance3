@@ -15,6 +15,7 @@ import {
   IntegrationsPanel,
   ApiPanel,
 } from '@/components/settings';
+import { PartnerProvider, usePartner } from '@/contexts/PartnerContext';
 import './settings.css';
 
 const SETTINGS_TABS = [
@@ -43,11 +44,13 @@ const PANEL_MAP = {
   'api': ApiPanel,
 };
 
-export default function SettingsPage() {
+function SettingsInner() {
   const [activeTab, setActiveTab] = useState('my-details');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [saveToast, setSaveToast] = useState(false);
   const router = useRouter();
+  const { isPartner } = usePartner();
+  const dashboardPath = isPartner ? '/partner-home' : '/home-dashboard';
 
   const ActivePanel = PANEL_MAP[activeTab];
 
@@ -65,7 +68,7 @@ export default function SettingsPage() {
     <div className="settings-page">
       {/* Settings header (navbar returns null on /settings) */}
       <header className="settings-header">
-        <Link href="/home-dashboard" className="settings-header-back">
+        <Link href={dashboardPath} className="settings-header-back">
           <i className="bi bi-arrow-left" />
           <span>Back to Dashboard</span>
         </Link>
@@ -133,7 +136,7 @@ export default function SettingsPage() {
           <div className="settings-sidebar-footer">
             <button
               className="settings-back-btn"
-              onClick={() => router.push('/home-dashboard')}
+              onClick={() => router.push(dashboardPath)}
               type="button"
             >
               <i className="bi bi-arrow-left" />
@@ -156,5 +159,13 @@ export default function SettingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <PartnerProvider>
+      <SettingsInner />
+    </PartnerProvider>
   );
 }
