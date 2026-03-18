@@ -16,7 +16,7 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const destination = redirectTo || "/home";
+  const destination = redirectTo || "/home-dashboard";
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -34,7 +34,27 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
         return;
       }
 
-      router.push(destination);
+      if (variant === "partner") {
+        const { data: { user } } = await supabase.auth.getUser();
+        let isPartner = !!user?.user_metadata?.partner_role;
+        if (!isPartner) {
+          const { data: partner } = await supabase
+            .from("partners")
+            .select("id")
+            .eq("user_id", user?.id)
+            .eq("status", "active")
+            .single();
+          isPartner = !!partner;
+        }
+        if (!isPartner) {
+          await supabase.auth.signOut();
+          setError("This account is not registered as a partner. Contact partnersupport@ezana.world or apply to become a partner.");
+          return;
+        }
+        router.push("/partner-home");
+      } else {
+        router.push(destination);
+      }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
@@ -44,10 +64,12 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
 
   const handleGoogleSignIn = async () => {
     try {
+      const oauthType = variant === "partner" ? "partner" : "user";
+      const oauthRedirect = variant === "partner" ? "/partner-home" : destination;
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(destination)}`,
+          redirectTo: `${window.location.origin}/auth/callback?type=${oauthType}&redirect=${encodeURIComponent(oauthRedirect)}`,
         },
       });
 
@@ -310,6 +332,26 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
                 </>
               )}
             </div>
+
+            {/* Partner or Creator? — only on user variant */}
+            {variant === "user" && (
+              <div className="mt-6 pt-6 border-t border-gray-700/50">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="flex-1 h-px bg-gray-700/50" />
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Partner or Creator?</span>
+                  <div className="flex-1 h-px bg-gray-700/50" />
+                </div>
+                <Link
+                  href="/auth/partner-login"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-amber-500/30 bg-amber-500/5 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all font-medium text-sm"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.636.622-.01.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.636.89.01a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.636-.622.01-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01-.622-.636z" />
+                  </svg>
+                  Login as Partner
+                </Link>
+              </div>
+            )}
           </motion.div>
         </div>
       </motion.div>

@@ -35,17 +35,17 @@ export default function LoginChoicePage() {
           </Link>
 
           <Link
-            href="/auth/partner/signin"
-            className="flex items-center gap-4 p-4 rounded-xl border border-[#10b981]/30 bg-[#0d1117]/80 hover:bg-[#10b981]/10 hover:border-[#10b981]/50 transition-all group"
+            href="/auth/partner-login"
+            className="flex items-center gap-4 p-4 rounded-xl border border-[#d4a853]/30 bg-[#0d1117]/80 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/50 transition-all group"
           >
-            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#10b981]/20 flex items-center justify-center group-hover:bg-[#10b981]/30 transition-colors">
-              <i className="bi bi-briefcase text-[#10b981] text-xl" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#d4a853]/20 flex items-center justify-center group-hover:bg-[#d4a853]/30 transition-colors">
+              <i className="bi bi-patch-check-fill text-[#d4a853] text-xl" />
             </div>
             <div className="flex-1">
               <h2 className="font-semibold text-white">Login as Partner</h2>
               <p className="text-sm text-[#9ca3af]">Partner, creator, or professional money manager</p>
             </div>
-            <i className="bi bi-chevron-right text-[#10b981] opacity-70 group-hover:opacity-100 transition-opacity" />
+            <i className="bi bi-chevron-right text-[#d4a853] opacity-70 group-hover:opacity-100 transition-opacity" />
           </Link>
         </div>
 
