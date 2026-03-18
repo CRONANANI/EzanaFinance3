@@ -63,7 +63,7 @@ export function PartnerNavbar() {
           </Link>
           <Link href="/partner-learning" className={`nav-link ${pathname?.includes('partner-learning') ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard" />
-            <span>Content Studio</span>
+            <span>Creator Studio</span>
           </Link>
         </div>
 

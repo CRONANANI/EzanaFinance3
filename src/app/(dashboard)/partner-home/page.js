@@ -8,7 +8,7 @@ import '../partner.css';
 const QUICK_LINKS = [
   { href: '/partner-dashboard', icon: 'bi-speedometer2', label: 'Dashboard', desc: 'Revenue, copiers, and performance', color: '#10b981' },
   { href: '/partner-community', icon: 'bi-people', label: 'Community', desc: 'Engage followers and copiers', color: '#3b82f6' },
-  { href: '/partner-learning', icon: 'bi-mortarboard', label: 'Content Studio', desc: 'Build courses and content', color: '#a78bfa' },
+  { href: '/partner-learning', icon: 'bi-mortarboard', label: 'Creator Studio', desc: 'Build courses and content', color: '#a78bfa' },
   { href: '/settings', icon: 'bi-gear', label: 'Settings', desc: 'Profile, payouts, and API', color: '#fbbf24' },
 ];
 

@@ -77,7 +77,7 @@ export async function POST(request) {
 
   if (!partner?.echo_writer_approved) {
     return NextResponse.json(
-      { error: 'You must be an approved Echo writer to submit articles. Apply via Content Studio.' },
+      { error: 'You must be an approved Echo writer to submit articles. Apply via Creator Studio.' },
       { status: 403 }
     );
   }

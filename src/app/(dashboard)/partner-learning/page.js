@@ -45,6 +45,14 @@ export default function PartnerLearningPage() {
     return session?.access_token || null;
   }, []);
 
+  const fetchEchoArticles = useCallback(async () => {
+    const token = await getToken();
+    if (!token) return;
+    const res = await fetch('/api/echo/articles?my=true', { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    setEchoArticles(data.articles || []);
+  }, [getToken]);
+
   const fetchWriterStatus = useCallback(async () => {
     const token = await getToken();
     if (!token) return;
@@ -60,18 +68,10 @@ export default function PartnerLearningPage() {
     }
   }, [activeView, user, fetchEchoArticles, fetchWriterStatus]);
 
-  const fetchEchoArticles = useCallback(async () => {
-    const token = await getToken();
-    if (!token) return;
-    const res = await fetch('/api/echo/articles?my=true', { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setEchoArticles(data.articles || []);
-  }, [getToken]);
-
   return (
     <div className="ptr-page">
       <div className="ptr-page-header">
-        <h1 className="ptr-page-title">Content Studio</h1>
+        <h1 className="ptr-page-title">Creator Studio</h1>
         <div className="ptr-page-header-right">
           <div className="ptr-tab-group">
             {[

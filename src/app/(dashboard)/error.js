@@ -2,8 +2,13 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function DashboardError({ error, reset }) {
+  const pathname = usePathname();
+  const isPartnerRoute = pathname?.startsWith('/partner-');
+  const dashboardHref = isPartnerRoute ? '/partner-home' : '/home-dashboard';
+
   useEffect(() => {
     console.error('Dashboard error:', error);
   }, [error]);
@@ -26,7 +31,7 @@ export default function DashboardError({ error, reset }) {
                 Try again
               </button>
               <Link
-                href="/home-dashboard"
+                href={dashboardHref}
                 className="px-6 py-3 bg-muted text-foreground rounded-xl font-medium hover:bg-muted/80 transition-colors"
               >
                 Go to Dashboard

@@ -85,7 +85,7 @@ export function WriterApplication({ getToken }) {
     <div className="echo-app-form">
       <div className="echo-app-form-header">
         <h2>Apply to Write for Ezana Echo</h2>
-        <p>Submit proof of your finance writing experience. Once approved, you can publish articles directly to Ezana Echo from your Content Studio.</p>
+        <p>Submit proof of your finance writing experience. Once approved, you can publish articles directly to Ezana Echo from your Creator Studio.</p>
       </div>
 
       {error && <div className="echo-msg echo-msg-error"><i className="bi bi-exclamation-triangle" /> {error}</div>}
