@@ -2,9 +2,10 @@ import './globals.css';
 import { Suspense } from 'react';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
+import { PartnerProvider } from '@/contexts/PartnerContext';
 import { CongressProvider } from '@/contexts/CongressContext';
 import { PinProvider } from '@/contexts/PinContext';
-import { Navbar } from '@/components/Layout/Navbar';
+import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 
 export const metadata = {
   title: 'Ezana Finance - Follow the moves that matter',
@@ -30,14 +31,16 @@ export default function RootLayout({ children }) {
       <body className="app-body" style={{ backgroundColor: '#0f1419', color: '#ffffff' }}>
         <ThemeProvider>
           <AuthProvider>
-            <CongressProvider>
-              <PinProvider>
-                <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
-                  <Navbar />
-                </Suspense>
-                {children}
-              </PinProvider>
-            </CongressProvider>
+            <PartnerProvider>
+              <CongressProvider>
+                <PinProvider>
+                  <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
+                    <ConditionalNavbar />
+                  </Suspense>
+                  {children}
+                </PinProvider>
+              </CongressProvider>
+            </PartnerProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
