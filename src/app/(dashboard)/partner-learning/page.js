@@ -1,7 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
+import { ArticleEditor, WriterApplication } from '@/components/echo';
 import '../partner.css';
+import '../../ezana-echo/echo-publish.css';
 
 const PUBLISHED_COURSES = [
   { id: 1, title: 'Options Trading Basics', students: 342, revenue: 1890, rating: 4.8, modules: 5, status: 'published', lastUpdated: 'Mar 10, 2026' },
@@ -31,6 +35,38 @@ const RECENT_REVIEWS = [
 
 export default function PartnerLearningPage() {
   const [activeView, setActiveView] = useState('courses');
+  const [echoArticles, setEchoArticles] = useState([]);
+  const [editingArticle, setEditingArticle] = useState(null);
+  const [isApprovedWriter, setIsApprovedWriter] = useState(false);
+  const { user } = useAuth();
+
+  const getToken = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  }, []);
+
+  const fetchWriterStatus = useCallback(async () => {
+    const token = await getToken();
+    if (!token) return;
+    const res = await fetch('/api/echo/writer-application', { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    setIsApprovedWriter(data.isApprovedWriter || false);
+  }, [getToken]);
+
+  useEffect(() => {
+    if (activeView === 'echo' && user) {
+      fetchEchoArticles();
+      fetchWriterStatus();
+    }
+  }, [activeView, user, fetchEchoArticles, fetchWriterStatus]);
+
+  const fetchEchoArticles = useCallback(async () => {
+    const token = await getToken();
+    if (!token) return;
+    const res = await fetch('/api/echo/articles?my=true', { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    setEchoArticles(data.articles || []);
+  }, [getToken]);
 
   return (
     <div className="ptr-page">
@@ -40,6 +76,7 @@ export default function PartnerLearningPage() {
           <div className="ptr-tab-group">
             {[
               { key: 'courses', label: 'My Courses', icon: 'bi-journal-bookmark' },
+              { key: 'echo', label: 'Ezana Echo', icon: 'bi-newspaper' },
               { key: 'analytics', label: 'Analytics', icon: 'bi-bar-chart' },
               { key: 'reviews', label: 'Reviews', icon: 'bi-star' },
             ].map((t) => (
@@ -108,6 +145,47 @@ export default function PartnerLearningPage() {
             </div>
           </div>
         </>
+      )}
+
+      {activeView === 'echo' && (
+        <div className="ptr-card" style={{ marginBottom: '1.25rem' }}>
+          <div className="ptr-card-header">
+            <h3>Ezana Echo</h3>
+            <span className="ptr-card-count">{isApprovedWriter ? 'Write & publish articles' : 'Apply to become a writer'}</span>
+          </div>
+          <div className="ptr-echo-section">
+            {!isApprovedWriter ? (
+              <WriterApplication getToken={getToken} />
+            ) : (
+              <>
+                <ArticleEditor
+                  getToken={getToken}
+                  editingArticle={editingArticle}
+                  onSaved={() => {
+                    setEditingArticle(null);
+                    fetchEchoArticles();
+                  }}
+                />
+                {echoArticles.length > 0 && (
+                  <div className="ptr-echo-articles-list" style={{ marginTop: '1.5rem' }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: 700, marginBottom: '0.75rem', color: '#8b949e' }}>Your Articles</h4>
+                    {echoArticles.map((a) => (
+                      <div key={a.id} className="ptr-course-item" style={{ marginBottom: '0.5rem' }}>
+                        <div className="ptr-course-info">
+                          <span className="ptr-course-title">{a.article_title}</span>
+                          <span className="ptr-course-meta">
+                            {a.article_category} · <span className={`echo-status-badge echo-status-${a.article_status}`}>{a.article_status}</span>
+                          </span>
+                        </div>
+                        <button className="ptr-btn-sm" onClick={() => setEditingArticle(a)}>Edit</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       {activeView === 'reviews' && (

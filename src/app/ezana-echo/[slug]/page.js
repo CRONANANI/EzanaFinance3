@@ -1,9 +1,13 @@
 'use client';
 
+import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 import { Sp500Chart } from '@/components/ezana-echo/Sp500Chart';
+import { AuthorCard } from '@/components/echo';
 import './article.css';
+import '../echo-publish.css';
 
 const ARTICLES = {
   'oil-assets-surge': {
@@ -270,9 +274,47 @@ export default function ArticlePage() {
   const params = useParams();
   const router = useRouter();
   const slug = params?.slug;
-  const article = slug ? ARTICLES[slug] : null;
+  const [apiArticle, setApiArticle] = React.useState(null);
+  const [loading, setLoading] = React.useState(!!slug);
+
+  const staticArticle = slug ? ARTICLES[slug] : null;
+
+  React.useEffect(() => {
+    if (!slug) return;
+    if (staticArticle) {
+      setLoading(false);
+      return;
+    }
+    fetch(`/api/echo/articles?slug=${encodeURIComponent(slug)}`)
+      .then((r) => r.json())
+      .then((d) => setApiArticle(d.article))
+      .catch(() => setApiArticle(null))
+      .finally(() => setLoading(false));
+  }, [slug, staticArticle]);
+
+  const article = staticArticle || (apiArticle ? {
+    title: apiArticle.article_title,
+    category: apiArticle.article_category,
+    author: apiArticle.author_name,
+    authorId: apiArticle.author_id,
+    authorAvatar: apiArticle.author_avatar,
+    date: apiArticle.published_at ? new Date(apiArticle.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+    readTime: `${apiArticle.read_time_minutes || 5} min read`,
+    content: null,
+    body: apiArticle.article_body,
+  } : null);
 
   if (!slug) return null;
+  if (loading) {
+    return (
+      <div className="ezana-article-page">
+        <div className="ezana-echo-bg" />
+        <div className="ezana-article-container" style={{ padding: '3rem', textAlign: 'center' }}>
+          <p style={{ color: '#8b949e' }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
   if (!article) {
     if (typeof window !== 'undefined') router.replace('/ezana-echo');
     return null;
@@ -290,13 +332,26 @@ export default function ArticlePage() {
         <article className="ezana-article">
           <span className="ezana-echo-category-tag">{article.category}</span>
           <h1 className="ezana-article-title">{article.title}</h1>
+          {article.authorId ? (
+            <div className="ezana-article-author-card" style={{ marginBottom: '1rem' }}>
+              <AuthorCard author={{ user_id: article.authorId, display_name: article.author, avatar_url: article.authorAvatar, articleCount: 0, subscriberCount: 0, verified: false }} />
+            </div>
+          ) : null}
           <div className="ezana-article-meta">
-            <span>{article.author}</span>
+            {!article.authorId && <span>{article.author}</span>}
             <span>{article.date}</span>
             <span>{article.readTime}</span>
           </div>
 
-          <div className="ezana-article-content">{article.content}</div>
+          <div className="ezana-article-content">
+            {article.body ? (
+              <div className="ezana-article-markdown prose prose-invert max-w-none">
+                <ReactMarkdown>{article.body}</ReactMarkdown>
+              </div>
+            ) : (
+              article.content
+            )}
+          </div>
         </article>
       </div>
     </div>
