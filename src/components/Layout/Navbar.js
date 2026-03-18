@@ -267,6 +267,10 @@ export function Navbar() {
               </Link>
             </div>
           </div>
+          <Link href="/trading" className={`nav-link ${pathname.includes('trading') ? 'active' : ''}`} data-page="trading" onClick={() => setMobileMenuOpen(false)}>
+            <i className="bi bi-graph-up-arrow"></i>
+            <span>Trading</span>
+          </Link>
           <Link href="/watchlist" className={`nav-link ${pathname.includes('watchlist') ? 'active' : ''}`} data-page="watchlist" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-bookmark"></i>
             <span>Watchlist</span>
