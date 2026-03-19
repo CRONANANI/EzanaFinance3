@@ -68,22 +68,38 @@ button:active:not(:disabled) {
   margin-right: auto;
 }
 
-/* ── Skip to content ── */
-.skip-to-content {
+/* ── Skip to content — visually hidden until focused ── */
+.skip-to-content,
+a[href="#main-content"].skip-to-content {
   position: absolute;
-  left: -9999px;
-  top: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
   z-index: 99999;
-  padding: 12px 20px;
+}
+.skip-to-content:focus,
+a[href="#main-content"].skip-to-content:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1.5rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
   background: #10b981;
   color: #0a0e13;
   font-weight: 700;
   border-radius: 8px;
-  transition: left 0.2s;
-}
-.skip-to-content:focus {
-  left: 16px;
-  top: 16px;
   outline: 2px solid #fff;
   outline-offset: 2px;
 }
