@@ -18,6 +18,7 @@ export function Navbar() {
   const isHelpCenter = pathname?.startsWith('/help-center');
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
   const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated) || isEzanaEcho;
+  const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo');
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -211,10 +212,10 @@ export function Navbar() {
             <i className="bi bi-speedometer2"></i>
             <span>Dashboard</span>
           </Link>
-          <div className="nav-dropdown mobile-dropdown-flat">
-            <span className="nav-link mobile-dropdown-label">
+          <div className={`nav-dropdown mobile-dropdown-flat ${isResearchActive ? 'active' : ''}`}>
+            <span className={`nav-link mobile-dropdown-label ${isResearchActive ? 'active' : ''}`}>
               <i className="bi bi-search"></i>
-              <span>Research Tools</span>
+              <span>Research</span>
             </span>
             <div className="mobile-dropdown-items">
               <Link href="/inside-the-capitol" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
@@ -237,12 +238,16 @@ export function Navbar() {
                 <i className="bi bi-bullseye"></i>
                 <div><div className="item-title">Betting Markets</div></div>
               </Link>
+              <Link href="/ezana-echo" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-newspaper"></i>
+                <div><div className="item-title">Ezana Echo</div></div>
+              </Link>
             </div>
           </div>
-          <div className="nav-dropdown desktop-dropdown-only">
-            <button className="nav-link dropdown-trigger" type="button">
+          <div className={`nav-dropdown desktop-dropdown-only ${isResearchActive ? 'active' : ''}`}>
+            <button className={`nav-link dropdown-trigger ${isResearchActive ? 'active' : ''}`} type="button" aria-label="Research menu">
               <i className="bi bi-search"></i>
-              <span>Research Tools</span>
+              <span>Research</span>
               <i className="bi bi-chevron-down chevron"></i>
             </button>
             <div className="dropdown-menu">
@@ -266,6 +271,10 @@ export function Navbar() {
                 <i className="bi bi-bullseye"></i>
                 <div><div className="item-title">Betting Markets</div><div className="item-desc">Odds & predictions</div></div>
               </Link>
+              <Link href="/ezana-echo" className="dropdown-item">
+                <i className="bi bi-newspaper"></i>
+                <div><div className="item-title">Ezana Echo</div><div className="item-desc">Articles & insights</div></div>
+              </Link>
             </div>
           </div>
           <Link href="/trading" className={`nav-link ${pathname.includes('trading') ? 'active' : ''}`} data-page="trading" onClick={() => setMobileMenuOpen(false)}>
@@ -283,10 +292,6 @@ export function Navbar() {
           <Link href="/learning-center" className={`nav-link ${pathname.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
-          </Link>
-          <Link href="/ezana-echo" className={`nav-link ${pathname.includes('ezana-echo') ? 'active' : ''}`} data-page="ezana-echo" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-newspaper"></i>
-            <span>Ezana Echo</span>
           </Link>
         </div>
         <div className="nav-actions">
