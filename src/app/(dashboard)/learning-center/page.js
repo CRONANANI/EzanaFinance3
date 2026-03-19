@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/components/AuthProvider';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { getAllCourseSummaries } from '@/lib/courses';
 import '../../../../app-legacy/assets/css/theme.css';
@@ -22,28 +23,40 @@ const TABS = [
 
 const COURSE_SUMMARIES = getAllCourseSummaries();
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning';
+  if (hour < 17) return 'Good Afternoon';
+  return 'Good Evening';
+}
+
 export default function LearningCenterPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  return (
-    <div className="learning-center-container">
-      <header className="learning-header-bar">
-        <div className="learning-header-left">
-          <h1 className="learning-welcome">Welcome back!</h1>
-          <p className="learning-tagline">Boost your skills to shine in your investing journey.</p>
-        </div>
-        <div className="learning-search-wrap">
-          <i className="bi bi-search" />
-          <input type="text" className="learning-search-input" placeholder="Search Courses" id="learningSearchInput" />
-        </div>
-      </header>
+  const userName = user?.user_metadata?.first_name
+    || user?.user_metadata?.full_name?.split(' ')[0]
+    || user?.email?.split('@')[0]
+    || 'there';
+  const greeting = getGreeting();
 
-      <div className="learning-tabs">
+  return (
+    <div className="lc-page">
+      <div className="lc-greeting-row">
+        <div className="lc-greeting">
+          <h1>{greeting}, {userName} 👋</h1>
+          <p>Boost your skills to shine in your investing journey.</p>
+        </div>
+        <button type="button" className="lc-search-btn">
+          <i className="bi bi-search" /> Search Courses
+        </button>
+      </div>
+
+      <div className="lc-tabs">
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            className={`learning-tab ${activeTab === tab.id ? 'active' : ''}`}
-            data-tab={tab.id}
+            className={`lc-tab ${activeTab === tab.id ? 'active' : ''}`}
             type="button"
             onClick={() => setActiveTab(tab.id)}
           >
@@ -53,171 +66,153 @@ export default function LearningCenterPage() {
       </div>
 
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`} data-content="dashboard">
-        <section className="learning-upper-section">
+        <div className="lc-dashboard-layout">
           <PinnableCard cardId="learning-course-table" title="My Courses" sourcePage="/learning-center" sourceLabel="Learning Center" defaultW={4} defaultH={2}>
-          <div className="learning-course-table-card">
-            <div className="course-table-wrap">
-              <table className="learning-course-table">
-                <thead>
-                  <tr>
-                    <th>Course Name</th>
-                    <th>Instructor</th>
-                    <th>Progress</th>
-                    <th>Level</th>
-                    <th>Next Assignment</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td data-label="Course"><strong>Portfolio Management Fundamentals</strong></td>
-                    <td data-label="Instructor"><div className="instructor-cell"><span className="instructor-avatar">WC</span> Warren Chen, CFA</div></td>
-                    <td data-label="Progress"><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '70%' }} /></div><span>70%</span></div></td>
-                    <td data-label="Level"><span className="level-badge beginner">Beginner</span></td>
-                    <td data-label="Next">Lesson 9 · Apr 27, 2026</td>
-                    <td data-label=""><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
-                  </tr>
-                  <tr>
-                    <td data-label="Course"><strong>Risk Management Strategies</strong></td>
-                    <td data-label="Instructor"><div className="instructor-cell"><span className="instructor-avatar">SM</span> Sarah Miller, FRM</div></td>
-                    <td data-label="Progress"><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '40%' }} /></div><span>40%</span></div></td>
-                    <td data-label="Level"><span className="level-badge intermediate">Intermediate</span></td>
-                    <td data-label="Next">Lesson 8 · Apr 28, 2026</td>
-                    <td data-label=""><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
-                  </tr>
-                  <tr>
-                    <td data-label="Course"><strong>Understanding Volatility</strong></td>
-                    <td data-label="Instructor"><div className="instructor-cell"><span className="instructor-avatar">JM</span> James Mitchell</div></td>
-                    <td data-label="Progress"><div className="progress-cell"><div className="progress-bar-inline"><div className="progress-fill" style={{ width: '25%' }} /></div><span>25%</span></div></td>
-                    <td data-label="Level"><span className="level-badge intermediate">Intermediate</span></td>
-                    <td data-label="Next">Lesson 4 · May 1, 2026</td>
-                    <td data-label=""><button className="btn-icon" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div className="lc-table-wrap">
+            <table className="lc-table">
+              <thead>
+                <tr>
+                  <th>Course Name</th>
+                  <th>Instructor</th>
+                  <th>Progress</th>
+                  <th>Level</th>
+                  <th>Next Assignment</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span className="lc-course-name">Portfolio Management Fundamentals</span></td>
+                  <td><div className="lc-instructor"><span className="lc-instructor-avatar">WC</span> Warren Chen, CFA</div></td>
+                  <td><div className="lc-progress-cell"><div className="lc-progress-bar"><div className="lc-progress-fill" style={{ width: '70%' }} /></div><span className="lc-progress-pct">70%</span></div></td>
+                  <td><span className="lc-level-badge beginner">Beginner</span></td>
+                  <td>Lesson 9 · Apr 27, 2026</td>
+                  <td><button className="lc-action-btn" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
+                </tr>
+                <tr>
+                  <td><span className="lc-course-name">Risk Management Strategies</span></td>
+                  <td><div className="lc-instructor"><span className="lc-instructor-avatar">SM</span> Sarah Miller, FRM</div></td>
+                  <td><div className="lc-progress-cell"><div className="lc-progress-bar"><div className="lc-progress-fill" style={{ width: '40%' }} /></div><span className="lc-progress-pct">40%</span></div></td>
+                  <td><span className="lc-level-badge intermediate">Intermediate</span></td>
+                  <td>Lesson 8 · Apr 28, 2026</td>
+                  <td><button className="lc-action-btn" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
+                </tr>
+                <tr>
+                  <td><span className="lc-course-name">Understanding Volatility</span></td>
+                  <td><div className="lc-instructor"><span className="lc-instructor-avatar">JM</span> James Mitchell</div></td>
+                  <td><div className="lc-progress-cell"><div className="lc-progress-bar"><div className="lc-progress-fill" style={{ width: '25%' }} /></div><span className="lc-progress-pct">25%</span></div></td>
+                  <td><span className="lc-level-badge intermediate">Intermediate</span></td>
+                  <td>Lesson 4 · May 1, 2026</td>
+                  <td><button className="lc-action-btn" title="Settings" type="button"><i className="bi bi-gear" /></button></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           </PinnableCard>
           <PinnableCard cardId="learning-achievements" title="Achievements" sourcePage="/learning-center" sourceLabel="Learning Center" defaultW={2} defaultH={1}>
-          <div className="learning-achievements-card">
-            <div className="achievement-row">
-              <div className="achievement-icon blue"><i className="bi bi-journal-bookmark" /></div>
-              <div className="achievement-content"><span className="achievement-value">15</span><span className="achievement-label">Courses Enrolled</span></div>
+          <div className="lc-stats-card">
+            <div className="lc-stat-item">
+              <div className="lc-stat-icon courses"><i className="bi bi-journal-bookmark" /></div>
+              <div><span className="lc-stat-value">15</span><span className="lc-stat-label">Courses Enrolled</span></div>
             </div>
-            <div className="achievement-row">
-              <div className="achievement-icon green"><i className="bi bi-book" /></div>
-              <div className="achievement-content"><span className="achievement-value">28</span><span className="achievement-label">Hours Learned</span></div>
+            <div className="lc-stat-item">
+              <div className="lc-stat-icon hours"><i className="bi bi-book" /></div>
+              <div><span className="lc-stat-value">28</span><span className="lc-stat-label">Hours Learned</span></div>
             </div>
-            <div className="achievement-row">
-              <div className="achievement-icon orange"><i className="bi bi-star-fill" /></div>
-              <div className="achievement-content"><span className="achievement-value">12</span><span className="achievement-label">Reviews Earned</span></div>
+            <div className="lc-stat-item">
+              <div className="lc-stat-icon reviews"><i className="bi bi-star-fill" /></div>
+              <div><span className="lc-stat-value">12</span><span className="lc-stat-label">Reviews Earned</span></div>
             </div>
-            <div className="achievement-row">
-              <div className="achievement-icon red"><i className="bi bi-fire" /></div>
-              <div className="achievement-content"><span className="achievement-value">5</span><span className="achievement-label">Day Streak</span></div>
+            <div className="lc-stat-item">
+              <div className="lc-stat-icon streak"><i className="bi bi-fire" /></div>
+              <div><span className="lc-stat-value">5</span><span className="lc-stat-label">Day Streak</span></div>
             </div>
           </div>
           </PinnableCard>
+        </div>
+
+        <section className="lc-section">
+          <div className="lc-section-header">
+            <div>
+              <h2 className="lc-section-title">Recommended Courses</h2>
+              <p className="lc-section-subtitle">Based on your learning activity, we&apos;ve curated a personalized course list for you.</p>
+            </div>
+            <a href="#" className="lc-section-link">View All</a>
+          </div>
+          <div className="lc-courses-grid">
+            {COURSE_SUMMARIES.map((course) => (
+              <Link key={course.id} href={`/learning-center/${course.id}`} className="lc-course-card">
+                <div className="lc-course-card-header">
+                  <span className="lc-course-badge">Course</span>
+                  <span className="lc-course-hours"><i className="bi bi-clock" /> {course.stats.duration}</span>
+                </div>
+                <h4 className="lc-course-card-title">{course.title}</h4>
+                <p className="lc-course-card-desc">{course.subtitle}</p>
+                <div className="lc-course-card-footer">
+                  <div className="lc-course-card-tags">
+                    <span className="lc-course-tag">{course.category}</span>
+                    <span className="lc-course-tag">{course.stats.materials} lessons</span>
+                  </div>
+                  <span className="lc-course-card-link">View Course <i className="bi bi-arrow-right" /></span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
 
-        <section className="learning-section recommended-courses">
-          <div className="section-header-row">
+        <section className="lc-section">
+          <div className="lc-section-header">
             <div>
-              <h2 className="section-title">Recommended Courses</h2>
-              <p className="section-subtitle">Based on your learning activity, we&apos;ve curated a personalized course list for you.</p>
+              <h2 className="lc-section-title">Popular Course Topics</h2>
+              <p className="lc-section-subtitle">Based on your learning activity, we&apos;ve curated popular topics for you.</p>
             </div>
-            <button className="view-all-btn" type="button">View All</button>
+            <a href="#" className="lc-section-link">View All</a>
           </div>
-          <div className="courses-scroll-wrap">
-            <div className="courses-scroll">
-              {COURSE_SUMMARIES.map((course) => (
-                <Link key={course.id} href={`/learning-center/${course.id}`} className="course-card recommended-card">
-                  <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> {course.stats.duration}</span></div>
-                  <h4 className="course-title">{course.title}</h4>
-                  <p className="course-description">{course.subtitle}</p>
-                  <div className="course-tags"><span className="tag">{course.category}</span><span className="tag">{course.stats.materials} lessons</span></div>
-                  <span className="enroll-btn full-width">View Course</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="learning-section popular-topics">
-          <div className="section-header-row">
-            <div>
-              <h2 className="section-title">Popular Course Topics</h2>
-              <p className="section-subtitle">Based on your learning activity, we&apos;ve curated popular topics for you.</p>
-            </div>
-            <button className="view-all-btn" type="button">View All</button>
-          </div>
-          <div className="topics-scroll-wrap">
-            <div className="topics-scroll">
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-pie-chart" /></div><span>Portfolio Management</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-shield-check" /></div><span>Risk Management</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-graph-up" /></div><span>Technical Analysis</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-calculator" /></div><span>Quantitative Analysis</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-arrow-left-right" /></div><span>Options Trading</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-emoji-smile" /></div><span>Market Psychology</span></div>
-              <div className="topic-card"><div className="topic-icon"><i className="bi bi-bar-chart" /></div><span>Financial Statements</span></div>
-            </div>
+          <div className="lc-topic-pills">
+            <a href="#" className="lc-topic-pill">Portfolio Management</a>
+            <a href="#" className="lc-topic-pill">Risk Management</a>
+            <a href="#" className="lc-topic-pill">Technical Analysis</a>
+            <a href="#" className="lc-topic-pill">Quantitative Analysis</a>
+            <a href="#" className="lc-topic-pill">Options Trading</a>
+            <a href="#" className="lc-topic-pill">Market Psychology</a>
+            <a href="#" className="lc-topic-pill">Financial Statements</a>
           </div>
         </section>
       </div>
 
       <div className={`tab-content ${activeTab === 'courses' ? 'active' : ''}`} data-content="courses">
-        <h2 className="section-title">Courses In Progress</h2>
-        <div className="courses-list">
-          <div className="course-item in-progress">
-            <div className="course-thumbnail">
-              <div className="thumbnail-placeholder"><i className="bi bi-journal-bookmark" /></div>
-              <div className="progress-overlay">
-                <div className="progress-circle">
-                  <svg width="60" height="60"><circle cx="30" cy="30" r="25" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" /><circle cx="30" cy="30" r="25" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="157" strokeDashoffset="47" transform="rotate(-90 30 30)" /></svg>
-                  <span className="progress-percent">70%</span>
-                </div>
-              </div>
+        <h2 className="lc-section-title">Courses In Progress</h2>
+        <div className="lc-progress-list">
+          <div className="lc-progress-card">
+            <div className="lc-progress-ring">
+              <svg width="56" height="56"><circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" /><circle cx="28" cy="28" r="24" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="151" strokeDashoffset="45" transform="rotate(-90 28 28)" /></svg>
+              <span className="lc-progress-ring-pct">70%</span>
             </div>
-            <div className="course-details">
-              <div className="course-meta-top"><span className="course-category">Portfolio Management</span><span className="course-time">4 hours</span></div>
-              <h3 className="course-name">Portfolio Management Fundamentals</h3>
-              <p className="course-instructor"><i className="bi bi-person" /> Taught by Warren Chen, CFA</p>
-              <div className="course-progress-bar">
-                <div className="progress-bar-small"><div className="progress-fill" style={{ width: '70%' }} /></div>
-                <span className="progress-text">8 of 12 lessons completed</span>
-              </div>
-              <div className="course-actions">
-                <button className="btn-continue" type="button"><i className="bi bi-play-circle" /> Continue Learning</button>
-                <button className="btn-secondary-small" type="button"><i className="bi bi-download" /> Download Materials</button>
-              </div>
+            <div className="lc-progress-card-info">
+              <h3 className="lc-progress-card-title">Portfolio Management Fundamentals</h3>
+              <p className="lc-progress-card-meta">Portfolio Management · 4 hours · 8 of 12 lessons completed</p>
+            </div>
+            <div className="lc-progress-card-actions">
+              <button className="lc-continue-btn" type="button"><i className="bi bi-play-circle" /> Continue</button>
+              <button className="lc-download-btn" type="button"><i className="bi bi-download" /> Materials</button>
             </div>
           </div>
-          <div className="course-item in-progress">
-            <div className="course-thumbnail">
-              <div className="thumbnail-placeholder"><i className="bi bi-shield-check" /></div>
-              <div className="progress-overlay">
-                <div className="progress-circle">
-                  <svg width="60" height="60"><circle cx="30" cy="30" r="25" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" /><circle cx="30" cy="30" r="25" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="157" strokeDashoffset="94" transform="rotate(-90 30 30)" /></svg>
-                  <span className="progress-percent">40%</span>
-                </div>
-              </div>
+          <div className="lc-progress-card">
+            <div className="lc-progress-ring">
+              <svg width="56" height="56"><circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="4" /><circle cx="28" cy="28" r="24" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="151" strokeDashoffset="91" transform="rotate(-90 28 28)" /></svg>
+              <span className="lc-progress-ring-pct">40%</span>
             </div>
-            <div className="course-details">
-              <div className="course-meta-top"><span className="course-category">Risk Management</span><span className="course-time">6 hours</span></div>
-              <h3 className="course-name">Risk Management Strategies</h3>
-              <p className="course-instructor"><i className="bi bi-person" /> Taught by Sarah Miller, FRM</p>
-              <div className="course-progress-bar">
-                <div className="progress-bar-small"><div className="progress-fill" style={{ width: '40%' }} /></div>
-                <span className="progress-text">7 of 18 lessons completed</span>
-              </div>
-              <div className="course-actions">
-                <button className="btn-continue" type="button"><i className="bi bi-play-circle" /> Continue Learning</button>
-                <button className="btn-secondary-small" type="button"><i className="bi bi-download" /> Download Materials</button>
-              </div>
+            <div className="lc-progress-card-info">
+              <h3 className="lc-progress-card-title">Risk Management Strategies</h3>
+              <p className="lc-progress-card-meta">Risk Management · 6 hours · 7 of 18 lessons completed</p>
+            </div>
+            <div className="lc-progress-card-actions">
+              <button className="lc-continue-btn" type="button"><i className="bi bi-play-circle" /> Continue</button>
+              <button className="lc-download-btn" type="button"><i className="bi bi-download" /> Materials</button>
             </div>
           </div>
         </div>
-        <h2 className="section-title">Completed Courses</h2>
+        <h2 className="lc-section-title">Completed Courses</h2>
         <div className="courses-grid-small">
           <div className="course-card-small completed">
             <div className="completion-badge"><i className="bi bi-check-circle-fill" /></div>
@@ -244,7 +239,7 @@ export default function LearningCenterPage() {
       </div>
 
       <div className={`tab-content ${activeTab === 'skills' ? 'active' : ''}`} data-content="skills">
-        <h2 className="section-title">Your Skills</h2>
+        <h2 className="lc-section-title">Your Skills</h2>
         <div className="skills-grid">
           <div className="skill-card mastered">
             <div className="skill-header"><div className="skill-icon"><i className="bi bi-graph-up" /></div><span className="skill-level">Mastered</span></div>
@@ -274,7 +269,7 @@ export default function LearningCenterPage() {
       </div>
 
       <div className={`tab-content ${activeTab === 'badges' ? 'active' : ''}`} data-content="badges">
-        <h2 className="section-title">Your Badges (12 Earned)</h2>
+        <h2 className="lc-section-title">Your Badges (12 Earned)</h2>
         <div className="badges-grid">
           <div className="badge-card earned">
             <div className="badge-icon gold"><i className="bi bi-trophy-fill" /></div>
@@ -319,15 +314,23 @@ export default function LearningCenterPage() {
       </div>
 
       <div className={`tab-content ${activeTab === 'browse' ? 'active' : ''}`} data-content="browse">
-        <h2 className="section-title">Browse All Courses</h2>
-        <p className="muted-text">Explore our full catalog of courses. Use the Learning Opportunities sections on each research page to see topic-specific recommendations.</p>
-        <div className="courses-grid">
+        <h2 className="lc-section-title">Browse All Courses</h2>
+        <p className="lc-muted-text">Explore our full catalog of courses. Use the Learning Opportunities sections on each research page to see topic-specific recommendations.</p>
+        <div className="lc-courses-grid">
           {COURSE_SUMMARIES.map((course) => (
-            <Link key={course.id} href={`/learning-center/${course.id}`} className="course-card">
-              <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> {course.stats.duration}</span></div>
-              <h4 className="course-title">{course.title}</h4>
-              <p className="course-description">{course.subtitle}</p>
-              <div className="course-footer"><span className="course-level">{course.category}</span><span className="enroll-btn">View Course</span></div>
+            <Link key={course.id} href={`/learning-center/${course.id}`} className="lc-course-card">
+              <div className="lc-course-card-header">
+                <span className="lc-course-badge">Course</span>
+                <span className="lc-course-hours"><i className="bi bi-clock" /> {course.stats.duration}</span>
+              </div>
+              <h4 className="lc-course-card-title">{course.title}</h4>
+              <p className="lc-course-card-desc">{course.subtitle}</p>
+              <div className="lc-course-card-footer">
+                <div className="lc-course-card-tags">
+                  <span className="lc-course-tag">{course.category}</span>
+                </div>
+                <span className="lc-course-card-link">View Course <i className="bi bi-arrow-right" /></span>
+              </div>
             </Link>
           ))}
         </div>
