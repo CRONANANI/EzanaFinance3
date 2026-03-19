@@ -138,12 +138,12 @@ export function FeaturesSection() {
   const communityPosts = COMMUNITY_DATA[communityView] || COMMUNITY_DATA.trending;
 
   const FEATURE_CARDS = [
-    { title: 'Congressional Trading', desc: 'Track real-time congressional stock trades with alerts, filters, and portfolio analysis. See exactly what politicians are buying and selling.', href: '/inside-the-capitol', icon: 'bi-building' },
-    { title: 'Portfolio Analytics', desc: 'Real-time portfolio tracking with P&L, risk scoring, dividend tracking, and benchmark comparison against S&P 500 and NASDAQ.', href: '/home-dashboard', icon: 'bi-graph-up-arrow' },
-    { title: 'Market Intelligence', desc: 'Government contracts, lobbying activity, and patent momentum data correlated with stock movements for insider-level insights.', href: '/company-research', icon: 'bi-activity' },
-    { title: 'Real-Time Alerts', desc: 'Instant notifications when politicians you follow make trades or when your portfolio triggers risk alerts and price targets.', href: '/watchlist', icon: 'bi-bell' },
-    { title: 'Community Insights', desc: 'Connect with investors following similar strategies. Share analysis, discuss trades, and learn from the community\'s collective intelligence.', href: '/community', icon: 'bi-people' },
-    { title: 'Advanced Analytics', desc: 'Professional-grade metrics including Sharpe ratio, beta analysis, volatility scoring, and sector exposure with export capabilities.', href: '/for-the-quants', icon: 'bi-bar-chart' },
+    { title: 'Congressional Trading', desc: 'Track real-time congressional stock trades with alerts, filters, and portfolio analysis. See exactly what politicians are buying and selling.', href: '/auth/login', icon: 'bi-building' },
+    { title: 'Portfolio Analytics', desc: 'Real-time portfolio tracking with P&L, risk scoring, dividend tracking, and benchmark comparison against S&P 500 and NASDAQ.', href: '/auth/login', icon: 'bi-graph-up-arrow' },
+    { title: 'Market Intelligence', desc: 'Government contracts, lobbying activity, and patent momentum data correlated with stock movements for insider-level insights.', href: '/auth/login', icon: 'bi-activity' },
+    { title: 'Real-Time Alerts', desc: 'Instant notifications when politicians you follow make trades or when your portfolio triggers risk alerts and price targets.', href: '/auth/login', icon: 'bi-bell' },
+    { title: 'Community Insights', desc: 'Connect with investors following similar strategies. Share analysis, discuss trades, and learn from the community\'s collective intelligence.', href: '/auth/login', icon: 'bi-people' },
+    { title: 'Advanced Analytics', desc: 'Professional-grade metrics including Sharpe ratio, beta analysis, volatility scoring, and sector exposure with export capabilities.', href: '/auth/login', icon: 'bi-bar-chart' },
   ];
 
   return (
@@ -216,7 +216,7 @@ export function FeaturesSection() {
                 <div className="stat-item"><span className="stat-value">10+</span><span className="stat-label">Asset Classes</span></div>
                 <div className="stat-item"><span className="stat-value">24/7</span><span className="stat-label">Market Data</span></div>
               </div>
-              <Link href="/home-dashboard" className="feature-cta"><span>See Portfolio Tools</span><i className="bi bi-arrow-right" /></Link>
+              <Link href="/auth/login" className="feature-cta"><span>See Portfolio Tools</span><i className="bi bi-arrow-right" /></Link>
             </div>
           </div>
         </div>
@@ -285,7 +285,7 @@ export function FeaturesSection() {
                 <div className="stat-item"><span className="stat-value">535</span><span className="stat-label">Congress Members</span></div>
                 <div className="stat-item"><span className="stat-value">Real-time</span><span className="stat-label">Updates</span></div>
               </div>
-              <Link href="/inside-the-capitol" className="feature-cta"><span>Explore Congressional Trading</span><i className="bi bi-arrow-right" /></Link>
+              <Link href="/auth/login" className="feature-cta"><span>Explore Congressional Trading</span><i className="bi bi-arrow-right" /></Link>
             </div>
           </div>
         </div>

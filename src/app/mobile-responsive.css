@@ -628,13 +628,13 @@ body {
   /* Features grid */
   .features-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
     margin-bottom: 3rem;
   }
 
   .feature-card {
     height: auto;
-    min-height: auto;
+    min-height: 200px;
   }
 
   /* Feature blocks stack */
