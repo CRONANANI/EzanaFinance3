@@ -347,6 +347,40 @@
   cursor: not-allowed;
 }
 
+.settings-input-row {
+  display: flex;
+  align-items: center;
+}
+
+.settings-input-prefix {
+  padding: 0.625rem 0 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #d4a853;
+  background: rgba(212, 168, 83, 0.04);
+  border: 1px solid rgba(212, 168, 83, 0.1);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+}
+
+.settings-input-row .settings-input {
+  border-radius: 0 10px 10px 0;
+}
+
+.settings-field-hint {
+  font-size: 0.5625rem;
+  color: #4b5563;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.settings-field-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+  display: block;
+}
+
 textarea.settings-input {
   min-height: 100px;
   resize: vertical;

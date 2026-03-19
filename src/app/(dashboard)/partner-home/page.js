@@ -1,9 +1,13 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { usePartner } from '@/contexts/PartnerContext';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import { BadgeRow } from '@/components/partner/BadgeDisplay';
 import '../partner.css';
+import '@/components/partner/badges.css';
 
 const QUICK_LINKS = [
   { href: '/partner-dashboard', icon: 'bi-speedometer2', label: 'Dashboard', desc: 'Revenue, copiers, and performance', color: '#10b981' },
@@ -31,8 +35,35 @@ function getGreeting() {
 export default function PartnerHomePage() {
   const { user } = useAuth();
   const { partnerRole } = usePartner();
+  const [profile, setProfile] = useState(null);
+  const [earnedBadges, setEarnedBadges] = useState([]);
 
-  const name = user?.user_metadata?.first_name
+  const getToken = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  }, []);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const [profileRes, badgesRes] = await Promise.all([
+          fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/partner/badges', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const profileData = await profileRes.json();
+        const badgesData = await badgesRes.json();
+        setProfile(profileData.profile);
+        setEarnedBadges(badgesData.earned || []);
+      } catch {}
+    };
+    fetchProfile();
+  }, [getToken]);
+
+  const displayName = profile?.username
+    || profile?.display_name
+    || user?.user_metadata?.first_name
     || user?.user_metadata?.full_name?.split(' ')[0]
     || user?.email?.split('@')[0]
     || 'Partner';
@@ -40,13 +71,13 @@ export default function PartnerHomePage() {
   return (
     <div className="ptr-page">
       <div className="ptr-hero">
-        <div className="ptr-hero-content">
+        <div className="ptr-hero-content" style={{ flex: 1 }}>
           <div className="ptr-hero-badge-row">
             <span className="ptr-verified-badge">
               <i className="bi bi-patch-check-fill" /> Verified {partnerRole === 'creator' ? 'Creator' : partnerRole === 'trader' ? 'Trader' : 'Partner'}
             </span>
           </div>
-          <h1 className="ptr-hero-title">{getGreeting()}, {name}</h1>
+          <h1 className="ptr-hero-title">{getGreeting()}, {displayName}</h1>
           <p className="ptr-hero-sub">Welcome to your Partner Hub. Manage your strategies, grow your audience, and track your earnings.</p>
 
           <div className="ptr-hero-stats">
@@ -68,6 +99,20 @@ export default function PartnerHomePage() {
             </div>
           </div>
         </div>
+
+        <div className="ptr-hero-avatar-section">
+          <BadgeRow badges={earnedBadges} />
+          <div className="ptr-hero-avatar">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt={displayName} />
+            ) : (
+              <span className="ptr-hero-avatar-initials">
+                {(displayName || 'P')[0].toUpperCase()}
+              </span>
+            )}
+          </div>
+        </div>
+
         <div className="ptr-hero-glow" />
       </div>
 

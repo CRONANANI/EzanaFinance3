@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { BadgesModal } from '@/components/partner/BadgeDisplay';
 import '../partner.css';
+import '@/components/partner/badges.css';
 
 const MAX_CHARS = 280;
 const EMOJIS = ['😀','😊','👍','❤️','🔥','📈','💰','🎯','✅','🚀','💡','📊','⭐','🙌','💪','🎉','🤝','📉','💎','🏆'];
@@ -69,7 +72,13 @@ const COPIER_MESSAGES = [
 export default function PartnerCommunityPage() {
   const [newPost, setNewPost] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
+  const [badgesOpen, setBadgesOpen] = useState(false);
   const emojiAnchorRef = useRef(null);
+
+  const getToken = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  }, []);
 
   const len = newPost.length;
   const pct = (len / MAX_CHARS) * 100;
@@ -205,6 +214,8 @@ export default function PartnerCommunityPage() {
           </div>
         </div>
       )}
+
+      <BadgesModal isOpen={badgesOpen} onClose={() => setBadgesOpen(false)} getToken={getToken} />
     </div>
   );
 }

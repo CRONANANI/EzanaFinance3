@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { usePartner } from '@/contexts/PartnerContext';
+import { supabase } from '@/lib/supabase';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -115,6 +117,55 @@ export function MyDetailsPanel({ onSave }) {
 
 export function ProfilePanel({ onSave }) {
   const [publicProfile, setPublicProfile] = useState(true);
+  const [username, setUsername] = useState('');
+  const [usernameSaving, setUsernameSaving] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+  const { isPartner } = usePartner();
+
+  const getToken = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  }, []);
+
+  useEffect(() => {
+    if (isPartner) {
+      const fetchProfile = async () => {
+        const token = await getToken();
+        if (!token) return;
+        try {
+          const res = await fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } });
+          const data = await res.json();
+          setUsername(data.profile?.username || '');
+        } catch {}
+      };
+      fetchProfile();
+    }
+  }, [isPartner, getToken]);
+
+  const handleSaveUsername = async () => {
+    if (!isPartner) return;
+    setUsernameError('');
+    setUsernameSaving(true);
+    try {
+      const token = await getToken();
+      const res = await fetch('/api/partner/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ username: username || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setUsernameError(data.error || 'Update failed');
+        return;
+      }
+      onSave?.();
+    } catch {
+      setUsernameError('Update failed');
+    } finally {
+      setUsernameSaving(false);
+    }
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -122,6 +173,29 @@ export function ProfilePanel({ onSave }) {
         <p className="settings-panel-desc">Control how others see your public profile.</p>
       </div>
       <div className="settings-section">
+        {isPartner && (
+          <div className="settings-row single">
+            <div className="settings-field">
+              <label className="settings-label">Platform Username</label>
+              <div className="settings-input-row">
+                <span className="settings-input-prefix">@</span>
+                <input
+                  type="text"
+                  className="settings-input"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  placeholder="your_username"
+                  maxLength={24}
+                />
+              </div>
+              <span className="settings-field-hint">3-24 characters. Letters, numbers, underscores only. This appears on your hero card and public profile.</span>
+              {usernameError && <span className="settings-field-error">{usernameError}</span>}
+              <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={handleSaveUsername} disabled={usernameSaving}>
+                {usernameSaving ? 'Saving...' : 'Save username'}
+              </button>
+            </div>
+          </div>
+        )}
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Public profile</span>
