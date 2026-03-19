@@ -900,9 +900,12 @@ body:has(.landing-page) {
     color: #10b981 !important;
     font-size: 0.9375rem;
     line-height: 1.6;
-    text-align: center;
-    max-width: none;
-    margin: 0.9rem auto 1.5rem;
+    text-align: center !important;
+    max-width: 620px;
+    margin: 0.9rem auto 1.5rem !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block;
     background: none !important;
     border: none !important;
     padding: 0 !important;
@@ -1049,6 +1052,14 @@ body:has(.landing-page) {
     width: 100%;
     max-width: 100%;
     flex-shrink: 0;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    text-align: left !important;
 }
 
 .globe-card-v-0 { align-self: flex-start; }
@@ -1091,17 +1102,19 @@ body:has(.landing-page) {
 }
 
 .globe-alert-title {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #f8fafc;
-    white-space: normal;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin: 0 0 0.25rem;
+    text-align: left;
 }
 
 .globe-alert-text {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    line-height: 1.4;
-    white-space: normal;
+    font-size: 0.6875rem;
+    color: #8b949e;
+    margin: 0;
+    text-align: left;
+    white-space: nowrap;
 }
 
 .globe-alert-time {
