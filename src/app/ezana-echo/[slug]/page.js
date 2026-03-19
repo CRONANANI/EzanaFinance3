@@ -36,6 +36,101 @@ function ReadingProgressBar() {
 }
 
 const ARTICLES = {
+  'the-45-day-loophole-congressional-trade-disclosure': {
+    title: 'The 45-Day Loophole: Why Congressional Trade Disclosure Must Happen in Real Time',
+    category: 'Politics',
+    author: 'Ezana Finance Editorial',
+    date: '15 Mar 2025',
+    readTime: '8 min read',
+    content: (
+      <>
+        <p className="ezana-article-lead">
+          In the time it takes a member of Congress to disclose a stock trade, the entire market can move. A company can report earnings, a sector can collapse, an industry can be reshaped by regulation. And under current law, that delay is not just permitted — it is protected.
+        </p>
+        <p>
+          The STOCK Act of 2012 was supposed to fix this. Signed into law by President Obama, it affirmed that members of Congress are not exempt from insider trading laws and mandated that they disclose securities transactions exceeding $1,000 within 45 days. Before the STOCK Act, lawmakers were only required to file annual disclosures — meaning the public might not learn about a suspicious trade for an entire year.
+        </p>
+        <p>Forty-five days was an improvement. But in 2026, it is a relic.</p>
+
+        <h2>The Delay Is the Problem</h2>
+        <p>
+          Every retail investor in America has their trades reported to FINRA in real time. When you buy a share of Apple on your brokerage app, the transaction is recorded, settled, and reportable within seconds. The infrastructure for instant disclosure exists. It has existed for years.
+        </p>
+        <p>
+          Members of Congress, meanwhile, operate under a system designed for paper filing cabinets. The 45-day window creates an information gap wide enough to drive a portfolio through. A lawmaker who sits on the Senate Banking Committee can trade shares of a financial institution, and the public will not know about it for more than six weeks. By then, the position may already be closed, the profit already realized, and the informational advantage already spent.
+        </p>
+        <p>
+          This is not a hypothetical problem. During the 117th Congress alone, 78 members violated even the STOCK Act&apos;s lenient 45-day requirement. The penalty for that violation is $200. Two hundred dollars. No member of Congress has ever been prosecuted for insider trading under the STOCK Act.
+        </p>
+
+        <h2>The Numbers Tell the Story</h2>
+        <p>
+          At Ezana Finance, we track every congressional trade disclosure. The patterns are consistent: trades cluster around committee hearings, regulatory announcements, and policy shifts. The timing is suspicious at a frequency that defies statistical coincidence.
+        </p>
+        <p>
+          During the government shutdown of early 2025, while federal employees missed paychecks and families navigated the loss of SNAP benefits, members of Congress executed nearly 200 trades representing between $3 million and $9 million in financial assets. The public learned about these trades weeks later.
+        </p>
+        <p>
+          When the disclosure finally arrives, the moment has passed. The informational advantage has been captured. The market has already priced in whatever the lawmaker knew when they placed the trade.
+        </p>
+
+        <h2>The Technology Argument</h2>
+        <p>
+          Proponents of the 45-day window often cite administrative burden — the idea that elected officials need time to compile and file paperwork. This argument has not aged well.
+        </p>
+        <p>
+          Brokerages already report every trade electronically. FINRA receives transaction data in milliseconds. The Consolidated Audit Trail, which the SEC mandated for tracking market activity, processes billions of events per day. The idea that a lawmaker&apos;s assistant cannot file a disclosure within one business day is not a technology problem. It is a political one.
+        </p>
+        <p>
+          Every modern brokerage, including the platforms that lawmakers themselves use to execute their trades, generates transaction records automatically. The data exists the moment the trade is placed. The only question is how long the public should be forced to wait before seeing it.
+        </p>
+        <p><strong>Our answer: one business day.</strong> Not 45 days. Not 30 days. Not even a week. One business day — the same standard that applies to corporate insiders reporting transactions under SEC Section 16.</p>
+
+        <h2>What Is Being Done</h2>
+        <p>
+          The 119th Congress has seen a surge of reform proposals. At least 25 bills or resolutions have been introduced seeking to tighten or eliminate the trading window. Two have advanced beyond committee referral.
+        </p>
+        <p>
+          The HONEST Act (S. 1498), reported by the Senate Homeland Security and Governmental Affairs Committee in December 2025, would prohibit members of Congress, their spouses, and dependents from owning or trading individual stocks entirely.
+        </p>
+        <p>
+          The Stop Insider Trading Act, introduced by House Administration Chairman Bryan Steil in January 2026, would ban the purchase of individual stocks and require seven days of public notice before any sale.
+        </p>
+        <p>
+          The Restore Trust in Congress Act proposes a full ban on stock trading by lawmakers, their spouses, and their dependents. It has bipartisan support, and public polling consistently shows approximately 86% of Americans across party lines support such a prohibition.
+        </p>
+        <p>
+          These are steps in the right direction. But they have been steps for years. The 117th Congress held hearings. The 118th Congress introduced bills. The 119th Congress has introduced more bills. None have been signed into law.
+        </p>
+
+        <h2>What We Are Calling For</h2>
+        <p>At Ezana Finance, we believe the minimum viable reform is straightforward:</p>
+        <ul>
+          <li><strong>One business day disclosure.</strong> Every trade by a member of Congress, their spouse, and their dependents should be publicly disclosed within one business day of execution. Not 45 days. Not 30. One. The technology exists. The precedent exists under SEC Section 16. The only barrier is political will.</li>
+          <li><strong>Real-time electronic filing.</strong> All disclosures should be filed electronically in a standardized, machine-readable format. No more PDF scans. No more handwritten forms. Structured data that researchers, journalists, and platforms like Ezana Finance can process immediately and make accessible to every American.</li>
+          <li><strong>Meaningful penalties.</strong> The current $200 fine for late disclosure is not a deterrent — it is a parking ticket. Penalties should scale with the transaction value. Repeated violations should trigger mandatory referral to the Department of Justice.</li>
+          <li><strong>Full ban as the long-term goal.</strong> While one-day disclosure is the minimum, we support an outright ban on individual stock trading by members of Congress and their immediate families during their term of office. If you shape the rules that govern markets, you should not be a player in those markets.</li>
+        </ul>
+
+        <h2>Why This Matters to You</h2>
+        <p>
+          If you are reading this, you are likely someone who pays attention to markets. You may track congressional trades through our platform. You may have noticed the patterns yourself.
+        </p>
+        <p>
+          The 45-day window does not just disadvantage retail investors. It corrodes trust in democratic institutions. Every time a senator discloses a perfectly-timed trade six weeks after the fact, it reinforces the perception that the system is rigged — that there are two sets of rules, and yours is the worse one.
+        </p>
+        <p>Markets function on trust. Democracies function on trust. The disclosure window erodes both.</p>
+
+        <h2>How You Can Help</h2>
+        <p>This is not a partisan issue. Eighty-six percent of Americans agree. Lawmakers on both sides of the aisle have introduced reform bills. The infrastructure for real-time disclosure already exists. What is missing is pressure.</p>
+        <ul>
+          <li><strong>Contact your representatives.</strong> Tell them you support one-business-day disclosure for congressional stock trades. Reference the bills already in play: the HONEST Act (S. 1498), the STOCK Act 2.0 (H.R. 3779), or the Restore Trust in Congress Act.</li>
+          <li><strong>Share this article.</strong> The more people who understand the 45-day loophole, the harder it becomes to defend.</li>
+          <li><strong>Keep watching the data.</strong> We will keep tracking every trade, every disclosure, every delay. Because transparency should not be a 45-day afterthought. It should be the default.</li>
+        </ul>
+      </>
+    ),
+  },
   'oil-assets-surge': {
     title: '7 assets that historically surge when oil prices spike',
     category: 'Energy',

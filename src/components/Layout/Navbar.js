@@ -284,6 +284,10 @@ export function Navbar() {
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
           </Link>
+          <Link href="/ezana-echo" className={`nav-link ${pathname.includes('ezana-echo') ? 'active' : ''}`} data-page="ezana-echo" onClick={() => setMobileMenuOpen(false)}>
+            <i className="bi bi-newspaper"></i>
+            <span>Ezana Echo</span>
+          </Link>
         </div>
         <div className="nav-actions">
           <ThemeToggle />
