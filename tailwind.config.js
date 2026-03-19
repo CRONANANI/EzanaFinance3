@@ -72,5 +72,6 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require('lightswind/plugin'),require("tailwindcss-animate")],
 };

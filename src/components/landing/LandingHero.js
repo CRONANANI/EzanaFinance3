@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
+import { AuroraTextEffect } from '@/components/lightswind/aurora-text-effect';
 
 export function LandingHero() {
   useEffect(() => {
@@ -25,9 +26,27 @@ export function LandingHero() {
   return (
     <div className="content-container hero-container">
       <div className="hero-content">
-        <h1 className="hero-tagline">
-          <AnimatedWords text="Your Network Is Your Net Worth" baseDelay={0} staggerMs={40} />
-        </h1>
+        <AuroraTextEffect
+          text="Your network is your net worth"
+          as="h1"
+          fontSize="clamp(2rem, 5vw, 4rem)"
+          className="hero-tagline bg-transparent dark:bg-transparent w-full overflow-visible"
+          textClassName="font-extrabold tracking-tight text-white"
+          colors={{
+            first: "bg-emerald-400",
+            second: "bg-teal-300",
+            third: "bg-green-500",
+            fourth: "bg-emerald-600",
+          }}
+          blurAmount="blur-xl"
+          animationSpeed={{
+            border: 8,
+            first: 6,
+            second: 7,
+            third: 4,
+            fourth: 14,
+          }}
+        />
         <p className="hero-subtitle">
           <AnimatedWords
             text="The best investors don't beat the market by luck—they just have better information. Ezana gives you retail institutional-grade data: legendary investor portfolios, real-time congressional trades, hedge fund 13F filings, and advanced market analytics. Connect your brokerage accounts to our platform and receive the same insights that drive billions in Wall Street decisions. This isn't retail investing. This is how the professionals play."
