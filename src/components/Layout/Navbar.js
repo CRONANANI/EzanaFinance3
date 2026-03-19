@@ -19,7 +19,7 @@ export function Navbar() {
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
-  const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated) || isEzanaEcho;
+  const showLandingNav = isLanding || isHelpCenter || isEzanaEcho;
   const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo');
 
   const userNavItems = [
