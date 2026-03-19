@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function PartnerNavbar() {
   const pathname = usePathname();
@@ -68,6 +69,7 @@ export function PartnerNavbar() {
         </div>
 
         <div className="nav-actions">
+          <ThemeToggle />
           <Link href="/settings" className="nav-action-btn" title="Settings">
             <i className="bi bi-gear" />
           </Link>

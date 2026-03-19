@@ -327,19 +327,4 @@
   .ptr-course-stats-row { display: none; }
 }
 
-/* ══════════════════════════════
-   LIGHT MODE
-   ══════════════════════════════ */
-body.light-mode .ptr-hero { background: linear-gradient(135deg, rgba(212, 168, 83, 0.04) 0%, rgba(16, 185, 129, 0.01) 100%); }
-body.light-mode .ptr-hero-title { color: #111827; }
-body.light-mode .ptr-card { background: #fff; border-color: rgba(0, 0, 0, 0.06); }
-body.light-mode .ptr-card-header h3 { color: #111827; }
-body.light-mode .ptr-stat-value { color: #111827; }
-body.light-mode .ptr-hero-stat-value { color: #111827; }
-body.light-mode .ptr-link-label { color: #111827; }
-body.light-mode .ptr-strategy-name { color: #111827; }
-body.light-mode .ptr-copier-name { color: #111827; }
-body.light-mode .ptr-course-title { color: #111827; }
-body.light-mode .ptr-post-text { color: #1f2937; }
-body.light-mode .ptr-message-from { color: #111827; }
-body.light-mode .ptr-analytics-big { color: #b8922f; }
+/* Light mode overrides moved to partner-light-mode.css (imported in globals.css) */

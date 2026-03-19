@@ -15,6 +15,7 @@
 @import './nav-notifications.css';
 @import './ui-improvements.css';
 @import './light-mode.css';
+@import './partner-light-mode.css';
 
 @tailwind base;
 @tailwind components;

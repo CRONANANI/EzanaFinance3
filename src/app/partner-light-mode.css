@@ -1,0 +1,460 @@
+/* ═══════════════════════════════════════════════════════════
+   PARTNER PAGES — COMPLETE LIGHT MODE OVERRIDES
+   Gold (#d4a853) → deeper gold (#92731d) for white bg contrast.
+   NO emerald (#10b981) except for .positive (P&L profit).
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── NAVBAR ── */
+body.light-mode .partner-nav {
+  background: #fff;
+  border-bottom-color: rgba(146, 115, 29, 0.2);
+}
+body.light-mode .partner-nav .nav-link {
+  color: #64748b;
+}
+body.light-mode .partner-nav .nav-link:hover,
+body.light-mode .partner-nav .nav-link.active {
+  color: #92731d;
+}
+body.light-mode .partner-badge-nav {
+  color: #92731d;
+  background: rgba(184, 146, 47, 0.06);
+  border-color: rgba(184, 146, 47, 0.15);
+}
+body.light-mode .partner-nav .nav-action-btn {
+  color: #64748b;
+}
+body.light-mode .partner-nav .nav-action-btn:hover {
+  color: #92731d;
+  background: rgba(184, 146, 47, 0.06);
+}
+body.light-mode .partner-nav .theme-toggle-btn {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-mode .partner-nav .theme-toggle-btn:hover {
+  background: rgba(184, 146, 47, 0.06);
+  border-color: rgba(184, 146, 47, 0.2);
+}
+
+/* ── HERO ── */
+body.light-mode .ptr-hero {
+  background: linear-gradient(135deg, rgba(184, 146, 47, 0.06) 0%, transparent 100%);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-hero-glow {
+  opacity: 0.5;
+}
+body.light-mode .ptr-hero-title {
+  color: #0f172a;
+}
+body.light-mode .ptr-hero-sub {
+  color: #64748b;
+}
+body.light-mode .ptr-hero-stat-value {
+  color: #0f172a;
+}
+body.light-mode .ptr-hero-stat-label {
+  color: #94a3b8;
+}
+body.light-mode .ptr-verified-badge {
+  color: #92731d;
+  background: rgba(184, 146, 47, 0.08);
+  border-color: rgba(184, 146, 47, 0.15);
+}
+
+/* ── CARDS ── */
+body.light-mode .ptr-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-card-header {
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+body.light-mode .ptr-card-header h3 {
+  color: #0f172a;
+}
+body.light-mode .ptr-card-count {
+  color: #94a3b8;
+}
+
+/* ── QUICK LINKS ── */
+body.light-mode .ptr-link-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-link-card:hover {
+  border-color: rgba(184, 146, 47, 0.25);
+  background: rgba(184, 146, 47, 0.02);
+}
+body.light-mode .ptr-link-label {
+  color: #0f172a;
+}
+body.light-mode .ptr-link-desc {
+  color: #64748b;
+}
+body.light-mode .ptr-link-arrow {
+  color: #94a3b8;
+}
+body.light-mode .ptr-link-card:hover .ptr-link-arrow {
+  color: #92731d;
+}
+
+/* ── STAT CARDS ── */
+body.light-mode .ptr-stat-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-stat-card.ptr-stat-gold {
+  background: rgba(184, 146, 47, 0.04);
+  border-color: rgba(184, 146, 47, 0.2);
+}
+body.light-mode .ptr-stat-card > i {
+  color: #94a3b8;
+}
+body.light-mode .ptr-stat-card.ptr-stat-gold > i {
+  color: #92731d;
+}
+body.light-mode .ptr-stat-value {
+  color: #0f172a;
+}
+body.light-mode .ptr-stat-label {
+  color: #94a3b8;
+}
+body.light-mode .ptr-stat-mini {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-stat-mini-value {
+  color: #0f172a;
+}
+body.light-mode .ptr-stat-mini-label {
+  color: #94a3b8;
+}
+
+/* ── TABS ── */
+body.light-mode .ptr-tab {
+  color: #64748b;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-tab:hover {
+  color: #1e293b;
+}
+body.light-mode .ptr-tab.active {
+  background: rgba(184, 146, 47, 0.08);
+  color: #92731d;
+  border-color: rgba(184, 146, 47, 0.2);
+}
+body.light-mode .ptr-tab-badge {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ── TIMEFRAME BUTTONS ── */
+body.light-mode .ptr-tf-btn {
+  color: #64748b;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-tf-btn.active {
+  background: #92731d;
+  color: #fff;
+  border-color: #92731d;
+}
+
+/* ── BUTTONS ── */
+body.light-mode .ptr-btn-primary {
+  background: linear-gradient(135deg, #b8922f, #92731d);
+  color: #fff;
+}
+body.light-mode .ptr-btn-sm {
+  color: #92731d;
+  background: rgba(184, 146, 47, 0.06);
+  border-color: rgba(184, 146, 47, 0.15);
+}
+body.light-mode .ptr-btn-sm:hover {
+  background: rgba(184, 146, 47, 0.1);
+}
+
+/* ── PAGE HEADER ── */
+body.light-mode .ptr-page-title {
+  color: #0f172a;
+}
+
+/* ── ACTIVITY ── */
+body.light-mode .ptr-activity-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-activity-text {
+  color: #1e293b;
+}
+body.light-mode .ptr-activity-text strong {
+  color: #92731d;
+}
+body.light-mode .ptr-activity-time {
+  color: #94a3b8;
+}
+body.light-mode .ptr-follower-avatar {
+  background: rgba(184, 146, 47, 0.08);
+  color: #92731d;
+}
+
+/* ── STRATEGIES ── */
+body.light-mode .ptr-strategy-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-strategy-name {
+  color: #0f172a;
+}
+body.light-mode .ptr-strategy-meta {
+  color: #94a3b8;
+}
+body.light-mode .ptr-strategy-return-mo {
+  color: #94a3b8;
+}
+
+/* ── COPIERS ── */
+body.light-mode .ptr-copier-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-copier-rank {
+  background: rgba(184, 146, 47, 0.12);
+  color: #92731d;
+}
+body.light-mode .ptr-copier-name {
+  color: #0f172a;
+}
+body.light-mode .ptr-copier-meta {
+  color: #94a3b8;
+}
+body.light-mode .ptr-copier-pnl-pct {
+  color: #94a3b8;
+}
+
+/* ── COMMISSIONS ── */
+body.light-mode .ptr-commission-item {
+  background: rgba(184, 146, 47, 0.04);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-commission-label {
+  color: #0f172a;
+}
+body.light-mode .ptr-commission-rate {
+  color: #92731d;
+}
+body.light-mode .ptr-commission-earned {
+  color: #0f172a;
+}
+body.light-mode .ptr-payout-next {
+  background: rgba(184, 146, 47, 0.04);
+  border-top-color: rgba(0, 0, 0, 0.04);
+  color: #64748b;
+}
+body.light-mode .ptr-payout-next strong {
+  color: #92731d;
+}
+body.light-mode .ptr-countdown {
+  color: #92731d;
+}
+
+/* ── TABLE ── */
+body.light-mode .ptr-table th {
+  color: #94a3b8;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-table td {
+  color: #1e293b;
+  border-bottom-color: rgba(0, 0, 0, 0.03);
+}
+body.light-mode .ptr-table-amount {
+  color: #059669;
+}
+body.light-mode .ptr-status-badge.green {
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+}
+
+/* ── COMPOSE ── */
+body.light-mode .ptr-compose {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-compose-input {
+  background: #f8fafb;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+}
+body.light-mode .ptr-compose-input:focus {
+  border-color: rgba(184, 146, 47, 0.4);
+}
+body.light-mode .ptr-compose-input::placeholder {
+  color: #94a3b8;
+}
+body.light-mode .ptr-compose-tool {
+  color: #94a3b8;
+}
+body.light-mode .ptr-compose-tool:hover {
+  color: #92731d;
+}
+body.light-mode .ptr-char-count {
+  color: #94a3b8;
+}
+body.light-mode .ptr-emoji-picker {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+body.light-mode .ptr-emoji-btn:hover {
+  background: rgba(184, 146, 47, 0.08);
+}
+
+/* ── POSTS ── */
+body.light-mode .ptr-post {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-post-pinned {
+  color: #92731d;
+}
+body.light-mode .ptr-post-text {
+  color: #1e293b;
+}
+body.light-mode .ptr-post-time {
+  color: #94a3b8;
+}
+body.light-mode .ptr-post-stats span {
+  color: #94a3b8;
+}
+body.light-mode .ptr-post-stats span:hover {
+  color: #92731d;
+}
+
+/* ── MESSAGES ── */
+body.light-mode .ptr-message-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-message-item.unread {
+  background: rgba(184, 146, 47, 0.04);
+}
+body.light-mode .ptr-message-avatar {
+  background: rgba(184, 146, 47, 0.08);
+  color: #92731d;
+}
+body.light-mode .ptr-message-from {
+  color: #0f172a;
+}
+body.light-mode .ptr-message-time {
+  color: #94a3b8;
+}
+body.light-mode .ptr-message-text {
+  color: #64748b;
+}
+body.light-mode .ptr-unread-dot {
+  background: #92731d;
+}
+
+/* ── ANALYTICS ── */
+body.light-mode .ptr-analytics-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .ptr-analytics-card h4 {
+  color: #0f172a;
+}
+body.light-mode .ptr-analytics-big {
+  color: #92731d;
+}
+body.light-mode .ptr-analytics-label {
+  color: #94a3b8;
+}
+body.light-mode .ptr-analytics-sub {
+  color: #cbd5e1;
+}
+body.light-mode .ptr-analytics-bar-label {
+  color: #64748b;
+}
+body.light-mode .ptr-analytics-bar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-analytics-bar-fill {
+  background: linear-gradient(90deg, #b8922f, #92731d);
+}
+body.light-mode .ptr-analytics-bar-fill.blue {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+body.light-mode .ptr-analytics-bar-val {
+  color: #0f172a;
+}
+
+/* ── COURSES ── */
+body.light-mode .ptr-course-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-course-icon {
+  background: rgba(167, 139, 250, 0.1);
+  color: #7c3aed;
+}
+body.light-mode .ptr-course-icon.draft {
+  background: rgba(184, 146, 47, 0.08);
+  color: #92731d;
+}
+body.light-mode .ptr-course-title {
+  color: #0f172a;
+}
+body.light-mode .ptr-course-meta {
+  color: #94a3b8;
+}
+body.light-mode .ptr-course-stat-val {
+  color: #0f172a;
+}
+body.light-mode .ptr-course-stat-lbl {
+  color: #94a3b8;
+}
+body.light-mode .ptr-draft-progress-bar {
+  background: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-draft-progress-fill {
+  background: linear-gradient(90deg, #b8922f, #92731d);
+}
+body.light-mode .ptr-draft-progress-pct {
+  color: #92731d;
+}
+
+/* ── REVIEWS ── */
+body.light-mode .ptr-review-item {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .ptr-review-avatar {
+  background: rgba(184, 146, 47, 0.08);
+  color: #92731d;
+}
+body.light-mode .ptr-review-name {
+  color: #0f172a;
+}
+body.light-mode .ptr-review-course {
+  color: #94a3b8;
+}
+body.light-mode .ptr-review-rating {
+  color: #b8922f;
+}
+body.light-mode .ptr-review-text {
+  color: #64748b;
+}
+body.light-mode .ptr-review-time {
+  color: #94a3b8;
+}
+
+/* ── CARD BADGE ── */
+body.light-mode .ptr-card-badge {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.12);
+}
+
+/* ── PAGE ── */
+body.light-mode .ptr-page {
+  background: #f8fafb;
+}
+
+/* P&L positive stays green (universal profit indicator) */
+body.light-mode .ptr-strategy-return-total.positive,
+body.light-mode .ptr-copier-pnl .positive,
+body.light-mode .ptr-stat-change.positive {
+  color: #059669;
+}
