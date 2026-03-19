@@ -5,51 +5,35 @@ import Link from 'next/link';
 import {
   Search,
   BookOpen,
+  Activity,
   Wallet,
+  BarChart3,
   Shield,
   CreditCard,
+  Users,
+  GraduationCap,
   HelpCircle,
   ChevronRight,
   ArrowRight,
   FileText,
 } from 'lucide-react';
+import { USER_CATEGORIES } from '@/lib/help-center-content';
 
 const BASE = '/help-center/user';
 
-const CATEGORIES = [
-  { id: 'getting-started', title: 'Getting Started', description: 'Learn the basics of Ezana Finance', icon: BookOpen, articles: [
-    { title: 'How to create your account', slug: 'create-account' },
-    { title: 'Connecting your brokerage with Plaid', slug: 'connect-brokerage' },
-    { title: 'Understanding the dashboard', slug: 'dashboard-overview' },
-  ]},
-  { id: 'portfolio', title: 'Portfolio & Brokerage', description: 'Manage your investments and linked accounts', icon: Wallet, articles: [
-    { title: 'Syncing your portfolio data', slug: 'portfolio-sync' },
-    { title: 'Adding and removing brokerage accounts', slug: 'manage-accounts' },
-    { title: 'Understanding portfolio analytics', slug: 'portfolio-analytics' },
-  ]},
-  { id: 'account', title: 'Account & Security', description: 'Account settings and security', icon: Shield, articles: [
-    { title: 'Updating your profile', slug: 'update-profile' },
-    { title: 'Changing your password', slug: 'change-password' },
-    { title: 'Two-factor authentication', slug: '2fa' },
-  ]},
-  { id: 'billing', title: 'Billing & Subscriptions', description: 'Plans, payments, and invoices', icon: CreditCard, articles: [
-    { title: 'Subscription plans explained', slug: 'subscription-plans' },
-    { title: 'Upgrading or downgrading', slug: 'change-plan' },
-    { title: 'Billing and invoices', slug: 'billing' },
-  ]},
-];
+const ICON_MAP = { BookOpen, Activity, Wallet, BarChart3, Shield, CreditCard, Users, GraduationCap };
 
 const POPULAR_ARTICLES = [
-  { title: 'How do I connect my brokerage account?', slug: 'connect-brokerage' },
-  { title: 'What data does Ezana track from congressional trades?', slug: 'congressional-trades' },
-  { title: 'How do I cancel my subscription?', slug: 'cancel-subscription' },
+  { title: 'How do I connect my brokerage account?', slug: 'connecting-your-brokerage' },
+  { title: 'How does congressional trading data work?', slug: 'how-congressional-data-works' },
+  { title: 'How do I cancel my subscription?', slug: 'managing-subscription' },
   { title: 'Is my financial data secure?', slug: 'data-security' },
 ];
 
 const FAQ_ITEMS = [
-  { q: 'How do I connect my brokerage account?', a: 'Go to the Dashboard and click "Connect Brokerage". You\'ll be guided through Plaid\'s secure linking flow. We support most major US brokerages including Fidelity, Schwab, TD Ameritrade, and more.' },
-  { q: 'What is congressional trading data?', a: 'Ezana tracks publicly disclosed trades by members of Congress. This data is required by the STOCK Act and provides insight into how lawmakers invest based on their legislative work.' },
-  { q: 'Can I export my portfolio data?', a: 'Yes. From your Dashboard, use the Report button to export your portfolio summary as CSV. Full export options are available in Account Settings.' },
+  { q: 'How do I connect my brokerage account?', a: 'Go to Settings → Integrations and click Connect on any supported brokerage. You\'ll be redirected to Plaid\'s secure connection flow. Ezana receives read-only access to your positions and balances.' },
+  { q: 'What is congressional trading data?', a: 'Ezana aggregates publicly disclosed trades by members of Congress under the STOCK Act. Each trade shows the politician\'s name, party, chamber, stock traded, transaction type, estimated dollar range, and filing date.' },
+  { q: 'Can I export my portfolio data?', a: 'Yes. From your Dashboard, use the Report button to export your portfolio summary. The For The Quants section allows CSV export for advanced analytics.' },
   { q: 'How do I contact support?', a: 'Email us at contact@ezana.world or use the Contact button in the footer. We typically respond within 24 hours on business days.' },
 ];
 
@@ -77,8 +61,8 @@ export default function UserHelpCenterPage() {
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="mb-10 text-2xl font-semibold text-white">Browse by category</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
+          {USER_CATEGORIES.map((cat) => {
+            const Icon = ICON_MAP[cat.iconName] || BookOpen;
             return (
               <Link key={cat.id} href={`${BASE}/category/${cat.id}`} className="group rounded-xl border border-[rgba(16,185,129,0.1)] bg-[rgba(26,35,50,0.6)] p-6 transition-all hover:border-[#10b981]/30 hover:bg-[rgba(16,185,129,0.05)]">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[rgba(16,185,129,0.15)] text-[#10b981] transition-colors group-hover:bg-[rgba(16,185,129,0.25)]"><Icon className="h-6 w-6" /></div>

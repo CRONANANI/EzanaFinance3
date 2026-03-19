@@ -6,50 +6,25 @@ import {
   Search,
   BookOpen,
   Code2,
-  Link2,
+  FileText,
+  Repeat,
   LayoutDashboard,
   Users,
   HelpCircle,
   ChevronRight,
   ArrowRight,
-  FileText,
 } from 'lucide-react';
+import { PARTNER_CATEGORIES } from '@/lib/help-center-content';
 
 const BASE = '/help-center/partner';
 
-const CATEGORIES = [
-  { id: 'onboarding', title: 'Partner Onboarding', description: 'Get started as an Ezana partner', icon: BookOpen, articles: [
-    { title: 'How to join the partner program', slug: 'join-partner-program' },
-    { title: 'Partner eligibility requirements', slug: 'partner-eligibility' },
-    { title: 'Setting up your partner account', slug: 'partner-account-setup' },
-  ]},
-  { id: 'api', title: 'API Access', description: 'Integrate with Ezana APIs', icon: Code2, articles: [
-    { title: 'Getting your API keys', slug: 'api-keys' },
-    { title: 'API rate limits and usage', slug: 'api-rate-limits' },
-    { title: 'Webhook integration', slug: 'webhooks' },
-  ]},
-  { id: 'affiliate', title: 'Affiliate & Referral Tools', description: 'Referral links and tracking', icon: Link2, articles: [
-    { title: 'Creating referral links', slug: 'referral-links' },
-    { title: 'Tracking referrals and commissions', slug: 'referral-tracking' },
-    { title: 'Commission structure', slug: 'commission-structure' },
-  ]},
-  { id: 'dashboard', title: 'Partner Dashboard', description: 'Manage your partner account', icon: LayoutDashboard, articles: [
-    { title: 'Dashboard overview', slug: 'dashboard-overview' },
-    { title: 'Viewing analytics and performance', slug: 'partner-analytics' },
-    { title: 'Payout and payment methods', slug: 'payouts' },
-  ]},
-  { id: 'resources', title: 'Program Resources', description: 'Marketing and support materials', icon: Users, articles: [
-    { title: 'Brand guidelines and logos', slug: 'brand-guidelines' },
-    { title: 'Marketing materials', slug: 'marketing-materials' },
-    { title: 'Partner support contacts', slug: 'partner-support' },
-  ]},
-];
+const ICON_MAP = { BookOpen, FileText, Repeat, LayoutDashboard, Users, Code2 };
 
 const POPULAR_ARTICLES = [
   { title: 'How do I get my API keys?', slug: 'api-keys' },
-  { title: 'How are referral commissions calculated?', slug: 'commission-structure' },
-  { title: 'What are the eligibility requirements?', slug: 'partner-eligibility' },
-  { title: 'How do I track my referrals?', slug: 'referral-tracking' },
+  { title: 'How are partner commissions calculated?', slug: 'commission-structure' },
+  { title: 'How do I become a partner?', slug: 'becoming-a-partner' },
+  { title: 'How do I track my copiers?', slug: 'reading-metrics' },
 ];
 
 const FAQ_ITEMS = [
@@ -83,8 +58,8 @@ export default function PartnerHelpCenterPage() {
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="mb-10 text-2xl font-semibold text-white">Browse by category</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
+          {PARTNER_CATEGORIES.map((cat) => {
+            const Icon = ICON_MAP[cat.iconName] || BookOpen;
             return (
               <Link key={cat.id} href={`${BASE}/category/${cat.id}`} className="group rounded-xl border border-[rgba(16,185,129,0.1)] bg-[rgba(26,35,50,0.6)] p-6 transition-all hover:border-[#10b981]/30 hover:bg-[rgba(16,185,129,0.05)]">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[rgba(16,185,129,0.15)] text-[#10b981] transition-colors group-hover:bg-[rgba(16,185,129,0.25)]"><Icon className="h-6 w-6" /></div>

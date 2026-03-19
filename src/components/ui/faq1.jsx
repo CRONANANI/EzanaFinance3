@@ -10,34 +10,34 @@ import {
 
 const DEFAULT_ITEMS = [
   {
-    question: "What is Ezana Finance?",
+    question: "How does Ezana Finance know what politicians are trading before the news does?",
     answer:
-      "Ezana Finance is a comprehensive investment analytics platform that provides institutional-grade market intelligence and portfolio management tools to individual investors.",
+      "We aggregate data directly from official congressional financial disclosures filed with the Clerk of the House and Secretary of the Senate under the STOCK Act. Our system parses new filings within minutes of publication — often days or weeks before mainstream media picks them up. Every trade you see on the platform links back to the original government filing so you can verify it yourself.",
   },
   {
-    question: "How do I get started?",
+    question: "Is it legal to trade based on what members of Congress buy and sell?",
     answer:
-      "Click \"Sign Up\" to create your free account, complete onboarding, and start tracking congressional trades and market intelligence.",
+      "Yes. Congressional trade disclosures are public records made available under the STOCK Act of 2012. While members of Congress are prohibited from trading on nonpublic information, the public is free to view and act on their disclosed transactions. Ezana simply makes this public data easier to access, filter, and analyze — we do not provide investment advice.",
   },
   {
-    question: "How does congressional trading tracking work?",
+    question: "What happens to my data when I connect my brokerage account?",
     answer:
-      "We aggregate publicly disclosed congressional stock trades from STOCK Act filings. We monitor all 535 members, update in real-time, and provide advanced filtering and alerts.",
+      "Your brokerage connection is handled through Plaid and Alpaca — industry-standard infrastructure used by apps like Venmo, Robinhood, and Coinbase. Ezana never sees or stores your brokerage login credentials. We receive read-only access to your holdings and transactions for portfolio tracking. Your financial data is encrypted in transit and at rest, and you can disconnect your brokerage at any time from Settings.",
   },
   {
-    question: "Can I follow specific congress members?",
+    question: "How is Ezana different from free tools like Quiver Quantitative or Capitol Trades?",
     answer:
-      "Yes! Create custom watchlists of congress members, receive real-time alerts when they trade, and view their complete trading history.",
+      "Free congressional trade trackers show you raw data. Ezana turns that data into actionable intelligence. We combine congressional trades with hedge fund 13F filings, government contract awards, lobbying expenditures, and patent data — then correlate it all with market movements. Add real-time alerts, portfolio analytics, copy trading, community insights, and a full brokerage account, and you have an institutional-grade platform, not just a data table.",
   },
   {
-    question: "Do I need to connect my brokerage account?",
+    question: "What does the first 1,000 users get lifetime legacy access actually mean?",
     answer:
-      "No, it's optional. You can track congressional trades without linking accounts, enter holdings manually, or connect for automatic syncing.",
+      "The first 1,000 users who sign up during our early access period receive permanent access to all Individual plan features — forever. No monthly subscription, no annual renewal, no price increases. This includes real-time congressional alerts, full 13F filing access, legendary investor portfolios, unlimited watchlists, and priority support. Once the 1,000 spots are filled, the offer closes permanently.",
   },
   {
-    question: "What is the early access waitlist?",
+    question: "Can I actually execute trades directly on Ezana, or is it just a research tool?",
     answer:
-      "The first 1,000 users to sign up receive lifetime legacy access—no subscription, no limits. Join the waitlist to be notified at launch.",
+      "Both. Ezana is a full-featured platform. You can use our research tools — congressional trading data, company analysis, market intelligence — without ever placing a trade. But if you want to act on what you find, you can open a brokerage account directly within Ezana (powered by Alpaca Securities, a FINRA/SIPC member). Buy and sell stocks, invest fractional shares, copy partner strategies, and manage your portfolio all in one place. Your account is SIPC insured up to $500,000.",
   },
 ];
 

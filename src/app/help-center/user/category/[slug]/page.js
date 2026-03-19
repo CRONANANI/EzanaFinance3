@@ -3,48 +3,14 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, FileText } from 'lucide-react';
+import { USER_CATEGORIES } from '@/lib/help-center-content';
 
 const BASE = '/help-center/user';
-
-const CATEGORIES = {
-  'getting-started': {
-    title: 'Getting Started',
-    articles: [
-      { title: 'How to create your account', slug: 'create-account' },
-      { title: 'Connecting your brokerage with Plaid', slug: 'connect-brokerage' },
-      { title: 'Understanding the dashboard', slug: 'dashboard-overview' },
-    ],
-  },
-  portfolio: {
-    title: 'Portfolio & Brokerage',
-    articles: [
-      { title: 'Syncing your portfolio data', slug: 'portfolio-sync' },
-      { title: 'Adding and removing brokerage accounts', slug: 'manage-accounts' },
-      { title: 'Understanding portfolio analytics', slug: 'portfolio-analytics' },
-    ],
-  },
-  account: {
-    title: 'Account & Security',
-    articles: [
-      { title: 'Updating your profile', slug: 'update-profile' },
-      { title: 'Changing your password', slug: 'change-password' },
-      { title: 'Two-factor authentication', slug: '2fa' },
-    ],
-  },
-  billing: {
-    title: 'Billing & Subscriptions',
-    articles: [
-      { title: 'Subscription plans explained', slug: 'subscription-plans' },
-      { title: 'Upgrading or downgrading', slug: 'change-plan' },
-      { title: 'Billing and invoices', slug: 'billing' },
-    ],
-  },
-};
 
 export default function UserHelpCategoryPage() {
   const params = useParams();
   const slug = params?.slug;
-  const category = slug ? CATEGORIES[slug] : null;
+  const category = slug ? USER_CATEGORIES.find((c) => c.id === slug) : null;
 
   if (!category) {
     return (

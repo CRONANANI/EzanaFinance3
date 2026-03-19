@@ -3,56 +3,14 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, FileText } from 'lucide-react';
+import { PARTNER_CATEGORIES } from '@/lib/help-center-content';
 
 const BASE = '/help-center/partner';
-
-const CATEGORIES = {
-  onboarding: {
-    title: 'Partner Onboarding',
-    articles: [
-      { title: 'How to join the partner program', slug: 'join-partner-program' },
-      { title: 'Partner eligibility requirements', slug: 'partner-eligibility' },
-      { title: 'Setting up your partner account', slug: 'partner-account-setup' },
-    ],
-  },
-  api: {
-    title: 'API Access',
-    articles: [
-      { title: 'Getting your API keys', slug: 'api-keys' },
-      { title: 'API rate limits and usage', slug: 'api-rate-limits' },
-      { title: 'Webhook integration', slug: 'webhooks' },
-    ],
-  },
-  affiliate: {
-    title: 'Affiliate & Referral Tools',
-    articles: [
-      { title: 'Creating referral links', slug: 'referral-links' },
-      { title: 'Tracking referrals and commissions', slug: 'referral-tracking' },
-      { title: 'Commission structure', slug: 'commission-structure' },
-    ],
-  },
-  dashboard: {
-    title: 'Partner Dashboard',
-    articles: [
-      { title: 'Dashboard overview', slug: 'dashboard-overview' },
-      { title: 'Viewing analytics and performance', slug: 'partner-analytics' },
-      { title: 'Payout and payment methods', slug: 'payouts' },
-    ],
-  },
-  resources: {
-    title: 'Program Resources',
-    articles: [
-      { title: 'Brand guidelines and logos', slug: 'brand-guidelines' },
-      { title: 'Marketing materials', slug: 'marketing-materials' },
-      { title: 'Partner support contacts', slug: 'partner-support' },
-    ],
-  },
-};
 
 export default function PartnerHelpCategoryPage() {
   const params = useParams();
   const slug = params?.slug;
-  const category = slug ? CATEGORIES[slug] : null;
+  const category = slug ? PARTNER_CATEGORIES.find((c) => c.id === slug) : null;
 
   if (!category) {
     return (
