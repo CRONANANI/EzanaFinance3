@@ -71,7 +71,7 @@ export default function PartnerHomePage() {
   return (
     <div className="ptr-page">
       <div className="ptr-hero">
-        <div className="ptr-hero-content" style={{ flex: 1 }}>
+        <div className="ptr-hero-left">
           <div className="ptr-hero-badge-row">
             <span className="ptr-verified-badge">
               <i className="bi bi-patch-check-fill" /> Verified {partnerRole === 'creator' ? 'Creator' : partnerRole === 'trader' ? 'Trader' : 'Partner'}
@@ -79,7 +79,6 @@ export default function PartnerHomePage() {
           </div>
           <h1 className="ptr-hero-title">{getGreeting()}, {displayName}</h1>
           <p className="ptr-hero-sub">Welcome to your Partner Hub. Manage your strategies, grow your audience, and track your earnings.</p>
-
           <div className="ptr-hero-stats">
             <div className="ptr-hero-stat">
               <span className="ptr-hero-stat-value">$12,450</span>
@@ -100,8 +99,7 @@ export default function PartnerHomePage() {
           </div>
         </div>
 
-        <div className="ptr-hero-avatar-section">
-          <BadgeRow badges={earnedBadges} />
+        <div className="ptr-hero-right">
           <div className="ptr-hero-avatar">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt={displayName} />
@@ -111,6 +109,7 @@ export default function PartnerHomePage() {
               </span>
             )}
           </div>
+          <BadgeRow badges={earnedBadges} />
         </div>
 
         <div className="ptr-hero-glow" />

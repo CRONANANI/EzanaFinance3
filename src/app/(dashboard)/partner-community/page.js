@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { BadgesModal } from '@/components/partner/BadgeDisplay';
+import { BadgesModal, BadgeRow } from '@/components/partner/BadgeDisplay';
 import '../partner.css';
 import '@/components/partner/badges.css';
 
@@ -69,16 +69,46 @@ const COPIER_MESSAGES = [
   { from: 'Mark R.', text: 'Thanks for the dividend picks — already up 8%!', time: '1 day ago', unread: false },
 ];
 
+const SAMPLE_BADGES = [
+  { id: '1', badge_name: 'Verified Partner', badge_icon: 'bi-patch-check-fill', tier: 1, tier_name: 'Bronze', tier_color: '#cd7f32' },
+  { id: '2', badge_name: 'Echo Writer', badge_icon: 'bi-pencil-square', tier: 2, tier_name: 'Silver', tier_color: '#c0c0c0' },
+];
+
 export default function PartnerCommunityPage() {
   const [newPost, setNewPost] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
   const [badgesOpen, setBadgesOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [earnedBadges, setEarnedBadges] = useState([]);
   const emojiAnchorRef = useRef(null);
 
   const getToken = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token || null;
   }, []);
+
+  useEffect(() => {
+    const fetchPartnerData = async () => {
+      try {
+        const token = await getToken();
+        if (!token) return;
+        const [profileRes, badgesRes] = await Promise.all([
+          fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/partner/badges', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const profileData = await profileRes.json();
+        const badgesData = await badgesRes.json();
+        if (profileData.profile) setProfile(profileData.profile);
+        if (badgesData.earned?.length) setEarnedBadges(badgesData.earned);
+      } catch (err) {
+        console.error('Failed to load partner data:', err);
+      }
+    };
+    fetchPartnerData();
+  }, [getToken]);
+
+  const displayName = profile?.username || profile?.display_name || 'You';
+  const displayBadges = earnedBadges.length ? earnedBadges : SAMPLE_BADGES;
 
   const len = newPost.length;
   const pct = (len / MAX_CHARS) * 100;
@@ -92,19 +122,24 @@ export default function PartnerCommunityPage() {
     <div className="ptr-page">
       <div className="ptr-page-header">
         <h1 className="ptr-page-title">Community Hub</h1>
-        <div className="ptr-tab-group">
-          {[
-            { key: 'feed', label: 'Feed', icon: 'bi-newspaper' },
-            { key: 'messages', label: 'Messages', icon: 'bi-chat-dots' },
-            { key: 'analytics', label: 'Analytics', icon: 'bi-bar-chart' },
-          ].map((t) => (
-            <button key={t.key} className={`ptr-tab ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)}>
-              <i className={`bi ${t.icon}`} /> {t.label}
-              {t.key === 'messages' && COPIER_MESSAGES.filter(m => m.unread).length > 0 && (
-                <span className="ptr-tab-badge">{COPIER_MESSAGES.filter(m => m.unread).length}</span>
-              )}
-            </button>
-          ))}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="ptr-tab-group">
+            {[
+              { key: 'feed', label: 'Feed', icon: 'bi-newspaper' },
+              { key: 'messages', label: 'Messages', icon: 'bi-chat-dots' },
+              { key: 'analytics', label: 'Analytics', icon: 'bi-bar-chart' },
+            ].map((t) => (
+              <button key={t.key} className={`ptr-tab ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)}>
+                <i className={`bi ${t.icon}`} /> {t.label}
+                {t.key === 'messages' && COPIER_MESSAGES.filter(m => m.unread).length > 0 && (
+                  <span className="ptr-tab-badge">{COPIER_MESSAGES.filter(m => m.unread).length}</span>
+                )}
+              </button>
+            ))}
+          </div>
+          <button className="ptr-btn-sm" onClick={() => setBadgesOpen(true)}>
+            <i className="bi bi-award" /> Badges
+          </button>
         </div>
       </div>
 
@@ -137,6 +172,10 @@ export default function PartnerCommunityPage() {
             {RECENT_POSTS.map((post) => (
               <div key={post.id} className="ptr-post">
                 {post.pinned && <span className="ptr-post-pinned"><i className="bi bi-pin-fill" /> Pinned</span>}
+                <div className="ptr-post-author">
+                  <span className="ptr-post-author-name">{displayName}</span>
+                  <BadgeRow badges={displayBadges} />
+                </div>
                 <p className="ptr-post-text">{post.text}</p>
                 <div className="ptr-post-meta">
                   <span className="ptr-post-time">{post.time}</span>

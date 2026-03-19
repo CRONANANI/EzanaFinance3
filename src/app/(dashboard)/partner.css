@@ -32,9 +32,28 @@
   border: 1px solid rgba(212, 168, 83, 0.12); border-radius: 20px;
   margin-bottom: 1.5rem; overflow: hidden;
 }
-.ptr-hero-avatar-section {
-  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+/* Left side: text content, takes up available space */
+.ptr-hero-left {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Right side: avatar + badges, centered in remaining space */
+.ptr-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   flex-shrink: 0;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.ptr-hero-right .badge-row {
+  justify-content: center;
 }
 .ptr-hero-avatar {
   width: 88px; height: 88px; border-radius: 50%;
@@ -58,7 +77,6 @@ body.light-mode .ptr-hero-avatar-initials { color: #92731d; }
   background: radial-gradient(circle, rgba(212, 168, 83, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
-.ptr-hero-content { position: relative; z-index: 1; }
 
 .ptr-hero-badge-row { margin-bottom: 0.75rem; }
 .ptr-verified-badge {
@@ -266,6 +284,9 @@ body.light-mode .ptr-hero-avatar-initials { color: #92731d; }
 /* ── Posts ── */
 .ptr-post { padding: 1.25rem; border-bottom: 1px solid rgba(212, 168, 83, 0.04); }
 .ptr-post-pinned { font-size: 0.5625rem; font-weight: 700; color: #d4a853; display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.5rem; }
+.ptr-post-author { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.75rem; }
+.ptr-post-author-name { font-size: 0.8125rem; font-weight: 700; color: #d4a853; }
+.ptr-post-author .badge-row { justify-content: flex-start; }
 .ptr-post-text { font-size: 0.875rem; color: #e2e8f0; line-height: 1.6; margin: 0 0 0.75rem; }
 .ptr-post-meta { display: flex; justify-content: space-between; align-items: center; }
 .ptr-post-time { font-size: 0.625rem; color: #4b5563; }
@@ -341,7 +362,7 @@ body.light-mode .ptr-hero-avatar-initials { color: #92731d; }
 @media (max-width: 768px) {
   .ptr-page { padding: 1rem; }
   .ptr-hero { flex-direction: column; text-align: center; }
-  .ptr-hero-avatar-section { order: -1; }
+  .ptr-hero-right { order: -1; padding: 0; }
   .ptr-hero-stats { flex-wrap: wrap; gap: 1.25rem; justify-content: center; }
   .ptr-hero-title { font-size: 1.5rem; }
   .ptr-links-grid { grid-template-columns: 1fr; }
