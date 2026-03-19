@@ -434,7 +434,6 @@ body:has(.landing-page) {
 
 /* Hero Tagline (main title) - Single line, fluid scaling - same green as waitlist intro */
 .hero-tagline {
-    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     font-size: 2.625rem;
     font-size: clamp(1.0125rem, 3.75vw, 2.625rem);
     font-weight: 700;
