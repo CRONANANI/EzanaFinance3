@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { BadgesModal, BadgeRow } from '@/components/partner/BadgeDisplay';
+import { BadgeRow } from '@/components/partner/BadgeDisplay';
 import '../partner.css';
 import '@/components/partner/badges.css';
 
@@ -77,9 +77,13 @@ const SAMPLE_BADGES = [
 export default function PartnerCommunityPage() {
   const [newPost, setNewPost] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
-  const [badgesOpen, setBadgesOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [earnedBadges, setEarnedBadges] = useState([]);
+  const [badgeCategories, setBadgeCategories] = useState({});
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [totalAvailable, setTotalAvailable] = useState(0);
+  const [badgeFilter, setBadgeFilter] = useState('All');
+  const [badgesLoading, setBadgesLoading] = useState(true);
   const emojiAnchorRef = useRef(null);
 
   const getToken = useCallback(async () => {
@@ -107,6 +111,27 @@ export default function PartnerCommunityPage() {
     fetchPartnerData();
   }, [getToken]);
 
+  useEffect(() => {
+    if (activeTab === 'badges') {
+      const fetchBadges = async () => {
+        setBadgesLoading(true);
+        try {
+          const token = await getToken();
+          const res = await fetch('/api/partner/badges', { headers: { Authorization: `Bearer ${token}` } });
+          const data = await res.json();
+          setBadgeCategories(data.categories || {});
+          setTotalEarned(data.totalEarned || 0);
+          setTotalAvailable(data.totalAvailable || 0);
+        } catch (err) {
+          console.error('Failed to load badges:', err);
+        } finally {
+          setBadgesLoading(false);
+        }
+      };
+      fetchBadges();
+    }
+  }, [activeTab, getToken]);
+
   const displayName = profile?.username || profile?.display_name || 'You';
   const displayBadges = earnedBadges.length ? earnedBadges : SAMPLE_BADGES;
 
@@ -122,24 +147,20 @@ export default function PartnerCommunityPage() {
     <div className="ptr-page">
       <div className="ptr-page-header">
         <h1 className="ptr-page-title">Community Hub</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div className="ptr-tab-group">
-            {[
-              { key: 'feed', label: 'Feed', icon: 'bi-newspaper' },
-              { key: 'messages', label: 'Messages', icon: 'bi-chat-dots' },
-              { key: 'analytics', label: 'Analytics', icon: 'bi-bar-chart' },
-            ].map((t) => (
-              <button key={t.key} className={`ptr-tab ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)}>
-                <i className={`bi ${t.icon}`} /> {t.label}
-                {t.key === 'messages' && COPIER_MESSAGES.filter(m => m.unread).length > 0 && (
-                  <span className="ptr-tab-badge">{COPIER_MESSAGES.filter(m => m.unread).length}</span>
-                )}
-              </button>
-            ))}
-          </div>
-          <button className="ptr-btn-sm" onClick={() => setBadgesOpen(true)}>
-            <i className="bi bi-award" /> Badges
-          </button>
+        <div className="ptr-tab-group">
+          {[
+            { key: 'feed', label: 'Feed', icon: 'bi-newspaper' },
+            { key: 'messages', label: 'Messages', icon: 'bi-chat-dots' },
+            { key: 'analytics', label: 'Analytics', icon: 'bi-bar-chart' },
+            { key: 'badges', label: 'Badges', icon: 'bi-award' },
+          ].map((t) => (
+            <button key={t.key} className={`ptr-tab ${activeTab === t.key ? 'active' : ''}`} onClick={() => setActiveTab(t.key)}>
+              <i className={`bi ${t.icon}`} /> {t.label}
+              {t.key === 'messages' && COPIER_MESSAGES.filter(m => m.unread).length > 0 && (
+                <span className="ptr-tab-badge">{COPIER_MESSAGES.filter(m => m.unread).length}</span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -254,7 +275,110 @@ export default function PartnerCommunityPage() {
         </div>
       )}
 
-      <BadgesModal isOpen={badgesOpen} onClose={() => setBadgesOpen(false)} getToken={getToken} />
+      {activeTab === 'badges' && (
+        <div className="ptr-badges-page">
+          <div className="ptr-card" style={{ marginBottom: '1.25rem' }}>
+            <div className="ptr-card-header">
+              <h3>Badges & Achievements</h3>
+              <span className="ptr-card-count">{totalEarned} of {totalAvailable} earned</span>
+            </div>
+            <div style={{ padding: '1rem 1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1, height: '6px', background: 'rgba(212,168,83,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${totalAvailable ? (totalEarned / totalAvailable) * 100 : 0}%`, background: 'linear-gradient(90deg, #cd7f32, #d4a853, #b9f2ff)', borderRadius: '3px', transition: 'width 0.5s' }} />
+                </div>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#d4a853' }}>
+                  {totalAvailable ? Math.round((totalEarned / totalAvailable) * 100) : 0}%
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                {[
+                  { name: 'Bronze', color: '#cd7f32' },
+                  { name: 'Silver', color: '#c0c0c0' },
+                  { name: 'Gold', color: '#d4a853' },
+                  { name: 'Platinum', color: '#e5e4e2' },
+                  { name: 'Diamond', color: '#b9f2ff' },
+                ].map((t) => (
+                  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.5625rem', color: '#6b7280', fontWeight: 600 }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: t.color }} />
+                    <span>{t.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="ptr-tab-group" style={{ marginBottom: '1.25rem' }}>
+            {['All', ...Object.keys(badgeCategories)].map((cat) => (
+              <button key={cat} type="button" className={`ptr-tab ${badgeFilter === cat ? 'active' : ''}`} onClick={() => setBadgeFilter(cat)}>
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {badgesLoading ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280', fontSize: '0.875rem' }}>Loading badges...</div>
+          ) : (
+            <div className="ptr-badges-grid">
+              {(badgeFilter === 'All'
+                ? Object.values(badgeCategories).flat()
+                : badgeCategories[badgeFilter] || []
+              ).map((badge) => {
+                const tierStyles = {
+                  1: { border: '#cd7f32', bg: 'rgba(205,127,50,0.08)', glow: 'rgba(205,127,50,0.2)' },
+                  2: { border: '#c0c0c0', bg: 'rgba(192,192,192,0.08)', glow: 'rgba(192,192,192,0.2)' },
+                  3: { border: '#d4a853', bg: 'rgba(212,168,83,0.08)', glow: 'rgba(212,168,83,0.2)' },
+                  4: { border: '#e5e4e2', bg: 'rgba(229,228,226,0.08)', glow: 'rgba(229,228,226,0.25)' },
+                  5: { border: '#b9f2ff', bg: 'rgba(185,242,255,0.08)', glow: 'rgba(185,242,255,0.3)' },
+                };
+                const style = tierStyles[badge.tier] || tierStyles[1];
+
+                return (
+                  <div key={badge.id} className="ptr-card ptr-badge-card" style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    textAlign: 'center', padding: '1.25rem 0.75rem',
+                    opacity: badge.earned ? 1 : 0.5,
+                    transition: 'all 0.2s',
+                  }}>
+                    <div style={{
+                      width: '52px', height: '52px', borderRadius: '14px',
+                      border: `2px solid ${badge.earned ? style.border : 'rgba(107,114,128,0.2)'}`,
+                      background: badge.earned ? style.bg : 'rgba(107,114,128,0.04)',
+                      boxShadow: badge.earned ? `0 0 16px ${style.glow}` : 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1.25rem', marginBottom: '0.75rem',
+                    }}>
+                      <i className={`bi ${badge.badge_icon}`} style={{ color: badge.earned ? badge.tier_color : '#4b5563' }} />
+                    </div>
+                    <div style={{
+                      fontSize: '0.5rem', fontWeight: 800, textTransform: 'uppercase',
+                      letterSpacing: '0.1em', marginBottom: '0.25rem',
+                      color: badge.earned ? badge.tier_color : '#4b5563',
+                    }}>
+                      {badge.tier_name}
+                    </div>
+                    <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '0.25rem' }}>
+                      {badge.badge_name}
+                    </div>
+                    <div style={{ fontSize: '0.625rem', color: '#6b7280', lineHeight: 1.4, marginBottom: '0.375rem' }}>
+                      {badge.badge_description}
+                    </div>
+                    {badge.earned && badge.earnedAt ? (
+                      <div style={{ fontSize: '0.5rem', color: '#4b5563' }}>
+                        Earned {new Date(badge.earnedAt).toLocaleDateString()}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.5625rem', color: '#4b5563', display: 'flex', alignItems: 'center', gap: '0.25rem', justifyContent: 'center' }}>
+                        <i className="bi bi-lock-fill" /> Locked
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
