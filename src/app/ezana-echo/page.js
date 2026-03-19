@@ -22,6 +22,7 @@ const PINNED_ARTICLE = {
 const CATEGORIES = ['All', 'Markets', 'Investing', 'Trading', 'Crypto', 'Economy', 'Politics', 'Technology', 'Education', 'Energy', 'Congress', 'Portfolio', 'Insights'];
 
 const STATIC_ARTICLES = [
+  { slug: 'four-formulas-prediction-market-trading', title: 'The 4 Formulas That Separate Winning Prediction Market Traders From Everyone Else', excerpt: 'The top 0.04% of prediction market wallets capture 70% of all profits. The difference is four mathematical formulas and the discipline to use them.', category: 'Trading', author: 'Ezana Finance Editorial', date: 'Mar 2026', readTime: '12 min read', image: null },
   { slug: 'oil-assets-surge', title: '7 assets that historically surge when oil prices spike', excerpt: 'When crude prices rise, certain sectors and securities tend to outperform.', category: 'Energy', author: 'Ezana Research', date: '2 Mar 2025', readTime: '8 min read', image: null },
   { slug: 'hedge-fund-strategies-backtest', title: 'Top 7 beginner Hedge Fund strategies you can backtest', excerpt: 'Seven institutional strategies with backtesting formulas.', category: 'Markets', author: 'Ezana Research', date: '2 Mar 2025', readTime: '8 min read', image: null },
   { slug: 'sp500-returns-by-president', title: 'S&P 500 returns under different presidents', excerpt: 'Interactive chart of S&P 500 returns by presidential term.', category: 'Markets', author: 'Ezana Research', date: '2 Mar 2025', readTime: '5 min read', image: '/images/ezana-echo/sp500-returns-preview.png' },
