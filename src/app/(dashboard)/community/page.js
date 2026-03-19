@@ -218,8 +218,9 @@ export default function CommunityPage() {
         </div>
       </div>
 
+      <div className="legendary-investors-section">
       <PinnableCard cardId="legendary-investors" title="Legendary Investors" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
-      <div className="component-card">
+      <div className="component-card legendary-investors-card">
         <div className="card-header card-header-with-subtitle">
           <h3><i className="bi bi-trophy-fill" /> Legendary Investors</h3>
           <p className="card-subtitle">Explore public profiles of iconic investors — scroll to analyze their strategies and track records</p>
@@ -229,6 +230,7 @@ export default function CommunityPage() {
         </div>
       </div>
       </PinnableCard>
+      </div>
 
       <div className="dashboard-grid community-features-grid">
         <PinnableCard cardId="community-feed" title="Community Feed" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={3}>

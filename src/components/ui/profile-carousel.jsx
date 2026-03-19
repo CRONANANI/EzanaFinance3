@@ -34,8 +34,9 @@ export function ProfileCarousel({ items, variant = "default", initialScroll = 0 
 
   const handleCardClose = (index) => {
     if (carouselRef.current) {
-      const cardWidth = typeof window !== "undefined" && window.innerWidth < 768 ? 230 : 384;
-      const gap = typeof window !== "undefined" && window.innerWidth < 768 ? 4 : 8;
+      const isInvestor = variant === "investor";
+      const cardWidth = isInvestor ? 200 : (typeof window !== "undefined" && window.innerWidth < 768 ? 230 : 384);
+      const gap = isInvestor ? 12 : (typeof window !== "undefined" && window.innerWidth < 768 ? 4 : 8);
       const scrollPosition = (cardWidth + gap) * (index + 1);
       carouselRef.current.scrollTo({ left: scrollPosition, behavior: "smooth" });
     }
@@ -208,28 +209,42 @@ function ProfileCard({ profile, index, variant = "default", onCardClose = () => 
       >
         <div
           className={cn(
-            "rounded-2xl bg-gradient-to-b overflow-hidden flex flex-col items-center justify-center relative z-10 border border-[#10b981]/10",
-            "h-[420px] w-72 md:h-[480px] md:w-80",
+            "rounded-2xl bg-gradient-to-b overflow-hidden flex flex-col items-center relative z-10 border border-[#10b981]/10",
+            variant === "investor"
+              ? "legendary-investor-card h-[200px] w-[200px] min-w-[200px] max-w-[220px] shrink-0 justify-start pt-0"
+              : "h-[420px] w-72 md:h-[480px] md:w-80 justify-center",
             cardBg
           )}
         >
-          <div className="absolute inset-0 opacity-20">
-            <Image
-              src={profile.backgroundImage || "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800"}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="320px"
-            />
-          </div>
-          <ProfileImage src={profile.profileImage} alt={profile.name} />
-          <p className="text-[#9ca3af] text-sm text-center mt-4 px-4 line-clamp-3">
+          {variant !== "investor" && (
+            <div className="absolute inset-0 opacity-20 investor-card-bg">
+              <Image
+                src={profile.backgroundImage || "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800"}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="320px"
+              />
+            </div>
+          )}
+          {variant === "investor" && (
+            <div className="investor-card-header w-full h-[70px] min-h-[70px] shrink-0 bg-gradient-to-br from-[#0f1419] to-[#111a16]" />
+          )}
+          <ProfileImage src={profile.profileImage} alt={profile.name} variant={variant} />
+          <p
+            className={cn(
+              "text-[#9ca3af] text-center",
+              variant === "investor"
+                ? "investor-bio text-[0.6875rem] mt-2 line-clamp-2 px-2"
+                : "text-sm mt-4 line-clamp-3 px-4"
+            )}
+          >
             {profile.description.length > 120 ? `${profile.description.slice(0, 120)}...` : profile.description}
           </p>
-          <p className="text-white text-xl font-semibold text-center mt-4">
+          <p className={cn("text-white text-center font-semibold", variant === "investor" ? "investor-name text-[0.8125rem] mt-1" : "text-xl mt-4")}>
             {profile.name}
           </p>
-          <p className="text-[#10b981] text-sm font-medium text-center mt-1">
+          <p className={cn("text-[#10b981] font-medium text-center", variant === "investor" ? "investor-designation text-[0.625rem] mt-0.5 pb-2" : "text-sm mt-1")}>
             {profile.designation}
           </p>
         </div>
@@ -238,10 +253,16 @@ function ProfileCard({ profile, index, variant = "default", onCardClose = () => 
   );
 }
 
-function ProfileImage({ src, alt }) {
+function ProfileImage({ src, alt, variant }) {
   const [isLoading, setLoading] = useState(true);
+  const isInvestor = variant === "investor";
   return (
-    <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#10b981]/40 flex-shrink-0 mt-6 z-10">
+    <div
+      className={cn(
+        "relative rounded-full overflow-hidden border-2 border-[#10b981]/40 flex-shrink-0 z-10 investor-avatar-wrap",
+        isInvestor ? "w-12 h-12 min-w-12 min-h-12 mt-[-24px]" : "w-24 h-24 md:w-32 md:h-32 mt-6"
+      )}
+    >
       <Image
         className={cn("object-cover transition duration-300", isLoading ? "blur-sm" : "blur-0")}
         onLoad={() => setLoading(false)}

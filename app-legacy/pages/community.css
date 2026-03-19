@@ -1,5 +1,115 @@
 /* Community Page - Dashboard Consistency */
 
+/* ============================================
+   TIGHT CARD SPACING - Match dashboard/settings
+   ============================================ */
+.community-features-grid .component-card,
+.community-discussions-grid .component-card {
+  padding: 0 !important;
+}
+
+.community-features-grid .card-header,
+.community-discussions-grid .card-header,
+.my-friends-card .card-header,
+.community-feed-card .card-header,
+.friends-activity-card .card-header,
+.active-discussions-card .card-header,
+.leaderboard-card .card-header,
+.community-insights-card .card-header {
+  padding: 0.875rem 1.25rem !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.community-features-grid .card-header + .card-body,
+.community-discussions-grid .card-header + .card-body,
+.my-friends-card .card-header + .card-body,
+.community-feed-card .card-header + .card-body,
+.friends-activity-card .card-header + .card-body,
+.active-discussions-card .card-header + .card-body,
+.leaderboard-card .card-header + .card-body,
+.community-insights-card .card-header + .card-body {
+  margin-top: 0 !important;
+  padding: 0.75rem 1.25rem !important;
+}
+
+/* Feed filter tabs - tight below header */
+.community-feed-card .card-body {
+  padding: 0.5rem 1.25rem 1rem !important;
+}
+
+.community-feed-filters {
+  padding: 0 !important;
+  margin: 0 0 0.5rem 0 !important;
+  gap: 0.5rem;
+}
+
+.community-feed-threads {
+  padding: 0 !important;
+}
+
+/* Discussion filter buttons in Active Discussions - tight */
+.active-discussions-card .card-header {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.discussion-filter-buttons {
+  padding: 0;
+  margin: 0;
+}
+
+.active-discussions-card .card-body {
+  padding: 0.75rem 1.25rem !important;
+}
+
+/* Legendary Investors section - tight spacing */
+.legendary-investors-section .component-card {
+  padding: 0 !important;
+}
+
+.legendary-investors-section .card-header.card-header-with-subtitle {
+  padding: 0.875rem 1.25rem !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.legendary-investors-section .card-header-with-subtitle .card-subtitle {
+  padding: 0;
+  margin: 0.25rem 0 0 0;
+  font-size: 0.8125rem;
+}
+
+.legendary-investors-section .card-body {
+  padding: 0.5rem 1.25rem 1rem !important;
+  margin-top: 0 !important;
+}
+
+/* ============================================
+   LEGENDARY INVESTORS - Compact cards, no chart bg
+   ============================================ */
+.legendary-investors-section .profile-carousel-scroll {
+  padding: 0.5rem 0 1rem !important;
+  margin-top: 0 !important;
+}
+
+.legendary-investors-section .relative.w-full {
+  margin-top: 0 !important;
+}
+
+.legendary-investors-section .profile-carousel-scroll > div {
+  gap: 0.75rem !important;
+  padding-left: 0.75rem !important;
+}
+
+/* My Friends, Leaderboard, Friends Activity, Community Insights */
+.my-friends-card .card-body,
+.leaderboard-card .card-body,
+.friends-activity-card .card-body,
+.community-insights-card .card-body {
+  padding: 0.75rem 1.25rem !important;
+}
+
 /* Community Search - Users, Partners, Creators */
 .community-search-wrapper {
   position: relative;
