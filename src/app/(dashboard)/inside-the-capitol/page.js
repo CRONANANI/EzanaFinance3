@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -76,9 +77,10 @@ const POLITICIAN_PERF = [
 const PC_W = 780;
 const PC_H = 380;
 const PC_PAD = { top: 50, right: 40, bottom: 50, left: 60 };
-const PC_DOT_R = 22;
+const PC_DOT_R = 6;
 
 function PoliticianPerfChart({ window: tw }) {
+  const router = useRouter();
   const [hoveredId, setHoveredId] = useState(null);
 
   const sorted = useMemo(
@@ -150,11 +152,11 @@ function PoliticianPerfChart({ window: tw }) {
           const bgColor = p.party === 'Democrat' ? '#2563eb' : '#dc2626';
 
           return (
-            <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} style={{ cursor: 'pointer' }}>
+            <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => router.push(`/inside-the-capitol/${slugify(p.name)}`)} style={{ cursor: 'pointer' }}>
               <circle cx={cx} cy={cy} r={PC_DOT_R + 3} fill="none" stroke={borderColor} strokeWidth={isHov ? 3.5 : 2} filter="url(#itcDotGlow)" opacity={isHov ? 1 : 0.85} />
               <circle cx={cx} cy={cy} r={PC_DOT_R} fill={bgColor} />
-              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="10" fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
-              <text x={cx} y={cy + PC_DOT_R + 16} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize="10" fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
+              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="7" fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
+              <text x={cx} y={cy + PC_DOT_R + 10} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize="9" fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
                 {p.returns[tw] >= 0 ? '+' : ''}{p.returns[tw]}%
               </text>
               <circle cx={cx} cy={cy} r={PC_DOT_R + 14} fill="transparent" style={{ pointerEvents: 'all' }} />

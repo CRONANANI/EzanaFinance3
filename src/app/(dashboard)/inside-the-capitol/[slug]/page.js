@@ -17,6 +17,14 @@ const POLITICIANS = {
     role: 'Representative', yearsInOffice: '1987 – Present', age: 85, committees: 'Appropriations Committee',
     committeeUrl: 'https://clerk.house.gov/members/P000197',
     totalValue: 3036028, monthlyChange: 2.9, avgReportingTime: 28,
+    topIndustry: { name: 'Technology', pct: 52 },
+    ytdReturns: 18.4, ytdDollar: 483200,
+    similarTraders: [
+      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 72 },
+      { slug: 'dan-crenshaw', name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', state: 'TX', initials: 'DC', overlap: 61 },
+      { slug: 'josh-gottheimer', name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', initials: 'JG', overlap: 54 },
+    ],
+    perfData: { '1M': { returnPct: 2.4 }, '3M': { returnPct: 8.1 }, '6M': { returnPct: 14.2 }, '1Y': { returnPct: 18.4 }, 'All': { returnPct: 54.3 } },
     holdings: [
       { ticker: 'NVDA', name: 'NVIDIA Corp', value: 1200000, pct: 39.5, change: 12.4 },
       { ticker: 'AAPL', name: 'Apple Inc', value: 580000, pct: 19.1, change: 5.2 },
@@ -42,6 +50,14 @@ const POLITICIANS = {
     role: 'Senator', yearsInOffice: '2021 – Present', age: 70, committees: 'Armed Services, Agriculture',
     committeeUrl: 'https://www.senate.gov/senators/tuberville',
     totalValue: 1280000, monthlyChange: -1.4, avgReportingTime: 41,
+    topIndustry: { name: 'Consumer Staples', pct: 42 },
+    ytdReturns: -12.8, ytdDollar: -163840,
+    similarTraders: [
+      { slug: 'dan-crenshaw', name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', state: 'TX', initials: 'DC', overlap: 78 },
+      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 65 },
+      { slug: 'josh-gottheimer', name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', initials: 'JG', overlap: 52 },
+    ],
+    perfData: { '1M': { returnPct: -1.4 }, '3M': { returnPct: -8.2 }, '6M': { returnPct: -22.5 }, '1Y': { returnPct: -38.7 }, 'All': { returnPct: -53.0 } },
     holdings: [
       { ticker: 'KMB', name: 'Kimberly-Clark', value: 380000, pct: 29.7, change: -2.1 },
       { ticker: 'HPQ', name: 'HP Inc', value: 240000, pct: 18.8, change: -4.3 },
@@ -65,6 +81,14 @@ const POLITICIANS = {
     role: 'Representative', yearsInOffice: '2019 – Present', age: 40, committees: 'Energy and Commerce',
     committeeUrl: 'https://clerk.house.gov/members/C001120',
     totalValue: 890000, monthlyChange: 3.8, avgReportingTime: 18,
+    topIndustry: { name: 'Technology', pct: 38 },
+    ytdReturns: 8.2, ytdDollar: 72980,
+    similarTraders: [
+      { slug: 'tommy-tuberville', name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', initials: 'TT', overlap: 65 },
+      { slug: 'nancy-pelosi', name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', overlap: 58 },
+      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 49 },
+    ],
+    perfData: { '1M': { returnPct: 3.2 }, '3M': { returnPct: 8.5 }, '6M': { returnPct: 14.1 }, '1Y': { returnPct: 22.8 }, 'All': { returnPct: 38.7 } },
     holdings: [
       { ticker: 'AAPL', name: 'Apple Inc', value: 280000, pct: 31.5, change: 5.2 },
       { ticker: 'MSFT', name: 'Microsoft Corp', value: 220000, pct: 24.7, change: 8.7 },
@@ -84,6 +108,14 @@ const POLITICIANS = {
     role: 'Senator', yearsInOffice: '2009 – Present', age: 71, committees: 'Intelligence, Banking',
     committeeUrl: 'https://www.senate.gov/senators/warner',
     totalValue: 2140000, monthlyChange: 1.2, avgReportingTime: 22,
+    topIndustry: { name: 'Technology', pct: 48 },
+    ytdReturns: 5.4, ytdDollar: 115560,
+    similarTraders: [
+      { slug: 'nancy-pelosi', name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', overlap: 68 },
+      { slug: 'ro-khanna', name: 'Ro Khanna', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'RK', overlap: 55 },
+      { slug: 'josh-gottheimer', name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', initials: 'JG', overlap: 51 },
+    ],
+    perfData: { '1M': { returnPct: 1.2 }, '3M': { returnPct: 3.8 }, '6M': { returnPct: 6.9 }, '1Y': { returnPct: 9.4 }, 'All': { returnPct: 41.2 } },
     holdings: [
       { ticker: 'META', name: 'Meta Platforms', value: 520000, pct: 24.3, change: 6.8 },
       { ticker: 'CRM', name: 'Salesforce Inc', value: 380000, pct: 17.8, change: 4.2 },
@@ -104,6 +136,14 @@ const POLITICIANS = {
     role: 'Representative', yearsInOffice: '2017 – Present', age: 49, committees: 'Financial Services',
     committeeUrl: 'https://clerk.house.gov/members/G000583',
     totalValue: 640000, monthlyChange: 2.1, avgReportingTime: 15,
+    topIndustry: { name: 'Technology', pct: 62 },
+    ytdReturns: 11.2, ytdDollar: 71680,
+    similarTraders: [
+      { slug: 'nancy-pelosi', name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', overlap: 54 },
+      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 51 },
+      { slug: 'tommy-tuberville', name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', initials: 'TT', overlap: 52 },
+    ],
+    perfData: { '1M': { returnPct: 2.1 }, '3M': { returnPct: 5.4 }, '6M': { returnPct: 9.2 }, '1Y': { returnPct: 14.2 }, 'All': { returnPct: 46.1 } },
     holdings: [
       { ticker: 'MSFT', name: 'Microsoft Corp', value: 280000, pct: 43.8, change: 8.7 },
       { ticker: 'GOOGL', name: 'Alphabet Inc', value: 210000, pct: 32.8, change: 4.3 },
@@ -123,27 +163,23 @@ function formatUSD(n) {
   return `US$${n.toLocaleString()}`;
 }
 
-/* ── Spark chart ── */
-function PerformanceChart({ seed = 0, positive = true }) {
-  const pts = useMemo(() => {
-    const arr = [];
-    let v = 40;
-    for (let i = 0; i < 60; i++) {
-      v += Math.sin(i * 0.3 + seed) * 4 + (positive ? 0.3 : -0.2) + (Math.sin(i * 0.8 + seed * 3) * 2);
-      v = Math.max(5, Math.min(95, v));
-      arr.push(v);
-    }
-    return arr;
-  }, [seed, positive]);
+/* ── Performance chart paths per timeframe (downward = negative returns) ── */
+const PERF_PATHS = {
+  '1M': 'M0,120 L100,115 L200,125 L300,110 L400,118 L500,105 L600,95',
+  '3M': 'M0,130 L100,140 L200,125 L300,145 L400,130 L500,115 L600,100',
+  '6M': 'M0,110 L100,130 L200,150 L300,165 L400,155 L500,140 L600,120',
+  '1Y': 'M0,90 L100,110 L200,130 L300,155 L400,170 L500,165 L600,150',
+  'All': 'M0,70 L100,95 L200,120 L300,150 L400,170 L500,175 L600,185',
+};
 
-  const w = 600, h = 200;
-  const xStep = w / (pts.length - 1);
-  const path = pts.map((y, i) => `${i === 0 ? 'M' : 'L'}${i * xStep},${h - (y / 100) * h}`).join(' ');
-  const area = `${path} L${w},${h} L0,${h} Z`;
+function PerformanceChart({ perfData }) {
+  const [perfTimeframe, setPerfTimeframe] = useState('All');
+  const data = perfData[perfTimeframe];
+  const returnPct = data.returnPct;
+  const positive = returnPct >= 0;
   const color = positive ? '#10b981' : '#ef4444';
-  const lastVal = pts[pts.length - 1];
-  const firstVal = pts[0];
-  const changePct = ((lastVal - firstVal) / firstVal * 100).toFixed(1);
+  const path = PERF_PATHS[perfTimeframe];
+  const area = `${path} L600,200 L0,200 Z`;
 
   return (
     <div className="pp-perf">
@@ -151,15 +187,15 @@ function PerformanceChart({ seed = 0, positive = true }) {
         <h3>Portfolio Performance</h3>
         <div className="pp-perf-badge" style={{ color }}>
           <i className={`bi ${positive ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
-          {positive ? '+' : ''}{changePct}%
+          {positive ? '+' : ''}{returnPct}%
         </div>
       </div>
       <div className="pp-perf-timerange">
         {['1M', '3M', '6M', '1Y', 'All'].map((t) => (
-          <button key={t} type="button" className={`pp-tr-btn ${t === 'All' ? 'on' : ''}`}>{t}</button>
+          <button key={t} type="button" className={`pp-tr-btn ${perfTimeframe === t ? 'on' : ''}`} onClick={() => setPerfTimeframe(t)}>{t}</button>
         ))}
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="pp-perf-svg">
+      <svg viewBox="0 0 600 200" preserveAspectRatio="none" className="pp-perf-svg">
         <defs>
           <linearGradient id="perfGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -199,7 +235,7 @@ function HoldingsDonut({ holdings }) {
         {holdings.map((h, i) => (
           <div key={h.ticker} className="pp-donut-item">
             <span className="pp-donut-color" style={{ background: colors[i % colors.length] }} />
-            <span className="pp-donut-tk">{h.ticker}</span>
+            <Link href={`/company-research?ticker=${h.ticker}`} className="pp-donut-tk">{h.ticker}</Link>
             <span className="pp-donut-pct">{h.pct}%</span>
           </div>
         ))}
@@ -288,10 +324,39 @@ export default function PoliticianProfilePage() {
                   {isPositive ? '+' : ''}{pol.monthlyChange}%
                 </span>
               </div>
+              <div className="pp-ov-stat">
+                <span className="pp-ov-label">Top Industry</span>
+                <span className="pp-ov-value">{pol.topIndustry?.name || 'N/A'}</span>
+                <span className="pp-ov-sub">{pol.topIndustry?.pct || 0}% of portfolio</span>
+              </div>
+              <div className="pp-ov-stat">
+                <span className="pp-ov-label">YTD Returns</span>
+                <span className={`pp-ov-value ${(pol.ytdReturns ?? 0) >= 0 ? 'up' : 'down'}`}>
+                  {(pol.ytdReturns ?? 0) >= 0 ? '+' : ''}{pol.ytdReturns ?? 0}%
+                </span>
+                <span className="pp-ov-sub">{(pol.ytdDollar ?? 0) >= 0 ? '+' : ''}${Math.abs(pol.ytdDollar ?? 0).toLocaleString()}</span>
+              </div>
             </div>
+            {pol.similarTraders?.length > 0 && (
+              <div className="pp-similar-traders">
+                <span className="pp-similar-label">Most Similar Traders</span>
+                <div className="pp-similar-list">
+                  {pol.similarTraders.map((s) => (
+                    <Link key={s.slug} href={`/inside-the-capitol/${s.slug}`} className="pp-similar-item">
+                      <div className={`pp-similar-avatar ${s.party.toLowerCase()}`}>{s.initials}</div>
+                      <div className="pp-similar-info">
+                        <span className="pp-similar-name">{s.name}</span>
+                        <span className="pp-similar-meta">{s.party.charAt(0)} · {s.chamber} · {s.state}</span>
+                      </div>
+                      <span className="pp-similar-overlap">{s.overlap}% overlap</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <PerformanceChart seed={pol.initials.charCodeAt(0)} positive={isPositive} />
+          <PerformanceChart perfData={pol.perfData} />
 
           <div className="pp-bottom-grid">
             <div className="pp-card">
@@ -301,8 +366,8 @@ export default function PoliticianProfilePage() {
                 {pol.holdings.map((h) => (
                   <div key={h.ticker} className="pp-holding-row">
                     <div className="pp-hold-info">
-                      <span className="pp-hold-tk">{h.ticker}</span>
-                      <span className="pp-hold-name">{h.name}</span>
+                      <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-tk">{h.ticker}</Link>
+                      <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-name">{h.name}</Link>
                     </div>
                     <div className="pp-hold-right">
                       <span className="pp-hold-val">{formatUSD(h.value)}</span>

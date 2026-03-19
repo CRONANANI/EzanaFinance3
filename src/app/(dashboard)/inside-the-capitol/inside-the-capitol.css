@@ -51,7 +51,7 @@
 .itc-body-pad { padding: 0 1.25rem .75rem; }
 
 /* ── Trade rows ── */
-.itc-tr { display: grid; grid-template-columns: 72px 1.2fr 1.2fr auto; align-items: center; gap: .6rem; padding: .55rem 1.25rem; border-bottom: 1px solid rgba(16,185,129,.05); transition: background .15s; }
+.itc-tr { display: grid; grid-template-columns: 80px 1fr 1fr 140px; align-items: center; gap: 1rem; padding: .55rem 1.25rem; border-bottom: 1px solid rgba(16,185,129,.05); transition: background .15s; }
 .itc-tr:last-child { border-bottom: none; }
 .itc-tr:hover { background: rgba(16,185,129,.04); }
 
@@ -72,7 +72,7 @@
 .itc-dot.democrat { background: #3b82f6; }
 .itc-dot.republican { background: #ef4444; }
 
-.itc-tr-right { text-align: right; }
+.itc-tr-right { text-align: right; justify-self: end; }
 .itc-tr-amt { font-size: .75rem; font-weight: 700; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; }
 .itc-tr-flag i { color: #fbbf24; font-size: .7rem; margin-left: .35rem; }
 
