@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════
+   EZANA FINANCE — UI/UX Improvements
+   Typography, animations, accessibility, micro-interactions
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Typography Scale ── */
+:root {
+  --text-xs: 0.625rem;
+  --text-sm: 0.75rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+}
+
+/* ── Page Transition ── */
+.dashboard-container > *,
+.main-content > * {
+  animation: pageIn 0.25s ease-out;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Focus Visible (Accessibility) ── */
+:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+input:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Button Press Micro-interaction ── */
+button:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.1s;
+}
+
+/* ── Card Hover Lift ── */
+.component-card,
+.db-card,
+.ptr-card,
+.trd-form-card,
+.ezana-echo-card {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.component-card:hover,
+.db-card:hover,
+.ptr-card:hover,
+.trd-form-card:hover,
+.ezana-echo-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+/* ── Max-width containers ── */
+.ptr-page,
+.partner-dashboard-container {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Skip to content ── */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 99999;
+  padding: 12px 20px;
+  background: #10b981;
+  color: #0a0e13;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: left 0.2s;
+}
+.skip-to-content:focus {
+  left: 16px;
+  top: 16px;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-container > *,
+  .main-content > * {
+    animation: none;
+  }
+  button:active:not(:disabled) {
+    transform: none;
+  }
+}

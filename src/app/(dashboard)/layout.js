@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
+import '@/components/Layout/mobile-bottom-nav.css';
 
 export default function DashboardLayout({ children }) {
   useEffect(() => {
@@ -11,8 +13,11 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   return (
-    <main className="dashboard-main">
-      <div className="dashboard-container">{children}</div>
-    </main>
+    <>
+      <main className="dashboard-main" id="main-content">
+        <div className="dashboard-container">{children}</div>
+      </main>
+      <MobileBottomNav />
+    </>
   );
 }

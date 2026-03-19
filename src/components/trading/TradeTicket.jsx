@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 
 export function TradeTicket({ getToken, onOrderPlaced }) {
+  const { toast } = useToast();
   const [side, setSide] = useState('buy');
   const [symbol, setSymbol] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -15,7 +17,6 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
     if (symbol.length < 1) { setSearchResults([]); return; }
@@ -64,12 +65,13 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.details || data.error);
 
-      setSuccess(`${side === 'buy' ? 'Buy' : 'Sell'} order for ${selectedAsset.symbol} submitted`);
+      toast.success(`${side === 'buy' ? 'Buy' : 'Sell'} order for ${selectedAsset.symbol} submitted`);
       setQty('');
       setLimitPrice('');
       onOrderPlaced?.(data);
     } catch (err) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -82,8 +84,7 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
         <button className={`trd-side-btn buy ${side === 'buy' ? 'active' : ''}`} onClick={() => setSide('buy')}>Buy</button>
         <button className={`trd-side-btn sell ${side === 'sell' ? 'active' : ''}`} onClick={() => setSide('sell')}>Sell</button>
       </div>
-      {error && <div className="trd-error"><i className="bi bi-exclamation-triangle" /> {error}</div>}
-      {success && <div className="trd-success"><i className="bi bi-check-circle" /> {success}</div>}
+      {error && <div className="trd-error" role="alert"><i className="bi bi-exclamation-triangle" /> {error}</div>}
       <div className="trd-form-body">
         <div className="trd-field" style={{ position: 'relative' }}>
           <label>Stock / ETF</label>

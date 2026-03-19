@@ -5,6 +5,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { PartnerProvider } from '@/contexts/PartnerContext';
 import { CongressProvider } from '@/contexts/CongressContext';
 import { PinProvider } from '@/contexts/PinContext';
+import { ToastProvider } from '@/contexts/ToastContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 
 export const metadata = {
@@ -29,15 +30,18 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="app-body" style={{ backgroundColor: '#0f1419', color: '#ffffff' }}>
+        <a href="#main-content" className="skip-to-content">Skip to content</a>
         <ThemeProvider>
           <AuthProvider>
             <PartnerProvider>
               <CongressProvider>
                 <PinProvider>
-                  <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
-                    <ConditionalNavbar />
-                  </Suspense>
-                  {children}
+                  <ToastProvider>
+                    <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
+                      <ConditionalNavbar />
+                    </Suspense>
+                    {children}
+                  </ToastProvider>
                 </PinProvider>
               </CongressProvider>
             </PartnerProvider>

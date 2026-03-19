@@ -12,6 +12,7 @@
 @import './mobile-responsive.css';
 @import './mobile-nav-fix.css';
 @import './nav-notifications.css';
+@import './ui-improvements.css';
 
 @tailwind base;
 @tailwind components;

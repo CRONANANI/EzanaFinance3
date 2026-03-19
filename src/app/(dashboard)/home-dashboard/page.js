@@ -75,6 +75,10 @@ function getGreeting() {
   return 'Good Evening';
 }
 
+function formatLongDate() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 /* ═══════════════════════════════════════════════════════════
    DONUT CHART COMPONENT
    ═══════════════════════════════════════════════════════════ */
@@ -136,8 +140,19 @@ export default function HomeDashboardPage() {
         <div>
           <h1 className="db-greeting">{greeting}, {userName} <span className="db-greeting-emoji">👋</span></h1>
           <p className="db-greeting-sub">
-            Today you amassed a <strong className="db-greeting-highlight">+{PORTFOLIO_CHANGE_PCT}% increase</strong> in your portfolio holdings
+            {PORTFOLIO_CHANGE_PCT >= 0 ? (
+              <>Today you amassed a <strong className="db-greeting-highlight">+{PORTFOLIO_CHANGE_PCT}% increase</strong> in your portfolio holdings</>
+            ) : (
+              <>Markets are down <strong className="db-greeting-highlight">{Math.abs(PORTFOLIO_CHANGE_PCT)}%</strong> today — stay the course, long-term wins</>
+            )}
           </p>
+          <p className="db-greeting-date">{formatLongDate()}</p>
+          <div className="db-quick-actions">
+            <a href="/trading" className="db-quick-action-pill"><i className="bi bi-lightning-charge" /> Trade</a>
+            <a href="/trading#fund" className="db-quick-action-pill"><i className="bi bi-bank" /> Deposit</a>
+            <a href="/ezana-echo" className="db-quick-action-pill"><i className="bi bi-search" /> Research</a>
+            <a href="/community" className="db-quick-action-pill"><i className="bi bi-people" /> Community</a>
+          </div>
         </div>
       </div>
 
@@ -220,7 +235,7 @@ export default function HomeDashboardPage() {
           </div>
           <div className="db-portfolio-grid">
             {MY_HOLDINGS.map((h) => (
-              <div key={h.ticker} className="db-holding-card">
+              <a key={h.ticker} href={`/company-research?ticker=${h.ticker}`} className={`db-holding-card db-holding-card-link ${h.change >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}>
                 <div className="db-holding-top">
                   <div className="db-holding-ticker-wrap">
                     <span className="db-holding-dot" style={{ background: h.change >= 0 ? '#10b981' : '#ef4444' }} />
@@ -234,7 +249,8 @@ export default function HomeDashboardPage() {
                   </span>
                   <span className="db-holding-qty">Quantity: {h.qty}</span>
                 </div>
-              </div>
+                <span className="db-holding-view-details">View Details</span>
+              </a>
             ))}
           </div>
         </div>
@@ -246,25 +262,34 @@ export default function HomeDashboardPage() {
             <button className="db-icon-btn" title="Add"><i className="bi bi-plus-lg" /></button>
           </div>
           <div className="db-watchlist-list">
-            {WATCHLIST.map((w) => (
-              <div key={w.ticker} className="db-watchlist-item">
-                <div className="db-watchlist-left">
-                  <div className="db-watchlist-avatar">
-                    <span>{w.ticker[0]}</span>
-                  </div>
-                  <div>
-                    <span className="db-watchlist-ticker">{w.ticker}</span>
-                    <span className="db-watchlist-name">{w.name}</span>
-                  </div>
-                </div>
-                <div className="db-watchlist-right">
-                  <span className="db-watchlist-price">${w.price.toLocaleString()}</span>
-                  <span className={`db-watchlist-change ${w.change >= 0 ? 'positive' : 'negative'}`}>
-                    {w.change >= 0 ? '+' : ''}{w.change}%
-                  </span>
-                </div>
+            {WATCHLIST.length === 0 ? (
+              <div className="db-watchlist-empty">
+                <i className="bi bi-bookmark" style={{ fontSize: '2rem', color: '#6b7280', marginBottom: '0.5rem' }} />
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#8b949e' }}>Empty watchlist — add stocks to track</p>
+                <button className="db-icon-btn" style={{ marginTop: '0.75rem' }} title="Add stock"><i className="bi bi-plus-lg" /></button>
               </div>
-            ))}
+            ) : (
+              WATCHLIST.map((w) => (
+                <div key={w.ticker} className="db-watchlist-item">
+                  <div className="db-watchlist-left">
+                    <div className="db-watchlist-avatar">
+                      <span>{w.ticker[0]}</span>
+                    </div>
+                    <div>
+                      <span className="db-watchlist-ticker">{w.ticker}</span>
+                      <span className="db-watchlist-name">{w.name}</span>
+                    </div>
+                  </div>
+                  <div className="db-watchlist-right">
+                    <span className="db-watchlist-price">${w.price.toLocaleString()}</span>
+                    <span className={`db-watchlist-change ${w.change >= 0 ? 'positive' : 'negative'}`}>
+                      <i className={`bi ${w.change >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`} style={{ fontSize: '0.625rem', marginRight: 2 }} />
+                      {w.change >= 0 ? '+' : ''}{w.change}%
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
