@@ -279,7 +279,7 @@
   margin-bottom: 1.25rem;
 }
 
-/* ── My Portfolios ── */
+/* ── My Holdings ── */
 .db-portfolio-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -295,6 +295,36 @@
   transition: all 0.15s;
   cursor: pointer;
   position: relative;
+}
+
+.db-holding-worst-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.db-holding-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.db-holding-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 .db-holding-card-link {
   display: block;
@@ -328,13 +358,6 @@
   justify-content: center;
   padding: 2rem 1rem;
   text-align: center;
-}
-
-.db-holding-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
 }
 
 .db-holding-ticker-wrap {

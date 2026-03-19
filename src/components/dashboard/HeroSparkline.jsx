@@ -4,6 +4,8 @@ import { useState, useMemo, useRef } from 'react';
 
 const W = 500;
 const H = 120;
+const W_CUSTOM = 480;
+const H_CUSTOM = 80;
 const POINTS = 40;
 
 function generateDataPoints() {
@@ -21,7 +23,7 @@ function generateDataPoints() {
   return pts;
 }
 
-export function HeroSparkline({ portfolioValue, changePct }) {
+export function HeroSparkline({ portfolioValue, changePct, chartPath }) {
   const [hover, setHover] = useState(null);
   const [crosshairX, setCrosshairX] = useState(null);
   const svgRef = useRef(null);
@@ -31,7 +33,7 @@ export function HeroSparkline({ portfolioValue, changePct }) {
   const areaD = `${pathD} L${W},${H} L0,${H} Z`;
 
   const handleMouseMove = (e) => {
-    if (!svgRef.current) return;
+    if (chartPath || !svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * W;
     const idx = Math.round((x / W) * POINTS);
@@ -46,6 +48,27 @@ export function HeroSparkline({ portfolioValue, changePct }) {
     setHover(null);
     setCrosshairX(null);
   };
+
+  if (chartPath) {
+    const areaPath = `${chartPath} L${W_CUSTOM},${H_CUSTOM} L0,${H_CUSTOM} Z`;
+    return (
+      <div className="db-hero-chart" style={{ position: 'relative' }}>
+        <svg viewBox={`0 0 ${W_CUSTOM} ${H_CUSTOM}`} preserveAspectRatio="none" className="db-sparkline-svg">
+          <defs>
+            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={areaPath} fill="url(#chartGradient)" />
+          <path d={chartPath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <div className="db-chart-axis">
+          <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="db-hero-chart" style={{ position: 'relative' }} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>

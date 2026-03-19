@@ -1,29 +1,62 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import './home-dashboard.css';
 
 /* ═══════════════════════════════════════════════════════════
-   SAMPLE DATA — Replace with real data from usePortfolio()
-   once Plaid integration is live.
+   TIMEFRAME-AWARE DATA — Hero + Holdings update when 1D/1M/6M/1Y clicked
    ═══════════════════════════════════════════════════════════ */
-const PORTFOLIO_VALUE = 220360.0;
-const PORTFOLIO_CHANGE_PCT = 4.9;
-const PORTFOLIO_CHANGE_AMT = 10297.64;
-const TOTAL_COMPANIES = 26;
-const CASH_BALANCE = 10250.0;
-const COMMITTED_CASH = 7000.0;
+const HERO_DATA = {
+  '1D': { value: 220360.00, change: 4.9, changeDollar: 10297.64, companies: 26, cash: 10250, committed: 7000 },
+  '1M': { value: 224800.00, change: 7.2, changeDollar: 15068.00, companies: 26, cash: 10250, committed: 7000 },
+  '6M': { value: 248500.00, change: 18.6, changeDollar: 39012.00, companies: 26, cash: 12400, committed: 5200 },
+  '1Y': { value: 278900.00, change: 34.1, changeDollar: 71040.00, companies: 26, cash: 14800, committed: 4500 },
+};
 
-const MY_HOLDINGS = [
-  { ticker: 'MSFT', name: 'Microsoft', value: 1120.0, change: 3.25, changeAmt: 35.4, qty: 10, color: '#4cc9f0' },
-  { ticker: 'NFLX', name: 'Netflix', value: 980.0, change: -1.12, changeAmt: -11.0, qty: 6, color: '#ef4444' },
-  { ticker: 'META', name: 'Meta', value: 740.0, change: 2.85, changeAmt: 20.45, qty: 9, color: '#3b82f6' },
-  { ticker: 'GOOGL', name: 'Google', value: 1320.0, change: 4.12, changeAmt: 52.4, qty: 7, color: '#10b981' },
-  { ticker: 'TSLA', name: 'Tesla', value: 760.0, change: -0.85, changeAmt: -6.5, qty: 5, color: '#ef4444' },
-  { ticker: 'SHOP', name: 'Shopify', value: 610.0, change: 6.4, changeAmt: 36.2, qty: 11, color: '#10b981' },
-];
+const HOLDINGS_DATA = {
+  '1D': [
+    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 4.12, changeDollar: 52.40, qty: 7, color: '#4285F4' },
+    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 3.25, changeDollar: 35.40, qty: 10, color: '#00a4ef' },
+    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 2.10, changeDollar: 20.10, qty: 6, color: '#e50914' },
+    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 1.85, changeDollar: 13.80, qty: 5, color: '#cc0000' },
+    { ticker: 'META', name: 'Meta', price: 740.00, change: -1.45, changeDollar: -10.85, qty: 9, color: '#0082fb', worst: true },
+    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -2.30, changeDollar: -14.40, qty: 11, color: '#96bf48', worst: true },
+  ],
+  '1M': [
+    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 8.70, changeDollar: 105.60, qty: 7, color: '#4285F4' },
+    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 6.40, changeDollar: 67.20, qty: 10, color: '#00a4ef' },
+    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 5.20, changeDollar: 37.50, qty: 5, color: '#cc0000' },
+    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 3.80, changeDollar: 35.90, qty: 6, color: '#e50914' },
+    { ticker: 'META', name: 'Meta', price: 740.00, change: -3.20, changeDollar: -24.50, qty: 9, color: '#0082fb', worst: true },
+    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -5.10, changeDollar: -32.80, qty: 11, color: '#96bf48', worst: true },
+  ],
+  '6M': [
+    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 22.40, changeDollar: 241.60, qty: 7, color: '#4285F4' },
+    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 18.90, changeDollar: 178.20, qty: 10, color: '#00a4ef' },
+    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 14.50, changeDollar: 124.20, qty: 6, color: '#e50914' },
+    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 12.10, changeDollar: 82.00, qty: 5, color: '#cc0000' },
+    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -8.60, changeDollar: -57.60, qty: 11, color: '#96bf48', worst: true },
+    { ticker: 'META', name: 'Meta', price: 740.00, change: -4.30, changeDollar: -33.20, qty: 9, color: '#0082fb', worst: true },
+  ],
+  '1Y': [
+    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 38.50, changeDollar: 368.40, qty: 7, color: '#4285F4' },
+    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 32.20, changeDollar: 273.60, qty: 10, color: '#00a4ef' },
+    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 28.70, changeDollar: 218.40, qty: 6, color: '#e50914' },
+    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 24.50, changeDollar: 142.80, qty: 5, color: '#cc0000' },
+    { ticker: 'META', name: 'Meta', price: 740.00, change: -12.40, changeDollar: -105.20, qty: 9, color: '#0082fb', worst: true },
+    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -18.70, changeDollar: -133.60, qty: 11, color: '#96bf48', worst: true },
+  ],
+};
+
+const CHART_PATHS = {
+  '1D': 'M0,65 C40,60 80,45 120,50 C160,55 200,35 240,30 C280,25 320,40 360,20 C400,15 440,25 480,10',
+  '1M': 'M0,70 C40,65 80,55 120,60 C160,50 200,45 240,35 C280,40 320,30 360,25 C400,20 440,15 480,10',
+  '6M': 'M0,75 C40,70 80,60 120,55 C160,65 200,50 240,40 C280,35 320,25 360,30 C400,20 440,12 480,8',
+  '1Y': 'M0,80 C40,75 80,70 120,60 C160,55 200,65 240,45 C280,35 320,40 360,25 C400,18 440,12 480,5',
+};
 
 const WATCHLIST = [
   { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 954.7, change: 3.12 },
@@ -108,8 +141,10 @@ function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, cente
    ═══════════════════════════════════════════════════════════ */
 export default function HomeDashboardPage() {
   const { user } = useAuth();
-  const [heroTimeframe, setHeroTimeframe] = useState('1Y');
-  const [portfolioTimeframe, setPortfolioTimeframe] = useState('1Y');
+  const [timeframe, setTimeframe] = useState('1D');
+  const heroData = HERO_DATA[timeframe];
+  const holdings = HOLDINGS_DATA[timeframe];
+  const chartPath = CHART_PATHS[timeframe];
 
   const userName = user?.user_metadata?.first_name
     || user?.user_metadata?.full_name?.split(' ')[0]
@@ -125,10 +160,10 @@ export default function HomeDashboardPage() {
         <div>
           <h1 className="db-greeting">{greeting}, {userName} <span className="db-greeting-emoji">👋</span></h1>
           <p className="db-greeting-sub">
-            {PORTFOLIO_CHANGE_PCT >= 0 ? (
-              <>Today you amassed a <strong className="db-greeting-highlight">+{PORTFOLIO_CHANGE_PCT}% increase</strong> in your portfolio holdings</>
+            {heroData.change >= 0 ? (
+              <>Today you amassed a <strong className="db-greeting-highlight">+{heroData.change}% increase</strong> in your portfolio holdings</>
             ) : (
-              <>Markets are down <strong className="db-greeting-highlight">{Math.abs(PORTFOLIO_CHANGE_PCT)}%</strong> today — stay the course, long-term wins</>
+              <>Markets are down <strong className="db-greeting-highlight">{Math.abs(heroData.change)}%</strong> today — stay the course, long-term wins</>
             )}
           </p>
           <p className="db-greeting-date">{formatLongDate()}</p>
@@ -148,19 +183,19 @@ export default function HomeDashboardPage() {
             <div>
               <span className="db-hero-label">Current Value <i className="bi bi-arrow-up-right" /></span>
               <div className="db-hero-value">
-                ${PORTFOLIO_VALUE.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${heroData.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
-              <span className="db-hero-change positive">
-                +{PORTFOLIO_CHANGE_PCT}%
-                <span className="db-hero-change-amt">+${PORTFOLIO_CHANGE_AMT.toLocaleString()}</span>
+              <span className={`db-hero-change ${heroData.change >= 0 ? 'positive' : 'negative'}`}>
+                {heroData.change >= 0 ? '+' : ''}{heroData.change}%
+                <span className="db-hero-change-amt">{heroData.changeDollar >= 0 ? '+' : ''}${heroData.changeDollar.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </span>
             </div>
             <div className="db-hero-timeframes">
               {['1D', '1M', '6M', '1Y'].map((tf) => (
                 <button
                   key={tf}
-                  className={`db-tf-btn ${heroTimeframe === tf ? 'active' : ''}`}
-                  onClick={() => setHeroTimeframe(tf)}
+                  className={`db-tf-btn ${timeframe === tf ? 'active' : ''}`}
+                  onClick={() => setTimeframe(tf)}
                 >{tf}</button>
               ))}
             </div>
@@ -170,56 +205,55 @@ export default function HomeDashboardPage() {
           <div className="db-hero-stats">
             <div className="db-hero-stat">
               <span className="db-hero-stat-label">Total Companies <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">{TOTAL_COMPANIES}</span>
+              <span className="db-hero-stat-value">{heroData.companies}</span>
             </div>
             <div className="db-hero-stat">
               <span className="db-hero-stat-label">Cash Balance <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">${CASH_BALANCE.toLocaleString()}</span>
+              <span className="db-hero-stat-value">${heroData.cash.toLocaleString()}</span>
             </div>
             <div className="db-hero-stat">
               <span className="db-hero-stat-label">Committed Cash <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">${COMMITTED_CASH.toLocaleString()}</span>
+              <span className="db-hero-stat-value">${heroData.committed.toLocaleString()}</span>
             </div>
           </div>
         </div>
 
         {/* Chart area */}
-        <HeroSparkline portfolioValue={PORTFOLIO_VALUE} changePct={PORTFOLIO_CHANGE_PCT} />
+        <HeroSparkline portfolioValue={heroData.value} changePct={heroData.change} chartPath={chartPath} />
       </div>
 
       {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
       <div className="db-row-2">
-        {/* My Portfolios */}
+        {/* My Holdings */}
         <div className="db-card db-portfolios-card">
           <div className="db-card-header">
-            <h3>My Portfolios</h3>
+            <h3>My Holdings</h3>
             <div className="db-card-header-right">
               <div className="db-tf-group-sm">
                 {['1D', '1M', '6M', '1Y'].map((tf) => (
-                  <button key={tf} className={`db-tf-btn-sm ${portfolioTimeframe === tf ? 'active' : ''}`} onClick={() => setPortfolioTimeframe(tf)}>{tf}</button>
+                  <button key={tf} className={`db-tf-btn-sm ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
                 ))}
               </div>
               <button className="db-icon-btn" title="Export"><i className="bi bi-box-arrow-up-right" /></button>
             </div>
           </div>
           <div className="db-portfolio-grid">
-            {MY_HOLDINGS.map((h) => (
-              <a key={h.ticker} href={`/company-research?ticker=${h.ticker}`} className={`db-holding-card db-holding-card-link ${h.change >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}>
+            {holdings.map((h) => (
+              <Link key={h.ticker} href={`/company-research?ticker=${h.ticker}`} className={`db-holding-card db-holding-card-link ${h.change >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}>
                 <div className="db-holding-top">
-                  <div className="db-holding-ticker-wrap">
-                    <span className="db-holding-dot" style={{ background: h.change >= 0 ? '#10b981' : '#ef4444' }} />
+                  <span className="db-holding-dot" style={{ background: h.color }} />
+                  <div className="db-holding-info">
                     <span className="db-holding-label">{h.name} ({h.ticker})</span>
+                    <span className="db-holding-value">${h.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className={`db-holding-change ${h.change >= 0 ? 'positive' : 'negative'}`}>
+                      {h.change >= 0 ? '+' : ''}{h.change}% ({h.changeDollar >= 0 ? '+' : ''}${Math.abs(h.changeDollar).toFixed(2)})
+                    </span>
+                    <span className="db-holding-qty">Quantity: {h.qty}</span>
                   </div>
                 </div>
-                <div className="db-holding-value">${h.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-                <div className="db-holding-bottom">
-                  <span className={`db-holding-change ${h.change >= 0 ? 'positive' : 'negative'}`}>
-                    {h.change >= 0 ? '+' : ''}{h.change}% (${Math.abs(h.changeAmt).toFixed(2)})
-                  </span>
-                  <span className="db-holding-qty">Quantity: {h.qty}</span>
-                </div>
+                {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
                 <span className="db-holding-view-details">View Details</span>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
