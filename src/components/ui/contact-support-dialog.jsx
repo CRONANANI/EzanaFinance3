@@ -90,7 +90,7 @@ export function ContactSupportDialog({ open, onOpenChange }) {
             description="We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!"
             phone="Contact us for support"
             email="contact@ezana.world"
-            web={{ label: "ezana.world", url: "https://ezana.world" }}
+            web={null}
             onSubmit={handleSubmit}
             compact
             className="[&_h1]:text-zinc-100 [&_h3]:text-zinc-100 [&_p]:text-zinc-400 [&_label]:text-zinc-300 [&_li]:text-zinc-400 [&_a]:text-primary [&_span]:text-zinc-300"

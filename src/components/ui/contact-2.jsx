@@ -67,12 +67,14 @@ export function Contact2({
                 {email}
               </a>
             </li>
-            <li>
-              <span className="font-bold text-foreground">Web: </span>
-              <a href={web.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
-                {web.label}
-              </a>
-            </li>
+            {web && (
+              <li>
+                <span className="font-bold text-foreground">Web: </span>
+                <a href={web.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">
+                  {web.label}
+                </a>
+              </li>
+            )}
           </ul>
         </div>
       </div>

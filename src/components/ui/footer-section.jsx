@@ -12,7 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Facebook, Instagram, Linkedin, Moon, Send, Sun, Twitter } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Moon, Send, Sun } from "lucide-react";
 
 export function FooterSection({ onContactClick }) {
   const [isDarkMode, setIsDarkMode] = React.useState(true);
@@ -33,7 +33,7 @@ export function FooterSection({ onContactClick }) {
   return (
     <footer className="relative border-t border-border bg-background text-foreground transition-colors duration-300">
       <div className="container mx-auto px-4 py-12 md:px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
           <div className="relative">
             <h2 className="mb-4 text-3xl font-bold tracking-tight">Stay Connected</h2>
             <p className="mb-6 text-muted-foreground">
@@ -92,14 +92,6 @@ export function FooterSection({ onContactClick }) {
               </a>
             </nav>
           </div>
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Contact Us</h3>
-            <address className="space-y-2 text-sm not-italic">
-              <p>Ezana Finance</p>
-              <p>contact@ezana.world</p>
-              <p>Contact us for enterprise inquiries</p>
-            </address>
-          </div>
           <div className="relative">
             <h3 className="mb-4 text-lg font-semibold">Follow Us</h3>
             <div className="mb-6 flex space-x-4">
@@ -119,13 +111,13 @@ export function FooterSection({ onContactClick }) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                      <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                        <Twitter className="h-4 w-4" />
+                      <a href="https://x.com/EzanaWorld" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+                        <i className="bi bi-twitter-x" />
                       </a>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Follow us on Twitter</p>
+                    <p>Follow us on X</p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
