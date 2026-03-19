@@ -16,6 +16,7 @@
 @import './ui-improvements.css';
 @import './light-mode.css';
 @import './partner-light-mode.css';
+@import './terminal-theme.css';
 
 @tailwind base;
 @tailwind components;

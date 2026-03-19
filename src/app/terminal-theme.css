@@ -1,0 +1,152 @@
+/* ═══════════════════════════════════════
+   TERMINAL THEME — Global consistency
+   Extracted from /home (Ezana Terminal)
+   Applied to ALL pages (except landing hero)
+   ═══════════════════════════════════════ */
+
+/* Base typography — Plus Jakarta Sans (matches terminal) */
+body {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* All headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+/* Numeric values — use mono font for clean alignment */
+[class*="value"]:not([class*="label"]),
+[class*="price"],
+[class*="amount"],
+[class*="pct"],
+[class*="stat-value"],
+[class*="stat-mini-value"],
+[class*="hero-stat-value"],
+[class*="account-value"],
+[class*="analytics-big"],
+.db-donut-value,
+.t-pv-amount,
+.t-perf-stat-value,
+.t-risk-metric-value,
+.t-donut-pct,
+.t-index-val,
+.t-mover-price,
+.t-mover-change,
+.lc-progress-pct,
+.lc-stat-value {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Positive/negative values — keep colors, add mono */
+.positive,
+.negative,
+.t-green,
+.t-red {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-feature-settings: 'tnum' 1;
+}
+
+.positive { color: #10b981 !important; }
+.negative { color: #ef4444 !important; }
+
+/* Section titles — consistent across all pages */
+[class*="section-title"],
+[class*="card-header"] h3,
+[class*="form-header"] h2,
+[class*="page-title"],
+.t-panel-title {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Small uppercase labels — consistent everywhere */
+[class*="stat-label"],
+[class*="field"] label,
+.t-pv-label,
+.t-perf-stat-label,
+.t-risk-metric-label,
+.t-index-name,
+.lc-stat-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+table th,
+.table th,
+.lc-table th,
+.t-holdings-table th {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4b5563;
+}
+
+/* Component cards — match terminal panel style */
+[class*="-card"]:not(a):not(button):not([class*="course-card"]),
+[class*="form-card"],
+.t-panel {
+  border-radius: 14px;
+}
+
+/* Table styling — consistent everywhere */
+table,
+.table,
+.lc-table,
+.t-holdings-table {
+  font-size: 0.8125rem;
+}
+
+table td,
+.table td,
+.lc-table td,
+.t-holdings-table td {
+  font-size: 0.8125rem;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Buttons — consistent weight */
+button,
+a.btn,
+[class*="btn-primary"],
+[class*="btn-secondary"] {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Input fields — consistent font */
+input,
+textarea,
+select {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+}
+
+/* Code blocks and data displays */
+pre,
+code,
+[class*="code"],
+.formula-code code {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+}
+
+/* Light mode adjustments */
+body.light-mode [class*="stat-label"],
+body.light-mode [class*="field"] label,
+body.light-mode table th,
+body.light-mode .table th,
+body.light-mode .lc-table th {
+  color: #94a3b8;
+}
+
+/* Landing page hero — DO NOT override (preserve existing design) */
