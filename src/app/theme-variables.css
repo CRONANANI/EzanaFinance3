@@ -1,0 +1,190 @@
+/* ═══════════════════════════════════════════════════════════
+   EZANA FINANCE — CSS CUSTOM PROPERTIES THEME SYSTEM
+   
+   This file defines ALL colors as CSS variables.
+   Dark mode is the default. Light mode overrides via
+   body.light-mode class (set by ThemeProvider).
+   
+   Add this as the FIRST import in globals.css:
+   @import './theme-variables.css';
+   
+   Then gradually replace hardcoded colors across all CSS
+   files with these variable names.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Core Backgrounds ── */
+  --bg-primary: #0a0e13;          /* Page background */
+  --bg-secondary: #0d1117;        /* Elevated surfaces (cards) */
+  --bg-tertiary: #161b22;         /* Deeply nested elements */
+  --bg-overlay: rgba(0, 0, 0, 0.6); /* Modal/overlay backdrop */
+
+  /* ── Card / Surface ── */
+  --surface-card: rgba(16, 185, 129, 0.02);
+  --surface-card-hover: rgba(16, 185, 129, 0.04);
+  --surface-input: rgba(16, 185, 129, 0.04);
+  --surface-input-focus: rgba(16, 185, 129, 0.06);
+
+  /* ── Borders ── */
+  --border-primary: rgba(16, 185, 129, 0.08);
+  --border-secondary: rgba(16, 185, 129, 0.06);
+  --border-hover: rgba(16, 185, 129, 0.2);
+  --border-focus: rgba(16, 185, 129, 0.4);
+  --border-input: rgba(16, 185, 129, 0.1);
+
+  /* ── Text ── */
+  --text-primary: #f0f6fc;        /* Headings, values, important text */
+  --text-secondary: #e2e8f0;      /* Body text, labels */
+  --text-muted: #8b949e;          /* De-emphasized text */
+  --text-faint: #6b7280;          /* Captions, meta, timestamps */
+  --text-ghost: #4b5563;          /* Placeholders, disabled */
+
+  /* ── Brand: Emerald (User) ── */
+  --emerald: #10b981;
+  --emerald-hover: #059669;
+  --emerald-dark: #047857;
+  --emerald-bg: rgba(16, 185, 129, 0.08);
+  --emerald-bg-hover: rgba(16, 185, 129, 0.12);
+  --emerald-bg-subtle: rgba(16, 185, 129, 0.04);
+  --emerald-border: rgba(16, 185, 129, 0.15);
+  --emerald-glow: rgba(16, 185, 129, 0.25);
+  --emerald-text: #10b981;
+
+  /* ── Brand: Gold (Partner) ── */
+  --gold: #d4a853;
+  --gold-hover: #b8922f;
+  --gold-bg: rgba(212, 168, 83, 0.08);
+  --gold-bg-hover: rgba(212, 168, 83, 0.12);
+  --gold-border: rgba(212, 168, 83, 0.15);
+  --gold-text: #d4a853;
+
+  /* ── Semantic: Status ── */
+  --positive: #10b981;
+  --positive-bg: rgba(16, 185, 129, 0.12);
+  --negative: #ef4444;
+  --negative-bg: rgba(239, 68, 68, 0.08);
+  --negative-border: rgba(239, 68, 68, 0.2);
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --info: #3b82f6;
+  --info-bg: rgba(59, 130, 246, 0.12);
+
+  /* ── Accent Colors ── */
+  --blue: #3b82f6;
+  --blue-bg: rgba(59, 130, 246, 0.12);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167, 139, 250, 0.12);
+  --pink: #f472b6;
+  --orange: #f97316;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
+
+  /* ── Navbar ── */
+  --nav-bg: rgba(10, 14, 19, 0.95);
+  --nav-border: rgba(16, 185, 129, 0.08);
+
+  /* ── Scrollbar ── */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(16, 185, 129, 0.15);
+
+  /* ── Chart ── */
+  --chart-line: #10b981;
+  --chart-fill-start: rgba(16, 185, 129, 0.3);
+  --chart-fill-end: rgba(16, 185, 129, 0);
+  --chart-axis: #4b5563;
+
+  /* ── Badge on bell ── */
+  --badge-bg: #ef4444;
+  --badge-ring: #0f1419;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT MODE — Complete Override
+   ═══════════════════════════════════════════════════════════ */
+
+body.light-mode {
+  /* ── Core Backgrounds ── */
+  --bg-primary: #f8fafb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+
+  /* ── Card / Surface ── */
+  --surface-card: #ffffff;
+  --surface-card-hover: #f8fafb;
+  --surface-input: #f8fafb;
+  --surface-input-focus: #ffffff;
+
+  /* ── Borders ── */
+  --border-primary: rgba(0, 0, 0, 0.08);
+  --border-secondary: rgba(0, 0, 0, 0.05);
+  --border-hover: rgba(16, 185, 129, 0.25);
+  --border-focus: rgba(16, 185, 129, 0.5);
+  --border-input: rgba(0, 0, 0, 0.12);
+
+  /* ── Text ── */
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-ghost: #cbd5e1;
+
+  /* ── Brand: Emerald (User) — slightly deeper for contrast on white ── */
+  --emerald: #059669;
+  --emerald-hover: #047857;
+  --emerald-dark: #065f46;
+  --emerald-bg: rgba(16, 185, 129, 0.06);
+  --emerald-bg-hover: rgba(16, 185, 129, 0.1);
+  --emerald-bg-subtle: rgba(16, 185, 129, 0.03);
+  --emerald-border: rgba(16, 185, 129, 0.2);
+  --emerald-glow: rgba(16, 185, 129, 0.15);
+  --emerald-text: #059669;
+
+  /* ── Brand: Gold (Partner) ── */
+  --gold: #b8922f;
+  --gold-hover: #9a7a24;
+  --gold-bg: rgba(184, 146, 47, 0.06);
+  --gold-bg-hover: rgba(184, 146, 47, 0.1);
+  --gold-border: rgba(184, 146, 47, 0.2);
+  --gold-text: #92731d;
+
+  /* ── Semantic ── */
+  --positive: #059669;
+  --positive-bg: rgba(5, 150, 105, 0.08);
+  --negative: #dc2626;
+  --negative-bg: rgba(220, 38, 38, 0.06);
+  --negative-border: rgba(220, 38, 38, 0.15);
+  --warning: #d97706;
+  --warning-bg: rgba(217, 119, 6, 0.08);
+  --info: #2563eb;
+  --info-bg: rgba(37, 99, 235, 0.08);
+
+  /* ── Shadows — softer for light backgrounds ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.08);
+
+  /* ── Navbar ── */
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-border: rgba(0, 0, 0, 0.06);
+
+  /* ── Scrollbar ── */
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+
+  /* ── Chart ── */
+  --chart-line: #059669;
+  --chart-fill-start: rgba(5, 150, 105, 0.15);
+  --chart-fill-end: rgba(5, 150, 105, 0);
+  --chart-axis: #94a3b8;
+
+  /* ── Badge ── */
+  --badge-ring: #ffffff;
+}

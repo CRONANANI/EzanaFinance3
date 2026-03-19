@@ -1,5 +1,12 @@
 /* Ezana Echo - Article Page */
 
+.ezana-reading-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; background: rgba(16,185,129,0.1); z-index: 1000;
+}
+.ezana-reading-progress-fill {
+  height: 100%; background: linear-gradient(90deg, #10b981, #34d399); transition: width 0.08s ease-out;
+}
+
 .ezana-article-page {
   min-height: 100vh;
   position: relative;
@@ -153,10 +160,10 @@
   overflow-x: auto;
 }
 
-/* Crisp image rendering for presidential photos in chart (retina/high-DPI) */
+/* High-quality image rendering for presidential photos in chart */
 .sp500-chart-svg image {
+  image-rendering: auto;
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
 }
 
 /* Pulsating line animation - travels left to right */

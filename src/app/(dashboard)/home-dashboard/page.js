@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import './home-dashboard.css';
 
 /* ═══════════════════════════════════════════════════════════
@@ -53,20 +54,6 @@ const RECENT_TRANSACTIONS = [
   { company: 'Apple', date: '08 Dec 2025', amount: 1240.5, positive: true, txId: '#784512369' },
   { company: 'MSFT', date: '07 Dec 2025', amount: 980.75, positive: true, txId: '#784512368' },
 ];
-
-// Generate a simple sparkline path (upward trend)
-function generateSparkline(width, height, points = 40) {
-  let y = height * 0.7;
-  const step = width / points;
-  const coords = [];
-  for (let i = 0; i <= points; i++) {
-    y += (Math.random() - 0.35) * (height * 0.06);
-    y = Math.max(height * 0.2, Math.min(height * 0.85, y));
-    if (i > points * 0.7) y -= Math.random() * (height * 0.04);
-    coords.push(`${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${y.toFixed(1)}`);
-  }
-  return coords.join(' ');
-}
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -130,8 +117,6 @@ export default function HomeDashboardPage() {
     || 'Investor';
 
   const greeting = getGreeting();
-
-  const sparklinePath = useMemo(() => generateSparkline(500, 120), []);
 
   return (
     <div className="db-page">
@@ -199,23 +184,7 @@ export default function HomeDashboardPage() {
         </div>
 
         {/* Chart area */}
-        <div className="db-hero-chart">
-          <svg viewBox="0 0 500 120" preserveAspectRatio="none" className="db-sparkline-svg">
-            <defs>
-              <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {/* Fill area */}
-            <path d={`${sparklinePath} L500,120 L0,120 Z`} fill="url(#sparkGrad)" />
-            {/* Line */}
-            <path d={sparklinePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <div className="db-chart-axis">
-            <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
-          </div>
-        </div>
+        <HeroSparkline portfolioValue={PORTFOLIO_VALUE} changePct={PORTFOLIO_CHANGE_PCT} />
       </div>
 
       {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { NavNotifications } from '@/components/NavNotifications';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -285,6 +286,7 @@ export function Navbar() {
           </Link>
         </div>
         <div className="nav-actions">
+          <ThemeToggle />
           <Link href="/settings" className="nav-action-btn" title="Settings" aria-label="Settings">
             <i className="bi bi-gear"></i>
           </Link>

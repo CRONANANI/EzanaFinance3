@@ -1,7 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import '../partner.css';
+
+const MAX_CHARS = 280;
+const EMOJIS = ['😀','😊','👍','❤️','🔥','📈','💰','🎯','✅','🚀','💡','📊','⭐','🙌','💪','🎉','🤝','📉','💎','🏆'];
+
+function EmojiPicker({ onPick, anchorRef }) {
+  const [open, setOpen] = useState(false);
+  const popRef = useRef(null);
+
+  useEffect(() => {
+    const h = (e) => {
+      if (!popRef.current?.contains(e.target) && !anchorRef?.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('click', h);
+    return () => document.removeEventListener('click', h);
+  }, [anchorRef]);
+
+  return (
+    <div className="ptr-emoji-wrap" ref={anchorRef}>
+      <button type="button" className="ptr-compose-tool" title="Emoji" onClick={() => setOpen(!open)}>
+        <i className="bi bi-emoji-smile" />
+      </button>
+      {open && (
+        <div className="ptr-emoji-picker" ref={popRef} onClick={(e) => e.stopPropagation()}>
+          {EMOJIS.map((e, i) => (
+            <button key={i} type="button" className="ptr-emoji-btn" onClick={() => { onPick(e); setOpen(false); }}>{e}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const ENGAGEMENT_STATS = {
   followers: 847,
@@ -38,6 +69,15 @@ const COPIER_MESSAGES = [
 export default function PartnerCommunityPage() {
   const [newPost, setNewPost] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
+  const emojiAnchorRef = useRef(null);
+
+  const len = newPost.length;
+  const pct = (len / MAX_CHARS) * 100;
+  const charClass = pct >= 95 ? 'danger' : pct >= 80 ? 'warning' : '';
+
+  const insertEmoji = (emoji) => {
+    setNewPost((p) => p + emoji);
+  };
 
   return (
     <div className="ptr-page">
@@ -70,14 +110,18 @@ export default function PartnerCommunityPage() {
         <div className="ptr-row-2">
           <div className="ptr-card" style={{ flex: 1.5 }}>
             <div className="ptr-compose">
-              <textarea className="ptr-compose-input" value={newPost} onChange={(e) => setNewPost(e.target.value)} placeholder="Share a market insight, trade idea, or update with your followers..." />
+              <textarea className="ptr-compose-input" value={newPost} onChange={(e) => setNewPost(e.target.value)} placeholder="Share a market insight, trade idea, or update with your followers..." maxLength={MAX_CHARS} />
               <div className="ptr-compose-actions">
                 <div className="ptr-compose-tools">
+                  <EmojiPicker onPick={insertEmoji} anchorRef={emojiAnchorRef} />
                   <button className="ptr-compose-tool" title="Image"><i className="bi bi-image" /></button>
                   <button className="ptr-compose-tool" title="Poll"><i className="bi bi-bar-chart-steps" /></button>
                   <button className="ptr-compose-tool" title="Schedule"><i className="bi bi-clock" /></button>
                 </div>
-                <button className="ptr-btn-primary" disabled={!newPost.trim()}>Post</button>
+                <div className="ptr-compose-right">
+                  <span className={`ptr-char-count ${charClass}`}>{len}/{MAX_CHARS}</span>
+                  <button className="ptr-btn-primary" disabled={!newPost.trim()}>Post</button>
+                </div>
               </div>
             </div>
 

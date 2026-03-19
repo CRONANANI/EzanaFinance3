@@ -61,8 +61,22 @@ export default function CourseDetailPage() {
     setExpandedModules((prev) => ({ ...prev, [modId]: !prev[modId] }));
   };
 
+  const [showModuleCelebration, setShowModuleCelebration] = useState(null);
+  const [show100Overlay, setShow100Overlay] = useState(false);
+
   const markComplete = (lessonId) => {
-    setCompletedLessons((prev) => ({ ...prev, [lessonId]: true }));
+    setCompletedLessons((prev) => {
+      const next = { ...prev, [lessonId]: true };
+      const mod = course?.modules.find((m) => m.lessons.some((l) => l.id === lessonId));
+      if (mod) {
+        const done = mod.lessons.filter((l) => next[l.id]).length;
+        if (done === mod.lessons.length) setShowModuleCelebration(mod.title);
+      }
+      const total = course?.modules.reduce((s, m) => s + m.lessons.length, 0) || 0;
+      const completed = Object.values(next).filter(Boolean).length;
+      if (total > 0 && completed === total) setTimeout(() => setShow100Overlay(true), 400);
+      return next;
+    });
   };
 
   const selectLesson = (lesson) => {
@@ -104,6 +118,23 @@ export default function CourseDetailPage() {
 
   return (
     <div className="cd-page">
+      {showModuleCelebration && (
+        <div className="cd-module-celebration" role="alert">
+          <i className="bi bi-trophy-fill" />
+          <span>Module complete: {showModuleCelebration}</span>
+          <button type="button" onClick={() => setShowModuleCelebration(null)}><i className="bi bi-x" /></button>
+        </div>
+      )}
+      {show100Overlay && (
+        <div className="cd-100-overlay">
+          <div className="cd-100-content">
+            <i className="bi bi-stars" />
+            <h2>Course Complete!</h2>
+            <p>Congratulations on finishing {course.title}</p>
+            <button type="button" className="cd-btn-primary" onClick={() => setShow100Overlay(false)}>Continue</button>
+          </div>
+        </div>
+      )}
       <div className="cd-header">
         <div className="cd-header-inner">
           <div className="cd-header-left">

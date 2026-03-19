@@ -1,4 +1,5 @@
 /* @import must come first - otherwise browsers ignore these stylesheets */
+@import './theme-variables.css';
 @import 'app-legacy/assets/css/theme-variables.css';
 @import 'app-legacy/components/navigation/unified-nav.css';
 @import 'app-legacy/assets/css/page-layout.css';
@@ -13,6 +14,7 @@
 @import './mobile-nav-fix.css';
 @import './nav-notifications.css';
 @import './ui-improvements.css';
+@import './light-mode.css';
 
 @tailwind base;
 @tailwind components;

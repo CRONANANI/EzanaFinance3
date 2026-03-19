@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
+import { getMarketStatus } from '@/utils/marketHours';
+import { Confetti } from '@/components/ui/Confetti';
 
 export function TradeTicket({ getToken, onOrderPlaced }) {
   const { toast } = useToast();
@@ -17,6 +19,14 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [marketStatus, setMarketStatus] = useState(() => getMarketStatus());
+
+  useEffect(() => {
+    const t = setInterval(() => setMarketStatus(getMarketStatus()), 60000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (symbol.length < 1) { setSearchResults([]); return; }
@@ -40,11 +50,11 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
     setSearchResults([]);
   };
 
-  const handleSubmit = async () => {
+  const doSubmit = async () => {
     if (!selectedAsset || !qty) return;
+    setShowConfirm(false);
     setLoading(true);
     setError(null);
-    setSuccess(null);
     try {
       const token = await getToken();
       const payload = {
@@ -68,6 +78,7 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
       toast.success(`${side === 'buy' ? 'Buy' : 'Sell'} order for ${selectedAsset.symbol} submitted`);
       setQty('');
       setLimitPrice('');
+      setShowConfetti(true);
       onOrderPlaced?.(data);
     } catch (err) {
       setError(err.message);
@@ -77,10 +88,39 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
     }
   };
 
+  const handleSubmit = () => {
+    if (!selectedAsset || !qty || parseFloat(qty) <= 0) return;
+    setShowConfirm(true);
+  };
+
   return (
-    <div className="trd-form-card trd-ticket">
-      <div className="trd-form-header"><h2>Trade</h2></div>
-      <div className="trd-side-toggle">
+    <>
+      <Confetti active={showConfetti} onComplete={() => setShowConfetti(false)} />
+      {showConfirm && (
+        <div className="trd-confirm-overlay" onClick={() => setShowConfirm(false)}>
+          <div className="trd-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Confirm Order</h3>
+            <div className="trd-confirm-summary">
+              <p><strong>{side === 'buy' ? 'Buy' : 'Sell'}</strong> {selectedAsset?.symbol}</p>
+              <p>{amountType === 'shares' ? `${qty} shares` : `$${qty}`} @ {orderType === 'market' ? 'Market' : `Limit $${limitPrice}`}</p>
+            </div>
+            <div className="trd-confirm-actions">
+              <button className="trd-btn-secondary" onClick={() => setShowConfirm(false)}>Cancel</button>
+              <button className={`trd-btn-primary trd-submit-${side}`} onClick={doSubmit} disabled={loading}>
+                {loading ? 'Submitting...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="trd-form-card trd-ticket">
+        <div className="trd-form-header"><h2>Trade</h2></div>
+        {!marketStatus.isOpen && (
+          <div className="trd-market-closed" role="status">
+            <i className="bi bi-clock" /> {marketStatus.message}
+          </div>
+        )}
+        <div className="trd-side-toggle">
         <button className={`trd-side-btn buy ${side === 'buy' ? 'active' : ''}`} onClick={() => setSide('buy')}>Buy</button>
         <button className={`trd-side-btn sell ${side === 'sell' ? 'active' : ''}`} onClick={() => setSide('sell')}>Sell</button>
       </div>
@@ -157,5 +197,6 @@ export function TradeTicket({ getToken, onOrderPlaced }) {
         )}
       </div>
     </div>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * Optimize presidential portrait images for the S&P 500 chart.
- * Resizes to 224x224 for crisp display on retina/high-DPI screens.
+ * Resizes to 512x512 for maximum quality on retina/high-DPI screens.
  * Run: node scripts/optimize-president-images.js
  */
 
@@ -9,7 +9,7 @@ const path = require('path');
 const fs = require('fs');
 
 const SRC_DIR = path.join(__dirname, '../public/images/ezana-echo');
-const SIZE = 224; // 2x the 112px display size for retina
+const SIZE = 512; // High resolution for crisp display
 
 const IMAGES = [
   'bill-clinton.png',
@@ -36,7 +36,7 @@ async function optimize() {
         position: 'center',
         kernel: sharp.kernel.lanczos3,
       })
-      .png({ quality: 95, compressionLevel: 6 })
+      .png({ quality: 100, compressionLevel: 0 })
       .toFile(destPath);
     console.log(`Optimized ${file} (${width}x${height} -> ${SIZE}x${SIZE})`);
     fs.renameSync(destPath, srcPath);

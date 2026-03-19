@@ -1,10 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { EchoSearchBar, AuthorCard } from '@/components/echo';
 import './ezana-echo.css';
 import './echo-publish.css';
+
+function ArticleCard({ article }) {
+  const ref = useRef(null);
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      const viewportCenter = window.innerHeight / 2;
+      const diff = (centerY - viewportCenter) / viewportCenter;
+      setOffset(Math.max(-8, Math.min(8, diff * 12)));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <div ref={ref} className="ezana-echo-card-wrapper" style={{ transform: `translateY(${offset}px)` }}>
+      <Link href={`/ezana-echo/${article.slug}`} className="ezana-echo-card">
+        <div className="ezana-echo-card-image">
+          {article.image && !article.image.startsWith('/api/placeholder') ? (
+            <img src={article.image} alt={article.title} className="ezana-echo-card-image-img" />
+          ) : (
+            <div className="ezana-echo-card-image-placeholder">
+              <i className="bi bi-newspaper text-4xl text-emerald-500/30" />
+            </div>
+          )}
+          <span className="ezana-echo-card-category">{article.category}</span>
+        </div>
+        <div className="ezana-echo-card-body">
+          <h3 className="ezana-echo-card-title">{article.title}</h3>
+          <p className="ezana-echo-card-excerpt">{article.excerpt}</p>
+          {article.authorId ? (
+            <div className="ezana-echo-card-author" onClick={(e) => e.preventDefault()}>
+              <AuthorCard author={{ user_id: article.authorId, display_name: article.author, avatar_url: article.authorAvatar, articleCount: 0, subscriberCount: 0, verified: false }} compact />
+            </div>
+          ) : (
+            <div className="ezana-echo-card-meta">
+              <span>{article.author}</span>
+              <span>{article.date}</span>
+            </div>
+          )}
+        </div>
+      </Link>
+    </div>
+  );
+}
 
 const CATEGORIES = ['All', 'Markets', 'Investing', 'Trading', 'Crypto', 'Economy', 'Politics', 'Technology', 'Education', 'Energy', 'Congress', 'Portfolio', 'Insights'];
 
@@ -212,34 +262,7 @@ export default function EzanaEchoPage() {
 
           <div className="ezana-echo-grid">
             {filteredArticles.map((article) => (
-              <div key={article.slug} className="ezana-echo-card-wrapper">
-                <Link href={`/ezana-echo/${article.slug}`} className="ezana-echo-card">
-                  <div className="ezana-echo-card-image">
-                    {article.image && !article.image.startsWith('/api/placeholder') ? (
-                      <img src={article.image} alt={article.title} className="ezana-echo-card-image-img" />
-                    ) : (
-                      <div className="ezana-echo-card-image-placeholder">
-                        <i className="bi bi-newspaper text-4xl text-emerald-500/30" />
-                      </div>
-                    )}
-                    <span className="ezana-echo-card-category">{article.category}</span>
-                  </div>
-                  <div className="ezana-echo-card-body">
-                    <h3 className="ezana-echo-card-title">{article.title}</h3>
-                    <p className="ezana-echo-card-excerpt">{article.excerpt}</p>
-                    {article.authorId ? (
-                      <div className="ezana-echo-card-author" onClick={(e) => e.preventDefault()}>
-                        <AuthorCard author={{ user_id: article.authorId, display_name: article.author, avatar_url: article.authorAvatar, articleCount: 0, subscriberCount: 0, verified: false }} compact />
-                      </div>
-                    ) : (
-                      <div className="ezana-echo-card-meta">
-                        <span>{article.author}</span>
-                        <span>{article.date}</span>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </div>
+              <ArticleCard key={article.slug} article={article} />
             ))}
           </div>
         </section>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { AnimatedCounter } from '@/components/partner/AnimatedCounter';
 import '../partner.css';
 
 const EARNINGS_DATA = {
@@ -11,6 +12,47 @@ const EARNINGS_DATA = {
   pendingPayout: 780.5,
   nextPayoutDate: 'April 1, 2026',
 };
+
+const EARNINGS_CHART_DATA = [1200, 1450, 1320, 1890, 2100, 2340];
+
+function EarningsChart({ data }) {
+  const max = Math.max(...data);
+  const w = 400; const h = 120;
+  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 20)}`).join(' ');
+  const linePath = `M${pts}`;
+  const areaPath = `M${pts} L${w},${h} L0,${h} Z`;
+  return (
+    <div className="ptr-earnings-chart">
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="ptrEarningsGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#d4a853" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#d4a853" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill="url(#ptrEarningsGrad)" />
+        <path d={linePath} fill="none" stroke="#d4a853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
+function NextPayoutCountdown({ dateStr }) {
+  const { days, hours } = useMemo(() => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = d - now;
+    if (diff <= 0) return { days: 0, hours: 0 };
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+    const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    return { days, hours };
+  }, [dateStr]);
+  return (
+    <span className="ptr-countdown">
+      <AnimatedCounter value={days} />d <AnimatedCounter value={hours} />h
+    </span>
+  );
+}
 
 const COPIER_METRICS = {
   totalCopiers: 234,
@@ -61,31 +103,38 @@ export default function PartnerDashboardPage() {
         <div className="ptr-stat-card ptr-stat-gold">
           <i className="bi bi-cash-coin" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">${EARNINGS_DATA.totalEarnings.toLocaleString()}</span>
+            <span className="ptr-stat-value">$<AnimatedCounter value={EARNINGS_DATA.totalEarnings} decimals={0} /></span>
             <span className="ptr-stat-label">Total Earnings</span>
           </div>
         </div>
         <div className="ptr-stat-card">
           <i className="bi bi-graph-up-arrow" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">${EARNINGS_DATA.thisMonth.toLocaleString()}</span>
+            <span className="ptr-stat-value">$<AnimatedCounter value={EARNINGS_DATA.thisMonth} decimals={0} /></span>
             <span className="ptr-stat-label">This Month <span className="ptr-stat-change positive">+{EARNINGS_DATA.monthlyChange}%</span></span>
           </div>
         </div>
         <div className="ptr-stat-card">
           <i className="bi bi-people-fill" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">{COPIER_METRICS.totalCopiers}</span>
+            <span className="ptr-stat-value"><AnimatedCounter value={COPIER_METRICS.totalCopiers} /></span>
             <span className="ptr-stat-label">Total Copiers <span className="ptr-stat-change positive">+{COPIER_METRICS.newThisWeek} this week</span></span>
           </div>
         </div>
         <div className="ptr-stat-card">
           <i className="bi bi-wallet2" />
           <div className="ptr-stat-info">
-            <span className="ptr-stat-value">${COPIER_METRICS.totalAUM.toLocaleString()}</span>
+            <span className="ptr-stat-value">$<AnimatedCounter value={COPIER_METRICS.totalAUM} decimals={0} /></span>
             <span className="ptr-stat-label">Assets Under Management</span>
           </div>
         </div>
+      </div>
+
+      <div className="ptr-card ptr-earnings-chart-card">
+        <div className="ptr-card-header">
+          <h3>Earnings Trend</h3>
+        </div>
+        <EarningsChart data={EARNINGS_CHART_DATA} />
       </div>
 
       <div className="ptr-row-2">
@@ -159,7 +208,7 @@ export default function PartnerDashboardPage() {
           </div>
           <div className="ptr-payout-next">
             <i className="bi bi-clock" />
-            <span>Next payout: <strong>${EARNINGS_DATA.pendingPayout.toLocaleString()}</strong> on {EARNINGS_DATA.nextPayoutDate}</span>
+            <span>Next payout: <strong>${EARNINGS_DATA.pendingPayout.toLocaleString()}</strong> on {EARNINGS_DATA.nextPayoutDate} — <NextPayoutCountdown dateStr={EARNINGS_DATA.nextPayoutDate} /></span>
           </div>
         </div>
 

@@ -226,6 +226,10 @@
   color: #10b981;
 }
 
+.ezana-echo-card-wrapper {
+  transition: transform 0.15s ease-out;
+}
+
 .ezana-echo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

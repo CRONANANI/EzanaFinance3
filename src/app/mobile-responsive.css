@@ -1417,3 +1417,41 @@ body {
     padding: 1rem;
   }
 }
+
+/* ============================================
+   NARROW VIEWPORT (360px) - Full responsive audit
+   Dashboard, trade ticket, partner, article, nav
+   ============================================ */
+@media (max-width: 360px) {
+  .nav-container { padding: 0 0.75rem; }
+  .main-nav .nav-container { padding: 0 0.75rem; }
+  .trd-page { padding: 0.75rem; }
+  .trd-account-row { grid-template-columns: 1fr; }
+  .trd-positions-table-header { font-size: 0.5rem; }
+  .trd-sort-col { padding: 0.2rem 0; }
+  .ptr-page { padding: 0.75rem 1rem; }
+  .ptr-stats-row { grid-template-columns: 1fr; }
+  .ptr-page-header { flex-direction: column; align-items: flex-start; }
+  .ptr-tf-group, .ptr-tab-group { flex-wrap: wrap; }
+  .ezana-echo-container { padding: 0 0.75rem; }
+  .ezana-echo-filters { flex-direction: column; align-items: stretch; }
+  .ezana-echo-filter-btn { flex: 1; min-width: 0; font-size: 0.625rem; padding: 0.4rem 0.5rem; }
+  .ezana-article-container { padding: 0 0.75rem; }
+  .ezana-article { padding: 1.5rem 1rem; }
+  .db-page { padding: 0.75rem 1rem; }
+  .db-hero-card { flex-direction: column; }
+  .db-hero-chart { width: 100%; }
+  .db-greeting { font-size: 1.25rem; }
+  .db-quick-actions { flex-wrap: wrap; }
+  .db-hero-stats { flex-direction: column; gap: 0.75rem; }
+  .db-row-2 { grid-template-columns: 1fr; }
+  .db-row-3 { grid-template-columns: 1fr; }
+  .settings-page .settings-layout { flex-direction: column; }
+  .settings-sidebar { width: 100%; position: static; height: auto; }
+  .cd-header-inner { flex-direction: column; gap: 1rem; }
+  .cd-stats-bar { flex-wrap: wrap; gap: 0.5rem; }
+  .cd-body { flex-direction: column; }
+  .cd-sidebar { width: 100%; }
+  .trd-confirm-modal { padding: 1rem; max-width: 100%; }
+  .trd-form-card { padding: 0 1rem; }
+}

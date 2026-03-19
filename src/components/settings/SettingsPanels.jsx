@@ -1,12 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
    ═══════════════════════════════════════════════════════════ */
 
 export function MyDetailsPanel({ onSave }) {
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File must be under 2MB');
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setAvatarPreview(url);
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -15,13 +29,18 @@ export function MyDetailsPanel({ onSave }) {
       </div>
       <div className="settings-section">
         <div className="settings-avatar-area">
-          <div className="settings-avatar">
-            <i className="bi bi-person-fill" />
+          <div className="settings-avatar" onClick={() => fileInputRef.current?.click()}>
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar preview" className="settings-avatar-img" />
+            ) : (
+              <i className="bi bi-person-fill" />
+            )}
           </div>
+          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleAvatarChange} className="settings-avatar-input" />
           <div className="settings-avatar-actions">
             <span className="settings-avatar-name">Profile photo</span>
             <span className="settings-avatar-hint">JPG, PNG. Max 2MB.</span>
-            <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }}>Upload</button>
+            <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => fileInputRef.current?.click()}>Upload</button>
           </div>
         </div>
         <div className="settings-row">
@@ -74,6 +93,20 @@ export function MyDetailsPanel({ onSave }) {
         </div>
         <div className="settings-btn-row">
           <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+        </div>
+        <div className="settings-danger-zone">
+          <h3 className="settings-danger-title"><i className="bi bi-exclamation-triangle" /> Danger Zone</h3>
+          <div className="settings-danger-card">
+            <div>
+              <strong>Delete account</strong>
+              <p>Permanently delete your account and all associated data. This cannot be undone.</p>
+            </div>
+            <button type="button" className="settings-btn-danger" onClick={() => {
+              if (confirm('Are you sure? This will permanently delete your account.')) {
+                alert('Account deletion would be processed. Connect to your auth provider to implement.');
+              }
+            }}>Delete account</button>
+          </div>
         </div>
       </div>
     </div>
@@ -151,9 +184,24 @@ export function ProfilePanel({ onSave }) {
   );
 }
 
+function passwordStrength(pwd) {
+  if (!pwd) return { score: 0, label: '', pct: 0 };
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (pwd.length >= 12) score++;
+  if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+  if (/\d/.test(pwd)) score++;
+  if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+  const pcts = [0, 20, 40, 60, 80, 100];
+  return { score, label: labels[score], pct: pcts[score] };
+}
+
 export function PasswordPanel({ onSave }) {
   const [twoFA, setTwoFA] = useState(false);
   const [loginAlerts, setLoginAlerts] = useState(true);
+  const [newPassword, setNewPassword] = useState('');
+  const strength = passwordStrength(newPassword);
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -171,7 +219,15 @@ export function PasswordPanel({ onSave }) {
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">New password</label>
-            <input type="password" className="settings-input" placeholder="••••••••" />
+            <input type="password" className="settings-input" placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            {newPassword && (
+              <div className="settings-password-strength">
+                <div className="settings-strength-bar">
+                  <div className="settings-strength-fill" style={{ width: `${strength.pct}%`, background: strength.pct < 40 ? '#ef4444' : strength.pct < 70 ? '#f59e0b' : '#10b981' }} />
+                </div>
+                <span className="settings-strength-label">{strength.label}</span>
+              </div>
+            )}
           </div>
           <div className="settings-field">
             <label className="settings-label">Confirm new password</label>

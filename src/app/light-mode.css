@@ -1,0 +1,735 @@
+/* ═══════════════════════════════════════════════════════════
+   EZANA FINANCE — COMPLETE LIGHT MODE OVERRIDES
+   
+   This single file handles ALL light mode styling.
+   Import AFTER theme-variables.css and all component CSS:
+   @import './light-mode.css';
+   
+   Replaces all scattered body.light-mode rules in
+   individual component CSS files.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Global / Body ── */
+body.light-mode {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+/* ── Scrollbar ── */
+body.light-mode ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ══════════════════════════════
+   NAVBAR
+   ══════════════════════════════ */
+body.light-mode .main-nav,
+body.light-mode .navbar {
+  background: var(--nav-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom-color: var(--nav-border);
+}
+
+body.light-mode .nav-link {
+  color: var(--text-muted);
+}
+
+body.light-mode .nav-link:hover,
+body.light-mode .nav-link.active {
+  color: var(--emerald-text);
+}
+
+body.light-mode .nav-action-btn {
+  color: var(--text-muted);
+}
+
+body.light-mode .nav-action-btn:hover {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+}
+
+body.light-mode .logo-text {
+  color: var(--emerald-text);
+}
+
+/* ══════════════════════════════
+   DASHBOARD
+   ══════════════════════════════ */
+body.light-mode .db-page {
+  background: var(--bg-primary);
+}
+
+body.light-mode .db-greeting {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-greeting-sub {
+  color: var(--text-faint);
+}
+
+body.light-mode .db-greeting-highlight {
+  color: var(--emerald-text);
+}
+
+/* Hero card */
+body.light-mode .db-hero-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .db-hero-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-hero-stat-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-hero-label,
+body.light-mode .db-hero-stat-label {
+  color: var(--text-faint);
+}
+
+/* Cards */
+body.light-mode .db-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .db-card-header {
+  border-bottom-color: var(--border-secondary);
+}
+
+body.light-mode .db-card-header h3 {
+  color: var(--text-primary);
+}
+
+/* Holdings */
+body.light-mode .db-holding-card {
+  background: var(--bg-primary);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .db-holding-card:hover {
+  background: var(--surface-card-hover);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+body.light-mode .db-holding-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-holding-label {
+  color: var(--text-muted);
+}
+
+/* Watchlist */
+body.light-mode .db-watchlist-ticker {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-watchlist-price {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-watchlist-item {
+  border-bottom-color: var(--border-secondary);
+}
+
+body.light-mode .db-watchlist-item:hover {
+  background: var(--surface-card-hover);
+}
+
+/* Donut / Sectors / Transactions */
+body.light-mode .db-donut-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-sector-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-sector-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-tx-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .db-icon-btn {
+  border-color: var(--border-primary);
+  color: var(--text-faint);
+}
+
+body.light-mode .db-tf-btn,
+body.light-mode .db-tf-btn-sm {
+  border-color: var(--border-primary);
+  color: var(--text-faint);
+}
+
+body.light-mode .db-tf-btn.active,
+body.light-mode .db-tf-btn-sm.active {
+  background: var(--emerald);
+  color: #fff;
+  border-color: var(--emerald);
+}
+
+/* ══════════════════════════════
+   SETTINGS
+   ══════════════════════════════ */
+body.light-mode .settings-page {
+  background: var(--bg-primary);
+}
+
+body.light-mode .settings-sidebar {
+  border-right-color: var(--border-primary);
+}
+
+body.light-mode .settings-title,
+body.light-mode .settings-panel-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .settings-section-title {
+  color: var(--text-secondary);
+}
+
+body.light-mode .settings-nav-item.active {
+  background: var(--emerald-bg);
+}
+
+body.light-mode .settings-nav-label {
+  color: var(--text-muted);
+}
+
+body.light-mode .settings-nav-item.active .settings-nav-label {
+  color: var(--text-primary);
+}
+
+body.light-mode .settings-input {
+  background: var(--surface-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+body.light-mode .settings-input:focus {
+  border-color: var(--border-focus);
+  background: var(--surface-input-focus);
+}
+
+body.light-mode .settings-toggle-label {
+  color: var(--text-secondary);
+}
+
+body.light-mode .settings-plan-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .settings-table td {
+  color: var(--text-secondary);
+}
+
+body.light-mode .settings-integration-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .settings-api-key {
+  background: var(--bg-tertiary);
+}
+
+/* ══════════════════════════════
+   TRADING
+   ══════════════════════════════ */
+body.light-mode .trd-form-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .trd-form-header h2 {
+  color: var(--text-primary);
+}
+
+body.light-mode .trd-input {
+  background: var(--surface-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+body.light-mode .trd-input:focus {
+  border-color: var(--border-focus);
+  background: var(--surface-input-focus);
+}
+
+body.light-mode .trd-position-symbol,
+body.light-mode .trd-order-symbol {
+  color: var(--text-primary);
+}
+
+body.light-mode .trd-position-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .trd-account-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .trd-account-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .trd-search-dropdown {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+body.light-mode .trd-search-symbol {
+  color: var(--text-primary);
+}
+
+body.light-mode .trd-nav-btn {
+  border-color: var(--border-primary);
+  color: var(--text-faint);
+}
+
+body.light-mode .trd-nav-btn.active {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+}
+
+/* ══════════════════════════════
+   PARTNER PAGES
+   ══════════════════════════════ */
+body.light-mode .ptr-page {
+  background: var(--bg-primary);
+}
+
+body.light-mode .ptr-hero {
+  background: linear-gradient(135deg, rgba(184, 146, 47, 0.04) 0%, transparent 100%);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .ptr-hero-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .ptr-card-header h3 {
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-stat-value,
+body.light-mode .ptr-hero-stat-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-link-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .ptr-link-card:hover {
+  border-color: var(--gold-border);
+  box-shadow: var(--shadow-md);
+}
+
+body.light-mode .ptr-link-label {
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-strategy-name,
+body.light-mode .ptr-copier-name,
+body.light-mode .ptr-course-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-post-text {
+  color: var(--text-secondary);
+}
+
+body.light-mode .ptr-message-from {
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-analytics-big {
+  color: var(--gold-text);
+}
+
+body.light-mode .ptr-stat-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .ptr-compose-input {
+  background: var(--surface-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+body.light-mode .ptr-table td {
+  color: var(--text-secondary);
+}
+
+/* Partner navbar */
+body.light-mode .partner-nav {
+  background: var(--nav-bg);
+  border-bottom-color: var(--gold-border);
+}
+
+/* ══════════════════════════════
+   COURSE DETAIL
+   ══════════════════════════════ */
+body.light-mode .cd-page {
+  background: var(--bg-primary);
+}
+
+body.light-mode .cd-header {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
+}
+
+body.light-mode .cd-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .cd-stat-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .cd-content-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .cd-sidebar {
+  border-right-color: var(--border-primary);
+}
+
+body.light-mode .cd-module-title {
+  color: var(--text-secondary);
+}
+
+body.light-mode .cd-lesson-title {
+  color: var(--text-secondary);
+}
+
+body.light-mode .cd-progress-done {
+  color: var(--text-primary);
+}
+
+body.light-mode .cd-quiz-q-text {
+  color: var(--text-primary);
+}
+
+body.light-mode .cd-quiz-option {
+  background: var(--surface-input);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+body.light-mode .cd-lesson-content {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+  color: var(--text-muted);
+}
+
+body.light-mode .cd-video-placeholder {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .cd-instructor-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .cd-report-card-value {
+  color: var(--emerald-text);
+}
+
+/* ══════════════════════════════
+   NOTIFICATIONS
+   ══════════════════════════════ */
+body.light-mode .nn-bell-btn {
+  color: var(--text-muted);
+}
+
+body.light-mode .nn-bell-btn:hover,
+body.light-mode .nn-bell-btn.nn-bell-active {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+}
+
+body.light-mode .nn-badge {
+  box-shadow: 0 0 0 2px var(--bg-secondary);
+}
+
+body.light-mode .nn-dropdown {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-xl);
+}
+
+body.light-mode .nn-dropdown-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .nn-item-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .nn-item.nn-read .nn-item-title {
+  color: var(--text-faint);
+}
+
+body.light-mode .nn-item-content {
+  color: var(--text-muted);
+}
+
+body.light-mode .nn-item:hover {
+  background: var(--surface-card-hover);
+}
+
+body.light-mode .nn-mobile-panel {
+  background: var(--bg-secondary);
+}
+
+body.light-mode .nn-mobile-header-left h3 {
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════
+   AUTH PAGES
+   ══════════════════════════════ */
+body.light-mode .auth-page {
+  background: var(--bg-primary);
+}
+
+body.light-mode .auth-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+body.light-mode .partner-auth-card {
+  background: var(--surface-card);
+  border-color: var(--gold-border);
+}
+
+body.light-mode .auth-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .auth-input {
+  background: var(--surface-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+body.light-mode .auth-input:focus {
+  border-color: var(--border-focus);
+  background: var(--surface-input-focus);
+}
+
+body.light-mode .auth-btn-google {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════
+   ECHO PUBLISHING
+   ══════════════════════════════ */
+body.light-mode .echo-editor {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .echo-editor-header h2 {
+  color: var(--text-primary);
+}
+
+body.light-mode .echo-input {
+  background: var(--surface-input);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+body.light-mode .echo-author-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .echo-app-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .echo-app-card h3 {
+  color: var(--text-primary);
+}
+
+body.light-mode .echo-auth-modal-content {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .echo-auth-modal-content h3 {
+  color: var(--text-primary);
+}
+
+body.light-mode .echo-search-bar {
+  background: var(--surface-input);
+  border-color: var(--border-input);
+}
+
+body.light-mode .echo-search-input {
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════
+   TRUSTED LOGOS
+   ══════════════════════════════ */
+body.light-mode .tl-heading {
+  color: var(--text-primary);
+}
+
+body.light-mode .tl-logo-img {
+  opacity: 0.35;
+  filter: grayscale(100%) brightness(0.3);
+}
+
+body.light-mode .tl-logo-item:hover .tl-logo-img {
+  opacity: 0.85;
+  filter: grayscale(0%) brightness(1);
+}
+
+/* ══════════════════════════════
+   MOBILE NAV
+   ══════════════════════════════ */
+body.light-mode .mobile-nav-menu {
+  background: var(--surface-card);
+}
+
+body.light-mode .mobile-nav-link {
+  color: var(--text-secondary);
+}
+
+body.light-mode .mobile-nav-link:hover {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+}
+
+/* ══════════════════════════════
+   GLOBAL OVERRIDES
+   ══════════════════════════════ */
+body.light-mode .positive { color: var(--positive) !important; }
+body.light-mode .negative { color: var(--negative) !important; }
+
+/* Selection highlight */
+body.light-mode ::selection {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THEME TOGGLE BUTTON
+   Sits beside the gear icon in the navbar.
+   Sun = dark mode active (click for light)
+   Moon = light mode active (click for dark)
+   ═══════════════════════════════════════════════════════════ */
+
+.theme-toggle-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--border-primary, rgba(16, 185, 129, 0.08));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--emerald-bg, rgba(16, 185, 129, 0.08));
+  border-color: var(--border-hover, rgba(16, 185, 129, 0.2));
+}
+
+/* Icon wrapper — handles the rotation animation */
+.theme-toggle-icon-wrap {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-icon-wrap.dark {
+  transform: rotate(0deg);
+}
+
+.theme-toggle-icon-wrap.light {
+  transform: rotate(180deg);
+}
+
+/* Sun icon */
+.theme-toggle-sun {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 1rem;
+  color: #fbbf24;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Moon icon */
+.theme-toggle-moon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 1rem;
+  color: #60a5fa;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Dark mode: show sun, hide moon */
+.theme-toggle-icon-wrap.dark .theme-toggle-sun {
+  opacity: 1;
+  transform: scale(1);
+}
+.theme-toggle-icon-wrap.dark .theme-toggle-moon {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+/* Light mode: hide sun, show moon */
+.theme-toggle-icon-wrap.light .theme-toggle-sun {
+  opacity: 0;
+  transform: scale(0.5);
+}
+.theme-toggle-icon-wrap.light .theme-toggle-moon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Light mode button styling ── */
+body.light-mode .theme-toggle-btn {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-mode .theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+}

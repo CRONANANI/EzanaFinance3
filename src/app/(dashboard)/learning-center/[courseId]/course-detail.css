@@ -664,3 +664,28 @@ body.light-mode .cd-lesson-content { background: rgba(0,0,0,0.02); border-color:
 body.light-mode .cd-video-placeholder { background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-color: rgba(0,0,0,0.06); }
 body.light-mode .cd-report-card-value { color: #059669; }
 body.light-mode .cd-report-module-header { color: #1f2937; }
+
+/* Progress celebrations */
+.cd-module-celebration {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  z-index: 100; display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1.25rem; background: rgba(16,185,129,0.95); color: #0a0e13;
+  border-radius: 12px; font-size: 0.875rem; font-weight: 700; box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+  animation: cdSlideUp 0.3s ease-out;
+}
+.cd-module-celebration i:first-child { font-size: 1.25rem; color: #047857; }
+.cd-module-celebration button { background: none; border: none; color: inherit; cursor: pointer; padding: 0.25rem; opacity: 0.8; }
+.cd-module-celebration button:hover { opacity: 1; }
+@keyframes cdSlideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+.cd-100-overlay {
+  position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.cd-100-content {
+  text-align: center; padding: 2.5rem; background: #161b22; border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 20px; max-width: 400px;
+}
+.cd-100-content i { font-size: 3rem; color: #fbbf24; display: block; margin-bottom: 1rem; }
+.cd-100-content h2 { font-size: 1.5rem; font-weight: 800; color: #f0f6fc; margin: 0 0 0.5rem; }
+.cd-100-content p { font-size: 0.875rem; color: #8b949e; margin: 0 0 1.5rem; }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -8,6 +8,32 @@ import { Sp500Chart } from '@/components/ezana-echo/Sp500Chart';
 import { AuthorCard } from '@/components/echo';
 import './article.css';
 import '../echo-publish.css';
+
+function ReadingProgressBar() {
+  const [pct, setPct] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const article = document.querySelector('.ezana-article-content');
+      if (!article) return;
+      const rect = article.getBoundingClientRect();
+      const winH = window.innerHeight;
+      const start = -rect.height + winH;
+      const scrolled = -rect.top;
+      const progress = Math.min(100, Math.max(0, (scrolled / (rect.height + winH)) * 100));
+      setPct(progress);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <div className="ezana-reading-progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+      <div className="ezana-reading-progress-fill" style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
 
 const ARTICLES = {
   'oil-assets-surge': {
@@ -322,6 +348,7 @@ export default function ArticlePage() {
 
   return (
     <div className="ezana-article-page">
+      <ReadingProgressBar />
       <div className="ezana-echo-bg" />
       <div className={`ezana-article-container ${slug === 'sp500-returns-by-president' ? 'ezana-article-wide' : ''}`}>
         <Link href="/ezana-echo" className="ezana-article-back">

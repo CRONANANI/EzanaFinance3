@@ -99,25 +99,46 @@ select.trd-input { appearance: none; cursor: pointer; background-image: url("dat
 .trd-review-label { color: #6b7280; }
 .trd-review-item span:last-child { color: #f0f6fc; font-weight: 600; }
 
-.trd-account-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.trd-account-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
 .trd-account-card { padding: 1.25rem; background: rgba(16,185,129,0.02); border: 1px solid rgba(16,185,129,0.08); border-radius: 14px; }
 .trd-account-label { font-size: 0.625rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 0.25rem; }
 .trd-account-value { font-size: 1.25rem; font-weight: 800; color: #f0f6fc; }
 
+.trd-positions-with-chart { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+.trd-positions-donut { position: relative; width: 140px; flex-shrink: 0; }
+.trd-donut-svg { display: block; }
+.trd-donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.trd-donut-value { font-size: 1.25rem; font-weight: 800; color: #f0f6fc; }
+.trd-donut-label { font-size: 0.5625rem; color: #6b7280; font-weight: 600; }
+.trd-donut-legend { margin-top: 0.5rem; }
+.trd-donut-legend-item { display: flex; align-items: center; gap: 0.375rem; font-size: 0.625rem; color: #8b949e; margin-bottom: 0.2rem; }
+.trd-legend-dot { width: 6px; height: 6px; border-radius: 2px; flex-shrink: 0; }
+.trd-legend-pct { margin-left: auto; font-weight: 600; color: #e2e8f0; }
+
+.trd-positions-table-wrap { flex: 1; min-width: 0; }
+.trd-positions-table-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-bottom: 1px solid rgba(16,185,129,0.08); font-size: 0.5625rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+.trd-sort-col { display: flex; align-items: center; gap: 0.25rem; background: none; border: none; color: inherit; cursor: pointer; font: inherit; padding: 0.25rem 0; transition: color 0.15s; }
+.trd-sort-col:hover { color: #10b981; }
+.trd-sort-col.active { color: #10b981; }
+.trd-sort-col-placeholder { width: 28px; flex-shrink: 0; }
+
 .trd-positions-list { padding: 0; }
-.trd-position-row { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1.5rem; border-bottom: 1px solid rgba(16,185,129,0.04); transition: background 0.1s; }
+.trd-position-row { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(80px, 1fr) minmax(90px, 1fr) minmax(80px, 1fr) 28px; align-items: center; gap: 0.5rem; padding: 0.875rem 1rem; border-bottom: 1px solid rgba(16,185,129,0.04); transition: background 0.1s; }
 .trd-position-row:hover { background: rgba(16,185,129,0.02); }
-.trd-position-left { min-width: 140px; }
+.trd-position-left { min-width: 0; }
 .trd-position-symbol { font-size: 0.9375rem; font-weight: 800; color: #f0f6fc; display: block; }
 .trd-position-qty { font-size: 0.625rem; color: #6b7280; }
-.trd-position-mid { flex: 1; }
+.trd-position-mid { min-width: 0; }
 .trd-position-value { font-size: 0.875rem; font-weight: 700; color: #e2e8f0; display: block; }
 .trd-position-price { font-size: 0.5625rem; color: #4b5563; }
-.trd-position-right { text-align: right; min-width: 100px; }
+.trd-position-right { text-align: right; min-width: 0; }
 .trd-position-pl { font-size: 0.875rem; font-weight: 700; display: block; }
 .trd-position-plpct { font-size: 0.625rem; font-weight: 600; }
+.trd-position-today { text-align: right; min-width: 0; }
 .trd-btn-close { width: 28px; height: 28px; border-radius: 6px; background: rgba(239,68,68,0.06); border: none; color: #6b7280; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: all 0.15s; }
 .trd-btn-close:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+.trd-positions-card { max-width: 100%; }
 
 .trd-filter-row { display: flex; gap: 2px; }
 .trd-filter-btn { padding: 0.3rem 0.625rem; font-size: 0.625rem; font-weight: 700; color: #6b7280; background: transparent; border: 1px solid rgba(16,185,129,0.08); border-radius: 6px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
@@ -165,13 +186,24 @@ select.trd-input { appearance: none; cursor: pointer; background-image: url("dat
 
 .trd-trade-layout { display: flex; justify-content: center; }
 
+.trd-confirm-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.trd-confirm-modal { background: #161b22; border: 1px solid rgba(16,185,129,0.2); border-radius: 18px; padding: 1.5rem; max-width: 360px; width: 100%; }
+.trd-confirm-modal h3 { font-size: 1.125rem; font-weight: 800; color: #f0f6fc; margin: 0 0 1rem; }
+.trd-confirm-summary { padding: 1rem; background: rgba(16,185,129,0.04); border-radius: 10px; margin-bottom: 1rem; }
+.trd-confirm-summary p { margin: 0 0 0.25rem; font-size: 0.875rem; color: #e2e8f0; }
+.trd-confirm-summary p:last-child { margin-bottom: 0; }
+.trd-confirm-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+.trd-market-closed { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; margin: 0 1.5rem 1rem; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 10px; font-size: 0.75rem; color: #fbbf24; }
+.trd-market-closed i { font-size: 0.875rem; }
+
 @media (max-width: 768px) {
   .trd-page { padding: 1rem; }
   .trd-nav { flex-wrap: wrap; gap: 0.25rem; }
   .trd-nav-btn { flex: 1; min-width: 0; font-size: 0.6875rem; padding: 0.5rem 0.75rem; justify-content: center; }
   .trd-account-row { grid-template-columns: 1fr 1fr; }
-  .trd-position-row { flex-wrap: wrap; gap: 0.5rem; }
-  .trd-position-left { min-width: 100%; }
+  .trd-positions-with-chart { flex-direction: column; }
+  .trd-positions-table-header { flex-wrap: wrap; }
+  .trd-position-row { grid-template-columns: 1fr 1fr auto auto 28px; gap: 0.5rem; }
   .trd-order-row { flex-wrap: wrap; }
   .trd-row { grid-template-columns: 1fr; }
   .trd-form-card { max-width: 100%; }
