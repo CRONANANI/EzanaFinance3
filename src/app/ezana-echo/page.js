@@ -136,7 +136,15 @@ export default function EzanaEchoPage() {
         {/* 5. Article Cards Grid */}
         <div className="echo-grid">
           {loading ? (
-            <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#64748b' }}>Loading articles...</p>
+            <div className="echo-loading-state">
+              <div className="echo-loading-spinner" aria-hidden />
+              <p>Loading articles...</p>
+            </div>
+          ) : filteredArticles.length === 0 ? (
+            <div className="echo-empty-state">
+              <i className="bi bi-newspaper" aria-hidden />
+              <p>No articles published yet</p>
+            </div>
           ) : (
             filteredArticles.map((article) => (
               <Link key={article.slug} href={`/ezana-echo/${article.slug}`} className="echo-article-card">
@@ -155,7 +163,9 @@ export default function EzanaEchoPage() {
                   <p className="echo-card-excerpt">{article.excerpt}</p>
                   <div className="echo-card-footer">
                     <div className="echo-card-author-row">
-                      <div className="echo-card-avatar">{article.author?.[0] || 'E'}</div>
+                      <div className="echo-card-avatar">
+                        {article.authorAvatar ? <img src={article.authorAvatar} alt="" /> : (article.author?.[0] || 'E')}
+                      </div>
                       <span className="echo-card-author-name">{article.author}</span>
                     </div>
                     <div className="echo-card-meta">
@@ -170,23 +180,25 @@ export default function EzanaEchoPage() {
         </div>
 
         {/* 6. Authors Row */}
-        <div className="echo-section-header">
-          <h3 className="echo-section-title">Authors</h3>
-          <Link href="/ezana-echo/author" className="echo-section-link">View all <i className="bi bi-arrow-right" /></Link>
-        </div>
-        <div className="echo-authors-row">
+        <div className="echo-authors-section">
+          <div className="echo-section-header">
+            <h3 className="echo-section-title">Authors</h3>
+            <Link href="/ezana-echo/author" className="echo-section-link">View all <i className="bi bi-arrow-right" /></Link>
+          </div>
+          <div className="echo-authors-row">
           {apiAuthors.slice(0, 6).map((a) => (
             <Link key={a.user_id || a.id} href={a.user_id ? `/ezana-echo/author/${a.user_id}` : '#'} className="echo-author-mini">
               <div className="echo-author-mini-avatar">
-                {a.avatar_url ? <img src={a.avatar_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : a.display_name?.[0] || 'E'}
+                {a.avatar_url ? <img src={a.avatar_url} alt="" /> : (a.display_name?.[0] || 'E')}
                 {a.verified && <i className="bi bi-patch-check-fill echo-author-mini-verified" />}
               </div>
-              <div>
+              <div className="echo-author-mini-info">
                 <span className="echo-author-mini-name">{a.display_name}</span>
                 <span className="echo-author-mini-stat">{a.articleCount || 0} articles · {(a.subscriberCount || 0).toLocaleString()} subscribers</span>
               </div>
             </Link>
           ))}
+          </div>
         </div>
 
         {/* 7. Newsletter CTA */}
