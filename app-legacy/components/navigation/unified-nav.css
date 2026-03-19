@@ -50,8 +50,12 @@
   background-clip: text;
 }
 
+/* Center nav: AnimatedNav on desktop, nav-links on mobile only (shown via nav-links-open) */
+.main-nav .nav-links {
+  display: none;
+}
+
 .nav-links {
-  display: flex;
   gap: 0.5rem;
   align-items: center;
   flex: 1;

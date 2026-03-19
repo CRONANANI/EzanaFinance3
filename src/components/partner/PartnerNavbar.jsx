@@ -6,11 +6,20 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AnimatedNav } from '@/components/ui/AnimatedNav';
+import '@/components/ui/animated-nav.css';
 
 export function PartnerNavbar() {
   const pathname = usePathname();
   const { verified, partnerRole } = usePartner();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const partnerNavItems = [
+    { id: 1, title: 'Home', url: '/partner-home', icon: 'bi-house-door', isActive: pathname === '/partner-home' },
+    { id: 2, title: 'Dashboard', url: '/partner-dashboard', icon: 'bi-speedometer2', isActive: pathname?.includes('partner-dashboard') },
+    { id: 3, title: 'Community', url: '/partner-community', icon: 'bi-people', isActive: pathname?.includes('partner-community') },
+    { id: 4, title: 'Content Studio', url: '/partner-learning', icon: 'bi-mortarboard', isActive: pathname?.includes('partner-learning') },
+  ];
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -49,6 +58,7 @@ export function PartnerNavbar() {
           <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
         </button>
 
+        <AnimatedNav items={partnerNavItems} accentColor="#d4a853" />
         <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
           <Link href="/partner-home" className={`nav-link ${pathname === '/partner-home' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-house-door" />
@@ -64,7 +74,7 @@ export function PartnerNavbar() {
           </Link>
           <Link href="/partner-learning" className={`nav-link ${pathname?.includes('partner-learning') ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard" />
-            <span>Creator Studio</span>
+            <span>Content Studio</span>
           </Link>
         </div>
 

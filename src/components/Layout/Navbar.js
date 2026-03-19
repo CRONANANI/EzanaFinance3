@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AnimatedNav } from '@/components/ui/AnimatedNav';
+import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -19,6 +21,30 @@ export function Navbar() {
   const isEzanaEcho = pathname?.startsWith('/ezana-echo');
   const showLandingNav = isLanding || (isHelpCenter && !isAuthenticated) || isEzanaEcho;
   const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo');
+
+  const userNavItems = [
+    { id: 1, title: 'Dashboard', url: '/home-dashboard', icon: 'bi-speedometer2', isActive: pathname?.includes('home-dashboard') },
+    {
+      id: 2,
+      title: 'Research',
+      url: '#',
+      icon: 'bi-search',
+      dropdown: true,
+      isActive: isResearchActive,
+      items: [
+        { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
+        { id: 22, title: 'Company Research', description: 'Financial analysis', url: '/company-research', icon: 'bi-bar-chart-line' },
+        { id: 23, title: 'Market Analysis', description: 'Sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
+        { id: 24, title: 'For The Quants', description: 'Quant tools', url: '/for-the-quants', icon: 'bi-calculator' },
+        { id: 25, title: 'Betting Markets', description: 'Odds & predictions', url: '/betting-markets', icon: 'bi-bullseye' },
+        { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
+      ],
+    },
+    { id: 3, title: 'Trading', url: '/trading', icon: 'bi-graph-up-arrow', isActive: pathname?.includes('/trading') },
+    { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
+    { id: 5, title: 'Community', url: '/community', icon: 'bi-people', isActive: pathname?.includes('/community') },
+    { id: 6, title: 'Learning Center', url: '/learning-center', icon: 'bi-mortarboard', isActive: pathname?.includes('/learning-center') },
+  ];
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -207,8 +233,9 @@ export function Navbar() {
         >
           <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
         </button>
+        <AnimatedNav items={userNavItems} accentColor="#10b981" />
         <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
-          <Link href="/home-dashboard" className={`nav-link ${pathname.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/home-dashboard" className={`nav-link ${pathname?.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-speedometer2"></i>
             <span>Dashboard</span>
           </Link>
@@ -244,52 +271,19 @@ export function Navbar() {
               </Link>
             </div>
           </div>
-          <div className={`nav-dropdown desktop-dropdown-only ${isResearchActive ? 'active' : ''}`}>
-            <button className={`nav-link dropdown-trigger ${isResearchActive ? 'active' : ''}`} type="button" aria-label="Research menu">
-              <i className="bi bi-search"></i>
-              <span>Research</span>
-              <i className="bi bi-chevron-down chevron"></i>
-            </button>
-            <div className="dropdown-menu">
-              <Link href="/inside-the-capitol" className="dropdown-item">
-                <i className="bi bi-building"></i>
-                <div><div className="item-title">Inside The Capitol</div><div className="item-desc">Congressional trading</div></div>
-              </Link>
-              <Link href="/company-research" className="dropdown-item">
-                <i className="bi bi-bar-chart-line"></i>
-                <div><div className="item-title">Company Research</div><div className="item-desc">Financial analysis</div></div>
-              </Link>
-              <Link href="/market-analysis" className="dropdown-item">
-                <i className="bi bi-graph-up-arrow"></i>
-                <div><div className="item-title">Market Analysis</div><div className="item-desc">Sector trends</div></div>
-              </Link>
-              <Link href="/for-the-quants" className="dropdown-item">
-                <i className="bi bi-calculator"></i>
-                <div><div className="item-title">For The Quants</div><div className="item-desc">Quant tools</div></div>
-              </Link>
-              <Link href="/betting-markets" className="dropdown-item">
-                <i className="bi bi-bullseye"></i>
-                <div><div className="item-title">Betting Markets</div><div className="item-desc">Odds & predictions</div></div>
-              </Link>
-              <Link href="/ezana-echo" className="dropdown-item">
-                <i className="bi bi-newspaper"></i>
-                <div><div className="item-title">Ezana Echo</div><div className="item-desc">Articles & insights</div></div>
-              </Link>
-            </div>
-          </div>
-          <Link href="/trading" className={`nav-link ${pathname.includes('trading') ? 'active' : ''}`} data-page="trading" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/trading" className={`nav-link ${pathname?.includes('trading') ? 'active' : ''}`} data-page="trading" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-graph-up-arrow"></i>
             <span>Trading</span>
           </Link>
-          <Link href="/watchlist" className={`nav-link ${pathname.includes('watchlist') ? 'active' : ''}`} data-page="watchlist" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/watchlist" className={`nav-link ${pathname?.includes('watchlist') ? 'active' : ''}`} data-page="watchlist" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-bookmark"></i>
             <span>Watchlist</span>
           </Link>
-          <Link href="/community" className={`nav-link ${pathname.includes('community') ? 'active' : ''}`} data-page="community" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/community" className={`nav-link ${pathname?.includes('community') ? 'active' : ''}`} data-page="community" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-people"></i>
             <span>Community</span>
           </Link>
-          <Link href="/learning-center" className={`nav-link ${pathname.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
+          <Link href="/learning-center" className={`nav-link ${pathname?.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
           </Link>
