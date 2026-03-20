@@ -286,20 +286,29 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
           transition: isDragging ? "none" : "transform 0.15s ease-out",
         }}
       >
-        <Image
-          src={dataUrl}
-          className="world-map-image"
-          alt=""
-          height={height}
-          width={width}
-          draggable={false}
-          unoptimized
-        />
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          className="world-map-svg world-map-svg--interactive"
-          preserveAspectRatio="xMidYMid meet"
-        >
+        <div className="world-map-wrapper" style={{ position: "relative", width: "100%", height: "100%" }}>
+          <Image
+            src={dataUrl}
+            className="world-map-image"
+            alt=""
+            height={height}
+            width={width}
+            draggable={false}
+            unoptimized
+            style={{ objectFit: "contain" }}
+          />
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            className="world-map-svg world-map-svg--interactive"
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          >
           {FINANCIAL_CENTERS.map((center) => {
             const point = projectPoint(center.lat, center.lng);
             const isHovered = hoveredDot === center.id;
@@ -323,59 +332,58 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                 onMouseLeave={() => setHoveredDot(null)}
                 onClick={(e) => handleDotClick(center, e)}
               >
-                {/* Pulse ring 1 */}
-                <circle cx={point.x} cy={point.y} r="3" fill={lineColor} opacity="0.3">
-                  <animate attributeName="r" from="3" to="12" dur="2s" repeatCount="indefinite" />
+                {/* Pulse ring 1 — reduced ~95% */}
+                <circle cx={point.x} cy={point.y} r="0.5" fill={lineColor} opacity="0.3">
+                  <animate attributeName="r" from="0.5" to="3" dur="2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
                 {/* Pulse ring 2 (offset timing) */}
-                <circle cx={point.x} cy={point.y} r="3" fill={lineColor} opacity="0.2">
-                  <animate attributeName="r" from="3" to="12" dur="2s" begin="1s" repeatCount="indefinite" />
+                <circle cx={point.x} cy={point.y} r="0.5" fill={lineColor} opacity="0.2">
+                  <animate attributeName="r" from="0.5" to="3" dur="2s" begin="1s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.2" to="0" dur="2s" begin="1s" repeatCount="indefinite" />
                 </circle>
-                {/* Main dot */}
+                {/* Main dot — reduced ~95% */}
                 <circle
                   cx={point.x}
                   cy={point.y}
-                  r={isHovered || isSelected ? 5 : 4}
+                  r={isHovered || isSelected ? 1.8 : 1.2}
                   fill={isSelected ? "#fff" : lineColor}
                   stroke={isSelected ? lineColor : "none"}
-                  strokeWidth={isSelected ? 1.5 : 0}
+                  strokeWidth={isSelected ? 0.4 : 0}
                 />
                 {/* Inner dot */}
-                <circle cx={point.x} cy={point.y} r="1.5" fill={isSelected ? lineColor : "#0a0e13"} />
+                <circle cx={point.x} cy={point.y} r="0.4" fill={isSelected ? lineColor : "#0a0e13"} />
 
                 {isHovered && !isSelected && (
                   <g pointerEvents="none">
                     <rect
-                      x={point.x - 48}
-                      y={point.y - 34}
-                      width="96"
-                      height="26"
-                      rx="4"
-                      fill="#0a0e13"
-                      stroke={lineColor}
-                      strokeWidth="0.5"
-                      opacity="0.95"
+                      x={point.x - 22}
+                      y={point.y - 14}
+                      width="44"
+                      height="10"
+                      rx="2"
+                      fill="rgba(10,14,19,0.92)"
+                      stroke="rgba(16,185,129,0.2)"
+                      strokeWidth="0.3"
                     />
                     <text
                       x={point.x}
-                      y={point.y - 22}
+                      y={point.y - 8.5}
                       textAnchor="middle"
                       fill="#f0f6fc"
-                      fontSize="6"
+                      fontSize="3"
                       fontWeight="700"
-                      fontFamily="var(--font-sans, system-ui, sans-serif)"
+                      fontFamily="var(--font-mono, monospace)"
                     >
                       {center.name}
                     </text>
                     <text
                       x={point.x}
-                      y={point.y - 13}
+                      y={point.y - 5.5}
                       textAnchor="middle"
-                      fill="#6b7280"
-                      fontSize="4.5"
-                      fontFamily="var(--font-sans, system-ui, sans-serif)"
+                      fill="#4b5563"
+                      fontSize="2"
+                      fontFamily="var(--font-mono, monospace)"
                     >
                       {center.exchange}
                     </text>
@@ -385,6 +393,7 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
             );
           })}
         </svg>
+        </div>
       </div>
     </div>
   );
