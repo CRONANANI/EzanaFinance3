@@ -615,6 +615,7 @@ body {
 
   .hero-waitlist-intro {
     white-space: normal;
+    text-align: center;
   }
 
   .hero-waitlist {
@@ -623,6 +624,7 @@ body {
 
   .legacy-subtext {
     white-space: normal;
+    text-align: center;
   }
 
   /* Features grid */
