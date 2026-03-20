@@ -1,6 +1,14 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect, useMemo } from "react";
+import {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import DottedMap from "dotted-map";
 import Image from "next/image";
 
@@ -21,13 +29,24 @@ export const FINANCIAL_CENTERS = [
 
 export type FinancialCenter = (typeof FINANCIAL_CENTERS)[number];
 
+export type WorldMapHandle = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+};
+
 type WorldMapProps = {
   lineColor?: string;
   onDotClick?: (center: FinancialCenter) => void;
   selectedPanelId?: string | null;
+  /** Hide built-in +/−/reset (use external controls via ref). */
+  hideControls?: boolean;
 };
 
-export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = null }: WorldMapProps) {
+export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
+  { lineColor = "#10b981", onDotClick, selectedPanelId = null, hideControls = false },
+  ref
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
@@ -48,7 +67,6 @@ export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = 
     return { map: m, svgMap: svg, width: inst.width, height: inst.height };
   }, []);
 
-  /** Align dots with DottedMap’s Mercator grid (same as underlying SVG). */
   const projectPoint = useCallback(
     (lat: number, lng: number) => {
       const pin = map.getPin({ lat, lng });
@@ -56,6 +74,32 @@ export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = 
       return { x: pin.x, y: pin.y };
     },
     [map, width, height]
+  );
+
+  const zoomTowardCenter = useCallback((factor: number) => {
+    setTransform((prev) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      const newScale = Math.min(Math.max(prev.scale * factor, 1), 5);
+      if (!rect) return { ...prev, scale: newScale };
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const scaleChange = newScale / prev.scale;
+      return {
+        scale: newScale,
+        x: cx - (cx - prev.x) * scaleChange,
+        y: cy - (cy - prev.y) * scaleChange,
+      };
+    });
+  }, []);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      zoomIn: () => zoomTowardCenter(1.3),
+      zoomOut: () => zoomTowardCenter(1 / 1.3),
+      resetZoom: () => setTransform({ x: 0, y: 0, scale: 1 }),
+    }),
+    [zoomTowardCenter]
   );
 
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -208,25 +252,31 @@ export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = 
       onTouchEnd={handleTouchEnd}
       style={{ cursor: isDragging ? "grabbing" : "grab" }}
     >
-      <div className="world-map-controls" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
-        <button
-          type="button"
-          onClick={() => setTransform((p) => ({ ...p, scale: Math.min(p.scale * 1.3, 5) }))}
-          title="Zoom in"
+      {!hideControls && (
+        <div
+          className="world-map-controls"
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         >
-          +
-        </button>
-        <button
-          type="button"
-          onClick={() => setTransform((p) => ({ ...p, scale: Math.max(p.scale * 0.7, 1) }))}
-          title="Zoom out"
-        >
-          −
-        </button>
-        <button type="button" onClick={resetZoom} title="Reset">
-          ⟲
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => zoomTowardCenter(1.3)}
+            title="Zoom in"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={() => zoomTowardCenter(1 / 1.3)}
+            title="Zoom out"
+          >
+            −
+          </button>
+          <button type="button" onClick={resetZoom} title="Reset">
+            ⟲
+          </button>
+        </div>
+      )}
 
       <div
         className="world-map-inner"
@@ -254,7 +304,6 @@ export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = 
             const point = projectPoint(center.lat, center.lng);
             const isHovered = hoveredDot === center.id;
             const isSelected = selectedPanelId === center.panelId;
-            const r = isHovered || isSelected ? 5 : 3.5;
             return (
               <g
                 key={center.id}
@@ -274,14 +323,29 @@ export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = 
                 onMouseLeave={() => setHoveredDot(null)}
                 onClick={(e) => handleDotClick(center, e)}
               >
-                <circle cx={point.x} cy={point.y} r="2" fill={lineColor} opacity="0.4">
-                  <animate attributeName="r" from="2" to="10" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
+                {/* Pulse ring 1 */}
+                <circle cx={point.x} cy={point.y} r="3" fill={lineColor} opacity="0.3">
+                  <animate attributeName="r" from="3" to="12" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
-                <circle cx={point.x} cy={point.y} r={r} fill={lineColor} />
-                <circle cx={point.x} cy={point.y} r="1.5" fill="#0a0e13" />
+                {/* Pulse ring 2 (offset timing) */}
+                <circle cx={point.x} cy={point.y} r="3" fill={lineColor} opacity="0.2">
+                  <animate attributeName="r" from="3" to="12" dur="2s" begin="1s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.2" to="0" dur="2s" begin="1s" repeatCount="indefinite" />
+                </circle>
+                {/* Main dot */}
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={isHovered || isSelected ? 5 : 4}
+                  fill={isSelected ? "#fff" : lineColor}
+                  stroke={isSelected ? lineColor : "none"}
+                  strokeWidth={isSelected ? 1.5 : 0}
+                />
+                {/* Inner dot */}
+                <circle cx={point.x} cy={point.y} r="1.5" fill={isSelected ? lineColor : "#0a0e13"} />
 
-                {isHovered && (
+                {isHovered && !isSelected && (
                   <g pointerEvents="none">
                     <rect
                       x={point.x - 48}
@@ -324,4 +388,4 @@ export function WorldMap({ lineColor = "#10b981", onDotClick, selectedPanelId = 
       </div>
     </div>
   );
-}
+});

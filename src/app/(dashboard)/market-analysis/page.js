@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { WorldMap } from '@/components/ui/world-map';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -95,25 +95,100 @@ const CHAIN_EVENTS = [
   { id: 5, title: 'OIL PRICES SURGE', region: 'Global', severity: 'CRITICAL', time: 'Mar 20, early morning', ago: '~6h ago', body: 'Oil prices surge on Middle East tensions. Brent crude above $88. OPEC+ maintains production cuts through Q2 2026.' },
 ];
 
-const MAP_DOT_LABELS = {
-  newyork: 'New York', toronto: 'Toronto', saopaulo: 'São Paulo', london: 'London',
-  frankfurt: 'Frankfurt', dubai: 'Dubai', mumbai: 'Mumbai', singapore: 'Singapore',
-  hongkong: 'Hong Kong', shanghai: 'Shanghai', tokyo: 'Tokyo', sydney: 'Sydney',
+const FINANCIAL_CITIES = [
+  { id: 'toronto', name: 'Toronto', country: 'Canada', exchange: 'TSX', timezone: 'EST' },
+  { id: 'new-york', name: 'New York', country: 'United States', exchange: 'NYSE / NASDAQ', timezone: 'EST' },
+  { id: 'sao-paulo', name: 'São Paulo', country: 'Brazil', exchange: 'B3', timezone: 'BRT' },
+  { id: 'london', name: 'London', country: 'United Kingdom', exchange: 'LSE', timezone: 'GMT' },
+  { id: 'frankfurt', name: 'Frankfurt', country: 'Germany', exchange: 'Deutsche Börse', timezone: 'CET' },
+  { id: 'dubai', name: 'Dubai', country: 'UAE', exchange: 'DFM', timezone: 'GST' },
+  { id: 'mumbai', name: 'Mumbai', country: 'India', exchange: 'BSE / NSE', timezone: 'IST' },
+  { id: 'singapore', name: 'Singapore', country: 'Singapore', exchange: 'SGX', timezone: 'SGT' },
+  { id: 'hong-kong', name: 'Hong Kong', country: 'China', exchange: 'HKEX', timezone: 'HKT' },
+  { id: 'shanghai', name: 'Shanghai', country: 'China', exchange: 'SSE', timezone: 'CST' },
+  { id: 'tokyo', name: 'Tokyo', country: 'Japan', exchange: 'TSE', timezone: 'JST' },
+  { id: 'sydney', name: 'Sydney', country: 'Australia', exchange: 'ASX', timezone: 'AEST' },
+];
+
+const PANEL_ID_TO_CITY_ID = {
+  toronto: 'toronto', newyork: 'new-york', saopaulo: 'sao-paulo', london: 'london',
+  frankfurt: 'frankfurt', dubai: 'dubai', mumbai: 'mumbai', singapore: 'singapore',
+  hongkong: 'hong-kong', shanghai: 'shanghai', tokyo: 'tokyo', sydney: 'sydney',
 };
 
-const MAP_EVENTS = {
-  newyork: { title: 'Fed Policy & US Markets', desc: 'Federal Reserve signals data-dependent approach to rate cuts. S&P 500 near all-time highs with AI sector leading gains.', impact: 'Moderate impact on global risk sentiment.' },
-  toronto: { title: 'Bank of Canada Easing', desc: 'BoC continues easing cycle with rates below Fed. Canadian dollar under pressure as commodity prices stabilize.', impact: 'CAD weakness supports Canadian exporters.' },
-  saopaulo: { title: 'Brazil Fiscal Concerns', desc: 'Ibovespa faces headwinds from fiscal policy uncertainty. Real weakens as budget deficit concerns mount.', impact: 'EM sentiment cautious.' },
-  london: { title: 'BoE Dovish Pivot', desc: 'UK gilt yields fall as BoE signals dovish pivot. Sterling faces pressure as growth outlook weakens.', impact: 'UK bonds rally.' },
-  frankfurt: { title: 'ECB Rate Path', desc: 'ECB signals potential rate cut in June as eurozone inflation cools toward 2% target. DAX reaches new highs.', impact: 'EUR weakness expected.' },
-  dubai: { title: 'Gulf Markets & Oil', desc: 'UAE markets benefit from elevated oil prices and economic diversification. Dubai real estate sector shows continued momentum.', impact: 'Petrodollar flows support regional equity markets.' },
-  mumbai: { title: 'India Growth Story', desc: 'Sensex and Nifty at record highs. India GDP growth exceeds 7% as manufacturing and services PMI expand.', impact: 'India emerges as key allocation for global EM funds.' },
-  singapore: { title: 'ASEAN Financial Hub', desc: 'SGX benefits from regional capital flows. MAS maintains tight monetary policy as inflation moderates.', impact: 'Regional safe haven status supports SGD.' },
-  hongkong: { title: 'China Recovery Play', desc: 'Hang Seng rebounds on PBOC stimulus measures. Tech sector leads recovery as regulatory headwinds ease.', impact: 'Hong Kong serves as proxy for China recovery thesis.' },
-  shanghai: { title: 'PBOC Stimulus', desc: 'PBOC cuts reserve ratio to support economy. Shanghai Composite gains as property sector stabilization measures take effect.', impact: 'Chinese equities rally.' },
-  tokyo: { title: 'BOJ Policy Normalization', desc: 'Bank of Japan maintains ultra-loose policy but signals gradual normalization. Yen carry trade remains dominant theme.', impact: 'Yen carry trade flows support global risk assets.' },
-  sydney: { title: 'RBA Watch & Resources', desc: 'ASX 200 supported by resource sector strength. RBA holds rates steady as housing market shows resilience.', impact: 'Australian dollar sensitive to China demand outlook.' },
+const CITY_NEWS = {
+  'new-york': [
+    { id: 1, category: 'MARKETS', severity: 'positive', title: 'S&P 500 extends rally to 5th consecutive week on strong earnings', time: '45m ago', source: 'Reuters', url: '#' },
+    { id: 2, category: 'FED', severity: 'critical', title: 'Fed Chair Powell: Policy appropriately restrictive, watching data', time: '2h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'BONDS', severity: 'elevated', title: 'US Treasury 10Y yield rises to 4.5% on strong jobs data', time: '3h ago', source: 'CNBC', url: '#' },
+    { id: 4, category: 'EARNINGS', severity: 'positive', title: 'NVIDIA beats Q4 expectations, raises guidance on AI demand', time: '6h ago', source: 'WSJ', url: '#' },
+    { id: 5, category: 'GEOPOLITICAL', severity: 'elevated', title: 'US expands semiconductor export controls to additional Chinese firms', time: '8h ago', source: 'FT', url: '#' },
+    { id: 6, category: 'IPO', severity: 'neutral', title: 'Reddit files for IPO, targets $6.5B valuation amid social media pivot', time: '12h ago', source: 'TechCrunch', url: '#' },
+  ],
+  london: [
+    { id: 1, category: 'BOE', severity: 'elevated', title: 'Bank of England holds rates at 4.5%, split vote signals future cut', time: '1h ago', source: 'Reuters', url: '#' },
+    { id: 2, category: 'MARKETS', severity: 'positive', title: 'FTSE 100 hits record high on mining and banking sector gains', time: '3h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'ENERGY', severity: 'critical', title: 'Brent crude surges past $88 on Middle East supply disruption fears', time: '4h ago', source: 'FT', url: '#' },
+    { id: 4, category: 'GEOPOLITICAL', severity: 'elevated', title: 'UK announces new defense spending increase, £2.5B for cyber warfare', time: '6h ago', source: 'The Guardian', url: '#' },
+    { id: 5, category: 'REAL ESTATE', severity: 'negative', title: 'London commercial property values decline 3.2% QoQ amid remote work shift', time: '10h ago', source: 'Reuters', url: '#' },
+  ],
+  tokyo: [
+    { id: 1, category: 'BOJ', severity: 'critical', title: 'Bank of Japan maintains ultra-loose policy; yen at 34-year low', time: '4h ago', source: 'Nikkei', url: '#' },
+    { id: 2, category: 'CURRENCY', severity: 'elevated', title: 'USD/JPY breaches 158 — intervention risk at critical level', time: '4h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'MARKETS', severity: 'positive', title: 'Nikkei 225 surges 1.24% as weak yen boosts exporters', time: '5h ago', source: 'Reuters', url: '#' },
+    { id: 4, category: 'TECH', severity: 'positive', title: 'Toyota announces $10B EV battery investment with Panasonic partnership', time: '8h ago', source: 'Nikkei Asia', url: '#' },
+    { id: 5, category: 'GEOPOLITICAL', severity: 'elevated', title: 'Japan expands Taiwan Strait patrol missions amid rising tensions', time: '14h ago', source: 'Japan Times', url: '#' },
+  ],
+  frankfurt: [
+    { id: 1, category: 'ECB', severity: 'elevated', title: 'ECB signals rate cuts ahead as eurozone growth concerns mount', time: '2h ago', source: 'Reuters', url: '#' },
+    { id: 2, category: 'MARKETS', severity: 'positive', title: 'DAX 40 rises 0.58% led by automotive and industrial recovery', time: '3h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'INDUSTRY', severity: 'positive', title: 'German manufacturing PMI beats expectations at 48.2, recovery signaled', time: '5h ago', source: 'FT', url: '#' },
+    { id: 4, category: 'ENERGY', severity: 'elevated', title: 'Germany accelerates LNG terminal construction, reduces Russian dependence to 4%', time: '9h ago', source: 'DW', url: '#' },
+  ],
+  'hong-kong': [
+    { id: 1, category: 'MARKETS', severity: 'negative', title: 'Hang Seng falls 0.87% as property sector selloff deepens', time: '5h ago', source: 'SCMP', url: '#' },
+    { id: 2, category: 'PROPERTY', severity: 'critical', title: 'Evergrande liquidation proceedings enter final phase; creditor losses mount', time: '6h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'TECH', severity: 'positive', title: 'Alibaba and Tencent rally on Beijing stimulus signals for tech sector', time: '7h ago', source: 'Reuters', url: '#' },
+    { id: 4, category: 'GEOPOLITICAL', severity: 'elevated', title: 'Hong Kong passes new security legislation; foreign business groups voice concerns', time: '12h ago', source: 'FT', url: '#' },
+  ],
+  shanghai: [
+    { id: 1, category: 'PBOC', severity: 'positive', title: 'PBOC announces targeted stimulus for property and infrastructure', time: '6h ago', source: 'Xinhua', url: '#' },
+    { id: 2, category: 'MARKETS', severity: 'positive', title: 'Shanghai Composite rises 0.34% on state fund buying support', time: '6h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'TRADE', severity: 'elevated', title: 'China retaliates with tariffs on US agricultural imports; trade war escalates', time: '10h ago', source: 'Reuters', url: '#' },
+    { id: 4, category: 'TECH', severity: 'positive', title: 'Huawei unveils new AI chip, challenging NVIDIA in domestic market', time: '14h ago', source: 'Nikkei Asia', url: '#' },
+  ],
+  mumbai: [
+    { id: 1, category: 'MARKETS', severity: 'positive', title: 'Sensex hits record high on strong FDI inflows and IT earnings', time: '5h ago', source: 'Economic Times', url: '#' },
+    { id: 2, category: 'RBI', severity: 'neutral', title: 'RBI holds rates at 6.25%; GDP growth forecast maintained at 7.2%', time: '1d ago', source: 'Reuters', url: '#' },
+    { id: 3, category: 'GEOPOLITICAL', severity: 'elevated', title: 'India-China border talks resume with cautious optimism on LAC disengagement', time: '1d ago', source: 'The Hindu', url: '#' },
+    { id: 4, category: 'TECH', severity: 'positive', title: 'Infosys and TCS report strong Q4 guidance; IT sector outlook bullish', time: '2d ago', source: 'Mint', url: '#' },
+  ],
+  singapore: [
+    { id: 1, category: 'MARKETS', severity: 'positive', title: 'SGX reports record derivatives trading volume in March', time: '3h ago', source: 'Bloomberg', url: '#' },
+    { id: 2, category: 'TRADE', severity: 'elevated', title: 'Singapore non-oil exports rise 8.3% as chip demand surges', time: '8h ago', source: 'Straits Times', url: '#' },
+    { id: 3, category: 'REGULATION', severity: 'neutral', title: 'MAS tightens crypto exchange regulations; new licensing framework', time: '1d ago', source: 'Reuters', url: '#' },
+  ],
+  dubai: [
+    { id: 1, category: 'ENERGY', severity: 'critical', title: 'Oil prices surge on Middle East tensions; Strait of Hormuz risk elevated', time: '3h ago', source: 'Reuters', url: '#' },
+    { id: 2, category: 'MARKETS', severity: 'positive', title: 'Dubai Financial Market gains 1.2% on real estate and banking strength', time: '5h ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'GEOPOLITICAL', severity: 'critical', title: 'UAE activates air defense systems; regional military posture heightened', time: '6h ago', source: 'Al Jazeera', url: '#' },
+    { id: 4, category: 'PROPERTY', severity: 'positive', title: 'Dubai property transactions hit $12B record in Q1 2026', time: '1d ago', source: 'Gulf News', url: '#' },
+  ],
+  toronto: [
+    { id: 1, category: 'MARKETS', severity: 'positive', title: 'TSX gains 0.18% led by mining and energy sector', time: '2h ago', source: 'Globe and Mail', url: '#' },
+    { id: 2, category: 'BOC', severity: 'elevated', title: 'Bank of Canada signals pause after 3 consecutive cuts; CAD steadies', time: '1d ago', source: 'Reuters', url: '#' },
+    { id: 3, category: 'PROPERTY', severity: 'negative', title: 'Canadian housing starts decline 12% as mortgage rates weigh on demand', time: '1d ago', source: 'Bloomberg', url: '#' },
+  ],
+  'sao-paulo': [
+    { id: 1, category: 'MARKETS', severity: 'negative', title: 'Bovespa falls 0.45% on fiscal concerns and currency weakness', time: '3h ago', source: 'Reuters', url: '#' },
+    { id: 2, category: 'BCB', severity: 'elevated', title: 'Brazil central bank holds Selic rate at 13.25%; inflation remains sticky', time: '1d ago', source: 'Bloomberg', url: '#' },
+    { id: 3, category: 'COMMODITIES', severity: 'positive', title: 'Brazilian soybean exports surge 15% on strong Chinese demand', time: '2d ago', source: 'Valor Econômico', url: '#' },
+  ],
+  sydney: [
+    { id: 1, category: 'MARKETS', severity: 'positive', title: 'ASX 200 gains 0.22% on mining sector strength; BHP hits 6-month high', time: '6h ago', source: 'AFR', url: '#' },
+    { id: 2, category: 'RBA', severity: 'neutral', title: 'RBA extends rate pause; markets price first cut for September', time: '1d ago', source: 'Reuters', url: '#' },
+    { id: 3, category: 'TRADE', severity: 'elevated', title: 'Australia-China trade relations normalize; wine tariffs removed', time: '2d ago', source: 'Sydney Morning Herald', url: '#' },
+  ],
 };
 
 function CategoryPanel({ category, onClose }) {
@@ -238,6 +313,53 @@ function SettingsPanel({ onClose }) {
   );
 }
 
+function CityNewsPanel({ cityId, onClose }) {
+  const city = FINANCIAL_CITIES.find((c) => c.id === cityId);
+  if (!city) return null;
+
+  const news = CITY_NEWS[cityId] || [];
+
+  const severityColors = {
+    critical: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
+    elevated: { bg: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: 'rgba(251,191,36,0.2)' },
+    positive: { bg: 'rgba(16,185,129,0.1)', color: '#10b981', border: 'rgba(16,185,129,0.2)' },
+    negative: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
+    neutral: { bg: 'rgba(107,114,128,0.1)', color: '#6b7280', border: 'rgba(107,114,128,0.2)' },
+  };
+
+  return (
+    <div className="ma-city-panel">
+      <div className="ma-city-panel-header">
+        <div>
+          <h3 className="ma-city-panel-name">{city.name}</h3>
+          <span className="ma-city-panel-meta">{city.country} · {city.exchange} · {city.timezone}</span>
+        </div>
+        <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close"><i className="bi bi-x-lg" /></button>
+      </div>
+
+      <div className="ma-city-panel-count">{news.length} ACTIVE ITEMS</div>
+
+      <div className="ma-city-panel-list">
+        {news.map((item) => {
+          const sev = severityColors[item.severity] || severityColors.neutral;
+          return (
+            <a key={item.id} href={item.url} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
+              <div className="ma-city-news-top">
+                <span className="ma-city-news-badge" style={{ background: sev.bg, color: sev.color, borderColor: sev.border }}>
+                  {item.category}
+                </span>
+                <span className="ma-city-news-time">{item.time}</span>
+              </div>
+              <p className="ma-city-news-title">{item.title}</p>
+              <span className="ma-city-news-source">{item.source} →</span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ChainView() {
   return (
     <div className="ma-chain">
@@ -278,7 +400,13 @@ export default function MarketAnalysisPage() {
     setActiveCategory((prev) => (prev === cat ? null : cat));
   };
 
-  const selectedEvent = selectedDot ? MAP_EVENTS[selectedDot] : null;
+  const cityId = selectedDot ? PANEL_ID_TO_CITY_ID[selectedDot] : null;
+
+  useEffect(() => {
+    const onKeyDown = (e) => { if (e.key === 'Escape') setSelectedDot(null); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <div className="ma-fullscreen">
@@ -291,7 +419,7 @@ export default function MarketAnalysisPage() {
 
       {view === 'map' ? (
         <>
-          <div className="ma-map-area">
+          <div className="ma-map-area" onClick={() => setSelectedDot(null)}>
             <WorldMap
               ref={mapRef}
               lineColor="#10b981"
@@ -362,22 +490,8 @@ export default function MarketAnalysisPage() {
             </div>
           </div>
 
-          {selectedDot && (
-            <div className="ma-news-panel open">
-              <div className="ma-news-panel-header">
-                <div>
-                  <span className="ma-news-panel-badge"><i className="bi bi-geo-alt-fill" /> {MAP_DOT_LABELS[selectedDot] || selectedDot}</span>
-                  <h3>{selectedEvent?.title || 'Event Details'}</h3>
-                </div>
-                <button type="button" className="ma-news-panel-close" onClick={() => setSelectedDot(null)} aria-label="Close"><i className="bi bi-x-lg" /></button>
-              </div>
-              {selectedEvent && (
-                <div className="ma-news-panel-body">
-                  <p>{selectedEvent.desc}</p>
-                  <div className="ma-news-impact"><strong>AI Impact:</strong> {selectedEvent.impact}</div>
-                </div>
-              )}
-            </div>
+          {cityId && (
+            <CityNewsPanel cityId={cityId} onClose={() => setSelectedDot(null)} />
           )}
         </>
       ) : (
