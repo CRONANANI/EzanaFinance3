@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { PinnableCard } from '@/components/ui/PinnableCard';
+import { WorldMap } from '@/components/ui/world-map';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -18,6 +17,19 @@ const LAYERS = [
   { id: 'commodities', label: 'Commodities', icon: 'bi-box-seam' },
   { id: 'currencies', label: 'Currencies', icon: 'bi-currency-exchange' },
   { id: 'volatility', label: 'Volatility', icon: 'bi-activity' },
+];
+
+/* ── Dotted world map: major financial center connections ── */
+const MARKET_CONNECTIONS = [
+  { start: { lat: 40.7128, lng: -74.006 }, end: { lat: 51.5074, lng: -0.1278 } },
+  { start: { lat: 51.5074, lng: -0.1278 }, end: { lat: 50.1109, lng: 8.6821 } },
+  { start: { lat: 50.1109, lng: 8.6821 }, end: { lat: 35.6762, lng: 139.6503 } },
+  { start: { lat: 35.6762, lng: 139.6503 }, end: { lat: 22.3193, lng: 114.1694 } },
+  { start: { lat: 22.3193, lng: 114.1694 }, end: { lat: 1.3521, lng: 103.8198 } },
+  { start: { lat: 40.7128, lng: -74.006 }, end: { lat: 19.4326, lng: -99.1332 } },
+  { start: { lat: 40.7128, lng: -74.006 }, end: { lat: -23.5505, lng: -46.6333 } },
+  { start: { lat: 51.5074, lng: -0.1278 }, end: { lat: 25.2048, lng: 55.2708 } },
+  { start: { lat: 35.6762, lng: 139.6503 }, end: { lat: -33.8688, lng: 151.2093 } },
 ];
 
 /* ── Map dot positions — major global financial centers ── */
@@ -128,13 +140,7 @@ export default function MarketAnalysisPage() {
         </div>
 
         <div className="map-container">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Equirectangular_projection_SW.jpg/1200px-Equirectangular_projection_SW.jpg"
-            alt="World Map"
-            className="world-map-img"
-          />
-          <div className="map-vignette" />
-          <div className="map-grid-overlay" />
+          <WorldMap dots={MARKET_CONNECTIONS} lineColor="#10b981" />
 
           <div className="map-overlay-dots">
             {MAP_DOTS.map((dot) => (

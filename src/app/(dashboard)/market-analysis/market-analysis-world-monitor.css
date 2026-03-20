@@ -209,39 +209,44 @@ body.sidebar-open .market-analysis-world-monitor {
   background: #060a0f;
 }
 
-.world-map-img {
+/* Dotted world map (dotted-map + framer-motion) — fills panel */
+.map-container .world-map-container {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
-  filter: brightness(0.3) contrast(1.2) saturate(0.6) hue-rotate(-5deg);
+  margin: 0;
+  border-radius: 0;
+  aspect-ratio: unset;
+}
+
+.world-map-container {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  background: transparent;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.world-map-image {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
+  pointer-events: none;
   user-select: none;
-  pointer-events: none;
 }
 
-/* Green vignette overlay */
-.map-vignette {
+.world-map-svg {
+  width: 100%;
+  height: 100%;
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(6, 10, 15, 0.6) 100%),
-    radial-gradient(ellipse at 25% 40%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 75% 60%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
   pointer-events: none;
-  z-index: 1;
-}
-
-/* Subtle grid overlay */
-.map-grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0.5;
+  user-select: none;
 }
 
 /* ── Market dots ── */
@@ -905,8 +910,8 @@ body.light-mode .map-header {
   background: rgba(248, 249, 251, 0.95);
 }
 
-body.light-mode .world-map-img {
-  filter: brightness(0.7) contrast(1.1) saturate(0.5);
+body.light-mode .world-map-container {
+  background: transparent;
 }
 
 body.light-mode .conveyer-section {
