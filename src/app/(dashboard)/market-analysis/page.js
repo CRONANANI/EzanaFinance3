@@ -19,34 +19,21 @@ const LAYERS = [
   { id: 'volatility', label: 'Volatility', icon: 'bi-activity' },
 ];
 
-/* ── Dotted world map: major financial center connections ── */
-const MARKET_CONNECTIONS = [
-  { start: { lat: 40.7128, lng: -74.006 }, end: { lat: 51.5074, lng: -0.1278 } },
-  { start: { lat: 51.5074, lng: -0.1278 }, end: { lat: 50.1109, lng: 8.6821 } },
-  { start: { lat: 50.1109, lng: 8.6821 }, end: { lat: 35.6762, lng: 139.6503 } },
-  { start: { lat: 35.6762, lng: 139.6503 }, end: { lat: 22.3193, lng: 114.1694 } },
-  { start: { lat: 22.3193, lng: 114.1694 }, end: { lat: 1.3521, lng: 103.8198 } },
-  { start: { lat: 40.7128, lng: -74.006 }, end: { lat: 19.4326, lng: -99.1332 } },
-  { start: { lat: 40.7128, lng: -74.006 }, end: { lat: -23.5505, lng: -46.6333 } },
-  { start: { lat: 51.5074, lng: -0.1278 }, end: { lat: 25.2048, lng: 55.2708 } },
-  { start: { lat: 35.6762, lng: 139.6503 }, end: { lat: -33.8688, lng: 151.2093 } },
-];
-
-/* ── Map dot positions — major global financial centers ── */
-const MAP_DOTS = [
-  { id: 'newyork', label: 'New York', region: 'usa', top: '38%', left: '22%', market: 'NYSE / NASDAQ', status: 'open' },
-  { id: 'toronto', label: 'Toronto', region: 'canada', top: '34%', left: '24%', market: 'TSX', status: 'open' },
-  { id: 'saopaulo', label: 'São Paulo', region: 'brazil', top: '68%', left: '30%', market: 'B3 / Bovespa', status: 'closed' },
-  { id: 'london', label: 'London', region: 'uk', top: '28%', left: '46%', market: 'LSE / FTSE', status: 'open' },
-  { id: 'frankfurt', label: 'Frankfurt', region: 'europe', top: '30%', left: '49%', market: 'Xetra / DAX', status: 'open' },
-  { id: 'dubai', label: 'Dubai', region: 'middleeast', top: '45%', left: '59%', market: 'DFM / ADX', status: 'closed' },
-  { id: 'mumbai', label: 'Mumbai', region: 'india', top: '48%', left: '65%', market: 'BSE / NSE', status: 'closed' },
-  { id: 'singapore', label: 'Singapore', region: 'singapore', top: '58%', left: '73%', market: 'SGX', status: 'closed' },
-  { id: 'hongkong', label: 'Hong Kong', region: 'hongkong', top: '44%', left: '76%', market: 'HKEX', status: 'closed' },
-  { id: 'shanghai', label: 'Shanghai', region: 'china', top: '40%', left: '77%', market: 'SSE / SZSE', status: 'closed' },
-  { id: 'tokyo', label: 'Tokyo', region: 'japan', top: '36%', left: '83%', market: 'TSE / Nikkei', status: 'closed' },
-  { id: 'sydney', label: 'Sydney', region: 'australia', top: '72%', left: '85%', market: 'ASX', status: 'closed' },
-];
+/* ── Map panel labels (news drawer) — ids match WorldMap center.panelId ── */
+const MAP_DOT_LABELS = {
+  newyork: 'New York',
+  toronto: 'Toronto',
+  saopaulo: 'São Paulo',
+  london: 'London',
+  frankfurt: 'Frankfurt',
+  dubai: 'Dubai',
+  mumbai: 'Mumbai',
+  singapore: 'Singapore',
+  hongkong: 'Hong Kong',
+  shanghai: 'Shanghai',
+  tokyo: 'Tokyo',
+  sydney: 'Sydney',
+};
 
 /* ── Map events — data behind each dot ── */
 const MAP_EVENTS = {
@@ -91,9 +78,12 @@ export default function MarketAnalysisPage() {
   const [selectedDot, setSelectedDot] = useState(null);
   const [activeLayer, setActiveLayer] = useState('markets');
   const [timeRange, setTimeRange] = useState('24h');
-  const [hoveredDot, setHoveredDot] = useState(null);
-
   const selectedEvent = selectedDot ? MAP_EVENTS[selectedDot] : null;
+
+  const handleCenterClick = (center) => {
+    const id = center.panelId;
+    setSelectedDot((prev) => (prev === id ? null : id));
+  };
 
   return (
     <div className={`market-analysis-world-monitor ${selectedDot ? 'has-news-panel' : ''}`}>
@@ -140,36 +130,11 @@ export default function MarketAnalysisPage() {
         </div>
 
         <div className="map-container">
-          <WorldMap dots={MARKET_CONNECTIONS} lineColor="#10b981" />
-
-          <div className="map-overlay-dots">
-            {MAP_DOTS.map((dot) => (
-              <div
-                key={dot.id}
-                className={`market-dot ${dot.region} ${selectedDot === dot.id ? 'selected' : ''} ${dot.status}`}
-                style={{ top: dot.top, left: dot.left }}
-                onClick={() => setSelectedDot(selectedDot === dot.id ? null : dot.id)}
-                onMouseEnter={() => setHoveredDot(dot.id)}
-                onMouseLeave={() => setHoveredDot(null)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && setSelectedDot(selectedDot === dot.id ? null : dot.id)}
-              >
-                <span className="dot-ring" />
-                <span className="dot-core" />
-                {hoveredDot === dot.id && (
-                  <div className="dot-tooltip">
-                    <div className="dot-tooltip-name">{dot.label}</div>
-                    <div className="dot-tooltip-market">{dot.market}</div>
-                    <div className={`dot-tooltip-status ${dot.status}`}>
-                      <span className="dot-tooltip-status-dot" />
-                      {dot.status === 'open' ? 'Market Open' : 'Market Closed'}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <WorldMap
+            lineColor="#10b981"
+            selectedPanelId={selectedDot}
+            onDotClick={handleCenterClick}
+          />
         </div>
       </div>
 
@@ -210,7 +175,7 @@ export default function MarketAnalysisPage() {
             {selectedDot && (
               <span className="news-panel-region-badge">
                 <i className="bi bi-geo-alt-fill" />
-                {MAP_DOTS.find((d) => d.id === selectedDot)?.label}
+                {MAP_DOT_LABELS[selectedDot] || selectedDot}
               </span>
             )}
             <h3>{selectedEvent?.title || 'Event Details'}</h3>
