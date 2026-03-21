@@ -20,7 +20,11 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
-  padding: 0.75rem;
+  padding: 0.5rem;
+}
+
+.ma-fullscreen.ma-view-map .ma-top-bar {
+  top: 32px;
 }
 
 .ma-view-toggle {
@@ -56,6 +60,10 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+}
+
+.ma-fullscreen.ma-view-map .ma-map-area {
+  inset: 28px 0 0 0;
 }
 
 .ma-map-area .world-map-container {
@@ -471,15 +479,15 @@
 /* ═══ Live Ticker Bar ═══ */
 .ma-ticker-bar {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
   height: 28px;
   background: rgba(7, 10, 14, 0.88);
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
   display: flex;
   align-items: center;
-  z-index: 20;
+  z-index: 25;
   overflow: hidden;
 }
 
@@ -564,7 +572,7 @@
 
 body.light-mode .ma-ticker-bar {
   background: rgba(255, 255, 255, 0.92);
-  border-top-color: rgba(0, 0, 0, 0.06);
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
 body.light-mode .ma-ticker-symbol {

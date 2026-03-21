@@ -377,7 +377,40 @@ export default function MarketAnalysisPage() {
   }, []);
 
   return (
-    <div className="ma-fullscreen">
+    <div className={`ma-fullscreen ${view === 'map' ? 'ma-view-map' : ''}`}>
+      {view === 'map' && (
+        <div className="ma-ticker-bar">
+          <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>
+          <div className="ma-ticker-scroll">
+            <div className="ma-ticker-content">
+              {tickerData.length === 0 && (
+                <span className="ma-ticker-item">
+                  <span className="ma-ticker-symbol" style={{ color: '#4b5563' }}>LOADING MARKET DATA...</span>
+                </span>
+              )}
+              {tickerData.map((item, i) => (
+                <span key={i} className="ma-ticker-item">
+                  <span className="ma-ticker-symbol">{item.symbol}</span>
+                  <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
+                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
+                  </span>
+                  <span className="ma-ticker-sep">•</span>
+                </span>
+              ))}
+              {tickerData.map((item, i) => (
+                <span key={`d-${i}`} className="ma-ticker-item">
+                  <span className="ma-ticker-symbol">{item.symbol}</span>
+                  <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
+                    {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
+                  </span>
+                  <span className="ma-ticker-sep">•</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="ma-top-bar">
         <div className="ma-view-toggle">
           <button type="button" className={`ma-view-btn ${view === 'map' ? 'active' : ''}`} onClick={() => setView('map')}>THE MAP</button>
@@ -427,37 +460,6 @@ export default function MarketAnalysisPage() {
           {activeCategory && <CategoryPanel category={activeCategory} onClose={() => setActiveCategory(null)} />}
           {filterOpen && <FilterPanel onClose={() => setFilterOpen(false)} />}
           {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
-
-          <div className="ma-ticker-bar">
-            <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>
-            <div className="ma-ticker-scroll">
-              <div className="ma-ticker-content">
-                {tickerData.length === 0 && (
-                  <span className="ma-ticker-item">
-                    <span className="ma-ticker-symbol" style={{ color: '#4b5563' }}>LOADING MARKET DATA...</span>
-                  </span>
-                )}
-                {tickerData.map((item, i) => (
-                  <span key={i} className="ma-ticker-item">
-                    <span className="ma-ticker-symbol">{item.symbol}</span>
-                    <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
-                      {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
-                    </span>
-                    <span className="ma-ticker-sep">•</span>
-                  </span>
-                ))}
-                {tickerData.map((item, i) => (
-                  <span key={`d-${i}`} className="ma-ticker-item">
-                    <span className="ma-ticker-symbol">{item.symbol}</span>
-                    <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
-                      {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
-                    </span>
-                    <span className="ma-ticker-sep">•</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
 
           {cityId && (
             <CityNewsPanel cityId={cityId} onClose={() => setSelectedDot(null)} />
