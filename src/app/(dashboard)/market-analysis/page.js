@@ -9,39 +9,6 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 
-const TICKER_ITEMS = [
-  { symbol: 'S&P 500', price: '5,892.34', change: 0.45 },
-  { symbol: 'NASDAQ', price: '18,743.21', change: 0.72 },
-  { symbol: 'DOW JONES', price: '43,127.89', change: -0.18 },
-  { symbol: 'FTSE 100', price: '8,234.56', change: 0.31 },
-  { symbol: 'DAX 40', price: '19,456.78', change: 0.58 },
-  { symbol: 'CAC 40', price: '7,891.23', change: -0.12 },
-  { symbol: 'NIKKEI 225', price: '39,234.56', change: 1.24 },
-  { symbol: 'HANG SENG', price: '17,892.34', change: -0.87 },
-  { symbol: 'SHANGHAI', price: '3,089.45', change: 0.34 },
-  { symbol: 'SENSEX', price: '73,456.78', change: 0.65 },
-  { symbol: 'ASX 200', price: '7,823.45', change: 0.22 },
-  { symbol: 'TSX', price: '22,345.67', change: 0.18 },
-  { symbol: 'KOSPI', price: '2,634.12', change: 0.89 },
-  { symbol: 'BOVESPA', price: '128,456', change: -0.45 },
-  { symbol: 'GOLD', price: '$2,178.34', change: 0.15 },
-  { symbol: 'SILVER', price: '$27.89', change: 1.45 },
-  { symbol: 'OIL WTI', price: '$78.45', change: -1.23 },
-  { symbol: 'OIL BRENT', price: '$82.67', change: -0.98 },
-  { symbol: 'COPPER', price: '$4.23', change: 0.67 },
-  { symbol: 'NATURAL GAS', price: '$2.34', change: -2.1 },
-  { symbol: 'EUR/USD', price: '1.0876', change: 0.08 },
-  { symbol: 'USD/JPY', price: '158.31', change: 0.34 },
-  { symbol: 'GBP/USD', price: '1.2654', change: -0.12 },
-  { symbol: 'BTC', price: '$87,234', change: 2.34 },
-  { symbol: 'ETH', price: '$3,456', change: 1.87 },
-  { symbol: 'FED RATE', price: '4.25-4.50%', change: 0 },
-  { symbol: 'ECB RATE CUT', price: '-25BP TO 2.65%', change: -0.25 },
-  { symbol: 'BOJ HOLD', price: '0.50%', change: 0 },
-  { symbol: 'US 10Y', price: '4.50%', change: 0.03 },
-  { symbol: 'VIX', price: '14.32', change: -3.2 },
-];
-
 const CATEGORY_DATA = {
   markets: {
     title: 'MARKETS',
@@ -90,14 +57,6 @@ const CATEGORY_DATA = {
   },
 };
 
-const CHAIN_EVENTS = [
-  { id: 1, title: 'S&P 500 EXTENDS RALLY', region: 'United States', severity: 'POSITIVE', time: 'Mar 20, afternoon', ago: '~45m ago', body: 'S&P 500 extends rally to 5th consecutive week on strong earnings and AI sector momentum. Technology and healthcare sectors leading gains.' },
-  { id: 2, title: 'FED CHAIR POWELL TESTIMONY', region: 'United States', severity: 'CRITICAL', time: 'Mar 20, morning', ago: '~2h ago', body: 'Powell maintains restrictive stance, saying policy is "appropriately restrictive" and the Fed is watching data carefully before any rate adjustments.' },
-  { id: 3, title: 'BANK OF JAPAN RATE DECISION', region: 'Japan', severity: 'ELEVATED', time: 'Mar 20, early morning', ago: '~4h ago', body: 'BOJ maintains ultra-loose monetary policy. Yen falls to 34-year low against USD at 158.31. Intervention risk elevated.' },
-  { id: 4, title: 'US TREASURY 10Y YIELD RISES', region: 'United States', severity: 'ELEVATED', time: 'Mar 20, morning', ago: '~5h ago', body: 'US Treasury 10-year yield rises to 4.5% on strong jobs data. Bond market pricing in fewer rate cuts for 2026.' },
-  { id: 5, title: 'OIL PRICES SURGE', region: 'Global', severity: 'CRITICAL', time: 'Mar 20, early morning', ago: '~6h ago', body: 'Oil prices surge on Middle East tensions. Brent crude above $88. OPEC+ maintains production cuts through Q2 2026.' },
-];
-
 const FINANCIAL_CITIES = [
   { id: 'toronto', name: 'Toronto', country: 'Canada', exchange: 'TSX', timezone: 'EST' },
   { id: 'new-york', name: 'New York', country: 'United States', exchange: 'NYSE / NASDAQ', timezone: 'EST' },
@@ -117,81 +76,6 @@ const PANEL_ID_TO_CITY_ID = {
   toronto: 'toronto', newyork: 'new-york', saopaulo: 'sao-paulo', london: 'london',
   frankfurt: 'frankfurt', dubai: 'dubai', mumbai: 'mumbai', singapore: 'singapore',
   hongkong: 'hong-kong', shanghai: 'shanghai', tokyo: 'tokyo', sydney: 'sydney',
-};
-
-const CITY_NEWS = {
-  'new-york': [
-    { id: 1, category: 'MARKETS', severity: 'positive', title: 'S&P 500 extends rally to 5th consecutive week on strong earnings', time: '45m ago', source: 'Reuters', url: '#' },
-    { id: 2, category: 'FED', severity: 'critical', title: 'Fed Chair Powell: Policy appropriately restrictive, watching data', time: '2h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'BONDS', severity: 'elevated', title: 'US Treasury 10Y yield rises to 4.5% on strong jobs data', time: '3h ago', source: 'CNBC', url: '#' },
-    { id: 4, category: 'EARNINGS', severity: 'positive', title: 'NVIDIA beats Q4 expectations, raises guidance on AI demand', time: '6h ago', source: 'WSJ', url: '#' },
-    { id: 5, category: 'GEOPOLITICAL', severity: 'elevated', title: 'US expands semiconductor export controls to additional Chinese firms', time: '8h ago', source: 'FT', url: '#' },
-    { id: 6, category: 'IPO', severity: 'neutral', title: 'Reddit files for IPO, targets $6.5B valuation amid social media pivot', time: '12h ago', source: 'TechCrunch', url: '#' },
-  ],
-  london: [
-    { id: 1, category: 'BOE', severity: 'elevated', title: 'Bank of England holds rates at 4.5%, split vote signals future cut', time: '1h ago', source: 'Reuters', url: '#' },
-    { id: 2, category: 'MARKETS', severity: 'positive', title: 'FTSE 100 hits record high on mining and banking sector gains', time: '3h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'ENERGY', severity: 'critical', title: 'Brent crude surges past $88 on Middle East supply disruption fears', time: '4h ago', source: 'FT', url: '#' },
-    { id: 4, category: 'GEOPOLITICAL', severity: 'elevated', title: 'UK announces new defense spending increase, £2.5B for cyber warfare', time: '6h ago', source: 'The Guardian', url: '#' },
-    { id: 5, category: 'REAL ESTATE', severity: 'negative', title: 'London commercial property values decline 3.2% QoQ amid remote work shift', time: '10h ago', source: 'Reuters', url: '#' },
-  ],
-  tokyo: [
-    { id: 1, category: 'BOJ', severity: 'critical', title: 'Bank of Japan maintains ultra-loose policy; yen at 34-year low', time: '4h ago', source: 'Nikkei', url: '#' },
-    { id: 2, category: 'CURRENCY', severity: 'elevated', title: 'USD/JPY breaches 158 — intervention risk at critical level', time: '4h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'MARKETS', severity: 'positive', title: 'Nikkei 225 surges 1.24% as weak yen boosts exporters', time: '5h ago', source: 'Reuters', url: '#' },
-    { id: 4, category: 'TECH', severity: 'positive', title: 'Toyota announces $10B EV battery investment with Panasonic partnership', time: '8h ago', source: 'Nikkei Asia', url: '#' },
-    { id: 5, category: 'GEOPOLITICAL', severity: 'elevated', title: 'Japan expands Taiwan Strait patrol missions amid rising tensions', time: '14h ago', source: 'Japan Times', url: '#' },
-  ],
-  frankfurt: [
-    { id: 1, category: 'ECB', severity: 'elevated', title: 'ECB signals rate cuts ahead as eurozone growth concerns mount', time: '2h ago', source: 'Reuters', url: '#' },
-    { id: 2, category: 'MARKETS', severity: 'positive', title: 'DAX 40 rises 0.58% led by automotive and industrial recovery', time: '3h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'INDUSTRY', severity: 'positive', title: 'German manufacturing PMI beats expectations at 48.2, recovery signaled', time: '5h ago', source: 'FT', url: '#' },
-    { id: 4, category: 'ENERGY', severity: 'elevated', title: 'Germany accelerates LNG terminal construction, reduces Russian dependence to 4%', time: '9h ago', source: 'DW', url: '#' },
-  ],
-  'hong-kong': [
-    { id: 1, category: 'MARKETS', severity: 'negative', title: 'Hang Seng falls 0.87% as property sector selloff deepens', time: '5h ago', source: 'SCMP', url: '#' },
-    { id: 2, category: 'PROPERTY', severity: 'critical', title: 'Evergrande liquidation proceedings enter final phase; creditor losses mount', time: '6h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'TECH', severity: 'positive', title: 'Alibaba and Tencent rally on Beijing stimulus signals for tech sector', time: '7h ago', source: 'Reuters', url: '#' },
-    { id: 4, category: 'GEOPOLITICAL', severity: 'elevated', title: 'Hong Kong passes new security legislation; foreign business groups voice concerns', time: '12h ago', source: 'FT', url: '#' },
-  ],
-  shanghai: [
-    { id: 1, category: 'PBOC', severity: 'positive', title: 'PBOC announces targeted stimulus for property and infrastructure', time: '6h ago', source: 'Xinhua', url: '#' },
-    { id: 2, category: 'MARKETS', severity: 'positive', title: 'Shanghai Composite rises 0.34% on state fund buying support', time: '6h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'TRADE', severity: 'elevated', title: 'China retaliates with tariffs on US agricultural imports; trade war escalates', time: '10h ago', source: 'Reuters', url: '#' },
-    { id: 4, category: 'TECH', severity: 'positive', title: 'Huawei unveils new AI chip, challenging NVIDIA in domestic market', time: '14h ago', source: 'Nikkei Asia', url: '#' },
-  ],
-  mumbai: [
-    { id: 1, category: 'MARKETS', severity: 'positive', title: 'Sensex hits record high on strong FDI inflows and IT earnings', time: '5h ago', source: 'Economic Times', url: '#' },
-    { id: 2, category: 'RBI', severity: 'neutral', title: 'RBI holds rates at 6.25%; GDP growth forecast maintained at 7.2%', time: '1d ago', source: 'Reuters', url: '#' },
-    { id: 3, category: 'GEOPOLITICAL', severity: 'elevated', title: 'India-China border talks resume with cautious optimism on LAC disengagement', time: '1d ago', source: 'The Hindu', url: '#' },
-    { id: 4, category: 'TECH', severity: 'positive', title: 'Infosys and TCS report strong Q4 guidance; IT sector outlook bullish', time: '2d ago', source: 'Mint', url: '#' },
-  ],
-  singapore: [
-    { id: 1, category: 'MARKETS', severity: 'positive', title: 'SGX reports record derivatives trading volume in March', time: '3h ago', source: 'Bloomberg', url: '#' },
-    { id: 2, category: 'TRADE', severity: 'elevated', title: 'Singapore non-oil exports rise 8.3% as chip demand surges', time: '8h ago', source: 'Straits Times', url: '#' },
-    { id: 3, category: 'REGULATION', severity: 'neutral', title: 'MAS tightens crypto exchange regulations; new licensing framework', time: '1d ago', source: 'Reuters', url: '#' },
-  ],
-  dubai: [
-    { id: 1, category: 'ENERGY', severity: 'critical', title: 'Oil prices surge on Middle East tensions; Strait of Hormuz risk elevated', time: '3h ago', source: 'Reuters', url: '#' },
-    { id: 2, category: 'MARKETS', severity: 'positive', title: 'Dubai Financial Market gains 1.2% on real estate and banking strength', time: '5h ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'GEOPOLITICAL', severity: 'critical', title: 'UAE activates air defense systems; regional military posture heightened', time: '6h ago', source: 'Al Jazeera', url: '#' },
-    { id: 4, category: 'PROPERTY', severity: 'positive', title: 'Dubai property transactions hit $12B record in Q1 2026', time: '1d ago', source: 'Gulf News', url: '#' },
-  ],
-  toronto: [
-    { id: 1, category: 'MARKETS', severity: 'positive', title: 'TSX gains 0.18% led by mining and energy sector', time: '2h ago', source: 'Globe and Mail', url: '#' },
-    { id: 2, category: 'BOC', severity: 'elevated', title: 'Bank of Canada signals pause after 3 consecutive cuts; CAD steadies', time: '1d ago', source: 'Reuters', url: '#' },
-    { id: 3, category: 'PROPERTY', severity: 'negative', title: 'Canadian housing starts decline 12% as mortgage rates weigh on demand', time: '1d ago', source: 'Bloomberg', url: '#' },
-  ],
-  'sao-paulo': [
-    { id: 1, category: 'MARKETS', severity: 'negative', title: 'Bovespa falls 0.45% on fiscal concerns and currency weakness', time: '3h ago', source: 'Reuters', url: '#' },
-    { id: 2, category: 'BCB', severity: 'elevated', title: 'Brazil central bank holds Selic rate at 13.25%; inflation remains sticky', time: '1d ago', source: 'Bloomberg', url: '#' },
-    { id: 3, category: 'COMMODITIES', severity: 'positive', title: 'Brazilian soybean exports surge 15% on strong Chinese demand', time: '2d ago', source: 'Valor Econômico', url: '#' },
-  ],
-  sydney: [
-    { id: 1, category: 'MARKETS', severity: 'positive', title: 'ASX 200 gains 0.22% on mining sector strength; BHP hits 6-month high', time: '6h ago', source: 'AFR', url: '#' },
-    { id: 2, category: 'RBA', severity: 'neutral', title: 'RBA extends rate pause; markets price first cut for September', time: '1d ago', source: 'Reuters', url: '#' },
-    { id: 3, category: 'TRADE', severity: 'elevated', title: 'Australia-China trade relations normalize; wine tariffs removed', time: '2d ago', source: 'Sydney Morning Herald', url: '#' },
-  ],
 };
 
 function CategoryPanel({ category, onClose }) {
@@ -318,17 +202,33 @@ function SettingsPanel({ onClose }) {
 
 function CityNewsPanel({ cityId, onClose }) {
   const city = FINANCIAL_CITIES.find((c) => c.id === cityId);
-  if (!city) return null;
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const news = CITY_NEWS[cityId] || [];
+  useEffect(() => {
+    if (!cityId) return;
+    setLoading(true);
+    fetch(`/api/market-data/city-news?city=${encodeURIComponent(cityId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setNews(data.news || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [cityId]);
 
-  const severityColors = {
-    critical: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
-    elevated: { bg: 'rgba(251,191,36,0.1)', color: '#fbbf24', border: 'rgba(251,191,36,0.2)' },
-    positive: { bg: 'rgba(16,185,129,0.1)', color: '#10b981', border: 'rgba(16,185,129,0.2)' },
-    negative: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
-    neutral: { bg: 'rgba(107,114,128,0.1)', color: '#6b7280', border: 'rgba(107,114,128,0.2)' },
+  const timeAgo = (unixOrIso) => {
+    const ms = typeof unixOrIso === 'number'
+      ? Date.now() - unixOrIso * 1000
+      : Date.now() - new Date(unixOrIso).getTime();
+    const mins = Math.floor(ms / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
   };
+
+  if (!city) return null;
 
   return (
     <div className="ma-city-panel">
@@ -340,45 +240,92 @@ function CityNewsPanel({ cityId, onClose }) {
         <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close"><i className="bi bi-x-lg" /></button>
       </div>
 
-      <div className="ma-city-panel-count">{news.length} ACTIVE ITEMS</div>
+      <div className="ma-city-panel-count">{loading ? 'LOADING...' : `${news.length} ARTICLES`}</div>
 
       <div className="ma-city-panel-list">
-        {news.map((item) => {
-          const sev = severityColors[item.severity] || severityColors.neutral;
-          return (
-            <a key={item.id} href={item.url} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
+        {loading ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+            Fetching latest news...
+          </div>
+        ) : news.length === 0 ? (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+            No recent news found.
+          </div>
+        ) : (
+          news.map((item) => (
+            <a key={item.id} href={item.url || '#'} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
               <div className="ma-city-news-top">
-                <span className="ma-city-news-badge" style={{ background: sev.bg, color: sev.color, borderColor: sev.border }}>
-                  {item.category}
-                </span>
-                <span className="ma-city-news-time">{item.time}</span>
+                <span className="ma-city-news-badge">{item.category}</span>
+                <span className="ma-city-news-time">{timeAgo(item.time)}</span>
               </div>
               <p className="ma-city-news-title">{item.title}</p>
-              <span className="ma-city-news-source">{item.source} →</span>
+              <span className="ma-city-news-source">{item.source || 'Finnhub'} →</span>
             </a>
-          );
-        })}
+          ))
+        )}
       </div>
     </div>
   );
 }
 
 function ChainView() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/market-data/economic-calendar')
+      .then((res) => res.json())
+      .then((data) => {
+        setEvents(data.events || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const timeAgo = (isoOrUnix) => {
+    const ms = typeof isoOrUnix === 'number'
+      ? Date.now() - isoOrUnix * 1000
+      : Date.now() - new Date(isoOrUnix).getTime();
+    const mins = Math.floor(ms / 60000);
+    if (mins < 60) return `~${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `~${hours}h ago`;
+    return `~${Math.floor(hours / 24)}d ago`;
+  };
+
+  const formatDate = (isoOrUnix) => {
+    const d = typeof isoOrUnix === 'number' ? new Date(isoOrUnix * 1000) : new Date(isoOrUnix);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  };
+
+  if (loading) {
+    return (
+      <div className="ma-chain" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: '#4b5563', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.75rem' }}>LOADING CHAIN DATA...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="ma-chain">
       <div className="ma-chain-list">
-        {CHAIN_EVENTS.map((event) => (
+        {events.map((event) => (
           <div key={event.id} className="ma-chain-item">
             <div className="ma-chain-dot" />
             <div className="ma-chain-content">
               <div className="ma-chain-header">
                 <span className="ma-chain-title">{event.title}</span>
-                <span className="ma-chain-region">{event.region}</span>
-                <span className={`ma-chain-severity ${event.severity.toLowerCase()}`}>{event.severity}</span>
-                <span className="ma-chain-ago">{event.ago}</span>
+                <span className="ma-chain-region">{event.country}</span>
+                <span className={`ma-chain-severity ${(event.impact || '').toLowerCase()}`}>{event.impact || 'MODERATE'}</span>
+                <span className="ma-chain-ago">{timeAgo(event.time)}</span>
               </div>
-              <div className="ma-chain-time">{event.time}</div>
+              <div className="ma-chain-time">{formatDate(event.time)}</div>
               <p className="ma-chain-body">{event.body}</p>
+              {event.url && (
+                <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.5625rem', color: '#10b981', fontFamily: 'var(--font-mono, monospace)', textDecoration: 'none' }}>
+                  {event.source || 'Read more'} →
+                </a>
+              )}
             </div>
           </div>
         ))}
@@ -393,7 +340,25 @@ export default function MarketAnalysisPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedDot, setSelectedDot] = useState(null);
+  const [tickerData, setTickerData] = useState([]);
   const mapRef = useRef(null);
+
+  useEffect(() => {
+    const fetchTicker = async () => {
+      try {
+        const res = await fetch('/api/market-data/quotes');
+        const data = await res.json();
+        if (data.quotes) {
+          setTickerData(data.quotes.filter((q) => q.price !== '—'));
+        }
+      } catch (err) {
+        console.error('Ticker fetch failed:', err);
+      }
+    };
+    fetchTicker();
+    const interval = setInterval(fetchTicker, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCenterClick = (center) => {
     setSelectedDot((prev) => (prev === center.panelId ? null : center.panelId));
@@ -467,20 +432,25 @@ export default function MarketAnalysisPage() {
             <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>
             <div className="ma-ticker-scroll">
               <div className="ma-ticker-content">
-                {TICKER_ITEMS.map((item, i) => (
+                {tickerData.length === 0 && (
+                  <span className="ma-ticker-item">
+                    <span className="ma-ticker-symbol" style={{ color: '#4b5563' }}>LOADING MARKET DATA...</span>
+                  </span>
+                )}
+                {tickerData.map((item, i) => (
                   <span key={i} className="ma-ticker-item">
                     <span className="ma-ticker-symbol">{item.symbol}</span>
-                    <span className={`ma-ticker-value ${item.change >= 0 ? 'up' : 'down'}`}>
-                      {item.price} {item.change >= 0 ? '+' : ''}{item.change}%
+                    <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
+                      {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
                     </span>
                     <span className="ma-ticker-sep">•</span>
                   </span>
                 ))}
-                {TICKER_ITEMS.map((item, i) => (
+                {tickerData.map((item, i) => (
                   <span key={`d-${i}`} className="ma-ticker-item">
                     <span className="ma-ticker-symbol">{item.symbol}</span>
-                    <span className={`ma-ticker-value ${item.change >= 0 ? 'up' : 'down'}`}>
-                      {item.price} {item.change >= 0 ? '+' : ''}{item.change}%
+                    <span className={`ma-ticker-value ${parseFloat(item.change) >= 0 ? 'up' : 'down'}`}>
+                      {item.price} {parseFloat(item.change) >= 0 ? '+' : ''}{item.change}%
                     </span>
                     <span className="ma-ticker-sep">•</span>
                   </span>
