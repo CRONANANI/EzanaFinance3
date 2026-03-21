@@ -70,12 +70,20 @@ const FINANCIAL_CITIES = [
   { id: 'shanghai', name: 'Shanghai', country: 'China', exchange: 'SSE', timezone: 'CST' },
   { id: 'tokyo', name: 'Tokyo', country: 'Japan', exchange: 'TSE', timezone: 'JST' },
   { id: 'sydney', name: 'Sydney', country: 'Australia', exchange: 'ASX', timezone: 'AEST' },
+  { id: 'johannesburg', name: 'Johannesburg', country: 'South Africa', exchange: 'JSE', timezone: 'SAST' },
+  { id: 'addis-ababa', name: 'Addis Ababa', country: 'Ethiopia', exchange: 'ESX', timezone: 'EAT' },
+  { id: 'lagos', name: 'Lagos', country: 'Nigeria', exchange: 'NGX', timezone: 'WAT' },
+  { id: 'moscow', name: 'Moscow', country: 'Russia', exchange: 'MOEX', timezone: 'MSK' },
+  { id: 'paris', name: 'Paris', country: 'France', exchange: 'Euronext', timezone: 'CET' },
+  { id: 'tel-aviv', name: 'Tel Aviv', country: 'Israel', exchange: 'TASE', timezone: 'IST' },
 ];
 
 const PANEL_ID_TO_CITY_ID = {
   toronto: 'toronto', newyork: 'new-york', saopaulo: 'sao-paulo', london: 'london',
   frankfurt: 'frankfurt', dubai: 'dubai', mumbai: 'mumbai', singapore: 'singapore',
   hongkong: 'hong-kong', shanghai: 'shanghai', tokyo: 'tokyo', sydney: 'sydney',
+  johannesburg: 'johannesburg', addisababa: 'addis-ababa', lagos: 'lagos',
+  moscow: 'moscow', paris: 'paris', telaviv: 'tel-aviv',
 };
 
 function CategoryPanel({ category, onClose }) {

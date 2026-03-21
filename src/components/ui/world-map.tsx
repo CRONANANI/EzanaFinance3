@@ -25,6 +25,12 @@ export const FINANCIAL_CENTERS = [
   { id: "shanghai", panelId: "shanghai", name: "Shanghai", lat: 31.2304, lng: 121.4737, exchange: "SSE" },
   { id: "tokyo", panelId: "tokyo", name: "Tokyo", lat: 35.6762, lng: 139.6503, exchange: "TSE" },
   { id: "sydney", panelId: "sydney", name: "Sydney", lat: -33.8688, lng: 151.2093, exchange: "ASX" },
+  { id: "johannesburg", panelId: "johannesburg", name: "Johannesburg", lat: -26.2041, lng: 28.0473, exchange: "JSE" },
+  { id: "addis-ababa", panelId: "addisababa", name: "Addis Ababa", lat: 9.0192, lng: 38.7525, exchange: "ESX" },
+  { id: "lagos", panelId: "lagos", name: "Lagos", lat: 6.5244, lng: 3.3792, exchange: "NGX" },
+  { id: "moscow", panelId: "moscow", name: "Moscow", lat: 55.7558, lng: 37.6173, exchange: "MOEX" },
+  { id: "paris", panelId: "paris", name: "Paris", lat: 48.8566, lng: 2.3522, exchange: "Euronext" },
+  { id: "tel-aviv", panelId: "telaviv", name: "Tel Aviv", lat: 32.0853, lng: 34.7818, exchange: "TASE" },
 ] as const;
 
 export type FinancialCenter = (typeof FINANCIAL_CENTERS)[number];

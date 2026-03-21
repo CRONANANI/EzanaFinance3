@@ -16,6 +16,12 @@ const CITY_TICKERS = {
   shanghai: ['BABA', 'NIO', 'PDD', 'LI'],
   tokyo: ['TM', 'SONY', 'MUFG', 'NMR'],
   sydney: ['BHP', 'RIO', 'WBK'],
+  johannesburg: ['AGL.JO', 'SOL.JO', 'NPN.JO'],
+  'addis-ababa': [],
+  lagos: ['DANGCEM.LG', 'GTCO.LG'],
+  moscow: ['SBER.ME', 'GAZP.ME', 'LKOH.ME'],
+  paris: ['MC.PA', 'OR.PA', 'SAN.PA', 'TTE.PA'],
+  'tel-aviv': ['TEVA', 'CHKP', 'NICE', 'CYBR'],
 };
 
 export async function GET(request) {
