@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PinnableCard } from '@/components/ui/PinnableCard';
@@ -260,7 +260,7 @@ const STATE_SLUG_TO_ABBR = {
   'new-jersey': 'NJ', 'west-virginia': 'WV', 'utah': 'UT',
 };
 
-export default function InsideTheCapitolPage() {
+function InsideTheCapitolContent() {
   const searchParams = useSearchParams();
   const partyFilter = searchParams.get('party');
   const stateFilter = searchParams.get('state');
@@ -540,5 +540,17 @@ export default function InsideTheCapitolPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function InsideTheCapitolPage() {
+  return (
+    <Suspense fallback={
+      <div className="itc-page" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#8b949e' }}>Loading...</p>
+      </div>
+    }>
+      <InsideTheCapitolContent />
+    </Suspense>
   );
 }

@@ -3,6 +3,8 @@
  * Query: ?search=AAPL or ?search=apple
  */
 import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { alpacaRequest } from '@/lib/alpaca';
 
 export async function GET(request) {
