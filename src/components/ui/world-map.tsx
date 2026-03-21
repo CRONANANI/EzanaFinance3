@@ -332,46 +332,44 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                 onMouseLeave={() => setHoveredDot(null)}
                 onClick={(e) => handleDotClick(center, e)}
               >
-                {/* Pulse ring 1 — reduced ~95% */}
-                <circle cx={point.x} cy={point.y} r="0.5" fill={lineColor} opacity="0.3">
-                  <animate attributeName="r" from="0.5" to="3" dur="2s" repeatCount="indefinite" />
+                {/* Pulse ring 1 */}
+                <circle cx={point.x} cy={point.y} r="0.25" fill={lineColor} opacity="0.3">
+                  <animate attributeName="r" from="0.25" to="1.5" dur="2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
-                {/* Pulse ring 2 (offset timing) */}
-                <circle cx={point.x} cy={point.y} r="0.5" fill={lineColor} opacity="0.2">
-                  <animate attributeName="r" from="0.5" to="3" dur="2s" begin="1s" repeatCount="indefinite" />
+                {/* Pulse ring 2 */}
+                <circle cx={point.x} cy={point.y} r="0.25" fill={lineColor} opacity="0.2">
+                  <animate attributeName="r" from="0.25" to="1.5" dur="2s" begin="1s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.2" to="0" dur="2s" begin="1s" repeatCount="indefinite" />
                 </circle>
-                {/* Main dot — reduced ~95% */}
+                {/* Main dot — solid green, no inner black dot */}
                 <circle
                   cx={point.x}
                   cy={point.y}
-                  r={isHovered || isSelected ? 1.8 : 1.2}
+                  r={isHovered || isSelected ? 0.9 : 0.6}
                   fill={isSelected ? "#fff" : lineColor}
                   stroke={isSelected ? lineColor : "none"}
-                  strokeWidth={isSelected ? 0.4 : 0}
+                  strokeWidth={isSelected ? 0.2 : 0}
                 />
-                {/* Inner dot */}
-                <circle cx={point.x} cy={point.y} r="0.4" fill={isSelected ? lineColor : "#0a0e13"} />
 
                 {isHovered && !isSelected && (
                   <g pointerEvents="none">
                     <rect
-                      x={point.x - 22}
-                      y={point.y - 14}
-                      width="44"
-                      height="10"
-                      rx="2"
+                      x={point.x - 11}
+                      y={point.y - 7}
+                      width="22"
+                      height="5"
+                      rx="1"
                       fill="rgba(10,14,19,0.92)"
                       stroke="rgba(16,185,129,0.2)"
-                      strokeWidth="0.3"
+                      strokeWidth="0.15"
                     />
                     <text
                       x={point.x}
-                      y={point.y - 8.5}
+                      y={point.y - 4.2}
                       textAnchor="middle"
                       fill="#f0f6fc"
-                      fontSize="3"
+                      fontSize="1.5"
                       fontWeight="700"
                       fontFamily="var(--font-mono, monospace)"
                     >
@@ -379,10 +377,10 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                     </text>
                     <text
                       x={point.x}
-                      y={point.y - 5.5}
+                      y={point.y - 2.8}
                       textAnchor="middle"
                       fill="#4b5563"
-                      fontSize="2"
+                      fontSize="1"
                       fontFamily="var(--font-mono, monospace)"
                     >
                       {center.exchange}

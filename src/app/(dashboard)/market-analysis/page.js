@@ -9,34 +9,37 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 
-const TICKER_DATA = [
-  { symbol: 'S&P 500', price: '5,892.34', change: 0.45, changePercent: '+0.45' },
-  { symbol: 'NASDAQ', price: '18,743.21', change: 0.72, changePercent: '+0.72' },
-  { symbol: 'DOW', price: '43,127.89', change: -0.18, changePercent: '-0.18' },
-  { symbol: 'FTSE 100', price: '8,234.56', change: 0.31, changePercent: '+0.31' },
-  { symbol: 'DAX', price: '19,456.78', change: 0.58, changePercent: '+0.58' },
-  { symbol: 'CAC 40', price: '7,891.23', change: -0.12, changePercent: '-0.12' },
-  { symbol: 'NIKKEI 225', price: '39,234.56', change: 1.24, changePercent: '+1.24' },
-  { symbol: 'HANG SENG', price: '17,892.34', change: -0.87, changePercent: '-0.87' },
-  { symbol: 'SHANGHAI', price: '3,089.45', change: 0.34, changePercent: '+0.34' },
-  { symbol: 'SENSEX', price: '73,456.78', change: 0.65, changePercent: '+0.65' },
-  { symbol: 'ASX 200', price: '7,823.45', change: 0.22, changePercent: '+0.22' },
-  { symbol: 'TSX', price: '22,345.67', change: 0.18, changePercent: '+0.18' },
-  { symbol: 'BOVESPA', price: '128,456.78', change: -0.45, changePercent: '-0.45' },
-  { symbol: 'KOSPI', price: '2,634.12', change: 0.89, changePercent: '+0.89' },
-  { symbol: 'GOLD', price: '2,178.34', change: 0.15, changePercent: '+0.15' },
-  { symbol: 'OIL WTI', price: '78.45', change: -1.23, changePercent: '-1.23' },
-  { symbol: 'EUR/USD', price: '1.0876', change: 0.08, changePercent: '+0.08' },
-  { symbol: 'BTC/USD', price: '87,234.56', change: 2.34, changePercent: '+2.34' },
-];
-
-const MARKET_INTEL_CARDS = [
-  { badge: 'Markets', badgeClass: 'markets', title: 'S&P 500 extends rally to 5th consecutive week', time: '45m ago', location: 'New York' },
-  { badge: 'Central Banks', badgeClass: 'fed', title: 'Fed Chair Powell: Policy appropriately restrictive', time: '2h ago', location: 'Washington' },
-  { badge: 'Asia', badgeClass: 'asia', title: 'Bank of Japan maintains ultra-loose policy; yen at 34-year low', time: '4h ago', location: 'Tokyo' },
-  { badge: 'Bonds', badgeClass: 'bonds', title: 'US Treasury 10Y yield rises to 4.5% on strong jobs data', time: '5h ago', location: 'New York' },
-  { badge: 'Commodities', badgeClass: 'commodities', title: 'Oil prices surge on Middle East tensions; Brent above $88', time: '6h ago', location: 'London' },
-  { badge: 'Emerging', badgeClass: 'em', title: "India's Sensex hits record high on strong earnings", time: '8h ago', location: 'Mumbai' },
+const TICKER_ITEMS = [
+  { symbol: 'S&P 500', price: '5,892.34', change: 0.45 },
+  { symbol: 'NASDAQ', price: '18,743.21', change: 0.72 },
+  { symbol: 'DOW JONES', price: '43,127.89', change: -0.18 },
+  { symbol: 'FTSE 100', price: '8,234.56', change: 0.31 },
+  { symbol: 'DAX 40', price: '19,456.78', change: 0.58 },
+  { symbol: 'CAC 40', price: '7,891.23', change: -0.12 },
+  { symbol: 'NIKKEI 225', price: '39,234.56', change: 1.24 },
+  { symbol: 'HANG SENG', price: '17,892.34', change: -0.87 },
+  { symbol: 'SHANGHAI', price: '3,089.45', change: 0.34 },
+  { symbol: 'SENSEX', price: '73,456.78', change: 0.65 },
+  { symbol: 'ASX 200', price: '7,823.45', change: 0.22 },
+  { symbol: 'TSX', price: '22,345.67', change: 0.18 },
+  { symbol: 'KOSPI', price: '2,634.12', change: 0.89 },
+  { symbol: 'BOVESPA', price: '128,456', change: -0.45 },
+  { symbol: 'GOLD', price: '$2,178.34', change: 0.15 },
+  { symbol: 'SILVER', price: '$27.89', change: 1.45 },
+  { symbol: 'OIL WTI', price: '$78.45', change: -1.23 },
+  { symbol: 'OIL BRENT', price: '$82.67', change: -0.98 },
+  { symbol: 'COPPER', price: '$4.23', change: 0.67 },
+  { symbol: 'NATURAL GAS', price: '$2.34', change: -2.1 },
+  { symbol: 'EUR/USD', price: '1.0876', change: 0.08 },
+  { symbol: 'USD/JPY', price: '158.31', change: 0.34 },
+  { symbol: 'GBP/USD', price: '1.2654', change: -0.12 },
+  { symbol: 'BTC', price: '$87,234', change: 2.34 },
+  { symbol: 'ETH', price: '$3,456', change: 1.87 },
+  { symbol: 'FED RATE', price: '4.25-4.50%', change: 0 },
+  { symbol: 'ECB RATE CUT', price: '-25BP TO 2.65%', change: -0.25 },
+  { symbol: 'BOJ HOLD', price: '0.50%', change: 0 },
+  { symbol: 'US 10Y', price: '4.50%', change: 0.03 },
+  { symbol: 'VIX', price: '14.32', change: -3.2 },
 ];
 
 const CATEGORY_DATA = {
@@ -460,28 +463,24 @@ export default function MarketAnalysisPage() {
           {filterOpen && <FilterPanel onClose={() => setFilterOpen(false)} />}
           {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
-          <div className="ma-bottom-cards">
-            {MARKET_INTEL_CARDS.map((card, i) => (
-              <div key={i} className="ma-bottom-card">
-                <span className={`ma-bottom-card-category ${card.badgeClass}`}>{card.badge}</span>
-                <h4 className="ma-bottom-card-title">{card.title}</h4>
-                <div className="ma-bottom-card-footer">
-                  <span className="ma-bottom-card-location">{card.location}</span>
-                  <span className="ma-bottom-card-time">{card.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <div className="ma-ticker-bar">
             <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>
             <div className="ma-ticker-scroll">
               <div className="ma-ticker-content">
-                {[...TICKER_DATA, ...TICKER_DATA].map((item, i) => (
+                {TICKER_ITEMS.map((item, i) => (
                   <span key={i} className="ma-ticker-item">
                     <span className="ma-ticker-symbol">{item.symbol}</span>
-                    <span className={`ma-ticker-price ${item.change >= 0 ? 'positive' : 'negative'}`}>
-                      {item.price} {item.change >= 0 ? '+' : ''}{item.changePercent}%
+                    <span className={`ma-ticker-value ${item.change >= 0 ? 'up' : 'down'}`}>
+                      {item.price} {item.change >= 0 ? '+' : ''}{item.change}%
+                    </span>
+                    <span className="ma-ticker-sep">•</span>
+                  </span>
+                ))}
+                {TICKER_ITEMS.map((item, i) => (
+                  <span key={`d-${i}`} className="ma-ticker-item">
+                    <span className="ma-ticker-symbol">{item.symbol}</span>
+                    <span className={`ma-ticker-value ${item.change >= 0 ? 'up' : 'down'}`}>
+                      {item.price} {item.change >= 0 ? '+' : ''}{item.change}%
                     </span>
                     <span className="ma-ticker-sep">•</span>
                   </span>
