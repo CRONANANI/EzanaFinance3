@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
 import '@/components/Layout/mobile-bottom-nav.css';
+import './layout.css';
 
 export default function DashboardLayout({ children }) {
   useEffect(() => {

@@ -43,6 +43,10 @@
 .itc-sf { padding: .2rem .7rem; font-size: .6875rem; font-weight: 600; color: var(--muted-foreground,#6b7280); background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: all .2s; }
 .itc-sf:hover { color: var(--foreground,#f0f6fc); background: rgba(16,185,129,.06); }
 .itc-sf.on { color: #10b981; background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); }
+.itc-filter-clear { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .5rem; font-size: .625rem; font-weight: 600; color: #10b981; background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.2); border-radius: 6px; text-decoration: none; margin-left: .5rem; transition: all .2s; }
+.itc-filter-clear:hover { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.4); }
+.itc-filter-tag { text-transform: capitalize; }
+.itc-filter-clear i { font-size: .75rem; }
 
 /* body scroll area */
 .itc-body { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; scrollbar-width: thin; scrollbar-color: rgba(16,185,129,.12) transparent; }

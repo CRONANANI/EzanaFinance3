@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 
 import '../../../../app-legacy/assets/css/theme.css';
@@ -254,15 +254,42 @@ function Spark({ seed = 0, color = '#10b981' }) {
   );
 }
 
+/* State slug (URL) to abbreviation mapping for trade filtering */
+const STATE_SLUG_TO_ABBR = {
+  'california': 'CA', 'alabama': 'AL', 'texas': 'TX', 'virginia': 'VA',
+  'new-jersey': 'NJ', 'west-virginia': 'WV', 'utah': 'UT',
+};
+
 export default function InsideTheCapitolPage() {
+  const searchParams = useSearchParams();
+  const partyFilter = searchParams.get('party');
+  const stateFilter = searchParams.get('state');
+
   const [assetFilter, setAssetFilter] = useState('Stocks Only');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [activePartyFilter, setActivePartyFilter] = useState(null);
+  const [activeStateFilter, setActiveStateFilter] = useState(null);
   const [activePolIdx, setActivePolIdx] = useState(0);
   const [perfWindow, setPerfWindow] = useState('1Y');
+
+  useEffect(() => {
+    setActivePartyFilter(partyFilter || null);
+  }, [partyFilter]);
+
+  useEffect(() => {
+    setActiveStateFilter(stateFilter || null);
+  }, [stateFilter]);
 
   const trades = LATEST_TRADES.filter((t) => {
     if (typeFilter === 'Buy') return t.type === 'BUY';
     if (typeFilter === 'Sell') return t.type === 'SELL';
+    if (activePartyFilter) {
+      if (t.party.toLowerCase() !== activePartyFilter) return false;
+    }
+    if (activeStateFilter) {
+      const abbr = STATE_SLUG_TO_ABBR[activeStateFilter] || activeStateFilter.toUpperCase().slice(0, 2);
+      if (t.state !== abbr) return false;
+    }
     return true;
   });
 
@@ -308,6 +335,12 @@ export default function InsideTheCapitolPage() {
               {['All', 'Buy', 'Sell'].map((f) => (
                 <button key={f} type="button" className={`itc-sf ${typeFilter === f ? 'on' : ''}`} onClick={() => setTypeFilter(f)}>{f}</button>
               ))}
+              {(activePartyFilter || activeStateFilter) && (
+                <Link href="/inside-the-capitol" className="itc-filter-clear">
+                  <span className="itc-filter-tag">{activePartyFilter ? activePartyFilter.charAt(0).toUpperCase() + activePartyFilter.slice(1) : ''}{activePartyFilter && activeStateFilter ? ' · ' : ''}{activeStateFilter ? activeStateFilter.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''}</span>
+                  <i className="bi bi-x" />
+                </Link>
+              )}
             </div>
             <div className="itc-body">
               {trades.map((t) => (

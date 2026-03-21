@@ -1,0 +1,18 @@
+/* ============================================
+   DASHBOARD LAYOUT — Global page margins
+   Match watchlist: padding 2rem (1rem at 768px)
+   ============================================ */
+
+.dashboard-main .dashboard-container,
+.dashboard-container {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-main .dashboard-container,
+  .dashboard-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

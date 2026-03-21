@@ -280,8 +280,12 @@ export default function PoliticianProfilePage() {
             <div className={`pp-avatar-xl ${pol.party.toLowerCase()}`}>{pol.initials}</div>
             <h1 className="pp-name">{pol.name}</h1>
             <div className="pp-badges">
-              <span className={`pp-party-badge ${pol.party.toLowerCase()}`}>{pol.party}</span>
-              <span className="pp-state-badge">{pol.state}</span>
+              <Link href={`/inside-the-capitol?party=${pol.party.toLowerCase()}`} className="pp-badge-link">
+                <span className={`pp-party-badge ${pol.party.toLowerCase()}`}>{pol.party}</span>
+              </Link>
+              <Link href={`/inside-the-capitol?state=${pol.state.toLowerCase().replace(/\s+/g, '-')}`} className="pp-badge-link">
+                <span className="pp-state-badge">{pol.state}</span>
+              </Link>
             </div>
             <p className="pp-role">{pol.role}{pol.district ? ` (${pol.district})` : ''}</p>
           </div>
@@ -340,15 +344,12 @@ export default function PoliticianProfilePage() {
             {pol.similarTraders?.length > 0 && (
               <div className="pp-similar-traders">
                 <span className="pp-similar-label">Most Similar Traders</span>
-                <div className="pp-similar-list">
+                <div className="pp-similar-row">
                   {pol.similarTraders.map((s) => (
                     <Link key={s.slug} href={`/inside-the-capitol/${s.slug}`} className="pp-similar-item">
                       <div className={`pp-similar-avatar ${s.party.toLowerCase()}`}>{s.initials}</div>
-                      <div className="pp-similar-info">
-                        <span className="pp-similar-name">{s.name}</span>
-                        <span className="pp-similar-meta">{s.party.charAt(0)} · {s.chamber} · {s.state}</span>
-                      </div>
-                      <span className="pp-similar-overlap">{s.overlap}% overlap</span>
+                      <span className="pp-similar-name">{s.name}</span>
+                      <span className="pp-similar-pct">{s.overlap}%</span>
                     </Link>
                   ))}
                 </div>
