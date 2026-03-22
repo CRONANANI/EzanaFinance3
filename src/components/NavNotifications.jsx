@@ -32,7 +32,7 @@ function getTimeAgo(ts) {
 /**
  * NavNotifications
  *
- * DESKTOP  →  Bell icon sits to the LEFT of the raven logo in the
+ * DESKTOP  →  Bell icon sits to the LEFT of the logo in the
  *             dashboard navbar. Click opens a dropdown panel that
  *             appears below the bell. Shows filter tabs, notification
  *             cards with expand-on-click for full detail.

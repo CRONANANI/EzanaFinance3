@@ -216,7 +216,7 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav">
       <div className="nav-container">
-        {/* ── LEFT ZONE: Raven logo + Notifications bell ── */}
+        {/* ── LEFT ZONE: Logo + Notifications bell ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
             <Image src="/ezana-logo.png" alt="Ezana Finance" width={48} height={48} style={{ objectFit: 'contain', display: 'block' }} />
