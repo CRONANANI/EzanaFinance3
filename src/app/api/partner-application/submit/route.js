@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
+import { sanitizeObject } from '@/lib/sanitize';
 import { supabaseAdmin } from '@/lib/plaid';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
+async function handlePost(request) {
+  const rawBody = await request.json();
+  const body = sanitizeObject(rawBody);
     const {
       fullName, email, phone, country, city,
       partnerType, yearsExperience, currentRole, companyName, linkedinUrl, websiteUrl,
@@ -63,21 +66,20 @@ export async function POST(request) {
       .select('id')
       .single();
 
-    if (insertErr) {
-      console.error('[Partner Application] Insert error:', insertErr);
-      return NextResponse.json({ error: 'Failed to submit application' }, { status: 500 });
-    }
-
-    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://ezana.world'}/auth/partner/apply/verify?token=${verificationToken}`;
-    console.log(`[Partner Application] Verification link for ${email}: ${verifyUrl}`);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Application submitted. Check your email to complete the process.',
-      applicationId: app.id,
-      ...(process.env.NODE_ENV === 'development' ? { verifyUrl } : {}),
-    });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (insertErr) {
+    logger.error('Partner Application insert error', { error: insertErr.message });
+    return NextResponse.json({ error: 'Failed to submit application' }, { status: 500 });
   }
+
+  const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://ezana.world'}/auth/partner/apply/verify?token=${verificationToken}`;
+  logger.info('Partner application submitted', { email, applicationId: app.id });
+
+  return NextResponse.json({
+    success: true,
+    message: 'Application submitted. Check your email to complete the process.',
+    applicationId: app.id,
+    ...(process.env.NODE_ENV === 'development' ? { verifyUrl } : {}),
+  });
 }
+
+export const POST = withApiGuard(handlePost, { requireAuth: false, strict: true });

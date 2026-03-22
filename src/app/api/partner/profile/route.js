@@ -4,35 +4,32 @@
  * PATCH — update username and/or avatar
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
+import { sanitizeObject } from '@/lib/sanitize';
 
-export async function GET(request) {
-  try {
-    const user = await getAuthUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: partner } = await supabaseAdmin
+async function handleGet(request, user) {
+  const { data: partner } = await supabaseAdmin
       .from('partners')
       .select('username, display_name, avatar_url, verified, echo_writer_approved')
       .eq('user_id', user.id)
       .single();
 
-    return NextResponse.json({ profile: partner || null });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  return NextResponse.json({ profile: partner || null });
 }
 
-export async function PATCH(request) {
-  try {
-    const user = await getAuthUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = withApiGuard(handleGet, { requireAuth: true });
 
-    const body = await request.json();
-    const { username, avatarUrl } = body;
+async function handlePatch(request, user) {
+  const rawBody = await request.json();
+  const body = sanitizeObject(rawBody);
+    const { username, avatarUrl, displayName } = body;
 
     const updates = {};
+
+    if (displayName !== undefined) {
+      updates.display_name = displayName === '' || displayName === null ? null : String(displayName).trim();
+    }
 
     if (username !== undefined) {
       const clean = (username || '').trim().toLowerCase();
@@ -75,10 +72,8 @@ export async function PATCH(request) {
       .select('username, display_name, avatar_url')
       .single();
 
-    if (updateErr) return NextResponse.json({ error: 'Update failed' }, { status: 500 });
-
-    return NextResponse.json({ success: true, profile: updated });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  if (updateErr) return NextResponse.json({ error: 'Update failed' }, { status: 500 });
+  return NextResponse.json({ success: true, profile: updated });
 }
+
+export const PATCH = withApiGuard(handlePatch, { requireAuth: true });

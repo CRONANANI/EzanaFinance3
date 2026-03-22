@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withApiGuard } from '@/lib/api-guard';
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const BASE = 'https://finnhub.io/api/v1';
@@ -35,10 +36,9 @@ const CRYPTO = [
   { symbol: 'BINANCE:ETHUSDT', display: 'ETH' },
 ];
 
-export async function GET() {
+async function handleGet() {
   try {
     const allSymbols = [...TICKER_SYMBOLS, ...FOREX_PAIRS, ...CRYPTO];
-
     const quotes = await Promise.all(
       allSymbols.map(async (item) => {
         try {
@@ -60,11 +60,11 @@ export async function GET() {
 
     return NextResponse.json(
       { quotes },
-      {
-        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
-      }
+      { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } }
     );
   } catch (error) {
     return NextResponse.json({ error: error.message, quotes: [] }, { status: 500 });
   }
 }
+
+export const GET = withApiGuard(handleGet, { requireAuth: false });

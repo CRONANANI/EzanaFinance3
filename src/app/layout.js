@@ -1,5 +1,8 @@
 import './globals.css';
 import { Suspense } from 'react';
+import { validateEnv } from '@/lib/env';
+
+validateEnv();
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
 import { PartnerProvider } from '@/contexts/PartnerContext';

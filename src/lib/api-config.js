@@ -5,11 +5,11 @@
 
 export const API_CONFIG = Object.freeze({
   alphaVantage: {
-    key: process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY || 'UM530SUY02FGEJ1G',
+    key: process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY || '',
     base: 'https://www.alphavantage.co/query',
   },
   fmp: {
-    key: process.env.NEXT_PUBLIC_FMP_API_KEY || 'KtI6Q5fak2JMGRWi0tUK7J8s6ktuDEgd',
+    key: process.env.NEXT_PUBLIC_FMP_API_KEY || '',
     base: 'https://financialmodelingprep.com/api',
   },
   newsApi: {

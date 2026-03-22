@@ -51,18 +51,23 @@ export async function GET(request) {
     return NextResponse.json({ articles: articles || [] });
   }
 
+  const page = parseInt(searchParams.get('page') || '1');
+  const pageSize = 20;
+  const start = (page - 1) * pageSize;
+
   let query = supabaseAdmin
     .from('echo_articles')
-    .select('id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, read_time_minutes, view_count, like_count, published_at')
+    .select('id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, read_time_minutes, view_count, like_count, published_at', { count: 'exact' })
     .eq('article_status', 'published')
-    .order('published_at', { ascending: false });
+    .order('published_at', { ascending: false })
+    .range(start, start + pageSize - 1);
 
   if (authorId) query = query.eq('author_id', authorId);
   if (category) query = query.eq('article_category', category);
   if (search) query = query.or(`article_title.ilike.%${search}%,author_name.ilike.%${search}%`);
 
-  const { data: articles } = await query.limit(50);
-  return NextResponse.json({ articles: articles || [] });
+  const { data: articles, count } = await query;
+  return NextResponse.json({ articles: articles || [], total: count ?? 0 });
 }
 
 export async function POST(request) {

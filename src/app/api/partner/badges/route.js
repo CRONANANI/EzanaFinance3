@@ -3,15 +3,11 @@
  * GET — get all badge definitions + partner's earned badges grouped by category
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 
-export async function GET(request) {
-  try {
-    const user = await getAuthUser(request);
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: allBadges } = await supabaseAdmin
+async function handleGet(request, user) {
+  const { data: allBadges } = await supabaseAdmin
       .from('badge_definitions')
       .select('*')
       .order('sort_order', { ascending: true });
@@ -40,14 +36,12 @@ export async function GET(request) {
       earnedAt: earnedMap[b.id],
     }));
 
-    return NextResponse.json({
-      categories,
-      earned,
-      totalEarned: earned.length,
-      totalAvailable: (allBadges || []).length,
-    });
-  } catch (error) {
-    console.error('[Badges] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  return NextResponse.json({
+    categories,
+    earned,
+    totalEarned: earned.length,
+    totalAvailable: (allBadges || []).length,
+  });
 }
+
+export const GET = withApiGuard(handleGet, { requireAuth: true });

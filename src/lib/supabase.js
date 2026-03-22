@@ -8,6 +8,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Client-side Supabase client
+// NOTE: For httpOnly cookies, migrate to createBrowserClient from @supabase/ssr
+// with proper cookie handlers - see middleware.js for server-side refresh
 export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
 
 // Server-side client with service role (BYPASSES RLS)
