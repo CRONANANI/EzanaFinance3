@@ -202,6 +202,18 @@
   gap: 0.75rem;
 }
 
+/* Nav logo — transparent bg, blend white into dark nav */
+.nav-logo-img {
+  background: transparent !important;
+}
+body:not(.light-mode) .nav-logo-img {
+  mix-blend-mode: multiply;
+  filter: contrast(1.1) brightness(1.05);
+}
+body.light-mode .nav-logo-img {
+  mix-blend-mode: darken;
+}
+
 /* Nav left zone — Logo + Bell grouped left in dashboard nav */
 .nav-left-zone {
   display: flex;
