@@ -67,7 +67,7 @@ export function Navbar() {
         <div className="nav-container nav-container-centered">
           <Link href="/" className="logo logo-centered" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span className="logo-text" style={{ color: '#10b981' }}>Ezana Finance</span>
-            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={28} height={28} className="nav-logo-img" style={{ objectFit: 'contain' }} />
+            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={36} height={36} className="nav-logo-img" style={{ objectFit: 'contain' }} />
           </Link>
           <button
             className="mobile-hamburger"
@@ -219,7 +219,7 @@ export function Navbar() {
         {/* ── LEFT ZONE: Logo + Notifications bell ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
-            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={48} height={48} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
+            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={62} height={62} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
           </Link>
           <div className="nn-wrapper">
             <NavNotifications />

@@ -202,13 +202,14 @@
   gap: 0.75rem;
 }
 
-/* Nav logo — transparent bg, blend white into dark nav */
+/* Nav logo — transparent bg; dark mode: show natural colors; light mode: blend */
 .nav-logo-img {
   background: transparent !important;
 }
 body:not(.light-mode) .nav-logo-img {
-  mix-blend-mode: multiply;
-  filter: contrast(1.1) brightness(1.05);
+  /* No mix-blend-mode in dark mode — multiply made logo invisible on dark nav */
+  mix-blend-mode: normal;
+  filter: contrast(1.05) brightness(1.08);
 }
 body.light-mode .nav-logo-img {
   mix-blend-mode: darken;
