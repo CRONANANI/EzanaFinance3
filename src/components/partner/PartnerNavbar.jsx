@@ -41,7 +41,7 @@ export function PartnerNavbar() {
       <div className="nav-container">
         <div className="nav-left-zone">
           <Link href="/partner-home" className="nav-brand nav-home-btn partner-brand" title="Partner Hub">
-            <Image src="/ezana-logo.png" alt="Ezana Finance" width={48} height={48} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
+            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={48} height={48} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
           </Link>
           <div className="partner-badge-nav">
             <i className="bi bi-patch-check-fill" />

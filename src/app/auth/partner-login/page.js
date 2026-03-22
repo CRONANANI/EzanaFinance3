@@ -73,7 +73,7 @@ export default function PartnerLoginPage() {
       <div className="auth-container">
         <div className="auth-card partner-auth-card">
           <div className="auth-logo-wrap">
-            <Image src="/ezana-logo.png" alt="Ezana Finance" width={48} height={48} className="nav-logo-img" style={{ objectFit: 'contain' }} />
+            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={48} height={48} className="nav-logo-img" style={{ objectFit: 'contain' }} />
             <span className="auth-logo-text" style={{ color: '#d4a853' }}>Ezana Finance</span>
           </div>
 

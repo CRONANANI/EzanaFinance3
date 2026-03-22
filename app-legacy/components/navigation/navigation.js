@@ -55,7 +55,7 @@ class Navigation {
         brandSection.className = 'logo';
         brandSection.innerHTML = `
             <a href="${config.brand.href}" class="brand-link">
-                <img src="../assets/images/ezana-logo.png" alt="${config.brand.name}" class="nav-brand-logo" style="height:36px;width:auto;object-fit:contain;">
+                <img src="../assets/images/ezana-logo.svg" alt="${config.brand.name}" class="nav-brand-logo" style="height:36px;width:auto;object-fit:contain;">
             </a>
         `;
 

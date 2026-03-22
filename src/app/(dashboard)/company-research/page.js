@@ -280,7 +280,7 @@ export default function CompanyResearchPage() {
               >
                 {model.flagship ? (
                   <div className="grpv-brand-logo">
-                    <img src="/app-legacy/assets/images/ezana-logo.png" alt="Ezana Finance" className="grpv-logo-img" />
+                    <img src="/ezana-logo.svg" alt="Ezana Finance" className="grpv-logo-img" />
                   </div>
                 ) : (
                   <div className={`model-metric-icon ${model.id}`} style={{ background: `${model.color}20`, color: model.color }}>
