@@ -1,18 +1,20 @@
 /* ============================================
    DASHBOARD LAYOUT — Global page margins
-   Match watchlist: padding 2rem (1rem at 768px)
+   Match Inside The Capitol: 1.5rem 2rem 3rem
+   Applied to ALL dashboard pages
    ============================================ */
 
 .dashboard-main .dashboard-container,
 .dashboard-container {
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding: 1.5rem 2rem 3rem;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .dashboard-main .dashboard-container,
   .dashboard-container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 1rem;
   }
 }

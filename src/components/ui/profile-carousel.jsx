@@ -211,7 +211,7 @@ function ProfileCard({ profile, index, variant = "default", onCardClose = () => 
           className={cn(
             "rounded-2xl bg-gradient-to-b overflow-hidden flex flex-col items-center relative z-10 border border-[#10b981]/10",
             variant === "investor"
-              ? "legendary-investor-card h-[200px] w-[200px] min-w-[200px] max-w-[220px] shrink-0 justify-start pt-0"
+              ? "legendary-investor-card min-h-[200px] w-[240px] min-w-[220px] max-w-[240px] shrink-0 justify-start pt-0"
               : "h-[420px] w-72 md:h-[480px] md:w-80 justify-center",
             cardBg
           )}
@@ -235,16 +235,16 @@ function ProfileCard({ profile, index, variant = "default", onCardClose = () => 
             className={cn(
               "text-[#9ca3af] text-center",
               variant === "investor"
-                ? "investor-bio text-[0.6875rem] mt-2 line-clamp-2 px-2"
+                ? "investor-bio text-[0.5625rem] mt-2 line-clamp-3 px-2 leading-relaxed"
                 : "text-sm mt-4 line-clamp-3 px-4"
             )}
           >
             {profile.description.length > 120 ? `${profile.description.slice(0, 120)}...` : profile.description}
           </p>
-          <p className={cn("text-white text-center font-semibold", variant === "investor" ? "investor-name text-[0.8125rem] mt-1" : "text-xl mt-4")}>
+          <p className={cn("text-white text-center font-semibold", variant === "investor" ? "investor-name text-[0.75rem] mt-1 font-extrabold" : "text-xl mt-4")}>
             {profile.name}
           </p>
-          <p className={cn("text-[#10b981] font-medium text-center", variant === "investor" ? "investor-designation text-[0.625rem] mt-0.5 pb-2" : "text-sm mt-1")}>
+          <p className={cn("text-[#10b981] font-medium text-center", variant === "investor" ? "investor-designation text-[0.625rem] mt-0.5 pb-2 font-semibold break-words" : "text-sm mt-1")}>
             {profile.designation}
           </p>
         </div>

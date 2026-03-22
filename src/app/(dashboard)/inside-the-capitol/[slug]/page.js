@@ -172,6 +172,14 @@ const PERF_PATHS = {
   'All': 'M0,70 L100,95 L200,120 L300,150 L400,170 L500,175 L600,185',
 };
 
+const TIME_LABELS = {
+  '1M': ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+  '3M': ['Jan', 'Feb', 'Mar'],
+  '6M': ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+  '1Y': ['Apr', 'Jul', 'Oct', 'Jan', 'Apr'],
+  'All': ['2021', '2022', '2023', '2024', '2025', '2026'],
+};
+
 function PerformanceChart({ perfData }) {
   const [perfTimeframe, setPerfTimeframe] = useState('All');
   const data = perfData[perfTimeframe];
@@ -205,6 +213,11 @@ function PerformanceChart({ perfData }) {
         <path d={area} fill="url(#perfGrad)" />
         <path d={path} fill="none" stroke={color} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
       </svg>
+      <div className="perf-chart-xaxis">
+        {(TIME_LABELS[perfTimeframe] || []).map((label, i) => (
+          <span key={i} className="perf-chart-xlabel">{label}</span>
+        ))}
+      </div>
     </div>
   );
 }

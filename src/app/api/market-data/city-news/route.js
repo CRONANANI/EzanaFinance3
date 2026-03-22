@@ -3,6 +3,36 @@ import { NextResponse } from 'next/server';
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const BASE = 'https://finnhub.io/api/v1';
 
+const CITY_KEYWORDS = {
+  'new-york': ['new york', 'nyc', 'wall street', 'nasdaq', 'nyse', 'fed ', 'federal reserve', 'us economy', 'us market', 'american', 'united states'],
+  toronto: ['toronto', 'canada', 'canadian', 'tsx', 'bank of canada', 'loonie'],
+  'sao-paulo': ['brazil', 'brazilian', 'bovespa', 'sao paulo', 'são paulo', 'real ', 'bcb'],
+  london: ['london', 'uk ', 'united kingdom', 'britain', 'british', 'ftse', 'bank of england', 'boe', 'sterling', 'pound'],
+  frankfurt: ['frankfurt', 'german', 'germany', 'ecb', 'european central bank', 'dax', 'eurozone', 'euro '],
+  dubai: ['dubai', 'uae', 'emirates', 'abu dhabi', 'opec', 'middle east', 'gulf', 'saudi'],
+  mumbai: ['mumbai', 'india', 'indian', 'sensex', 'nifty', 'rbi', 'rupee'],
+  singapore: ['singapore', 'sgx', 'mas ', 'asean'],
+  'hong-kong': ['hong kong', 'hongkong', 'hkex', 'hang seng', 'hsi'],
+  shanghai: ['shanghai', 'china', 'chinese', 'pboc', 'beijing', 'csi', 'sse'],
+  tokyo: ['tokyo', 'japan', 'japanese', 'nikkei', 'boj', 'bank of japan', 'yen', 'yen '],
+  sydney: ['sydney', 'australia', 'australian', 'asx', 'rba', 'aussie'],
+  johannesburg: ['johannesburg', 'south africa', 'jse', 'rand', 'african'],
+  'addis-ababa': ['ethiopia', 'addis ababa', 'african union', 'east africa'],
+  lagos: ['lagos', 'nigeria', 'nigerian', 'ngx', 'naira', 'west africa'],
+  moscow: ['moscow', 'russia', 'russian', 'moex', 'ruble', 'kremlin'],
+  paris: ['paris', 'france', 'french', 'cac 40', 'euronext', 'macron'],
+  'tel-aviv': ['tel aviv', 'israel', 'israeli', 'tase', 'shekel', 'teva'],
+  miami: ['miami', 'florida', 'south florida', 'fintech', 'crypto'],
+  'san-francisco': ['san francisco', 'silicon valley', 'bay area', 'tech', 'startup', 'venture'],
+  chicago: ['chicago', 'cme', 'cboe', 'futures', 'options', 'derivatives', 'midwest'],
+  seoul: ['seoul', 'korea', 'korean', 'kospi', 'samsung', 'sk hynix'],
+  geneva: ['geneva', 'switzerland', 'swiss', 'zurich', 'six exchange'],
+  dublin: ['dublin', 'ireland', 'irish', 'euronext dublin'],
+  stockholm: ['stockholm', 'sweden', 'swedish', 'nordic', 'nasdaq nordic'],
+  montreal: ['montreal', 'quebec', 'canada', 'canadian', 'tmx'],
+  hamilton: ['bermuda', 'hamilton', 'reinsurance', 'offshore'],
+};
+
 const CITY_TICKERS = {
   'new-york': ['AAPL', 'MSFT', 'JPM', 'GS'],
   toronto: ['RY', 'TD', 'ENB', 'CNQ'],
@@ -70,7 +100,14 @@ export async function GET(request) {
 
     unique.sort((a, b) => (b.datetime || 0) - (a.datetime || 0));
 
-    const formatted = unique.slice(0, 15).map((n) => ({
+    const keywords = CITY_KEYWORDS[cityId] || [];
+    const relevant = unique.filter((article) => {
+      const text = `${article.headline || ''} ${article.summary || ''} ${article.related || ''}`.toLowerCase();
+      return keywords.some(kw => text.includes(kw));
+    });
+    const finalNews = relevant.length >= 3 ? relevant : unique;
+
+    const formatted = finalNews.slice(0, 15).map((n) => ({
       id: n.id || n.headline?.slice(0, 20),
       category: (n.category || 'MARKETS').toUpperCase(),
       title: n.headline || 'Market Update',

@@ -110,6 +110,14 @@ export default function CommunityPage() {
 
   return (
     <>
+      <div className="community-hub-header">
+        <h1 className="community-hub-title">Community Hub</h1>
+        <div className="community-hub-tabs">
+          <button type="button" className={`community-hub-tab ${communitySearchType === 'all' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('all'); setCommunitySearchOpen(true); }}>All</button>
+          <button type="button" className={`community-hub-tab ${communitySearchType === 'users' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('users'); setCommunitySearchOpen(true); }}>Users</button>
+          <button type="button" className={`community-hub-tab ${communitySearchType === 'partners' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('partners'); setCommunitySearchOpen(true); }}>Partners</button>
+        </div>
+      </div>
       <div className="community-search-wrapper" ref={communitySearchRef}>
         <div className="community-search-bar">
           <i className="bi bi-search community-search-icon" />
@@ -167,7 +175,39 @@ export default function CommunityPage() {
         )}
       </div>
 
-      <div className="stats-grid condensed">
+      <div className="community-layout">
+      <aside className="community-sidebar">
+      <div className="community-card">
+        <div className="community-stat-grid">
+          <div className="community-stat"><span className="community-stat-value">12,456</span><span className="community-stat-label">Total Members</span></div>
+          <div className="community-stat"><span className="community-stat-value">89</span><span className="community-stat-label">Active Discussions</span></div>
+          <div className="community-stat"><span className="community-stat-value">47</span><span className="community-stat-label">Your Friends</span></div>
+          <div className="community-stat"><span className="community-stat-value">#127</span><span className="community-stat-label">Your Rank</span></div>
+        </div>
+      </div>
+      <div className="community-card">
+        <div className="community-card-header"><h3>Leaderboard</h3></div>
+        <div className="community-leaderboard">
+          {[{ name: 'Emma Wilson', initials: 'EW', return: 34.5 }, { name: 'David Kim', initials: 'DK', return: 28.2 }, { name: 'Lisa Park', initials: 'LP', return: 25.7 }, { name: 'Alex Chen', initials: 'AC', return: 22.1 }, { name: 'You', initials: 'ME', return: 12.4 }].map((u, i) => (
+            <div key={i} className="community-leader-row">
+              <span className="community-leader-rank">{i + 1}</span>
+              <div className="community-leader-avatar">{u.initials}</div>
+              <span className="community-leader-name">{u.name}</span>
+              <span className="community-leader-return">+{u.return}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="community-card">
+        <div className="community-card-header"><h3>Insights</h3></div>
+        <div style={{ padding: '0.875rem 1.25rem' }}>
+          <div className="community-insight"><span className="community-insight-label">Most Discussed</span><span className="community-insight-value">NVDA</span><span className="community-insight-sub">89 mentions</span></div>
+          <div className="community-insight"><span className="community-insight-label">Trending Topic</span><span className="community-insight-value">AI Stocks</span><span className="community-insight-sub">156 discussions</span></div>
+        </div>
+      </div>
+      </aside>
+      <div className="community-main">
+      <div className="stats-grid condensed" style={{ display: 'none' }}>
         <div className="stat-card stat-card-with-buttons">
           <div className="stat-icon members"><i className="bi bi-people" /></div>
           <div className="stat-content">
@@ -272,7 +312,9 @@ export default function CommunityPage() {
           </div>
         </div>
         </PinnableCard>
+      </div>
 
+      <div className="community-bottom-grid">
         <PinnableCard cardId="my-friends" title="My Friends" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={3}>
         <div className="component-card my-friends-card" ref={addFriendRef}>
           <div className="card-header">
@@ -369,7 +411,9 @@ export default function CommunityPage() {
         </div>
         </PinnableCard>
       </div>
+      </div>
 
+      <div className="community-discussions-main">
       <div className="dashboard-grid community-discussions-grid">
         <PinnableCard cardId="active-discussions" title="Active Discussions" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
         <div className="component-card active-discussions-card">
@@ -469,8 +513,11 @@ export default function CommunityPage() {
         </div>
         </PinnableCard>
       </div>
+      </div>
+      </div>
+      </div>
 
-      <PinnableCard cardId="community-insights" title="Community Insights" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={1}>
+      <div className="hidden"><PinnableCard cardId="community-insights" title="Community Insights" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={1}>
       <div className="component-card community-insights-card">
         <div className="card-header"><h3><i className="bi bi-bar-chart" /> Community Insights</h3></div>
         <div className="card-body">
@@ -496,7 +543,7 @@ export default function CommunityPage() {
           </div>
         </div>
       </div>
-      </PinnableCard>
+      </PinnableCard></div>
     </>
   );
 }
