@@ -36,6 +36,13 @@
   margin-bottom: 1.5rem;
 }
 
+/* Shared tab content wrapper — zero extra spacing; inherits from .lc-page */
+.lc-tab-content {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
 .lc-tab {
   display: flex;
   align-items: center;
@@ -297,6 +304,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
+  width: 100%;
 }
 
 .lc-course-card {
@@ -421,6 +429,7 @@
 }
 
 .lc-progress-list {
+  width: 100%;
   margin-bottom: 2rem;
 }
 
@@ -539,11 +548,11 @@
   font-size: 0.875rem;
 }
 
-.tab-content .lc-section-title:first-child {
+.lc-tab-content .lc-section-title:first-child {
   margin-top: 0;
 }
 
-.tab-content .lc-section-title {
+.lc-tab-content .lc-section-title {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
 }
@@ -553,6 +562,13 @@
     grid-template-columns: 1fr;
   }
   .lc-courses-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lc-tab-content .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lc-tab-content .badges-grid,
+  .lc-tab-content .courses-grid-small {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -572,6 +588,11 @@
 
 @media (max-width: 640px) {
   .lc-courses-grid {
+    grid-template-columns: 1fr;
+  }
+  .lc-tab-content .skills-grid,
+  .lc-tab-content .badges-grid,
+  .lc-tab-content .courses-grid-small {
     grid-template-columns: 1fr;
   }
 }
@@ -1410,10 +1431,11 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 }
 .btn-secondary-small:hover { background: var(--accent); color: var(--primary); }
 
-.courses-grid-small {
+.lc-tab-content .courses-grid-small {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .course-card-small {
@@ -1461,7 +1483,12 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 }
 .btn-review:hover { background: var(--primary); color: var(--primary-foreground); }
 
-.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+.lc-tab-content .skills-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+}
 
 .skill-card {
   background: var(--card);
@@ -1497,7 +1524,12 @@ body.light-mode .lc-topic-pill:hover { color: #059669; border-color: rgba(16, 18
 .stat-small { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--muted-foreground); }
 .stat-small i { color: var(--primary); }
 
-.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; }
+.lc-tab-content .badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+}
 
 .badge-card {
   background: var(--card);

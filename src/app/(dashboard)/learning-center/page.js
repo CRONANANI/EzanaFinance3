@@ -66,6 +66,7 @@ export default function LearningCenterPage() {
       </div>
 
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`} data-content="dashboard">
+        <div className="lc-tab-content">
         <div className="lc-dashboard-layout">
           <PinnableCard cardId="learning-course-table" title="My Courses" sourcePage="/learning-center" sourceLabel="Learning Center" defaultW={4} defaultH={2}>
           <div className="lc-table-wrap">
@@ -178,9 +179,11 @@ export default function LearningCenterPage() {
             <a href="#" className="lc-topic-pill">Financial Statements</a>
           </div>
         </section>
+        </div>
       </div>
 
       <div className={`tab-content ${activeTab === 'courses' ? 'active' : ''}`} data-content="courses">
+        <div className="lc-tab-content">
         <h2 className="lc-section-title">Courses In Progress</h2>
         <div className="lc-progress-list">
           <div className="lc-progress-card">
@@ -236,9 +239,11 @@ export default function LearningCenterPage() {
             <button className="btn-review" type="button">Review Course</button>
           </div>
         </div>
+        </div>
       </div>
 
       <div className={`tab-content ${activeTab === 'skills' ? 'active' : ''}`} data-content="skills">
+        <div className="lc-tab-content">
         <h2 className="lc-section-title">Your Skills</h2>
         <div className="skills-grid">
           <div className="skill-card mastered">
@@ -266,9 +271,11 @@ export default function LearningCenterPage() {
             <div className="skill-stats"><div className="stat-small"><i className="bi bi-book" /><span>1 course</span></div><div className="stat-small"><i className="bi bi-award" /><span>0 badges</span></div></div>
           </div>
         </div>
+        </div>
       </div>
 
       <div className={`tab-content ${activeTab === 'badges' ? 'active' : ''}`} data-content="badges">
+        <div className="lc-tab-content">
         <h2 className="lc-section-title">Your Badges (12 Earned)</h2>
         <div className="badges-grid">
           <div className="badge-card earned">
@@ -311,9 +318,11 @@ export default function LearningCenterPage() {
             <div className="badge-progress">Progress: 1/8 courses</div>
           </div>
         </div>
+        </div>
       </div>
 
       <div className={`tab-content ${activeTab === 'browse' ? 'active' : ''}`} data-content="browse">
+        <div className="lc-tab-content">
         <h2 className="lc-section-title">Browse All Courses</h2>
         <p className="lc-muted-text">Explore our full catalog of courses. Use the Learning Opportunities sections on each research page to see topic-specific recommendations.</p>
         <div className="lc-courses-grid">
@@ -332,7 +341,8 @@ export default function LearningCenterPage() {
                 <span className="lc-course-card-link">View Course <i className="bi bi-arrow-right" /></span>
               </div>
             </Link>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
