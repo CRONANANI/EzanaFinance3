@@ -22,6 +22,15 @@ const CITY_TICKERS = {
   moscow: ['SBER.ME', 'GAZP.ME', 'LKOH.ME'],
   paris: ['MC.PA', 'OR.PA', 'SAN.PA', 'TTE.PA'],
   'tel-aviv': ['TEVA', 'CHKP', 'NICE', 'CYBR'],
+  miami: ['HOOD', 'COIN', 'SQ'],
+  'san-francisco': ['CRM', 'UBER', 'ABNB', 'PLTR'],
+  chicago: ['CME', 'CBOE', 'NDAQ'],
+  seoul: ['005930.KS', '000660.KS'],
+  geneva: ['NESN.SW', 'ROG.SW', 'NOVN.SW'],
+  dublin: ['CRH', 'LSEG', 'AIB.IR'],
+  stockholm: ['ERIC-B.ST', 'VOLV-B.ST', 'ABB.ST'],
+  montreal: ['BMO', 'BN', 'NTR'],
+  hamilton: ['RNR', 'ACGL', 'AXS'],
 };
 
 export async function GET(request) {

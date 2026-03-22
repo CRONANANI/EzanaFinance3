@@ -31,6 +31,15 @@ export const FINANCIAL_CENTERS = [
   { id: "moscow", panelId: "moscow", name: "Moscow", lat: 55.7558, lng: 37.6173, exchange: "MOEX" },
   { id: "paris", panelId: "paris", name: "Paris", lat: 48.8566, lng: 2.3522, exchange: "Euronext" },
   { id: "tel-aviv", panelId: "telaviv", name: "Tel Aviv", lat: 32.0853, lng: 34.7818, exchange: "TASE" },
+  { id: "miami", panelId: "miami", name: "Miami", lat: 25.7617, lng: -80.1918, exchange: "Fintech Hub" },
+  { id: "san-francisco", panelId: "sanfrancisco", name: "San Francisco", lat: 37.7749, lng: -122.4194, exchange: "VC / Tech" },
+  { id: "chicago", panelId: "chicago", name: "Chicago", lat: 41.8781, lng: -87.6298, exchange: "CME / CBOE" },
+  { id: "seoul", panelId: "seoul", name: "Seoul", lat: 37.5665, lng: 126.978, exchange: "KRX" },
+  { id: "geneva", panelId: "geneva", name: "Geneva", lat: 46.2044, lng: 6.1432, exchange: "SIX" },
+  { id: "dublin", panelId: "dublin", name: "Dublin", lat: 53.3498, lng: -6.2603, exchange: "Euronext Dublin" },
+  { id: "stockholm", panelId: "stockholm", name: "Stockholm", lat: 59.3293, lng: 18.0686, exchange: "Nasdaq Nordic" },
+  { id: "montreal", panelId: "montreal", name: "Montreal", lat: 45.5017, lng: -73.5673, exchange: "TMX / MX" },
+  { id: "hamilton", panelId: "hamilton", name: "Hamilton", lat: 32.2949, lng: -64.782, exchange: "BSX" },
 ] as const;
 
 export type FinancialCenter = (typeof FINANCIAL_CENTERS)[number];
@@ -338,17 +347,29 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                 onMouseLeave={() => setHoveredDot(null)}
                 onClick={(e) => handleDotClick(center, e)}
               >
-                {/* Pulse ring 1 */}
-                <circle cx={point.x} cy={point.y} r="0.25" fill={lineColor} opacity="0.3">
-                  <animate attributeName="r" from="0.25" to="1.5" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
+                {/* Pulse ring 1 — expands and fades */}
+                <circle cx={point.x} cy={point.y} r="0.6" fill="none" stroke={lineColor} strokeWidth="0.15" opacity="0">
+                  <animate attributeName="r" from="0.6" to="3" dur="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.6" to="0" dur="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="stroke-width" from="0.15" to="0.02" dur="2.5s" repeatCount="indefinite" />
                 </circle>
-                {/* Pulse ring 2 */}
-                <circle cx={point.x} cy={point.y} r="0.25" fill={lineColor} opacity="0.2">
-                  <animate attributeName="r" from="0.25" to="1.5" dur="2s" begin="1s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.2" to="0" dur="2s" begin="1s" repeatCount="indefinite" />
+                {/* Pulse ring 2 — offset by 1.25s for continuous effect */}
+                <circle cx={point.x} cy={point.y} r="0.6" fill="none" stroke={lineColor} strokeWidth="0.15" opacity="0">
+                  <animate attributeName="r" from="0.6" to="3" dur="2.5s" begin="1.25s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.6" to="0" dur="2.5s" begin="1.25s" repeatCount="indefinite" />
+                  <animate attributeName="stroke-width" from="0.15" to="0.02" dur="2.5s" begin="1.25s" repeatCount="indefinite" />
                 </circle>
-                {/* Main dot — solid green, no inner black dot */}
+                {/* Subtle glow ring — always visible, very faint */}
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r="1.2"
+                  fill="none"
+                  stroke={lineColor}
+                  strokeWidth="0.08"
+                  opacity="0.15"
+                />
+                {/* Main solid dot */}
                 <circle
                   cx={point.x}
                   cy={point.y}

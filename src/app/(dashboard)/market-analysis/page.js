@@ -76,6 +76,15 @@ const FINANCIAL_CITIES = [
   { id: 'moscow', name: 'Moscow', country: 'Russia', exchange: 'MOEX', timezone: 'MSK' },
   { id: 'paris', name: 'Paris', country: 'France', exchange: 'Euronext', timezone: 'CET' },
   { id: 'tel-aviv', name: 'Tel Aviv', country: 'Israel', exchange: 'TASE', timezone: 'IST' },
+  { id: 'miami', name: 'Miami', country: 'United States', exchange: 'Fintech Hub', timezone: 'EST' },
+  { id: 'san-francisco', name: 'San Francisco', country: 'United States', exchange: 'VC / Tech', timezone: 'PST' },
+  { id: 'chicago', name: 'Chicago', country: 'United States', exchange: 'CME / CBOE', timezone: 'CST' },
+  { id: 'seoul', name: 'Seoul', country: 'South Korea', exchange: 'KRX', timezone: 'KST' },
+  { id: 'geneva', name: 'Geneva', country: 'Switzerland', exchange: 'SIX', timezone: 'CET' },
+  { id: 'dublin', name: 'Dublin', country: 'Ireland', exchange: 'Euronext Dublin', timezone: 'GMT' },
+  { id: 'stockholm', name: 'Stockholm', country: 'Sweden', exchange: 'Nasdaq Nordic', timezone: 'CET' },
+  { id: 'montreal', name: 'Montreal', country: 'Canada', exchange: 'TMX / MX', timezone: 'EST' },
+  { id: 'hamilton', name: 'Hamilton', country: 'Bermuda', exchange: 'BSX', timezone: 'AST' },
 ];
 
 const PANEL_ID_TO_CITY_ID = {
@@ -84,6 +93,9 @@ const PANEL_ID_TO_CITY_ID = {
   hongkong: 'hong-kong', shanghai: 'shanghai', tokyo: 'tokyo', sydney: 'sydney',
   johannesburg: 'johannesburg', addisababa: 'addis-ababa', lagos: 'lagos',
   moscow: 'moscow', paris: 'paris', telaviv: 'tel-aviv',
+  miami: 'miami', sanfrancisco: 'san-francisco', chicago: 'chicago',
+  seoul: 'seoul', geneva: 'geneva', dublin: 'dublin',
+  stockholm: 'stockholm', montreal: 'montreal', hamilton: 'hamilton',
 };
 
 function CategoryPanel({ category, onClose }) {
