@@ -28,8 +28,13 @@ This app uses **[Supabase Auth](https://supabase.com/docs/guides/auth)** with th
 
 After OAuth, Supabase redirects to your app at `/auth/callback` with a `?code=` (PKCE) or tokens in the URL **hash** (implicit). The app uses a **client** callback (`src/app/auth/callback/page.js` + `AuthCallbackClient.js`) that calls `exchangeCodeForSession` or `setSession` using **`createBrowserClient` from `@supabase/ssr`** so the PKCE code verifier lives in the **same cookie storage** as the server/middleware.
 
-The **browser** client in `src/lib/supabase.js` must use **`createBrowserClient` from `@supabase/ssr`** (exported as `supabase` and `createClient()`). Do **not** use `createClient` from `@supabase/supabase-js` in the browser — it stores the PKCE verifier in **localStorage**, while `exchangeCodeForSession` on `/auth/callback` reads **cookies** → *"PKCE code verifier not found in storage."*  
-`AuthCallbackClient` imports the same `supabase` singleton as sign-up / sign-in so the verifier and exchange share storage.
+The **browser** client lives in **`src/lib/supabase.js`** (`'use client'`) and uses **`createBrowserClient` from `@supabase/ssr`** only (`supabase` + `createClient()`). Do **not** use `createClient` from `@supabase/supabase-js` in the browser.
+
+**Important:** Keep **server** Supabase (service role) in a **separate** module — `src/lib/supabase-service-role.js` (`createServerSupabaseClient`). If API routes import a file that also runs `createBrowserClient` on the **server** (no `window`), `@supabase/ssr` falls back to broken cookie storage and you can still see *"PKCE code verifier not found"* in the real browser.
+
+`AuthCallbackClient` imports the same `supabase` singleton as sign-up / sign-in.
+
+**Middleware** uses `createServerClient` with **`getAll` / `setAll`** cookies (recommended by `@supabase/ssr`). `/auth/*` skips middleware so OAuth callbacks are not blocked.
 
 New users are sent to `/onboarding` until `profiles.onboarding_completed` is true (see migration `supabase/migrations/20260323140000_onboarding_profiles.sql`).
 
