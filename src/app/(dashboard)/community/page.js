@@ -515,7 +515,6 @@ export default function CommunityPage() {
       </div>
       </div>
       </div>
-      </div>
 
       <div className="hidden"><PinnableCard cardId="community-insights" title="Community Insights" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={1}>
       <div className="component-card community-insights-card">
