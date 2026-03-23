@@ -205,6 +205,9 @@
 /* Nav logo — transparent bg; dark mode: show natural colors; light mode: blend */
 .nav-logo-img {
   background: transparent !important;
+  max-height: 36px;
+  width: auto !important;
+  height: auto !important;
 }
 body:not(.light-mode) .nav-logo-img {
   /* No mix-blend-mode in dark mode — multiply made logo invisible on dark nav */
@@ -219,7 +222,7 @@ body.light-mode .nav-logo-img {
 .nav-left-zone {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   flex-shrink: 0;
 }
 @media (max-width: 768px) {

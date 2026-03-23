@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { usePartner } from '@/contexts/PartnerContext';
 import { supabase } from '@/lib/supabase';
 
@@ -116,10 +117,20 @@ export function MyDetailsPanel({ onSave }) {
 }
 
 export function ProfilePanel({ onSave }) {
-  const [publicProfile, setPublicProfile] = useState(true);
-  const [username, setUsername] = useState('');
-  const [usernameSaving, setUsernameSaving] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
+  const [form, setForm] = useState({
+    username: '',
+    displayName: '',
+    bio: '',
+    website: '',
+    twitter: '',
+    linkedin: '',
+    investorType: 'retail',
+    experience: 'intermediate',
+    publicProfile: true,
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { isPartner } = usePartner();
 
   const getToken = useCallback(async () => {
@@ -127,42 +138,52 @@ export function ProfilePanel({ onSave }) {
     return session?.access_token || null;
   }, []);
 
+  const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
   useEffect(() => {
-    if (isPartner) {
-      const fetchProfile = async () => {
+    const loadProfile = async () => {
+      try {
         const token = await getToken();
         if (!token) return;
-        try {
-          const res = await fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } });
-          const data = await res.json();
-          setUsername(data.profile?.username || '');
-        } catch {}
-      };
-      fetchProfile();
-    }
-  }, [isPartner, getToken]);
+        const res = await fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.profile) {
+          setForm((prev) => ({
+            ...prev,
+            username: data.profile.username || '',
+            displayName: data.profile.display_name || '',
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    };
+    loadProfile();
+  }, [getToken]);
 
-  const handleSaveUsername = async () => {
-    if (!isPartner) return;
-    setUsernameError('');
-    setUsernameSaving(true);
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setError('');
+    setSuccess('');
     try {
       const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
       const res = await fetch('/api/partner/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ username: username || null }),
+        body: JSON.stringify({
+          username: form.username || null,
+          displayName: form.displayName || null,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setUsernameError(data.error || 'Update failed');
-        return;
-      }
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      setSuccess('Profile saved successfully');
       onSave?.();
-    } catch {
-      setUsernameError('Update failed');
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setUsernameSaving(false);
+      setSaving(false);
     }
   };
 
@@ -182,17 +203,13 @@ export function ProfilePanel({ onSave }) {
                 <input
                   type="text"
                   className="settings-input"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  value={form.username}
+                  onChange={(e) => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   placeholder="your_username"
                   maxLength={24}
                 />
               </div>
               <span className="settings-field-hint">3-24 characters. Letters, numbers, underscores only. This appears on your hero card and public profile.</span>
-              {usernameError && <span className="settings-field-error">{usernameError}</span>}
-              <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={handleSaveUsername} disabled={usernameSaving}>
-                {usernameSaving ? 'Saving...' : 'Save username'}
-              </button>
             </div>
           </div>
         )}
@@ -201,57 +218,71 @@ export function ProfilePanel({ onSave }) {
             <span className="settings-toggle-label">Public profile</span>
             <span className="settings-toggle-desc">Allow others to view your profile and activity</span>
           </div>
-          <button type="button" className={`settings-switch ${publicProfile ? 'on' : ''}`} onClick={() => setPublicProfile(!publicProfile)} aria-label="Toggle public profile" />
+          <button type="button" className={`settings-switch ${form.publicProfile ? 'on' : ''}`} onClick={() => update('publicProfile', !form.publicProfile)} aria-label="Toggle public profile" />
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Display name</label>
-            <input type="text" className="settings-input" placeholder="John D." />
+            <input
+              type="text"
+              className="settings-input"
+              placeholder="John D."
+              value={form.displayName}
+              onChange={(e) => update('displayName', e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Bio</label>
-            <textarea className="settings-input" placeholder="Tell us about yourself..." rows={4} />
+            <textarea className="settings-input" placeholder="Tell us about yourself..." rows={4} value={form.bio} onChange={(e) => update('bio', e.target.value)} />
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Investor type</label>
-            <select className="settings-input">
-              <option>Individual</option>
-              <option>Professional</option>
-              <option>Institutional</option>
+            <select className="settings-input" value={form.investorType} onChange={(e) => update('investorType', e.target.value)}>
+              <option value="retail">Individual</option>
+              <option value="professional">Professional</option>
+              <option value="institutional">Institutional</option>
             </select>
           </div>
           <div className="settings-field">
             <label className="settings-label">Experience level</label>
-            <select className="settings-input">
-              <option>Beginner</option>
-              <option>Intermediate</option>
-              <option>Advanced</option>
-              <option>Expert</option>
+            <select className="settings-input" value={form.experience} onChange={(e) => update('experience', e.target.value)}>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="expert">Expert</option>
             </select>
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Website</label>
-            <input type="url" className="settings-input" placeholder="https://" />
+            <input type="url" className="settings-input" placeholder="https://" value={form.website} onChange={(e) => update('website', e.target.value)} />
           </div>
           <div className="settings-field">
             <label className="settings-label">Twitter</label>
-            <input type="text" className="settings-input" placeholder="@username" />
+            <input type="text" className="settings-input" placeholder="@username" value={form.twitter} onChange={(e) => update('twitter', e.target.value)} />
           </div>
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">LinkedIn</label>
-            <input type="url" className="settings-input" placeholder="https://linkedin.com/in/..." />
+            <input type="url" className="settings-input" placeholder="https://linkedin.com/in/..." value={form.linkedin} onChange={(e) => update('linkedin', e.target.value)} />
           </div>
         </div>
+        {error && (
+          <div className="settings-field-error" style={{ marginBottom: '0.75rem' }}>{error}</div>
+        )}
+        {success && (
+          <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '8px', color: '#10b981', fontSize: '0.75rem', marginBottom: '0.75rem' }}>{success}</div>
+        )}
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={handleSaveProfile} disabled={saving}>
+            {saving ? 'Saving...' : 'Save Profile'}
+          </button>
         </div>
       </div>
     </div>
@@ -398,6 +429,30 @@ export function FamilyPanel({ onSave }) {
 }
 
 export function PlanPanel({ onSave }) {
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const openCustomerPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        window.location.href = '/auth/login?redirect=/settings';
+        return;
+      }
+      const res = await fetch('/api/stripe/create-portal', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
+      if (data.url) window.location.href = data.url;
+    } catch (e) {
+      alert(e.message || 'Billing portal unavailable. Subscribe once from Pricing, or add Stripe keys.');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -440,8 +495,19 @@ export function PlanPanel({ onSave }) {
             <div className="settings-plan-feature"><i className="bi bi-check" />Unlimited API</div>
           </div>
         </div>
-        <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Upgrade plan</button>
+        <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
+          <Link href="/pricing" className="settings-btn-primary" style={{ textAlign: 'center', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            View plans &amp; checkout
+          </Link>
+          <button
+            type="button"
+            className="settings-btn-secondary"
+            onClick={openCustomerPortal}
+            disabled={portalLoading}
+          >
+            {portalLoading ? 'Opening…' : 'Manage subscription'}
+          </button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>Save</button>
         </div>
       </div>
     </div>
@@ -449,6 +515,30 @@ export function PlanPanel({ onSave }) {
 }
 
 export function BillingPanel({ onSave }) {
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const openCustomerPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        window.location.href = '/auth/login?redirect=/settings';
+        return;
+      }
+      const res = await fetch('/api/stripe/create-portal', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
+      if (data.url) window.location.href = data.url;
+    } catch (e) {
+      alert(e.message || 'Open the Stripe Customer Portal after your first subscription.');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -459,6 +549,16 @@ export function BillingPanel({ onSave }) {
         <h3 className="settings-section-title"><i className="bi bi-credit-card" />Payment method</h3>
         <div className="settings-info-card">
           <strong>•••• •••• •••• 4242</strong> — Expires 12/26
+        </div>
+        <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <button
+            type="button"
+            className="settings-btn-primary"
+            onClick={openCustomerPortal}
+            disabled={portalLoading}
+          >
+            {portalLoading ? 'Opening…' : 'Update payment method'}
+          </button>
         </div>
         <button type="button" className="settings-btn-secondary">Add payment method</button>
         <h3 className="settings-section-title"><i className="bi bi-geo-alt" />Billing address</h3>

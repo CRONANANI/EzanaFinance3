@@ -44,6 +44,7 @@ export function Navbar() {
     { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
     { id: 5, title: 'Community', url: '/community', icon: 'bi-people', isActive: pathname?.includes('/community') },
     { id: 6, title: 'Learning Center', url: '/learning-center', icon: 'bi-mortarboard', isActive: pathname?.includes('/learning-center') },
+    { id: 7, title: 'Pricing', url: '/pricing', icon: 'bi-tag', isActive: pathname?.includes('/pricing') },
   ];
 
   useEffect(() => {
@@ -219,7 +220,7 @@ export function Navbar() {
         {/* ── LEFT ZONE: Logo + Notifications bell ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
-            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={93} height={93} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
+            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={34} height={34} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
           </Link>
           <div className="nn-wrapper">
             <NavNotifications />
@@ -286,6 +287,10 @@ export function Navbar() {
           <Link href="/learning-center" className={`nav-link ${pathname?.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
+          </Link>
+          <Link href="/pricing" className={`nav-link ${pathname?.includes('/pricing') ? 'active' : ''}`} data-page="pricing" onClick={() => setMobileMenuOpen(false)}>
+            <i className="bi bi-tag"></i>
+            <span>Pricing</span>
           </Link>
         </div>
         <div className="nav-actions">

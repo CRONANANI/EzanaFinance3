@@ -6,6 +6,7 @@ import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
+import './dashboard-polish.css';
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
