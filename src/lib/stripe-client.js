@@ -9,7 +9,8 @@ let stripePromise;
  * Checkout redirect uses session URL from the server — this is still useful for embedded flows.
  */
 export function getStripe() {
-  const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  const pk =
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_PUBLISHABLE_KEY;
   if (!pk) return null;
   if (!stripePromise) {
     stripePromise = loadStripe(pk);

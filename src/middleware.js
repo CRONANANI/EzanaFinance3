@@ -7,6 +7,11 @@ const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http:/
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
+  /** Stripe webhook must receive the raw body — skip session / CORS handling */
+  if (pathname.startsWith('/api/stripe/webhook')) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   /** OAuth callback and auth pages must not run session-gate logic (session is created here) */
   if (pathname.startsWith('/auth')) {
     return NextResponse.next({ request: { headers: request.headers } });

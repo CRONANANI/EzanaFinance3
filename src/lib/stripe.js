@@ -2,7 +2,6 @@
  * Server-only Stripe client. Do not import from client components.
  */
 import Stripe from 'stripe';
-import { PLANS } from '@/lib/plans';
 
 const key = process.env.STRIPE_SECRET_KEY;
 
@@ -13,5 +12,3 @@ export const stripe = key
       apiVersion: '2026-02-25.clover',
     })
   : null;
-
-export { PLANS };

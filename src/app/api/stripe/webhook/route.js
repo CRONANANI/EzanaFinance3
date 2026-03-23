@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/plaid';
+import { getPlanKeyByPriceId } from '@/config/pricing';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,27 +32,42 @@ export async function POST(request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        let userId = session.metadata?.supabase_user_id;
+        const userId = session.metadata?.supabase_user_id;
+        const planKey = session.metadata?.plan_key;
 
-        const subRef = session.subscription;
-        if (subRef && !userId) {
+        if (!userId) break;
+
+        if (session.mode === 'subscription') {
+          const subRef = session.subscription;
+          if (!subRef) break;
           const subId = typeof subRef === 'string' ? subRef : subRef.id;
-          const sub = await stripe.subscriptions.retrieve(subId);
-          userId = sub.metadata?.supabase_user_id;
-        }
-
-        if (userId) {
-          const subId =
-            typeof session.subscription === 'string'
-              ? session.subscription
-              : session.subscription?.id || null;
+          const subscription = await stripe.subscriptions.retrieve(subId);
+          const periodEnd = subscription.current_period_end
+            ? new Date(subscription.current_period_end * 1000).toISOString()
+            : null;
 
           await supabaseAdmin.from('profiles').upsert(
             {
               id: userId,
               stripe_customer_id: session.customer,
+              subscription_status: subscription.status,
+              subscription_id: subscription.id,
+              subscription_plan: planKey || getPlanKeyByPriceId(subscription.items?.data?.[0]?.price?.id),
+              current_period_end: periodEnd,
+              subscription_period_end: periodEnd,
+              current_plan: subscription.items?.data?.[0]?.price?.id ?? null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' }
+          );
+        } else if (session.mode === 'payment') {
+          await supabaseAdmin.from('profiles').upsert(
+            {
+              id: userId,
+              stripe_customer_id: session.customer,
+              one_time_plan: planKey,
+              one_time_plan_purchased_at: new Date().toISOString(),
               subscription_status: 'active',
-              subscription_id: subId,
               updated_at: new Date().toISOString(),
             },
             { onConflict: 'id' }
@@ -60,48 +76,89 @@ export async function POST(request) {
         break;
       }
 
+      case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        const sub = event.data.object;
-        const userId = sub.metadata?.supabase_user_id;
-        if (userId) {
-          const priceId = sub.items?.data?.[0]?.price?.id ?? null;
-          await supabaseAdmin
+        const subscription = event.data.object;
+        let userId = subscription.metadata?.supabase_user_id;
+        const priceId = subscription.items?.data?.[0]?.price?.id ?? null;
+        const planKeyFromPrice = getPlanKeyByPriceId(priceId);
+
+        if (!userId) {
+          const { data: profile } = await supabaseAdmin
             .from('profiles')
-            .update({
-              subscription_status: sub.status,
-              current_plan: priceId,
-              subscription_period_end: sub.current_period_end
-                ? new Date(sub.current_period_end * 1000).toISOString()
-                : null,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', userId);
+            .select('id')
+            .eq('stripe_customer_id', subscription.customer)
+            .maybeSingle();
+          if (profile) userId = profile.id;
         }
+
+        if (!userId) break;
+
+        const periodEnd = subscription.current_period_end
+          ? new Date(subscription.current_period_end * 1000).toISOString()
+          : null;
+
+        await supabaseAdmin
+          .from('profiles')
+          .update({
+            subscription_status: subscription.status,
+            subscription_id: subscription.id,
+            subscription_plan: subscription.metadata?.plan_key || planKeyFromPrice,
+            current_period_end: periodEnd,
+            subscription_period_end: periodEnd,
+            current_plan: priceId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', userId);
         break;
       }
 
       case 'customer.subscription.deleted': {
-        const sub = event.data.object;
-        const userId = sub.metadata?.supabase_user_id;
-        if (userId) {
+        const subscription = event.data.object;
+
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('id')
+          .eq('stripe_customer_id', subscription.customer)
+          .maybeSingle();
+
+        if (profile) {
           await supabaseAdmin
             .from('profiles')
             .update({
               subscription_status: 'canceled',
-              current_plan: null,
+              subscription_id: null,
+              subscription_plan: null,
               updated_at: new Date().toISOString(),
             })
-            .eq('id', userId);
+            .eq('id', profile.id);
         }
+        break;
+      }
+
+      case 'invoice.paid': {
+        const invoice = event.data.object;
+        console.log('[Stripe Webhook] Invoice paid:', invoice.id);
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
+        console.log('[Stripe Webhook] Invoice payment failed:', invoice.id);
         let userId = null;
         if (invoice.subscription) {
-          const sub = await stripe.subscriptions.retrieve(invoice.subscription);
+          const sub = await stripe.subscriptions.retrieve(
+            typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
+          );
           userId = sub.metadata?.supabase_user_id;
+          if (!userId) {
+            const { data: profile } = await supabaseAdmin
+              .from('profiles')
+              .select('id')
+              .eq('stripe_customer_id', sub.customer)
+              .maybeSingle();
+            if (profile) userId = profile.id;
+          }
         }
         if (userId) {
           await supabaseAdmin
@@ -116,10 +173,10 @@ export async function POST(request) {
       }
 
       default:
-        break;
+        console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
     }
-  } catch (e) {
-    console.error('[Stripe Webhook] Handler error:', e);
+  } catch (error) {
+    console.error('[Stripe Webhook] Handler error:', error);
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePartner } from '@/contexts/PartnerContext';
 import { supabase } from '@/lib/supabase';
+import { ManageBillingButton } from '@/components/billing/ManageBillingButton';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -429,30 +430,6 @@ export function FamilyPanel({ onSave }) {
 }
 
 export function PlanPanel({ onSave }) {
-  const [portalLoading, setPortalLoading] = useState(false);
-
-  const openCustomerPortal = async () => {
-    setPortalLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        window.location.href = '/auth/login?redirect=/settings';
-        return;
-      }
-      const res = await fetch('/api/stripe/create-portal', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
-      if (data.url) window.location.href = data.url;
-    } catch (e) {
-      alert(e.message || 'Billing portal unavailable. Subscribe once from Pricing, or add Stripe keys.');
-    } finally {
-      setPortalLoading(false);
-    }
-  };
-
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -499,14 +476,7 @@ export function PlanPanel({ onSave }) {
           <Link href="/pricing" className="settings-btn-primary" style={{ textAlign: 'center', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             View plans &amp; checkout
           </Link>
-          <button
-            type="button"
-            className="settings-btn-secondary"
-            onClick={openCustomerPortal}
-            disabled={portalLoading}
-          >
-            {portalLoading ? 'Opening…' : 'Manage subscription'}
-          </button>
+          <ManageBillingButton className="settings-btn-secondary" label="Manage subscription" />
           <button type="button" className="settings-btn-primary" onClick={onSave}>Save</button>
         </div>
       </div>
@@ -515,30 +485,6 @@ export function PlanPanel({ onSave }) {
 }
 
 export function BillingPanel({ onSave }) {
-  const [portalLoading, setPortalLoading] = useState(false);
-
-  const openCustomerPortal = async () => {
-    setPortalLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        window.location.href = '/auth/login?redirect=/settings';
-        return;
-      }
-      const res = await fetch('/api/stripe/create-portal', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
-      if (data.url) window.location.href = data.url;
-    } catch (e) {
-      alert(e.message || 'Open the Stripe Customer Portal after your first subscription.');
-    } finally {
-      setPortalLoading(false);
-    }
-  };
-
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -551,14 +497,7 @@ export function BillingPanel({ onSave }) {
           <strong>•••• •••• •••• 4242</strong> — Expires 12/26
         </div>
         <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <button
-            type="button"
-            className="settings-btn-primary"
-            onClick={openCustomerPortal}
-            disabled={portalLoading}
-          >
-            {portalLoading ? 'Opening…' : 'Update payment method'}
-          </button>
+          <ManageBillingButton className="settings-btn-primary" label="Update payment method" />
         </div>
         <button type="button" className="settings-btn-secondary">Add payment method</button>
         <h3 className="settings-section-title"><i className="bi bi-geo-alt" />Billing address</h3>
