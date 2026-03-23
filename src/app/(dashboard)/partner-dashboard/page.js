@@ -13,30 +13,6 @@ const EARNINGS_DATA = {
   nextPayoutDate: 'April 1, 2026',
 };
 
-const EARNINGS_CHART_DATA = [1200, 1450, 1320, 1890, 2100, 2340];
-
-function EarningsChart({ data }) {
-  const max = Math.max(...data);
-  const w = 400; const h = 120;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 20)}`).join(' ');
-  const linePath = `M${pts}`;
-  const areaPath = `M${pts} L${w},${h} L0,${h} Z`;
-  return (
-    <div className="ptr-earnings-chart">
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="ptrEarningsGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#d4a853" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#d4a853" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={areaPath} fill="url(#ptrEarningsGrad)" />
-        <path d={linePath} fill="none" stroke="#d4a853" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
-  );
-}
-
 function NextPayoutCountdown({ dateStr }) {
   const { days, hours } = useMemo(() => {
     const d = new Date(dateStr);
@@ -85,8 +61,33 @@ const TOP_COPIERS = [
   { name: 'David W.', copyAmount: 10000, since: 'Jun 2025', pnl: 1100, pnlPct: 11.0 },
 ];
 
+const MARKET_PULSE = [
+  { name: 'S&P 500', value: '5,892', change: '+0.45%', up: true },
+  { name: 'NASDAQ', value: '18,743', change: '+0.72%', up: true },
+  { name: 'DOW', value: '43,128', change: '-0.18%', up: false },
+  { name: 'VIX', value: '14.32', change: '-3.2%', up: false },
+  { name: 'BTC', value: '$87,234', change: '+2.34%', up: true },
+  { name: 'GOLD', value: '$2,178', change: '+0.15%', up: true },
+];
+
+const ACTIVITY_TIMELINE = [
+  { icon: 'bi-lightning-charge', text: 'New trade executed: BUY NVDA', time: '2 hours ago', color: '#10b981' },
+  { icon: 'bi-person-plus', text: '12 new copiers joined your Growth Alpha strategy', time: '5 hours ago', color: '#d4a853' },
+  { icon: 'bi-newspaper', text: 'Your article "AI Stocks 2026" received 340 reads', time: '1 day ago', color: '#3b82f6' },
+  { icon: 'bi-cash-stack', text: 'Commission payout of $1,240 processed', time: '2 days ago', color: '#10b981' },
+  { icon: 'bi-mortarboard', text: '8 new students enrolled in your Options course', time: '3 days ago', color: '#a78bfa' },
+];
+
+const TOP_CONTENT = [
+  { type: 'Article', title: 'AI Stocks to Watch in 2026', metric: '2,340 reads', icon: 'bi-newspaper', change: '+45%' },
+  { type: 'Course', title: 'Options Trading Fundamentals', metric: '156 enrolled', icon: 'bi-mortarboard', change: '+12%' },
+  { type: 'Article', title: 'Why the Fed Will Cut Rates', metric: '1,890 reads', icon: 'bi-newspaper', change: '+32%' },
+  { type: 'Strategy', title: 'Growth Alpha', metric: '234 copiers', icon: 'bi-lightning-charge', change: '+8.7%' },
+];
+
 export default function PartnerDashboardPage() {
   const [timeframe, setTimeframe] = useState('1M');
+  const [audienceTf, setAudienceTf] = useState('1M');
 
   return (
     <div className="ptr-page">
@@ -94,7 +95,7 @@ export default function PartnerDashboardPage() {
         <h1 className="ptr-page-title">Partner Dashboard</h1>
         <div className="ptr-tf-group">
           {['1W', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-            <button key={tf} className={`ptr-tf-btn ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
+            <button key={tf} type="button" className={`ptr-tf-btn ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
           ))}
         </div>
       </div>
@@ -130,18 +131,62 @@ export default function PartnerDashboardPage() {
         </div>
       </div>
 
-      <div className="ptr-card ptr-earnings-chart-card">
-        <div className="ptr-card-header">
-          <h3>Earnings Trend</h3>
+      <div className="ptr-row-2">
+        <div className="ptr-card">
+          <div className="ptr-card-header">
+            <h3>Market Pulse</h3>
+            <span className="ptr-card-badge">LIVE</span>
+          </div>
+          <div className="ptr-market-pulse">
+            {MARKET_PULSE.map((item, i) => (
+              <div key={i} className="ptr-market-item">
+                <span className="ptr-market-name">{item.name}</span>
+                <span className="ptr-market-value">{item.value}</span>
+                <span className={`ptr-market-change ${item.up ? 'positive' : 'negative'}`}>{item.change}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <EarningsChart data={EARNINGS_CHART_DATA} />
+
+        <div className="ptr-card">
+          <div className="ptr-card-header">
+            <h3>Audience Growth</h3>
+            <div className="ptr-tf-group">
+              {['1W', '1M', '3M', '6M'].map((tf) => (
+                <button key={tf} type="button" className={`ptr-tf-btn ${audienceTf === tf ? 'active' : ''}`} onClick={() => setAudienceTf(tf)}>{tf}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{ padding: '1rem 1.25rem' }}>
+            <div className="ptr-audience-stats-row">
+              <div>
+                <span className="ptr-audience-stat-label">Followers</span>
+                <span className="ptr-audience-stat-value">847</span>
+                <span className="ptr-audience-stat-delta">+12.4%</span>
+              </div>
+              <div>
+                <span className="ptr-audience-stat-label">Copiers</span>
+                <span className="ptr-audience-stat-value">234</span>
+                <span className="ptr-audience-stat-delta">+8.7%</span>
+              </div>
+              <div>
+                <span className="ptr-audience-stat-label">Echo Subscribers</span>
+                <span className="ptr-audience-stat-value">1,203</span>
+                <span className="ptr-audience-stat-delta">+15.2%</span>
+              </div>
+            </div>
+            <div className="ptr-audience-chart-placeholder">
+              <span>Growth chart renders here</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="ptr-row-2">
         <div className="ptr-card ptr-strategies-card">
           <div className="ptr-card-header">
             <h3>Your Strategies</h3>
-            <button className="ptr-btn-sm"><i className="bi bi-plus-lg" /> New Strategy</button>
+            <button type="button" className="ptr-btn-sm"><i className="bi bi-plus-lg" /> New Strategy</button>
           </div>
           <div className="ptr-strategy-list">
             {STRATEGIES.map((s) => (
@@ -156,6 +201,50 @@ export default function PartnerDashboardPage() {
                     <span className="ptr-strategy-return-mo">+{s.returnMo}% /mo</span>
                   </div>
                   <span className={`ptr-status-dot ${s.status}`} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="ptr-card">
+          <div className="ptr-card-header">
+            <h3>Top Performing Content</h3>
+          </div>
+          <div style={{ padding: 0 }}>
+            {TOP_CONTENT.map((item, i) => (
+              <div key={i} className="ptr-top-content-row">
+                <div className="ptr-top-content-icon">
+                  <i className={`bi ${item.icon}`} style={{ color: '#d4a853', fontSize: '0.875rem' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span className="ptr-top-content-type">{item.type}</span>
+                  <span className="ptr-top-content-title">{item.title}</span>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span className="ptr-top-content-metric">{item.metric}</span>
+                  <span className="ptr-top-content-change">{item.change}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="ptr-row-2">
+        <div className="ptr-card">
+          <div className="ptr-card-header">
+            <h3>Recent Activity</h3>
+          </div>
+          <div className="ptr-activity-timeline">
+            {ACTIVITY_TIMELINE.map((item, i) => (
+              <div key={i} className="ptr-timeline-item">
+                <div className="ptr-timeline-dot" style={{ background: item.color }}>
+                  <i className={`bi ${item.icon}`} />
+                </div>
+                <div className="ptr-timeline-content">
+                  <span className="ptr-timeline-text">{item.text}</span>
+                  <span className="ptr-timeline-time">{item.time}</span>
                 </div>
               </div>
             ))}

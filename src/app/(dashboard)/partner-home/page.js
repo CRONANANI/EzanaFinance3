@@ -5,7 +5,6 @@ import { useAuth } from '@/components/AuthProvider';
 import { usePartner } from '@/contexts/PartnerContext';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { BadgeRow } from '@/components/partner/BadgeDisplay';
 import '../partner.css';
 import '@/components/partner/badges.css';
 
@@ -109,7 +108,30 @@ export default function PartnerHomePage() {
               </span>
             )}
           </div>
-          <BadgeRow badges={earnedBadges} />
+          {earnedBadges.length > 0 && (
+            <div className="ptr-hero-badges">
+              {earnedBadges.slice(0, 5).map((badge) => {
+                const tip = badge.badge_description || badge.badge_name || '';
+                return (
+                  <div
+                    key={badge.id}
+                    className="ptr-hero-badge-item"
+                    data-tooltip={tip}
+                  >
+                    <div
+                      className="ptr-hero-badge-icon"
+                      style={{
+                        borderColor: badge.tier_color || '#d4a853',
+                        background: `${badge.tier_color || '#d4a853'}15`,
+                      }}
+                    >
+                      <i className={`bi ${badge.badge_icon || 'bi-award'}`} style={{ color: badge.tier_color || '#d4a853' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="ptr-hero-glow" />

@@ -8,11 +8,17 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
+import '@/app/(dashboard)/partner.css';
+
+const RESEARCH_PATHS = ['/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/betting-markets', '/ezana-echo'];
 
 export function PartnerNavbar() {
   const pathname = usePathname();
   const { verified, partnerRole } = usePartner();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [researchOpen, setResearchOpen] = useState(false);
+
+  const isResearchActive = RESEARCH_PATHS.some((p) => pathname?.includes(p));
 
   const partnerNavItems = [
     { id: 1, title: 'Home', url: '/partner-home', icon: 'bi-house-door', isActive: pathname === '/partner-home' },
@@ -23,6 +29,7 @@ export function PartnerNavbar() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setResearchOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -35,6 +42,11 @@ export function PartnerNavbar() {
       document.body.style.overflow = '';
     };
   }, [mobileMenuOpen]);
+
+  const closeResearch = () => {
+    setResearchOpen(false);
+    setMobileMenuOpen(false);
+  };
 
   return (
     <nav className="main-nav partner-nav" id="partnerNav">
@@ -68,6 +80,53 @@ export function PartnerNavbar() {
             <i className="bi bi-speedometer2" />
             <span>Dashboard</span>
           </Link>
+
+          <div
+            className="nav-dropdown-wrapper partner-research-wrap"
+            onMouseEnter={() => setResearchOpen(true)}
+            onMouseLeave={() => setResearchOpen(false)}
+          >
+            <button
+              type="button"
+              className={`nav-link partner-research-trigger ${isResearchActive ? 'active' : ''}`}
+              onClick={() => setResearchOpen((o) => !o)}
+              aria-expanded={researchOpen}
+              aria-haspopup="true"
+            >
+              <i className="bi bi-search" />
+              <span>Research</span>
+              <i className="bi bi-chevron-down partner-research-chevron" />
+            </button>
+            {researchOpen && (
+              <div className="nav-dropdown partner-nav-dropdown">
+                <Link href="/inside-the-capitol" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-bank" />
+                  <div><span className="nav-dropdown-title">Inside The Capitol</span><span className="nav-dropdown-desc">Congressional trading</span></div>
+                </Link>
+                <Link href="/company-research" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-building" />
+                  <div><span className="nav-dropdown-title">Company Research</span><span className="nav-dropdown-desc">Financial analysis</span></div>
+                </Link>
+                <Link href="/market-analysis" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-graph-up" />
+                  <div><span className="nav-dropdown-title">Market Analysis</span><span className="nav-dropdown-desc">Global markets</span></div>
+                </Link>
+                <Link href="/for-the-quants" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-calculator" />
+                  <div><span className="nav-dropdown-title">For The Quants</span><span className="nav-dropdown-desc">Quant tools</span></div>
+                </Link>
+                <Link href="/betting-markets" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-trophy" />
+                  <div><span className="nav-dropdown-title">Betting Markets</span><span className="nav-dropdown-desc">Odds & predictions</span></div>
+                </Link>
+                <Link href="/ezana-echo" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-newspaper" />
+                  <div><span className="nav-dropdown-title">Ezana Echo</span><span className="nav-dropdown-desc">Articles & insights</span></div>
+                </Link>
+              </div>
+            )}
+          </div>
+
           <Link href="/partner-community" className={`nav-link ${pathname?.includes('partner-community') ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-people" />
             <span>Community</span>
