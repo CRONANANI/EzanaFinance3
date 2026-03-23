@@ -8,7 +8,8 @@
 .ma-fullscreen {
   position: relative;
   width: 100%;
-  height: calc(100vh - 60px);
+  /* Viewport below fixed navbar (64px); align with --navbar-height in dashboard layout */
+  height: calc(100vh - var(--navbar-height));
   overflow: hidden;
   background: #070a0e;
 }

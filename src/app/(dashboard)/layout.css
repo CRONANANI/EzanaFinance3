@@ -1,21 +1,31 @@
 /* ============================================
    DASHBOARD LAYOUT — Single source of page margins
-   Match Inside The Capitol: 1.5rem 2rem 3rem (horizontal edges for all cards)
-   Padding lives on <main>; inner .dashboard-container has no extra inset.
+   Navbar is position:fixed (see unified-nav.css, height 64px). Top padding clears it
+   plus the same vertical gap as side margins (1.5rem).
    ============================================ */
 
+:root {
+  /* Shared with .main-nav (unified-nav.css) — used in calc() for MA fullscreen, etc. */
+  --navbar-height: 64px;
+}
+
 .dashboard-main.dashboard-main-content {
-  padding: 1.5rem 2rem 3rem;
+  padding-top: calc(var(--navbar-height, 64px) + 1.5rem);
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 3rem;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  min-height: calc(100vh - 64px);
+  min-height: 100vh;
 }
 
-/* Full-screen routes (absolute-positioned UI) — no outer inset */
+/* Full-screen routes (e.g. market analysis) — no horizontal inset; top clears fixed nav only */
 .dashboard-main-content.dashboard-main-content--fullscreen {
   padding: 0;
-  min-height: calc(100vh - 64px);
+  padding-top: var(--navbar-height, 64px);
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .dashboard-main .dashboard-container,
@@ -28,6 +38,16 @@
 
 @media (max-width: 768px) {
   .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
-    padding: 1rem;
+    padding-top: calc(var(--navbar-height, 64px) + 1rem);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .dashboard-main.dashboard-main-content.dashboard-main-content--fullscreen {
+    padding-top: var(--navbar-height, 64px);
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
   }
 }

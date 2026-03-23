@@ -223,13 +223,7 @@ body {
    DASHBOARD LAYOUT
    ============================================ */
 @media (max-width: 768px) {
-  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
-    padding: 1rem;
-  }
-
-  .dashboard-main {
-    padding-top: 64px;
-  }
+  /* Dashboard top/side padding: see src/app/(dashboard)/layout.css (navbar + gap) */
 
   body.sidebar-open .dashboard-main {
     margin-left: 0;
