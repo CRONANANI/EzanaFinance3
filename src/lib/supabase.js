@@ -1,3 +1,4 @@
+import { createBrowserClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -7,10 +8,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)');
 }
 
-// Client-side Supabase client
-// NOTE: For httpOnly cookies, migrate to createBrowserClient from @supabase/ssr
-// with proper cookie handlers - see middleware.js for server-side refresh
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+/**
+ * Browser client — MUST use @supabase/ssr createBrowserClient for OAuth PKCE.
+ * The generic createClient() stores the code verifier in localStorage, while the
+ * server callback reads cookies → exchange fails or missing ?code= behavior.
+ * @see https://supabase.com/docs/guides/auth/server-side/nextjs
+ */
+export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '');
 
 // Server-side client with service role (BYPASSES RLS)
 export const createServerSupabaseClient = () => {
@@ -26,8 +30,8 @@ export const createServerSupabaseClient = () => {
     {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     }
   );
 };

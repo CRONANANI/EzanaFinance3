@@ -26,9 +26,11 @@ This app uses **[Supabase Auth](https://supabase.com/docs/guides/auth)** with th
      - `https://ezana.world/**`  
      - `https://ezana.world/auth/callback`  
 
-After OAuth, Supabase redirects to your app at `/auth/callback` with a `code` that is exchanged for a session (`src/app/auth/callback/route.js`).
+After OAuth, Supabase redirects to your app at `/auth/callback` with a `?code=` (PKCE) or tokens in the URL **hash** (implicit). The app uses a **client** callback (`src/app/auth/callback/page.js` + `AuthCallbackClient.js`) that calls `exchangeCodeForSession` or `setSession` using **`createBrowserClient` from `@supabase/ssr`** so the PKCE code verifier lives in the **same cookie storage** as the server/middleware.
 
-The callback uses `@supabase/ssr` `createServerClient` with cookie `getAll` / `setAll` so the PKCE session is stored correctly. New users are sent to `/onboarding` until `profiles.onboarding_completed` is true (see migration `supabase/migrations/20260323140000_onboarding_profiles.sql`).
+The **browser** `supabase` export in `src/lib/supabase.js` must be `createBrowserClient` — not the plain `createClient` from `@supabase/supabase-js` — or OAuth can fail (verifier in localStorage vs cookies mismatch).
+
+New users are sent to `/onboarding` until `profiles.onboarding_completed` is true (see migration `supabase/migrations/20260323140000_onboarding_profiles.sql`).
 
 **Redirect allowlist** must include:
 
