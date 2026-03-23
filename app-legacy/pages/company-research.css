@@ -2,12 +2,6 @@
    COMPANY RESEARCH PAGE
    ============================================ */
 
-/* Bring content closer to top nav - shift everything up */
-.dashboard-container:has(.company-search-wrapper) {
-  padding-top: 0.5rem;
-  gap: 1rem;
-}
-
 /* Stat icon colors */
 .stat-icon.stocks { background: rgba(16, 185, 129, 0.2); color: #10b981; }
 .stat-icon.market { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
@@ -16,7 +10,7 @@
 .stat-change.positive { color: #10b981; }
 
 /* Stats Grid - match dashboard metric-card height (Total Portfolio Value, Risk Score, etc.) */
-.dashboard-container:has(.company-search-wrapper) #companyStatsGrid {
+#companyStatsGrid {
   margin-bottom: 1rem;
 }
 

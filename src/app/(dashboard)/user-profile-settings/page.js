@@ -43,8 +43,8 @@ export default function UserProfileSettingsPage() {
   }
 
   return (
-    <div className="dashboard-container" style={{ paddingTop: 'calc(var(--nav-height, 64px) + 24px)' }}>
-      <div className="container mx-auto px-6 py-12">
+    <div className="user-profile-settings-page">
+      <div className="py-12">
         <div className="flex flex-wrap items-center justify-between gap-6 mb-12">
           <div>
             <h1 className="text-4xl font-light text-foreground tracking-tight page-title-shiny">

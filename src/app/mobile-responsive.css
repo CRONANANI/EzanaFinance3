@@ -223,7 +223,7 @@ body {
    DASHBOARD LAYOUT
    ============================================ */
 @media (max-width: 768px) {
-  .dashboard-container {
+  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
     padding: 1rem;
   }
 

@@ -3,9 +3,12 @@
    ============================================ */
 
 .lc-page {
-  /* Margins inherited from dashboard layout — no extra padding */
-  max-width: 1320px;
-  margin: 0 auto;
+  /* Inset from dashboard layout only — no extra horizontal max-width */
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .lc-greeting h1 {

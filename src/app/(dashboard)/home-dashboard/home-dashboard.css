@@ -4,10 +4,13 @@
    Dark theme: #0a0e13 bg, #10b981 emerald accent
    ═══════════════════════════════════════════════════════════ */
 
+/* Page inset comes from dashboard layout <main.dashboard-main-content> only */
 .db-page {
-  padding: 1.5rem 2rem 3rem;
-  max-width: 1320px;
-  margin: 0 auto;
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ══════════════════════════════

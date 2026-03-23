@@ -60,8 +60,7 @@ button:active:not(:disabled) {
   transform: translateY(-2px);
 }
 
-/* ── Max-width containers ── */
-.ptr-page,
+/* ── Optional max-width (partner dashboard only; page margins from layout) ── */
 .partner-dashboard-container {
   max-width: 1320px;
   margin-left: auto;

@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Page ──
-   Margins match layout.css `.dashboard-container` (1.5rem 2rem 3rem) — no extra padding here */
+   Horizontal inset from layout `<main.dashboard-main-content>` only — no per-page padding */
 .ptr-page {
   padding: 0;
   max-width: 100%;

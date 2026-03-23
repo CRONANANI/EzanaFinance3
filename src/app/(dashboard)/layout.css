@@ -1,20 +1,33 @@
 /* ============================================
-   DASHBOARD LAYOUT — Global page margins
-   Match Inside The Capitol: 1.5rem 2rem 3rem
-   Applied to ALL dashboard pages
+   DASHBOARD LAYOUT — Single source of page margins
+   Match Inside The Capitol: 1.5rem 2rem 3rem (horizontal edges for all cards)
+   Padding lives on <main>; inner .dashboard-container has no extra inset.
    ============================================ */
+
+.dashboard-main.dashboard-main-content {
+  padding: 1.5rem 2rem 3rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: calc(100vh - 64px);
+}
+
+/* Full-screen routes (absolute-positioned UI) — no outer inset */
+.dashboard-main-content.dashboard-main-content--fullscreen {
+  padding: 0;
+  min-height: calc(100vh - 64px);
+}
 
 .dashboard-main .dashboard-container,
 .dashboard-container {
-  padding: 1.5rem 2rem 3rem;
+  padding: 0;
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
-  .dashboard-main .dashboard-container,
-  .dashboard-container {
+  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
     padding: 1rem;
   }
 }
