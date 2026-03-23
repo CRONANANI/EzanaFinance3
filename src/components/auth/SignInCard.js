@@ -1,22 +1,34 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, ArrowRight, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthDotMap from "./AuthDotMap";
 import { supabase } from "@/lib/supabase";
+import { buildOAuthCallbackUrl } from "@/lib/auth/googleOAuth";
 
-const SignInCard = ({ variant = "user", redirectTo }) => {
+const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
   const destination = redirectTo || "/home-dashboard";
+
+  useEffect(() => {
+    if (oauthErrorMessage) {
+      try {
+        setError(decodeURIComponent(oauthErrorMessage));
+      } catch {
+        setError(oauthErrorMessage);
+      }
+    }
+  }, [oauthErrorMessage]);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -63,13 +75,17 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
   };
 
   const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError("");
     try {
-      const oauthType = variant === "partner" ? "partner" : "user";
-      const oauthRedirect = variant === "partner" ? "/partner-home" : destination;
+      const redirectToUrl = buildOAuthCallbackUrl({
+        variant: variant === "partner" ? "partner" : "user",
+        destination: variant === "partner" ? "/partner-home" : destination,
+      });
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?type=${oauthType}&redirect=${encodeURIComponent(oauthRedirect)}`,
+          redirectTo: redirectToUrl,
         },
       });
 
@@ -78,6 +94,8 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
       }
     } catch (err) {
       setError("Failed to sign in with Google. Please try again.");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -176,7 +194,8 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
             <div className="mb-6">
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-2 bg-[#161b22] border border-gray-700 rounded-lg p-3 hover:bg-[#1c2128] hover:border-emerald-500/30 transition-all duration-300 text-gray-300"
+                disabled={googleLoading}
+                className="w-full flex items-center justify-center gap-2 bg-[#161b22] border border-gray-700 rounded-lg p-3 hover:bg-[#1c2128] hover:border-emerald-500/30 transition-all duration-300 text-gray-300 disabled:opacity-60 disabled:cursor-not-allowed"
                 onClick={handleGoogleSignIn}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -197,7 +216,7 @@ const SignInCard = ({ variant = "user", redirectTo }) => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span>Continue with Google</span>
+                <span>{googleLoading ? "Redirecting…" : "Continue with Google"}</span>
               </button>
             </div>
 

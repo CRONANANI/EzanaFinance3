@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,6 +13,18 @@ export default function PartnerLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const e = params.get('error');
+    if (e) {
+      try {
+        setError(decodeURIComponent(e));
+      } catch {
+        setError(e);
+      }
+    }
+  }, []);
 
   const validatePartnerStatus = async (userId) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -59,10 +71,11 @@ export default function PartnerLoginPage() {
   };
 
   const handleGooglePartnerLogin = async () => {
+    const redirectTo = `${window.location.origin}/auth/callback?type=partner&redirect=${encodeURIComponent('/partner-home')}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?type=partner`,
+        redirectTo,
       },
     });
     if (error) setError(error.message);

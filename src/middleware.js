@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { matchesRoutePrefix, PARTNER_DASHBOARD_ROUTES, USER_DASHBOARD_ROUTES } from '@/lib/auth/protected-routes';
 
 const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
@@ -22,9 +23,13 @@ export async function middleware(request) {
     }
   );
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin') || '';
     if (ALLOWED_ORIGINS.some((o) => origin === o)) {
       response.headers.set('Access-Control-Allow-Origin', origin);
@@ -35,6 +40,21 @@ export async function middleware(request) {
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 200, headers: response.headers });
     }
+    return response;
+  }
+
+  if (matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES) && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/partner-login';
+    url.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES) && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/signin';
+    url.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(url);
   }
 
   return response;
