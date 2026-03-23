@@ -33,13 +33,45 @@ export function LandingHero() {
             staggerMs={20}
           />
         </p>
-        <p className="hero-waitlist-intro hero-waitlist-intro-plain animate-in" data-delay="1750">
-          <AnimatedWords
-            text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits."
-            baseDelay={1800}
-            staggerMs={25}
-          />
-        </p>
+        <div
+          style={{
+            width: '100%',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            boxSizing: 'border-box',
+          }}
+        >
+          <p
+            className="animate-in"
+            data-delay="1750"
+            style={{
+              textAlign: 'center',
+              width: '100%',
+              display: 'block',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              marginTop: '0.9rem',
+              marginBottom: '1.5rem',
+              paddingLeft: 0,
+              paddingRight: 0,
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              color: '#10b981',
+              fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+              lineHeight: 1.6,
+              fontWeight: 400,
+              whiteSpace: 'normal',
+            }}
+          >
+            <AnimatedWords
+              text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits."
+              baseDelay={1800}
+              staggerMs={25}
+            />
+          </p>
+        </div>
         <div className="hero-waitlist animate-in" data-delay="2050">
           <AnimatedWaitlistForm />
         </div>
