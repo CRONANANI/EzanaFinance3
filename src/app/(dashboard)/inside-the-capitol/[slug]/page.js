@@ -279,6 +279,11 @@ export default function PoliticianProfilePage() {
   }
 
   const isPositive = pol.monthlyChange >= 0;
+  const totalPositions = pol.holdings?.length ?? 0;
+  const sectorCount = Math.max(1, Math.ceil(totalPositions / 2));
+  const topPct = Math.min(100, Math.max(0, pol.topIndustry?.pct ?? 0));
+  const ytdPct = pol.ytdReturns ?? 0;
+  const ytdDollar = pol.ytdDollar ?? 0;
 
   return (
     <div className="pp-page">
@@ -332,45 +337,65 @@ export default function PoliticianProfilePage() {
 
         {/* RIGHT MAIN */}
         <div className="pp-main">
-          <div className="pp-overview-card">
-            <div className="pp-ov-header">
+          <div className="po-card">
+            <div className="po-header">
               <h3>Portfolio Overview</h3>
-              <span className="pp-ov-badge">Summary</span>
+              <button type="button" className="po-summary-btn">Summary</button>
             </div>
-            <div className="pp-ov-stats">
-              <div className="pp-ov-stat">
-                <span className="pp-ov-label">Total Value</span>
-                <span className="pp-ov-value">US${pol.totalValue.toLocaleString()}</span>
+
+            <div className="po-primary">
+              <div className="po-primary-left">
+                <span className="po-primary-label">TOTAL VALUE</span>
+                <span className="po-primary-value">US${pol.totalValue.toLocaleString()}</span>
               </div>
-              <div className="pp-ov-stat">
-                <span className="pp-ov-label">Monthly Change</span>
-                <span className={`pp-ov-change ${isPositive ? 'up' : 'down'}`}>
-                  <i className={`bi ${isPositive ? 'bi-arrow-up' : 'bi-arrow-down'}`} />
-                  {isPositive ? '+' : ''}{pol.monthlyChange}%
+              <div className={`po-primary-change ${isPositive ? 'positive' : 'negative'}`}>
+                <i className={`bi ${isPositive ? 'bi-arrow-up-short' : 'bi-arrow-down-short'}`} />
+                <span>
+                  {isPositive ? '+' : ''}
+                  {pol.monthlyChange}% this month
                 </span>
               </div>
-              <div className="pp-ov-stat">
-                <span className="pp-ov-label">Top Industry</span>
-                <span className="pp-ov-value">{pol.topIndustry?.name || 'N/A'}</span>
-                <span className="pp-ov-sub">{pol.topIndustry?.pct || 0}% of portfolio</span>
+            </div>
+
+            <div className="po-secondary-row">
+              <div className="po-secondary-item">
+                <span className="po-secondary-label">TOP INDUSTRY</span>
+                <span className="po-secondary-value">{pol.topIndustry?.name || 'N/A'}</span>
+                <div className="po-secondary-bar">
+                  <div className="po-secondary-bar-fill" style={{ width: `${topPct}%` }} />
+                </div>
+                <span className="po-secondary-sub">{topPct}% of portfolio</span>
               </div>
-              <div className="pp-ov-stat">
-                <span className="pp-ov-label">YTD Returns</span>
-                <span className={`pp-ov-value ${(pol.ytdReturns ?? 0) >= 0 ? 'up' : 'down'}`}>
-                  {(pol.ytdReturns ?? 0) >= 0 ? '+' : ''}{pol.ytdReturns ?? 0}%
+              <div className="po-secondary-item">
+                <span className="po-secondary-label">YTD RETURNS</span>
+                <span className={`po-secondary-value ${ytdPct >= 0 ? 'positive' : 'negative'}`}>
+                  {ytdPct >= 0 ? '+' : ''}
+                  {ytdPct}%
                 </span>
-                <span className="pp-ov-sub">{(pol.ytdDollar ?? 0) >= 0 ? '+' : ''}${Math.abs(pol.ytdDollar ?? 0).toLocaleString()}</span>
+                <span className="po-secondary-sub">
+                  {ytdDollar >= 0 ? '+' : '-'}
+                  $
+                  {Math.abs(ytdDollar).toLocaleString()}
+                </span>
+              </div>
+              <div className="po-secondary-item">
+                <span className="po-secondary-label">TOTAL POSITIONS</span>
+                <span className="po-secondary-value">{totalPositions}</span>
+                <span className="po-secondary-sub">
+                  across {sectorCount} sector{sectorCount === 1 ? '' : 's'}
+                </span>
               </div>
             </div>
+
             {pol.similarTraders?.length > 0 && (
-              <div className="pp-similar-traders">
-                <span className="pp-similar-label">Most Similar Traders</span>
-                <div className="pp-similar-row">
+              <div className="po-traders">
+                <span className="po-traders-label">SIMILAR TRADERS</span>
+                <div className="po-traders-row">
                   {pol.similarTraders.map((s) => (
-                    <Link key={s.slug} href={`/inside-the-capitol/${s.slug}`} className="pp-similar-item">
-                      <div className={`pp-similar-avatar ${s.party.toLowerCase()}`}>{s.initials}</div>
-                      <span className="pp-similar-name">{s.name}</span>
-                      <span className="pp-similar-pct">{s.overlap}%</span>
+                    <Link key={s.slug} href={`/inside-the-capitol/${s.slug}`} className="po-trader">
+                      <div className={`po-trader-avatar ${s.party.toLowerCase()}`}>{s.initials}</div>
+                      <span className="po-trader-name">{s.name}</span>
+                      <span className="po-trader-pct">{s.overlap}%</span>
                     </Link>
                   ))}
                 </div>
