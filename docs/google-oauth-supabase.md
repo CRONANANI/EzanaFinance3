@@ -28,6 +28,16 @@ This app uses **[Supabase Auth](https://supabase.com/docs/guides/auth)** with th
 
 After OAuth, Supabase redirects to your app at `/auth/callback` with a `code` that is exchanged for a session (`src/app/auth/callback/route.js`).
 
+The callback uses `@supabase/ssr` `createServerClient` with cookie `getAll` / `setAll` so the PKCE session is stored correctly. New users are sent to `/onboarding` until `profiles.onboarding_completed` is true (see migration `supabase/migrations/20260323140000_onboarding_profiles.sql`).
+
+**Redirect allowlist** must include:
+
+- `http://localhost:3000/auth/callback`
+- `https://ezana.world/auth/callback`
+- `http://localhost:3000/**` and `https://ezana.world/**` (wildcard) as needed
+
+Middleware skips all `/auth/*` routes so the callback is never treated as “logged out dashboard.”
+
 ## 3. Environment variables
 
 - Keep **`NEXT_PUBLIC_SUPABASE_URL`** and **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** in `.env.local`.

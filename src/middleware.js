@@ -5,6 +5,13 @@ import { matchesRoutePrefix, PARTNER_DASHBOARD_ROUTES, USER_DASHBOARD_ROUTES } f
 const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
 export async function middleware(request) {
+  const pathname = request.nextUrl.pathname;
+
+  /** OAuth callback and auth pages must not run session-gate logic (session is created here) */
+  if (pathname.startsWith('/auth')) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
@@ -26,8 +33,6 @@ export async function middleware(request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin') || '';

@@ -4,6 +4,7 @@
  */
 
 export const USER_DASHBOARD_ROUTES = [
+  '/onboarding',
   '/home-dashboard',
   '/home',
   '/watchlist',

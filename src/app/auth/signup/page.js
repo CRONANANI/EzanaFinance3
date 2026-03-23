@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, ArrowRight, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -19,6 +19,18 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const e = params.get('error');
+    if (e) {
+      try {
+        setError(decodeURIComponent(e));
+      } catch {
+        setError(e);
+      }
+    }
+  }, []);
+
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
     setError("");
@@ -26,7 +38,11 @@ export default function SignUpPage() {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: buildOAuthCallbackUrl({ variant: "user", destination: "/home-dashboard" }),
+          redirectTo: buildOAuthCallbackUrl({
+            variant: "user",
+            destination: "/home-dashboard",
+            flow: "signup",
+          }),
         },
       });
       if (oauthError) setError(oauthError.message);

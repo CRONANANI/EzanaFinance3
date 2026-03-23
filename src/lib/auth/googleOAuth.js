@@ -4,15 +4,16 @@
  */
 
 /**
- * @param {{ variant?: 'user' | 'partner'; destination?: string }} opts
+ * @param {{ variant?: 'user' | 'partner'; destination?: string; flow?: 'signup' | 'signin' }} opts
  * @returns {string} redirect URL passed to signInWithOAuth options.redirectTo
  */
 export function buildOAuthCallbackUrl(opts = {}) {
-  const { variant = 'user', destination = '/home-dashboard' } = opts;
+  const { variant = 'user', destination = '/home-dashboard', flow } = opts;
   if (typeof window === 'undefined') {
     return '';
   }
   const oauthType = variant === 'partner' ? 'partner' : 'user';
   const oauthRedirect = variant === 'partner' ? '/partner-home' : destination;
-  return `${window.location.origin}/auth/callback?type=${oauthType}&redirect=${encodeURIComponent(oauthRedirect)}`;
+  const flowParam = flow === 'signup' ? '&flow=signup' : '';
+  return `${window.location.origin}/auth/callback?type=${oauthType}${flowParam}&redirect=${encodeURIComponent(oauthRedirect)}`;
 }
