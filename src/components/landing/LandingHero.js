@@ -66,7 +66,7 @@ export function LandingHero() {
             }}
           >
             <AnimatedWords
-              text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits."
+              text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime Personal Advanced access — no subscription, no limits."
               baseDelay={1800}
               staggerMs={25}
             />

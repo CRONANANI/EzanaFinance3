@@ -79,7 +79,7 @@
                 <!-- Legacy User Signup - First 10,000 get lifetime access -->
                 <div class="legacy-signup" id="legacy-signup">
                     <div class="legacy-signup-inner">
-                        <p class="legacy-subtext" style="text-align:center;width:100%;display:block;margin:0.9rem auto 1.5rem;padding-left:0;padding-right:0;max-width:100%;box-sizing:border-box;color:#10b981;">Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime legacy access—no subscription, no limits.</p>
+                        <p class="legacy-subtext" style="text-align:center;width:100%;display:block;margin:0.9rem auto 1.5rem;padding-left:0;padding-right:0;max-width:100%;box-sizing:border-box;color:#10b981;">Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime Personal Advanced access — no subscription, no limits.</p>
                         <form class="legacy-signup-form" id="legacySignupForm" novalidate>
                             <div class="legacy-form-row">
                                 <input type="email" name="email" id="legacyEmail" placeholder="Enter your email" required autocomplete="email" class="legacy-email-input">
@@ -679,7 +679,7 @@
     <section class="pricing-module" id="pricing">
       <div class="pricing-module-inner">
         <h2>Simple, Transparent Pricing</h2>
-        <p class="pricing-subtitle">Choose the plan that fits your investment strategy.</p>
+        <p class="pricing-subtitle">Choose the plan that fits your investment journey. All plans include a 14-day free trial.</p>
         <div class="pricing-switch-wrap">
           <div class="pricing-switch" id="pricingSwitch" role="switch" aria-checked="false" tabindex="0">
             <div class="pricing-switch-thumb"></div>
@@ -687,44 +687,45 @@
           <span class="pricing-switch-label" id="pricingSwitchLabel">Pay annually and save 20%</span>
         </div>
         <div class="pricing-grid-module">
-          <div class="pricing-card-module" data-plan="free">
-            <div class="pricing-card-icon"><i class="bi bi-house-door" style="font-size:2rem"></i></div>
-            <h3 class="pricing-card-name">Free</h3>
-            <p class="pricing-card-desc">Perfect for getting started</p>
-            <div class="pricing-card-price">$0</div>
-            <p class="pricing-card-period"></p>
-            <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
-            <div class="pricing-card-overview">
-              <h4>Overview</h4>
-              <p class="overview-users">✓ 1 brokerage account</p>
-              <h4>Highlights</h4>
-              <ul class="highlights-list">
-                <li class="included"><i class="bi bi-check icon-check"></i> Basic portfolio tracking</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Weekly congressional alerts</li>
-                <li class="excluded"><i class="bi bi-x icon-x"></i> Real-time alerts</li>
-                <li class="excluded"><i class="bi bi-x icon-x"></i> Advanced analytics</li>
-                <li class="excluded"><i class="bi bi-x icon-x"></i> API access</li>
-              </ul>
-            </div>
-          </div>
-          <div class="pricing-card-module recommended" data-plan="pro">
-            <span class="badge-recommended">Recommended</span>
-            <div class="pricing-card-icon"><i class="bi bi-graph-up-arrow" style="font-size:2rem"></i></div>
-            <h3 class="pricing-card-name">Pro</h3>
-            <p class="pricing-card-desc">For serious investors</p>
-            <div class="pricing-card-price"><span class="monthly-price">$29</span><span class="yearly-price" style="display:none">$278</span></div>
+          <div class="pricing-card-module" data-plan="individual">
+            <div class="pricing-card-icon"><i class="bi bi-person" style="font-size:2rem"></i></div>
+            <h3 class="pricing-card-name">Individual</h3>
+            <p class="pricing-card-desc">For casual investors</p>
+            <div class="pricing-card-price"><span class="monthly-price">$5</span><span class="yearly-price" style="display:none">$4</span></div>
             <p class="pricing-card-period">/ month</p>
             <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
             <div class="pricing-card-overview">
-              <h4>Overview</h4>
-              <p class="overview-users">✓ Unlimited brokerage accounts</p>
               <h4>Highlights</h4>
               <ul class="highlights-list">
+                <li class="included"><i class="bi bi-check icon-check"></i> Congressional trade alerts (24hr delay)</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Basic 13F filing access</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Community forum access</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Weekly market digest</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Watchlist (up to 10 tickers)</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Ezana Echo access</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Email notifications</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pricing-card-module recommended" data-plan="advanced">
+            <span class="badge-recommended">Most Popular</span>
+            <div class="pricing-card-icon"><i class="bi bi-graph-up-arrow" style="font-size:2rem"></i></div>
+            <h3 class="pricing-card-name">Personal Advanced</h3>
+            <p class="pricing-card-desc">For active traders</p>
+            <div class="pricing-card-price"><span class="monthly-price">$19</span><span class="yearly-price" style="display:none">$15</span></div>
+            <p class="pricing-card-period">/ month</p>
+            <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
+            <div class="pricing-card-overview">
+              <h4>Highlights</h4>
+              <ul class="highlights-list">
+                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Individual</li>
                 <li class="included"><i class="bi bi-check icon-check"></i> Real-time congressional alerts</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Advanced portfolio analytics</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Institutional holdings (13F)</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> AI-powered insights</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Lobbying & contracts data</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Full 13F filing database</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Legendary investor portfolios</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Advanced filtering &amp; search</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Unlimited watchlists</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> AI-powered company research</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> API access (10K calls/mo)</li>
                 <li class="included"><i class="bi bi-check icon-check"></i> Priority support</li>
               </ul>
             </div>
@@ -732,42 +733,46 @@
           <div class="pricing-card-module" data-plan="family">
             <div class="pricing-card-icon"><i class="bi bi-people" style="font-size:2rem"></i></div>
             <h3 class="pricing-card-name">Family</h3>
-            <p class="pricing-card-desc">For households & shared portfolios</p>
-            <div class="pricing-card-price"><span class="monthly-price">$99</span><span class="yearly-price" style="display:none">$950</span></div>
+            <p class="pricing-card-desc">Households &amp; shared portfolios</p>
+            <div class="pricing-card-price"><span class="monthly-price">$49</span><span class="yearly-price" style="display:none">$39</span></div>
             <p class="pricing-card-period">/ month</p>
             <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
             <div class="pricing-card-overview">
-              <h4>Overview</h4>
-              <p class="overview-users">✓ Up to 5 members</p>
               <h4>Highlights</h4>
               <ul class="highlights-list">
-                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Pro</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Shared watchlists & alerts</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Personal Advanced</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Up to 5 user accounts</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Shared watchlists &amp; alerts</li>
                 <li class="included"><i class="bi bi-check icon-check"></i> Family portfolio dashboard</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Lobbying & contracts data</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Priority support</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> 14-day free trial</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Consolidated reporting</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Joint investment tracking</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> API access on main account (25K calls/mo)</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Dedicated family support</li>
               </ul>
             </div>
           </div>
-          <div class="pricing-card-module" data-plan="elite">
+          <div class="pricing-card-module" data-plan="professional">
             <div class="pricing-card-icon"><i class="bi bi-building" style="font-size:2rem"></i></div>
-            <h3 class="pricing-card-name">Elite</h3>
-            <p class="pricing-card-desc">Maximum intelligence</p>
-            <div class="pricing-card-price"><span class="monthly-price">$99</span><span class="yearly-price" style="display:none">$950</span></div>
+            <h3 class="pricing-card-name">Professional</h3>
+            <p class="pricing-card-desc">Full-time traders &amp; family offices</p>
+            <p style="font-size:0.65rem;color:#d4a853;text-align:center;margin:0.25rem 0 0.5rem;">Verified partners receive a discounted rate</p>
+            <div class="pricing-card-price"><span class="monthly-price">$119</span><span class="yearly-price" style="display:none">$95</span></div>
             <p class="pricing-card-period">/ month</p>
             <a href="pages/sign-up.html" class="pricing-card-btn">Get started</a>
             <div class="pricing-card-overview">
-              <h4>Overview</h4>
-              <p class="overview-users">✓ Unlimited everything</p>
               <h4>Highlights</h4>
               <ul class="highlights-list">
-                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Pro</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> API access for automation</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Custom watchlists (unlimited)</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> Advanced pattern detection</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Everything in Family</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Unlimited user accounts</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> API access (100K calls/mo)</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Custom data exports &amp; white-label reports</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Compliance &amp; audit logs</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Team management &amp; role-based access</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Copy trading infrastructure</li>
                 <li class="included"><i class="bi bi-check icon-check"></i> Dedicated account manager</li>
-                <li class="included"><i class="bi bi-check icon-check"></i> White-glove onboarding</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> SLA guarantees</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Institutional-grade data feeds</li>
+                <li class="included"><i class="bi bi-check icon-check"></i> Direct support channel</li>
               </ul>
             </div>
           </div>
@@ -858,7 +863,7 @@
         </button>
         <div class="faq-answer">
           <div class="answer-content">
-            <p>The first 1,000 users to sign up receive lifetime legacy access—no subscription, no limits. Join the waitlist to be notified at launch.</p>
+            <p>The first 1,000 users to sign up receive lifetime Personal Advanced access — no subscription, no limits. Join the waitlist to be notified at launch.</p>
           </div>
         </div>
       </div>

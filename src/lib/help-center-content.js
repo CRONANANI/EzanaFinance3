@@ -199,8 +199,8 @@ export const USER_ARTICLES = {
     "Account deletion is permanent — all your data, watchlists, and settings will be removed within 30 days.",
   ]) },
   'plans-overview': { title: 'Understanding Ezana Plans', category: 'Billing & Subscriptions', content: wrap([
-    "Ezana offers four plans: Free ($0/forever — basic congressional data, limited watchlist, weekly digest), Individual ($19/month — real-time alerts, full database, unlimited watchlists, priority support), Family ($39/month — up to 5 accounts, shared watchlists, family portfolio dashboard), and Professional ($99/month — API access, custom exports, white-label reports, dedicated account manager).",
-    "All paid plans include a 14-day free trial. Early access legacy users receive Individual plan features permanently at no cost.",
+    "Ezana offers four paid plans: Individual ($5/month — delayed congressional alerts, basic 13F access, community, weekly digest, watchlist up to 10 tickers, Ezana Echo, email notifications), Personal Advanced ($19/month — everything in Individual plus real-time alerts, full 13F database, legendary portfolios, advanced search, unlimited watchlists, AI research, 10K API calls/mo, priority support), Family ($49/month — everything in Personal Advanced plus up to 5 accounts, shared watchlists, family dashboard, consolidated reporting, 25K API calls on the main account), and Professional ($119/month — unlimited accounts, 100K API calls, custom exports, compliance logs, team roles, copy-trading infrastructure, dedicated manager, SLA, institutional data feeds).",
+    "Users without a subscription still get limited free access by default — that is not a separate plan on the pricing page. All paid plans include a 14-day free trial where configured in Stripe. Early access legacy users receive Personal Advanced features permanently at no cost.",
   ]) },
   'managing-subscription': { title: 'Upgrading, Downgrading, or Canceling', category: 'Billing & Subscriptions', content: wrap([
     "Go to Settings → Plan to view your current subscription. To upgrade, click on a higher plan — you'll be prorated for the remainder of your billing cycle.",

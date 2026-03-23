@@ -17,8 +17,7 @@
       monthlyPrices.forEach(function (p) { p.style.display = isAnnual ? 'none' : 'inline'; });
       yearlyPrices.forEach(function (p) { p.style.display = isAnnual ? 'inline' : 'none'; });
       periods.forEach(function (p) {
-        if (p.closest('[data-plan="free"]')) return;
-        p.textContent = isAnnual ? '/ year' : '/ month';
+        p.textContent = '/ month';
       });
     }
 

@@ -4,84 +4,6 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
-const PRICING_PLANS = [
-  {
-    id: 'free',
-    name: 'Free',
-    subtitle: 'For curious investors',
-    price: '$0',
-    period: 'forever',
-    overview: 'Basic access to congressional trading data and market insights.',
-    features: [
-      'Congressional trade alerts (delayed)',
-      'Basic 13F filing access',
-      'Community forum access',
-      'Weekly market digest',
-      'Limited watchlist (5 tickers)',
-    ],
-    cta: 'Start Free Trial',
-    popular: false,
-  },
-  {
-    id: 'individual',
-    name: 'Individual',
-    subtitle: 'For active traders',
-    price: '$19',
-    period: '/month',
-    overview: 'Real-time data and advanced analytics for serious investors.',
-    features: [
-      'Real-time congressional alerts',
-      'Full 13F filing database',
-      'Legendary investor portfolios',
-      'Advanced filtering & search',
-      'Unlimited watchlists',
-      'Email & push notifications',
-      'Priority support',
-    ],
-    cta: 'Start Free Trial',
-    popular: true,
-  },
-  {
-    id: 'family',
-    name: 'Family',
-    subtitle: 'Households & Shared Portfolios',
-    price: '$39',
-    period: '/month',
-    overview: 'Share premium access with up to 5 family members.',
-    features: [
-      'Everything in Individual',
-      'Up to 5 user accounts',
-      'Shared watchlists & alerts',
-      'Family portfolio dashboard',
-      'Consolidated reporting',
-      'Joint investment tracking',
-      'Dedicated family support',
-    ],
-    cta: 'Start Free Trial',
-    popular: false,
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    subtitle: 'For institutions & advisors',
-    price: '$99',
-    period: '/month',
-    overview: 'Enterprise-grade tools for financial professionals.',
-    features: [
-      'Everything in Family',
-      'API access (100K calls/mo)',
-      'Custom data exports',
-      'White-label reports',
-      'Compliance & audit logs',
-      'Team management',
-      'Dedicated account manager',
-      'SLA guarantees',
-    ],
-    cta: 'Start Free Trial',
-    popular: false,
-  },
-];
-
 export function PricingSection() {
   const [billingCycle, setBillingCycle] = useState('monthly');
 
@@ -111,49 +33,215 @@ export function PricingSection() {
         </div>
 
         <div className="pricing-grid">
-          {PRICING_PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              className={`pricing-card ${plan.popular ? 'popular' : ''}`}
-            >
-              {plan.popular && (
-                <div className="popular-badge">Most Popular</div>
-              )}
-
-              <div className="card-header">
-                <h3 className="plan-name">{plan.name}</h3>
-                <p className="plan-subtitle">{plan.subtitle}</p>
-                <div className="price">
-                  <span className="price-amount">
-                    {billingCycle === 'yearly' && plan.price !== '$0'
-                      ? `$${Math.round(parseInt(plan.price.slice(1)) * 0.8)}`
-                      : plan.price}
-                  </span>
-                  <span className="price-period">
-                    {plan.price === '$0' ? plan.period : billingCycle === 'yearly' ? '/month, billed yearly' : plan.period}
-                  </span>
-                </div>
-              </div>
-
-              <div className="card-body">
-                <p className="plan-overview">{plan.overview}</p>
-
-                <ul className="features-list">
-                  {plan.features.map((feature, index) => (
-                    <li key={index}>
-                      <Check className="feature-check" size={16} />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/sign-up" className="get-started-btn">
-                  {plan.cta}
-                </Link>
-                <p className="trial-note">14-day free trial • No credit card required</p>
-              </div>
+          {/* Plan 1 */}
+          <div className="pricing-card">
+            <h3>Individual</h3>
+            <p className="pricing-tagline">For casual investors</p>
+            <div className="pricing-price">
+              <span className="pricing-amount">${billingCycle === 'yearly' ? '4' : '5'}</span>
+              <span className="pricing-interval">/month</span>
             </div>
-          ))}
+            {billingCycle === 'yearly' && <p className="pricing-annual">$48/year — save 20%</p>}
+            <ul className="features-list">
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Congressional trade alerts (24hr delay)</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Basic 13F filing access</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Community forum access</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Weekly market digest</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Watchlist (up to 10 tickers)</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Ezana Echo access</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Email notifications</span>
+              </li>
+            </ul>
+            <Link href="/auth/login" className="pricing-btn">
+              Get Started
+            </Link>
+            <p className="pricing-trial">14-day free trial • No credit card required</p>
+          </div>
+
+          {/* Plan 2 — Most Popular */}
+          <div className="pricing-card popular">
+            <span className="pricing-badge">Most Popular</span>
+            <h3>Personal Advanced</h3>
+            <p className="pricing-tagline">For active traders</p>
+            <div className="pricing-price">
+              <span className="pricing-amount">${billingCycle === 'yearly' ? '15' : '19'}</span>
+              <span className="pricing-interval">/month</span>
+            </div>
+            {billingCycle === 'yearly' && <p className="pricing-annual">$180/year — save 20%</p>}
+            <ul className="features-list">
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Everything in Individual</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Real-time congressional alerts</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Full 13F filing database</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Legendary investor portfolios</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Advanced filtering & search</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Unlimited watchlists</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>AI-powered company research</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>API access (10K calls/mo)</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Priority support</span>
+              </li>
+            </ul>
+            <Link href="/auth/login" className="pricing-btn primary">
+              Start Free Trial
+            </Link>
+            <p className="pricing-trial">14-day free trial • No credit card required</p>
+          </div>
+
+          {/* Plan 3 */}
+          <div className="pricing-card">
+            <h3>Family</h3>
+            <p className="pricing-tagline">Households & shared portfolios</p>
+            <div className="pricing-price">
+              <span className="pricing-amount">${billingCycle === 'yearly' ? '39' : '49'}</span>
+              <span className="pricing-interval">/month</span>
+            </div>
+            {billingCycle === 'yearly' && <p className="pricing-annual">$468/year — save 20%</p>}
+            <ul className="features-list">
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Everything in Personal Advanced</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Up to 5 user accounts</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Shared watchlists & alerts</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Family portfolio dashboard</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Consolidated reporting</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Joint investment tracking</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>API access on main account (25K calls/mo)</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Dedicated family support</span>
+              </li>
+            </ul>
+            <Link href="/auth/login" className="pricing-btn">
+              Start Free Trial
+            </Link>
+            <p className="pricing-trial">14-day free trial • No credit card required</p>
+          </div>
+
+          {/* Plan 4 */}
+          <div className="pricing-card professional">
+            <h3>Professional</h3>
+            <p className="pricing-tagline">Full-time traders & family offices</p>
+            <div className="pricing-price">
+              <span className="pricing-amount">${billingCycle === 'yearly' ? '95' : '119'}</span>
+              <span className="pricing-interval">/month</span>
+            </div>
+            {billingCycle === 'yearly' && <p className="pricing-annual">$1,140/year — save 20%</p>}
+            <p className="pricing-partner-note">Verified partners receive a discounted rate</p>
+            <ul className="features-list">
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Everything in Family</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Unlimited user accounts</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>API access (100K calls/mo)</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Custom data exports & white-label reports</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Compliance & audit logs</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Team management & role-based access</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Copy trading infrastructure</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Dedicated account manager</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>SLA guarantees</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Institutional-grade data feeds</span>
+              </li>
+              <li>
+                <Check className="feature-check" size={16} />
+                <span>Direct support channel</span>
+              </li>
+            </ul>
+            <Link href="/auth/login" className="pricing-btn">
+              Start Free Trial
+            </Link>
+            <p className="pricing-trial">14-day free trial • No credit card required</p>
+          </div>
         </div>
       </div>
     </section>

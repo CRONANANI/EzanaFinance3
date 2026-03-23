@@ -32,7 +32,7 @@ const DEFAULT_ITEMS = [
   {
     question: "What does the first 1,000 users get lifetime legacy access actually mean?",
     answer:
-      "The first 1,000 users who sign up during our early access period receive permanent access to all Individual plan features — forever. No monthly subscription, no annual renewal, no price increases. This includes real-time congressional alerts, full 13F filing access, legendary investor portfolios, unlimited watchlists, and priority support. Once the 1,000 spots are filled, the offer closes permanently.",
+      "The first 1,000 users who sign up during our early access period receive permanent Personal Advanced access — the full $19/month tier — forever. No monthly subscription, no annual renewal, no price increases. This includes real-time congressional alerts, full 13F filing access, legendary investor portfolios, unlimited watchlists, AI-powered research, API access, and priority support. Once the 1,000 spots are filled, the offer closes permanently.",
   },
   {
     question: "Can I actually execute trades directly on Ezana, or is it just a research tool?",
