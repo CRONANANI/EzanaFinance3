@@ -7,29 +7,17 @@ import { PLANS } from '@/config/pricing';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function originFromRequest(request) {
-  return process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || 'https://ezana.world';
-}
-
 export async function POST(request) {
   try {
     if (!stripe) {
       return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 });
     }
 
-    const body = await request.json();
-    const planKey = body.planKey;
+    const { planKey } = await request.json();
     const plan = planKey ? PLANS[planKey] : null;
 
-    if (!plan) {
-      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
-    }
-
-    if (!plan.priceId || plan.priceId.includes('REPLACE')) {
-      return NextResponse.json(
-        { error: 'Plan price ID not configured. Set NEXT_PUBLIC_STRIPE_PRICE_* in your environment.' },
-        { status: 400 }
-      );
+    if (!plan || !plan.priceId) {
+      return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
     }
 
     const cookieStore = cookies();
@@ -42,13 +30,13 @@ export async function POST(request) {
             return cookieStore.getAll();
           },
           setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) => {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              try {
                 cookieStore.set(name, value, options);
-              });
-            } catch {
-              // ignore when not writable
-            }
+              } catch {
+                // ignore
+              }
+            });
           },
         },
       }
@@ -60,7 +48,7 @@ export async function POST(request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'You must be signed in to subscribe' }, { status: 401 });
     }
 
     const { data: profile } = await supabase
@@ -75,35 +63,37 @@ export async function POST(request) {
       const customer = await stripe.customers.create({
         email: user.email,
         name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-        metadata: {
-          supabase_user_id: user.id,
-        },
+        metadata: { supabase_user_id: user.id },
       });
       customerId = customer.id;
 
-      await supabase.from('profiles').upsert(
-        {
-          id: user.id,
-          stripe_customer_id: customerId,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'id' }
-      );
+      const { error: saveErr } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: user.id,
+            stripe_customer_id: customerId,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
+      if (saveErr) {
+        console.error('Failed to save stripe_customer_id:', saveErr);
+      }
     }
 
-    const base = originFromRequest(request);
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
 
     const sessionParams = {
       customer: customerId,
       line_items: [{ price: plan.priceId, quantity: 1 }],
       mode: plan.mode,
-      success_url: `${base}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/pricing?canceled=true`,
+      success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing?canceled=true`,
       metadata: {
         supabase_user_id: user.id,
         plan_key: planKey,
       },
-      allow_promotion_codes: true,
     };
 
     if (plan.mode === 'subscription') {
@@ -124,7 +114,7 @@ export async function POST(request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Checkout session error:', error);
+    console.error('Stripe checkout session error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to create checkout session' },
       { status: 500 }

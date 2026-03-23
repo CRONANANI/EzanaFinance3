@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePartner } from '@/contexts/PartnerContext';
 import { supabase } from '@/lib/supabase';
-import { ManageBillingButton } from '@/components/billing/ManageBillingButton';
+import { ManageBillingButton } from '@/components/ManageBillingButton';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields

@@ -8,22 +8,19 @@ import { supabase } from '@/lib/supabase';
 import { hasActiveSubscription } from '@/lib/subscription';
 import './pricing.css';
 
-const TIERS = [
-  { monthly: 'personal_monthly', annual: 'individual_annual' },
-  { monthly: 'personal_advanced_monthly', annual: 'personal_advanced_annual' },
-  { monthly: 'family_monthly', annual: 'family_annual' },
-  { monthly: 'professional_monthly', annual: 'professional_annual' },
-];
-
 function PricingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const canceled = searchParams.get('canceled');
 
-  const [billingCycle, setBillingCycle] = useState('monthly');
+  const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [loading, setLoading] = useState(null);
   const [signedIn, setSignedIn] = useState(false);
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
+
+  const monthlyPlans = Object.entries(PLANS).filter(([, p]) => p.mode === 'subscription');
+  const annualPlans = Object.entries(PLANS).filter(([, p]) => p.mode === 'payment');
+  const displayPlans = billingPeriod === 'monthly' ? monthlyPlans : annualPlans;
 
   const getSession = useCallback(async () => {
     const {
@@ -55,10 +52,10 @@ function PricingContent() {
     };
   }, [getSession]);
 
-  const handleSubscribe = async (planKey) => {
+  const handleCheckout = async (planKey) => {
     const plan = PLANS[planKey];
-    if (!plan?.priceId || plan.priceId.includes('REPLACE')) {
-      alert('Set Stripe Price IDs in your environment (NEXT_PUBLIC_STRIPE_PRICE_*).');
+    if (!plan?.priceId) {
+      alert('Set Stripe Price IDs in .env.local (NEXT_PUBLIC_STRIPE_PRICE_*).');
       return;
     }
     setLoading(planKey);
@@ -68,22 +65,27 @@ function PricingContent() {
         window.location.href = `/auth/signin?redirect=${encodeURIComponent('/pricing')}`;
         return;
       }
-      const res = await fetch('/api/stripe/create-checkout-session', {
+      const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ planKey }),
       });
-      const data = await res.json();
-      if (res.status === 401) {
-        router.push('/auth/signin?redirect=/pricing');
+      const data = await response.json();
+
+      if (data.error) {
+        if (response.status === 401) {
+          router.push('/auth/signin?redirect=/pricing');
+          return;
+        }
+        alert(data.error);
         return;
       }
-      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+
       if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error('Checkout error:', err);
-      alert(err.message || 'Could not start checkout');
+      alert('Something went wrong. Please try again.');
     } finally {
       setLoading(null);
     }
@@ -96,7 +98,7 @@ function PricingContent() {
       {canceled && (
         <div className="pricing-free-banner" role="status" style={{ borderColor: 'rgba(234, 179, 8, 0.5)' }}>
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
-          <span>Payment was canceled. You can try again below.</span>
+          <span>Payment was canceled. Try again below.</span>
         </div>
       )}
       {showFreeBanner && (
@@ -119,46 +121,50 @@ function PricingContent() {
         <div className="pricing-toggle">
           <button
             type="button"
-            className={billingCycle === 'monthly' ? 'active' : ''}
-            onClick={() => setBillingCycle('monthly')}
+            className={billingPeriod === 'monthly' ? 'active' : ''}
+            onClick={() => setBillingPeriod('monthly')}
           >
             Monthly
           </button>
           <button
             type="button"
-            className={billingCycle === 'yearly' ? 'active' : ''}
-            onClick={() => setBillingCycle('yearly')}
+            className={billingPeriod === 'annual' ? 'active' : ''}
+            onClick={() => setBillingPeriod('annual')}
           >
-            Annual <span className="pricing-save">One-time</span>
+            Annual <span className="pricing-save">(Save)</span>
           </button>
         </div>
       </div>
 
       <div className="pricing-grid">
-        {TIERS.map((tier, idx) => {
-          const planKey = billingCycle === 'yearly' ? tier.annual : tier.monthly;
-          const plan = PLANS[planKey];
-          const isPopular = idx === 1;
-          const isPro = idx === 3;
-
+        {displayPlans.map(([key, plan]) => {
+          const isPopular = key === 'personal_advanced_monthly' || key === 'personal_advanced_annual';
+          const isPro = key === 'professional_monthly' || key === 'professional_annual';
           const displayPrice = plan.price.toLocaleString('en-US');
 
           return (
-            <div key={planKey} className={`pricing-card${isPopular ? ' popular' : ''}${isPro ? ' professional' : ''}`}>
+            <div key={key} className={`pricing-card${isPopular ? ' popular' : ''}${isPro ? ' professional' : ''}`}>
               {isPopular && <span className="pricing-popular-badge">Most Popular</span>}
               <h3>{plan.name}</h3>
               <p className="pricing-desc">
-                {idx === 0 && 'For casual investors'}
-                {idx === 1 && 'For active traders'}
-                {idx === 2 && 'Households & shared portfolios'}
-                {idx === 3 && 'Full-time traders & family offices'}
+                {key === 'personal_monthly' || key === 'individual_annual'
+                  ? 'For casual investors'
+                  : key.includes('personal_advanced')
+                    ? 'For active traders'
+                    : key.startsWith('family')
+                      ? 'Households & shared portfolios'
+                      : key.startsWith('professional')
+                        ? 'Full-time traders & family offices'
+                        : ''}
               </p>
               <div className="pricing-price">
                 ${displayPrice}
-                <span>{billingCycle === 'yearly' ? '/year (one-time)' : '/month'}</span>
+                <span>{plan.mode === 'subscription' ? '/month' : '/year'}</span>
               </div>
               {isPro && <p className="pricing-partner-note">Verified partners receive a discounted rate</p>}
-              {billingCycle === 'yearly' && <p className="pricing-annual">Billed once per year</p>}
+              {plan.mode === 'payment' && (
+                <p className="pricing-annual">One-time payment (billed once per year)</p>
+              )}
               <ul>
                 {(plan.features || []).map((f, i) => (
                   <li key={i}>
@@ -169,16 +175,16 @@ function PricingContent() {
               <button
                 type="button"
                 className="pricing-btn primary"
-                onClick={() => handleSubscribe(planKey)}
-                disabled={!!loading}
+                onClick={() => handleCheckout(key)}
+                disabled={loading === key}
               >
-                {loading === planKey
-                  ? 'Loading…'
-                  : !plan.priceId || plan.priceId.includes('REPLACE')
+                {loading === key
+                  ? 'Redirecting to checkout...'
+                  : !plan.priceId
                     ? 'Configure price in Stripe'
-                    : billingCycle === 'yearly'
+                    : plan.mode === 'payment'
                       ? 'Pay annually'
-                      : 'Start checkout'}
+                      : 'Get Started'}
               </button>
             </div>
           );

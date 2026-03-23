@@ -10,10 +10,10 @@ export function hasActiveSubscription(profile) {
   }
 
   if (profile.one_time_plan && profile.one_time_plan_purchased_at) {
-    const purchaseDate = new Date(profile.one_time_plan_purchased_at);
-    const oneYearLater = new Date(purchaseDate);
-    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-    return new Date() < oneYearLater;
+    const purchased = new Date(profile.one_time_plan_purchased_at);
+    const expiresAt = new Date(purchased);
+    expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+    return new Date() < expiresAt;
   }
 
   return false;
@@ -34,4 +34,19 @@ export function getActivePlan(profile) {
   }
 
   return null;
+}
+
+/** Higher = more features (for gating). */
+export function getPlanTier(planKey) {
+  const tiers = {
+    personal_monthly: 1,
+    individual_annual: 1,
+    personal_advanced_monthly: 2,
+    personal_advanced_annual: 2,
+    family_monthly: 3,
+    family_annual: 3,
+    professional_monthly: 4,
+    professional_annual: 4,
+  };
+  return tiers[planKey] || 0;
 }

@@ -26,10 +26,10 @@ export function ManageBillingButton({ className, children, label = 'Manage Billi
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || 'Could not open billing portal');
+        alert(data.error || 'Could not open billing portal.');
       }
     } catch {
-      alert('Something went wrong');
+      alert('Something went wrong.');
     } finally {
       setLoading(false);
     }
