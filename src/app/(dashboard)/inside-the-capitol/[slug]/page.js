@@ -286,9 +286,17 @@ export default function PoliticianProfilePage() {
         <i className="bi bi-arrow-left" /> Inside The Capitol
       </Link>
 
-      <div className="pp-layout">
+      <div
+        className="pp-layout politician-profile-grid capitol-profile-grid"
+        style={{
+          /* gridTemplateColumns lives in CSS so @media can switch to 1fr on small screens */
+          display: 'grid',
+          gap: '1.25rem',
+          alignItems: 'start',
+        }}
+      >
         {/* LEFT SIDEBAR */}
-        <aside className="pp-sidebar">
+        <div className="pp-sidebar">
           <div className="pp-avatar-section">
             <div className={`pp-avatar-xl ${pol.party.toLowerCase()}`}>{pol.initials}</div>
             <h1 className="pp-name">{pol.name}</h1>
@@ -320,10 +328,10 @@ export default function PoliticianProfilePage() {
             <div className="pp-info-row"><span className="pp-info-lbl">Total Filings</span><span className="pp-info-val">{pol.filingStats.totalFilings}</span></div>
             <div className="pp-info-row"><span className="pp-info-lbl">Timeliness</span><span className={`pp-timeliness ${pol.filingStats.timeliness === 'On Time' ? 'good' : 'late'}`}>{pol.filingStats.timeliness}</span></div>
           </div>
-        </aside>
+        </div>
 
         {/* RIGHT MAIN */}
-        <main className="pp-main">
+        <div className="pp-main">
           <div className="pp-overview-card">
             <div className="pp-ov-header">
               <h3>Portfolio Overview</h3>
@@ -411,7 +419,7 @@ export default function PoliticianProfilePage() {
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );
