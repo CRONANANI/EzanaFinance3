@@ -1,30 +1,38 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)');
+  console.warn(
+    'Missing Supabase environment variables (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)'
+  );
 }
 
 /**
- * Browser client — MUST use @supabase/ssr createBrowserClient for OAuth PKCE.
- * The generic createClient() stores the code verifier in localStorage, while the
- * server callback reads cookies → exchange fails or missing ?code= behavior.
- * @see https://supabase.com/docs/guides/auth/server-side/nextjs
+ * Browser OAuth / PKCE — MUST use `createBrowserClient` from `@supabase/ssr` so the
+ * code verifier lives in cookies. `@supabase/supabase-js` `createClient` uses
+ * localStorage; the callback then cannot find the verifier → "PKCE code verifier not found".
  */
+export function createClient() {
+  return createBrowserClient(supabaseUrl || '', supabaseAnonKey || '');
+}
+
+/** Singleton for components that `import { supabase } from '@/lib/supabase'`. */
 export const supabase = createBrowserClient(supabaseUrl || '', supabaseAnonKey || '');
 
-// Server-side client with service role (BYPASSES RLS)
-export const createServerSupabaseClient = () => {
+/**
+ * Server-only: service role (bypasses RLS). Not for browser / OAuth.
+ */
+export function createServerSupabaseClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!serviceRoleKey) {
     console.error('SUPABASE_SERVICE_ROLE_KEY is not set!');
   }
 
-  return createClient(
+  return createSupabaseJsClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     serviceRoleKey,
     {
@@ -34,4 +42,4 @@ export const createServerSupabaseClient = () => {
       },
     }
   );
-};
+}

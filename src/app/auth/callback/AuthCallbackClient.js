@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { supabase } from '@/lib/supabase';
 
 function authErrorPath(flow, type) {
   if (type === 'partner') return '/auth/partner-login';
@@ -82,11 +82,6 @@ export default function AuthCallbackClient() {
 
   useEffect(() => {
     const run = async () => {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      );
-
       const flow = searchParams.get('flow');
       const type = searchParams.get('type');
       const redirectParam = searchParams.get('redirect') || '/home-dashboard';

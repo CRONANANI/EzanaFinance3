@@ -28,7 +28,8 @@ This app uses **[Supabase Auth](https://supabase.com/docs/guides/auth)** with th
 
 After OAuth, Supabase redirects to your app at `/auth/callback` with a `?code=` (PKCE) or tokens in the URL **hash** (implicit). The app uses a **client** callback (`src/app/auth/callback/page.js` + `AuthCallbackClient.js`) that calls `exchangeCodeForSession` or `setSession` using **`createBrowserClient` from `@supabase/ssr`** so the PKCE code verifier lives in the **same cookie storage** as the server/middleware.
 
-The **browser** `supabase` export in `src/lib/supabase.js` must be `createBrowserClient` — not the plain `createClient` from `@supabase/supabase-js` — or OAuth can fail (verifier in localStorage vs cookies mismatch).
+The **browser** client in `src/lib/supabase.js` must use **`createBrowserClient` from `@supabase/ssr`** (exported as `supabase` and `createClient()`). Do **not** use `createClient` from `@supabase/supabase-js` in the browser — it stores the PKCE verifier in **localStorage**, while `exchangeCodeForSession` on `/auth/callback` reads **cookies** → *"PKCE code verifier not found in storage."*  
+`AuthCallbackClient` imports the same `supabase` singleton as sign-up / sign-in so the verifier and exchange share storage.
 
 New users are sent to `/onboarding` until `profiles.onboarding_completed` is true (see migration `supabase/migrations/20260323140000_onboarding_profiles.sql`).
 
