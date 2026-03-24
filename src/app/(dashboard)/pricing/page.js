@@ -16,6 +16,7 @@ function PricingContent() {
 
   const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [loading, setLoading] = useState(null);
+  const [checkoutError, setCheckoutError] = useState('');
   const [signedIn, setSignedIn] = useState(false);
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
   const [trialStatus, setTrialStatus] = useState(null);
@@ -60,6 +61,7 @@ function PricingContent() {
     const plan = PLANS[planKey];
     if (!plan?.priceId) return;
     setLoading(planKey);
+    setCheckoutError('');
     try {
       const session = await getSession();
       if (!session?.access_token) {
@@ -79,14 +81,14 @@ function PricingContent() {
           router.push('/auth/signin?redirect=/pricing');
           return;
         }
-        alert(data.error);
+        setCheckoutError(data.error);
         return;
       }
 
       if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error('Checkout error:', err);
-      alert('Something went wrong. Please try again.');
+      setCheckoutError('Something went wrong. Please try again.');
     } finally {
       setLoading(null);
     }
@@ -96,6 +98,20 @@ function PricingContent() {
 
   return (
     <div className="pricing-page">
+      {checkoutError && (
+        <div
+          className="pricing-free-banner"
+          role="alert"
+          style={{
+            borderColor: 'rgba(239, 68, 68, 0.45)',
+            background: 'rgba(239, 68, 68, 0.08)',
+            color: '#fecaca',
+          }}
+        >
+          <i className="bi bi-exclamation-circle" aria-hidden="true" />
+          <span>{checkoutError}</span>
+        </div>
+      )}
       {canceled && (
         <div className="pricing-free-banner" role="status" style={{ borderColor: 'rgba(234, 179, 8, 0.5)' }}>
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />

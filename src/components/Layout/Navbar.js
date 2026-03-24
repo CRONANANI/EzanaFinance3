@@ -44,7 +44,6 @@ export function Navbar() {
     { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
     { id: 5, title: 'Community', url: '/community', icon: 'bi-people', isActive: pathname?.includes('/community') },
     { id: 6, title: 'Learning Center', url: '/learning-center', icon: 'bi-mortarboard', isActive: pathname?.includes('/learning-center') },
-    { id: 7, title: 'Pricing', url: '/pricing', icon: 'bi-tag', isActive: pathname?.includes('/pricing') },
   ];
 
   useEffect(() => {
@@ -287,10 +286,6 @@ export function Navbar() {
           <Link href="/learning-center" className={`nav-link ${pathname?.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
-          </Link>
-          <Link href="/pricing" className={`nav-link ${pathname?.includes('/pricing') ? 'active' : ''}`} data-page="pricing" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-tag"></i>
-            <span>Pricing</span>
           </Link>
         </div>
         <div className="nav-actions">

@@ -20,6 +20,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
     }
 
+    if (!String(plan.priceId).startsWith('price_')) {
+      console.error(
+        `Invalid price ID for plan ${planKey}: ${plan.priceId}. Expected price_... (Stripe Price ID), not a Product ID (prod_...). Check NEXT_PUBLIC_STRIPE_PRICE_* environment variables.`
+      );
+      return NextResponse.json(
+        { error: 'Payment configuration error. Please contact support.' },
+        { status: 500 }
+      );
+    }
+
     const cookieStore = cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
