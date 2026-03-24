@@ -38,7 +38,17 @@ export default function OnboardingPage() {
         return;
       }
 
-      router.replace('/home-dashboard');
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
+        router.replace('/home-dashboard');
+      } else {
+        router.replace('/select-plan');
+      }
     } catch (e) {
       setError(e?.message || 'Something went wrong');
     } finally {
@@ -54,8 +64,8 @@ export default function OnboardingPage() {
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">Welcome to Ezana Finance</h1>
         <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-          Your account is ready. Continue to the dashboard to explore congressional trades, 13F filings,
-          portfolio tools, and market intelligence.
+          Your account is ready. Next, choose a plan and start your 7-day free trial — you won&apos;t be
+          charged until the trial ends.
         </p>
         {error && (
           <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-400">
@@ -68,7 +78,7 @@ export default function OnboardingPage() {
           disabled={loading}
           className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50"
         >
-          {loading ? 'Saving…' : 'Continue to dashboard'}
+          {loading ? 'Saving…' : 'Continue'}
         </button>
         <p className="mt-6 text-xs text-gray-500">
           Need help?{' '}

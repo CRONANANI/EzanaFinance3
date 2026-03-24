@@ -21,14 +21,14 @@ export function TrialExpiredGate() {
           maxWidth: '500px',
         }}
       >
-        <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#fff' }}>Your free trial has ended</h1>
+        <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#fff' }}>Your access period has ended</h1>
         <p style={{ color: '#999', marginBottom: '2rem', lineHeight: '1.6' }}>
-          Your 7-day free trial is over. Choose a plan to continue accessing Ezana Finance&apos;s market data,
-          analytics, and trading tools.
+          Start a 7-day free trial with a plan to continue using Ezana Finance&apos;s market data, analytics, and
+          trading tools. You won&apos;t be charged until the trial ends.
         </p>
         <button
           type="button"
-          onClick={() => router.push('/pricing')}
+          onClick={() => router.push('/select-plan')}
           style={{
             background: '#10b981',
             color: 'white',
@@ -40,7 +40,7 @@ export function TrialExpiredGate() {
             cursor: 'pointer',
           }}
         >
-          Choose a Plan
+          Choose a plan
         </button>
       </div>
     </div>

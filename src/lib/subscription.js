@@ -19,6 +19,10 @@ export function hasActiveSubscription(profile) {
   return false;
 }
 
+export function isInTrial(profile) {
+  return profile?.subscription_status === 'trialing';
+}
+
 export function getActivePlan(profile) {
   if (!profile) return null;
 

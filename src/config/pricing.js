@@ -47,7 +47,7 @@ export const PLANS = {
     price: 48,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_ANNUAL,
     interval: 'year',
-    mode: 'payment',
+    mode: 'subscription',
     features: ['Basic market data', 'Watchlist', 'Daily newsletter'],
   },
   personal_advanced_annual: {
@@ -56,7 +56,7 @@ export const PLANS = {
     price: 180,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_ADVANCED_ANNUAL,
     interval: 'year',
-    mode: 'payment',
+    mode: 'subscription',
     popular: true,
     features: ['Everything in Personal', 'Advanced analytics', 'Real-time alerts'],
   },
@@ -66,7 +66,7 @@ export const PLANS = {
     price: 468,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FAMILY_ANNUAL,
     interval: 'year',
-    mode: 'payment',
+    mode: 'subscription',
     features: ['Everything in Personal Advanced', 'Up to 5 family members', 'Shared portfolios'],
   },
   professional_annual: {
@@ -75,7 +75,7 @@ export const PLANS = {
     price: 1140,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL_ANNUAL,
     interval: 'year',
-    mode: 'payment',
+    mode: 'subscription',
     features: ['Everything in Family', 'API access', 'Priority support', 'Custom reports'],
   },
 };

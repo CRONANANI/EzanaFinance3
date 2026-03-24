@@ -7,9 +7,9 @@ import { PLANS } from '@/config/pricing';
 import { supabase } from '@/lib/supabase';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { getTrialStatus } from '@/lib/trial';
-import './pricing.css';
+import '../pricing/pricing.css';
 
-function PricingContent() {
+function SelectPlanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const canceled = searchParams.get('canceled');
@@ -65,20 +65,20 @@ function PricingContent() {
     try {
       const session = await getSession();
       if (!session?.access_token) {
-        window.location.href = `/auth/signin?redirect=${encodeURIComponent('/pricing')}`;
+        window.location.href = `/auth/signin?redirect=${encodeURIComponent('/select-plan')}`;
         return;
       }
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ planKey, cancelPath: '/pricing' }),
+        body: JSON.stringify({ planKey, cancelPath: '/select-plan' }),
       });
       const data = await response.json();
 
       if (data.error) {
         if (response.status === 401) {
-          router.push('/auth/signin?redirect=/pricing');
+          router.push('/auth/signin?redirect=/select-plan');
           return;
         }
         setCheckoutError(data.error);
@@ -115,15 +115,15 @@ function PricingContent() {
       {canceled && (
         <div className="pricing-free-banner" role="status" style={{ borderColor: 'rgba(234, 179, 8, 0.5)' }}>
           <i className="bi bi-exclamation-triangle" aria-hidden="true" />
-          <span>Payment was canceled. Try again below.</span>
+          <span>Checkout was canceled. Pick a plan below when you&apos;re ready.</span>
         </div>
       )}
       {showFreeBanner && (
         <div className="pricing-free-banner" role="status">
           <i className="bi bi-info-circle" aria-hidden="true" />
           <span>
-            You&apos;re currently on free access with limited features. Choose a plan below to unlock the
-            full platform.
+            Start your 7-day free trial — enter payment on the next screen. You won&apos;t be charged until
+            the trial ends.
           </span>
         </div>
       )}
@@ -146,14 +146,15 @@ function PricingContent() {
         </div>
       )}
       <div className="pricing-header">
-        <h1>Choose Your Plan</h1>
+        <h1>Choose your plan</h1>
         <p>
           7-day free trial on every plan. Your card won&apos;t be charged until the trial ends. Cancel
-          anytime before then.
+          anytime before then and you won&apos;t be charged.
         </p>
         {!signedIn && (
           <p className="pricing-auth-hint">
-            <Link href={`/auth/signin?redirect=${encodeURIComponent('/pricing')}`}>Sign in</Link> to subscribe.
+            <Link href={`/auth/signin?redirect=${encodeURIComponent('/select-plan')}`}>Sign in</Link> to
+            continue.
           </p>
         )}
         <div className="pricing-toggle">
@@ -204,11 +205,7 @@ function PricingContent() {
                 onClick={() => handleCheckout(key)}
                 disabled={loading === key || !plan.priceId}
               >
-                {loading === key
-                  ? 'Redirecting…'
-                  : !plan.priceId
-                    ? 'Coming soon'
-                    : 'Start free trial'}
+                {loading === key ? 'Redirecting…' : !plan.priceId ? 'Coming soon' : 'Start free trial'}
               </button>
             </div>
           );
@@ -218,10 +215,10 @@ function PricingContent() {
   );
 }
 
-export default function PricingPage() {
+export default function SelectPlanPage() {
   return (
     <Suspense fallback={<div className="pricing-page"><p style={{ padding: '2rem' }}>Loading…</p></div>}>
-      <PricingContent />
+      <SelectPlanContent />
     </Suspense>
   );
 }

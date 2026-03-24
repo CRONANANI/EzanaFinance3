@@ -13,7 +13,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 });
     }
 
-    const { planKey } = await request.json();
+    const { planKey, cancelPath } = await request.json();
     const plan = planKey ? PLANS[planKey] : null;
 
     if (!plan || !plan.priceId) {
@@ -61,11 +61,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'You must be signed in to subscribe' }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileErr } = await supabase
       .from('profiles')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, subscription_status, subscription_id')
       .eq('id', user.id)
       .maybeSingle();
+
+    if (profileErr) {
+      console.error('create-checkout-session profile fetch:', profileErr.message);
+    }
+
+    const hasExistingSubscription =
+      profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing';
 
     let customerId = profile?.stripe_customer_id;
 
@@ -77,16 +84,14 @@ export async function POST(request) {
       });
       customerId = customer.id;
 
-      const { error: saveErr } = await supabase
-        .from('profiles')
-        .upsert(
-          {
-            id: user.id,
-            stripe_customer_id: customerId,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        );
+      const { error: saveErr } = await supabase.from('profiles').upsert(
+        {
+          id: user.id,
+          stripe_customer_id: customerId,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      );
       if (saveErr) {
         console.error('Failed to save stripe_customer_id:', saveErr);
       }
@@ -94,31 +99,29 @@ export async function POST(request) {
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
 
+    const safeCancel =
+      cancelPath === '/pricing' || cancelPath === '/select-plan' ? cancelPath : '/select-plan';
+
+    /** All catalog plans use recurring Stripe Prices (monthly or yearly) in subscription mode. */
     const sessionParams = {
       customer: customerId,
       line_items: [{ price: plan.priceId, quantity: 1 }],
-      mode: plan.mode,
+      mode: 'subscription',
       success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing?canceled=true`,
+      cancel_url: `${origin}${safeCancel}?canceled=true`,
+      payment_method_collection: 'always',
+      subscription_data: {
+        metadata: {
+          supabase_user_id: user.id,
+          plan_key: planKey,
+        },
+        ...(hasExistingSubscription ? {} : { trial_period_days: 7 }),
+      },
       metadata: {
         supabase_user_id: user.id,
         plan_key: planKey,
       },
     };
-
-    if (plan.mode === 'subscription') {
-      sessionParams.subscription_data = {
-        metadata: {
-          supabase_user_id: user.id,
-          plan_key: planKey,
-        },
-      };
-      sessionParams.payment_method_collection = 'always';
-    }
-
-    if (plan.mode === 'payment') {
-      sessionParams.invoice_creation = { enabled: true };
-    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

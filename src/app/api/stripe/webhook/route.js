@@ -46,9 +46,8 @@ export async function POST(request) {
           break;
         }
 
-        if (session.mode === 'subscription') {
+        if (session.mode === 'subscription' && session.subscription) {
           const subRef = session.subscription;
-          if (!subRef) break;
           const subId = typeof subRef === 'string' ? subRef : subRef.id;
           const subscription = await stripe.subscriptions.retrieve(subId);
           const periodEnd = subscription.current_period_end
@@ -69,20 +68,9 @@ export async function POST(request) {
             },
             { onConflict: 'id' }
           );
-          console.log(`Subscription activated for user ${userId}, plan: ${planKey}`);
-        } else if (session.mode === 'payment') {
-          await supabaseAdmin.from('profiles').upsert(
-            {
-              id: userId,
-              stripe_customer_id: session.customer,
-              one_time_plan: planKey,
-              one_time_plan_purchased_at: new Date().toISOString(),
-              subscription_status: 'active',
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' }
+          console.log(
+            `Subscription created for user ${userId}, plan: ${planKey}, status: ${subscription.status}`
           );
-          console.log(`One-time payment completed for user ${userId}, plan: ${planKey}`);
         }
         break;
       }

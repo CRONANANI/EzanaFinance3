@@ -2,10 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 
-export function TrialBanner({ daysRemaining, trialExpired }) {
+/**
+ * @param {'stripe' | 'account' | 'expired'} variant
+ * @param {number} daysRemaining
+ */
+export function TrialBanner({ daysRemaining, trialExpired, variant = 'account' }) {
   const router = useRouter();
 
-  if (trialExpired) {
+  if (trialExpired || variant === 'expired') {
     return (
       <div
         style={{
@@ -21,7 +25,7 @@ export function TrialBanner({ daysRemaining, trialExpired }) {
         <span>Your free trial has ended. Choose a plan to continue using Ezana Finance.</span>
         <button
           type="button"
-          onClick={() => router.push('/pricing')}
+          onClick={() => router.push('/select-plan')}
           style={{
             background: 'white',
             color: '#dc2626',
@@ -40,7 +44,46 @@ export function TrialBanner({ daysRemaining, trialExpired }) {
     );
   }
 
-  if (daysRemaining <= 3) {
+  if (variant === 'stripe' && daysRemaining > 0) {
+    return (
+      <div
+        style={{
+          background: 'linear-gradient(90deg, #059669, #10b981)',
+          color: 'white',
+          padding: '12px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.9rem',
+        }}
+      >
+        <span>
+          {daysRemaining === 1
+            ? 'Your free trial ends tomorrow — cancel anytime before then to avoid being charged.'
+            : `${daysRemaining} days left in your free trial. You won’t be charged until the trial ends.`}
+        </span>
+        <button
+          type="button"
+          onClick={() => router.push('/settings')}
+          style={{
+            background: 'white',
+            color: '#059669',
+            border: 'none',
+            padding: '8px 20px',
+            borderRadius: '6px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            marginLeft: '16px',
+          }}
+        >
+          Manage plan
+        </button>
+      </div>
+    );
+  }
+
+  if (variant === 'account' && daysRemaining <= 3 && daysRemaining > 0) {
     return (
       <div
         style={{
@@ -55,13 +98,13 @@ export function TrialBanner({ daysRemaining, trialExpired }) {
       >
         <span>
           {daysRemaining === 1
-            ? 'Your free trial ends tomorrow!'
-            : `Your free trial ends in ${daysRemaining} days.`}{' '}
-          Choose a plan to keep your access.
+            ? 'Your access window ends tomorrow!'
+            : `Your access ends in ${daysRemaining} days.`}{' '}
+          Choose a plan to keep full access.
         </span>
         <button
           type="button"
-          onClick={() => router.push('/pricing')}
+          onClick={() => router.push('/select-plan')}
           style={{
             background: 'white',
             color: '#d97706',
@@ -74,7 +117,7 @@ export function TrialBanner({ daysRemaining, trialExpired }) {
             marginLeft: '16px',
           }}
         >
-          View Plans
+          View plans
         </button>
       </div>
     );

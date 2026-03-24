@@ -5,6 +5,8 @@
 
 export const USER_DASHBOARD_ROUTES = [
   '/onboarding',
+  '/select-plan',
+  '/payment',
   '/home-dashboard',
   '/home',
   '/watchlist',
