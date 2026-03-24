@@ -1,5 +1,9 @@
 'use client';
 
+/**
+ * OAuth (e.g. Google) completes here: exchange code → session, then route by profile.
+ * Unverified email → /auth/verify-email; verified & not onboarded → /onboarding; else redirect param or /home-dashboard.
+ */
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';

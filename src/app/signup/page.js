@@ -11,7 +11,6 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
   const handleSignUp = async (e) => {
@@ -32,11 +31,12 @@ export default function SignUpPage() {
 
       if (signUpError) throw signUpError;
 
-      setSuccess(true);
+      if (data.user) {
+        router.push('/auth/verify-email');
+        return;
+      }
 
-      setTimeout(() => {
-        router.push('/home');
-      }, 2000);
+      setError('Could not create account. Please try again.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -57,14 +57,6 @@ export default function SignUpPage() {
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded">
             <p className="text-red-500 text-sm">{error}</p>
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-4 p-3 bg-green-500/10 border border-green-500 rounded">
-            <p className="text-green-500 text-sm">
-              Account created! Redirecting to dashboard...
-            </p>
           </div>
         )}
 

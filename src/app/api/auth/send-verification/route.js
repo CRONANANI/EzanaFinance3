@@ -48,25 +48,40 @@ export async function POST() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('email_verified')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profile?.email_verified) {
-      return NextResponse.json(
-        { error: 'Email already verified', alreadyVerified: true },
-        { status: 200 }
-      );
-    }
-
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
       console.error('send-verification: missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     const supabaseAdmin = createServerSupabaseClient();
+
+    let { data: profile } = await supabase
+      .from('profiles')
+      .select('email_verified')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!profile) {
+      const { error: insertProfileErr } = await supabaseAdmin.from('profiles').insert({
+        id: user.id,
+        email: user.email ?? '',
+        email_verified: false,
+        onboarding_completed: false,
+        updated_at: new Date().toISOString(),
+      });
+      if (insertProfileErr) {
+        console.error('send-verification: profile insert', insertProfileErr);
+        return NextResponse.json({ error: 'Could not prepare your account' }, { status: 500 });
+      }
+      profile = { email_verified: false };
+    }
+
+    if (profile.email_verified) {
+      return NextResponse.json(
+        { error: 'Email already verified', alreadyVerified: true },
+        { status: 200 }
+      );
+    }
 
     const { data: recentCode, error: recentErr } = await supabaseAdmin
       .from('email_verification_codes')

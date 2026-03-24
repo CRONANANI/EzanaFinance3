@@ -62,14 +62,13 @@ export default function SignUpPage() {
         return;
       }
 
-      if (!data.session) {
-        setError(
-          "Account created but no session started. Turn off Supabase “Confirm email” in Auth settings, or check your email to confirm first."
-        );
+      /* With Supabase "Confirm email" off, signUp creates the user and session; we verify via 6-digit code only. */
+      if (data.user) {
+        router.push("/auth/verify-email");
         return;
       }
 
-      router.push("/auth/verify-email");
+      setError("Could not create account. Please try again.");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
