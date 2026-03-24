@@ -32,6 +32,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
   if (!profile) {
     const { error: insErr } = await supabase.from('profiles').insert({
       id: user.id,
+      email: user.email,
       onboarding_completed: false,
       email_verified: false,
       updated_at: new Date().toISOString(),

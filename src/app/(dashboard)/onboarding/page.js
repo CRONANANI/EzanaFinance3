@@ -26,6 +26,7 @@ export default function OnboardingPage() {
       const { error: upErr } = await supabase.from('profiles').upsert(
         {
           id: user.id,
+          email: user.email,
           onboarding_completed: true,
           updated_at: new Date().toISOString(),
         },

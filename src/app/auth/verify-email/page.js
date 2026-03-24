@@ -30,11 +30,7 @@ export default function VerifyEmailPage() {
       .maybeSingle();
 
     if (profile?.email_verified) {
-      if (profile.onboarding_completed === false) {
-        router.replace('/onboarding');
-      } else {
-        router.replace('/home-dashboard');
-      }
+      router.replace('/home-dashboard');
     }
   }, [router]);
 
@@ -124,8 +120,8 @@ export default function VerifyEmailPage() {
       const data = await res.json();
 
       if (data.success) {
-        setSuccess('Email verified!');
-        setTimeout(() => router.push('/onboarding'), 1000);
+        setSuccess('Email verified! Redirecting…');
+        setTimeout(() => router.replace('/home-dashboard'), 600);
       } else {
         setError(data.error);
         setCode(['', '', '', '', '', '']);

@@ -122,9 +122,20 @@ export async function POST(request) {
 
     const now = new Date().toISOString();
 
+    const email = user.email ?? null;
+    if (!email) {
+      console.error('verify-code: authenticated user has no email on profile');
+      return NextResponse.json({ error: 'Account email is missing' }, { status: 400 });
+    }
+
     const { data: updatedRows, error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ email_verified: true, updated_at: now })
+      .update({
+        email,
+        email_verified: true,
+        onboarding_completed: true,
+        updated_at: now,
+      })
       .eq('id', user.id)
       .select('id');
 
@@ -136,8 +147,9 @@ export async function POST(request) {
     if (!updatedRows?.length) {
       const { error: insertError } = await supabaseAdmin.from('profiles').insert({
         id: user.id,
+        email,
         email_verified: true,
-        onboarding_completed: false,
+        onboarding_completed: true,
         updated_at: now,
       });
 
