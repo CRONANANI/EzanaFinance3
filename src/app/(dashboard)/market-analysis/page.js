@@ -2,6 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { WorldMap } from '@/components/ui/world-map';
+import {
+  PANEL_ID_TO_CITY_KEY,
+  PANEL_ID_TO_FINHUB_CITY_ID,
+} from '@/config/cityNewsSources';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -86,17 +90,6 @@ const FINANCIAL_CITIES = [
   { id: 'montreal', name: 'Montreal', country: 'Canada', exchange: 'TMX / MX', timezone: 'EST' },
   { id: 'hamilton', name: 'Hamilton', country: 'Bermuda', exchange: 'BSX', timezone: 'AST' },
 ];
-
-const PANEL_ID_TO_CITY_ID = {
-  toronto: 'toronto', newyork: 'new-york', saopaulo: 'sao-paulo', london: 'london',
-  frankfurt: 'frankfurt', dubai: 'dubai', mumbai: 'mumbai', singapore: 'singapore',
-  hongkong: 'hong-kong', shanghai: 'shanghai', tokyo: 'tokyo', sydney: 'sydney',
-  johannesburg: 'johannesburg', addisababa: 'addis-ababa', lagos: 'lagos',
-  moscow: 'moscow', paris: 'paris', telaviv: 'tel-aviv',
-  miami: 'miami', sanfrancisco: 'san-francisco', chicago: 'chicago',
-  seoul: 'seoul', geneva: 'geneva', dublin: 'dublin',
-  stockholm: 'stockholm', montreal: 'montreal', hamilton: 'hamilton',
-};
 
 function CategoryPanel({ category, onClose }) {
   const [expanded, setExpanded] = useState(null);
@@ -220,22 +213,50 @@ function SettingsPanel({ onClose }) {
   );
 }
 
-function CityNewsPanel({ cityId, onClose }) {
-  const city = FINANCIAL_CITIES.find((c) => c.id === cityId);
+function CityNewsPanel({ panelId, onClose }) {
+  const finhubCityId = panelId ? PANEL_ID_TO_FINHUB_CITY_ID[panelId] : null;
+  const cityKey = panelId ? PANEL_ID_TO_CITY_KEY[panelId] : null;
+  const city = finhubCityId ? FINANCIAL_CITIES.find((c) => c.id === finhubCityId) : null;
+
+  const [regional, setRegional] = useState(null);
   const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingRegional, setLoadingRegional] = useState(true);
+  const [loadingNews, setLoadingNews] = useState(true);
 
   useEffect(() => {
-    if (!cityId) return;
-    setLoading(true);
-    fetch(`/api/market-data/city-news?city=${encodeURIComponent(cityId)}`)
+    if (!cityKey) {
+      setRegional(null);
+      setLoadingRegional(false);
+      return;
+    }
+    setLoadingRegional(true);
+    fetch(`/api/news/city?city=${encodeURIComponent(cityKey)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setRegional(data);
+        setLoadingRegional(false);
+      })
+      .catch(() => {
+        setRegional(null);
+        setLoadingRegional(false);
+      });
+  }, [cityKey]);
+
+  useEffect(() => {
+    if (!finhubCityId) {
+      setNews([]);
+      setLoadingNews(false);
+      return;
+    }
+    setLoadingNews(true);
+    fetch(`/api/market-data/city-news?city=${encodeURIComponent(finhubCityId)}`)
       .then((res) => res.json())
       .then((data) => {
         setNews(data.news || []);
-        setLoading(false);
+        setLoadingNews(false);
       })
-      .catch(() => setLoading(false));
-  }, [cityId]);
+      .catch(() => setLoadingNews(false));
+  }, [finhubCityId]);
 
   const timeAgo = (unixOrIso) => {
     const ms = typeof unixOrIso === 'number'
@@ -248,41 +269,78 @@ function CityNewsPanel({ cityId, onClose }) {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
-  if (!city) return null;
+  if (!city || !cityKey) return null;
+
+  const displayName = regional?.city || city.name;
+  const displayRegion = regional?.region;
 
   return (
     <div className="ma-city-panel">
       <div className="ma-city-panel-header">
         <div>
-          <h3 className="ma-city-panel-name">{city.name}</h3>
-          <span className="ma-city-panel-meta">{city.country} · {city.exchange} · {city.timezone}</span>
+          <h3 className="ma-city-panel-name">{displayName}</h3>
+          <span className="ma-city-panel-meta">
+            {displayRegion ? `${displayRegion} · ` : ''}{city.country} · {city.exchange} · {city.timezone}
+          </span>
         </div>
         <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close"><i className="bi bi-x-lg" /></button>
       </div>
 
-      <div className="ma-city-panel-count">{loading ? 'LOADING...' : `${news.length} ARTICLES`}</div>
-
-      <div className="ma-city-panel-list">
-        {loading ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
-            Fetching latest news...
+      <div className="ma-city-panel-body">
+        <div className="ma-city-panel-section-label">Regional financial news sources</div>
+        {loadingRegional ? (
+          <div style={{ padding: '1rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+            Loading sources…
           </div>
-        ) : news.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
-            No recent news found.
+        ) : regional?.sources?.length ? (
+          <div className="ma-city-sources">
+            {regional.sources.map((source, i) => (
+              <div key={`${source.name}-${i}`} className="ma-city-source-card">
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ma-city-source-link"
+                >
+                  {source.name}
+                  {' '}
+                  <span aria-hidden>↗</span>
+                </a>
+                <p className="ma-city-source-focus">{source.focus}</p>
+              </div>
+            ))}
           </div>
         ) : (
-          news.map((item) => (
-            <a key={item.id} href={item.url || '#'} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
-              <div className="ma-city-news-top">
-                <span className="ma-city-news-badge">{item.category}</span>
-                <span className="ma-city-news-time">{timeAgo(item.time)}</span>
-              </div>
-              <p className="ma-city-news-title">{item.title}</p>
-              <span className="ma-city-news-source">{item.source || 'Finnhub'} →</span>
-            </a>
-          ))
+          <div style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.65rem' }}>No curated sources for this hub.</div>
         )}
+
+        <div className="ma-city-panel-section-label ma-city-panel-section-label--mt">Latest headlines</div>
+        <div className="ma-city-panel-count">
+          {loadingNews ? 'LOADING…' : `${news.length} ARTICLES (AGGREGATED)`}
+        </div>
+
+        <div className="ma-city-panel-list">
+          {loadingNews ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+              Fetching latest news…
+            </div>
+          ) : news.length === 0 ? (
+            <div style={{ padding: '1rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+              No recent headlines. Open a regional source above for live coverage.
+            </div>
+          ) : (
+            news.map((item) => (
+              <a key={item.id} href={item.url || '#'} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
+                <div className="ma-city-news-top">
+                  <span className="ma-city-news-badge">{item.category}</span>
+                  <span className="ma-city-news-time">{timeAgo(item.time)}</span>
+                </div>
+                <p className="ma-city-news-title">{item.title}</p>
+                <span className="ma-city-news-source">{item.source || 'Finnhub'} →</span>
+              </a>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
@@ -388,7 +446,6 @@ export default function MarketAnalysisPage() {
     setActiveCategory((prev) => (prev === cat ? null : cat));
   };
 
-  const cityId = selectedDot ? PANEL_ID_TO_CITY_ID[selectedDot] : null;
 
   useEffect(() => {
     const onKeyDown = (e) => { if (e.key === 'Escape') setSelectedDot(null); };
@@ -481,8 +538,8 @@ export default function MarketAnalysisPage() {
           {filterOpen && <FilterPanel onClose={() => setFilterOpen(false)} />}
           {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
-          {cityId && (
-            <CityNewsPanel cityId={cityId} onClose={() => setSelectedDot(null)} />
+          {selectedDot && (
+            <CityNewsPanel panelId={selectedDot} onClose={() => setSelectedDot(null)} />
           )}
         </>
       ) : (

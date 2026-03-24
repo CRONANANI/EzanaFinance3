@@ -332,6 +332,7 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               <g
                 key={center.id}
                 data-world-map-dot="1"
+                data-city={center.panelId}
                 style={{ cursor: "pointer" }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
