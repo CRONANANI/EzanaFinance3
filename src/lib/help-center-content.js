@@ -72,7 +72,7 @@ export const USER_CATEGORIES = [
 
 export const USER_ARTICLES = {
   'creating-your-account': { title: 'Creating Your Ezana Finance Account', category: 'Getting Started', content: wrap([
-    "To get started, visit ezana.world and click 'Login' then 'Sign up'. You can register with your email address and a password, or sign in directly with your Google account.",
+    "To get started, visit ezana.world and click 'Login' then 'Sign up'. You can register with your email address and a password.",
     "After registering, you'll be taken to your personal dashboard where you can explore congressional trading data, connect your brokerage, and customize your experience.",
     "If you received a legacy access invitation, your account will automatically be upgraded once you sign up with the same email.",
   ]) },
