@@ -296,7 +296,7 @@ function InsideTheCapitolContent() {
   const pol = FEATURED_POLITICIANS[activePolIdx];
 
   return (
-    <div className="itc-page">
+    <div className="itc-page dashboard-page-inset">
       {/* ── Stats ── */}
       <div className="itc-stats">
         {STAT_CARDS.map((s) => (
@@ -546,7 +546,7 @@ function InsideTheCapitolContent() {
 export default function InsideTheCapitolPage() {
   return (
     <Suspense fallback={
-      <div className="itc-page" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="itc-page dashboard-page-inset" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#8b949e' }}>Loading...</p>
       </div>
     }>

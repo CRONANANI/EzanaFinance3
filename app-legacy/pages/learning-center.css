@@ -3,10 +3,11 @@
    ============================================ */
 
 .lc-page {
-  /* Inset from dashboard layout only — no extra horizontal max-width */
+  /* Inset from layout `.dashboard-page-inset` — do not use `padding: 0` shorthand (would fight horizontal inset). */
   max-width: 100%;
   margin: 0;
-  padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
   width: 100%;
   box-sizing: border-box;
 }

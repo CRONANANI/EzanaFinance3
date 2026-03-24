@@ -154,7 +154,7 @@ export default function HomeDashboardPage() {
   const greeting = getGreeting();
 
   return (
-    <div className="db-page">
+    <div className="db-page dashboard-page-inset">
       {/* ═══ GREETING ═══ */}
       <div className="db-greeting-section">
         <div>

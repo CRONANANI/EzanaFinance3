@@ -144,7 +144,7 @@ export default function WatchlistPage() {
   const isUp = selected.change >= 0;
 
   return (
-    <div className="wl-page">
+    <div className="wl-page dashboard-page-inset">
 
       {/* ═══ TOP STRIP — mixed indices, politicians, institutions ═══ */}
       <div className="wl-top-strip">

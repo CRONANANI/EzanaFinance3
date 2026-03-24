@@ -109,7 +109,7 @@ export default function CommunityPage() {
   const displayDiscussions = needsSuggested ? [...discussions, ...SUGGESTED_DISCUSSIONS.slice(0, 4 - discussions.length)] : discussions;
 
   return (
-    <>
+    <div className="dashboard-page-inset">
       <div className="community-hub-header">
         <h1 className="community-hub-title">Community Hub</h1>
         <div className="community-hub-tabs">
@@ -543,6 +543,6 @@ export default function CommunityPage() {
         </div>
       </div>
       </PinnableCard></div>
-    </>
+    </div>
   );
 }

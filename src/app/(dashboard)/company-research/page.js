@@ -129,7 +129,7 @@ export default function CompanyResearchPage() {
   const resetStats = () => setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
 
   return (
-    <>
+    <div className="dashboard-page-inset">
       <div className="company-search-wrapper relative" ref={searchRef}>
         <AnimatedGlowingSearchBar
           value={query}
@@ -371,6 +371,6 @@ export default function CompanyResearchPage() {
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

@@ -41,7 +41,7 @@ export default function LearningCenterPage() {
   const greeting = getGreeting();
 
   return (
-    <div className="lc-page">
+    <div className="lc-page dashboard-page-inset">
       <div className="lc-greeting-row">
         <div className="lc-greeting">
           <h1>{greeting}, {userName} 👋</h1>

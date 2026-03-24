@@ -384,7 +384,7 @@ export default function ForTheQuantsPage() {
     const strat = all.find(s => s.id === selectedStrategy);
     if (strat) {
       return (
-        <div className="ftq-page">
+        <div className="ftq-page dashboard-page-inset">
           <StrategyDetail strategy={strat} onBack={() => setSelectedStrategy(null)} />
         </div>
       );
@@ -392,7 +392,7 @@ export default function ForTheQuantsPage() {
   }
 
   return (
-    <div className="ftq-page">
+    <div className="ftq-page dashboard-page-inset">
       {/* ── Top Section: 3 cards ── */}
       <div className="ftq-top-grid">
         <div className="ftq-top-card ftq-trading-card">

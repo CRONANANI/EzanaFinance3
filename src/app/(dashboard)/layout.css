@@ -36,7 +36,24 @@
   box-sizing: border-box;
 }
 
+/* Match Betting Markets `.betting-markets-container` — max-width + horizontal padding (2rem),
+   combined with main’s own horizontal padding (2rem) = same edge distance as Betting Markets. */
+.dashboard-main.dashboard-main-content .dashboard-container .dashboard-page-inset {
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
 @media (max-width: 768px) {
+  .dashboard-main.dashboard-main-content .dashboard-container .dashboard-page-inset {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) {
     padding-top: calc(var(--navbar-height, 64px) + 1rem);
     padding-left: 1rem;

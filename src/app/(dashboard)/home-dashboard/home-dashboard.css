@@ -4,9 +4,10 @@
    Dark theme: #0a0e13 bg, #10b981 emerald accent
    ═══════════════════════════════════════════════════════════ */
 
-/* Page inset comes from dashboard layout <main.dashboard-main-content> only */
+/* Horizontal inset from `.dashboard-page-inset` — avoid `padding: 0` shorthand on the same node. */
 .db-page {
-  padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
   max-width: 100%;
   margin: 0;
   width: 100%;
@@ -669,7 +670,8 @@
 }
 
 @media (max-width: 768px) {
-  .db-page { padding: 1rem; }
+  .db-page:not(.dashboard-page-inset) { padding: 1rem; }
+  .db-page.dashboard-page-inset { padding-top: 1rem; padding-bottom: 1rem; }
   .db-greeting { font-size: 1.25rem; }
 
   .db-hero-card { flex-direction: column; padding: 1.25rem; }
