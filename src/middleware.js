@@ -12,11 +12,6 @@ export async function middleware(request) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
-  /** OAuth callback and auth pages must not run session-gate logic (session is created here) */
-  if (pathname.startsWith('/auth')) {
-    return NextResponse.next({ request: { headers: request.headers } });
-  }
-
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
@@ -40,6 +35,11 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  /** OAuth / PKCE callback — session is established client-side; do not gate */
+  if (pathname === '/auth/callback' || pathname.startsWith('/auth/callback/')) {
+    return response;
+  }
+
   if (pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin') || '';
     if (ALLOWED_ORIGINS.some((o) => origin === o)) {
@@ -52,6 +52,32 @@ export async function middleware(request) {
       return new NextResponse(null, { status: 200, headers: response.headers });
     }
     return response;
+  }
+
+  if (pathname === '/auth/verify-email' && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/signin';
+    url.searchParams.set('redirect', '/auth/verify-email');
+    return NextResponse.redirect(url);
+  }
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email_verified')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.email_verified !== true) {
+      const onAuthOrApi =
+        pathname.startsWith('/api') || pathname === '/auth' || pathname.startsWith('/auth/');
+      if (!onAuthOrApi) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/verify-email';
+        url.search = '';
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   if (matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES) && !user) {

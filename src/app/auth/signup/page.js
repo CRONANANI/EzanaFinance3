@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, ArrowRight, TrendingUp } from "lucide-react";
+import { Eye, EyeOff, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import AuthDotMap from "@/components/auth/AuthDotMap";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +16,6 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -47,7 +47,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -62,43 +62,20 @@ export default function SignUpPage() {
         return;
       }
 
-      setSuccess(true);
+      if (!data.session) {
+        setError(
+          "Account created but no session started. Turn off Supabase “Confirm email” in Auth settings, or check your email to confirm first."
+        );
+        return;
+      }
+
+      router.push("/auth/verify-email");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a] p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-[#0d1117] border border-emerald-500/20 rounded-2xl p-8 text-center"
-        >
-          <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Check your email</h2>
-          <p className="text-gray-400 mb-6">
-            We&apos;ve sent a confirmation link to <span className="text-emerald-500">{email}</span>.
-            Click the link to activate your account.
-          </p>
-          <Link
-            href="/auth/signin"
-            className="inline-flex items-center text-emerald-500 hover:text-emerald-400 transition-colors"
-          >
-            Back to Sign In
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0f0a]">

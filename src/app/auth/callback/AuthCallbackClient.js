@@ -19,6 +19,40 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     return;
   }
 
+  let { data: profile, error: profileErr } = await supabase
+    .from('profiles')
+    .select('onboarding_completed, email_verified')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileErr) {
+    console.error('[auth/callback] profile fetch:', profileErr.message);
+  }
+
+  if (!profile) {
+    const { error: insErr } = await supabase.from('profiles').insert({
+      id: user.id,
+      onboarding_completed: false,
+      email_verified: false,
+      updated_at: new Date().toISOString(),
+    });
+    if (insErr) {
+      console.error('[auth/callback] profile insert:', insErr.message);
+      const createdAt = new Date(user.created_at).getTime();
+      if (Date.now() - createdAt < 120000) {
+        router.replace('/auth/verify-email');
+        return;
+      }
+    } else {
+      profile = { onboarding_completed: false, email_verified: false };
+    }
+  }
+
+  if (!profile || profile.email_verified !== true) {
+    router.replace('/auth/verify-email');
+    return;
+  }
+
   if (type === 'partner') {
     let isPartner = !!user.user_metadata?.partner_role;
     if (!isPartner) {
@@ -39,34 +73,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     return;
   }
 
-  const { data: profile, error: profileErr } = await supabase
-    .from('profiles')
-    .select('onboarding_completed')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profileErr) {
-    console.error('[auth/callback] profile fetch:', profileErr.message);
-  }
-
-  if (!profile) {
-    const { error: insErr } = await supabase.from('profiles').insert({
-      id: user.id,
-      onboarding_completed: false,
-      updated_at: new Date().toISOString(),
-    });
-    if (insErr) {
-      console.error('[auth/callback] profile insert:', insErr.message);
-      const createdAt = new Date(user.created_at).getTime();
-      if (Date.now() - createdAt < 120000) {
-        router.replace('/onboarding');
-        return;
-      }
-    } else {
-      router.replace('/onboarding');
-      return;
-    }
-  } else if (profile.onboarding_completed === false) {
+  if (profile.onboarding_completed === false) {
     router.replace('/onboarding');
     return;
   }
