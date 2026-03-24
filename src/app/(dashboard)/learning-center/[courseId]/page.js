@@ -4,10 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getCourse } from '@/lib/courses';
+import { useChecklist } from '@/hooks/useChecklist';
 import './course-detail.css';
 
 export default function CourseDetailPage() {
   const params = useParams();
+  const { completeTask } = useChecklist();
   const course = getCourse(params.courseId);
 
   const [activeTab, setActiveTab] = useState('description');
@@ -97,6 +99,7 @@ export default function CourseDetailPage() {
     if (!activeLesson) return;
     setQuizSubmitted((prev) => ({ ...prev, [activeLesson.id]: true }));
     markComplete(activeLesson.id);
+    completeTask('learning_2');
   };
 
   const getModuleProgress = (mod) => {
@@ -261,6 +264,13 @@ export default function CourseDetailPage() {
         </aside>
 
         <main className="cd-content">
+          {activeLesson && activeTab !== 'progress' && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+              <button type="button" className="cd-btn-secondary" onClick={() => completeTask('learning_3')}>
+                <i className="bi bi-bookmark-plus" /> Bookmark lesson
+              </button>
+            </div>
+          )}
           {activeTab === 'progress' ? (
             <div className="cd-progress-report">
               <h2 className="cd-content-title">Learning Report</h2>

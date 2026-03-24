@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { useChecklist } from '@/hooks/useChecklist';
 import { ProfileCarousel } from '@/components/ui/profile-carousel';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -47,6 +48,7 @@ const LEGENDARY_INVESTORS = [
 ];
 
 export default function CommunityPage() {
+  const { completeTask } = useChecklist();
   const [activeFeed, setActiveFeed] = useState('trending');
   const [friendsView, setFriendsView] = useState('list');
   const [addFriendOpen, setAddFriendOpen] = useState(false);
@@ -196,7 +198,7 @@ export default function CommunityPage() {
         <div className="community-card-header"><h3>Leaderboard</h3></div>
         <div className="community-leaderboard">
           {[{ name: 'Emma Wilson', initials: 'EW', return: 34.5 }, { name: 'David Kim', initials: 'DK', return: 28.2 }, { name: 'Lisa Park', initials: 'LP', return: 25.7 }, { name: 'Alex Chen', initials: 'AC', return: 22.1 }, { name: 'You', initials: 'ME', return: 12.4 }].map((u, i) => (
-            <div key={i} className="community-leader-row">
+            <div key={i} className="community-leader-row" role="button" tabIndex={0} onClick={() => completeTask('community_3')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('community_3'); }}>
               <span className="community-leader-rank">{i + 1}</span>
               <div className="community-leader-avatar">{u.initials}</div>
               <span className="community-leader-name">{u.name}</span>
@@ -266,7 +268,7 @@ export default function CommunityPage() {
           <p className="card-subtitle">Explore public profiles of iconic investors — scroll to analyze their strategies and track records</p>
         </div>
         <div className="card-body">
-          <ProfileCarousel items={LEGENDARY_INVESTORS} variant="investor" />
+          <ProfileCarousel items={LEGENDARY_INVESTORS} variant="investor" onInvestorCardOpen={() => completeTask('community_2')} />
         </div>
       </div>
       </PinnableCard>
@@ -292,7 +294,7 @@ export default function CommunityPage() {
                 </div>
               ) : (
                 displayDiscussions.map((d) => (
-                  <article key={d.id} className="feed-thread-card">
+                  <article key={d.id} className="feed-thread-card" role="presentation" onClick={() => completeTask('community_1')}>
                     <div className="thread-meta-top">
                       <div className="thread-author"><div className="thread-avatar">{d.author}</div><span className="thread-author-name">{d.name}</span></div>
                       <span className="thread-topic-tag">{d.tag}</span>

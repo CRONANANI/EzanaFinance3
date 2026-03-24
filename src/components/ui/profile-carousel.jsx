@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Quote, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Profile item: name, designation (subtitle), description, profileImage
-export function ProfileCarousel({ items, variant = "default", initialScroll = 0 }) {
+export function ProfileCarousel({ items, variant = "default", initialScroll = 0, onInvestorCardOpen }) {
   const carouselRef = React.useRef(null);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(true);
@@ -73,6 +73,7 @@ export function ProfileCarousel({ items, variant = "default", initialScroll = 0 
                 index={index}
                 variant={variant}
                 onCardClose={() => handleCardClose(index)}
+                onOpen={variant === "investor" ? onInvestorCardOpen : undefined}
               />
             </motion.div>
           ))}
@@ -115,11 +116,14 @@ function useOutsideClick(ref, onOutsideClick) {
   }, [ref, onOutsideClick]);
 }
 
-function ProfileCard({ profile, index, variant = "default", onCardClose = () => {} }) {
+function ProfileCard({ profile, index, variant = "default", onCardClose = () => {}, onOpen }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef(null);
 
-  const handleExpand = () => setIsExpanded(true);
+  const handleExpand = () => {
+    onOpen?.();
+    setIsExpanded(true);
+  };
   const handleCollapse = () => {
     setIsExpanded(false);
     onCardClose();

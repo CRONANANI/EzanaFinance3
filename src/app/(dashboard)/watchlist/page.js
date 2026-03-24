@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { useChecklist } from '@/hooks/useChecklist';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -125,11 +126,12 @@ function TypeIcon({ item }) {
 }
 
 export default function WatchlistPage() {
+  const { completeTask } = useChecklist();
+  const addedStockRef = useRef(false);
   const [selected, setSelected] = useState(TOP_STRIP[0]);
   const [timeRange, setTimeRange] = useState('1Y');
   const [sideTab, setSideTab] = useState('All');
   const [search, setSearch] = useState('');
-
   const sideItems = useMemo(() => {
     let items = WATCHLIST_ITEMS;
     if (sideTab === 'Stocks') items = items.filter(i => i.type === 'stock');
@@ -139,7 +141,13 @@ export default function WatchlistPage() {
     return items;
   }, [sideTab, search]);
 
-  const selectAny = useCallback((item) => setSelected(item), []);
+  const selectAny = useCallback((item) => {
+    setSelected(item);
+    if (item?.type === 'stock' && !addedStockRef.current) {
+      addedStockRef.current = true;
+      completeTask('watchlist_1');
+    }
+  }, [completeTask]);
 
   const isUp = selected.change >= 0;
 
@@ -214,9 +222,16 @@ export default function WatchlistPage() {
               <div className="wl-big-price">{fmtPrice(selected.price)}</div>
               <div className="wl-price-meta">{selected.name} · {selected.ticker}</div>
               </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
             <div className={`wl-big-chg ${isUp?'up':'dn'}`}>
               <i className={`bi ${isUp?'bi-arrow-up-right':'bi-arrow-down-right'}`}/>
               {fmtPct(selected.pct)}
+            </div>
+            {selected.type === 'stock' && (
+              <button type="button" className="wl-bc-link" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => completeTask('watchlist_3')}>
+                <i className="bi bi-bell"/> Set price alert
+              </button>
+            )}
             </div>
           </div>
 
@@ -269,7 +284,7 @@ export default function WatchlistPage() {
                     </div>
 
           <div className="wl-side-tabs">
-            {SIDEBAR_TABS.map(t => <button key={t} type="button" className={`wl-st ${sideTab===t?'on':''}`} onClick={()=>setSideTab(t)}>{t}</button>)}
+            {SIDEBAR_TABS.map(t => <button key={t} type="button" className={`wl-st ${sideTab===t?'on':''}`} onClick={()=>{ setSideTab(t); if (t !== 'All') completeTask('watchlist_2'); }}>{t}</button>)}
                   </div>
 
           <div className="wl-side-list">
@@ -296,7 +311,7 @@ export default function WatchlistPage() {
             })}
           </div>
 
-          <button type="button" className="wl-add"><i className="bi bi-plus-lg"/> Add to Watchlist</button>
+          <button type="button" className="wl-add" onClick={() => { completeTask('watchlist_1'); }}><i className="bi bi-plus-lg"/> Add to Watchlist</button>
         </aside>
       </div>
     </div>

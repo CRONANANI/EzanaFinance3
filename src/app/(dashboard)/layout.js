@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
 import { DashboardTrialShell } from '@/components/DashboardTrialShell';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { TutorialWalkthrough } from '@/components/TutorialWalkthrough';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
 import './dashboard-polish.css';
@@ -22,6 +23,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <ErrorBoundary>
+      <TutorialWalkthrough />
       <main
         className={`dashboard-main dashboard-main-content${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
         id="main-content"

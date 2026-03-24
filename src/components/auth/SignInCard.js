@@ -16,7 +16,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const destination = redirectTo || "/home-dashboard";
+  const destination = redirectTo || "/home";
 
   useEffect(() => {
     if (oauthErrorMessage) {

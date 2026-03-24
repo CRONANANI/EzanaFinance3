@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { NavNotifications } from '@/components/NavNotifications';
+import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
@@ -214,13 +215,18 @@ export function Navbar() {
   }
 
   return (
-    <nav className="main-nav" id="mainNav">
+    <nav className="main-nav" id="mainNav" data-tutorial="main-nav">
       <div className="nav-container">
-        {/* ── LEFT ZONE: Logo + Notifications bell ── */}
+        {/* ── LEFT ZONE: Logo + checklist + Notifications bell ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
             <Image src="/ezana-logo.svg" alt="Ezana Finance" width={34} height={34} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
           </Link>
+          {isAuthenticated && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ChecklistProgressIcon />
+            </div>
+          )}
           <div className="nn-wrapper">
             <NavNotifications />
           </div>

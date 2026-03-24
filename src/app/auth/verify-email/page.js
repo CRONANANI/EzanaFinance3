@@ -31,7 +31,7 @@ export default function VerifyEmailPage() {
 
     if (profile?.email_verified) {
       if (profile.onboarding_completed) {
-        router.replace('/home-dashboard');
+        router.replace('/home');
       } else {
         router.replace('/onboarding');
       }

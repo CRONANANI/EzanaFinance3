@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { useChecklist } from '@/hooks/useChecklist';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/theme-variables.css';
@@ -230,6 +231,7 @@ function CategoryBreakdown({ data }) {
 }
 
 export default function BettingMarketsPage() {
+  const { completeTask } = useChecklist();
   const [activeCategory, setActiveCategory] = useState('All');
 
   /* ── Live markets state ── */
@@ -348,12 +350,13 @@ export default function BettingMarketsPage() {
       }
       const data = await res.json();
       setTraderProfile(data);
+      completeTask('market_1');
     } catch (err) {
       setTraderError(err.message);
     } finally {
       setTraderLoading(false);
     }
-  }, [traderQuery]);
+  }, [traderQuery, completeTask]);
 
   const handleLeaderboardClick = (username) => {
     setTraderQuery(username);
@@ -860,7 +863,14 @@ export default function BettingMarketsPage() {
                     const cat = guessCategory(m);
                     const yesPrice = parseYesPrice(m);
                     return (
-                      <div key={m.id || i} className="bm-prediction-card">
+                      <div
+                        key={m.id || i}
+                        className="bm-prediction-card"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => completeTask('market_2')}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('market_2'); }}
+                      >
                         <div className={`bm-prediction-icon ${cat}`}>
                           <i className={`bi ${CATEGORY_ICONS[cat] || 'bi-question-circle'}`} />
                         </div>
@@ -910,7 +920,7 @@ export default function BettingMarketsPage() {
                       <div className="bm-odds-label">ML</div>
                     </div>
                     {sport.games.map((g, gi) => (
-                      <div key={gi} className="bm-game-row">
+                      <div key={gi} className="bm-game-row" role="button" tabIndex={0} onClick={() => completeTask('market_3')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('market_3'); }}>
                         <div className="bm-game-time">{g.time}</div>
                         <div className="bm-teams">
                           <div className="bm-team">{g.home}</div>

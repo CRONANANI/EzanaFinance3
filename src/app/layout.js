@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
 import { PartnerProvider } from '@/contexts/PartnerContext';
 import { CongressProvider } from '@/contexts/CongressContext';
-import { PinProvider } from '@/contexts/PinContext';
+import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 
@@ -38,14 +38,14 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <PartnerProvider>
               <CongressProvider>
-                <PinProvider>
+                <PinnedCardsProvider>
                   <ToastProvider>
                     <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
                       <ConditionalNavbar />
                     </Suspense>
                     {children}
                   </ToastProvider>
-                </PinProvider>
+                </PinnedCardsProvider>
               </CongressProvider>
             </PartnerProvider>
           </AuthProvider>

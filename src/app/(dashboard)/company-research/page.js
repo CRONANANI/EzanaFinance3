@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
 import {
@@ -17,6 +18,7 @@ import { AIAnalysisPanel } from '@/components/research/AIAnalysisPanel';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub, useCompanyProfile, useStockMetric } from '@/hooks/useFinnhub';
 import { getCarouselModels } from '@/lib/ai/analysis-prompts';
+import { useChecklist } from '@/hooks/useChecklist';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -30,7 +32,9 @@ import '@/components/research/ai-analysis-panel.css';
 /* ── Carousel model configs from the prompts library ── */
 const CAROUSEL_MODELS = getCarouselModels();
 
-export default function CompanyResearchPage() {
+function CompanyResearchPageInner() {
+  const searchParams = useSearchParams();
+  const { completeTask } = useChecklist();
   const scriptLoadedRef = useRef(false);
   const [selectedStock, setSelectedStock] = useState(null);
   const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
@@ -48,6 +52,16 @@ export default function CompanyResearchPage() {
   const { data: profile } = useCompanyProfile(selectedStock);
   const { data: metricData } = useStockMetric(selectedStock);
   const showSuggestions = suggestions.length > 0;
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && q.trim()) {
+      const sym = q.trim().toUpperCase();
+      setSelectedStock(sym);
+      setQuery(sym);
+      setViewMode('stock');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!profile && !metricData) return;
@@ -70,13 +84,21 @@ export default function CompanyResearchPage() {
     });
   }, [profile, metricData]);
 
-  const handleSelectStock = useCallback((item) => {
+  useEffect(() => {
+    if (selectedStock && (profile || metricData)) {
+      completeTask('research_2');
+    }
+  }, [selectedStock, profile, metricData, completeTask]);
+
+  const handleSelectStock = useCallback((item, opts) => {
     const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
     setSelectedStock(sym);
     setViewMode('stock');
     setQuery(sym);
     clearSuggestions();
-  }, [setQuery, clearSuggestions]);
+    completeTask('research_1');
+    if (opts?.fromPeer) completeTask('research_3');
+  }, [setQuery, clearSuggestions, completeTask]);
 
   const handleSearchInput = useCallback((eOrValue) => {
     const q = typeof eOrValue === 'string' ? eOrValue : eOrValue?.target?.value ?? '';
@@ -257,7 +279,7 @@ export default function CompanyResearchPage() {
               <EarningsCard symbol={selectedStock} />
             </PinnableCard>
             <PinnableCard cardId="competitors-card" title="Competitors" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
-              <CompetitorsCard symbol={selectedStock} onSelectPeer={handleSelectStock} />
+              <CompetitorsCard symbol={selectedStock} onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })} />
             </PinnableCard>
           </div>
         </section>
@@ -372,5 +394,13 @@ export default function CompanyResearchPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function CompanyResearchPage() {
+  return (
+    <Suspense fallback={<div className="dashboard-page-inset" style={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>Loading…</div>}>
+      <CompanyResearchPageInner />
+    </Suspense>
   );
 }

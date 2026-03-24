@@ -45,7 +45,7 @@ export default function OnboardingPage() {
         .maybeSingle();
 
       if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
-        router.replace('/home-dashboard');
+        router.replace('/home');
       } else {
         router.replace('/select-plan');
       }

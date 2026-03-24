@@ -65,7 +65,8 @@
 .itc-tr-date { font-size: .5625rem; color: var(--muted-foreground,#6b7280); display: block; }
 
 .itc-tr-co-name { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.itc-tr-co-exch { font-size: .6rem; color: var(--muted-foreground,#6b7280); }
+.itc-tr-co-exch { font-size: .6rem; color: var(--muted-foreground,#6b7280); text-decoration: none; cursor: pointer; }
+.itc-tr-co-exch:hover { color: #10b981; text-decoration: underline; }
 
 .itc-tr-mem { text-decoration: none; display: block; }
 .itc-tr-mem-name { font-size: .8rem; font-weight: 600; color: var(--foreground,#f0f6fc); display: block; transition: color .2s; }

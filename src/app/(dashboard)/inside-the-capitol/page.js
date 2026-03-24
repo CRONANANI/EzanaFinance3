@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { useChecklist } from '@/hooks/useChecklist';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -79,7 +80,7 @@ const PC_H = 380;
 const PC_PAD = { top: 50, right: 40, bottom: 50, left: 60 };
 const PC_DOT_R = 6;
 
-function PoliticianPerfChart({ window: tw }) {
+function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
   const router = useRouter();
   const [hoveredId, setHoveredId] = useState(null);
 
@@ -152,7 +153,7 @@ function PoliticianPerfChart({ window: tw }) {
           const bgColor = p.party === 'Democrat' ? '#2563eb' : '#dc2626';
 
           return (
-            <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => router.push(`/inside-the-capitol/${slugify(p.name)}`)} style={{ cursor: 'pointer' }}>
+            <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }} style={{ cursor: 'pointer' }}>
               <circle cx={cx} cy={cy} r={PC_DOT_R + 3} fill="none" stroke={borderColor} strokeWidth={isHov ? 3.5 : 2} filter="url(#itcDotGlow)" opacity={isHov ? 1 : 0.85} />
               <circle cx={cx} cy={cy} r={PC_DOT_R} fill={bgColor} />
               <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="7" fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
@@ -264,6 +265,7 @@ function InsideTheCapitolContent() {
   const searchParams = useSearchParams();
   const partyFilter = searchParams.get('party');
   const stateFilter = searchParams.get('state');
+  const { completeTask } = useChecklist();
 
   const [assetFilter, setAssetFilter] = useState('Stocks Only');
   const [typeFilter, setTypeFilter] = useState('All');
@@ -335,6 +337,21 @@ function InsideTheCapitolContent() {
               {['All', 'Buy', 'Sell'].map((f) => (
                 <button key={f} type="button" className={`itc-sf ${typeFilter === f ? 'on' : ''}`} onClick={() => setTypeFilter(f)}>{f}</button>
               ))}
+              <span className="itc-sf-label" style={{ marginLeft: 8, marginRight: 4, color: '#8b949e', fontSize: 11 }}>Party</span>
+              <Link
+                href="/inside-the-capitol?party=republican"
+                className={`itc-sf ${activePartyFilter === 'republican' ? 'on' : ''}`}
+                onClick={() => completeTask('capitol_2')}
+              >
+                R
+              </Link>
+              <Link
+                href="/inside-the-capitol?party=democrat"
+                className={`itc-sf ${activePartyFilter === 'democrat' ? 'on' : ''}`}
+                onClick={() => completeTask('capitol_2')}
+              >
+                D
+              </Link>
               {(activePartyFilter || activeStateFilter) && (
                 <Link href="/inside-the-capitol" className="itc-filter-clear">
                   <span className="itc-filter-tag">{activePartyFilter ? activePartyFilter.charAt(0).toUpperCase() + activePartyFilter.slice(1) : ''}{activePartyFilter && activeStateFilter ? ' · ' : ''}{activeStateFilter ? activeStateFilter.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''}</span>
@@ -351,9 +368,11 @@ function InsideTheCapitolContent() {
                   </div>
                   <div className="itc-tr-co">
                     <span className="itc-tr-co-name">{t.company}</span>
-                    <span className="itc-tr-co-exch">{t.exchange}</span>
+                    <Link href={`/company-research?q=${encodeURIComponent(t.ticker)}`} className="itc-tr-co-exch" onClick={() => completeTask('capitol_3')}>
+                      {t.exchange}
+                    </Link>
                   </div>
-                  <Link href={`/inside-the-capitol/${slugify(t.member)}`} className="itc-tr-mem">
+                  <Link href={`/inside-the-capitol/${slugify(t.member)}`} className="itc-tr-mem" onClick={() => completeTask('capitol_1')}>
                     <span className="itc-tr-mem-name">{t.member}</span>
                     <span className="itc-tr-mem-meta"><span className={`itc-dot ${t.party.toLowerCase()}`} />{t.party} | {t.chamber} | {t.state}</span>
                   </Link>
@@ -382,7 +401,7 @@ function InsideTheCapitolContent() {
               ))}
             </div>
             <div className="itc-body" style={{ overflow: 'visible' }}>
-              <PoliticianPerfChart window={perfWindow} />
+              <PoliticianPerfChart window={perfWindow} onOpenPolitician={() => completeTask('capitol_1')} />
             </div>
           </div>
         </PinnableCard>
@@ -405,9 +424,9 @@ function InsideTheCapitolContent() {
               </div>
               <div className="itc-pol-detail">
                 <div className="itc-pol-top">
-                  <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className={`itc-avatar-lg ${pol.party.toLowerCase()}`}>{pol.initials}</Link>
+                  <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className={`itc-avatar-lg ${pol.party.toLowerCase()}`} onClick={() => completeTask('capitol_1')}>{pol.initials}</Link>
                   <div>
-                    <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className="itc-pol-name">{pol.name}</Link>
+                    <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className="itc-pol-name" onClick={() => completeTask('capitol_1')}>{pol.name}</Link>
                     <div className="itc-pol-meta"><span className={`itc-dot ${pol.party.toLowerCase()}`} />{pol.party} | {pol.chamber} | {pol.state}</div>
                   </div>
                 </div>

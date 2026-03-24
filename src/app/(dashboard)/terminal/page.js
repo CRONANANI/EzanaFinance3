@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
-import './terminal.css';
+import '../home/terminal.css';
 
 const INDEX_SYMBOLS = [
   { name: 'S&P 500', symbol: 'SPY' },
@@ -325,7 +325,7 @@ export default function HomeTerminalPage() {
       </div>
 
       {/* ── MAIN GRID ── */}
-      <div className="t-grid" data-tutorial="home-grid">
+      <div className="t-grid">
         {/* LEFT: Holdings */}
         <div className="t-panel t-holdings">
           <div className="t-panel-header">

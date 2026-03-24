@@ -9,7 +9,7 @@ export default function SignInPage({ searchParams }) {
   const redirectTo =
     typeof searchParams?.redirect === "string" && searchParams.redirect.startsWith("/")
       ? searchParams.redirect
-      : "/home-dashboard";
+      : "/home";
   const oauthErrorMessage =
     typeof searchParams?.error === "string" ? searchParams.error : undefined;
 

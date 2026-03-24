@@ -8,7 +8,7 @@ export default function PaymentSuccessPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/home-dashboard');
+      router.push('/home');
     }, 3000);
     return () => clearTimeout(timer);
   }, [router]);

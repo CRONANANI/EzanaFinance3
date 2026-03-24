@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { getAllCourseSummaries } from '@/lib/courses';
+import { useChecklist } from '@/hooks/useChecklist';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -32,6 +33,7 @@ function getGreeting() {
 
 export default function LearningCenterPage() {
   const { user } = useAuth();
+  const { completeTask } = useChecklist();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const userName = user?.user_metadata?.first_name
@@ -142,7 +144,7 @@ export default function LearningCenterPage() {
           </div>
           <div className="lc-courses-grid">
             {COURSE_SUMMARIES.map((course) => (
-              <Link key={course.id} href={`/learning-center/${course.id}`} className="lc-course-card">
+              <Link key={course.id} href={`/learning-center/${course.id}`} className="lc-course-card" onClick={() => completeTask('learning_1')}>
                 <div className="lc-course-card-header">
                   <span className="lc-course-badge">Course</span>
                   <span className="lc-course-hours"><i className="bi bi-clock" /> {course.stats.duration}</span>

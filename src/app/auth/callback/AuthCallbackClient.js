@@ -2,7 +2,7 @@
 
 /**
  * OAuth (e.g. Google) completes here: exchange code → session, then route by profile.
- * Unverified email → /auth/verify-email; verified & not onboarded → /onboarding; else redirect param or /home-dashboard.
+ * Unverified email → /auth/verify-email; verified & not onboarded → /onboarding; else redirect param or /home.
  */
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -83,7 +83,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     return;
   }
 
-  const dest = redirectParam.startsWith('/') ? redirectParam : '/home-dashboard';
+  const dest = redirectParam.startsWith('/') ? redirectParam : '/home';
   router.replace(dest);
 }
 
@@ -96,7 +96,7 @@ export default function AuthCallbackClient() {
     const run = async () => {
       const flow = searchParams.get('flow');
       const type = searchParams.get('type');
-      const redirectParam = searchParams.get('redirect') || '/home-dashboard';
+      const redirectParam = searchParams.get('redirect') || '/home';
       const oauthError = searchParams.get('error');
       const errorDescription = searchParams.get('error_description');
 
