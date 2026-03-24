@@ -10,7 +10,6 @@ export const USER_DASHBOARD_ROUTES = [
   '/watchlist',
   '/market-analysis',
   '/community',
-  '/pricing',
   '/user-profile-settings',
   '/company-research',
   '/learning-center',

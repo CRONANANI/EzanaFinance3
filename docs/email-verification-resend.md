@@ -6,7 +6,11 @@ After sign-up (email/password or OAuth callback), users are sent to **`/auth/ver
 
 - **`RESEND_API_KEY`** — required for sending mail.
 - **`RESEND_FROM_EMAIL`** (optional) — defaults to `Ezana Finance <noreply@ezana.world>`. Use a domain you have verified in Resend.
-- **`SUPABASE_SERVICE_ROLE_KEY`** — used by API routes to write codes and update profiles (server-only).
+- **`SUPABASE_SERVICE_ROLE_KEY`** — required for `verify-code` + `send-verification` admin writes (bypasses RLS). Must be the **service_role** key from Supabase → Settings → API (never expose to the client).
+
+## Middleware
+
+Email verification redirects only apply when a **logged-in** user hits a **protected** route (`USER_DASHBOARD_ROUTES` / `PARTNER_DASHBOARD_ROUTES`). Public marketing pages (e.g. `/`, `/pricing`, `/help-center`, `/ezana-echo`) are not gated by verification.
 
 ## Supabase Auth
 

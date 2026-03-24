@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,7 +46,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const supabaseAdmin = createServerSupabaseClient();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('verify-code: missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
 
     const { data: verificationRecord, error: fetchError } = await supabaseAdmin
       .from('email_verification_codes')
@@ -111,18 +120,31 @@ export async function POST(request) {
       .update({ verified: true })
       .eq('id', verificationRecord.id);
 
-    const { error: profileErr } = await supabaseAdmin.from('profiles').upsert(
-      {
+    const now = new Date().toISOString();
+
+    const { data: updatedRows, error: updateError } = await supabaseAdmin
+      .from('profiles')
+      .update({ email_verified: true, updated_at: now })
+      .eq('id', user.id)
+      .select('id');
+
+    if (updateError) {
+      console.error('Failed to update profile (verify-code):', updateError);
+      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+    }
+
+    if (!updatedRows?.length) {
+      const { error: insertError } = await supabaseAdmin.from('profiles').insert({
         id: user.id,
         email_verified: true,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    );
+        onboarding_completed: false,
+        updated_at: now,
+      });
 
-    if (profileErr) {
-      console.error('Verify code profile update:', profileErr);
-      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+      if (insertError) {
+        console.error('Failed to insert profile (verify-code):', insertError);
+        return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ success: true });

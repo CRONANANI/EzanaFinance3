@@ -61,6 +61,11 @@ export async function POST() {
       );
     }
 
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      console.error('send-verification: missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
     const supabaseAdmin = createServerSupabaseClient();
 
     const { data: recentCode, error: recentErr } = await supabaseAdmin

@@ -6,13 +6,16 @@ import { createClient } from '@supabase/supabase-js';
 
 export function createServerSupabaseClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-  if (!serviceRoleKey) {
-    console.error('SUPABASE_SERVICE_ROLE_KEY is not set!');
+  if (!url || !serviceRoleKey) {
+    console.error(
+      'createServerSupabaseClient: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing'
+    );
   }
 
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    url,
     serviceRoleKey,
     {
       auth: {

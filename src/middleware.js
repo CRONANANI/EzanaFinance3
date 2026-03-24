@@ -61,7 +61,25 @@ export async function middleware(request) {
     return NextResponse.redirect(url);
   }
 
-  if (user) {
+  const onPartnerProtectedRoute = matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES);
+  const onUserProtectedRoute = matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES);
+
+  if (onPartnerProtectedRoute && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/partner-login';
+    url.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (onUserProtectedRoute && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/signin';
+    url.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(url);
+  }
+
+  /** Only enforce email verification when accessing dashboard/partner areas — not on marketing pages like / */
+  if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('email_verified')
@@ -69,29 +87,11 @@ export async function middleware(request) {
       .maybeSingle();
 
     if (profile?.email_verified !== true) {
-      const onAuthOrApi =
-        pathname.startsWith('/api') || pathname === '/auth' || pathname.startsWith('/auth/');
-      if (!onAuthOrApi) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/auth/verify-email';
-        url.search = '';
-        return NextResponse.redirect(url);
-      }
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/verify-email';
+      url.search = '';
+      return NextResponse.redirect(url);
     }
-  }
-
-  if (matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES) && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/auth/partner-login';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES) && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/auth/signin';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
   }
 
   return response;
