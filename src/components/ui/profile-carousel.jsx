@@ -50,9 +50,9 @@ export function ProfileCarousel({ items, variant = "default", initialScroll = 0 
   }, [initialScroll]);
 
   return (
-    <div className="relative w-full mt-6">
+    <div className="relative w-full min-w-0 max-w-full overflow-hidden mt-6">
       <div
-        className="profile-carousel-scroll flex w-full overflow-x-auto overscroll-x-auto scroll-smooth py-5"
+        className="profile-carousel-scroll flex w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain scroll-smooth py-5"
         ref={carouselRef}
         onScroll={checkScrollability}
       >

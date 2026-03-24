@@ -109,7 +109,7 @@ export default function CommunityPage() {
   const displayDiscussions = needsSuggested ? [...discussions, ...SUGGESTED_DISCUSSIONS.slice(0, 4 - discussions.length)] : discussions;
 
   return (
-    <div className="dashboard-page-inset">
+    <div className="dashboard-page-inset community-page">
       <div className="community-hub-header">
         <h1 className="community-hub-title">Community Hub</h1>
         <div className="community-hub-tabs">
@@ -186,6 +186,13 @@ export default function CommunityPage() {
         </div>
       </div>
       <div className="community-card">
+        <div className="community-card-header"><h3>Insights</h3></div>
+        <div style={{ padding: '0.875rem 1.25rem' }}>
+          <div className="community-insight"><span className="community-insight-label">Most Discussed</span><span className="community-insight-value">NVDA</span><span className="community-insight-sub">89 mentions</span></div>
+          <div className="community-insight"><span className="community-insight-label">Trending Topic</span><span className="community-insight-value">AI Stocks</span><span className="community-insight-sub">156 discussions</span></div>
+        </div>
+      </div>
+      <div className="community-card">
         <div className="community-card-header"><h3>Leaderboard</h3></div>
         <div className="community-leaderboard">
           {[{ name: 'Emma Wilson', initials: 'EW', return: 34.5 }, { name: 'David Kim', initials: 'DK', return: 28.2 }, { name: 'Lisa Park', initials: 'LP', return: 25.7 }, { name: 'Alex Chen', initials: 'AC', return: 22.1 }, { name: 'You', initials: 'ME', return: 12.4 }].map((u, i) => (
@@ -196,13 +203,6 @@ export default function CommunityPage() {
               <span className="community-leader-return">+{u.return}%</span>
             </div>
           ))}
-        </div>
-      </div>
-      <div className="community-card">
-        <div className="community-card-header"><h3>Insights</h3></div>
-        <div style={{ padding: '0.875rem 1.25rem' }}>
-          <div className="community-insight"><span className="community-insight-label">Most Discussed</span><span className="community-insight-value">NVDA</span><span className="community-insight-sub">89 mentions</span></div>
-          <div className="community-insight"><span className="community-insight-label">Trending Topic</span><span className="community-insight-value">AI Stocks</span><span className="community-insight-sub">156 discussions</span></div>
         </div>
       </div>
       </aside>
@@ -411,7 +411,6 @@ export default function CommunityPage() {
         </div>
         </PinnableCard>
       </div>
-      </div>
 
       <div className="community-discussions-main">
       <div className="dashboard-grid community-discussions-grid">
@@ -512,6 +511,7 @@ export default function CommunityPage() {
           </div>
         </div>
         </PinnableCard>
+      </div>
       </div>
       </div>
       </div>
