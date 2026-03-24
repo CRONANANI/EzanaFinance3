@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { PLANS } from '@/config/pricing';
 import { supabase } from '@/lib/supabase';
 import { hasActiveSubscription } from '@/lib/subscription';
+import { getTrialStatus } from '@/lib/trial';
 import './pricing.css';
 
 function PricingContent() {
@@ -17,6 +18,7 @@ function PricingContent() {
   const [loading, setLoading] = useState(null);
   const [signedIn, setSignedIn] = useState(false);
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
+  const [trialStatus, setTrialStatus] = useState(null);
 
   const monthlyPlans = Object.entries(PLANS).filter(([, p]) => p.mode === 'subscription');
   const annualPlans = Object.entries(PLANS).filter(([, p]) => p.mode === 'payment');
@@ -37,8 +39,10 @@ function PricingContent() {
       setSignedIn(!!session);
       if (!session?.user?.id) {
         setHasPaidSubscription(false);
+        setTrialStatus(null);
         return;
       }
+      setTrialStatus(getTrialStatus(session.user.created_at));
       const { data: profile } = await supabase
         .from('profiles')
         .select('subscription_status, one_time_plan, one_time_plan_purchased_at')
@@ -54,10 +58,7 @@ function PricingContent() {
 
   const handleCheckout = async (planKey) => {
     const plan = PLANS[planKey];
-    if (!plan?.priceId) {
-      alert('Set Stripe Price IDs in .env.local (NEXT_PUBLIC_STRIPE_PRICE_*).');
-      return;
-    }
+    if (!plan?.priceId) return;
     setLoading(planKey);
     try {
       const session = await getSession();
@@ -110,6 +111,24 @@ function PricingContent() {
           </span>
         </div>
       )}
+      {signedIn && !hasPaidSubscription && trialStatus && (
+        <div
+          style={{
+            background: trialStatus.trialExpired ? 'rgba(220, 38, 38, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+            border: `1px solid ${trialStatus.trialExpired ? 'rgba(220, 38, 38, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+            borderRadius: '8px',
+            padding: '12px 20px',
+            marginBottom: '2rem',
+            textAlign: 'center',
+            fontSize: '0.9rem',
+            color: trialStatus.trialExpired ? '#fca5a5' : '#6ee7b7',
+          }}
+        >
+          {trialStatus.trialExpired
+            ? 'Your free trial has ended. Choose a plan to continue.'
+            : `You have ${trialStatus.daysRemaining} day${trialStatus.daysRemaining !== 1 ? 's' : ''} left on your free trial.`}
+        </div>
+      )}
       <div className="pricing-header">
         <h1>Choose Your Plan</h1>
         <p>All paid plans include a 14-day trial where configured in Stripe. Cancel anytime.</p>
@@ -138,7 +157,7 @@ function PricingContent() {
 
       <div className="pricing-grid">
         {displayPlans.map(([key, plan]) => {
-          const isPopular = key === 'personal_advanced_monthly' || key === 'personal_advanced_annual';
+          const isPopular = plan.popular === true;
           const isPro = key === 'professional_monthly' || key === 'professional_annual';
           const displayPrice = plan.price.toLocaleString('en-US');
 
@@ -146,17 +165,7 @@ function PricingContent() {
             <div key={key} className={`pricing-card${isPopular ? ' popular' : ''}${isPro ? ' professional' : ''}`}>
               {isPopular && <span className="pricing-popular-badge">Most Popular</span>}
               <h3>{plan.name}</h3>
-              <p className="pricing-desc">
-                {key === 'personal_monthly' || key === 'individual_annual'
-                  ? 'For casual investors'
-                  : key.includes('personal_advanced')
-                    ? 'For active traders'
-                    : key.startsWith('family')
-                      ? 'Households & shared portfolios'
-                      : key.startsWith('professional')
-                        ? 'Full-time traders & family offices'
-                        : ''}
-              </p>
+              <p className="pricing-desc">{plan.description || ''}</p>
               <div className="pricing-price">
                 ${displayPrice}
                 <span>{plan.mode === 'subscription' ? '/month' : '/year'}</span>
@@ -176,12 +185,12 @@ function PricingContent() {
                 type="button"
                 className="pricing-btn primary"
                 onClick={() => handleCheckout(key)}
-                disabled={loading === key}
+                disabled={loading === key || !plan.priceId}
               >
                 {loading === key
-                  ? 'Redirecting to checkout...'
+                  ? 'Redirecting...'
                   : !plan.priceId
-                    ? 'Configure price in Stripe'
+                    ? 'Coming soon'
                     : plan.mode === 'payment'
                       ? 'Pay annually'
                       : 'Get Started'}

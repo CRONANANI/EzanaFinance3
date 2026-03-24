@@ -64,6 +64,11 @@ export async function middleware(request) {
   const onPartnerProtectedRoute = matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES);
   const onUserProtectedRoute = matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES);
 
+  /** Always allow /pricing so users can subscribe after trial (not gated by email list above) */
+  if (pathname === '/pricing' || pathname.startsWith('/pricing/')) {
+    return response;
+  }
+
   if (onPartnerProtectedRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/partner-login';

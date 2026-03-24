@@ -1,10 +1,12 @@
 /**
  * Stripe plan catalog — Price IDs from NEXT_PUBLIC_STRIPE_PRICE_* in `.env.local`.
+ * Injected at build time for client bundles; ensure all vars are set before `next build`.
  */
 
 export const PLANS = {
   personal_monthly: {
     name: 'Personal',
+    description: 'For casual investors',
     price: 5,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_MONTHLY,
     interval: 'month',
@@ -13,14 +15,17 @@ export const PLANS = {
   },
   personal_advanced_monthly: {
     name: 'Personal Advanced',
+    description: 'For active traders',
     price: 19,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_ADVANCED_MONTHLY,
     interval: 'month',
     mode: 'subscription',
+    popular: true,
     features: ['Everything in Personal', 'Advanced analytics', 'Real-time alerts'],
   },
   family_monthly: {
     name: 'Family',
+    description: 'Households & shared portfolios',
     price: 49,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FAMILY_MONTHLY,
     interval: 'month',
@@ -29,6 +34,7 @@ export const PLANS = {
   },
   professional_monthly: {
     name: 'Professional',
+    description: 'Full-time traders & family offices',
     price: 119,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL_MONTHLY,
     interval: 'month',
@@ -37,6 +43,7 @@ export const PLANS = {
   },
   individual_annual: {
     name: 'Individual',
+    description: 'For casual investors',
     price: 48,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_INDIVIDUAL_ANNUAL,
     interval: 'year',
@@ -45,14 +52,17 @@ export const PLANS = {
   },
   personal_advanced_annual: {
     name: 'Personal Advanced',
+    description: 'For active traders',
     price: 180,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PERSONAL_ADVANCED_ANNUAL,
     interval: 'year',
     mode: 'payment',
+    popular: true,
     features: ['Everything in Personal', 'Advanced analytics', 'Real-time alerts'],
   },
   family_annual: {
     name: 'Family',
+    description: 'Households & shared portfolios',
     price: 468,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_FAMILY_ANNUAL,
     interval: 'year',
@@ -61,6 +71,7 @@ export const PLANS = {
   },
   professional_annual: {
     name: 'Professional',
+    description: 'Full-time traders & family offices',
     price: 1140,
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PROFESSIONAL_ANNUAL,
     interval: 'year',
