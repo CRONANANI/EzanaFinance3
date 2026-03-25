@@ -1,0 +1,307 @@
+/* Commodities Research — dashboard-aligned */
+
+.cm-page .cm-header-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.cm-page .cm-header-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.35rem 0 0;
+  line-height: 1.5;
+}
+
+.cm-page .ra-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cm-page .ra-stat-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+}
+
+.cm-page .ra-stat-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.cm-page .ra-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: 0.35rem;
+}
+
+.cm-page .ra-stat-price {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  font-feature-settings: 'tnum' 1;
+}
+
+.cm-page .ra-stat-chg {
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.cm-page .ra-stat-chg.up {
+  color: #10b981;
+}
+
+.cm-page .ra-stat-chg.down {
+  color: #f87171;
+}
+
+.cm-page .ra-row-60-40 {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cm-page .ra-row-50 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cm-page .ra-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.cm-page .ra-tab {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b949e;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cm-page .ra-tab.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #10b981;
+}
+
+.cm-page .ra-table-wrap {
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
+}
+
+.cm-page .ra-table-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cm-page .ra-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.42);
+  border-radius: 6px;
+}
+
+.cm-page .ra-table-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto minmax(80px, 100px);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  font-size: 0.8125rem;
+}
+
+.cm-page .ra-table-row:hover {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.cm-page .ra-td-name {
+  color: #f0f6fc;
+  font-weight: 600;
+}
+
+.cm-page .ra-td-price {
+  color: #e2e8f0;
+  font-feature-settings: 'tnum' 1;
+}
+
+.cm-page .ra-td-chg.up {
+  color: #10b981;
+}
+
+.cm-page .ra-td-chg.down {
+  color: #f87171;
+}
+
+.cm-page .ra-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  overflow: hidden;
+}
+
+.cm-page .ra-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.cm-page .ra-mover-row {
+  font-size: 0.8125rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  color: #d1d5db;
+}
+
+.cm-page .ra-divider {
+  border: none;
+  border-top: 1px solid rgba(16, 185, 129, 0.1);
+  margin: 0.75rem 0;
+}
+
+.cm-page .ra-sentiment-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(239, 68, 68, 0.08);
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.cm-page .ra-sentiment-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 5px;
+}
+
+.cm-page .ra-news-wrap {
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
+}
+
+.cm-page .ra-news-item {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.cm-page .ra-news-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0 0 0.35rem;
+}
+
+.cm-page .ra-news-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.cm-page .ra-tf-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.cm-page .ra-tf {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: transparent;
+  color: #8b949e;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cm-page .ra-tf.active {
+  background: #10b981;
+  color: #fff;
+  border-color: #10b981;
+}
+
+.cm-page .ra-chart-select {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  color: #f0f6fc;
+  font-family: inherit;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 1200px) {
+  .cm-page .ra-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cm-page .ra-row-60-40 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .cm-page .ra-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cm-page .ra-row-50 {
+    grid-template-columns: 1fr;
+  }
+
+  .cm-page .ra-table-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+body.light-mode .cm-page .ra-stat-card {
+  background: #fff;
+  border-color: rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .cm-page .ra-stat-price {
+  color: #111827;
+}
+
+body.light-mode .cm-page .cm-header-title {
+  color: #111827;
+}
+
+.cm-page .ra-join-link {
+  margin-top: 0.75rem;
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+}
+
+.cm-page .ra-join-link:hover {
+  text-decoration: underline;
+}

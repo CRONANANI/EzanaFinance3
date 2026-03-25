@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { ArticleEditor, WriterApplication } from '@/components/echo';
 import '../partner.css';
-import '../../ezana-echo/echo-publish.css';
+import '../ezana-echo/echo-publish.css';
 
 const PUBLISHED_COURSES = [
   { id: 1, title: 'Options Trading Basics', students: 342, revenue: 1890, rating: 4.8, modules: 5, status: 'published', lastUpdated: 'Mar 10, 2026' },
