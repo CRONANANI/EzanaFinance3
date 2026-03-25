@@ -265,7 +265,7 @@ export default function PoliticianProfilePage() {
 
   if (!pol) {
     return (
-      <div className="pp-page">
+      <div className="pp-page dashboard-page-inset">
         <div className="pp-not-found">
           <i className="bi bi-person-x" />
           <h2>Politician Not Found</h2>
@@ -286,20 +286,14 @@ export default function PoliticianProfilePage() {
   const ytdDollar = pol.ytdDollar ?? 0;
 
   return (
-    <div className="pp-page">
-      <Link href="/inside-the-capitol" className="pp-back">
-        <i className="bi bi-arrow-left" /> Inside The Capitol
-      </Link>
+    <div className="pp-page dashboard-page-inset">
+      <div className="pp-back-row">
+        <Link href="/inside-the-capitol" className="pp-back">
+          <i className="bi bi-arrow-left" /> Inside The Capitol
+        </Link>
+      </div>
 
-      <div
-        className="pp-layout politician-profile-grid capitol-profile-grid"
-        style={{
-          /* gridTemplateColumns lives in CSS so @media can switch to 1fr on small screens */
-          display: 'grid',
-          gap: '1.25rem',
-          alignItems: 'start',
-        }}
-      >
+      <div className="pp-layout politician-profile-grid capitol-profile-grid">
         {/* LEFT SIDEBAR */}
         <div className="pp-sidebar">
           <div className="pp-avatar-section">
