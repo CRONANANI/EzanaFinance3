@@ -1,550 +1,594 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { PinnableCard } from '@/components/ui/PinnableCard';
-import { useChecklist } from '@/hooks/useChecklist';
-import { ProfileCarousel } from '@/components/ui/profile-carousel';
-import '../../../../app-legacy/assets/css/theme.css';
-import '../../../../app-legacy/assets/css/unified-component-cards.css';
-import '../../../../app-legacy/assets/css/pages-common.css';
-import '../../../../app-legacy/assets/css/light-mode-fixes.css';
-import '../../../../app-legacy/pages/home-dashboard.css';
-import '../../../../app-legacy/components/community/trophy-cabinet/trophy-cabinet.css';
-import '../../../../app-legacy/assets/css/cards-common.css';
-import '../../../../app-legacy/assets/css/metrics-common.css';
-import '../../../../app-legacy/assets/css/research-pages-cards.css';
-import '../../../../app-legacy/pages/community.css';
-import '../../../../app-legacy/components/profile-carousel/profile-carousel.css';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import '../home-dashboard/home-dashboard.css';
+import './community.css';
 
-const TRENDING_DISCUSSIONS = [
-  { id: 1, author: 'AS', name: 'Aakash Sharma', tag: 'Portfolio Tips', title: 'What are some effective strategies to stay productive with market research?', preview: "I've been struggling to keep up with sector rotations...", time: '2 Hrs Ago', likes: 20, comments: 8 },
-  { id: 2, author: 'NR', name: 'Nidhi Rao', tag: 'Congressional Trading', title: 'Best practices for interpreting 13F filings and congressional disclosure data', preview: 'New to following institutional moves...', time: '3 Hrs Ago', likes: 35, comments: 9 },
-  { id: 3, author: 'SP', name: 'Sunita Patil', tag: 'Time Management', title: 'How do you balance fundamental analysis with keeping up to date on market news?', preview: "Finding it hard to allocate time...", time: '5 Hrs Ago', likes: 17, comments: 6 },
-  { id: 4, author: 'AJ', name: 'Alex Johnson', tag: 'Technology', title: 'Q1 2024 Tech Stock Predictions', preview: "What are everyone's thoughts on the tech sector...", time: '6 Hrs Ago', likes: 45, comments: 23 },
-  { id: 5, author: 'SC', name: 'Sarah Chen', tag: 'Dividends', title: 'Best Dividend Stocks for 2024', preview: "Looking for stable dividend-paying stocks...", time: '8 Hrs Ago', likes: 32, comments: 18 },
-];
-const FOLLOWING_DISCUSSIONS = TRENDING_DISCUSSIONS.slice(0, 2);
-const SUGGESTED_DISCUSSIONS = [
-  { id: 6, author: 'MB', name: 'Mike Brown', tag: 'Congress', title: 'Congressional Trading Alert System', preview: "Has anyone set up automated alerts...", time: '1 day ago', likes: 89, comments: 56 },
-  { id: 7, author: 'EW', name: 'Emma Wilson', tag: 'AI Stocks', title: 'AI sector momentum discussion', preview: "The AI rally continues...", time: '2 days ago', likes: 67, comments: 34 },
-];
-const FRIENDS_LIST = [
-  { id: 1, initials: 'EM', name: 'Eric Morrison', streak: 410 },
-  { id: 2, initials: 'JM', name: 'Joseph Morrison', streak: 328 },
-  { id: 3, initials: 'JM', name: 'John Morrison', streak: 256 },
-  { id: 4, initials: 'EM', name: 'Emily Morrison', streak: 142 },
-  { id: 5, initials: 'DL', name: 'Diana Larussa', streak: 354, isYou: true },
-  { id: 6, initials: 'CL', name: 'Cathy Morrison', streak: 89 },
+/* ── Mock data (replace with API / props later) ── */
+const FILTER_TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'users', label: 'Users' },
+  { key: 'partners', label: 'Partners' },
 ];
 
-const LEGENDARY_INVESTORS = [
-  { name: 'Paul Tudor Jones', designation: '8.1B Net Worth', description: 'Founder of Tudor Investment Corporation. Known for macro trading and predicting the 1987 crash. Pioneer of trend-following and risk parity strategies.', profileImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Christopher Hohn', designation: '11.4B Net Worth', description: 'Founder of TCI Fund Management. Activist investor focused on corporate governance and value creation. Known for concentrated, high-conviction positions.', profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Ray Dalio', designation: '14B Net Worth', description: 'Founder of Bridgewater Associates, the world\'s largest hedge fund. Creator of the "All Weather" portfolio and principles-based investing. Author of "Principles."', profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Israel Englander', designation: '14.5B Net Worth', description: 'Founder of Millennium Management. Built one of the largest multi-strategy hedge funds. Known for quantitative and systematic approaches across asset classes.', profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Steve Cohen', designation: '21.3B Net Worth', description: 'Founder of Point72 and former SAC Capital. Legendary stock picker with a discretionary, research-driven approach. Major art collector and sports team owner.', profileImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'David Tepper', designation: '23.7B Net Worth', description: 'Founder of Appaloosa Management. Distressed debt and equity specialist. Known for bold bets during market crises, including the 2009 financial crisis.', profileImage: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
-  { name: 'Ken Griffin', designation: '51.2B Net Worth', description: 'Founder of Citadel and Citadel Securities. Built a market-making and multi-strategy empire. One of the most successful hedge fund managers in history.', profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', backgroundImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800' },
+const STAT_CARDS = [
+  {
+    emoji: '👥',
+    label: 'Members',
+    value: '12,456',
+    sub: '+342 this month',
+    subTone: 'positive',
+  },
+  {
+    emoji: '💬',
+    label: 'Discussions',
+    value: '89 active',
+    sub: '+14 today',
+    subTone: 'positive',
+  },
+  {
+    emoji: '🏆',
+    label: 'Your Rank',
+    value: '#127',
+    sub: 'Top 8%',
+    subTone: 'neutral',
+  },
+  {
+    emoji: '🔥',
+    label: 'Your Streak',
+    value: '12 days',
+    sub: 'Best: 31 days',
+    subTone: 'neutral',
+  },
 ];
 
-export default function CommunityPage() {
-  const { completeTask } = useChecklist();
-  const [activeFeed, setActiveFeed] = useState('trending');
-  const [friendsView, setFriendsView] = useState('list');
-  const [addFriendOpen, setAddFriendOpen] = useState(false);
-  const [friendSearch, setFriendSearch] = useState('');
-  const addFriendRef = useRef(null);
+const FEED_POSTS = [
+  {
+    id: 'p1',
+    initials: 'AS',
+    name: 'Aakash Sharma',
+    time: '2h ago',
+    badge: null,
+    text: "Just opened a position in NVDA after seeing Pelosi's latest trade. Thoughts?",
+    ticker: { sym: 'NVDA', price: 954.7, pct: 3.12 },
+    likes: 24,
+    comments: 8,
+    reposts: 3,
+  },
+  {
+    id: 'p2',
+    initials: 'JL',
+    name: 'Jessica Lee',
+    time: '5h ago',
+    badge: '🏆 Top 10',
+    text: "My portfolio is up 34% this quarter. Here's what I'm holding and why...",
+    ticker: null,
+    likes: 89,
+    comments: 23,
+    reposts: 12,
+  },
+  {
+    id: 'p3',
+    initials: 'MB',
+    name: 'Mike Brown',
+    time: '1d ago',
+    badge: null,
+    text: "Has anyone set up automated alerts for congressional trading? I'd love to get notified when filings hit.",
+    ticker: null,
+    likes: 12,
+    comments: 34,
+    reposts: 5,
+  },
+];
 
-  const [communitySearchQuery, setCommunitySearchQuery] = useState('');
-  const [communitySearchType, setCommunitySearchType] = useState('all');
-  const [communitySearchResults, setCommunitySearchResults] = useState({ users: [], partners: [], total: 0 });
-  const [communitySearchLoading, setCommunitySearchLoading] = useState(false);
-  const [communitySearchOpen, setCommunitySearchOpen] = useState(false);
-  const communitySearchRef = useRef(null);
-  const communitySearchDebounceRef = useRef(null);
+const LEADERBOARD = [
+  { rank: 1, name: 'Emma Wilson', pct: 34.5, bar: 100, trades: 12, win: 89 },
+  { rank: 2, name: 'David Kim', pct: 28.2, bar: 82, trades: 8, win: 75 },
+  { rank: 3, name: 'Lisa Park', pct: 25.7, bar: 74, trades: 15, win: 80 },
+  { rank: 4, name: 'Alex Chen', pct: 22.1, bar: 64 },
+  { rank: 5, name: 'Sarah Johnson', pct: 19.8, bar: 58 },
+  { rank: 6, name: 'Michael Brown', pct: 17.3, bar: 50 },
+  { rank: 7, name: 'Emily Davis', pct: 15.6, bar: 48 },
+  { rank: 8, name: 'James Wilson', pct: 14.2, bar: 42 },
+  { rank: 9, name: 'Maria Garcia', pct: 12.9, bar: 38 },
+  { rank: 10, name: 'Chris Taylor', pct: 11.5, bar: 34 },
+];
 
-  const fetchCommunitySearch = useCallback(async (q, type) => {
-    setCommunitySearchLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (q) params.set('q', q);
-      if (type && type !== 'all') params.set('type', type);
-      const res = await fetch(`/api/community/search?${params.toString()}`);
-      const data = await res.json();
-      setCommunitySearchResults({ users: data.users || [], partners: data.partners || [], total: data.total || 0 });
-    } catch {
-      setCommunitySearchResults({ users: [], partners: [], total: 0 });
-    } finally {
-      setCommunitySearchLoading(false);
-    }
-  }, []);
+const YOU_ROW = { rank: 127, name: 'You', pct: 12.4, bar: 28, change: 14, up: true };
 
-  useEffect(() => {
-    if (!communitySearchOpen) return;
-    if (communitySearchDebounceRef.current) clearTimeout(communitySearchDebounceRef.current);
-    communitySearchDebounceRef.current = setTimeout(() => {
-      fetchCommunitySearch(communitySearchQuery, communitySearchType);
-    }, 250);
-    return () => {
-      if (communitySearchDebounceRef.current) clearTimeout(communitySearchDebounceRef.current);
-    };
-  }, [communitySearchQuery, communitySearchType, communitySearchOpen, fetchCommunitySearch]);
+const CHALLENGES = [
+  {
+    id: 'c1',
+    title: '7-Day Trading Streak',
+    current: 5,
+    total: 7,
+    reward: '🔥 Streak Badge',
+    ends: 'Ends in 2 days',
+    done: false,
+  },
+  {
+    id: 'c2',
+    title: 'Research 5 Companies',
+    current: 2,
+    total: 5,
+    reward: '📊 Analyst Badge',
+    ends: 'Ends in 5 days',
+    done: false,
+  },
+  {
+    id: 'c3',
+    title: 'Follow 3 Politicians',
+    current: 3,
+    total: 3,
+    reward: '🏛️ Capitol Badge',
+    ends: 'COMPLETED',
+    done: true,
+  },
+];
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (addFriendRef.current && !addFriendRef.current.contains(e.target)) setAddFriendOpen(false);
-      if (communitySearchRef.current && !communitySearchRef.current.contains(e.target)) setCommunitySearchOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+const TRENDING_TOPICS = [
+  { rank: 1, title: 'NVDA earnings play?', replies: 47, kind: 'hot' },
+  { rank: 2, title: 'Congressional insider trades are getting out of hand', replies: 34, kind: 'rise' },
+  { rank: 3, title: 'Best dividend stocks for 2026', replies: 28, kind: 'pop' },
+  { rank: 4, title: 'Is the market overvalued?', replies: 21, kind: 'act' },
+  { rank: 5, title: 'Portfolio review: roast mine', replies: 56, kind: 'hot' },
+];
 
-  const getFeedDiscussions = () => {
-    if (activeFeed === 'trending') return TRENDING_DISCUSSIONS;
-    if (activeFeed === 'following' || activeFeed === 'followed') return FOLLOWING_DISCUSSIONS;
-    if (activeFeed === 'start') return [];
-    return TRENDING_DISCUSSIONS;
-  };
+const CIRCLE_ACTIVITY = [
+  { initials: 'EW', name: 'Emma Wilson', time: 'just now', action: 'Bought TSLA' },
+  { initials: 'DK', name: 'David Kim', time: '12m ago', action: 'Posted: "NVDA to $1000?"' },
+  { initials: 'LP', name: 'Lisa Park', time: '1h ago', action: 'Completed 7-day streak 🔥' },
+  { initials: 'AC', name: 'Alex Chen', time: '2h ago', action: 'Added AMZN to watchlist' },
+];
 
-  const discussions = getFeedDiscussions();
-  const needsSuggested = discussions.length < 4 && activeFeed !== 'start';
-  const displayDiscussions = needsSuggested ? [...discussions, ...SUGGESTED_DISCUSSIONS.slice(0, 4 - discussions.length)] : discussions;
+const LEGENDARY = [
+  { initials: 'WB', name: 'Warren Buffett', nw: '$120B', style: 'Value' },
+  { initials: 'RD', name: 'Ray Dalio', nw: '$14B', style: 'Macro' },
+  { initials: 'CW', name: 'Cathy Wood', nw: '$250M', style: 'Growth' },
+  { initials: 'PT', name: 'Paul Tudor Jones', nw: '$8.1B', style: 'Macro' },
+  { initials: 'SC', name: 'Steve Cohen', nw: '$21.3B', style: 'Quant' },
+];
+
+function Avatar({ initials }) {
+  return (
+    <div className="comm-avatar" aria-hidden>
+      {initials}
+    </div>
+  );
+}
+
+function FeedPost({ post, expanded, onToggle }) {
+  const previewLen = 120;
+  const long = post.text.length > previewLen;
+  const shown = expanded || !long ? post.text : `${post.text.slice(0, previewLen).trim()}…`;
 
   return (
-    <div className="dashboard-page-inset community-page">
-      <div className="community-hub-header">
-        <h1 className="community-hub-title">Community Hub</h1>
-        <div className="community-hub-tabs">
-          <button type="button" className={`community-hub-tab ${communitySearchType === 'all' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('all'); setCommunitySearchOpen(true); }}>All</button>
-          <button type="button" className={`community-hub-tab ${communitySearchType === 'users' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('users'); setCommunitySearchOpen(true); }}>Users</button>
-          <button type="button" className={`community-hub-tab ${communitySearchType === 'partners' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('partners'); setCommunitySearchOpen(true); }}>Partners</button>
-        </div>
-      </div>
-      <div className="community-search-wrapper" ref={communitySearchRef}>
-        <div className="community-search-bar">
-          <i className="bi bi-search community-search-icon" />
-          <input
-            type="text"
-            placeholder="Search users, partners, creators, or money managers..."
-            value={communitySearchQuery}
-            onChange={(e) => { setCommunitySearchQuery(e.target.value); setCommunitySearchOpen(true); }}
-            onFocus={() => setCommunitySearchOpen(true)}
-            className="community-search-input"
-          />
-          <div className="community-search-type-tabs">
-            <button type="button" className={`community-search-type-btn ${communitySearchType === 'all' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('all'); setCommunitySearchOpen(true); }}>All</button>
-            <button type="button" className={`community-search-type-btn ${communitySearchType === 'users' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('users'); setCommunitySearchOpen(true); }}>Users</button>
-            <button type="button" className={`community-search-type-btn ${communitySearchType === 'partners' ? 'active' : ''}`} onClick={() => { setCommunitySearchType('partners'); setCommunitySearchOpen(true); }}>Partners & Creators</button>
+    <div className="comm-post-block">
+      <button type="button" className="comm-post" onClick={() => onToggle(post.id)}>
+        <div className="comm-post-head">
+          <div className="comm-post-meta">
+            <Avatar initials={post.initials} />
+            <div>
+              <span className="comm-post-name">{post.name}</span>
+              <span className="comm-post-time"> · {post.time}</span>
+            </div>
           </div>
+          {post.badge && <span className="comm-post-badge">{post.badge}</span>}
         </div>
-        {communitySearchOpen && (
-          <div className="community-search-results">
-            {communitySearchLoading ? (
-              <div className="community-search-loading"><i className="bi bi-arrow-repeat spin" /> Searching...</div>
-            ) : (
-              <>
-                {communitySearchResults.total === 0 ? (
-                  <div className="community-search-empty">No results found. Try a different search or filter.</div>
-                ) : (
-                  <div className="community-search-results-list">
-                    {(communitySearchType === 'all' || communitySearchType === 'users') && communitySearchResults.users.map((u) => (
-                      <div key={u.id} className="community-search-result-item">
-                        <div className="community-search-result-avatar">{u.initials}</div>
-                        <div className="community-search-result-info">
-                          <span className="community-search-result-name">{u.name}</span>
-                          <span className="community-search-result-tag">{u.tag}</span>
-                          <span className="community-search-result-bio">{u.bio}</span>
-                        </div>
-                        <button type="button" className="community-search-result-btn"><i className="bi bi-person-plus" /> Follow</button>
-                      </div>
-                    ))}
-                    {(communitySearchType === 'all' || communitySearchType === 'partners') && communitySearchResults.partners.map((p) => (
-                      <div key={p.id} className="community-search-result-item partner">
-                        <div className="community-search-result-avatar partner">{p.initials}</div>
-                        <div className="community-search-result-info">
-                          <span className="community-search-result-name">{p.name}</span>
-                          <span className="community-search-result-tag">{p.tag}</span>
-                          <span className="community-search-result-bio">{p.bio}</span>
-                        </div>
-                        <button type="button" className="community-search-result-btn"><i className="bi bi-link-45deg" /> Connect</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+        <p className="comm-post-text">
+          {shown}
+          {long && !expanded && (
+            <span className="comm-post-expand"> read more</span>
+          )}
+        </p>
+        {post.ticker && (
+          <div className="comm-ticker-embed">
+            <span className="comm-ticker-sym">{post.ticker.sym}</span>
+            <span className="comm-ticker-price">${post.ticker.price.toFixed(2)}</span>
+            <span className={`comm-ticker-chg ${post.ticker.pct >= 0 ? 'up' : 'dn'}`}>
+              {post.ticker.pct >= 0 ? '▲' : '▼'} {post.ticker.pct >= 0 ? '+' : ''}
+              {post.ticker.pct.toFixed(2)}%
+            </span>
           </div>
         )}
+      </button>
+      <div className="comm-engage">
+        <button type="button" className="comm-engage-btn" aria-label="Like">
+          <span aria-hidden>❤️</span> {post.likes}
+        </button>
+        <button type="button" className="comm-engage-btn" aria-label="Comment">
+          <span aria-hidden>💬</span> {post.comments}
+        </button>
+        <button type="button" className="comm-engage-btn" aria-label="Repost">
+          <span aria-hidden>🔄</span> {post.reposts}
+        </button>
+        <button type="button" className="comm-engage-btn" aria-label="Save">
+          <span aria-hidden>📌</span> Save
+        </button>
       </div>
+    </div>
+  );
+}
 
-      <div className="community-layout">
-      <aside className="community-sidebar">
-      <div className="community-card">
-        <div className="community-stat-grid">
-          <div className="community-stat"><span className="community-stat-value">12,456</span><span className="community-stat-label">Total Members</span></div>
-          <div className="community-stat"><span className="community-stat-value">89</span><span className="community-stat-label">Active Discussions</span></div>
-          <div className="community-stat"><span className="community-stat-value">47</span><span className="community-stat-label">Your Friends</span></div>
-          <div className="community-stat"><span className="community-stat-value">#127</span><span className="community-stat-label">Your Rank</span></div>
-        </div>
-      </div>
-      <div className="community-card">
-        <div className="community-card-header"><h3>Insights</h3></div>
-        <div style={{ padding: '0.875rem 1.25rem' }}>
-          <div className="community-insight"><span className="community-insight-label">Most Discussed</span><span className="community-insight-value">NVDA</span><span className="community-insight-sub">89 mentions</span></div>
-          <div className="community-insight"><span className="community-insight-label">Trending Topic</span><span className="community-insight-value">AI Stocks</span><span className="community-insight-sub">156 discussions</span></div>
-        </div>
-      </div>
-      <div className="community-card">
-        <div className="community-card-header"><h3>Leaderboard</h3></div>
-        <div className="community-leaderboard" data-task-target="community-leaderboard">
-          {[{ name: 'Emma Wilson', initials: 'EW', return: 34.5 }, { name: 'David Kim', initials: 'DK', return: 28.2 }, { name: 'Lisa Park', initials: 'LP', return: 25.7 }, { name: 'Alex Chen', initials: 'AC', return: 22.1 }, { name: 'You', initials: 'ME', return: 12.4 }].map((u, i) => (
-            <div key={i} className="community-leader-row" role="button" tabIndex={0} onClick={() => completeTask('community_3')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('community_3'); }}>
-              <span className="community-leader-rank">{i + 1}</span>
-              <div className="community-leader-avatar">{u.initials}</div>
-              <span className="community-leader-name">{u.name}</span>
-              <span className="community-leader-return">+{u.return}%</span>
-            </div>
+export default function CommunityPage() {
+  const [filter, setFilter] = useState('all');
+  const [feedTab, setFeedTab] = useState('trending');
+  const [lbPeriod, setLbPeriod] = useState('weekly');
+  const [expandedId, setExpandedId] = useState(null);
+  const [search, setSearch] = useState('');
+
+  const toggleExpand = (id) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
+  const feedPosts = useMemo(() => {
+    // Placeholder: same mock for all tabs
+    return FEED_POSTS;
+  }, []);
+
+  const showEmptyFeed = feedPosts.length === 0;
+
+  return (
+    <div className="comm-page dashboard-page-inset db-page">
+      <header className="comm-header-top">
+        <h1 className="comm-page-title">Community</h1>
+        <div className="comm-header-tabs" role="tablist" aria-label="Community filter">
+          {FILTER_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={filter === t.key}
+              className={`db-tf-btn ${filter === t.key ? 'active' : ''}`}
+              onClick={() => setFilter(t.key)}
+            >
+              {t.label}
+            </button>
           ))}
         </div>
-      </div>
-      </aside>
-      <div className="community-main">
-      <div className="stats-grid condensed" style={{ display: 'none' }}>
-        <div className="stat-card stat-card-with-buttons">
-          <div className="stat-icon members"><i className="bi bi-people" /></div>
-          <div className="stat-content">
-            <div className="stat-value">12,456</div>
-            <div className="stat-label">Total Members</div>
-            <div className="stat-card-buttons">
-              <button type="button" className="stat-card-btn">Browse</button>
-              <button type="button" className="stat-card-btn">Top</button>
-              <button type="button" className="stat-card-btn">New</button>
-            </div>
-          </div>
-        </div>
-        <div className="stat-card stat-card-with-buttons">
-          <div className="stat-icon posts"><i className="bi bi-chat-dots" /></div>
-          <div className="stat-content">
-            <div className="stat-value">89</div>
-            <div className="stat-label">Active Discussions</div>
-            <div className="stat-card-buttons">
-              <button type="button" className={`stat-card-btn ${activeFeed === 'start' ? 'active' : ''}`} onClick={() => setActiveFeed('start')}>Start</button>
-              <button type="button" className={`stat-card-btn ${activeFeed === 'following' ? 'active' : ''}`} onClick={() => setActiveFeed('following')}>Following</button>
-              <button type="button" className={`stat-card-btn ${activeFeed === 'trending' ? 'active' : ''}`} onClick={() => setActiveFeed('trending')}>Trending</button>
-            </div>
-          </div>
-        </div>
-        <div className="stat-card stat-card-with-buttons">
-          <div className="stat-icon engagement"><i className="bi bi-person-hearts" /></div>
-          <div className="stat-content">
-            <div className="stat-value">47</div>
-            <div className="stat-label">Your Friends</div>
-            <div className="stat-card-buttons">
-              <button type="button" className={`stat-card-btn ${friendsView === 'all' ? 'active' : ''}`} onClick={() => setFriendsView('all')}>View All</button>
-              <button type="button" className={`stat-card-btn ${addFriendOpen ? 'active' : ''}`} onClick={() => setAddFriendOpen(!addFriendOpen)}>Add</button>
-              <button type="button" className={`stat-card-btn ${friendsView === 'activity' ? 'active' : ''}`} onClick={() => setFriendsView('activity')}>Activity</button>
-            </div>
-          </div>
-        </div>
-        <div className="stat-card stat-card-with-buttons">
-          <div className="stat-icon experts"><i className="bi bi-trophy" /></div>
-          <div className="stat-content">
-            <div className="stat-value">#127</div>
-            <div className="stat-label">Your Rank</div>
-            <div className="stat-card-buttons">
-              <button type="button" className="stat-card-btn">Leaderboard</button>
-              <button type="button" className="stat-card-btn">Awards</button>
-              <button type="button" className="stat-card-btn">My Stats</button>
-            </div>
-          </div>
-        </div>
+      </header>
+
+      <div className="comm-search-wrap">
+        <i className="bi bi-search" aria-hidden />
+        <input
+          className="comm-search-input"
+          placeholder="Search users, partners, creators, or money managers..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          aria-label="Search community"
+        />
       </div>
 
-      <div className="legendary-investors-section">
-      <PinnableCard cardId="legendary-investors" title="Legendary Investors" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
-      <div className="component-card legendary-investors-card">
-        <div className="card-header card-header-with-subtitle">
-          <h3><i className="bi bi-trophy-fill" /> Legendary Investors</h3>
-          <p className="card-subtitle">Explore public profiles of iconic investors — scroll to analyze their strategies and track records</p>
-        </div>
-        <div className="card-body">
-          <ProfileCarousel items={LEGENDARY_INVESTORS} variant="investor" onInvestorCardOpen={() => completeTask('community_2')} />
-        </div>
-      </div>
-      </PinnableCard>
-      </div>
-
-      <div className="dashboard-grid community-features-grid">
-        <PinnableCard cardId="community-feed" title="Community Feed" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={3}>
-        <div className="component-card community-feed-card" data-task-target="community-feed">
-          <div className="card-header"><h3><i className="bi bi-chat-square-text" /> Community Feed</h3></div>
-          <div className="card-body">
-            <div className="community-feed-filters">
-              <button type="button" className={`feed-filter-btn ${activeFeed === 'followed' ? 'active' : ''}`} onClick={() => setActiveFeed('following')}>Followed Discussions</button>
-              <button type="button" className={`feed-filter-btn ${activeFeed === 'topics' ? 'active' : ''}`} onClick={() => setActiveFeed('topics')}>Topics</button>
-              <button type="button" className={`feed-filter-btn ${activeFeed === 'suggestions' ? 'active' : ''}`} onClick={() => setActiveFeed('suggestions')}>Platform Feature Suggestions</button>
-              <button type="button" className={`feed-filter-btn ${activeFeed === 'trending' ? 'active' : ''}`} onClick={() => setActiveFeed('trending')}>Trending</button>
-              <button type="button" className={`feed-filter-btn ${activeFeed === 'explore' ? 'active' : ''}`} onClick={() => setActiveFeed('explore')}>Explore</button>
-            </div>
-            <div className="community-feed-threads" id="community-feed-threads">
-              {activeFeed === 'start' ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  <i className="bi bi-plus-circle text-4xl mb-4 block" />
-                  <p>Start a new discussion to share your insights with the community.</p>
-                </div>
-              ) : (
-                displayDiscussions.map((d) => (
-                  <article key={d.id} className="feed-thread-card" role="presentation" onClick={() => completeTask('community_1')}>
-                    <div className="thread-meta-top">
-                      <div className="thread-author"><div className="thread-avatar">{d.author}</div><span className="thread-author-name">{d.name}</span></div>
-                      <span className="thread-topic-tag">{d.tag}</span>
-                    </div>
-                    <h4 className="thread-title">{d.title}</h4>
-                    <p className="thread-preview">{d.preview}</p>
-                    <div className="thread-engagement">
-                      <div className="thread-avatar-sm">{d.author}</div>
-                      <span className="thread-time">{d.time}</span>
-                      <span className="thread-stat"><i className="bi bi-heart-fill" /> {d.likes}</span>
-                      <span className="thread-stat"><i className="bi bi-chat" /> {d.comments}</span>
-                    </div>
-                  </article>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-        </PinnableCard>
-      </div>
-
-      <div className="community-bottom-grid">
-        <PinnableCard cardId="my-friends" title="My Friends" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={3}>
-        <div className="component-card my-friends-card" ref={addFriendRef}>
-          <div className="card-header">
-            <h3><i className="bi bi-people-fill" /> My Friends</h3>
-            {addFriendOpen ? (
-              <div className="add-friend-search-wrapper">
-                <input
-                  type="text"
-                  placeholder="Search for friends..."
-                  value={friendSearch}
-                  onChange={(e) => setFriendSearch(e.target.value)}
-                  className="add-friend-search-input"
-                  autoFocus
-                />
+      {/* Row 1 — stat cards */}
+      <div className="comm-row-1">
+        {STAT_CARDS.map((s) => (
+          <div key={s.label} className="db-card comm-stat-card">
+            <div className="comm-stat-top">
+              <span className="comm-stat-emoji" aria-hidden>
+                {s.emoji}
+              </span>
+              <div className="comm-stat-body">
+                <span className="comm-stat-label">{s.label}</span>
+                <span className="comm-stat-value">{s.value}</span>
+                <span
+                  className={`comm-stat-sub ${s.subTone === 'positive' ? 'positive' : s.subTone === 'negative' ? 'negative' : ''}`}
+                >
+                  {s.sub}
+                </span>
               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Row 2 — feed + leaderboard */}
+      <div className="comm-row-2">
+        <div className="db-card comm-feed-card">
+          <div className="db-card-header">
+            <h3>Community Feed</h3>
+            <div className="comm-feed-tabs">
+              {['Trending', 'Following', 'Latest', 'My Posts'].map((label) => {
+                const key = label.toLowerCase().replace(/\s+/g, '-');
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`db-tf-btn-sm ${feedTab === key ? 'active' : ''}`}
+                    onClick={() => setFeedTab(key)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="comm-feed-scroll">
+            {showEmptyFeed ? (
+              <p className="comm-empty">No posts yet. Be the first to share!</p>
             ) : (
-              <button type="button" className="add-friend-btn" onClick={() => setAddFriendOpen(true)}><i className="bi bi-person-plus" /> Add a new friend</button>
+              feedPosts.map((post) => (
+                <FeedPost
+                  key={post.id}
+                  post={post}
+                  expanded={expandedId === post.id}
+                  onToggle={toggleExpand}
+                />
+              ))
             )}
           </div>
-          <div className="card-body">
-            <div className="league-tiers">
-              <div className="league-hexagon league-unlocked" title="Ruby League"><i className="bi bi-gem" /></div>
-              <div className="league-hexagon league-current" title="Emerald League"><i className="bi bi-gem" /></div>
-              <div className="league-hexagon league-locked" title="Locked"><i className="bi bi-lock" /></div>
-              <div className="league-hexagon league-locked" title="Locked"><i className="bi bi-lock" /></div>
-              <div className="league-hexagon league-locked" title="Locked"><i className="bi bi-lock" /></div>
-            </div>
-            <div className="league-title">Emerald League</div>
-            <div className="rank-toggle">
-              <button type="button" className="rank-tab active" data-rank="local">Local Rank</button>
-              <button type="button" className="rank-tab" data-rank="friend">Friend Rank</button>
-            </div>
-            <div className="user-stats-row">
-              <div className="user-stat-card"><i className="bi bi-fire text-primary" /><span className="user-stat-value">354</span><span className="user-stat-label">days</span></div>
-              <div className="user-stat-card"><i className="bi bi-gem" /><span className="user-stat-value">Emerald</span><span className="user-stat-label">League</span></div>
-            </div>
-            <div className="friends-ranked-list" id="friends-ranked-list">
-              {(friendsView === 'all' || friendsView === 'list') && FRIENDS_LIST.map((f, i) => (
-                <div key={f.id} className={`friend-rank-item ${f.isYou ? 'friend-rank-you' : ''}`}>
-                  <div className={`friend-rank-badge ${i < 3 ? `rank-${i + 1}` : ''}`}>{i < 3 ? <i className="bi bi-trophy-fill" /> : i + 1}</div>
-                  <div className="friend-avatar">{f.initials}</div>
-                  <div className="friend-info"><span className="friend-name">{f.name}</span><span className="friend-streak"><i className="bi bi-fire" /> {f.streak} days</span></div>
-                </div>
-              ))}
-              {friendsView === 'activity' && (
-                <div className="space-y-3 p-4">
-                  <p className="text-sm text-muted-foreground">Recent friend activity</p>
-                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-xs font-bold">EM</div>
-                    <div><p className="text-sm text-foreground"><span className="font-medium">Eric Morrison</span> made a new investment in <span className="text-primary font-medium">NVDA</span></p><p className="text-xs text-muted-foreground">2 hours ago</p></div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors">
-                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-xs font-bold">JM</div>
-                    <div><p className="text-sm text-foreground"><span className="font-medium">Joseph Morrison</span> liked your post</p><p className="text-xs text-muted-foreground">4 hours ago</p></div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <button type="button" className="view-all-friends-btn" onClick={() => setFriendsView('all')}>View All Friends</button>
+          <div className="comm-compose">
+            <input className="comm-compose-input" placeholder="Write a post..." aria-label="Write a post" />
           </div>
         </div>
-        </PinnableCard>
 
-        <PinnableCard cardId="friends-activity" title="Friends Activity" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={1}>
-        <div className="component-card friends-activity-card">
-          <div className="card-header"><h3><i className="bi bi-activity" /> Friends Activity</h3></div>
-          <div className="card-body">
-            <p className="text-muted-foreground mb-6">Track your friends&apos; investment activities and engagement</p>
-            <div id="activity-feed" className="space-y-4 max-h-48 overflow-y-auto">
-              <div className="flex items-start space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
-                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center flex-shrink-0"><i className="bi bi-graph-up text-primary-foreground text-sm" /></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground"><span className="font-medium">Alex Johnson</span> made a new investment in <span className="text-primary font-medium">TSLA</span></p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+        <div className="db-card">
+          <div className="db-card-header">
+            <div className="comm-lb-head">
+              <h3>🏆 Leaderboard</h3>
+              <select
+                className="comm-lb-select"
+                value={lbPeriod}
+                onChange={(e) => setLbPeriod(e.target.value)}
+                aria-label="Leaderboard period"
+              >
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="all">All-Time</option>
+              </select>
+            </div>
+          </div>
+          <p className="comm-lb-sub" style={{ padding: '0 1.25rem' }}>
+            This Week&apos;s Top Performers
+          </p>
+          <div className="comm-lb-scroll">
+            {LEADERBOARD.map((row) => (
+              <div key={row.rank}>
+                <div className="comm-lb-row">
+                  <span className="comm-lb-rank">
+                    {row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : row.rank}
+                  </span>
+                  <span className="comm-lb-name">{row.name}</span>
+                  <span className="comm-lb-pct">+{row.pct.toFixed(1)}%</span>
+                  <div className="comm-lb-bar-wrap">
+                    <div className="comm-lb-bar-fill" style={{ width: `${row.bar}%` }} />
+                  </div>
                 </div>
+                {row.rank <= 3 && row.trades != null && (
+                  <div className="comm-lb-meta">
+                    {row.trades} trades · {row.win}% win rate
+                  </div>
+                )}
               </div>
-              <div className="flex items-start space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
-                <div className="w-8 h-8 bg-accent rounded-xl flex items-center justify-center flex-shrink-0"><i className="bi bi-heart text-accent-foreground text-sm" /></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground"><span className="font-medium">Sarah Chen</span> liked your post about <span className="text-accent font-medium">market analysis</span></p>
-                  <p className="text-xs text-muted-foreground">4 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-4 p-3 rounded-xl hover:bg-muted transition-colors">
-                <div className="w-8 h-8 bg-chart-3 rounded-xl flex items-center justify-center flex-shrink-0"><i className="bi bi-chat text-chart-2 text-sm" /></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground"><span className="font-medium">Mike Brown</span> commented on <span className="text-chart-3 font-medium">tech sector trends</span></p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
-                </div>
+            ))}
+          </div>
+          <div className="comm-lb-you" style={{ padding: '0 1.25rem 1rem' }}>
+            <div className="comm-lb-row">
+              <span className="comm-lb-rank">{YOU_ROW.rank}</span>
+              <span className="comm-lb-name">{YOU_ROW.name}</span>
+              <span className="comm-lb-pct">+{YOU_ROW.pct.toFixed(1)}%</span>
+              <div className="comm-lb-bar-wrap">
+                <div className="comm-lb-bar-fill" style={{ width: `${YOU_ROW.bar}%` }} />
               </div>
             </div>
-            <button type="button" className="w-full bg-chart-5 text-chart-2 py-3 rounded-xl hover:bg-opacity-90 transition-colors text-sm font-medium mt-4">View Full Activity</button>
+            <p className={`comm-lb-change ${YOU_ROW.up ? '' : 'dn'}`}>
+              {YOU_ROW.up ? '▲' : '▼'} {YOU_ROW.change} spots from last week
+            </p>
+            <Link href="/community" className="comm-card-link">
+              View Full Rankings <i className="bi bi-arrow-right" />
+            </Link>
           </div>
         </div>
-        </PinnableCard>
       </div>
 
-      <div className="community-discussions-main">
-      <div className="dashboard-grid community-discussions-grid">
-        <PinnableCard cardId="active-discussions" title="Active Discussions" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={2}>
-        <div className="component-card active-discussions-card">
-          <div className="card-header">
-            <h3><i className="bi bi-chat-dots" /> Active Discussions</h3>
-            <div className="discussion-filter-buttons">
-              <button type="button" className={`discussion-filter-btn ${activeFeed === 'start' ? 'active' : ''}`} onClick={() => setActiveFeed('start')}><i className="bi bi-plus-circle" /> Start Discussion</button>
-              <button type="button" className={`discussion-filter-btn ${activeFeed === 'following' ? 'active' : ''}`} onClick={() => setActiveFeed('following')}><i className="bi bi-bookmark" /> Following</button>
-              <button type="button" className={`discussion-filter-btn ${activeFeed === 'trending' ? 'active' : ''}`} onClick={() => setActiveFeed('trending')}><i className="bi bi-fire" /> Trending</button>
-            </div>
+      {/* Row 3 */}
+      <div className="comm-row-3">
+        <div className="db-card">
+          <div className="db-card-header">
+            <h3>🎯 Active Challenges</h3>
           </div>
-          <div className="card-body">
-            <div className="space-y-4">
-              <div className="p-4 border border-border rounded-lg hover:bg-muted transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center"><span className="text-primary-foreground text-xs font-bold">AJ</span></div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">Q1 2024 Tech Stock Predictions</h4>
-                      <p className="text-sm text-muted-foreground">by Alex Johnson · 2 hours ago</p>
-                    </div>
+          <div className="comm-inner-scroll">
+            {CHALLENGES.length === 0 ? (
+              <p className="comm-empty">No active challenges this week</p>
+            ) : (
+              CHALLENGES.map((c) => (
+                <div key={c.id} className={`comm-challenge ${c.done ? 'done' : ''}`}>
+                  <p className="comm-challenge-title">{c.title}</p>
+                  <div className="comm-progress-track">
+                    <div
+                      className="comm-progress-fill"
+                      style={{ width: `${(c.current / c.total) * 100}%` }}
+                    />
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground"><i className="bi bi-chat" /><span>23</span><i className="bi bi-heart" /><span>45</span></div>
+                  <p className="comm-challenge-meta">
+                    {c.current}/{c.total} {c.done && <strong> ✅</strong>}
+                    <br />
+                    Reward: {c.reward}
+                    <br />
+                    {c.ends}
+                  </p>
                 </div>
-                <p className="text-muted-foreground text-sm mb-3">What are everyone&apos;s thoughts on the tech sector for Q1? I&apos;m seeing some interesting patterns in congressional trading...</p>
-                <div className="flex items-center space-x-2">
-                  <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded">Technology</span>
-                  <span className="px-2 py-1 bg-accent text-primary text-xs rounded">Predictions</span>
-                  <span className="px-2 py-1 bg-accent text-primary text-xs rounded">Hot</span>
-                </div>
-              </div>
-              <div className="p-4 border border-border rounded-lg hover:bg-muted transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center"><span className="text-primary-foreground text-xs font-bold">SC</span></div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">Best Dividend Stocks for 2024</h4>
-                      <p className="text-sm text-muted-foreground">by Sarah Chen · 5 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground"><i className="bi bi-chat" /><span>18</span><i className="bi bi-heart" /><span>32</span></div>
-                </div>
-                <p className="text-muted-foreground text-sm mb-3">Looking for stable dividend-paying stocks. What&apos;s everyone&apos;s favorite picks for consistent income?</p>
-                <div className="flex items-center space-x-2">
-                  <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded">Dividends</span>
-                  <span className="px-2 py-1 bg-accent text-primary text-xs rounded">Income</span>
-                </div>
-              </div>
-              <div className="p-4 border border-border rounded-lg hover:bg-muted transition-colors">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center"><span className="text-primary text-xs font-bold">MB</span></div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">Congressional Trading Alert System</h4>
-                      <p className="text-sm text-muted-foreground">by Mike Brown · 1 day ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground"><i className="bi bi-chat" /><span>56</span><i className="bi bi-heart" /><span>89</span></div>
-                </div>
-                <p className="text-muted-foreground text-sm mb-3">Has anyone set up automated alerts for congressional trading? I&apos;d love to get notified when certain members make trades...</p>
-                <div className="flex items-center space-x-2">
-                  <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded">Congress</span>
-                  <span className="px-2 py-1 bg-accent text-primary text-xs rounded">Alerts</span>
-                  <span className="px-2 py-1 bg-accent text-primary text-xs rounded">Trending</span>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
+            <Link href="/learning-center" className="comm-card-link" style={{ marginLeft: '1.25rem' }}>
+              View All Challenges <i className="bi bi-arrow-right" />
+            </Link>
           </div>
         </div>
-        </PinnableCard>
 
-        <PinnableCard cardId="leaderboard" title="Leaderboard" sourcePage="/community" sourceLabel="Community" defaultW={2} defaultH={2}>
-        <div className="component-card leaderboard-card">
-          <div className="card-header"><h3><i className="bi bi-trophy" /> Leaderboard</h3></div>
-          <div className="card-body">
-            <p className="text-muted-foreground mb-4 text-sm">Top performers this month</p>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center"><i className="bi bi-trophy-fill text-white" /></div>
-                <div className="flex-1"><div className="text-sm font-bold text-gray-900 dark:text-white">Emma Wilson</div><div className="text-xs text-gray-600 dark:text-gray-400">+34.5% return</div></div>
-                <div className="text-right"><div className="text-xs font-bold text-yellow-600 dark:text-yellow-400">#1</div></div>
+        <div className="db-card">
+          <div className="db-card-header">
+            <h3>🔥 Trending Now</h3>
+          </div>
+          <div className="comm-inner-scroll">
+            {TRENDING_TOPICS.map((t) => (
+              <div key={t.rank} className="comm-trend-item" role="button" tabIndex={0}>
+                <span className="comm-trend-rank">{t.rank}</span>
+                <span className="comm-trend-title">{t.title}</span>
+                <div className="comm-trend-meta">
+                  💬 {t.replies} replies ·{' '}
+                  {t.kind === 'hot' && <span className="comm-badge-hot">🔥 Hot</span>}
+                  {t.kind === 'rise' && <span className="comm-badge-rise">📈 Rising</span>}
+                  {t.kind === 'pop' && <span className="comm-badge-pop">⭐ Popular</span>}
+                  {t.kind === 'act' && <span className="comm-badge-act">💬 Active</span>}
+                </div>
               </div>
-              <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center"><span className="text-foreground text-xs font-bold">2</span></div>
-                <div className="flex-1"><div className="text-sm font-medium text-foreground">David Kim</div><div className="text-xs text-muted-foreground">+28.2% return</div></div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center"><span className="text-foreground text-xs font-bold">3</span></div>
-                <div className="flex-1"><div className="text-sm font-medium text-foreground">Lisa Park</div><div className="text-xs text-muted-foreground">+25.7% return</div></div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 bg-accent/30 rounded-lg border border-primary/30">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center"><span className="text-primary-foreground text-xs font-bold">127</span></div>
-                <div className="flex-1"><div className="text-sm font-medium text-foreground">You</div><div className="text-xs text-muted-foreground">+12.4% return</div></div>
-              </div>
-            </div>
+            ))}
+            <Link href="/community" className="comm-card-link" style={{ marginLeft: '1.25rem' }}>
+              Start a Discussion <i className="bi bi-arrow-right" />
+            </Link>
           </div>
         </div>
-        </PinnableCard>
-      </div>
-      </div>
-      </div>
+
+        <div className="db-card">
+          <div className="db-card-header">
+            <h3>👥 Your Circle</h3>
+          </div>
+          <div className="comm-inner-scroll">
+            <p className="comm-circle-head">Following: 23 · Followers: 47</p>
+            <p style={{ fontSize: '0.5625rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem' }}>
+              Recent Activity
+            </p>
+            {CIRCLE_ACTIVITY.length === 0 ? (
+              <p className="comm-empty">Follow users to see their activity</p>
+            ) : (
+              CIRCLE_ACTIVITY.map((row) => (
+                <div key={row.name + row.time} className="comm-circle-row">
+                  <Avatar initials={row.initials} />
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#f0f6fc' }}>{row.name}</div>
+                    <div style={{ fontSize: '0.5625rem', color: '#6b7280' }}>{row.time}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#e2e8f0', marginTop: '0.15rem' }}>{row.action}</div>
+                  </div>
+                </div>
+              ))
+            )}
+            <div className="comm-suggest">
+              <div>
+                <div className="comm-suggest-txt">Suggested: Mike Torres</div>
+                <div className="comm-suggest-sub">92% portfolio overlap with you</div>
+              </div>
+              <button type="button" className="comm-btn-sm">
+                Follow
+              </button>
+            </div>
+            <Link href="/community" className="comm-card-link" style={{ marginLeft: '1.25rem' }}>
+              Find People <i className="bi bi-arrow-right" />
+            </Link>
+          </div>
+        </div>
       </div>
 
-      <div className="hidden"><PinnableCard cardId="community-insights" title="Community Insights" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={1}>
-      <div className="component-card community-insights-card">
-        <div className="card-header"><h3><i className="bi bi-bar-chart" /> Community Insights</h3></div>
-        <div className="card-body">
-          <div className="community-insights-grid">
-            <div className="text-center insight-item">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3"><i className="bi bi-graph-up text-primary text-2xl" /></div>
-              <h4 className="font-semibold text-foreground mb-2">Most Discussed Stock</h4>
-              <div className="text-2xl font-bold text-primary">NVDA</div>
-              <div className="text-sm text-muted-foreground">89 mentions this week</div>
+      {/* Row 4 */}
+      <div className="comm-row-4">
+        <div className="db-card">
+          <div className="db-card-header">
+            <h3>🏅 Legendary Investors</h3>
+          </div>
+          <p style={{ fontSize: '0.6875rem', color: '#6b7280', margin: '0 1.25rem 0.75rem', lineHeight: 1.45 }}>
+            Learn from the best traders in history
+          </p>
+          <div className="comm-legend-scroll">
+            {LEGENDARY.map((inv) => (
+              <div key={inv.name} className="comm-legend-card" role="button" tabIndex={0}>
+                <div className="comm-legend-av">{inv.initials}</div>
+                <div className="comm-legend-name">{inv.name}</div>
+                <div className="comm-legend-nw">{inv.nw}</div>
+                <div className="comm-legend-style">{inv.style}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: '0 1.25rem 1rem' }}>
+            <Link href="/learning-center" className="comm-card-link">
+              Explore strategies <i className="bi bi-arrow-right" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="db-card">
+          <div className="db-card-header">
+            <h3>📊 Community Insights</h3>
+          </div>
+          <p style={{ fontSize: '0.6875rem', color: '#6b7280', margin: '0 1.25rem 0.5rem', lineHeight: 1.45 }}>
+            What 12,456 members are doing
+          </p>
+          <div className="comm-insight-row">
+            <div className="comm-insight-label">Most Discussed Stock</div>
+            <div className="comm-insight-val">NVDA — 847 mentions this week</div>
+            <div className="comm-insight-bar">
+              <div className="comm-insight-bar-fill" style={{ width: '85%' }} />
             </div>
-            <div className="text-center insight-item">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3"><i className="bi bi-trending-up text-primary text-2xl" /></div>
-              <h4 className="font-semibold text-foreground mb-2">Trending Topic</h4>
-              <div className="text-lg font-bold text-primary">AI Stocks</div>
-              <div className="text-sm text-muted-foreground">156 discussions</div>
+          </div>
+          <div className="comm-insight-row">
+            <div className="comm-insight-label">Trending Topic</div>
+            <div className="comm-insight-val">AI Stocks — 154 discussions</div>
+          </div>
+          <div className="comm-insight-row">
+            <div className="comm-insight-label">Community Sentiment</div>
+            <div className="comm-sentiment-row">
+              <div className="comm-insight-bar" style={{ flex: 1, marginTop: 0 }}>
+                <div className="comm-insight-bar-fill" style={{ width: '72%' }} />
+              </div>
+              <span className="comm-sentiment-pct">Bullish 72%</span>
             </div>
-            <div className="text-center insight-item">
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-3"><i className="bi bi-people text-primary text-2xl" /></div>
-              <h4 className="font-semibold text-foreground mb-2">Most Active User</h4>
-              <div className="text-lg font-bold text-primary">InvestorPro</div>
-              <div className="text-sm text-muted-foreground">45 posts this week</div>
+          </div>
+          <div className="comm-insight-row">
+            <div className="comm-insight-label">Most Followed Politician</div>
+            <div className="comm-insight-val">Nancy Pelosi — 3,420 followers</div>
+          </div>
+          <div className="comm-insight-row">
+            <div className="comm-insight-label">Top Badge This Week</div>
+            <div className="comm-insight-val">🔥 7-Day Streak — earned by 234 members</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 5 */}
+      <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+        <div className="db-card-header">
+          <h3>⭐ This Week&apos;s Spotlight</h3>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          <div className="comm-spotlight-row">
+            <div className="comm-spot-card">
+              <div className="comm-spot-tag">🏆 Top Performer</div>
+              <div className="comm-spot-title">Emma Wilson</div>
+              <p className="comm-spot-meta">
+                +34.5% this week
+                <br />
+                12 trades · 89% win rate
+              </p>
+              <Link href="/community" className="comm-card-link" style={{ marginTop: 0 }}>
+                View Profile <i className="bi bi-arrow-right" />
+              </Link>
+            </div>
+            <div className="comm-spot-card">
+              <div className="comm-spot-tag">📝 Best Post</div>
+              <div className="comm-spot-title">&quot;Why I&apos;m bullish on semiconductors in 2026&quot;</div>
+              <p className="comm-spot-meta">
+                89 likes · 23 comments
+                <br />
+                by David Kim
+              </p>
+              <Link href="/community" className="comm-card-link" style={{ marginTop: 0 }}>
+                Read Post <i className="bi bi-arrow-right" />
+              </Link>
+            </div>
+            <div className="comm-spot-card">
+              <div className="comm-spot-tag">🌟 Rising Star</div>
+              <div className="comm-spot-title">Maria Garcia</div>
+              <p className="comm-spot-meta">
+                New member
+                <br />
+                Completed 15 tasks in first week
+              </p>
+              <Link href="/community" className="comm-card-link" style={{ marginTop: 0 }}>
+                Follow <i className="bi bi-arrow-right" />
+              </Link>
             </div>
           </div>
         </div>
       </div>
-      </PinnableCard></div>
     </div>
   );
 }
