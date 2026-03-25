@@ -8,14 +8,20 @@ import { useTheme } from '@/components/ThemeProvider';
  * - Dark mode (default): shows sun icon (click to go light)
  * - Light mode: shows moon icon (click to go dark)
  */
-export function ThemeToggle() {
+export function ThemeToggle({ onThemeChange }) {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
+
+  const handleClick = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    toggleTheme();
+    onThemeChange?.(next);
+  };
 
   return (
     <button
       className="theme-toggle-btn"
-      onClick={toggleTheme}
+      onClick={handleClick}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       type="button"

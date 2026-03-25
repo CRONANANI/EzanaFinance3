@@ -9,6 +9,7 @@ import { PartnerProvider } from '@/contexts/PartnerContext';
 import { CongressProvider } from '@/contexts/CongressContext';
 import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 
 export const metadata = {
@@ -36,18 +37,20 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="skip-to-content">Skip to content</a>
         <ThemeProvider>
           <AuthProvider>
-            <PartnerProvider>
-              <CongressProvider>
-                <PinnedCardsProvider>
-                  <ToastProvider>
-                    <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
-                      <ConditionalNavbar />
-                    </Suspense>
-                    {children}
-                  </ToastProvider>
-                </PinnedCardsProvider>
-              </CongressProvider>
-            </PartnerProvider>
+            <SettingsProvider>
+              <PartnerProvider>
+                <CongressProvider>
+                  <PinnedCardsProvider>
+                    <ToastProvider>
+                      <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
+                        <ConditionalNavbar />
+                      </Suspense>
+                      {children}
+                    </ToastProvider>
+                  </PinnedCardsProvider>
+                </CongressProvider>
+              </PartnerProvider>
+            </SettingsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

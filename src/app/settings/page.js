@@ -17,6 +17,7 @@ import {
   ApiPanel,
 } from '@/components/settings';
 import { PartnerProvider, usePartner } from '@/contexts/PartnerContext';
+import { useUserSettings } from '@/contexts/SettingsContext';
 import './settings.css';
 
 const SETTINGS_TABS = [
@@ -36,24 +37,33 @@ const SETTINGS_TABS = [
 const PANEL_MAP = {
   'my-details': MyDetailsPanel,
   appearance: AppearancePanel,
-  'profile': ProfilePanel,
-  'password': PasswordPanel,
-  'family': FamilyPanel,
-  'plan': PlanPanel,
-  'billing': BillingPanel,
-  'email': EmailPanel,
-  'notifications': NotificationsPanel,
-  'integrations': IntegrationsPanel,
-  'api': ApiPanel,
+  profile: ProfilePanel,
+  password: PasswordPanel,
+  family: FamilyPanel,
+  plan: PlanPanel,
+  billing: BillingPanel,
+  email: EmailPanel,
+  notifications: NotificationsPanel,
+  integrations: IntegrationsPanel,
+  api: ApiPanel,
 };
 
 function SettingsInner() {
   const [activeTab, setActiveTab] = useState('my-details');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [saveToast, setSaveToast] = useState(false);
   const router = useRouter();
   const { isPartner } = usePartner();
   const dashboardPath = isPartner ? '/partner-home' : '/home-dashboard';
+
+  const {
+    settings,
+    loading,
+    saving,
+    saved,
+    error,
+    updateSetting,
+    saveSettings,
+  } = useUserSettings();
 
   const ActivePanel = PANEL_MAP[activeTab];
 
@@ -62,14 +72,30 @@ function SettingsInner() {
     setMobileNavOpen(false);
   };
 
-  const handleSave = () => {
-    setSaveToast(true);
-    setTimeout(() => setSaveToast(false), 2500);
+  const handleSave = async () => {
+    await saveSettings();
   };
+
+  const panelProps = {
+    onSave: handleSave,
+    settings,
+    updateSetting,
+    saveSettings,
+    saving,
+  };
+
+  if (loading) {
+    return (
+      <div className="settings-page">
+        <div style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+          Loading settings…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="settings-page">
-      {/* Settings header (navbar returns null on /settings) */}
       <header className="settings-header">
         <Link href={dashboardPath} className="settings-header-back">
           <i className="bi bi-arrow-left" />
@@ -78,15 +104,14 @@ function SettingsInner() {
         <h1 className="settings-header-title">Settings</h1>
       </header>
 
-      {/* Mobile tab selector */}
       <div className="settings-mobile-selector">
         <button
           className="settings-mobile-trigger"
           onClick={() => setMobileNavOpen(!mobileNavOpen)}
           type="button"
         >
-          <i className={`bi ${SETTINGS_TABS.find(t => t.key === activeTab)?.icon}`} />
-          <span>{SETTINGS_TABS.find(t => t.key === activeTab)?.label}</span>
+          <i className={`bi ${SETTINGS_TABS.find((t) => t.key === activeTab)?.icon}`} />
+          <span>{SETTINGS_TABS.find((t) => t.key === activeTab)?.label}</span>
           <i className={`bi bi-chevron-${mobileNavOpen ? 'up' : 'down'} settings-mobile-chevron`} />
         </button>
         {mobileNavOpen && (
@@ -110,7 +135,6 @@ function SettingsInner() {
       </div>
 
       <div className="settings-layout">
-        {/* Left sidebar nav (desktop) */}
         <aside className="settings-sidebar">
           <div className="settings-sidebar-header">
             <h1 className="settings-title">Settings</h1>
@@ -148,19 +172,52 @@ function SettingsInner() {
           </div>
         </aside>
 
-        {/* Right content area */}
         <main className="settings-content">
-          <ActivePanel onSave={handleSave} />
+          <ActivePanel {...panelProps} />
         </main>
       </div>
 
-      {/* Save toast */}
-      {saveToast && (
-        <div className="settings-toast">
-          <i className="bi bi-check-circle-fill" />
-          <span>Changes saved successfully</span>
+      <div
+        className="settings-global-save"
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          padding: '1rem 1.25rem',
+          marginTop: '1rem',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(15,20,25,0.95) 20%, #0f1419 100%)',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <div style={{ minHeight: '1.25rem' }}>
+          {error ? (
+            <p style={{ color: '#f87171', fontSize: '0.85rem', margin: 0 }}>{error}</p>
+          ) : saved ? (
+            <p style={{ color: '#10b981', fontSize: '0.85rem', margin: 0 }}>
+              <i className="bi bi-check-circle-fill" style={{ marginRight: '0.35rem' }} />
+              Settings saved
+            </p>
+          ) : (
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', margin: 0 }}>
+              Changes apply after you save
+            </p>
+          )}
         </div>
-      )}
+        <button
+          type="button"
+          className="settings-btn-primary"
+          onClick={handleSave}
+          disabled={saving}
+          style={{ opacity: saving ? 0.7 : 1 }}
+        >
+          {saving ? 'Saving…' : 'Save changes'}
+        </button>
+      </div>
     </div>
   );
 }

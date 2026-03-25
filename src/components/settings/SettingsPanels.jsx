@@ -7,12 +7,14 @@ import { supabase } from '@/lib/supabase';
 import { ManageBillingButton } from '@/components/ManageBillingButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useAuth } from '@/components/AuthProvider';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
    ═══════════════════════════════════════════════════════════ */
 
-export function MyDetailsPanel({ onSave }) {
+export function MyDetailsPanel({ onSave, settings, updateSetting }) {
+  const { user } = useAuth();
   const [avatarPreview, setAvatarPreview] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -27,6 +29,8 @@ export function MyDetailsPanel({ onSave }) {
     setAvatarPreview(url);
   };
 
+  const avatarSrc = avatarPreview || settings?.avatar_url;
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -36,8 +40,8 @@ export function MyDetailsPanel({ onSave }) {
       <div className="settings-section">
         <div className="settings-avatar-area">
           <div className="settings-avatar" onClick={() => fileInputRef.current?.click()}>
-            {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar preview" className="settings-avatar-img" />
+            {avatarSrc ? (
+              <img src={avatarSrc} alt="Avatar preview" className="settings-avatar-img" />
             ) : (
               <i className="bi bi-person-fill" />
             )}
@@ -45,55 +49,103 @@ export function MyDetailsPanel({ onSave }) {
           <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleAvatarChange} className="settings-avatar-input" />
           <div className="settings-avatar-actions">
             <span className="settings-avatar-name">Profile photo</span>
-            <span className="settings-avatar-hint">JPG, PNG. Max 2MB.</span>
+            <span className="settings-avatar-hint">JPG, PNG. Max 2MB. Paste an image URL below to sync across devices.</span>
             <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => fileInputRef.current?.click()}>Upload</button>
+          </div>
+        </div>
+        <div className="settings-row single">
+          <div className="settings-field">
+            <label className="settings-label">Profile image URL (optional)</label>
+            <input
+              type="url"
+              className="settings-input"
+              placeholder="https://…"
+              value={settings?.avatar_url || ''}
+              onChange={(e) => updateSetting('avatar_url', e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">First name</label>
-            <input type="text" className="settings-input" placeholder="John" />
+            <input
+              type="text"
+              className="settings-input"
+              placeholder="John"
+              value={settings?.first_name || ''}
+              onChange={(e) => updateSetting('first_name', e.target.value)}
+            />
           </div>
           <div className="settings-field">
             <label className="settings-label">Last name</label>
-            <input type="text" className="settings-input" placeholder="Doe" />
+            <input
+              type="text"
+              className="settings-input"
+              placeholder="Doe"
+              value={settings?.last_name || ''}
+              onChange={(e) => updateSetting('last_name', e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Email</label>
-            <input type="email" className="settings-input" placeholder="john@example.com" />
+            <input type="email" className="settings-input" placeholder="john@example.com" value={user?.email || ''} readOnly disabled style={{ opacity: 0.85 }} />
           </div>
           <div className="settings-field">
             <label className="settings-label">Phone</label>
-            <input type="tel" className="settings-input" placeholder="+1 (555) 000-0000" />
+            <input
+              type="tel"
+              className="settings-input"
+              placeholder="+1 (555) 000-0000"
+              value={settings?.phone || ''}
+              onChange={(e) => updateSetting('phone', e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Date of birth</label>
-            <input type="date" className="settings-input" />
+            <input
+              type="date"
+              className="settings-input"
+              value={settings?.date_of_birth || ''}
+              onChange={(e) => updateSetting('date_of_birth', e.target.value)}
+            />
           </div>
           <div className="settings-field">
             <label className="settings-label">Country</label>
-            <select className="settings-input">
-              <option>United States</option>
-              <option>Canada</option>
-              <option>United Kingdom</option>
+            <select className="settings-input" value={settings?.country || 'United States'} onChange={(e) => updateSetting('country', e.target.value)}>
+              <option value="United States">United States</option>
+              <option value="Canada">Canada</option>
+              <option value="United Kingdom">United Kingdom</option>
             </select>
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">City</label>
-            <input type="text" className="settings-input" placeholder="New York" />
+            <input
+              type="text"
+              className="settings-input"
+              placeholder="New York"
+              value={settings?.city || ''}
+              onChange={(e) => updateSetting('city', e.target.value)}
+            />
           </div>
           <div className="settings-field">
             <label className="settings-label">Timezone</label>
-            <select className="settings-input">
-              <option>America/New_York (EST)</option>
-              <option>America/Los_Angeles (PST)</option>
-              <option>America/Chicago (CST)</option>
+            <select className="settings-input" value={settings?.timezone || 'America/New_York'} onChange={(e) => updateSetting('timezone', e.target.value)}>
+              <option value="America/New_York">Eastern (ET)</option>
+              <option value="America/Chicago">Central (CT)</option>
+              <option value="America/Denver">Mountain (MT)</option>
+              <option value="America/Los_Angeles">Pacific (PT)</option>
+              <option value="America/Toronto">Toronto (ET)</option>
+              <option value="Europe/London">London (GMT)</option>
+              <option value="Europe/Paris">Paris (CET)</option>
+              <option value="Asia/Tokyo">Tokyo (JST)</option>
+              <option value="Asia/Shanghai">Shanghai (CST)</option>
+              <option value="Australia/Sydney">Sydney (AEST)</option>
             </select>
           </div>
         </div>
@@ -119,7 +171,7 @@ export function MyDetailsPanel({ onSave }) {
   );
 }
 
-export function AppearancePanel() {
+export function AppearancePanel({ settings, updateSetting, onSave }) {
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -128,32 +180,46 @@ export function AppearancePanel() {
       </div>
       <div className="settings-section">
         <h3 className="settings-section-title"><i className="bi bi-brightness-high" /> Theme</h3>
-        <p className="settings-appearance-hint">Switch between dark and light mode. Your preference is saved for this browser.</p>
+        <p className="settings-appearance-hint">Switch between dark and light mode. Click Save changes to sync across devices.</p>
         <div className="settings-appearance-row">
           <div>
             <span className="settings-label">Color mode</span>
             <p className="settings-appearance-sub">Dark reduces glare; light works well in bright rooms.</p>
           </div>
-          <ThemeToggle />
+          <ThemeToggle onThemeChange={(next) => updateSetting('theme', next)} />
+        </div>
+        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-translate" /> Language &amp; currency</h3>
+        <div className="settings-row">
+          <div className="settings-field">
+            <label className="settings-label">Language</label>
+            <select className="settings-input" value={settings?.language || 'en'} onChange={(e) => updateSetting('language', e.target.value)}>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
+          <div className="settings-field">
+            <label className="settings-label">Currency</label>
+            <select className="settings-input" value={settings?.currency || 'USD'} onChange={(e) => updateSetting('currency', e.target.value)}>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD (C$)</option>
+              <option value="AUD">AUD (A$)</option>
+              <option value="JPY">JPY (¥)</option>
+            </select>
+          </div>
+        </div>
+        <div className="settings-btn-row">
+          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
         </div>
       </div>
     </div>
   );
 }
 
-export function ProfilePanel({ onSave }) {
-  const [form, setForm] = useState({
-    username: '',
-    displayName: '',
-    bio: '',
-    website: '',
-    twitter: '',
-    linkedin: '',
-    investorType: 'retail',
-    experience: 'intermediate',
-    publicProfile: true,
-  });
-  const [saving, setSaving] = useState(false);
+export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, saving }) {
+  const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { isPartner } = usePartner();
@@ -163,52 +229,52 @@ export function ProfilePanel({ onSave }) {
     return session?.access_token || null;
   }, []);
 
-  const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-
   useEffect(() => {
     const loadProfile = async () => {
+      if (!isPartner) return;
       try {
         const token = await getToken();
         if (!token) return;
         const res = await fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        if (data.profile) {
-          setForm((prev) => ({
-            ...prev,
-            username: data.profile.username || '',
-            displayName: data.profile.display_name || '',
-          }));
+        if (data.profile?.username) {
+          setUsername(data.profile.username || '');
         }
       } catch (err) {
-        console.error('Failed to load profile:', err);
+        console.error('Failed to load partner profile:', err);
       }
     };
     loadProfile();
-  }, [getToken]);
+  }, [getToken, isPartner]);
 
   const handleSaveProfile = async () => {
-    setSaving(true);
     setError('');
     setSuccess('');
     try {
       const token = await getToken();
       if (!token) throw new Error('Not authenticated');
-      const res = await fetch('/api/partner/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          username: form.username || null,
-          displayName: form.displayName || null,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save');
-      setSuccess('Profile saved successfully');
-      onSave?.();
+
+      if (isPartner) {
+        const res = await fetch('/api/partner/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            username: username || null,
+            displayName: settings?.display_name || null,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save partner profile');
+      }
+
+      const ok = await saveSettings();
+      if (ok) {
+        setSuccess('Profile saved successfully');
+        onSave?.();
+        setTimeout(() => setSuccess(''), 2500);
+      }
     } catch (err) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
+      setError(err.message || 'Failed to save');
     }
   };
 
@@ -228,8 +294,8 @@ export function ProfilePanel({ onSave }) {
                 <input
                   type="text"
                   className="settings-input"
-                  value={form.username}
-                  onChange={(e) => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   placeholder="your_username"
                   maxLength={24}
                 />
@@ -243,7 +309,12 @@ export function ProfilePanel({ onSave }) {
             <span className="settings-toggle-label">Public profile</span>
             <span className="settings-toggle-desc">Allow others to view your profile and activity</span>
           </div>
-          <button type="button" className={`settings-switch ${form.publicProfile ? 'on' : ''}`} onClick={() => update('publicProfile', !form.publicProfile)} aria-label="Toggle public profile" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.privacy_show_profile ? 'on' : ''}`}
+            onClick={() => updateSetting('privacy_show_profile', !settings?.privacy_show_profile)}
+            aria-label="Toggle public profile"
+          />
         </div>
         <div className="settings-row single">
           <div className="settings-field">
@@ -252,21 +323,27 @@ export function ProfilePanel({ onSave }) {
               type="text"
               className="settings-input"
               placeholder="John D."
-              value={form.displayName}
-              onChange={(e) => update('displayName', e.target.value)}
+              value={settings?.display_name || ''}
+              onChange={(e) => updateSetting('display_name', e.target.value)}
             />
           </div>
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Bio</label>
-            <textarea className="settings-input" placeholder="Tell us about yourself..." rows={4} value={form.bio} onChange={(e) => update('bio', e.target.value)} />
+            <textarea
+              className="settings-input"
+              placeholder="Tell us about yourself..."
+              rows={4}
+              value={settings?.bio || ''}
+              onChange={(e) => updateSetting('bio', e.target.value)}
+            />
           </div>
         </div>
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Investor type</label>
-            <select className="settings-input" value={form.investorType} onChange={(e) => update('investorType', e.target.value)}>
+            <select className="settings-input" value={settings?.investor_type || 'retail'} onChange={(e) => updateSetting('investor_type', e.target.value)}>
               <option value="retail">Individual</option>
               <option value="professional">Professional</option>
               <option value="institutional">Institutional</option>
@@ -274,7 +351,7 @@ export function ProfilePanel({ onSave }) {
           </div>
           <div className="settings-field">
             <label className="settings-label">Experience level</label>
-            <select className="settings-input" value={form.experience} onChange={(e) => update('experience', e.target.value)}>
+            <select className="settings-input" value={settings?.experience_level || 'intermediate'} onChange={(e) => updateSetting('experience_level', e.target.value)}>
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
               <option value="advanced">Advanced</option>
@@ -285,17 +362,64 @@ export function ProfilePanel({ onSave }) {
         <div className="settings-row">
           <div className="settings-field">
             <label className="settings-label">Website</label>
-            <input type="url" className="settings-input" placeholder="https://" value={form.website} onChange={(e) => update('website', e.target.value)} />
+            <input type="url" className="settings-input" placeholder="https://" value={settings?.website || ''} onChange={(e) => updateSetting('website', e.target.value)} />
           </div>
           <div className="settings-field">
             <label className="settings-label">Twitter</label>
-            <input type="text" className="settings-input" placeholder="@username" value={form.twitter} onChange={(e) => update('twitter', e.target.value)} />
+            <input type="text" className="settings-input" placeholder="@username" value={settings?.twitter || ''} onChange={(e) => updateSetting('twitter', e.target.value)} />
           </div>
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">LinkedIn</label>
-            <input type="url" className="settings-input" placeholder="https://linkedin.com/in/..." value={form.linkedin} onChange={(e) => update('linkedin', e.target.value)} />
+            <input type="url" className="settings-input" placeholder="https://linkedin.com/in/..." value={settings?.linkedin || ''} onChange={(e) => updateSetting('linkedin', e.target.value)} />
+          </div>
+        </div>
+        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-shield-lock" /> Privacy</h3>
+        <div className="settings-toggle-row">
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Show my portfolio publicly</span>
+          </div>
+          <button type="button" className={`settings-switch ${settings?.privacy_show_portfolio ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_portfolio', !settings?.privacy_show_portfolio)} aria-label="Toggle portfolio visibility" />
+        </div>
+        <div className="settings-toggle-row">
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Show my activity in the community feed</span>
+          </div>
+          <button type="button" className={`settings-switch ${settings?.privacy_show_activity ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_activity', !settings?.privacy_show_activity)} aria-label="Toggle activity visibility" />
+        </div>
+        <div className="settings-toggle-row">
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Show me on the leaderboard</span>
+          </div>
+          <button type="button" className={`settings-switch ${settings?.privacy_show_on_leaderboard ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_on_leaderboard', !settings?.privacy_show_on_leaderboard)} aria-label="Toggle leaderboard" />
+        </div>
+        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-graph-up" /> Trading defaults</h3>
+        <div className="settings-row">
+          <div className="settings-field">
+            <label className="settings-label">Default watchlist</label>
+            <input type="text" className="settings-input" value={settings?.default_watchlist || 'main'} onChange={(e) => updateSetting('default_watchlist', e.target.value)} />
+          </div>
+          <div className="settings-field">
+            <label className="settings-label">Chart style</label>
+            <select className="settings-input" value={settings?.chart_style || 'candlestick'} onChange={(e) => updateSetting('chart_style', e.target.value)}>
+              <option value="candlestick">Candlestick</option>
+              <option value="line">Line</option>
+              <option value="bar">Bar</option>
+              <option value="area">Area</option>
+            </select>
+          </div>
+        </div>
+        <div className="settings-row single">
+          <div className="settings-field">
+            <label className="settings-label">Default chart timeframe</label>
+            <select className="settings-input" value={settings?.chart_timeframe || '1D'} onChange={(e) => updateSetting('chart_timeframe', e.target.value)}>
+              <option value="1D">1D</option>
+              <option value="5D">5D</option>
+              <option value="1M">1M</option>
+              <option value="3M">3M</option>
+              <option value="1Y">1Y</option>
+            </select>
           </div>
         </div>
         {error && (
@@ -327,9 +451,7 @@ function passwordStrength(pwd) {
   return { score, label: labels[score], pct: pcts[score] };
 }
 
-export function PasswordPanel({ onSave }) {
-  const [twoFA, setTwoFA] = useState(false);
-  const [loginAlerts, setLoginAlerts] = useState(true);
+export function PasswordPanel({ onSave, settings, updateSetting }) {
   const [newPassword, setNewPassword] = useState('');
   const strength = passwordStrength(newPassword);
   return (
@@ -369,14 +491,24 @@ export function PasswordPanel({ onSave }) {
             <span className="settings-toggle-label">Two-factor authentication</span>
             <span className="settings-toggle-desc">Add an extra layer of security</span>
           </div>
-          <button type="button" className={`settings-switch ${twoFA ? 'on' : ''}`} onClick={() => setTwoFA(!twoFA)} aria-label="Toggle 2FA" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.security_two_factor ? 'on' : ''}`}
+            onClick={() => updateSetting('security_two_factor', !settings?.security_two_factor)}
+            aria-label="Toggle 2FA"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Login alerts</span>
             <span className="settings-toggle-desc">Email when a new device signs in</span>
           </div>
-          <button type="button" className={`settings-switch ${loginAlerts ? 'on' : ''}`} onClick={() => setLoginAlerts(!loginAlerts)} aria-label="Toggle login alerts" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.security_login_alerts ? 'on' : ''}`}
+            onClick={() => updateSetting('security_login_alerts', !settings?.security_login_alerts)}
+            aria-label="Toggle login alerts"
+          />
         </div>
         <h3 className="settings-section-title"><i className="bi bi-laptop" />Active sessions</h3>
         <table className="settings-table">
@@ -559,9 +691,7 @@ export function BillingPanel({ onSave }) {
   );
 }
 
-export function EmailPanel({ onSave }) {
-  const [transactional, setTransactional] = useState(true);
-  const [marketing, setMarketing] = useState(false);
+export function EmailPanel({ onSave, settings, updateSetting }) {
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
@@ -575,14 +705,24 @@ export function EmailPanel({ onSave }) {
             <span className="settings-toggle-label">Order confirmations</span>
             <span className="settings-toggle-desc">Receipts and transaction confirmations</span>
           </div>
-          <button type="button" className={`settings-switch ${transactional ? 'on' : ''}`} onClick={() => setTransactional(!transactional)} aria-label="Toggle" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.email_transactional_confirmations ? 'on' : ''}`}
+            onClick={() => updateSetting('email_transactional_confirmations', !settings?.email_transactional_confirmations)}
+            aria-label="Toggle order confirmations"
+          />
         </div>
         <div className="settings-toggle-row">
           <div className="settings-toggle-info">
             <span className="settings-toggle-label">Security alerts</span>
             <span className="settings-toggle-desc">Login alerts and password changes</span>
           </div>
-          <button type="button" className="settings-switch on" aria-label="Toggle" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.email_security_alerts ? 'on' : ''}`}
+            onClick={() => updateSetting('email_security_alerts', !settings?.email_security_alerts)}
+            aria-label="Toggle security alerts email"
+          />
         </div>
         <h3 className="settings-section-title"><i className="bi bi-megaphone" />Marketing</h3>
         <div className="settings-toggle-row">
@@ -590,15 +730,24 @@ export function EmailPanel({ onSave }) {
             <span className="settings-toggle-label">Newsletter</span>
             <span className="settings-toggle-desc">Weekly market insights and tips</span>
           </div>
-          <button type="button" className={`settings-switch ${marketing ? 'on' : ''}`} onClick={() => setMarketing(!marketing)} aria-label="Toggle" />
+          <button
+            type="button"
+            className={`settings-switch ${settings?.email_marketing ? 'on' : ''}`}
+            onClick={() => updateSetting('email_marketing', !settings?.email_marketing)}
+            aria-label="Toggle newsletter"
+          />
         </div>
         <div className="settings-row single">
           <div className="settings-field">
             <label className="settings-label">Email frequency</label>
-            <select className="settings-input">
-              <option>Daily digest</option>
-              <option>Weekly digest</option>
-              <option>Monthly digest</option>
+            <select
+              className="settings-input"
+              value={settings?.email_digest_frequency || 'weekly'}
+              onChange={(e) => updateSetting('email_digest_frequency', e.target.value)}
+            >
+              <option value="daily">Daily digest</option>
+              <option value="weekly">Weekly digest</option>
+              <option value="monthly">Monthly digest</option>
             </select>
           </div>
         </div>
@@ -610,7 +759,7 @@ export function EmailPanel({ onSave }) {
   );
 }
 
-export function NotificationsPanel({ onSave }) {
+export function NotificationsPanel({ onSave, settings, updateSetting }) {
   const { isSubscribed, loading, supported, subscribe, unsubscribe } = useNotifications();
   const [toggling, setToggling] = useState(false);
   const [error, setError] = useState('');
@@ -621,6 +770,7 @@ export function NotificationsPanel({ onSave }) {
     if (isSubscribed) {
       const result = await unsubscribe();
       if (!result.success) setError(result.error || 'Could not disable notifications');
+      else updateSetting('notifications_desktop_enabled', false);
     } else {
       const result = await subscribe();
       if (!result.success) {
@@ -631,10 +781,19 @@ export function NotificationsPanel({ onSave }) {
         } else {
           setError(result.error || 'Failed to enable notifications');
         }
+      } else {
+        updateSetting('notifications_desktop_enabled', true);
       }
     }
     setToggling(false);
   };
+
+  const emailRows = [
+    { key: 'notifications_email_trades', label: 'Trade confirmations', desc: 'Receipts and fills' },
+    { key: 'notifications_email_alerts', label: 'Price alerts', desc: 'When your watchlist triggers fire' },
+    { key: 'notifications_email_community', label: 'Community replies and mentions', desc: 'When someone engages with you' },
+    { key: 'notifications_email_newsletter', label: 'Weekly newsletter', desc: 'Market insights and tips' },
+  ];
 
   return (
     <div className="settings-panel">
@@ -688,14 +847,27 @@ export function NotificationsPanel({ onSave }) {
             Email notifications
           </p>
           <p className="settings-toggle-desc" style={{ marginBottom: '0.75rem' }}>
-            Choose which updates you receive by email.
+            Choose which updates you receive by email. Click Save changes to sync.
           </p>
-          <p className="settings-push-placeholder">Coming soon</p>
+          {emailRows.map(({ key, label, desc }) => (
+            <div key={key} className="settings-toggle-row" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="settings-toggle-info">
+                <span className="settings-toggle-label">{label}</span>
+                <span className="settings-toggle-desc">{desc}</span>
+              </div>
+              <button
+                type="button"
+                className={`settings-switch ${settings?.[key] ? 'on' : ''}`}
+                onClick={() => updateSetting(key, !settings?.[key])}
+                aria-label={`Toggle ${label}`}
+              />
+            </div>
+          ))}
         </div>
 
         <div className="settings-btn-row">
           <button type="button" className="settings-btn-primary" onClick={onSave}>
-            Save other preferences
+            Save changes
           </button>
         </div>
       </div>
