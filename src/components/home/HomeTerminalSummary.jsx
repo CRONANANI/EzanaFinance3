@@ -48,6 +48,10 @@ export function HomeTerminalSummary({
   portfolioChange = 0,
   enrichedHoldings = [],
   loading = false,
+  hasUser = false,
+  weekPlaidTransactions = [],
+  weekTradeHistory = [],
+  weekActivityLoading = true,
 }) {
   const hasPortfolio = enrichedHoldings.length > 0;
   const todayPct = portfolioTotal > 0 ? (portfolioChange / portfolioTotal) * 100 : 0;
@@ -174,7 +178,17 @@ export function HomeTerminalSummary({
       {/* Row 2 — full width weekly recap (tabbed) */}
       <div className="hts-row hts-row-2">
         <div className="db-card hts-card hts-week-card">
-          <ThisWeekOnEzana hasPortfolio={hasPortfolio} />
+          <ThisWeekOnEzana
+            hasPortfolio={hasPortfolio}
+            hasUser={hasUser}
+            portfolioTotal={portfolioTotal}
+            portfolioChange={portfolioChange}
+            enrichedHoldings={enrichedHoldings}
+            portfolioLoading={loading}
+            weekPlaidTransactions={weekPlaidTransactions}
+            weekTradeHistory={weekTradeHistory}
+            weekActivityLoading={weekActivityLoading}
+          />
         </div>
       </div>
 

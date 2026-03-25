@@ -40,6 +40,9 @@ export default function HomeTerminalPage() {
   const [indexQuotes, setIndexQuotes] = useState({});
   const [loading, setLoading] = useState(true);
   const [marketLoading, setMarketLoading] = useState(true);
+  const [weekPlaidTransactions, setWeekPlaidTransactions] = useState([]);
+  const [weekTradeHistory, setWeekTradeHistory] = useState([]);
+  const [weekActivityLoading, setWeekActivityLoading] = useState(true);
 
   useEffect(() => {
     const tick = () =>
@@ -96,9 +99,66 @@ export default function HomeTerminalPage() {
     }
   }, []);
 
+  const fetchWeekRecap = useCallback(async () => {
+    if (!user) {
+      setWeekPlaidTransactions([]);
+      setWeekTradeHistory([]);
+      setWeekActivityLoading(false);
+      return;
+    }
+    setWeekActivityLoading(true);
+    try {
+      const monday = new Date();
+      const dow = monday.getDay();
+      const toMonday = dow === 0 ? -6 : 1 - dow;
+      monday.setDate(monday.getDate() + toMonday);
+      monday.setHours(0, 0, 0, 0);
+      const mondayStr = monday.toISOString().split('T')[0];
+      const mondayIso = monday.toISOString();
+
+      const [plaidRes, tradeRes] = await Promise.all([
+        supabase
+          .from('plaid_transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('transaction_date', mondayStr)
+          .order('transaction_date', { ascending: true }),
+        supabase
+          .from('trade_history')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('created_at', mondayIso)
+          .order('created_at', { ascending: true }),
+      ]);
+
+      if (plaidRes.error) {
+        console.warn('Week Plaid transactions:', plaidRes.error.message);
+        setWeekPlaidTransactions([]);
+      } else {
+        setWeekPlaidTransactions(plaidRes.data || []);
+      }
+      if (tradeRes.error) {
+        console.warn('Week trade history:', tradeRes.error.message);
+        setWeekTradeHistory([]);
+      } else {
+        setWeekTradeHistory(tradeRes.data || []);
+      }
+    } catch (err) {
+      console.error('Week recap fetch error:', err);
+      setWeekPlaidTransactions([]);
+      setWeekTradeHistory([]);
+    } finally {
+      setWeekActivityLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchPortfolio();
   }, [fetchPortfolio]);
+
+  useEffect(() => {
+    fetchWeekRecap();
+  }, [fetchWeekRecap]);
 
   useEffect(() => {
     fetchMarketData();
@@ -228,6 +288,10 @@ export default function HomeTerminalPage() {
         portfolioChange={portfolioChange}
         enrichedHoldings={enrichedHoldings}
         loading={loading}
+        hasUser={!!user}
+        weekPlaidTransactions={weekPlaidTransactions}
+        weekTradeHistory={weekTradeHistory}
+        weekActivityLoading={weekActivityLoading}
       />
 
       <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--bottom">

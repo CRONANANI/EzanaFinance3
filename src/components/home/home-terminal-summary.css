@@ -478,6 +478,26 @@
   padding-top: 0.75rem;
 }
 
+/* Centered header + tabs (This Week on Ezana) */
+.db-card-header.hts-week-header {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hts-week-header-titles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.hts-week-header-titles h3 {
+  margin: 0;
+}
+
 .hts-week-title-ico {
   font-style: normal;
 }
@@ -490,8 +510,32 @@
 }
 
 .hts-week-tabs {
+  display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
   margin-bottom: 0.75rem;
+}
+
+.hts-week-loading {
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
+.hts-week-leaderboard-link {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hts-week-leaderboard-link:hover {
+  text-decoration: underline;
+  color: #34d399;
 }
 
 .hts-week-panel {
