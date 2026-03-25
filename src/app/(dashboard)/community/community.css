@@ -410,6 +410,11 @@
   font-size: 0.75rem;
 }
 
+a.comm-lb-row {
+  text-decoration: none;
+  color: inherit;
+}
+
 .comm-lb-rank {
   font-weight: 800;
   color: #8b949e;
@@ -909,6 +914,125 @@
   .comm-lb-bar-wrap {
     grid-column: 1 / -1;
   }
+}
+
+/* Full leaderboard modal — matches db-card tokens */
+.comm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 9998;
+}
+
+.comm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.comm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  flex-shrink: 0;
+}
+
+.comm-modal-title {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.comm-modal-close {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  color: #6b7280;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.comm-modal-close:hover {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.comm-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.25rem 1.25rem;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--comm-scrollbar-thumb) var(--comm-scrollbar-track);
+}
+
+.comm-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comm-modal-body::-webkit-scrollbar-track {
+  background: var(--comm-scrollbar-track);
+  border-radius: 4px;
+}
+
+.comm-modal-body::-webkit-scrollbar-thumb {
+  background: var(--comm-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.comm-modal-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.1s;
+}
+
+.comm-modal-row:hover {
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.comm-modal-row:last-child {
+  border-bottom: none;
+}
+
+.comm-name-link {
+  color: #f0f6fc;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.comm-name-link:hover {
+  text-decoration: underline;
+  color: #10b981;
 }
 
 /* Light mode — mirror home-dashboard.css */

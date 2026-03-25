@@ -394,6 +394,24 @@ export function ProfilePanel({ onSave, settings, updateSetting, saveSettings, sa
           </div>
           <button type="button" className={`settings-switch ${settings?.privacy_show_on_leaderboard ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_on_leaderboard', !settings?.privacy_show_on_leaderboard)} aria-label="Toggle leaderboard" />
         </div>
+        <div className="settings-toggle-row">
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Show my trades publicly</span>
+          </div>
+          <button type="button" className={`settings-switch ${settings?.privacy_show_trades ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_trades', !settings?.privacy_show_trades)} aria-label="Toggle trades visibility" />
+        </div>
+        <div className="settings-toggle-row">
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Show my holdings</span>
+          </div>
+          <button type="button" className={`settings-switch ${settings?.privacy_show_holdings ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_holdings', !settings?.privacy_show_holdings)} aria-label="Toggle holdings visibility" />
+        </div>
+        <div className="settings-toggle-row">
+          <div className="settings-toggle-info">
+            <span className="settings-toggle-label">Show my watchlist</span>
+          </div>
+          <button type="button" className={`settings-switch ${settings?.privacy_show_watchlist ? 'on' : ''}`} onClick={() => updateSetting('privacy_show_watchlist', !settings?.privacy_show_watchlist)} aria-label="Toggle watchlist visibility" />
+        </div>
         <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-graph-up" /> Trading defaults</h3>
         <div className="settings-row">
           <div className="settings-field">

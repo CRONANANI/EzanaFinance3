@@ -28,7 +28,10 @@ export function getDefaultUserSettings() {
 
     privacy_show_profile: true,
     privacy_show_portfolio: false,
+    privacy_show_trades: false,
+    privacy_show_holdings: false,
     privacy_show_activity: true,
+    privacy_show_watchlist: false,
     privacy_show_on_leaderboard: true,
 
     first_name: '',
