@@ -1,5 +1,6 @@
 export {
   MyDetailsPanel,
+  AppearancePanel,
   ProfilePanel,
   PasswordPanel,
   FamilyPanel,
@@ -10,3 +11,4 @@ export {
   IntegrationsPanel,
   ApiPanel,
 } from './SettingsPanels';
+

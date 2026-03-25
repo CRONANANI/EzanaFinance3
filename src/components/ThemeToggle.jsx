@@ -3,12 +3,10 @@
 import { useTheme } from '@/components/ThemeProvider';
 
 /**
- * ThemeToggle — A sun/moon toggle button placed beside
- * the gear icon in the dashboard navbar.
+ * ThemeToggle — sun/moon control (used in Settings → Appearance).
  *
  * - Dark mode (default): shows sun icon (click to go light)
  * - Light mode: shows moon icon (click to go dark)
- * - Animated icon swap with rotation
  */
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();

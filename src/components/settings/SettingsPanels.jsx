@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePartner } from '@/contexts/PartnerContext';
 import { supabase } from '@/lib/supabase';
 import { ManageBillingButton } from '@/components/ManageBillingButton';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -111,6 +112,28 @@ export function MyDetailsPanel({ onSave }) {
               }
             }}>Delete account</button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AppearancePanel() {
+  return (
+    <div className="settings-panel">
+      <div className="settings-panel-header">
+        <h2 className="settings-panel-title">Appearance</h2>
+        <p className="settings-panel-desc">Choose how Ezana Finance looks on your device.</p>
+      </div>
+      <div className="settings-section">
+        <h3 className="settings-section-title"><i className="bi bi-brightness-high" /> Theme</h3>
+        <p className="settings-appearance-hint">Switch between dark and light mode. Your preference is saved for this browser.</p>
+        <div className="settings-appearance-row">
+          <div>
+            <span className="settings-label">Color mode</span>
+            <p className="settings-appearance-sub">Dark reduces glare; light works well in bright rooms.</p>
+          </div>
+          <ThemeToggle />
         </div>
       </div>
     </div>

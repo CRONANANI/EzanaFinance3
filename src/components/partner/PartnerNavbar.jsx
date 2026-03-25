@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
 import '@/app/(dashboard)/partner.css';
@@ -138,8 +137,7 @@ export function PartnerNavbar() {
         </div>
 
         <div className="nav-actions">
-          <ThemeToggle />
-          <Link href="/settings" className="nav-action-btn" title="Settings">
+          <Link href="/settings" className="nav-action-btn nav-settings-gear" title="Settings" aria-label="Settings">
             <i className="bi bi-gear" />
           </Link>
         </div>

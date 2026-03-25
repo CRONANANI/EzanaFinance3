@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   MyDetailsPanel,
+  AppearancePanel,
   ProfilePanel,
   PasswordPanel,
   FamilyPanel,
@@ -20,6 +21,7 @@ import './settings.css';
 
 const SETTINGS_TABS = [
   { key: 'my-details', label: 'My details', icon: 'bi-person', desc: 'Name, avatar, contact info' },
+  { key: 'appearance', label: 'Appearance', icon: 'bi-palette', desc: 'Theme & display' },
   { key: 'profile', label: 'Profile', icon: 'bi-card-heading', desc: 'Public profile & bio' },
   { key: 'password', label: 'Password', icon: 'bi-shield-lock', desc: 'Security & authentication' },
   { key: 'family', label: 'Family', icon: 'bi-people', desc: 'Linked family accounts' },
@@ -33,6 +35,7 @@ const SETTINGS_TABS = [
 
 const PANEL_MAP = {
   'my-details': MyDetailsPanel,
+  appearance: AppearancePanel,
   'profile': ProfilePanel,
   'password': PasswordPanel,
   'family': FamilyPanel,

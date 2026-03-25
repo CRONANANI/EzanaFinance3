@@ -218,7 +218,7 @@ body.light-mode .nav-logo-img {
   mix-blend-mode: darken;
 }
 
-/* Nav left zone — Logo only; bell + checklist live in .nav-actions (top right) */
+/* Nav left zone — Logo + bell + checklist (checklist right of bell) */
 .nav-left-zone {
   display: flex;
   align-items: center;

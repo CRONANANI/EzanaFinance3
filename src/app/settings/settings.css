@@ -269,6 +269,37 @@
   line-height: 1.5;
 }
 
+.settings-appearance-hint {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+.settings-appearance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.25rem;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 12px;
+}
+
+.settings-appearance-row .settings-label {
+  margin-bottom: 0.25rem;
+}
+
+.settings-appearance-sub {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+  max-width: 28rem;
+}
+
 /* Form sections */
 .settings-section {
   margin-bottom: 2rem;

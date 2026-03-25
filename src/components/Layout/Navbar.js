@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
 
@@ -217,11 +216,17 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav" data-tutorial="main-nav">
       <div className="nav-container">
-        {/* ── LEFT ZONE: Logo only ── */}
+        {/* ── LEFT ZONE: Logo + bell + checklist (checklist right of bell) ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
             <Image src="/ezana-logo.svg" alt="Ezana Finance" width={34} height={34} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
           </Link>
+          <div className="nav-bell-checklist-wrap">
+            <div className="nn-wrapper">
+              <NavNotifications />
+            </div>
+            {isAuthenticated && <ChecklistProgressIcon />}
+          </div>
         </div>
         <button
           className="mobile-hamburger"
@@ -287,14 +292,7 @@ export function Navbar() {
           </Link>
         </div>
         <div className="nav-actions">
-          <div className="nav-bell-checklist-wrap">
-            <div className="nn-wrapper">
-              <NavNotifications />
-            </div>
-            {isAuthenticated && <ChecklistProgressIcon />}
-          </div>
-          <ThemeToggle />
-          <Link href="/settings" className="nav-action-btn" title="Settings" aria-label="Settings">
+          <Link href="/settings" className="nav-action-btn nav-settings-gear" title="Settings" aria-label="Settings">
             <i className="bi bi-gear"></i>
           </Link>
         </div>

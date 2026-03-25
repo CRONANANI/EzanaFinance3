@@ -215,12 +215,27 @@ body:not(.light-mode) .dropdown-menu {
   margin-left: 1.5rem;
 }
 
-/* Bell + beginner checklist — grouped at start of nav-actions (checklist to the right of bell) */
+/* Bell + beginner checklist — beside logo (checklist to the right of bell) */
 .nav-bell-checklist-wrap {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+/* Settings gear — emerald accent */
+.main-nav .nav-action-btn.nav-settings-gear,
+.partner-nav .nav-action-btn.nav-settings-gear {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.main-nav .nav-action-btn.nav-settings-gear:hover,
+.partner-nav .nav-action-btn.nav-settings-gear:hover {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
 }
 
 .nav-action-btn {
