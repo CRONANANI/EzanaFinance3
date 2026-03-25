@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
+import { ThisWeekOnEzana } from './ThisWeekOnEzana';
 
 const MOCK_MOVERS = [
   { ticker: 'NVDA', pctChange: 4.2 },
@@ -170,36 +171,10 @@ export function HomeTerminalSummary({
         </div>
       </div>
 
-      {/* Row 2 — full width weekly recap */}
+      {/* Row 2 — full width weekly recap (tabbed) */}
       <div className="hts-row hts-row-2">
-        <div className="db-card hts-card">
-          <div className="db-card-header">
-            <h3>This Week on Ezana</h3>
-          </div>
-          <div className="hts-card-body">
-            <ul className="hts-weekly-lines">
-              <li>
-                <Link href="/home-dashboard">You made 7 trades this week</Link>
-              </li>
-              <li>
-                <Link href="/home-dashboard">
-                  Your portfolio is up +0.57% ($1,247)
-                </Link>
-              </li>
-              <li>
-                <Link href="/inside-the-capitol">Nancy Pelosi bought $1M–5M of NVDA</Link>
-              </li>
-              <li>
-                <Link href="/community">3 new discussions in communities you follow</Link>
-              </li>
-              <li>
-                <Link href="/watchlist">AAPL earnings report coming up Apr 8</Link>
-              </li>
-            </ul>
-            <p className="hts-weekly-footer">
-              You&apos;re more active than <span className="hts-accent-stat">68%</span> of users
-            </p>
-          </div>
+        <div className="db-card hts-card hts-week-card">
+          <ThisWeekOnEzana hasPortfolio={hasPortfolio} />
         </div>
       </div>
 

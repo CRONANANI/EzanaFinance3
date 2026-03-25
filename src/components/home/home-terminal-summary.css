@@ -469,6 +469,376 @@
   line-height: 1.5;
 }
 
+/* —— This Week on Ezana (tabbed) —— */
+.hts-week-card {
+  overflow: hidden;
+}
+
+.hts-week-card-body {
+  padding-top: 0.75rem;
+}
+
+.hts-week-title-ico {
+  font-style: normal;
+}
+
+.hts-week-date-range {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.hts-week-tabs {
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.hts-week-panel {
+  height: 280px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.hts-week-panel--scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.35) transparent;
+}
+
+.hts-week-panel--scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hts-week-panel--scroll::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.35);
+  border-radius: 3px;
+}
+
+.hts-week-tab-inner {
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.hts-week-tab-empty {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #8b949e;
+  font-size: 0.8125rem;
+}
+
+.hts-week-tab-empty .hts-label {
+  max-width: 18rem;
+  margin-top: 0.5rem;
+}
+
+.hts-week-chg-pos {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.hts-week-chg-neg {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.hts-week-metric-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.2rem;
+}
+
+.hts-week-metric-val {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.hts-week-metric-sub {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.hts-week-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.hts-week-best-worst {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.hts-week-inline-pair {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  font-size: 0.75rem;
+  color: #e2e8f0;
+}
+
+.hts-week-inline-pair .hts-week-metric-label {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.hts-week-inline-val {
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.hts-week-day-activity {
+  margin-top: 0.25rem;
+}
+
+.hts-week-day-labels,
+.hts-week-day-dots,
+.hts-week-day-counts {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+  text-align: center;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.hts-week-day-dots {
+  margin: 0.25rem 0;
+}
+
+.hts-week-trade-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 auto;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  display: block;
+}
+
+.hts-week-trade-dot.on {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.hts-week-day-caption {
+  font-size: 0.5625rem;
+  color: #4b5563;
+  margin: 0.25rem 0 0;
+  text-align: center;
+}
+
+.hts-week-compare {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 0.6875rem;
+  color: #8b949e;
+  line-height: 1.45;
+}
+
+/* Market tab */
+.hts-week-legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.6875rem;
+  color: #9ca3af;
+  line-height: 1.3;
+}
+
+.hts-week-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+
+.hts-week-chart-wrap {
+  flex: 1;
+  min-height: 160px;
+  width: 100%;
+}
+
+.hts-week-market-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Platform activity */
+.hts-week-activity-list {
+  gap: 0;
+  padding-right: 2px;
+}
+
+.hts-week-activity-row {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(3.5rem, auto) 1fr auto;
+  gap: 0.35rem 0.5rem;
+  align-items: start;
+  padding: 0.45rem 0.35rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.hts-week-activity-row:last-child {
+  border-bottom: none;
+}
+
+.hts-week-activity-row:hover {
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.hts-week-activity-icon {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.hts-week-activity-cat {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+.hts-week-activity-desc {
+  color: #e2e8f0;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.hts-week-activity-ago {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+/* Community tab */
+.hts-week-community {
+  gap: 0.45rem;
+  overflow-y: auto;
+}
+
+.hts-week-community-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.hts-week-mini-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(16, 185, 129, 0.08);
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.hts-week-mini-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.hts-week-mini-bar.wide {
+  margin-top: 0.35rem;
+}
+
+.hts-week-sentiment-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.hts-week-sentiment-track {
+  flex: 1;
+  min-width: 80px;
+  margin: 0;
+  height: 8px;
+}
+
+.hts-week-sentiment-pct {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #10b981;
+  white-space: nowrap;
+}
+
+.hts-week-body {
+  font-size: 0.75rem;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.hts-week-community-divider {
+  height: 1px;
+  background: rgba(16, 185, 129, 0.08);
+  margin: 0.25rem 0;
+}
+
+.hts-week-standing-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+}
+
+.hts-week-market {
+  gap: 0.35rem;
+}
+
+.hts-week-market .hts-week-chart-wrap {
+  flex: 1;
+  min-height: 140px;
+}
+
+.hts-week-community {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.35) transparent;
+}
+
+.hts-week-community::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hts-week-community::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.35);
+  border-radius: 3px;
+}
+
 /* —— Responsive —— */
 @media (max-width: 1024px) {
   .hts-row-1 {
@@ -547,4 +917,34 @@ body.light-mode .hts-pulse-change.positive {
 
 body.light-mode .hts-pulse-change.negative {
   color: #dc2626;
+}
+
+body.light-mode .hts-week-date-range {
+  color: #6b7280;
+}
+
+body.light-mode .hts-week-metric-val,
+body.light-mode .hts-week-inline-val {
+  color: #111827;
+}
+
+body.light-mode .hts-week-activity-desc,
+body.light-mode .hts-week-body {
+  color: #374151;
+}
+
+body.light-mode .hts-week-activity-row:hover {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+body.light-mode .hts-week-activity-row {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .hts-week-inline-pair {
+  color: #4b5563;
+}
+
+body.light-mode .hts-week-compare {
+  color: #6b7280;
 }
