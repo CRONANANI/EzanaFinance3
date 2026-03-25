@@ -12,6 +12,11 @@ export async function middleware(request) {
     return NextResponse.next({ request: { headers: request.headers } });
   }
 
+  /** Alpaca Broker webhooks — no auth cookie; forward as-is */
+  if (pathname.startsWith('/api/trading/webhook')) {
+    return NextResponse.next({ request: { headers: request.headers } });
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
