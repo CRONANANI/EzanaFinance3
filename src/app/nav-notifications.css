@@ -353,6 +353,48 @@
 }
 .nn-item-dismiss:hover { background: rgba(239, 68, 68, 0.2); }
 
+.nn-friend-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.nn-friend-accept,
+.nn-friend-decline {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.nn-friend-accept {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+.nn-friend-accept:hover {
+  background: rgba(16, 185, 129, 0.25);
+}
+.nn-friend-decline {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+}
+.nn-friend-decline:hover {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+body.light-mode .nn-friend-accept {
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+body.light-mode .nn-friend-decline {
+  color: #6b7280;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 
 /* ══════════════════════════════
    MOBILE: Fullscreen Overlay

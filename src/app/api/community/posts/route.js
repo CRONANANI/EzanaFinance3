@@ -130,12 +130,31 @@ export async function POST(request) {
     const body = await request.json();
     const content = typeof body.content === 'string' ? body.content : '';
     const mentioned_ticker = body.mentioned_ticker ? String(body.mentioned_ticker).slice(0, 8) : null;
+    const parent_post_id =
+      typeof body.parent_post_id === 'string' && body.parent_post_id.length > 0 ? body.parent_post_id : null;
 
     if (!content.trim()) {
       return NextResponse.json({ error: 'Post content is required' }, { status: 400 });
     }
-    if (content.length > 1000) {
-      return NextResponse.json({ error: 'Post must be under 1000 characters' }, { status: 400 });
+
+    const isComment = !!parent_post_id;
+    const maxLen = isComment ? 500 : 1000;
+    if (content.length > maxLen) {
+      return NextResponse.json(
+        { error: isComment ? `Comment must be under ${maxLen} characters` : `Post must be under ${maxLen} characters` },
+        { status: 400 }
+      );
+    }
+
+    if (isComment) {
+      const { data: parent, error: pErr } = await supabaseAdmin
+        .from('community_posts')
+        .select('id, parent_post_id')
+        .eq('id', parent_post_id)
+        .maybeSingle();
+      if (pErr || !parent || parent.parent_post_id != null) {
+        return NextResponse.json({ error: 'Parent post not found' }, { status: 400 });
+      }
     }
 
     const supabase = createServerSupabase();
@@ -149,9 +168,10 @@ export async function POST(request) {
       .insert({
         user_id: user.id,
         content: content.trim(),
-        mentioned_ticker: mentioned_ticker || null,
+        mentioned_ticker: isComment ? null : mentioned_ticker || null,
+        parent_post_id: parent_post_id || null,
       })
-      .select('id, user_id, content, mentioned_ticker, likes_count, comments_count, reposts_count, created_at')
+      .select('id, user_id, content, mentioned_ticker, likes_count, comments_count, reposts_count, created_at, parent_post_id')
       .single();
 
     if (error) {

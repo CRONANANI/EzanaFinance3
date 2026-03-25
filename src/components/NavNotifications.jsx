@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useAuth } from '@/components/AuthProvider';
 
 /* ═══════════════════════════════════════════════════════════
    SAMPLE DATA — replace with real subscription-based
@@ -44,6 +45,7 @@ function getTimeAgo(ts) {
  * Completely replaces the old NotificationsSidebar + SidebarContext.
  */
 export function NavNotifications() {
+  const { user, isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS);
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -89,6 +91,54 @@ export function NavNotifications() {
     setIsOpen(false);
     setExpandedId(null);
   }, []);
+
+  const respondFriendRequest = useCallback(async (requestId, status) => {
+    try {
+      await fetch('/api/community/friend-request', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: requestId, status }),
+      });
+      setNotifications((prev) => prev.filter((n) => n.friendRequestId !== requestId));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/community/friend-request');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (cancelled) return;
+        const requests = json.requests || [];
+        const frNotifs = requests.map((r) => ({
+          id: `fr-${r.id}`,
+          type: 'community',
+          title: `${r.sender_name} sent you a friend request`,
+          content: 'Accept to connect and follow each other.',
+          time: new Date(r.created_at).getTime(),
+          read: false,
+          icon: 'bi-person-plus',
+          badge: 'Community',
+          priority: 'medium',
+          friendRequestId: r.id,
+        }));
+        setNotifications((prev) => {
+          const withoutFr = prev.filter((n) => !String(n.id).startsWith('fr-'));
+          return [...frNotifs, ...withoutFr];
+        });
+      } catch {
+        /* table may not exist yet */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, user]);
 
   /* Close dropdown on outside click (desktop) */
   useEffect(() => {
@@ -167,6 +217,7 @@ export function NavNotifications() {
             expanded={expandedId === n.id}
             onToggle={() => toggleExpand(n.id)}
             onDismiss={(e) => dismissNotification(n.id, e)}
+            onFriendRespond={respondFriendRequest}
           />
         ))
       )}
@@ -259,7 +310,7 @@ export function NavNotifications() {
    Used identically in desktop dropdown and mobile overlay.
    Click to expand/collapse. Shows dismiss X when expanded.
    ═══════════════════════════════════════════════════════════ */
-function NotificationItem({ notification: n, expanded, onToggle, onDismiss }) {
+function NotificationItem({ notification: n, expanded, onToggle, onDismiss, onFriendRespond }) {
   return (
     <button
       type="button"
@@ -278,6 +329,24 @@ function NotificationItem({ notification: n, expanded, onToggle, onDismiss }) {
           <span className="nn-item-title">{n.title}</span>
           {expanded && (
             <p className="nn-item-content">{n.content}</p>
+          )}
+          {expanded && n.friendRequestId && onFriendRespond && (
+            <div className="nn-friend-actions" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="nn-friend-accept"
+                onClick={() => onFriendRespond(n.friendRequestId, 'accepted')}
+              >
+                Accept
+              </button>
+              <button
+                type="button"
+                className="nn-friend-decline"
+                onClick={() => onFriendRespond(n.friendRequestId, 'rejected')}
+              >
+                Decline
+              </button>
+            </div>
           )}
         </div>
         <div className="nn-item-right">

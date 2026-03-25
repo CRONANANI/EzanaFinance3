@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/plaid';
+import { isValidUuid } from '@/lib/uuid';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,12 @@ export async function GET(request, { params }) {
   try {
     const userId = params.userId;
     if (!userId) return NextResponse.json({ error: 'Missing user id' }, { status: 400 });
+    if (!isValidUuid(userId)) {
+      return NextResponse.json(
+        { error: 'Invalid profile link. Open a member from search or the leaderboard — names without an account use placeholder links only.' },
+        { status: 400 }
+      );
+    }
 
     const supabase = createServerSupabase();
     const {
@@ -58,6 +65,47 @@ export async function GET(request, { params }) {
       isFollowing = !!fr;
     }
 
+    let badges = [];
+    const { data: earnedBadges, error: badgeErr } = await supabaseAdmin
+      .from('partner_badges')
+      .select('badge_id, earned_at')
+      .eq('partner_id', userId);
+
+    if (!badgeErr && earnedBadges?.length) {
+      const badgeIds = earnedBadges.map((b) => b.badge_id);
+      const { data: defs } = await supabaseAdmin.from('badge_definitions').select('*').in('id', badgeIds);
+      const earnedMap = Object.fromEntries(earnedBadges.map((b) => [b.badge_id, b.earned_at]));
+      badges = (defs || []).map((d) => ({
+        id: d.id,
+        name: d.badge_name,
+        icon: d.badge_icon,
+        description: d.badge_description,
+        category: d.badge_category,
+        earnedAt: earnedMap[d.id] || null,
+      }));
+    }
+
+    let likesGiven = 0;
+    const { count: lc, error: likeErr } = await supabaseAdmin
+      .from('post_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    if (!likeErr) likesGiven = lc || 0;
+
+    const strategiesRaw = settings.investment_strategies;
+    const strategies = Array.isArray(strategiesRaw)
+      ? strategiesRaw
+      : typeof strategiesRaw === 'string' && strategiesRaw.trim()
+        ? strategiesRaw.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
+
+    const favoriteTools = settings.favorite_research_tools;
+    const favoriteResearchTools = Array.isArray(favoriteTools)
+      ? favoriteTools
+      : typeof favoriteTools === 'string' && favoriteTools.trim()
+        ? favoriteTools.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
+
     return NextResponse.json({
       profile: {
         id: profileRow.id,
@@ -77,7 +125,21 @@ export async function GET(request, { params }) {
         followers: followerCount || 0,
         following: followingCount || 0,
         posts: postCount || 0,
+        likes_given: likesGiven || 0,
       },
+      badges,
+      performance:
+        settings.privacy_show_portfolio === true
+          ? {
+              return_pct: settings.portfolio_return_pct ?? null,
+              total_trades: settings.portfolio_total_trades ?? null,
+              win_rate: settings.portfolio_win_rate ?? null,
+              best_stock: settings.portfolio_best_stock ?? null,
+            }
+          : null,
+      strategies,
+      courses: [],
+      favorite_research_tools: favoriteResearchTools.slice(0, 6),
     });
   } catch (e) {
     console.error('profile API', e);

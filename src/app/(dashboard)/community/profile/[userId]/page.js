@@ -227,6 +227,133 @@ export default function CommunityUserProfilePage() {
         )}
       </div>
 
+      {(data.badges || []).length > 0 && (
+        <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+          <div className="db-card-header">
+            <h3>Badges</h3>
+          </div>
+          <div style={{ padding: '0 1.25rem 1.25rem', display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
+            {data.badges.map((b) => (
+              <div
+                key={b.id}
+                title={b.description || b.name}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: 10,
+                  background: 'rgba(16, 185, 129, 0.06)',
+                  border: '1px solid rgba(16, 185, 129, 0.12)',
+                  fontSize: '0.75rem',
+                  color: '#e2e8f0',
+                }}
+              >
+                <span style={{ marginRight: '0.35rem' }}>{b.icon || '🏅'}</span>
+                {b.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.performance && p.privacy_show_portfolio && (
+        <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+          <div className="db-card-header">
+            <h3>Performance summary</h3>
+          </div>
+          <div style={{ padding: '0 1.25rem 1.25rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem' }}>
+            <div>
+              <span className="comm-stat-label">Return</span>
+              <p style={{ color: '#f0f6fc', fontWeight: 800, margin: '0.25rem 0 0', fontSize: '1rem' }}>
+                {data.performance.return_pct != null ? `${data.performance.return_pct}%` : '—'}
+              </p>
+            </div>
+            <div>
+              <span className="comm-stat-label">Trades</span>
+              <p style={{ color: '#f0f6fc', fontWeight: 800, margin: '0.25rem 0 0', fontSize: '1rem' }}>
+                {data.performance.total_trades ?? '—'}
+              </p>
+            </div>
+            <div>
+              <span className="comm-stat-label">Win rate</span>
+              <p style={{ color: '#f0f6fc', fontWeight: 800, margin: '0.25rem 0 0', fontSize: '1rem' }}>
+                {data.performance.win_rate != null ? `${data.performance.win_rate}%` : '—'}
+              </p>
+            </div>
+            <div>
+              <span className="comm-stat-label">Best stock</span>
+              <p style={{ color: '#f0f6fc', fontWeight: 700, margin: '0.25rem 0 0', fontSize: '0.875rem' }}>
+                {data.performance.best_stock || '—'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+        <div className="db-card-header">
+          <h3>Trading strategies</h3>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {(data.strategies || []).length > 0 ? (
+            <ul style={{ margin: 0, paddingLeft: '1.1rem', color: '#e2e8f0', fontSize: '0.8125rem' }}>
+              {data.strategies.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: '#6b7280', fontSize: '0.8125rem', margin: 0 }}>No strategies shared</p>
+          )}
+        </div>
+      </div>
+
+      {p.privacy_show_activity !== false && (
+        <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+          <div className="db-card-header">
+            <h3>Community activity</h3>
+          </div>
+          <div style={{ padding: '0 1.25rem 1.25rem', color: '#8b949e', fontSize: '0.8125rem', lineHeight: 1.6 }}>
+            <p style={{ margin: '0 0 0.5rem' }}>
+              <strong style={{ color: '#e2e8f0' }}>{data.counts?.posts ?? 0}</strong> posts ·{' '}
+              <strong style={{ color: '#e2e8f0' }}>{data.counts?.likes_given ?? 0}</strong> likes given
+            </p>
+            <p style={{ margin: 0, fontSize: '0.75rem' }}>Recent posts are listed below.</p>
+          </div>
+        </div>
+      )}
+
+      <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+        <div className="db-card-header">
+          <h3>Learning Center</h3>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {(data.courses || []).length > 0 ? (
+            <ul style={{ margin: 0, paddingLeft: '1.1rem', color: '#e2e8f0', fontSize: '0.8125rem' }}>
+              {data.courses.map((c) => (
+                <li key={c.id || c.name}>{c.name || c.title}</li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: '#6b7280', fontSize: '0.8125rem', margin: 0 }}>No courses enrolled</p>
+          )}
+        </div>
+      </div>
+
+      <div className="db-card" style={{ marginBottom: '1.25rem' }}>
+        <div className="db-card-header">
+          <h3>Favorite research tools</h3>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {(data.favorite_research_tools || []).length > 0 ? (
+            <p style={{ color: '#e2e8f0', fontSize: '0.8125rem', margin: 0, lineHeight: 1.45 }}>
+              Most used: {data.favorite_research_tools.join(', ')}
+            </p>
+          ) : (
+            <p style={{ color: '#6b7280', fontSize: '0.8125rem', margin: 0 }}>
+              Activity-based insights coming soon. Explore Company Research, Market Analysis, and Congressional tools from the nav.
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="db-card">
         <div className="db-card-header">
           <h3>Posts</h3>

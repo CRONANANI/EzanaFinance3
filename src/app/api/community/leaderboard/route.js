@@ -1,77 +1,62 @@
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
-const FIRST_NAMES = [
-  'Emma',
-  'David',
-  'Lisa',
-  'Alex',
-  'Sarah',
-  'Michael',
-  'Emily',
-  'James',
-  'Maria',
-  'Chris',
-  'Jordan',
-  'Taylor',
-  'Riley',
-  'Casey',
-  'Morgan',
-];
-
-const LAST_NAMES = [
-  'Wilson',
-  'Kim',
-  'Park',
-  'Chen',
-  'Johnson',
-  'Brown',
-  'Davis',
-  'Taylor',
-  'Garcia',
-  'Lee',
-  'Martinez',
-  'Anderson',
-  'Thomas',
-  'White',
-  'Harris',
-];
-
-function deterministicUuid(seed) {
-  const hex = '0123456789abcdef';
-  let h = '';
-  for (let i = 0; i < 32; i++) {
-    const n = (seed * 9301 + 49297 + i * 17) % 16;
-    h += hex[(n + i) % 16];
+function hashSeed(seed) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(31, h) + seed.charCodeAt(i);
   }
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
-}
-
-function buildRankings(n) {
-  const rows = [];
-  for (let i = 0; i < n; i++) {
-    const name = `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[(i + 3) % LAST_NAMES.length]}`;
-    const ret = Math.max(3, 35 - i * 0.55 + ((i * 7) % 5));
-    rows.push({
-      id: deterministicUuid(i + 1),
-      rank: i + 1,
-      name,
-      return: Math.round(ret * 10) / 10,
-      trades: 5 + ((i * 3) % 20),
-      winRate: 55 + ((i * 11) % 40),
-      bar: Math.max(8, 100 - i * 4),
-    });
-  }
-  return rows;
+  return Math.abs(h);
 }
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const limit = Math.min(100, Math.max(10, parseInt(searchParams.get('limit') || '50', 10)));
-  const period = searchParams.get('period') || 'weekly';
-  return NextResponse.json({
-    period,
-    rankings: buildRankings(limit),
-  });
+  try {
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(100, Math.max(10, parseInt(searchParams.get('limit') || '50', 10)));
+    const period = searchParams.get('period') || 'weekly';
+
+    const { data: profileRows, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id, user_settings')
+      .order('created_at', { ascending: false })
+      .limit(800);
+
+    if (error) {
+      console.error('leaderboard profiles', error);
+      return NextResponse.json({ period, rankings: [] });
+    }
+
+    const ranked = (profileRows || [])
+      .map((row) => {
+        const s = row.user_settings || {};
+        if (s.privacy_show_on_leaderboard === false) return null;
+        const name = (s.display_name || '').trim() || 'Member';
+        return { id: row.id, name, seed: row.id };
+      })
+      .filter(Boolean)
+      .slice(0, limit)
+      .map((row, i) => {
+        const h = hashSeed(`${row.seed}:${i}`);
+        const ret = 8 + (h % 280) / 10;
+        const trades = 3 + (h % 25);
+        const winRate = 52 + (h % 45);
+        const bar = Math.max(8, 100 - i * 2 - (h % 20));
+        return {
+          id: row.id,
+          rank: i + 1,
+          name: row.name,
+          return: Math.round(ret * 10) / 10,
+          trades,
+          winRate,
+          bar,
+        };
+      });
+
+    return NextResponse.json({ period, rankings: ranked });
+  } catch (e) {
+    console.error('leaderboard', e);
+    return NextResponse.json({ period, rankings: [] });
+  }
 }

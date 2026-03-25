@@ -5,9 +5,9 @@ import '@/app/(dashboard)/community/community.css';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { LeaderboardModal } from '@/components/community/LeaderboardModal';
+import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LEGENDARY_INVESTOR_LIST } from '@/config/legendaryInvestors';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
 
@@ -58,117 +58,6 @@ function CommunityUserLink({ userId, children, className, style }) {
   );
 }
 
-function FeedPost({ post, expanded, onToggle, onLike, onSave, quote }) {
-  const router = useRouter();
-  const previewLen = 120;
-  const text = post.text || '';
-  const long = text.length > previewLen;
-  const shown = expanded || !long ? text : `${text.slice(0, previewLen).trim()}…`;
-
-  return (
-    <div className="comm-post-block">
-      <div
-        className="comm-post"
-        role="button"
-        tabIndex={0}
-        onClick={() => onToggle(post.id)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onToggle(post.id);
-          }
-        }}
-      >
-        <div className="comm-post-head">
-          <div className="comm-post-meta">
-            <div className="comm-avatar" aria-hidden>
-              {post.initials}
-            </div>
-            <div>
-              {post.userId ? (
-                <span
-                  role="link"
-                  tabIndex={0}
-                  className="comm-name-link comm-post-name"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/community/profile/${post.userId}`);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.stopPropagation();
-                      router.push(`/community/profile/${post.userId}`);
-                    }
-                  }}
-                >
-                  {post.name}
-                </span>
-              ) : (
-                <span className="comm-post-name">{post.name}</span>
-              )}
-              <span className="comm-post-time"> · {post.time}</span>
-            </div>
-          </div>
-          {post.badge && <span className="comm-post-badge">{post.badge}</span>}
-        </div>
-        <p className="comm-post-text">
-          {shown}
-          {long && !expanded && <span className="comm-post-expand"> read more</span>}
-        </p>
-        {post.tickerSym && (
-          <div className="comm-ticker-embed">
-            <span className="comm-ticker-sym">{post.tickerSym}</span>
-            {quote ? (
-              <>
-                <span className="comm-ticker-price">${quote.price?.toFixed(2) ?? '—'}</span>
-                <span className={`comm-ticker-chg ${(quote.changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}>
-                  {(quote.changePercent ?? 0) >= 0 ? '▲' : '▼'}{' '}
-                  {(quote.changePercent ?? 0) >= 0 ? '+' : ''}
-                  {(quote.changePercent ?? 0).toFixed(2)}%
-                </span>
-              </>
-            ) : (
-              <span className="comm-ticker-price" style={{ color: '#6b7280', fontSize: '0.6875rem' }}>
-                Quote unavailable
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-      <div className="comm-engage">
-        <button
-          type="button"
-          className="comm-engage-btn"
-          aria-label="Like"
-          onClick={(e) => {
-            e.stopPropagation();
-            onLike(post.id, post.liked_by_me);
-          }}
-        >
-          <span aria-hidden>❤️</span> {post.likes}
-        </button>
-        <button type="button" className="comm-engage-btn" aria-label="Comment">
-          <span aria-hidden>💬</span> {post.comments}
-        </button>
-        <button type="button" className="comm-engage-btn" aria-label="Repost">
-          <span aria-hidden>🔄</span> {post.reposts}
-        </button>
-        <button
-          type="button"
-          className="comm-engage-btn"
-          aria-label="Save"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSave(post.id, post.saved_by_me);
-          }}
-        >
-          <span aria-hidden>📌</span> {post.saved_by_me ? 'Saved' : 'Save'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function tabToParam(key) {
   if (key === 'my-posts') return 'my-posts';
   return key;
@@ -189,6 +78,9 @@ export default function CommunityPageClient() {
   const [quoteMap, setQuoteMap] = useState({});
   const [lbRows, setLbRows] = useState([]);
   const [lbModalOpen, setLbModalOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchBusy, setSearchBusy] = useState(false);
+  const [friendBusy, setFriendBusy] = useState({});
 
   const fetchFeed = useCallback(async () => {
     setFeedLoading(true);
@@ -281,6 +173,41 @@ export default function CommunityPageClient() {
     };
   }, [lbPeriod]);
 
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setSearchBusy(true);
+      try {
+        const res = await fetch(`/api/community/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setSearchResults(data.users || []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchBusy(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const sendFriendRequest = async (receiverId) => {
+    if (!user || user.id === receiverId) return;
+    setFriendBusy((b) => ({ ...b, [receiverId]: true }));
+    try {
+      await fetch('/api/community/friend-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiver_id: receiverId }),
+      });
+    } finally {
+      setFriendBusy((b) => ({ ...b, [receiverId]: false }));
+    }
+  };
+
   const toggleExpand = (id) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
@@ -331,6 +258,12 @@ export default function CommunityPageClient() {
     } catch {
       fetchFeed();
     }
+  };
+
+  const handleCommentPosted = (postId) => {
+    setFeedPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, comments: (p.comments || 0) + 1 } : p))
+    );
   };
 
   const submitPost = async () => {
@@ -393,11 +326,44 @@ export default function CommunityPageClient() {
         <i className="bi bi-search" aria-hidden />
         <input
           className="comm-search-input"
-          placeholder="Search users, partners, creators, or money managers..."
+          placeholder="Search users by name (min. 2 characters)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           aria-label="Search community"
+          autoComplete="off"
         />
+        {search.trim().length >= 2 && (
+          <div className="comm-search-dropdown" role="listbox" aria-label="Search results">
+            {searchBusy && <div className="comm-search-status">Searching…</div>}
+            {!searchBusy && searchResults.length === 0 && (
+              <div className="comm-search-status">No users found</div>
+            )}
+            {!searchBusy &&
+              searchResults.map((u) => (
+                <div key={u.id} className="comm-search-row">
+                  <Link href={`/community/profile/${u.id}`} className="comm-search-hit">
+                    <div className="comm-search-av" aria-hidden>
+                      {getInitials(u.full_name)}
+                    </div>
+                    <div className="comm-search-meta">
+                      <span className="comm-search-name">{u.full_name}</span>
+                      {u.bio ? <span className="comm-search-bio">{u.bio}</span> : null}
+                    </div>
+                  </Link>
+                  {user && user.id !== u.id ? (
+                    <button
+                      type="button"
+                      className="comm-search-friend-btn"
+                      disabled={friendBusy[u.id]}
+                      onClick={() => sendFriendRequest(u.id)}
+                    >
+                      {friendBusy[u.id] ? '…' : 'Add friend'}
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+          </div>
+        )}
       </div>
 
       <div className="comm-row-1">
@@ -447,7 +413,7 @@ export default function CommunityPageClient() {
             {showEmptyFeed && !feedMessage && <p className="comm-empty">No posts yet. Be the first to share!</p>}
             {!feedLoading &&
               feedPosts.map((post) => (
-                <FeedPost
+                <CommunityFeedPost
                   key={post.id}
                   post={post}
                   expanded={expandedId === post.id}
@@ -455,6 +421,7 @@ export default function CommunityPageClient() {
                   onLike={handleLike}
                   onSave={handleSave}
                   quote={post.tickerSym ? quoteMap[post.tickerSym] : null}
+                  onCommentPosted={handleCommentPosted}
                 />
               ))}
           </div>
