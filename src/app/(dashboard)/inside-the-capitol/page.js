@@ -41,6 +41,18 @@ const LATEST_TRADES = [
 const PERF_WINDOWS = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y'];
 const PERF_LABELS = { '1W': '1 Week', '1M': '1 Month', '3M': '3 Months', '6M': '6 Months', '1Y': '1 Year', '3Y': '3 Years', '5Y': '5 Years', '10Y': '10 Years' };
 
+/** X-axis time context labels for the selected return window (shown along chart baseline) */
+const PERF_X_AXIS_LABELS = {
+  '1W': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  '1M': ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+  '3M': ['Jan', 'Feb', 'Mar'],
+  '6M': ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  '1Y': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  '3Y': ['2024', '2025', '2026'],
+  '5Y': ['2022', '2023', '2024', '2025', '2026'],
+  '10Y': ['2017', '2019', '2021', '2023', '2025', '2026'],
+};
+
 const POLITICIAN_PERF = [
   { name: 'Nancy Pelosi', initials: 'NP', party: 'Democrat', chamber: 'House', state: 'CA',
     topHoldings: ['NVDA', 'AAPL', 'MSFT'],
@@ -76,8 +88,8 @@ const POLITICIAN_PERF = [
 
 /* ── Politician Performance Chart ── */
 const PC_W = 780;
-const PC_H = 380;
-const PC_PAD = { top: 50, right: 40, bottom: 50, left: 60 };
+const PC_H = 392;
+const PC_PAD = { top: 50, right: 40, bottom: 62, left: 60 };
 const PC_DOT_R = 6;
 
 function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
@@ -94,6 +106,7 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
   const yMin = Math.min(Math.floor((Math.min(...returns) - 5) / 10) * 10, 0);
   const innerW = PC_W - PC_PAD.left - PC_PAD.right;
   const innerH = PC_H - PC_PAD.top - PC_PAD.bottom;
+  const xAxisLabels = PERF_X_AXIS_LABELS[tw] || [];
 
   const getX = (i) => PC_PAD.left + (i / (sorted.length - 1)) * innerW;
   const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
@@ -140,6 +153,25 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
 
         <line x1={PC_PAD.left} y1={PC_PAD.top} x2={PC_PAD.left} y2={PC_PAD.top + innerH} stroke="rgba(16,185,129,.3)" strokeWidth="1" />
         <line x1={PC_PAD.left} y1={PC_PAD.top + innerH} x2={PC_W - PC_PAD.right} y2={PC_PAD.top + innerH} stroke="rgba(16,185,129,.3)" strokeWidth="1" />
+
+        {xAxisLabels.map((lab, li) => {
+          const n = xAxisLabels.length;
+          const lx = n <= 1 ? PC_PAD.left + innerW / 2 : PC_PAD.left + (li / (n - 1)) * innerW;
+          const fs = tw === '1Y' ? 7.5 : 9;
+          return (
+            <text
+              key={`${tw}-x-${li}`}
+              x={lx}
+              y={PC_PAD.top + innerH + 18}
+              textAnchor="middle"
+              fill="#6b7280"
+              fontSize={fs}
+              fontFamily="Plus Jakarta Sans, sans-serif"
+            >
+              {lab}
+            </text>
+          );
+        })}
 
         <path d={areaPath} fill="url(#itcPerfGrad)" />
         <path d={linePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
@@ -207,13 +239,6 @@ const FEATURED_POLITICIANS = [
   { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', trades: 201, filings: 6, issuers: 52, volume: '8.4M', seed: 10 },
 ];
 
-const LATEST_BUZZ = [
-  { id: 1, time: 'Today, 07:16', platform: 'twitter', text: "Rep. Connolly's stock divestment in $D, $SAIC, $LDOS yields capital gains", tickers: ['D', 'SAIC', 'LDOS'], sentiment: 'neutral' },
-  { id: 2, time: 'Yesterday', platform: 'news', text: 'Unusual trading volume detected among Senate Banking Committee members ahead of hearing', tickers: ['JPM', 'BAC', 'GS'], sentiment: 'bearish' },
-  { id: 3, time: '2 days ago', platform: 'twitter', text: 'Multiple defense sector sales reported by Senator Tuberville, totaling $250K+', tickers: ['LMT', 'RTX', 'NOC'], sentiment: 'bearish' },
-  { id: 4, time: '3 days ago', platform: 'news', text: 'Tech committee members increasing exposure to AI stocks ahead of regulation vote', tickers: ['NVDA', 'MSFT', 'GOOGL'], sentiment: 'bullish' },
-];
-
 const SECTOR_DATA = [
   { sector: 'Technology', buy: 68, sell: 32, vol: '$142M', trades: 487 },
   { sector: 'Healthcare', buy: 55, sell: 45, vol: '$89M', trades: 312 },
@@ -223,12 +248,23 @@ const SECTOR_DATA = [
   { sector: 'Consumer', buy: 52, sell: 48, vol: '$38M', trades: 134 },
 ];
 
-const FILINGS = [
-  { member: 'Nancy Pelosi', type: 'PTR', date: 'Mar 12, 2026', tickers: ['NVDA', 'AAPL', 'RBLX'], isNew: true },
-  { member: 'Tommy Tuberville', type: 'PTR', date: 'Mar 11, 2026', tickers: ['KMB', 'HPQ', 'CLX'], isNew: true },
-  { member: 'Dan Crenshaw', type: 'Annual', date: 'Mar 10, 2026', tickers: ['AAPL', 'MSFT'], isNew: false },
-  { member: 'Mark Warner', type: 'PTR', date: 'Mar 8, 2026', tickers: ['META', 'CRM'], isNew: false },
-  { member: 'Josh Gottheimer', type: 'PTR', date: 'Mar 7, 2026', tickers: ['MSFT', 'GOOGL'], isNew: false },
+const UNUSUAL_VOLUME = [
+  { slug: 'nancy-pelosi', name: 'Nancy Pelosi', initials: 'NP', party: 'Democrat', tradesWeek: 15, avgWeek: 4, total: '$2.3M', top: ['NVDA', 'AAPL', 'MSFT'] },
+  { slug: 'tommy-tuberville', name: 'Tommy Tuberville', initials: 'TT', party: 'Republican', tradesWeek: 12, avgWeek: 3, total: '$890K', top: ['KMB', 'CLX', 'HPQ'] },
+  { slug: 'dan-crenshaw', name: 'Dan Crenshaw', initials: 'DC', party: 'Republican', tradesWeek: 8, avgWeek: 2, total: '$450K', top: ['AAPL', 'TSLA', 'MSFT'] },
+];
+
+const BIPARTISAN_TRADES = [
+  { ticker: 'NVDA', name: 'NVIDIA Corp', dems: 3, reps: 4, total: '$4.2M' },
+  { ticker: 'AAPL', name: 'Apple Inc', dems: 2, reps: 3, total: '$1.8M' },
+  { ticker: 'MSFT', name: 'Microsoft Corp', dems: 4, reps: 2, total: '$2.1M' },
+  { ticker: 'GOOGL', name: 'Alphabet Inc', dems: 2, reps: 2, total: '$950K' },
+];
+
+const EARNINGS_WATCH = [
+  { ticker: 'NVDA', earnDate: 'Apr 2, 2026', slug: 'nancy-pelosi', member: 'Nancy Pelosi', side: 'bought', range: '$1M–$5M', when: '3 days ago', warn: 'Traded 3 days before earnings' },
+  { ticker: 'AAPL', earnDate: 'Apr 8, 2026', slug: 'dan-crenshaw', member: 'Dan Crenshaw', side: 'bought', range: '$100K–$250K', when: '1 week ago', warn: 'Traded 7 days before earnings' },
+  { ticker: 'META', earnDate: 'Apr 10, 2026', slug: 'mark-warner', member: 'Mark Warner', side: 'sold', range: '$50K–$100K', when: '5 days ago', warn: 'Sold 5 days before earnings' },
 ];
 
 /* ── Spark SVG ── */
@@ -315,10 +351,29 @@ function InsideTheCapitolContent() {
         ))}
       </div>
 
-      {/* ── 2×2 Grid ── */}
-      <div className="itc-grid-2x2">
-        {/* TOP LEFT — Latest Trades */}
-        <PinnableCard cardId="itc-latest-trades" title="Latest Trades" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3}>
+      {/* Row 2: Top Performing Politicians — full width */}
+      <PinnableCard cardId="itc-top-performers" title="Top Performing Politicians" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={4} defaultH={3} className="itc-pinnable-fill">
+        <div className="itc-card">
+          <div className="itc-hdr">
+            <div className="itc-hdr-left">
+              <h3>TOP PERFORMING POLITICIANS</h3>
+            </div>
+            <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
+          </div>
+          <div className="itc-perf-windows">
+            {PERF_WINDOWS.map((w) => (
+              <button key={w} type="button" className={`itc-pw ${perfWindow === w ? 'on' : ''}`} onClick={() => setPerfWindow(w)}>{w}</button>
+            ))}
+          </div>
+          <div className="itc-body itc-perf-body" style={{ overflow: 'visible' }}>
+            <PoliticianPerfChart window={perfWindow} onOpenPolitician={() => completeTask('capitol_1')} />
+          </div>
+        </div>
+      </PinnableCard>
+
+      {/* Row 3: Latest Trades + Sector Activity */}
+      <div className="itc-row-trades-sector">
+        <PinnableCard cardId="itc-latest-trades" title="Latest Trades" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3} className="itc-pinnable-fill">
           <div className="itc-card">
             <div className="itc-hdr">
               <div className="itc-hdr-left">
@@ -339,24 +394,24 @@ function InsideTheCapitolContent() {
               ))}
               <span className="itc-sf-label" style={{ marginLeft: 8, marginRight: 4, color: '#8b949e', fontSize: 11 }}>Party</span>
               <span data-task-target="capitol-party-filter" style={{ display: 'inline-flex', gap: 4 }}>
-              <Link
-                href="/inside-the-capitol?party=republican"
-                className={`itc-sf ${activePartyFilter === 'republican' ? 'on' : ''}`}
-                onClick={() => completeTask('capitol_2')}
-              >
-                R
-              </Link>
-              <Link
-                href="/inside-the-capitol?party=democrat"
-                className={`itc-sf ${activePartyFilter === 'democrat' ? 'on' : ''}`}
-                onClick={() => completeTask('capitol_2')}
-              >
-                D
-              </Link>
+                <Link
+                  href="/inside-the-capitol?party=republican"
+                  className={`itc-sf ${activePartyFilter === 'republican' ? 'on' : ''}`}
+                  onClick={() => completeTask('capitol_2')}
+                >
+                  R
+                </Link>
+                <Link
+                  href="/inside-the-capitol?party=democrat"
+                  className={`itc-sf ${activePartyFilter === 'democrat' ? 'on' : ''}`}
+                  onClick={() => completeTask('capitol_2')}
+                >
+                  D
+                </Link>
               </span>
               {(activePartyFilter || activeStateFilter) && (
                 <Link href="/inside-the-capitol" className="itc-filter-clear">
-                  <span className="itc-filter-tag">{activePartyFilter ? activePartyFilter.charAt(0).toUpperCase() + activePartyFilter.slice(1) : ''}{activePartyFilter && activeStateFilter ? ' · ' : ''}{activeStateFilter ? activeStateFilter.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''}</span>
+                  <span className="itc-filter-tag">{activePartyFilter ? activePartyFilter.charAt(0).toUpperCase() + activePartyFilter.slice(1) : ''}{activePartyFilter && activeStateFilter ? ' · ' : ''}{activeStateFilter ? activeStateFilter.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''}</span>
                   <i className="bi bi-x" />
                 </Link>
               )}
@@ -398,106 +453,7 @@ function InsideTheCapitolContent() {
           </div>
         </PinnableCard>
 
-        {/* TOP RIGHT — Top Performing Politicians */}
-        <PinnableCard cardId="itc-top-performers" title="Top Performers" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3}>
-          <div className="itc-card">
-            <div className="itc-hdr">
-              <div className="itc-hdr-left">
-                <h3>TOP PERFORMING POLITICIANS</h3>
-              </div>
-              <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
-            </div>
-            <div className="itc-perf-windows">
-              {PERF_WINDOWS.map((w) => (
-                <button key={w} type="button" className={`itc-pw ${perfWindow === w ? 'on' : ''}`} onClick={() => setPerfWindow(w)}>{w}</button>
-              ))}
-            </div>
-            <div className="itc-body" style={{ overflow: 'visible' }}>
-              <PoliticianPerfChart window={perfWindow} onOpenPolitician={() => completeTask('capitol_1')} />
-            </div>
-          </div>
-        </PinnableCard>
-
-        {/* BOTTOM LEFT — Featured Politicians */}
-        <PinnableCard cardId="itc-featured-politicians" title="Featured Politicians" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3}>
-          <div className="itc-card">
-            <div className="itc-hdr">
-              <h3>FEATURED POLITICIANS</h3>
-              <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
-            </div>
-            <div className="itc-body">
-              <div className="itc-pol-tabs">
-                {FEATURED_POLITICIANS.map((p, i) => (
-                  <button key={p.id} type="button" className={`itc-pol-tab ${activePolIdx === i ? 'on' : ''}`} onClick={() => setActivePolIdx(i)}>
-                    <span className={`itc-avatar-sm ${p.party.toLowerCase()}`}>{p.initials}</span>
-                    <span className="itc-pol-tab-name">{p.name.split(' ').pop()}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="itc-pol-detail">
-                <div className="itc-pol-top">
-                  <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className={`itc-avatar-lg ${pol.party.toLowerCase()}`} onClick={() => completeTask('capitol_1')}>{pol.initials}</Link>
-                  <div>
-                    <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className="itc-pol-name" onClick={() => completeTask('capitol_1')}>{pol.name}</Link>
-                    <div className="itc-pol-meta"><span className={`itc-dot ${pol.party.toLowerCase()}`} />{pol.party} | {pol.chamber} | {pol.state}</div>
-                  </div>
-                </div>
-                <div className="itc-pol-nums">
-                  {[
-                    { v: pol.trades, l: 'Trades' },
-                    { v: pol.filings, l: 'Filings' },
-                    { v: pol.issuers, l: 'Issuers' },
-                    { v: pol.volume, l: 'Volume' },
-                  ].map((s) => (
-                    <div key={s.l} className="itc-pol-num">
-                      <span className="itc-pol-num-v">{s.v}</span>
-                      <span className="itc-pol-num-l">{s.l}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="itc-pol-chart">
-                  <span className="itc-pol-chart-lbl">vs S&P500</span>
-                  <Spark seed={pol.seed} color="#10b981" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </PinnableCard>
-
-        {/* BOTTOM RIGHT — Latest Buzz */}
-        <PinnableCard cardId="itc-latest-buzz" title="Latest Buzz" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={3}>
-          <div className="itc-card">
-            <div className="itc-hdr">
-              <h3>LATEST BUZZ</h3>
-              <Link href="/community" className="itc-va">VIEW ALL</Link>
-            </div>
-            <div className="itc-body">
-              {LATEST_BUZZ.map((b) => (
-                <div key={b.id} className="itc-bz">
-                  <div className="itc-bz-left">
-                    <span className="itc-bz-time">{b.time}</span>
-                    {b.platform === 'twitter' && <i className="bi bi-twitter itc-bz-plat" style={{ color: '#60a5fa' }} />}
-                    {b.platform === 'news' && <i className="bi bi-newspaper itc-bz-plat" style={{ color: '#8b949e' }} />}
-                  </div>
-                  <div className="itc-bz-body">
-                    <p className="itc-bz-text">{b.text}</p>
-                    <div className="itc-bz-tickers">
-                      {b.tickers.map((tk) => (
-                        <span key={tk} className={`itc-bz-tk ${b.sentiment}`}>${tk}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </PinnableCard>
-      </div>
-
-      {/* ── Bottom row ── */}
-      <div className="itc-grid-2">
-        {/* Sector Activity */}
-        <PinnableCard cardId="itc-sectors" title="Sector Activity" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2}>
+        <PinnableCard cardId="itc-sectors" title="Sector Activity" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2} className="itc-pinnable-fill">
           <div className="itc-card">
             <div className="itc-hdr"><h3>SECTOR ACTIVITY</h3></div>
             <div className="itc-body itc-body-pad">
@@ -516,27 +472,136 @@ function InsideTheCapitolContent() {
             </div>
           </div>
         </PinnableCard>
+      </div>
 
-        {/* Recent Filings */}
-        <PinnableCard cardId="itc-filings" title="Recent Filings" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2}>
-          <div className="itc-card">
-            <div className="itc-hdr">
-              <h3>RECENT FILINGS</h3>
-              <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
+      {/* Row 4: Politicians I'm Following — full width */}
+      <PinnableCard cardId="itc-featured-politicians" title={"Politicians I'm Following"} sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={4} defaultH={3} className="itc-pinnable-fill">
+        <div className="itc-card">
+          <div className="itc-hdr">
+            <h3>POLITICIANS I&apos;M FOLLOWING</h3>
+            <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
+          </div>
+          <div className="itc-body">
+            <div className="itc-pol-tabs">
+              {FEATURED_POLITICIANS.map((p, i) => (
+                <button key={p.id} type="button" className={`itc-pol-tab ${activePolIdx === i ? 'on' : ''}`} onClick={() => setActivePolIdx(i)}>
+                  <span className={`itc-avatar-sm ${p.party.toLowerCase()}`}>{p.initials}</span>
+                  <span className="itc-pol-tab-name">{p.name.split(' ').pop()}</span>
+                </button>
+              ))}
             </div>
-            <div className="itc-body">
-              {FILINGS.map((f, i) => (
-                <div key={i} className="itc-fil">
-                  <div className="itc-fil-left">
-                    <span className={`itc-fil-dot ${f.isNew ? 'new' : ''}`} />
-                    <div>
-                      <Link href={`/inside-the-capitol/${slugify(f.member)}`} className="itc-fil-name">{f.member}</Link>
-                      <span className="itc-fil-meta">{f.type} · {f.date}</span>
-                    </div>
+            <div className="itc-pol-detail">
+              <div className="itc-pol-top">
+                <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className={`itc-avatar-lg ${pol.party.toLowerCase()}`} onClick={() => completeTask('capitol_1')}>{pol.initials}</Link>
+                <div>
+                  <Link href={`/inside-the-capitol/${slugify(pol.name)}`} className="itc-pol-name" onClick={() => completeTask('capitol_1')}>{pol.name}</Link>
+                  <div className="itc-pol-meta"><span className={`itc-dot ${pol.party.toLowerCase()}`} />{pol.party} | {pol.chamber} | {pol.state}</div>
+                </div>
+              </div>
+              <div className="itc-pol-nums">
+                {[
+                  { v: pol.trades, l: 'Trades' },
+                  { v: pol.filings, l: 'Filings' },
+                  { v: pol.issuers, l: 'Issuers' },
+                  { v: pol.volume, l: 'Volume' },
+                ].map((s) => (
+                  <div key={s.l} className="itc-pol-num">
+                    <span className="itc-pol-num-v">{s.v}</span>
+                    <span className="itc-pol-num-l">{s.l}</span>
                   </div>
-                  <div className="itc-fil-tickers">
-                    {f.tickers.map((t) => <span key={t} className="itc-fil-tk">${t}</span>)}
+                ))}
+              </div>
+              <div className="itc-pol-chart">
+                <span className="itc-pol-chart-lbl">vs S&P500</span>
+                <Spark seed={pol.seed} color="#10b981" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </PinnableCard>
+
+      {/* Row 5: Unusual volume · Bipartisan trades · Earnings watch */}
+      <div className="itc-grid-3">
+        <PinnableCard cardId="itc-unusual-volume" title="Unusual Trading Volume" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2} className="itc-pinnable-fill">
+          <div className="itc-new-card">
+            <h3 className="itc-new-card-title">Unusual Trading Volume</h3>
+            <p className="itc-new-card-sub">Politicians with significantly higher-than-normal trading activity this week</p>
+            <div className="itc-new-card-list">
+              {UNUSUAL_VOLUME.map((u) => (
+                <div key={u.slug} className="itc-unusual-row">
+                  <Link href={`/inside-the-capitol/${u.slug}`} className="itc-unusual-avatar-link" aria-label={u.name}>
+                    <span className={`itc-avatar-sm ${u.party.toLowerCase()}`}>{u.initials}</span>
+                  </Link>
+                  <div className="itc-unusual-body">
+                    <Link href={`/inside-the-capitol/${u.slug}`} className="itc-unusual-name">{u.name}</Link>
+                    <p className="itc-unusual-meta">
+                      {u.tradesWeek} trades this week (avg: {u.avgWeek}/week) · {u.total} total
+                    </p>
+                    <p className="itc-unusual-stocks">
+                      Top stocks:{' '}
+                      {u.top.map((tk, i) => (
+                        <span key={tk}>
+                          {i > 0 ? ', ' : ''}
+                          <Link href={`/company-research?ticker=${tk}`} className="itc-unusual-tk">{tk}</Link>
+                        </span>
+                      ))}
+                    </p>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </PinnableCard>
+
+        <PinnableCard cardId="itc-bipartisan-trades" title="Bipartisan Trades" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2} className="itc-pinnable-fill">
+          <div className="itc-new-card">
+            <h3 className="itc-new-card-title">Bipartisan Trades</h3>
+            <p className="itc-new-card-sub">Stocks being bought by both parties this month</p>
+            <div className="itc-new-card-list">
+              {BIPARTISAN_TRADES.map((b) => (
+                <div key={b.ticker} className="itc-bipart-row">
+                  <div className="itc-bipart-hdr">
+                    <Link href={`/company-research?ticker=${b.ticker}`} className="itc-bipart-tk">{b.ticker}</Link>
+                    <span className="itc-bipart-co"> — {b.name}</span>
+                  </div>
+                  <p className="itc-bipart-meta">
+                    <span className="itc-bipart-party dem"><span className="itc-bip-dot dem" aria-hidden />{b.dems} Democrats bought</span>
+                    <span className="itc-bipart-sep"> · </span>
+                    <span className="itc-bipart-party rep"><span className="itc-bip-dot rep" aria-hidden />{b.reps} Republicans bought</span>
+                    <span className="itc-bipart-sep"> · </span>
+                    <span className="itc-bipart-total">Total: {b.total}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </PinnableCard>
+
+        <PinnableCard cardId="itc-earnings-watch" title="Upcoming Earnings Watch" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2} className="itc-pinnable-fill">
+          <div className="itc-new-card">
+            <h3 className="itc-new-card-title">Upcoming Earnings Watch</h3>
+            <p className="itc-new-card-sub">Companies with congressional trades ahead of earnings</p>
+            <div className="itc-new-card-list">
+              {EARNINGS_WATCH.map((e) => (
+                <div key={e.ticker} className="itc-earn-row">
+                  <div className="itc-earn-hdr">
+                    <Link href={`/company-research?ticker=${e.ticker}`} className="itc-earn-tk">{e.ticker}</Link>
+                    <span className="itc-earn-date"> — Earnings: {e.earnDate}</span>
+                  </div>
+                  <p className="itc-earn-line">
+                    <Link href={`/inside-the-capitol/${e.slug}`}>{e.member}</Link>
+                    {' '}
+                    {e.side}
+                    {' '}
+                    {e.range}
+                    {' '}
+                    ({e.when})
+                  </p>
+                  <p className="itc-earn-warn">
+                    <i className="bi bi-exclamation-triangle-fill" aria-hidden />
+                    {' '}
+                    {e.warn}
+                  </p>
                 </div>
               ))}
             </div>

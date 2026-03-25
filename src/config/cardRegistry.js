@@ -61,11 +61,12 @@ export const CARD_TITLES = {
 
   // Inside the Capitol
   'itc-latest-trades': 'Latest Trades',
-  'itc-top-performers': 'Top Performers',
-  'itc-featured-politicians': 'Featured Politicians',
-  'itc-latest-buzz': 'Latest Buzz',
+  'itc-top-performers': 'Top Performing Politicians',
+  'itc-featured-politicians': "Politicians I'm Following",
   'itc-sectors': 'Sector Activity',
-  'itc-filings': 'Recent Filings',
+  'itc-unusual-volume': 'Unusual Trading Volume',
+  'itc-bipartisan-trades': 'Bipartisan Trades',
+  'itc-earnings-watch': 'Upcoming Earnings Watch',
 
   // Company research
   'stock-heatmap': 'Stock Market Heatmap',
