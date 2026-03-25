@@ -693,13 +693,39 @@ body.light-mode .ma-ticker-sep {
 
 .ma-news-impact strong { color: #10b981; }
 
-/* ═══ Chain view ═══ */
+/* ═══ Chain view — full width within dashboard gutters (2rem), same as layout.css main padding ═══ */
+.ma-fullscreen.ma-view-chain {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ma-fullscreen.ma-view-chain .ma-top-bar {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  align-self: center;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+
 .ma-chain {
-  padding: 3rem 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 1.25rem 2rem 2rem;
+  flex: 1;
+  min-height: 0;
+  height: auto;
   overflow-y: auto;
+  overflow-x: auto;
+}
+
+.ma-chain.ma-chain--loading {
+  flex: 1;
+  min-height: 0;
 }
 
 .ma-chain-list {

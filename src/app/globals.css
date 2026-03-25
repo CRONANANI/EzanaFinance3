@@ -459,3 +459,43 @@ body.light-mode .nav-logo-img {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
+
+/* ═══ Emerald scrollbar (utility + Chain View) — track transparent, green thumb ═══ */
+.custom-scrollbar,
+.chain-view-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar,
+.chain-view-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.chain-view-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.chain-view-scroll::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.chain-view-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:active,
+.chain-view-scroll::-webkit-scrollbar-thumb:active {
+  background: #10b981;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner,
+.chain-view-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}

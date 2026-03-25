@@ -387,14 +387,14 @@ function ChainView() {
 
   if (loading) {
     return (
-      <div className="ma-chain" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="ma-chain ma-chain--loading chain-view-scroll custom-scrollbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ color: '#4b5563', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.75rem' }}>LOADING CHAIN DATA...</span>
       </div>
     );
   }
 
   return (
-    <div className="ma-chain">
+    <div className="ma-chain chain-view-scroll custom-scrollbar">
       <div className="ma-chain-list">
         {events.map((event) => (
           <div key={event.id} className="ma-chain-item">
@@ -463,7 +463,7 @@ export default function MarketAnalysisPage() {
   }, []);
 
   return (
-    <div className={`ma-fullscreen ${view === 'map' ? 'ma-view-map' : ''}`}>
+    <div className={`ma-fullscreen ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}>
       {view === 'map' && (
         <div className="ma-ticker-bar">
           <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>
