@@ -1,0 +1,614 @@
+/* For The Quants — dashboard-aligned cards (.db-card) */
+
+.ftq-page {
+  max-width: 100%;
+}
+
+.ftq-header {
+  margin-bottom: 1.5rem;
+}
+
+.ftq-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.ftq-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.35rem 0 0;
+  line-height: 1.5;
+}
+
+/* Row 1 — stat cards */
+.ftq-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.ftq-stat-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  min-height: 100px;
+}
+
+.ftq-stat-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.ftq-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 0.35rem;
+}
+
+.ftq-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  font-feature-settings: 'tnum' 1;
+  line-height: 1.2;
+}
+
+.ftq-stat-sub {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin-top: 0.35rem;
+}
+
+.ftq-stat-sub.positive {
+  color: #10b981;
+}
+
+/* Row 2 */
+.ftq-row-60-40 {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: stretch;
+}
+
+/* Row 3–4 */
+.ftq-row-50 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: stretch;
+}
+
+.ftq-card-body-pad {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.ftq-card-body-pad--flush-top {
+  padding-top: 0;
+}
+
+/* Strategy builder tabs */
+.ftq-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.ftq-tab {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b949e;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.ftq-tab:hover {
+  color: #e2e8f0;
+}
+
+.ftq-tab.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #10b981;
+}
+
+.ftq-strategy-list {
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.ftq-strategy-row {
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.ftq-strategy-row:last-child {
+  border-bottom: none;
+}
+
+.ftq-strategy-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ftq-strategy-detail {
+  font-size: 0.8125rem;
+  color: #8b949e;
+  margin: 0 0 0.5rem;
+}
+
+.ftq-strategy-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.65rem;
+}
+
+.ftq-status {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.ftq-status.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.ftq-status.paused {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+
+.ftq-status.draft {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+.ftq-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ftq-btn-ghost {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #10b981;
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ftq-btn-ghost:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.ftq-btn-primary {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  background: #10b981;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s;
+}
+
+.ftq-btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+/* Backtest stats */
+.ftq-bt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.ftq-bt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ftq-bt-label {
+  color: #6b7280;
+}
+
+.ftq-bt-value {
+  font-weight: 700;
+  color: #f0f6fc;
+  font-feature-settings: 'tnum' 1;
+}
+
+.ftq-bt-value.positive {
+  color: #10b981;
+}
+
+.ftq-mini-chart-wrap {
+  height: 72px;
+  margin: 0.75rem 0;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  overflow: hidden;
+}
+
+.ftq-bench {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.08);
+}
+
+/* Leaderboard */
+.ftq-lb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ftq-select {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  color: #e2e8f0;
+  font-family: inherit;
+}
+
+.ftq-lb-entry {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.ftq-lb-entry:last-of-type {
+  border-bottom: none;
+}
+
+.ftq-lb-line1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ftq-lb-rank {
+  font-weight: 800;
+  color: #6b7280;
+  width: 1.5rem;
+}
+
+.ftq-lb-name {
+  font-weight: 700;
+  color: #f0f6fc;
+  flex: 1;
+  min-width: 0;
+}
+
+.ftq-lb-ret {
+  font-weight: 800;
+  color: #10b981;
+  font-feature-settings: 'tnum' 1;
+}
+
+.ftq-lb-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.35rem 0 0 0;
+  padding-left: 2rem;
+}
+
+.ftq-link-btn {
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #10b981;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ftq-link-btn:hover {
+  color: #34d399;
+}
+
+.ftq-view-all {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+}
+
+.ftq-view-all:hover {
+  text-decoration: underline;
+}
+
+/* Risk */
+.ftq-risk-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.1);
+  overflow: hidden;
+  margin: 0.35rem 0 0.75rem;
+}
+
+.ftq-risk-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.ftq-sector-row {
+  margin-bottom: 0.65rem;
+}
+
+.ftq-sector-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.ftq-sector-label {
+  color: #9ca3af;
+}
+
+.ftq-sector-pct {
+  color: #f0f6fc;
+  font-weight: 600;
+  font-feature-settings: 'tnum' 1;
+}
+
+.ftq-sector-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(16, 185, 129, 0.1);
+  overflow: hidden;
+}
+
+.ftq-sector-bar-fill {
+  height: 100%;
+  background: rgba(16, 185, 129, 0.45);
+  border-radius: 3px;
+}
+
+/* Polymarket */
+.ftq-pm-search {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ftq-pm-input {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  color: #f0f6fc;
+  font-family: inherit;
+}
+
+.ftq-pm-input::placeholder {
+  color: #6b7280;
+}
+
+.ftq-betting-list {
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.ftq-betting-row {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ftq-betting-row:hover {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.ftq-betting-row:last-child {
+  border-bottom: none;
+}
+
+.ftq-bt-q {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0 0 0.25rem;
+}
+
+.ftq-bt-side {
+  font-size: 0.8125rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.ftq-bt-vol {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Betting analytics */
+.ftq-smart-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(239, 68, 68, 0.08);
+  overflow: hidden;
+  margin: 0.5rem 0 0.25rem;
+  display: flex;
+}
+
+.ftq-smart-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 5px;
+}
+
+.ftq-pos-row {
+  font-size: 0.8125rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  color: #d1d5db;
+}
+
+.ftq-pos-row:last-child {
+  border-bottom: none;
+}
+
+.ftq-pos-name {
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.ftq-vol-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 56px;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.ftq-vol-bar {
+  flex: 1;
+  background: rgba(16, 185, 129, 0.35);
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+}
+
+/* Indicators */
+.ftq-ind-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.ftq-ind-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.ftq-ind-card {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.ftq-ind-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.35rem;
+}
+
+.ftq-ind-val {
+  font-size: 0.75rem;
+  color: #8b949e;
+  margin-bottom: 0.65rem;
+}
+
+@media (max-width: 1200px) {
+  .ftq-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ftq-row-60-40 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .ftq-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ftq-row-50 {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.light-mode .ftq-title {
+  color: #111827;
+}
+
+body.light-mode .ftq-subtitle {
+  color: #6b7280;
+}
+
+body.light-mode .ftq-stat-card,
+body.light-mode .db-card {
+  background: #ffffff;
+  border-color: rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .ftq-stat-value,
+body.light-mode .db-card-header h3 {
+  color: #111827;
+}
+
+body.light-mode .ftq-pm-input {
+  background: #f9fafb;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #111827;
+}
