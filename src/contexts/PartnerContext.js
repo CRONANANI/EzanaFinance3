@@ -26,19 +26,17 @@ export function PartnerProvider({ children }) {
 
     setIsLoading(true);
     try {
-      const meta = user.user_metadata || {};
-      if (meta.partner_role) {
-        setIsPartner(true);
-        setPartnerRole(meta.partner_role);
-        setVerified(meta.partner_verified ?? true);
-      }
+      setIsPartner(false);
+      setPartnerRole(null);
+      setVerified(false);
+      setPartnerData(null);
 
       const { data: partner, error: partnerErr } = await supabase
         .from('partners')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (!partnerErr && partner) {
         setIsPartner(true);
