@@ -7,6 +7,9 @@ import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   const user = await getAuthUser(request);
   if (!user) {

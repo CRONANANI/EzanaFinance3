@@ -5,6 +5,9 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const authorId = searchParams.get('id');

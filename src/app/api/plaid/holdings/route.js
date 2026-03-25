@@ -10,6 +10,9 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request) {
   try {
     const user = await getAuthUser(request);

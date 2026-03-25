@@ -7,6 +7,9 @@ import { alpacaRequest } from '@/lib/alpaca';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const user = await getAuthUser(request);

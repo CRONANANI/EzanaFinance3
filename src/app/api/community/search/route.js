@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
+
 // Demo data for search - in production, query Supabase profiles/partners tables
 const DEMO_USERS = [
   { id: 'u1', type: 'user', name: 'Aakash Sharma', initials: 'AS', tag: 'Portfolio Tips', bio: 'Active investor, 12 posts' },

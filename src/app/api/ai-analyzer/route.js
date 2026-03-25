@@ -5,6 +5,9 @@ import { fetchMarketData } from '@/lib/ai/market-data';
 import { buildAnalysisPrompt } from '@/lib/ai/persona-engine';
 import { synthesizeResponses } from '@/lib/ai/synthesis';
 
+export const dynamic = 'force-dynamic';
+
+
 const MODEL = 'claude-sonnet-4-20250514';
 
 function parsePersonaResponse(text, personaId, personaName, personaType) {

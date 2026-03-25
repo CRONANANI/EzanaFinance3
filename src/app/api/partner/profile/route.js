@@ -8,6 +8,9 @@ import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 import { sanitizeObject } from '@/lib/sanitize';
 
+export const dynamic = 'force-dynamic';
+
+
 async function handleGet(request, user) {
   const { data: partner } = await supabaseAdmin
       .from('partners')

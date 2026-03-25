@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
+
 const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 
 async function fetchQuote(symbol, apiKey) {

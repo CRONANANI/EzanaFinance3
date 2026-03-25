@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   const checks = { status: 'ok', timestamp: new Date().toISOString(), services: {} };
 

@@ -6,6 +6,9 @@ import { NextResponse } from 'next/server';
 import { withApiGuard } from '@/lib/api-guard';
 import { supabaseAdmin } from '@/lib/plaid';
 
+export const dynamic = 'force-dynamic';
+
+
 async function handleGet(request, user) {
   const { data: allBadges } = await supabaseAdmin
       .from('badge_definitions')

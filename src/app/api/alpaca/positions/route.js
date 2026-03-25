@@ -7,6 +7,9 @@ import { alpacaRequest } from '@/lib/alpaca';
 import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 
+export const dynamic = 'force-dynamic';
+
+
 async function getAlpacaAccountId(userId) {
   const { data } = await supabaseAdmin
     .from('alpaca_accounts')

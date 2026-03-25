@@ -3,6 +3,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data';
 
+export const dynamic = 'force-dynamic';
+
+
 const MODEL = 'claude-sonnet-4-20250514';
 
 export async function POST(request) {

@@ -5,6 +5,9 @@ import { supabaseAdmin } from '@/lib/plaid';
 import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
+
 async function handlePost(request) {
   const rawBody = await request.json();
   const body = sanitizeObject(rawBody);
