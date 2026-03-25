@@ -1060,6 +1060,78 @@ select.settings-input {
   }
 }
 
+/* Desktop push (Settings → Notifications) */
+.settings-section-title--spaced {
+  margin-top: 2rem;
+}
+
+.settings-push-card {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 12px;
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.settings-push-card--muted {
+  background: rgba(15, 20, 28, 0.5);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.settings-toggle-row--push {
+  align-items: flex-start;
+}
+
+.settings-toggle-row--push .settings-switch {
+  margin-top: 0.2rem;
+}
+
+.settings-push-status {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.75rem 0 0;
+  line-height: 1.45;
+}
+
+.settings-push-status.is-on {
+  color: #10b981;
+}
+
+.settings-push-error {
+  font-size: 0.8125rem;
+  color: #f87171;
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.settings-push-unsupported {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.settings-push-placeholder {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
+}
+
+body.light-mode .settings-push-card {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+body.light-mode .settings-push-card--muted {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 
 /* ══════════════════════════════
    LIGHT MODE

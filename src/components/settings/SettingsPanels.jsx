@@ -6,6 +6,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { supabase } from '@/lib/supabase';
 import { ManageBillingButton } from '@/components/ManageBillingButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useNotifications } from '@/hooks/useNotifications';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -610,47 +611,92 @@ export function EmailPanel({ onSave }) {
 }
 
 export function NotificationsPanel({ onSave }) {
-  const [push, setPush] = useState(true);
-  const [sound, setSound] = useState(true);
-  const [desktop, setDesktop] = useState(false);
-  const [quietHours, setQuietHours] = useState(false);
+  const { isSubscribed, loading, supported, subscribe, unsubscribe } = useNotifications();
+  const [toggling, setToggling] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleDesktopToggle = async () => {
+    setToggling(true);
+    setError('');
+    if (isSubscribed) {
+      const result = await unsubscribe();
+      if (!result.success) setError(result.error || 'Could not disable notifications');
+    } else {
+      const result = await subscribe();
+      if (!result.success) {
+        if (result.error === 'Permission denied by browser') {
+          setError(
+            'Your browser blocked notifications. Open the lock icon in the address bar → Site settings → Notifications → Allow, then try again.'
+          );
+        } else {
+          setError(result.error || 'Failed to enable notifications');
+        }
+      }
+    }
+    setToggling(false);
+  };
+
   return (
     <div className="settings-panel">
       <div className="settings-panel-header">
         <h2 className="settings-panel-title">Notifications</h2>
-        <p className="settings-panel-desc">Alert and push notification settings.</p>
+        <p className="settings-panel-desc">Manage how you hear from Ezana Finance. Desktop push can only be enabled here — we never ask on sign-up or login.</p>
       </div>
+
       <div className="settings-section">
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Push notifications</span>
-            <span className="settings-toggle-desc">Receive alerts in browser</span>
+        <h3 className="settings-section-title"><i className="bi bi-bell" /> Desktop</h3>
+        <div className="settings-push-card">
+          <div className="settings-toggle-row settings-toggle-row--push">
+            <div className="settings-toggle-info">
+              <span className="settings-toggle-label">Desktop notifications</span>
+              <span className="settings-toggle-desc">
+                Receive push notifications in your browser for alerts and updates — even when this site is in the background. The browser will ask for permission only when you turn this on.
+              </span>
+            </div>
+            {!supported ? (
+              <span className="settings-push-unsupported">Not supported in this browser</span>
+            ) : (
+              <button
+                type="button"
+                className={`settings-switch ${isSubscribed ? 'on' : ''}`}
+                onClick={handleDesktopToggle}
+                disabled={loading || toggling}
+                aria-pressed={isSubscribed}
+                aria-label={isSubscribed ? 'Disable desktop notifications' : 'Enable desktop notifications'}
+              />
+            )}
           </div>
-          <button type="button" className={`settings-switch ${push ? 'on' : ''}`} onClick={() => setPush(!push)} aria-label="Toggle" />
+          {supported && (
+            <p className={`settings-push-status ${isSubscribed ? 'is-on' : ''}`}>
+              {loading || toggling
+                ? 'Checking…'
+                : isSubscribed
+                  ? 'Desktop notifications are enabled for this browser.'
+                  : 'Desktop notifications are off.'}
+            </p>
+          )}
+          {error ? (
+            <p className="settings-push-error" role="alert">
+              {error}
+            </p>
+          ) : null}
         </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Sound</span>
-            <span className="settings-toggle-desc">Play sound for new notifications</span>
-          </div>
-          <button type="button" className={`settings-switch ${sound ? 'on' : ''}`} onClick={() => setSound(!sound)} aria-label="Toggle" />
+
+        <h3 className="settings-section-title settings-section-title--spaced"><i className="bi bi-envelope" /> Email</h3>
+        <div className="settings-push-card settings-push-card--muted">
+          <p className="settings-toggle-label" style={{ marginBottom: '0.35rem' }}>
+            Email notifications
+          </p>
+          <p className="settings-toggle-desc" style={{ marginBottom: '0.75rem' }}>
+            Choose which updates you receive by email.
+          </p>
+          <p className="settings-push-placeholder">Coming soon</p>
         </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Desktop notifications</span>
-            <span className="settings-toggle-desc">Show even when tab is in background</span>
-          </div>
-          <button type="button" className={`settings-switch ${desktop ? 'on' : ''}`} onClick={() => setDesktop(!desktop)} aria-label="Toggle" />
-        </div>
-        <div className="settings-toggle-row">
-          <div className="settings-toggle-info">
-            <span className="settings-toggle-label">Quiet hours</span>
-            <span className="settings-toggle-desc">Mute notifications 10pm–7am</span>
-          </div>
-          <button type="button" className={`settings-switch ${quietHours ? 'on' : ''}`} onClick={() => setQuietHours(!quietHours)} aria-label="Toggle" />
-        </div>
+
         <div className="settings-btn-row">
-          <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+          <button type="button" className="settings-btn-primary" onClick={onSave}>
+            Save other preferences
+          </button>
         </div>
       </div>
     </div>
