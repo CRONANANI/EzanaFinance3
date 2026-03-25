@@ -1,0 +1,115 @@
+.partner-research-ribbon {
+  position: sticky;
+  top: 64px;
+  z-index: 40;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(212, 168, 83, 0.18);
+  background: linear-gradient(90deg, rgba(212, 168, 83, 0.1) 0%, rgba(15, 20, 25, 0.92) 45%);
+  backdrop-filter: blur(8px);
+}
+
+body.partner-app.light-mode .partner-research-ribbon,
+body.light-mode .partner-research-ribbon {
+  background: linear-gradient(90deg, rgba(184, 146, 47, 0.12) 0%, #fff 50%);
+  border-bottom-color: rgba(146, 115, 29, 0.2);
+}
+
+.partner-research-ribbon-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.partner-research-ribbon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.625rem;
+  color: #d4a853;
+  background: rgba(212, 168, 83, 0.12);
+  border: 1px solid rgba(212, 168, 83, 0.25);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+body.light-mode .partner-research-ribbon-badge {
+  color: #92731d;
+  background: rgba(184, 146, 47, 0.08);
+  border-color: rgba(184, 146, 47, 0.2);
+}
+
+.partner-research-ribbon-text {
+  color: rgba(226, 232, 240, 0.92);
+  flex: 1;
+  min-width: 200px;
+}
+
+body.light-mode .partner-research-ribbon-text {
+  color: #475569;
+}
+
+.partner-research-ribbon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.partner-research-ribbon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: #d4a853;
+  border: 1px solid rgba(212, 168, 83, 0.35);
+  background: rgba(212, 168, 83, 0.06);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.partner-research-ribbon-link:hover {
+  background: rgba(212, 168, 83, 0.12);
+  border-color: rgba(212, 168, 83, 0.5);
+  color: #e8c97a;
+}
+
+body.light-mode .partner-research-ribbon-link {
+  color: #92731d;
+  border-color: rgba(146, 115, 29, 0.35);
+  background: rgba(184, 146, 47, 0.06);
+}
+
+body.light-mode .partner-research-ribbon-link:hover {
+  background: rgba(184, 146, 47, 0.1);
+  color: #6b5315;
+}
+
+@media (max-width: 640px) {
+  .partner-research-ribbon {
+    top: 56px;
+  }
+  .partner-research-ribbon-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .partner-research-ribbon-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .partner-research-ribbon-link {
+    flex: 1;
+    justify-content: center;
+  }
+}

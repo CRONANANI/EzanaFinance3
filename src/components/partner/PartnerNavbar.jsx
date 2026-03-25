@@ -8,8 +8,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
 import '@/app/(dashboard)/partner.css';
-
-const RESEARCH_PATHS = ['/inside-the-capitol', '/company-research', '/market-analysis', '/for-the-quants', '/betting-markets', '/ezana-echo'];
+import { PARTNER_RESEARCH_ROUTES } from '@/lib/partner-chrome';
 
 export function PartnerNavbar() {
   const pathname = usePathname();
@@ -17,7 +16,9 @@ export function PartnerNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [researchOpen, setResearchOpen] = useState(false);
 
-  const isResearchActive = RESEARCH_PATHS.some((p) => pathname?.includes(p));
+  const isResearchActive = PARTNER_RESEARCH_ROUTES.some(
+    (p) => pathname === p || pathname?.startsWith(`${p}/`)
+  );
 
   const partnerNavItems = [
     { id: 1, title: 'Home', url: '/partner-home', icon: 'bi-house-door', isActive: pathname === '/partner-home' },
@@ -121,6 +122,10 @@ export function PartnerNavbar() {
                 <Link href="/ezana-echo" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-newspaper" />
                   <div><span className="nav-dropdown-title">Ezana Echo</span><span className="nav-dropdown-desc">Articles & insights</span></div>
+                </Link>
+                <Link href="/financial-analytics" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-pie-chart" />
+                  <div><span className="nav-dropdown-title">Financial Analytics</span><span className="nav-dropdown-desc">Deep metrics</span></div>
                 </Link>
               </div>
             )}

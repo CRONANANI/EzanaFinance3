@@ -188,3 +188,24 @@ body.light-mode {
   /* ── Badge ── */
   --badge-ring: #ffffff;
 }
+
+/* Partner app (shared routes + /partner-*): light mode uses gold accents instead of emerald */
+body.partner-app.light-mode {
+  --border-hover: rgba(184, 146, 47, 0.28);
+  --border-focus: rgba(184, 146, 47, 0.45);
+  --shadow-glow: 0 0 20px rgba(184, 146, 47, 0.08);
+
+  --emerald: #b8922f;
+  --emerald-hover: #92731d;
+  --emerald-dark: #6b5315;
+  --emerald-bg: rgba(184, 146, 47, 0.06);
+  --emerald-bg-hover: rgba(184, 146, 47, 0.1);
+  --emerald-bg-subtle: rgba(184, 146, 47, 0.03);
+  --emerald-border: rgba(184, 146, 47, 0.22);
+  --emerald-glow: rgba(184, 146, 47, 0.14);
+  --emerald-text: #92731d;
+
+  --chart-line: #b8922f;
+  --chart-fill-start: rgba(184, 146, 47, 0.18);
+  --chart-fill-end: rgba(184, 146, 47, 0);
+}

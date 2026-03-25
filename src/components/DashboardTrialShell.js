@@ -7,8 +7,10 @@ import { getTrialStatus } from '@/lib/trial';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { TrialBanner } from '@/components/TrialBanner';
 import { TrialExpiredGate } from '@/components/TrialExpiredGate';
+import { usePartner } from '@/contexts/PartnerContext';
 
-function shouldSkipTrialCheck(pathname) {
+function shouldSkipTrialCheck(pathname, isPartner) {
+  if (isPartner) return true;
   if (!pathname) return false;
   if (pathname === '/pricing') return true;
   if (pathname === '/select-plan') return true;
@@ -21,13 +23,14 @@ function shouldSkipTrialCheck(pathname) {
 
 export function DashboardTrialShell({ children }) {
   const pathname = usePathname();
-  const [ready, setReady] = useState(() => shouldSkipTrialCheck(pathname ?? ''));
+  const { isPartner } = usePartner();
+  const [ready, setReady] = useState(() => shouldSkipTrialCheck(pathname ?? '', isPartner));
   const [blocked, setBlocked] = useState(false);
   const [bannerMode, setBannerMode] = useState('none');
   const [bannerDays, setBannerDays] = useState(0);
 
   useEffect(() => {
-    if (shouldSkipTrialCheck(pathname ?? '')) {
+    if (shouldSkipTrialCheck(pathname ?? '', isPartner)) {
       setReady(true);
       setBlocked(false);
       setBannerMode('none');
@@ -92,9 +95,9 @@ export function DashboardTrialShell({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname]);
+  }, [pathname, isPartner]);
 
-  if (!ready && !shouldSkipTrialCheck(pathname ?? '')) {
+  if (!ready && !shouldSkipTrialCheck(pathname ?? '', isPartner)) {
     return (
       <div
         className="dashboard-trial-loading"

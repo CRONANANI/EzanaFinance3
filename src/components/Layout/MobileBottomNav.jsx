@@ -2,10 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { usePartner } from '@/contexts/PartnerContext';
+import { matchesPartnerRouteList, PARTNER_SHARED_APP_ROUTES } from '@/lib/partner-chrome';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { isPartner, isLoading } = usePartner();
   const isPartnerRoute = pathname?.startsWith('/partner-');
+  const isSharedPartner =
+    !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
+  const isPartnerExperience = isPartnerRoute || isSharedPartner;
 
   const userNavItems = [
     { href: '/home-dashboard', icon: 'bi-house', label: 'Home' },
@@ -23,11 +29,11 @@ export function MobileBottomNav() {
     { href: '#more', icon: 'bi-grid', label: 'More' },
   ];
 
-  const items = isPartnerRoute ? partnerNavItems : userNavItems;
+  const items = isPartnerExperience ? partnerNavItems : userNavItems;
 
   return (
     <nav
-      className={`mobile-bottom-nav ${isPartnerRoute ? 'partner-nav' : ''}`}
+      className={`mobile-bottom-nav ${isPartnerExperience ? 'partner-nav' : ''}`}
       role="navigation"
       aria-label="Mobile navigation"
     >

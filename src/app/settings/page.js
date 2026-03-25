@@ -16,9 +16,10 @@ import {
   IntegrationsPanel,
   ApiPanel,
 } from '@/components/settings';
-import { PartnerProvider, usePartner } from '@/contexts/PartnerContext';
+import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
 import './settings.css';
+import './settings-partner.css';
 
 const SETTINGS_TABS = [
   { key: 'my-details', label: 'My details', icon: 'bi-person', desc: 'Name, avatar, contact info' },
@@ -198,7 +199,7 @@ function SettingsInner() {
           {error ? (
             <p style={{ color: '#f87171', fontSize: '0.85rem', margin: 0 }}>{error}</p>
           ) : saved ? (
-            <p style={{ color: '#10b981', fontSize: '0.85rem', margin: 0 }}>
+            <p className="settings-saved-ok" style={{ fontSize: '0.85rem', margin: 0 }}>
               <i className="bi bi-check-circle-fill" style={{ marginRight: '0.35rem' }} />
               Settings saved
             </p>
@@ -223,9 +224,5 @@ function SettingsInner() {
 }
 
 export default function SettingsPage() {
-  return (
-    <PartnerProvider>
-      <SettingsInner />
-    </PartnerProvider>
-  );
+  return <SettingsInner />;
 }

@@ -80,8 +80,6 @@ export function HomeTerminalSummary({
 
   const activityScore = 78;
   const streakDays = 12;
-  const checklistDone = 9;
-  const checklistTotal = 18;
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
@@ -165,9 +163,6 @@ export function HomeTerminalSummary({
                 </span>
               ))}
             </div>
-            <p className="hts-footnote">
-              Checklist: {checklistDone}/{checklistTotal} complete
-            </p>
             <Link href="/home-dashboard" className="hts-card-link">
               Keep it going <i className="bi bi-arrow-right" />
             </Link>

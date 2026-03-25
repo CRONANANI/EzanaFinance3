@@ -1,0 +1,142 @@
+/* Partner hub on /settings — gold accents (align with partner dark / partner-light-mode.css) */
+
+body.partner-app .settings-header-back:hover {
+  color: #d4a853;
+}
+
+body.partner-app .settings-sidebar,
+body.partner-app .settings-sidebar-header {
+  border-color: rgba(212, 168, 83, 0.1);
+}
+
+body.partner-app .settings-nav-item:hover {
+  background: rgba(212, 168, 83, 0.06);
+}
+
+body.partner-app .settings-nav-item.active {
+  background: rgba(212, 168, 83, 0.1);
+}
+
+body.partner-app .settings-nav-icon {
+  background: rgba(212, 168, 83, 0.08);
+}
+
+body.partner-app .settings-nav-item.active .settings-nav-icon {
+  background: rgba(212, 168, 83, 0.18);
+  color: #d4a853;
+  box-shadow: 0 0 12px rgba(212, 168, 83, 0.12);
+}
+
+body.partner-app .settings-nav-item:hover .settings-nav-icon {
+  color: #d4a853;
+}
+
+body.partner-app .settings-nav-indicator {
+  background: #d4a853;
+  box-shadow: 0 0 8px rgba(212, 168, 83, 0.35);
+}
+
+body.partner-app .settings-back-btn:hover {
+  color: #d4a853;
+}
+
+body.partner-app .settings-sidebar-footer {
+  border-color: rgba(212, 168, 83, 0.1);
+}
+
+body.partner-app .settings-switch.on {
+  background: rgba(212, 168, 83, 0.45);
+}
+
+body.partner-app .settings-switch.on::after {
+  background: #d4a853;
+  box-shadow: 0 0 8px rgba(212, 168, 83, 0.35);
+}
+
+body.partner-app .settings-btn-primary {
+  background: linear-gradient(135deg, #b8922f, #92731d);
+}
+
+body.partner-app .settings-btn-primary:hover {
+  background: linear-gradient(135deg, #92731d, #6b5315);
+  box-shadow: 0 4px 16px rgba(212, 168, 83, 0.22);
+}
+
+body.partner-app .settings-btn-secondary {
+  border-color: rgba(212, 168, 83, 0.2);
+}
+
+body.partner-app .settings-btn-secondary:hover {
+  border-color: rgba(212, 168, 83, 0.35);
+  background: rgba(212, 168, 83, 0.06);
+}
+
+body.partner-app .settings-avatar {
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.1), rgba(212, 168, 83, 0.12));
+  border-color: rgba(212, 168, 83, 0.25);
+  color: #d4a853;
+}
+
+body.partner-app .settings-badge.green {
+  background: rgba(212, 168, 83, 0.12);
+  color: #d4a853;
+}
+
+body.partner-app .settings-plan-price,
+body.partner-app .settings-plan-feature i {
+  color: #d4a853;
+}
+
+body.partner-app .settings-api-key code,
+body.partner-app .settings-api-key-btn:hover {
+  color: #d4a853;
+}
+
+body.partner-app .settings-integration-status.connected-text {
+  color: #d4a853;
+}
+
+body.partner-app .settings-usage-fill {
+  background: linear-gradient(90deg, #b8922f, #92731d);
+}
+
+body.partner-app .settings-toast {
+  background: rgba(212, 168, 83, 0.12);
+  border-color: rgba(212, 168, 83, 0.28);
+  color: #d4a853;
+}
+
+body.partner-app .settings-push-status.is-on {
+  color: #d4a853;
+}
+
+body.partner-app .settings-saved-ok {
+  color: #d4a853;
+}
+
+body.partner-app .settings-mobile-trigger i:first-child,
+body.partner-app .settings-mobile-item.active i {
+  color: #d4a853;
+}
+
+body.partner-app .settings-header {
+  border-bottom-color: rgba(212, 168, 83, 0.12);
+}
+
+/* Light mode + partner */
+body.partner-app.light-mode .settings-nav-item.active {
+  background: rgba(184, 146, 47, 0.08);
+}
+
+body.partner-app.light-mode .settings-input:focus {
+  border-color: rgba(184, 146, 47, 0.45);
+}
+
+body.partner-app.light-mode .settings-push-card {
+  background: rgba(184, 146, 47, 0.08);
+  border-color: rgba(184, 146, 47, 0.2);
+}
+
+body.partner-app.light-mode .settings-saved-ok {
+  color: #92731d;
+}

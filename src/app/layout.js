@@ -12,6 +12,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ActiveTaskProvider } from '@/contexts/ActiveTaskContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
+import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 
 export const metadata = {
   title: 'Ezana Finance - Follow the moves that matter',
@@ -47,6 +48,7 @@ export default function RootLayout({ children }) {
                         <Suspense fallback={<nav className="main-nav" style={{ minHeight: 64 }} />}>
                           <ConditionalNavbar />
                         </Suspense>
+                        <PartnerChromeEffects />
                         {children}
                       </ToastProvider>
                     </PinnedCardsProvider>

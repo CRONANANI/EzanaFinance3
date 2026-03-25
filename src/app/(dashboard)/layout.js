@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { usePartner } from '@/contexts/PartnerContext';
+import { matchesPartnerRouteList, PARTNER_SHARED_APP_ROUTES } from '@/lib/partner-chrome';
 import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
 import { DashboardTrialShell } from '@/components/DashboardTrialShell';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -12,8 +14,12 @@ import './dashboard-polish.css';
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const { isPartner, isLoading } = usePartner();
   const isMarketAnalysisFullscreen = pathname === '/market-analysis';
   const isPartnerRoute = pathname?.startsWith('/partner-');
+  const isSharedPartner =
+    !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
+  const isPartnerExperience = isPartnerRoute || isSharedPartner;
 
   useEffect(() => {
     document.body.classList.add('dashboard-page');
@@ -29,7 +35,7 @@ export default function DashboardLayout({ children }) {
         className={`dashboard-main dashboard-main-content${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
         id="main-content"
       >
-        <div className={`dashboard-container${isPartnerRoute ? ' dashboard-container--partner-inset' : ''}`}>
+        <div className={`dashboard-container${isPartnerExperience ? ' dashboard-container--partner-inset' : ''}`}>
           <DashboardTrialShell>{children}</DashboardTrialShell>
         </div>
       </main>
