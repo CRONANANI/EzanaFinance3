@@ -29,7 +29,7 @@ export const SECTION_URLS = {
 export const DEFAULT_PINNED_CARDS = {
   dashboard: 'dashboard-portfolio-hero',
   capitol: 'itc-latest-trades',
-  research: 'company-overview',
+  research: 'stock-heatmap',
   betting: 'polymarket-trending',
   watchlist: 'stock-watchlist',
   learning: 'learning-course-table',
@@ -70,6 +70,7 @@ export const CARD_TITLES = {
 
   // Company research
   'stock-heatmap': 'Stock Market Heatmap',
+  'stock-chart-merged': 'Stock performance & quote',
   'company-overview': 'Company Overview',
   'stock-quote': 'Stock Quote',
   'key-metrics': 'Key Metrics',

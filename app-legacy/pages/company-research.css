@@ -1358,3 +1358,274 @@ body.light-mode .model-metric-card:hover {
   background: rgba(5, 150, 105, 0.06);
   border-color: rgba(5, 150, 105, 0.25);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Company Research — heatmap + sidebar, merged chart, db-style
+   ═══════════════════════════════════════════════════════════ */
+
+.cr-page .research-card {
+  background: rgba(16, 185, 129, 0.02) !important;
+  border: 1px solid rgba(16, 185, 129, 0.08) !important;
+  border-radius: 16px !important;
+  color: #f0f6fc;
+}
+
+.cr-page .research-card h3 {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+
+.cr-section-heading {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.cr-db-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.cr-pinnable-inner {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.cr-heatmap-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  align-items: stretch;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  min-height: 480px;
+}
+
+.cr-heatmap-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cr-heatmap-main .pinnable-card-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cr-heatmap-main .cr-pinnable-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.cr-heatmap-main .heatmap-container {
+  flex: 1;
+  min-height: 420px;
+}
+
+.cr-heatmap-sidebar {
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+}
+
+.cr-sidebar-heading {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin: 0 0 0.75rem 0.5rem;
+}
+
+.cr-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
+}
+
+.cr-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cr-scrollbar::-webkit-scrollbar-track {
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 6px;
+}
+
+.cr-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.42);
+  border-radius: 6px;
+}
+
+.cr-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.58);
+}
+
+.cr-models-vertical.models-carousel-section {
+  flex-direction: column;
+  align-items: stretch;
+  margin-bottom: 0;
+  gap: 0;
+}
+
+.cr-models-vertical .models-carousel-container {
+  overflow: visible;
+  width: 100%;
+}
+
+.cr-models-vertical .models-carousel-track {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  transform: none !important;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.cr-models-vertical .model-metric-card {
+  min-width: 0;
+  width: 100%;
+}
+
+.cr-models-below-stock {
+  margin-bottom: 1.5rem;
+}
+
+.cr-models-below-stock .models-carousel-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
+}
+
+.cr-models-below-stock .models-carousel-track {
+  transform: none !important;
+}
+
+.cr-stock-merged-card.market-chart-section {
+  margin-bottom: 0;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+.cr-merged-stock-head {
+  margin-bottom: 1rem;
+}
+
+.cr-merged-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.cr-merged-ticker {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  letter-spacing: -0.02em;
+}
+
+.cr-merged-long-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.cr-merged-quote .market-price {
+  font-size: 1.375rem;
+}
+
+.cr-merged-meta-line {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0;
+  line-height: 1.45;
+}
+
+.cr-chart-toolbar {
+  margin-bottom: 0.75rem !important;
+}
+
+.cr-stock-merged-card .chart-container.compact.cr-chart-shorter {
+  height: 256px;
+}
+
+.cr-merged-stats.market-chart-footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.cr-merged-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.cr-merged-stats-row .market-stat {
+  flex: 1 1 calc(25% - 0.5rem);
+  min-width: 72px;
+  align-items: flex-start;
+}
+
+.cr-merged-stats-row--secondary .market-stat-value {
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 1024px) {
+  .cr-heatmap-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .cr-heatmap-sidebar {
+    max-height: 50vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .cr-stock-merged-card .chart-container.compact.cr-chart-shorter {
+    height: 204px;
+  }
+
+  .cr-merged-stats-row .market-stat {
+    flex: 1 1 45%;
+  }
+}
+
+body.light-mode .cr-heatmap-sidebar {
+  background: rgba(5, 150, 105, 0.04);
+  border-color: rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .cr-db-card,
+body.light-mode .cr-stock-merged-card.market-chart-section {
+  background: #ffffff;
+  border-color: rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .cr-merged-ticker {
+  color: #111827;
+}
+
+body.light-mode .cr-merged-meta-line {
+  color: #4b5563;
+}

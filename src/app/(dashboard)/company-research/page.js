@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, Suspense } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
 import {
-  CompanyOverview,
-  StockQuote,
   KeyMetrics,
   AnalystRecommendations,
   CompanyNews,
@@ -32,6 +30,13 @@ import '@/components/research/ai-analysis-panel.css';
 /* ── Carousel model configs from the prompts library ── */
 const CAROUSEL_MODELS = getCarouselModels();
 
+function fmtPriceShort(v) {
+  if (v == null || v === '') return '--';
+  const n = Number(v);
+  if (Number.isNaN(n)) return '--';
+  return n >= 1 ? `$${n.toFixed(2)}` : `$${n.toFixed(4)}`;
+}
+
 function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
   const { completeTask } = useChecklist();
@@ -41,6 +46,7 @@ function CompanyResearchPageInner() {
   const [viewMode, setViewMode] = useState('heatmap');
   const [activeModel, setActiveModel] = useState(null);
   const searchRef = useRef(null);
+  const modelsCarouselScrollRef = useRef(null);
 
   const {
     query,
@@ -54,7 +60,7 @@ function CompanyResearchPageInner() {
   const showSuggestions = suggestions.length > 0;
 
   useEffect(() => {
-    const q = searchParams.get('q');
+    const q = searchParams.get('q') || searchParams.get('ticker');
     if (q && q.trim()) {
       const sym = q.trim().toUpperCase();
       setSelectedStock(sym);
@@ -83,6 +89,33 @@ function CompanyResearchPageInner() {
         : '--',
     });
   }, [profile, metricData]);
+
+  const w52Range = useMemo(() => {
+    const m = metricData?.metric;
+    if (!m) return '--';
+    const lo = m['52WeekLow'];
+    const hi = m['52WeekHigh'];
+    if (lo == null && hi == null) return '--';
+    return `${fmtPriceShort(lo)} – ${fmtPriceShort(hi)}`;
+  }, [metricData]);
+
+  const companyMetaLine = useMemo(() => {
+    const parts = [];
+    if (profile?.finnhubIndustry) parts.push(profile.finnhubIndustry);
+    if (profile?.exchange) parts.push(profile.exchange);
+    if (stats.mcap && stats.mcap !== '--') parts.push(`Market Cap: ${stats.mcap}`);
+    return parts.join(' · ') || '—';
+  }, [profile, stats.mcap]);
+
+  useEffect(() => {
+    if (viewMode !== 'stock' || !selectedStock) return;
+    const id = requestAnimationFrame(() => {
+      try {
+        window.marketChartWidget?.showStockChart?.(selectedStock);
+      } catch (_) {}
+    });
+    return () => cancelAnimationFrame(id);
+  }, [viewMode, selectedStock]);
 
   useEffect(() => {
     if (selectedStock && (profile || metricData)) {
@@ -150,8 +183,42 @@ function CompanyResearchPageInner() {
 
   const resetStats = () => setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
 
+  const scrollModelsCarousel = useCallback((dir) => {
+    modelsCarouselScrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
+  }, []);
+
+  const renderModelCards = (keyPrefix) =>
+    CAROUSEL_MODELS.map((model) => (
+      <div
+        key={`${keyPrefix}-${model.id}`}
+        className={`model-metric-card model-card ai-model-card ${model.flagship ? 'grpv-flagship' : ''} ${activeModel === model.id ? 'active' : ''}`}
+        data-model={model.id}
+        onClick={() => handleModelClick(model.id)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
+      >
+        {model.flagship ? (
+          <div className="grpv-brand-logo">
+            <img src="/ezana-logo.svg" alt="Ezana Finance" className="grpv-logo-img" />
+          </div>
+        ) : (
+          <div className={`model-metric-icon ${model.id}`} style={{ background: `${model.color}20`, color: model.color }}>
+            <i className={`bi ${model.icon}`} />
+          </div>
+        )}
+        <div className="model-metric-content">
+          <span className="model-metric-label">{model.name}</span>
+          <span className="model-metric-value">{model.description}</span>
+          <span className="model-metric-change">
+            {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
+          </span>
+        </div>
+      </div>
+    ));
+
   return (
-    <div className="dashboard-page-inset">
+    <div className="dashboard-page-inset cr-page">
       <div className="company-search-wrapper relative" ref={searchRef} data-task-target="research-search-bar">
         <AnimatedGlowingSearchBar
           value={query}
@@ -201,127 +268,151 @@ function CompanyResearchPageInner() {
         </div>
       </div>
 
-      <section className="market-chart-section" id="marketChartSection">
-        <div id="heatmapView" style={{ display: viewMode === 'heatmap' ? '' : 'none' }}>
-          <PinnableCard cardId="stock-heatmap" title="Stock Market Heatmap" sourcePage="/company-research" sourceLabel="Company Research" defaultW={4} defaultH={3}>
-            <div className="chart-header compact">
-              <div className="chart-title-area">
-                <h2 className="chart-title">Stock Market Heatmap</h2>
-                <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Market Cap</span>
+      <section className="cr-market-chart-root" id="marketChartSection">
+        <div
+          id="heatmapView"
+          className="cr-heatmap-layout"
+          style={{ display: viewMode === 'heatmap' ? undefined : 'none' }}
+        >
+          <div className="cr-heatmap-main">
+            <PinnableCard cardId="stock-heatmap" section="research">
+              <div className="cr-db-card cr-pinnable-inner">
+                <div className="chart-header compact">
+                  <div className="chart-title-area">
+                    <h2 className="chart-title">Stock Market Heatmap</h2>
+                    <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Market Cap</span>
+                  </div>
+                </div>
+                <div className="heatmap-container" id="heatmapContainer" data-task-target="research-company-card">
+                  <StockHeatmap onSelectStock={handleSelectStock} />
+                </div>
+              </div>
+            </PinnableCard>
+          </div>
+          <aside className="cr-heatmap-sidebar cr-scrollbar" aria-label="Financial model shortcuts">
+            <p className="cr-sidebar-heading">Stock analysis models</p>
+            <div className="models-carousel-section compact cr-models-vertical">
+              <div className="models-carousel-container cr-models-vertical-inner">
+                <div className="models-carousel-track" id="modelsCarouselTrack">
+                  {renderModelCards('hm')}
+                </div>
               </div>
             </div>
-            <div className="heatmap-container" id="heatmapContainer" data-task-target="research-company-card">
-              <StockHeatmap onSelectStock={handleSelectStock} />
-            </div>
-          </PinnableCard>
+          </aside>
         </div>
 
         <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>
-          <div className="chart-header compact">
-            <div className="chart-title-area">
-              <h2 className="chart-title" id="stockChartTitle">{selectedStock || '--'}</h2>
-              <div className="market-chart-meta" id="stockChartMeta">
-                <span className="market-price" id="stockPrice">--</span>
-                <span className="market-change" id="stockChange">--</span>
+          {selectedStock && (
+            <PinnableCard cardId="stock-chart-merged" section="research">
+              <div className="market-chart-section cr-db-card cr-stock-merged-card">
+                <div className="cr-merged-stock-head">
+                  <div className="cr-merged-title-row">
+                    <div className="cr-merged-names">
+                      <span className="cr-merged-ticker">{selectedStock}</span>
+                      {profile?.name ? <span className="cr-merged-long-name"> — {profile.name}</span> : null}
+                      <span id="stockChartTitle" className="sr-only">{selectedStock}</span>
+                    </div>
+                    <div className="market-chart-meta cr-merged-quote" id="stockChartMeta">
+                      <span className="market-price" id="stockPrice">--</span>
+                      <span className="market-change" id="stockChange">--</span>
+                    </div>
+                  </div>
+                  <p className="cr-merged-meta-line">{companyMetaLine}</p>
+                </div>
+                <div className="chart-header compact cr-chart-toolbar">
+                  <div className="chart-controls">
+                    <button
+                      className="back-to-heatmap-btn"
+                      id="backToHeatmap"
+                      type="button"
+                      onClick={() => {
+                        setViewMode('heatmap');
+                        setSelectedStock(null);
+                        resetStats();
+                        setActiveModel(null);
+                        try {
+                          window.marketChartWidget?.showHeatmap?.();
+                        } catch (_) {}
+                      }}
+                    >
+                      <i className="bi bi-grid-3x3-gap" /> Heatmap
+                    </button>
+                    <div className="time-range-selector compact" id="stockTimeRange">
+                      <button className="time-btn" type="button" data-range="1D">1D</button>
+                      <button className="time-btn" type="button" data-range="1W">1W</button>
+                      <button className="time-btn active" type="button" data-range="1M">1M</button>
+                      <button className="time-btn" type="button" data-range="3M">3M</button>
+                      <button className="time-btn" type="button" data-range="6M">6M</button>
+                      <button className="time-btn" type="button" data-range="1Y">1Y</button>
+                    </div>
+                  </div>
+                </div>
+                <div className="chart-container compact cr-chart-shorter" id="stockChartContainer">
+                  <div className="chart-loading" id="stockChartLoading">
+                    <i className="bi bi-arrow-repeat spin" />
+                    <span>Loading stock data...</span>
+                  </div>
+                  <canvas id="stockChart" />
+                </div>
+                <div className="cr-merged-stats market-chart-footer" id="stockChartFooter">
+                  <div className="cr-merged-stats-row">
+                    <div className="market-stat"><span className="market-stat-label">Open</span><span className="market-stat-value" id="mstatOpen">--</span></div>
+                    <div className="market-stat"><span className="market-stat-label">High</span><span className="market-stat-value" id="mstatHigh">--</span></div>
+                    <div className="market-stat"><span className="market-stat-label">Low</span><span className="market-stat-value" id="mstatLow">--</span></div>
+                    <div className="market-stat"><span className="market-stat-label">Volume</span><span className="market-stat-value" id="mstatVolume">--</span></div>
+                  </div>
+                  <div className="cr-merged-stats-row cr-merged-stats-row--secondary">
+                    <div className="market-stat"><span className="market-stat-label">P/E</span><span className="market-stat-value">{stats.pe}</span></div>
+                    <div className="market-stat"><span className="market-stat-label">EPS</span><span className="market-stat-value">{stats.eps}</span></div>
+                    <div className="market-stat"><span className="market-stat-label">Div Yield</span><span className="market-stat-value">{stats.divYield}</span></div>
+                    <div className="market-stat"><span className="market-stat-label">52W range</span><span className="market-stat-value">{w52Range}</span></div>
+                  </div>
+                  <span id="mstatPrevClose" className="sr-only" aria-hidden>--</span>
+                </div>
               </div>
-            </div>
-            <div className="chart-controls">
-              <button className="back-to-heatmap-btn" id="backToHeatmap" type="button" onClick={() => { setViewMode('heatmap'); setSelectedStock(null); resetStats(); setActiveModel(null); }}>
-                <i className="bi bi-grid-3x3-gap" /> Heatmap
-              </button>
-              <div className="time-range-selector compact" id="stockTimeRange">
-                <button className="time-btn" type="button" data-range="1D">1D</button>
-                <button className="time-btn" type="button" data-range="1W">1W</button>
-                <button className="time-btn active" type="button" data-range="1M">1M</button>
-                <button className="time-btn" type="button" data-range="3M">3M</button>
-                <button className="time-btn" type="button" data-range="6M">6M</button>
-                <button className="time-btn" type="button" data-range="1Y">1Y</button>
-              </div>
-            </div>
-          </div>
-          <div className="chart-container compact" id="stockChartContainer">
-            <div className="chart-loading" id="stockChartLoading">
-              <i className="bi bi-arrow-repeat spin" />
-              <span>Loading stock data...</span>
-            </div>
-            <canvas id="stockChart" />
-          </div>
-          <div className="market-chart-footer" id="stockChartFooter">
-            <div className="market-stat"><span className="market-stat-label">Open</span><span className="market-stat-value" id="mstatOpen">--</span></div>
-            <div className="market-stat"><span className="market-stat-label">High</span><span className="market-stat-value" id="mstatHigh">--</span></div>
-            <div className="market-stat"><span className="market-stat-label">Low</span><span className="market-stat-value" id="mstatLow">--</span></div>
-            <div className="market-stat"><span className="market-stat-label">Volume</span><span className="market-stat-value" id="mstatVolume">--</span></div>
-            <div className="market-stat"><span className="market-stat-label">Prev Close</span><span className="market-stat-value" id="mstatPrevClose">--</span></div>
-          </div>
+            </PinnableCard>
+          )}
         </div>
       </section>
 
       {selectedStock && (
-        <section className="research-cards-section mt-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Company Research · {selectedStock}</h2>
+        <section className="research-cards-section cr-research-cards mt-8">
+          <h2 className="cr-section-heading">Research · {selectedStock}</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PinnableCard cardId="company-overview" title="Company Overview" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
-              <CompanyOverview symbol={selectedStock} />
-            </PinnableCard>
-            <PinnableCard cardId="stock-quote" title="Stock Quote" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={1}>
-              <StockQuote symbol={selectedStock} />
-            </PinnableCard>
-            <PinnableCard cardId="key-metrics" title="Key Metrics" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+            <PinnableCard cardId="key-metrics" section="research">
               <KeyMetrics symbol={selectedStock} />
             </PinnableCard>
-            <PinnableCard cardId="analyst-recommendations" title="Analyst Recommendations" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={1}>
+            <PinnableCard cardId="analyst-recommendations" section="research">
               <AnalystRecommendations symbol={selectedStock} />
             </PinnableCard>
-            <PinnableCard cardId="company-news" title="Company News" sourcePage="/company-research" sourceLabel="Company Research" defaultW={4} defaultH={2}>
+            <PinnableCard cardId="company-news" section="research" className="lg:col-span-2">
               <CompanyNews symbol={selectedStock} className="lg:col-span-2" />
             </PinnableCard>
-            <PinnableCard cardId="earnings-card" title="Earnings" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+            <PinnableCard cardId="earnings-card" section="research">
               <EarningsCard symbol={selectedStock} />
             </PinnableCard>
-            <PinnableCard cardId="competitors-card" title="Competitors" sourcePage="/company-research" sourceLabel="Company Research" defaultW={2} defaultH={2}>
+            <PinnableCard cardId="competitors-card" section="research">
               <CompetitorsCard symbol={selectedStock} onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })} />
             </PinnableCard>
           </div>
         </section>
       )}
 
-      {/* ═══ AI Analysis Models Carousel ═══ */}
-      <section className="models-carousel-section compact">
-        <button className="carousel-nav prev" id="modelsCarouselPrev" type="button"><i className="bi bi-chevron-left" /></button>
-        <div className="models-carousel-container">
-          <div className="models-carousel-track" id="modelsCarouselTrack">
-            {CAROUSEL_MODELS.map((model) => (
-              <div
-                key={model.id}
-                className={`model-metric-card model-card ai-model-card ${model.flagship ? 'grpv-flagship' : ''} ${activeModel === model.id ? 'active' : ''}`}
-                data-model={model.id}
-                onClick={() => handleModelClick(model.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
-              >
-                {model.flagship ? (
-                  <div className="grpv-brand-logo">
-                    <img src="/ezana-logo.svg" alt="Ezana Finance" className="grpv-logo-img" />
-                  </div>
-                ) : (
-                  <div className={`model-metric-icon ${model.id}`} style={{ background: `${model.color}20`, color: model.color }}>
-                    <i className={`bi ${model.icon}`} />
-                  </div>
-                )}
-                <div className="model-metric-content">
-                  <span className="model-metric-label">{model.name}</span>
-                  <span className="model-metric-value">{model.description}</span>
-                  <span className="model-metric-change">
-                    {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
-                  </span>
-                </div>
-              </div>
-            ))}
+      {viewMode === 'stock' && (
+        <section className="models-carousel-section compact cr-models-below-stock">
+          <button className="carousel-nav prev" id="modelsCarouselPrev" type="button" onClick={() => scrollModelsCarousel(-1)} aria-label="Previous models">
+            <i className="bi bi-chevron-left" />
+          </button>
+          <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
+            <div className="models-carousel-track" id="modelsCarouselTrackStock">
+              {renderModelCards('st')}
+            </div>
           </div>
-        </div>
-        <button className="carousel-nav next" id="modelsCarouselNext" type="button"><i className="bi bi-chevron-right" /></button>
-      </section>
+          <button className="carousel-nav next" id="modelsCarouselNext" type="button" onClick={() => scrollModelsCarousel(1)} aria-label="Next models">
+            <i className="bi bi-chevron-right" />
+          </button>
+        </section>
+      )}
 
       {/* ═══ AI Analysis Detail Panel ═══ */}
       {activeModel && (

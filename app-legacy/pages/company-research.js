@@ -1210,9 +1210,11 @@ class CompanyResearch {
 }
 
 function initCompanyResearch() {
-  if (!document.getElementById('companySearchInput') || !document.getElementById('heatmapContainer')) return;
+  if (!document.getElementById('heatmapContainer')) return;
   try {
-    window.companyResearch = new CompanyResearch();
+    if (document.getElementById('companySearchInput')) {
+      window.companyResearch = new CompanyResearch();
+    }
     window.marketChartWidget = new MarketChartWidget();
   } catch (e) {
     console.warn('Company research init error:', e);
@@ -1255,8 +1257,10 @@ class MarketChartWidget {
   showHeatmap() {
     this.mode = 'heatmap';
     this.currentSymbol = null;
-    document.getElementById('heatmapView').style.display = '';
-    document.getElementById('stockChartView').style.display = 'none';
+    const heatmapEl = document.getElementById('heatmapView');
+    const stockEl = document.getElementById('stockChartView');
+    if (heatmapEl) heatmapEl.style.display = '';
+    if (stockEl) stockEl.style.display = 'none';
     this.resetStatCards();
   }
 
@@ -1274,9 +1278,12 @@ class MarketChartWidget {
   showStockChart(symbol) {
     this.mode = 'stock';
     this.currentSymbol = symbol.toUpperCase();
-    document.getElementById('heatmapView').style.display = 'none';
-    document.getElementById('stockChartView').style.display = '';
-    document.getElementById('stockChartTitle').textContent = this.currentSymbol;
+    const heatmapEl = document.getElementById('heatmapView');
+    const stockEl = document.getElementById('stockChartView');
+    if (heatmapEl) heatmapEl.style.display = 'none';
+    if (stockEl) stockEl.style.display = '';
+    const titleEl = document.getElementById('stockChartTitle');
+    if (titleEl) titleEl.textContent = this.currentSymbol;
     this.loadStockData(this.currentSymbol);
     this.loadOverviewStats(this.currentSymbol);
   }

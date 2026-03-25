@@ -298,6 +298,12 @@ export function PinnedCardContent({ cardId }) {
         </div>
       );
 
+    case 'stock-chart-merged':
+      return (
+        <div className="p-6 text-center text-sm text-gray-400 border border-emerald-500/10 rounded-2xl bg-emerald-500/[0.02]">
+          Pin shows your stock chart card. Open Company Research and select a ticker to load live price and chart on this page.
+        </div>
+      );
     case 'company-overview':
       return <CompanyOverview symbol={DEFAULT_SYMBOL} />;
     case 'stock-quote':
