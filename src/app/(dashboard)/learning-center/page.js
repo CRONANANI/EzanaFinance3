@@ -143,8 +143,14 @@ export default function LearningCenterPage() {
             <a href="#" className="lc-section-link">View All</a>
           </div>
           <div className="lc-courses-grid">
-            {COURSE_SUMMARIES.map((course) => (
-              <Link key={course.id} href={`/learning-center/${course.id}`} className="lc-course-card" onClick={() => completeTask('learning_1')}>
+            {COURSE_SUMMARIES.map((course, ci) => (
+              <Link
+                key={course.id}
+                href={`/learning-center/${course.id}`}
+                className="lc-course-card"
+                data-task-target={ci === 0 ? 'learning-module-card' : undefined}
+                onClick={() => completeTask('learning_1')}
+              >
                 <div className="lc-course-card-header">
                   <span className="lc-course-badge">Course</span>
                   <span className="lc-course-hours"><i className="bi bi-clock" /> {course.stats.duration}</span>

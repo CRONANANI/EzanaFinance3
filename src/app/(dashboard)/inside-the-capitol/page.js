@@ -338,6 +338,7 @@ function InsideTheCapitolContent() {
                 <button key={f} type="button" className={`itc-sf ${typeFilter === f ? 'on' : ''}`} onClick={() => setTypeFilter(f)}>{f}</button>
               ))}
               <span className="itc-sf-label" style={{ marginLeft: 8, marginRight: 4, color: '#8b949e', fontSize: 11 }}>Party</span>
+              <span data-task-target="capitol-party-filter" style={{ display: 'inline-flex', gap: 4 }}>
               <Link
                 href="/inside-the-capitol?party=republican"
                 className={`itc-sf ${activePartyFilter === 'republican' ? 'on' : ''}`}
@@ -352,6 +353,7 @@ function InsideTheCapitolContent() {
               >
                 D
               </Link>
+              </span>
               {(activePartyFilter || activeStateFilter) && (
                 <Link href="/inside-the-capitol" className="itc-filter-clear">
                   <span className="itc-filter-tag">{activePartyFilter ? activePartyFilter.charAt(0).toUpperCase() + activePartyFilter.slice(1) : ''}{activePartyFilter && activeStateFilter ? ' · ' : ''}{activeStateFilter ? activeStateFilter.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : ''}</span>
@@ -360,7 +362,7 @@ function InsideTheCapitolContent() {
               )}
             </div>
             <div className="itc-body">
-              {trades.map((t) => (
+              {trades.map((t, ti) => (
                 <div key={t.id} className="itc-tr">
                   <div className="itc-tr-type-col">
                     <span className={`itc-tr-type ${t.type.toLowerCase()}`}>{t.type}</span>
@@ -368,11 +370,21 @@ function InsideTheCapitolContent() {
                   </div>
                   <div className="itc-tr-co">
                     <span className="itc-tr-co-name">{t.company}</span>
-                    <Link href={`/company-research?q=${encodeURIComponent(t.ticker)}`} className="itc-tr-co-exch" onClick={() => completeTask('capitol_3')}>
+                    <Link
+                      href={`/company-research?q=${encodeURIComponent(t.ticker)}`}
+                      className="itc-tr-co-exch"
+                      onClick={() => completeTask('capitol_3')}
+                      data-task-target={ti === 0 ? 'capitol-stock-ticker' : undefined}
+                    >
                       {t.exchange}
                     </Link>
                   </div>
-                  <Link href={`/inside-the-capitol/${slugify(t.member)}`} className="itc-tr-mem" onClick={() => completeTask('capitol_1')}>
+                  <Link
+                    href={`/inside-the-capitol/${slugify(t.member)}`}
+                    className="itc-tr-mem"
+                    onClick={() => completeTask('capitol_1')}
+                    data-task-target={ti === 0 ? 'capitol-politician-name' : undefined}
+                  >
                     <span className="itc-tr-mem-name">{t.member}</span>
                     <span className="itc-tr-mem-meta"><span className={`itc-dot ${t.party.toLowerCase()}`} />{t.party} | {t.chamber} | {t.state}</span>
                   </Link>

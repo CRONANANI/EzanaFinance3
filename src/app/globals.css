@@ -499,3 +499,14 @@ body.light-mode .nav-logo-img {
 .chain-view-scroll::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+@keyframes taskCompletionSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

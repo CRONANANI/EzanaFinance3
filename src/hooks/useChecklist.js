@@ -42,6 +42,12 @@ export function useChecklist() {
     return () => subscription.unsubscribe();
   }, [loadProgress]);
 
+  useEffect(() => {
+    const onSync = () => loadProgress();
+    window.addEventListener('checklist-updated', onSync);
+    return () => window.removeEventListener('checklist-updated', onSync);
+  }, [loadProgress]);
+
   const completeTask = useCallback(async (taskId) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -57,8 +63,12 @@ export function useChecklist() {
           .update({
             checklist_progress: updated,
             checklist_completed: allDone,
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', user.id);
+          .eq('id', user.id)
+          .then(() => {
+            window.dispatchEvent(new Event('checklist-updated'));
+          });
         return updated;
       });
     } catch (error) {

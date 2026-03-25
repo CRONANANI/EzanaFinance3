@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { useChecklist } from '@/hooks/useChecklist';
 import { getTasksBySection } from '@/config/checklist';
-import { useRouter } from 'next/navigation';
+import { useActiveTaskContext } from '@/contexts/ActiveTaskContext';
 
 export function ChecklistProgressIcon() {
   const { completedCount, totalTasks, isComplete, progress } = useChecklist();
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
+  const { startTask } = useActiveTaskContext();
 
   const percentage = Math.round((completedCount / totalTasks) * 100);
   const tasksBySection = getTasksBySection();
@@ -115,12 +115,12 @@ export function ChecklistProgressIcon() {
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
-                          if (!done) router.push(task.page);
+                          if (!done) startTask(task.id);
                           setIsOpen(false);
                         }
                       }}
                       onClick={() => {
-                        if (!done) router.push(task.page);
+                        if (!done) startTask(task.id);
                         setIsOpen(false);
                       }}
                       style={{

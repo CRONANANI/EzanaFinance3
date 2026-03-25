@@ -74,6 +74,7 @@ export function ProfileCarousel({ items, variant = "default", initialScroll = 0,
                 variant={variant}
                 onCardClose={() => handleCardClose(index)}
                 onOpen={variant === "investor" ? onInvestorCardOpen : undefined}
+                dataTaskTarget={variant === "investor" && index === 0 ? "legendary-investor-card" : undefined}
               />
             </motion.div>
           ))}
@@ -116,7 +117,7 @@ function useOutsideClick(ref, onOutsideClick) {
   }, [ref, onOutsideClick]);
 }
 
-function ProfileCard({ profile, index, variant = "default", onCardClose = () => {}, onOpen }) {
+function ProfileCard({ profile, index, variant = "default", onCardClose = () => {}, onOpen, dataTaskTarget }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef(null);
 
@@ -210,6 +211,7 @@ function ProfileCard({ profile, index, variant = "default", onCardClose = () => 
         type="button"
         className="text-left w-full"
         whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+        data-task-target={dataTaskTarget}
       >
         <div
           className={cn(

@@ -152,7 +152,7 @@ function CompanyResearchPageInner() {
 
   return (
     <div className="dashboard-page-inset">
-      <div className="company-search-wrapper relative" ref={searchRef}>
+      <div className="company-search-wrapper relative" ref={searchRef} data-task-target="research-search-bar">
         <AnimatedGlowingSearchBar
           value={query}
           onChange={handleSearchInput}
@@ -210,7 +210,7 @@ function CompanyResearchPageInner() {
                 <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Market Cap</span>
               </div>
             </div>
-            <div className="heatmap-container" id="heatmapContainer">
+            <div className="heatmap-container" id="heatmapContainer" data-task-target="research-company-card">
               <StockHeatmap onSelectStock={handleSelectStock} />
             </div>
           </PinnableCard>

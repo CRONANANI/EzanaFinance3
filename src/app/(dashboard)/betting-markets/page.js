@@ -462,6 +462,7 @@ export default function BettingMarketsPage() {
                   value={traderQuery}
                   onChange={(e) => setTraderQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && lookupTrader()}
+                  data-task-target="polymarket-search"
                 />
                 <button onClick={lookupTrader} disabled={traderLoading || !traderQuery.trim()}>
                   {traderLoading ? 'Searching…' : 'Look Up'}
@@ -868,6 +869,7 @@ export default function BettingMarketsPage() {
                         className="bm-prediction-card"
                         role="button"
                         tabIndex={0}
+                        data-task-target={i === 0 ? 'prediction-market-item' : undefined}
                         onClick={() => completeTask('market_2')}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('market_2'); }}
                       >
@@ -900,7 +902,7 @@ export default function BettingMarketsPage() {
 
         {/* Sports Odds Board */}
         <PinnableCard cardId="sports-odds" title="Sports Odds Board" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
-          <div className="component-card">
+          <div className="component-card" data-task-target="sports-odds-board">
             <div className="card-header">
               <h3><i className="bi bi-trophy" /> Sports Odds Board</h3>
               <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Today&apos;s Lines</span>

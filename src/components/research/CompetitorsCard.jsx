@@ -43,12 +43,13 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
     >
       <h3 className="text-lg font-semibold text-white mb-4">Peer Companies</h3>
       <div className="flex flex-wrap gap-2">
-        {peers.map((peer) => (
+        {peers.map((peer, pi) => (
           <button
             key={peer}
             type="button"
             onClick={() => onSelectPeer?.(peer)}
             className="px-3 py-1.5 rounded-lg bg-[#161b22] hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 transition-colors text-sm font-medium"
+            data-task-target={pi === 0 ? 'research-compare-button' : undefined}
           >
             {peer}
           </button>

@@ -228,7 +228,13 @@ export default function WatchlistPage() {
               {fmtPct(selected.pct)}
             </div>
             {selected.type === 'stock' && (
-              <button type="button" className="wl-bc-link" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => completeTask('watchlist_3')}>
+              <button
+                type="button"
+                className="wl-bc-link"
+                style={{ padding: '4px 10px', fontSize: 12 }}
+                onClick={() => completeTask('watchlist_3')}
+                data-task-target="watchlist-price-alert"
+              >
                 <i className="bi bi-bell"/> Set price alert
               </button>
             )}
@@ -284,7 +290,20 @@ export default function WatchlistPage() {
                     </div>
 
           <div className="wl-side-tabs">
-            {SIDEBAR_TABS.map(t => <button key={t} type="button" className={`wl-st ${sideTab===t?'on':''}`} onClick={()=>{ setSideTab(t); if (t !== 'All') completeTask('watchlist_2'); }}>{t}</button>)}
+            {SIDEBAR_TABS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`wl-st ${sideTab === t ? 'on' : ''}`}
+                data-task-target={t === 'Stocks' ? 'watchlist-create-list' : undefined}
+                onClick={() => {
+                  setSideTab(t);
+                  if (t !== 'All') completeTask('watchlist_2');
+                }}
+              >
+                {t}
+              </button>
+            ))}
                   </div>
 
           <div className="wl-side-list">
@@ -311,7 +330,7 @@ export default function WatchlistPage() {
             })}
           </div>
 
-          <button type="button" className="wl-add" onClick={() => { completeTask('watchlist_1'); }}><i className="bi bi-plus-lg"/> Add to Watchlist</button>
+          <button type="button" className="wl-add" data-task-target="watchlist-add-button" onClick={() => { completeTask('watchlist_1'); }}><i className="bi bi-plus-lg"/> Add to Watchlist</button>
         </aside>
       </div>
     </div>

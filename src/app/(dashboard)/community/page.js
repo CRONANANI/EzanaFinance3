@@ -196,7 +196,7 @@ export default function CommunityPage() {
       </div>
       <div className="community-card">
         <div className="community-card-header"><h3>Leaderboard</h3></div>
-        <div className="community-leaderboard">
+        <div className="community-leaderboard" data-task-target="community-leaderboard">
           {[{ name: 'Emma Wilson', initials: 'EW', return: 34.5 }, { name: 'David Kim', initials: 'DK', return: 28.2 }, { name: 'Lisa Park', initials: 'LP', return: 25.7 }, { name: 'Alex Chen', initials: 'AC', return: 22.1 }, { name: 'You', initials: 'ME', return: 12.4 }].map((u, i) => (
             <div key={i} className="community-leader-row" role="button" tabIndex={0} onClick={() => completeTask('community_3')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('community_3'); }}>
               <span className="community-leader-rank">{i + 1}</span>
@@ -276,7 +276,7 @@ export default function CommunityPage() {
 
       <div className="dashboard-grid community-features-grid">
         <PinnableCard cardId="community-feed" title="Community Feed" sourcePage="/community" sourceLabel="Community" defaultW={4} defaultH={3}>
-        <div className="component-card community-feed-card">
+        <div className="component-card community-feed-card" data-task-target="community-feed">
           <div className="card-header"><h3><i className="bi bi-chat-square-text" /> Community Feed</h3></div>
           <div className="card-body">
             <div className="community-feed-filters">

@@ -266,7 +266,7 @@ export default function CourseDetailPage() {
         <main className="cd-content">
           {activeLesson && activeTab !== 'progress' && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
-              <button type="button" className="cd-btn-secondary" onClick={() => completeTask('learning_3')}>
+              <button type="button" className="cd-btn-secondary" data-task-target="learning-bookmark" onClick={() => completeTask('learning_3')}>
                 <i className="bi bi-bookmark-plus" /> Bookmark lesson
               </button>
             </div>
@@ -383,6 +383,7 @@ export default function CourseDetailPage() {
                   onClick={submitQuiz}
                   disabled={Object.keys(quizAnswers).length < activeLesson.questions.length}
                   style={{ marginTop: '1.5rem' }}
+                  data-task-target="learning-quiz-button"
                 >
                   Submit Quiz
                 </button>
