@@ -31,6 +31,15 @@ const CITY_KEYWORDS = {
   stockholm: ['stockholm', 'sweden', 'swedish', 'nordic', 'nasdaq nordic'],
   montreal: ['montreal', 'quebec', 'canada', 'canadian', 'tmx'],
   hamilton: ['bermuda', 'hamilton', 'reinsurance', 'offshore'],
+  auckland: ['auckland', 'new zealand', 'nzx', 'fonterra', 'kiwi', 'australasia'],
+  melbourne: ['melbourne', 'victoria', 'australia', 'australian', 'asx', 'superannuation'],
+  nairobi: ['nairobi', 'kenya', 'kenyan', 'east africa', 'nse', 'm-pesa', 'safaricom'],
+  santiago: ['santiago', 'chile', 'chilean', 'copper', 'ipsa', 'latam'],
+  lima: ['lima', 'peru', 'peruvian', 'sol ', 'bvl', 'mining', 'copper'],
+  bogota: ['bogota', 'bogotá', 'colombia', 'colombian', 'peso', 'bvc', 'oil'],
+  medellin: ['medellin', 'medellín', 'antioquia', 'colombia', 'colombian', 'innovation'],
+  'buenos-aires': ['buenos aires', 'argentina', 'argentine', 'peso', 'milei', 'mercosur', 'byma'],
+  boston: ['boston', 'massachusetts', 'biotech', 'pharma', 'harvard', 'mit ', 'endowment', 'fidelity'],
 };
 
 const CITY_TICKERS = {
@@ -61,6 +70,15 @@ const CITY_TICKERS = {
   stockholm: ['ERIC-B.ST', 'VOLV-B.ST', 'ABB.ST'],
   montreal: ['BMO', 'BN', 'NTR'],
   hamilton: ['RNR', 'ACGL', 'AXS'],
+  auckland: ['AIR.NZ', 'FPH.NZ'],
+  melbourne: ['BHP', 'CBA.AX', 'RIO'],
+  nairobi: ['SCOM.NR', 'EQTY.NR'],
+  santiago: ['SQM', 'CMPC', 'ENELAM.SN'],
+  lima: ['BAP', 'SCCO'],
+  bogota: ['CIB', 'EC'],
+  medellin: ['CIB', 'EC'],
+  'buenos-aires': ['MELI', 'YPF', 'GGAL'],
+  boston: ['MRNA', 'BIIB', 'AMGN', 'LLY'],
 };
 
 export async function GET(request) {

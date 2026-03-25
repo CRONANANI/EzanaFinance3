@@ -299,6 +299,15 @@ export const PANEL_ID_TO_CITY_KEY = {
   stockholm: 'stockholm',
   montreal: 'montreal',
   hamilton: 'hamilton',
+  auckland: 'auckland',
+  melbourne: 'melbourne',
+  nairobi: 'nairobi',
+  santiago: 'santiago',
+  lima: 'lima',
+  bogota: 'bogota',
+  medellin: 'medellin',
+  buenosaires: 'buenos_aires',
+  boston: 'boston',
 };
 
 /**
@@ -332,6 +341,15 @@ export const PANEL_ID_TO_FINHUB_CITY_ID = {
   stockholm: 'stockholm',
   montreal: 'montreal',
   hamilton: 'hamilton',
+  auckland: 'auckland',
+  melbourne: 'melbourne',
+  nairobi: 'nairobi',
+  santiago: 'santiago',
+  lima: 'lima',
+  bogota: 'bogota',
+  medellin: 'medellin',
+  buenosaires: 'buenos-aires',
+  boston: 'boston',
 };
 
 export function getSourcesForCity(cityKey) {
