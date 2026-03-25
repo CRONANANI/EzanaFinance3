@@ -29,7 +29,7 @@ export async function GET(request) {
       .from('plaid_transactions')
       .select('*')
       .eq('user_id', user.id)
-      .order('date', { ascending: false })
+      .order('transaction_date', { ascending: false })
       .limit(50);
 
     if (transactionsError) throw transactionsError;

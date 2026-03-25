@@ -105,7 +105,9 @@ export function PortfolioOverview() {
                 <span className={tx.amount > 0 ? 'negative' : 'positive'}>
                   ${Math.abs(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
-                <span className="tx-date">{new Date(tx.date).toLocaleDateString()}</span>
+                <span className="tx-date">
+                  {new Date(tx.transaction_date || tx.date).toLocaleDateString()}
+                </span>
               </div>
             </div>
           ))}
