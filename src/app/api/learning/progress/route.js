@@ -1,0 +1,249 @@
+import { NextResponse } from 'next/server';
+import { createServerSupabase } from '@/lib/supabase-server';
+import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
+import { buildPlaceholderContent } from '@/lib/learning-content';
+import {
+  buildProgressMap,
+  canAccessCourse,
+  isCourseFullyCompleted,
+  isLevelComplete,
+  levelBadgeKey,
+  trackBadgeKey,
+  TRACK_BADGE_LABELS,
+  LEVEL_BADGE_LABELS,
+} from '@/lib/learning-progress-logic';
+
+export const dynamic = 'force-dynamic';
+
+const PASS_PCT = 70;
+
+function labelForLevelBadgeKey(key) {
+  const m = typeof key === 'string' ? key.match(/_level_(.+)$/) : null;
+  if (!m) return key;
+  return LEVEL_BADGE_LABELS[m[1]] || key;
+}
+
+async function syncTrackAndBadges(supabase, userId, course) {
+  const { data: rows } = await supabase.from('user_course_progress').select('*').eq('user_id', userId);
+  const progressById = buildProgressMap(rows || []);
+  const track = course.track;
+
+  await supabase.from('user_track_progress').upsert(
+    {
+      user_id: userId,
+      track,
+      basic_completed: isLevelComplete(track, 'basic', progressById),
+      intermediate_completed: isLevelComplete(track, 'intermediate', progressById),
+      advanced_completed: isLevelComplete(track, 'advanced', progressById),
+      expert_completed: isLevelComplete(track, 'expert', progressById),
+      current_level: course.level,
+    },
+    { onConflict: 'user_id,track' }
+  );
+
+  const newBadges = [];
+
+  for (const lv of LEVEL_KEYS) {
+    if (isLevelComplete(track, lv, progressById)) {
+      const key = levelBadgeKey(track, lv);
+      if (!key) continue;
+      const { error } = await supabase.from('user_learning_badges').insert({ user_id: userId, badge_key: key });
+      if (!error) {
+        newBadges.push({ key, label: labelForLevelBadgeKey(key) });
+      }
+    }
+  }
+
+  const trackCourses = getCoursesByTrack(track);
+  const allTrackDone =
+    trackCourses.length > 0 && trackCourses.every((c) => isCourseFullyCompleted(progressById[c.id]));
+
+  if (allTrackDone) {
+    const tk = trackBadgeKey(track);
+    const { error } = await supabase.from('user_learning_badges').insert({ user_id: userId, badge_key: tk });
+    if (!error) {
+      newBadges.push({ key: tk, label: TRACK_BADGE_LABELS[track] || tk });
+    }
+  }
+
+  return newBadges;
+}
+
+async function updateBrokerageFlags(supabase, userId, courseId) {
+  if (courseId === 'stocks-advanced-3') {
+    await supabase
+      .from('brokerage_accounts')
+      .update({ short_selling_course_completed: true, updated_at: new Date().toISOString() })
+      .eq('user_id', userId);
+  }
+  if (courseId === 'stocks-advanced-4') {
+    await supabase
+      .from('brokerage_accounts')
+      .update({ margin_course_completed: true, updated_at: new Date().toISOString() })
+      .eq('user_id', userId);
+  }
+}
+
+export async function POST(request) {
+  try {
+    const supabase = createServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { courseId, action, answers } = body;
+
+    const course = getCourseById(courseId);
+    if (!course) {
+      return NextResponse.json({ error: 'Invalid course' }, { status: 400 });
+    }
+
+    const { data: progressRows } = await supabase.from('user_course_progress').select('*').eq('user_id', user.id);
+    const progressById = buildProgressMap(progressRows || []);
+
+    const access = canAccessCourse(course, progressById);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.reason || 'Course locked' }, { status: 403 });
+    }
+
+    const now = new Date().toISOString();
+
+    if (action === 'start') {
+      const { data: existing } = await supabase
+        .from('user_course_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .maybeSingle();
+
+      if (existing) {
+        const { data: upd, error } = await supabase
+          .from('user_course_progress')
+          .update({
+            status: 'in_progress',
+            started_at: existing.started_at || now,
+          })
+          .eq('user_id', user.id)
+          .eq('course_id', courseId)
+          .select()
+          .single();
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ progress: upd });
+      }
+
+      const { data: ins, error } = await supabase
+        .from('user_course_progress')
+        .insert({
+          user_id: user.id,
+          course_id: courseId,
+          status: 'in_progress',
+          progress_pct: 0,
+          reading_complete: false,
+          started_at: now,
+        })
+        .select()
+        .single();
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ progress: ins });
+    }
+
+    if (action === 'reading_complete') {
+      const { data: existing } = await supabase
+        .from('user_course_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .maybeSingle();
+
+      const { data: upd, error } = await supabase
+        .from('user_course_progress')
+        .upsert(
+          {
+            user_id: user.id,
+            course_id: courseId,
+            status: 'in_progress',
+            progress_pct: 100,
+            reading_complete: true,
+            started_at: existing?.started_at || now,
+            quiz_score: existing?.quiz_score ?? null,
+            quiz_passed: existing?.quiz_passed ?? null,
+          },
+          { onConflict: 'user_id,course_id' }
+        )
+        .select()
+        .single();
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ progress: upd });
+    }
+
+    if (action === 'quiz_submit') {
+      if (!Array.isArray(answers) || answers.length !== 5) {
+        return NextResponse.json({ error: 'Submit 5 answers (indices 0-3)' }, { status: 400 });
+      }
+
+      const { quiz } = buildPlaceholderContent(course);
+      let correct = 0;
+      for (let i = 0; i < 5; i += 1) {
+        if (Number(answers[i]) === quiz[i].correctIndex) correct += 1;
+      }
+      const scorePct = Math.round((correct / 5) * 100);
+      const passed = scorePct >= PASS_PCT;
+
+      const { data: existing } = await supabase
+        .from('user_course_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .maybeSingle();
+
+      if (!existing?.reading_complete) {
+        return NextResponse.json({ error: 'Mark reading as complete before taking the quiz' }, { status: 400 });
+      }
+
+      const row = {
+        user_id: user.id,
+        course_id: courseId,
+        status: passed ? 'completed' : 'in_progress',
+        progress_pct: 100,
+        reading_complete: true,
+        quiz_score: scorePct,
+        quiz_passed: passed,
+        started_at: existing?.started_at || now,
+        completed_at: passed ? now : null,
+      };
+
+      const { data: saved, error } = await supabase
+        .from('user_course_progress')
+        .upsert(row, { onConflict: 'user_id,course_id' })
+        .select()
+        .single();
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+      let badges = [];
+      if (passed) {
+        await updateBrokerageFlags(supabase, user.id, courseId);
+        badges = await syncTrackAndBadges(supabase, user.id, course);
+      }
+
+      return NextResponse.json({
+        progress: saved,
+        scorePct,
+        correct,
+        total: 5,
+        passed,
+        passThreshold: PASS_PCT,
+        quiz,
+        badges,
+      });
+    }
+
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}

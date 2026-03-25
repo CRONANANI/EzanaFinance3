@@ -1,0 +1,258 @@
+.lc3-page .lc3-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+  margin-bottom: 1rem;
+}
+
+.lc3-page .lc3-back:hover {
+  text-decoration: underline;
+}
+
+.lc3-breadcrumb {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0 0 0.75rem;
+}
+
+.lc3-title {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+
+.lc3-meta {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0 0 0.75rem;
+}
+
+.lc3-pct {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.lc3-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.12);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  max-width: 400px;
+}
+
+.lc3-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 4px;
+}
+
+.lc3-article {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.lc3-section {
+  margin-bottom: 1.5rem;
+}
+
+.lc3-h2 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0 0 0.75rem;
+}
+
+.lc3-body {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #d1d5db;
+  white-space: pre-wrap;
+}
+
+.lc3-callout {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  font-size: 0.8125rem;
+  color: #9ca3af;
+}
+
+.lc3-terms {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.lc3-read-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.lc3-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.lc3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.lc3-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lc3-btn-primary {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border-color: transparent;
+}
+
+.lc3-passed {
+  margin-top: 1rem;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.lc3-quiz {
+  padding: 1.25rem 1.5rem;
+}
+
+.lc3-qtext {
+  font-size: 0.9375rem;
+  color: #f0f6fc;
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.lc3-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.lc3-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: #d1d5db;
+}
+
+.lc3-opt.sel {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.lc3-quiz-actions {
+  margin-top: 1rem;
+}
+
+.lc3-link {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  font-family: inherit;
+}
+
+.lc3-results {
+  padding: 1.25rem 1.5rem;
+}
+
+.lc3-pass {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.lc3-fail {
+  color: #f87171;
+  font-weight: 700;
+}
+
+.lc3-muted {
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
+.lc3-review {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  font-size: 0.8125rem;
+}
+
+.lc3-review li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.lc3-review li.ok {
+  color: #9ca3af;
+}
+
+.lc3-review li.bad {
+  color: #f87171;
+}
+
+.lc3-results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.lc3-banner {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #d1fae5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+body.light-mode .lc3-title {
+  color: #111827;
+}

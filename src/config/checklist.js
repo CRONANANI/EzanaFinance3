@@ -251,7 +251,7 @@ export const CHECKLIST_TASKS = {
     sectionName: 'Learning Center',
     title: 'Complete a quiz',
     description: 'Finish a quiz at the end of a lesson',
-    page: '/learning-center/investing-fundamentals',
+    page: '/learning-center/course/stocks-basic-1',
     guide: {
       targetSelector: '[data-task-target="learning-quiz-button"]',
       message: 'Answer the questions, then click Submit Quiz.',
@@ -266,7 +266,7 @@ export const CHECKLIST_TASKS = {
     sectionName: 'Learning Center',
     title: 'Bookmark a lesson',
     description: 'Save a lesson to your bookmarks for later review',
-    page: '/learning-center/investing-fundamentals',
+    page: '/learning-center/course/stocks-basic-1',
     guide: {
       targetSelector: '[data-task-target="learning-bookmark"]',
       message: 'Open a lesson, then click Bookmark lesson.',

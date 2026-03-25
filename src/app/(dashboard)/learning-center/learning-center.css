@@ -1,0 +1,241 @@
+/* Learning Center — dashboard card styling */
+
+.lc2-page .lc2-header-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.lc2-page .lc2-header-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.35rem 0 0;
+  line-height: 1.5;
+}
+
+.lc2-overall {
+  margin: 1.25rem 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+}
+
+.lc2-overall-label {
+  font-size: 0.8125rem;
+  color: #9ca3af;
+  margin-bottom: 0.35rem;
+}
+
+.lc2-overall-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(16, 185, 129, 0.12);
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.lc2-overall-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.lc2-track-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .lc2-track-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .lc2-track-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lc2-track-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lc2-track-card:hover {
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+.lc2-track-card.active {
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15);
+}
+
+.lc2-track-icon {
+  font-size: 1.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.lc2-track-name {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.35rem;
+  line-height: 1.35;
+}
+
+.lc2-track-meta {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.lc2-track-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(16, 185, 129, 0.1);
+  overflow: hidden;
+}
+
+.lc2-track-bar-fill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 3px;
+}
+
+.lc2-track-pct {
+  font-size: 0.625rem;
+  color: #6b7280;
+  margin-top: 0.35rem;
+}
+
+.lc2-detail {
+  margin-top: 0.5rem;
+}
+
+.lc2-level-block {
+  margin-bottom: 1rem;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  overflow: hidden;
+}
+
+.lc2-level-block.locked {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.lc2-level-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+
+.lc2-level-body {
+  padding: 0.4rem 0;
+}
+
+.lc2-course-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 1.15rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  font-size: 0.8125rem;
+}
+
+.lc2-course-row:last-child {
+  border-bottom: none;
+}
+
+.lc2-course-row.done {
+  color: #9ca3af;
+}
+
+.lc2-course-row.active {
+  background: rgba(16, 185, 129, 0.06);
+  border-left: 3px solid #10b981;
+  padding-left: calc(1.15rem - 3px);
+}
+
+.lc2-course-row.locked {
+  color: #6b7280;
+}
+
+.lc2-course-title {
+  font-weight: 600;
+  color: #e5e7eb;
+  flex: 1;
+  min-width: 0;
+}
+
+.lc2-course-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.lc2-course-action {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lc2-course-action:hover {
+  text-decoration: underline;
+}
+
+.lc2-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.lc2-badge {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #d1d5db;
+}
+
+.lc2-loading {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+body.light-mode .lc2-track-card {
+  background: #fff;
+  border-color: rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .lc2-header-title {
+  color: #111827;
+}
