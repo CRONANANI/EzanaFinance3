@@ -86,11 +86,35 @@ const POLITICIAN_PERF = [
     returns: { '1W': 1.1, '1M': 3.6, '3M': 8.4, '6M': 14.9, '1Y': 26.3, '3Y': 61.4, '5Y': 102.8, '10Y': 210.5 } },
 ];
 
-/* ── Politician Performance Chart ── */
+/* ── Politician Performance Chart ──
+   Visual baseline: Dashboard PortfolioChart.js (Chart.js) — #10b981 line, rgba fill, subtle gray grid, axis #9ca3af / 10px */
 const PC_W = 780;
-const PC_H = 392;
+const PC_H = Math.round(392 * 0.7); /* was 392; −30% height */
 const PC_PAD = { top: 50, right: 40, bottom: 62, left: 60 };
 const PC_DOT_R = 6;
+
+/** Cubic smooth path through points (similar to Chart.js tension) */
+function buildSmoothPath(points) {
+  if (points.length === 0) return '';
+  if (points.length === 1) {
+    const [x, y] = points[0];
+    return `M ${x} ${y}`;
+  }
+  const p = points.map(([px, py]) => ({ x: px, y: py }));
+  let d = `M ${p[0].x} ${p[0].y}`;
+  for (let i = 0; i < p.length - 1; i++) {
+    const p0 = p[Math.max(0, i - 1)];
+    const p1 = p[i];
+    const p2 = p[i + 1];
+    const p3 = p[Math.min(p.length - 1, i + 2)];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
+}
 
 function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
   const router = useRouter();
@@ -115,8 +139,13 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
   const yTicks = [];
   for (let t = yMin; t <= yMax; t += yStep) yTicks.push(t);
 
-  const linePath = sorted.map((p, i) => `${i === 0 ? 'M' : 'L'}${getX(i)},${getY(p.returns[tw])}`).join(' ');
-  const areaPath = `${linePath} L${getX(sorted.length - 1)},${PC_PAD.top + innerH} L${getX(0)},${PC_PAD.top + innerH} Z`;
+  const linePoints = sorted.map((p, i) => [getX(i), getY(p.returns[tw])]);
+  const linePath = buildSmoothPath(linePoints);
+  const yBase = PC_PAD.top + innerH;
+  const areaPath =
+    linePoints.length > 0
+      ? `${linePath} L ${getX(sorted.length - 1)} ${yBase} L ${getX(0)} ${yBase} Z`
+      : '';
 
   const hovered = hoveredId != null ? sorted[hoveredId] : null;
 
@@ -125,46 +154,38 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
       <svg viewBox={`0 0 ${PC_W} ${PC_H}`} preserveAspectRatio="xMidYMid meet" className="itc-perf-svg">
         <defs>
           <linearGradient id="itcPerfGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.1" />
             <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
           </linearGradient>
-          <filter id="itcDotGlow">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#10b981" floodOpacity="0.35" />
-          </filter>
-          {sorted.map((_, i) => (
-            <clipPath key={i} id={`itcClip${i}`}>
-              <circle cx={getX(i)} cy={getY(sorted[i].returns[tw])} r={PC_DOT_R} />
-            </clipPath>
-          ))}
         </defs>
 
         {yTicks.map((t) => (
           <g key={t}>
-            <line x1={PC_PAD.left} y1={getY(t)} x2={PC_W - PC_PAD.right} y2={getY(t)} stroke="rgba(16,185,129,.12)" strokeWidth="1" strokeDasharray="4 4" />
-            <text x={PC_PAD.left - 10} y={getY(t)} textAnchor="end" dominantBaseline="middle" fill="#6b7280" fontSize="11" fontFamily="Plus Jakarta Sans, sans-serif">
+            <line x1={PC_PAD.left} y1={getY(t)} x2={PC_W - PC_PAD.right} y2={getY(t)} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
+            <text x={PC_PAD.left - 10} y={getY(t)} textAnchor="end" dominantBaseline="middle" fill="#9ca3af" fontSize="10" fontFamily="Plus Jakarta Sans, sans-serif">
               {t}%
             </text>
           </g>
         ))}
 
         {yMin <= 0 && yMax >= 0 && (
-          <line x1={PC_PAD.left} y1={getY(0)} x2={PC_W - PC_PAD.right} y2={getY(0)} stroke="rgba(16,185,129,.25)" strokeWidth="1" />
+          <line x1={PC_PAD.left} y1={getY(0)} x2={PC_W - PC_PAD.right} y2={getY(0)} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
         )}
 
-        <line x1={PC_PAD.left} y1={PC_PAD.top} x2={PC_PAD.left} y2={PC_PAD.top + innerH} stroke="rgba(16,185,129,.3)" strokeWidth="1" />
-        <line x1={PC_PAD.left} y1={PC_PAD.top + innerH} x2={PC_W - PC_PAD.right} y2={PC_PAD.top + innerH} stroke="rgba(16,185,129,.3)" strokeWidth="1" />
+        <line x1={PC_PAD.left} y1={PC_PAD.top} x2={PC_PAD.left} y2={PC_PAD.top + innerH} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
+        <line x1={PC_PAD.left} y1={PC_PAD.top + innerH} x2={PC_W - PC_PAD.right} y2={PC_PAD.top + innerH} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
 
         {xAxisLabels.map((lab, li) => {
           const n = xAxisLabels.length;
           const lx = n <= 1 ? PC_PAD.left + innerW / 2 : PC_PAD.left + (li / (n - 1)) * innerW;
-          const fs = tw === '1Y' ? 7.5 : 9;
+          const fs = tw === '1Y' ? 8 : 10;
           return (
             <text
               key={`${tw}-x-${li}`}
               x={lx}
               y={PC_PAD.top + innerH + 18}
               textAnchor="middle"
-              fill="#6b7280"
+              fill="#9ca3af"
               fontSize={fs}
               fontFamily="Plus Jakarta Sans, sans-serif"
             >
@@ -174,20 +195,17 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
         })}
 
         <path d={areaPath} fill="url(#itcPerfGrad)" />
-        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.7" />
-        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pathLength="100" strokeDasharray="3 97" className="itc-perf-pulse" />
+        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 
         {sorted.map((p, i) => {
           const cx = getX(i);
           const cy = getY(p.returns[tw]);
           const isHov = hoveredId === i;
-          const borderColor = p.party === 'Democrat' ? '#3b82f6' : '#ef4444';
           const bgColor = p.party === 'Democrat' ? '#2563eb' : '#dc2626';
 
           return (
             <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }} style={{ cursor: 'pointer' }}>
-              <circle cx={cx} cy={cy} r={PC_DOT_R + 3} fill="none" stroke={borderColor} strokeWidth={isHov ? 3.5 : 2} filter="url(#itcDotGlow)" opacity={isHov ? 1 : 0.85} />
-              <circle cx={cx} cy={cy} r={PC_DOT_R} fill={bgColor} />
+              <circle cx={cx} cy={cy} r={isHov ? PC_DOT_R + 1 : PC_DOT_R} fill={bgColor} stroke="none" strokeWidth={0} />
               <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="7" fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
               <text x={cx} y={cy + PC_DOT_R + 10} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize="9" fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
                 {p.returns[tw] >= 0 ? '+' : ''}{p.returns[tw]}%
@@ -356,7 +374,7 @@ function InsideTheCapitolContent() {
         <div className="itc-card">
           <div className="itc-hdr">
             <div className="itc-hdr-left">
-              <h3>TOP PERFORMING POLITICIANS</h3>
+              <h3 className="itc-perf-section-title">TOP PERFORMING POLITICIANS</h3>
             </div>
             <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
           </div>

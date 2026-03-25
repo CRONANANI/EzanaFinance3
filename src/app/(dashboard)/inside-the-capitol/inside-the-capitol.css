@@ -52,7 +52,7 @@
   min-height: 0;
 }
 
-.itc-perf-body { min-height: 260px; }
+.itc-perf-body { min-height: 182px; /* ~70% of prior 260px — matches shorter chart */ }
 
 /* Row 5 — new insight cards (dark shell per spec; sits inside pinnable wrapper) */
 .itc-new-card {
@@ -349,32 +349,35 @@
 .itc-fil-tickers { display: flex; gap: .3rem; }
 .itc-fil-tk { font-size: .6rem; font-weight: 700; color: #10b981; background: rgba(16,185,129,.08); padding: 2px 7px; border-radius: 4px; }
 
-/* ── Performance Chart ── */
-.itc-perf-windows { display: flex; gap: .3rem; padding: 0 1.25rem .5rem; flex-wrap: wrap; }
-.itc-pw { padding: .2rem .55rem; font-size: .625rem; font-weight: 700; color: var(--muted-foreground,#6b7280); background: transparent; border: 1px solid rgba(16,185,129,.12); border-radius: 6px; cursor: pointer; transition: all .2s; text-transform: uppercase; letter-spacing: .04em; }
+/* ── Performance Chart ──
+   Title + range buttons: same scale as stat card values (.itc-stat-val = 1.375rem / 800) */
+.itc-hdr h3.itc-perf-section-title {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.itc-perf-windows { display: flex; gap: .35rem; padding: 0 1.25rem .5rem; flex-wrap: wrap; align-items: center; }
+.itc-pw { padding: .25rem .65rem; font-size: 1.375rem; font-weight: 600; color: var(--muted-foreground,#6b7280); background: transparent; border: 1px solid rgba(16,185,129,.12); border-radius: 6px; cursor: pointer; transition: all .2s; text-transform: uppercase; letter-spacing: .02em; font-feature-settings: 'tnum' 1; }
 .itc-pw:hover { color: #10b981; border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.04); }
-.itc-pw.on { color: #10b981; background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.45); }
+.itc-pw.on { color: #10b981; background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.45); font-weight: 800; }
 
 .itc-perf-chart-wrap { position: relative; width: 100%; padding: 0 .5rem .5rem; }
 .itc-perf-svg { width: 100%; height: auto; display: block; }
 
-@keyframes itcPerfPulse {
-  0% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -100; }
-}
-.itc-perf-pulse { animation: itcPerfPulse 3s linear infinite; opacity: 0.5; }
-
-.itc-perf-tooltip { position: absolute; z-index: 20; width: 240px; padding: .75rem; background: rgba(13,17,23,.95); border: 1px solid rgba(16,185,129,.25); border-radius: 12px; backdrop-filter: blur(16px); box-shadow: 0 8px 32px rgba(0,0,0,.5); pointer-events: none; }
+/* Tooltip — align with Dashboard PortfolioChart.js (Chart.js plugin defaults) */
+.itc-perf-tooltip { position: absolute; z-index: 20; width: 240px; padding: 12px; background: rgba(17, 24, 39, 0.95); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; backdrop-filter: blur(16px); box-shadow: 0 8px 32px rgba(0,0,0,.5); pointer-events: none; }
 .itc-perf-tip-hdr { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
-.itc-perf-tip-name { font-size: .8rem; font-weight: 700; color: #f0f6fc; }
-.itc-perf-tip-meta { font-size: .6rem; color: #8b949e; display: flex; align-items: center; gap: .25rem; margin-top: 1px; }
+.itc-perf-tip-name { font-size: .8rem; font-weight: 700; color: #10b981; }
+.itc-perf-tip-meta { font-size: .6rem; color: #9ca3af; display: flex; align-items: center; gap: .25rem; margin-top: 1px; }
 .itc-perf-tip-return { font-size: .875rem; font-weight: 800; margin-bottom: .4rem; font-feature-settings: 'tnum' 1; }
 .itc-perf-tip-return.pos { color: #10b981; }
 .itc-perf-tip-return.neg { color: #ef4444; }
 .itc-perf-tip-hold { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; margin-bottom: .35rem; }
-.itc-perf-tip-hold-lbl { font-size: .6rem; font-weight: 600; color: #8b949e; margin-right: .15rem; }
+.itc-perf-tip-hold-lbl { font-size: .6rem; font-weight: 600; color: #9ca3af; margin-right: .15rem; }
 .itc-perf-tip-tk { font-size: .6rem; font-weight: 700; color: #10b981; background: rgba(16,185,129,.08); padding: 1px 6px; border-radius: 4px; }
-.itc-perf-tip-rank { font-size: .6rem; font-weight: 600; color: #8b949e; border-top: 1px solid rgba(16,185,129,.1); padding-top: .35rem; margin-top: .1rem; }
+.itc-perf-tip-rank { font-size: .6rem; font-weight: 600; color: #9ca3af; border-top: 1px solid rgba(16,185,129,.1); padding-top: .35rem; margin-top: .1rem; }
 
 /* ── Responsive ── */
 @media (max-width:1024px) { .itc-stats { grid-template-columns: repeat(2,1fr); } }
@@ -393,10 +396,10 @@
 
 /* ── Light mode ── */
 body.light-mode .itc-stat, body.light-mode .itc-card { background: #fff; border-color: rgba(16,185,129,.12); }
-body.light-mode .itc-stat-val, body.light-mode .itc-hdr h3, body.light-mode .itc-tr-co-name, body.light-mode .itc-tr-mem-name, body.light-mode .itc-ins-title, body.light-mode .itc-pol-name, body.light-mode .itc-pol-num-v, body.light-mode .itc-bz-text, body.light-mode .itc-sec-name, body.light-mode .itc-fil-name, body.light-mode .itc-tr-amt { color: #111827; }
+body.light-mode .itc-stat-val, body.light-mode .itc-hdr h3, body.light-mode .itc-hdr h3.itc-perf-section-title, body.light-mode .itc-tr-co-name, body.light-mode .itc-tr-mem-name, body.light-mode .itc-ins-title, body.light-mode .itc-pol-name, body.light-mode .itc-pol-num-v, body.light-mode .itc-bz-text, body.light-mode .itc-sec-name, body.light-mode .itc-fil-name, body.light-mode .itc-tr-amt { color: #111827; }
 body.light-mode .itc-pol-num, body.light-mode .itc-pol-chart { background: #f3f4f6; border-color: rgba(16,185,129,.06); }
-body.light-mode .itc-perf-tooltip { background: rgba(255,255,255,.96); border-color: rgba(16,185,129,.18); box-shadow: 0 8px 32px rgba(0,0,0,.1); }
-body.light-mode .itc-perf-tip-name { color: #111827; }
+body.light-mode .itc-perf-tooltip { background: rgba(255,255,255,.96); border-color: rgba(16,185,129,.2); box-shadow: 0 8px 32px rgba(0,0,0,.1); }
+body.light-mode .itc-perf-tip-name { color: #10b981; }
 body.light-mode .itc-pw { border-color: rgba(16,185,129,.15); }
 
 body.light-mode .itc-new-card {
