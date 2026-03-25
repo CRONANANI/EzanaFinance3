@@ -271,3 +271,150 @@ body.light-mode .badges-tab.active { background: rgba(184, 146, 47, 0.08); color
   .badges-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
   .badges-modal { max-height: 90vh; border-radius: 18px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PARTNER HOME — Hero badge grid (PartnerBadges.js)
+   ═══════════════════════════════════════════════════════════ */
+
+.partner-badges-root {
+  position: relative;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.partner-badges-count {
+  color: #888;
+  font-size: 0.75rem;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: left;
+}
+
+.partner-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 180px;
+  transition: all 0.3s ease;
+}
+
+.partner-badges-grid.partner-badges-grid--scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.partner-badges-cell {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  cursor: default;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.partner-badges-rarity-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.partner-badges-hint {
+  color: #555;
+  font-size: 0.65rem;
+  margin: 6px 0 0;
+  text-align: center;
+  max-width: 180px;
+}
+
+.partner-badges-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 12px;
+  width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.partner-badges-popover-title {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0 0 8px;
+}
+
+.partner-badges-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.partner-badges-popover-row:last-child {
+  border-bottom: none;
+}
+
+.partner-badges-popover-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.partner-badges-popover-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.partner-badges-popover-desc {
+  color: #666;
+  font-size: 0.7rem;
+  margin: 0;
+}
+
+body.light-mode .partner-badges-count {
+  color: #64748b;
+}
+
+body.light-mode .partner-badges-hint {
+  color: #64748b;
+}
+
+body.light-mode .partner-badges-popover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+body.light-mode .partner-badges-popover-title {
+  color: #0f172a;
+}
+
+body.light-mode .partner-badges-popover-row {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .partner-badges-popover-desc {
+  color: #64748b;
+}

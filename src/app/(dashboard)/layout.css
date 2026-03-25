@@ -36,6 +36,24 @@
   box-sizing: border-box;
 }
 
+/* Partner hub — same horizontal rhythm as .dashboard-page-inset on regular dashboard pages */
+.dashboard-main.dashboard-main-content .dashboard-container.dashboard-container--partner-inset {
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .dashboard-main.dashboard-main-content .dashboard-container.dashboard-container--partner-inset {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
 /* Match Betting Markets `.betting-markets-container` — max-width + horizontal padding (2rem),
    combined with main’s own horizontal padding (2rem) = same edge distance as Betting Markets. */
 .dashboard-main.dashboard-main-content .dashboard-container .dashboard-page-inset {

@@ -13,6 +13,7 @@ import './dashboard-polish.css';
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const isMarketAnalysisFullscreen = pathname === '/market-analysis';
+  const isPartnerRoute = pathname?.startsWith('/partner-');
 
   useEffect(() => {
     document.body.classList.add('dashboard-page');
@@ -28,7 +29,7 @@ export default function DashboardLayout({ children }) {
         className={`dashboard-main dashboard-main-content${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
         id="main-content"
       >
-        <div className="dashboard-container">
+        <div className={`dashboard-container${isPartnerRoute ? ' dashboard-container--partner-inset' : ''}`}>
           <DashboardTrialShell>{children}</DashboardTrialShell>
         </div>
       </main>

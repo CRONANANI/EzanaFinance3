@@ -28,6 +28,14 @@ body.light-mode .partner-nav .nav-action-btn:hover {
   color: #92731d;
   background: rgba(184, 146, 47, 0.06);
 }
+body.light-mode .partner-nav .nav-settings-gear,
+body.light-mode .partner-nav .nav-settings-gear i {
+  color: #92731d;
+}
+body.light-mode .partner-nav .nav-settings-gear:hover {
+  color: #6b5315;
+  background: rgba(184, 146, 47, 0.08);
+}
 body.light-mode .partner-nav .theme-toggle-btn {
   border-color: rgba(0, 0, 0, 0.08);
 }

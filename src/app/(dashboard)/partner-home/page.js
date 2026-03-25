@@ -5,6 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { usePartner } from '@/contexts/PartnerContext';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { PartnerBadges } from '@/components/partner/PartnerBadges';
 import '../partner.css';
 import '@/components/partner/badges.css';
 
@@ -35,7 +36,6 @@ export default function PartnerHomePage() {
   const { user } = useAuth();
   const { partnerRole } = usePartner();
   const [profile, setProfile] = useState(null);
-  const [earnedBadges, setEarnedBadges] = useState([]);
 
   const getToken = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -47,14 +47,9 @@ export default function PartnerHomePage() {
       const token = await getToken();
       if (!token) return;
       try {
-        const [profileRes, badgesRes] = await Promise.all([
-          fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/partner/badges', { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
+        const profileRes = await fetch('/api/partner/profile', { headers: { Authorization: `Bearer ${token}` } });
         const profileData = await profileRes.json();
-        const badgesData = await badgesRes.json();
         setProfile(profileData.profile);
-        setEarnedBadges(badgesData.earned || []);
       } catch {}
     };
     fetchProfile();
@@ -99,39 +94,18 @@ export default function PartnerHomePage() {
         </div>
 
         <div className="ptr-hero-right">
-          <div className="ptr-hero-avatar">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt={displayName} />
-            ) : (
-              <span className="ptr-hero-avatar-initials">
-                {(displayName || 'P')[0].toUpperCase()}
-              </span>
-            )}
-          </div>
-          {earnedBadges.length > 0 && (
-            <div className="ptr-hero-badges">
-              {earnedBadges.slice(0, 5).map((badge) => {
-                const tip = badge.badge_description || badge.badge_name || '';
-                return (
-                  <div
-                    key={badge.id}
-                    className="ptr-hero-badge-item"
-                    data-tooltip={tip}
-                  >
-                    <div
-                      className="ptr-hero-badge-icon"
-                      style={{
-                        borderColor: badge.tier_color || '#d4a853',
-                        background: `${badge.tier_color || '#d4a853'}15`,
-                      }}
-                    >
-                      <i className={`bi ${badge.badge_icon || 'bi-award'}`} style={{ color: badge.tier_color || '#d4a853' }} />
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="ptr-hero-identity-row">
+            <div className="ptr-hero-avatar">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt={displayName} />
+              ) : (
+                <span className="ptr-hero-avatar-initials">
+                  {(displayName || 'P')[0].toUpperCase()}
+                </span>
+              )}
             </div>
-          )}
+            <PartnerBadges />
+          </div>
         </div>
 
         <div className="ptr-hero-glow" />

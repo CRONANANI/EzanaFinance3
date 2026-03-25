@@ -17,6 +17,14 @@
 /* ── Partner Navbar Overrides ── */
 .partner-nav { border-bottom: 1px solid rgba(212, 168, 83, 0.12); }
 .partner-nav .nav-link.active { color: #d4a853; }
+.partner-nav .nav-settings-gear,
+.partner-nav .nav-settings-gear i {
+  color: #d4a853;
+}
+.partner-nav .nav-settings-gear:hover {
+  color: #e8c97a;
+  background: rgba(212, 168, 83, 0.08);
+}
 .partner-brand { position: relative; }
 
 .partner-badge-nav {
@@ -127,6 +135,12 @@
   padding: 0 1.5rem;
   position: relative;
   z-index: 1;
+}
+
+.ptr-hero-identity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
 }
 
 .ptr-hero-right .badge-row {
@@ -651,6 +665,11 @@ body.light-mode .ptr-hero-avatar-initials { color: #92731d; }
 @media (max-width: 768px) {
   .ptr-hero { flex-direction: column; text-align: center; }
   .ptr-hero-right { order: -1; padding: 0; }
+  .ptr-hero-identity-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  .partner-badges-count { text-align: center; }
   .ptr-hero-stats { flex-wrap: wrap; gap: 1.25rem; justify-content: center; }
   .ptr-hero-title { font-size: 1.5rem; }
   .ptr-links-grid { grid-template-columns: 1fr; }
