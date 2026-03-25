@@ -357,7 +357,7 @@ function InsideTheCapitolContent() {
       <div className="itc-stats">
         {STAT_CARDS.map((s) => (
           <div key={s.id} className="itc-stat">
-            <div className="itc-stat-icon" style={{ background: `${s.color}18`, color: s.color }}>
+            <div className="itc-stat-icon">
               <i className={`bi ${s.icon}`} />
             </div>
             <div>
@@ -410,7 +410,7 @@ function InsideTheCapitolContent() {
               {['All', 'Buy', 'Sell'].map((f) => (
                 <button key={f} type="button" className={`itc-sf ${typeFilter === f ? 'on' : ''}`} onClick={() => setTypeFilter(f)}>{f}</button>
               ))}
-              <span className="itc-sf-label" style={{ marginLeft: 8, marginRight: 4, color: '#8b949e', fontSize: 11 }}>Party</span>
+              <span className="itc-sf-label">Party</span>
               <span data-task-target="capitol-party-filter" style={{ display: 'inline-flex', gap: 4 }}>
                 <Link
                   href="/inside-the-capitol?party=republican"
