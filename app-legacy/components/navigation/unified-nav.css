@@ -215,6 +215,14 @@ body:not(.light-mode) .dropdown-menu {
   margin-left: 1.5rem;
 }
 
+/* Bell + beginner checklist — grouped at start of nav-actions (checklist to the right of bell) */
+.nav-bell-checklist-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .nav-action-btn {
   width: 32px;
   height: 32px;
