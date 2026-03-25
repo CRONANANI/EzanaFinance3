@@ -53,6 +53,7 @@ function weekRangeLabel() {
 function YourWeekTab({ hasPortfolio }) {
   const trades = [2, 3, 0, 0, 2];
   const activeDays = trades.map((n) => n > 0);
+  const activeDayCount = activeDays.filter(Boolean).length;
 
   if (!hasPortfolio) {
     return (
@@ -122,7 +123,9 @@ function YourWeekTab({ hasPortfolio }) {
             <span key={String(i)}>{n}</span>
           ))}
         </div>
-        <p className="hts-week-day-caption">5 of 5 trading days active · trades per day</p>
+        <p className="hts-week-day-caption">
+          {activeDayCount} of 5 trading days active · trades per day
+        </p>
       </div>
 
       <p className="hts-week-compare">
