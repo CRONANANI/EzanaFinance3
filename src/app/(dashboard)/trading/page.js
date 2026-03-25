@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import '../home-dashboard/home-dashboard.css';
 import './trading.css';
 
 function isActiveStatus(status) {
@@ -136,7 +137,9 @@ export default function TradingPage() {
 
       <section className="trd-feature-grid">
         <div className="trd-feature-card db-card">
-          <div className="trd-feature-emoji" aria-hidden>🧬</div>
+          <div className="trd-feature-icon-wrap" aria-hidden>
+            <span className="trd-feature-emoji">🧬</span>
+          </div>
           <h3 className="trd-feature-h3">Hybrid portfolios</h3>
           <p className="trd-feature-p">
             Blend strategies from multiple legendary investors and verified partners into a single
@@ -146,7 +149,9 @@ export default function TradingPage() {
         </div>
 
         <div className="trd-feature-card db-card">
-          <div className="trd-feature-emoji" aria-hidden>📋</div>
+          <div className="trd-feature-icon-wrap" aria-hidden>
+            <span className="trd-feature-emoji">📋</span>
+          </div>
           <h3 className="trd-feature-h3">Copy trading</h3>
           <p className="trd-feature-p">
             Follow and automatically mirror the trades of your favourite legendary investors,
@@ -156,7 +161,9 @@ export default function TradingPage() {
         </div>
 
         <div className="trd-feature-card db-card">
-          <div className="trd-feature-emoji" aria-hidden>📊</div>
+          <div className="trd-feature-icon-wrap" aria-hidden>
+            <span className="trd-feature-emoji">📊</span>
+          </div>
           <h3 className="trd-feature-h3">Margin trading &amp; short selling</h3>
           <p className="trd-feature-p">
             Accounts with a balance of $2,000 or more unlock margin trading and short selling.
@@ -170,7 +177,9 @@ export default function TradingPage() {
         </div>
 
         <div className="trd-feature-card db-card">
-          <div className="trd-feature-emoji" aria-hidden>⚙️</div>
+          <div className="trd-feature-icon-wrap" aria-hidden>
+            <span className="trd-feature-emoji">⚙️</span>
+          </div>
           <h3 className="trd-feature-h3">Automated investing</h3>
           <p className="trd-feature-p">
             Set up recurring investments on your own terms. Choose daily, weekly, or monthly
@@ -180,7 +189,9 @@ export default function TradingPage() {
         </div>
 
         <div className="trd-feature-card db-card">
-          <div className="trd-feature-emoji" aria-hidden>💸</div>
+          <div className="trd-feature-icon-wrap" aria-hidden>
+            <span className="trd-feature-emoji">💸</span>
+          </div>
           <h3 className="trd-feature-h3">Commission-free trading</h3>
           <p className="trd-feature-p">
             Trade stocks, ETFs, and crypto with zero commissions on every trade of $250 USD or
@@ -192,7 +203,9 @@ export default function TradingPage() {
         </div>
 
         <div className="trd-feature-card db-card">
-          <div className="trd-feature-emoji" aria-hidden>🧩</div>
+          <div className="trd-feature-icon-wrap" aria-hidden>
+            <span className="trd-feature-emoji">🧩</span>
+          </div>
           <h3 className="trd-feature-h3">Fractional shares</h3>
           <p className="trd-feature-p">
             Invest in any stock or ETF with any dollar amount. Own a piece of companies like Amazon,
@@ -246,7 +259,7 @@ export default function TradingPage() {
           type="button"
           onClick={handleOpenAccount}
           disabled={!checklistComplete}
-          className="trd-cta-btn"
+          className="trd-cta-btn trd-btn-primary"
         >
           {checklistComplete ? 'Open brokerage account' : 'Complete checklist to unlock'}
         </button>

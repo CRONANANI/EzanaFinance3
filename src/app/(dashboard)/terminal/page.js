@@ -274,7 +274,9 @@ export default function HomeTerminalPage() {
   return (
     <div className="ezana-terminal">
       {/* ── TOP TICKER BAR ── */}
-      <div className="t-ticker-bar">
+      <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--top">
+        <div className="dashboard-page-inset ezana-terminal-bar-inner">
+          <div className="t-ticker-bar">
         <div className="t-brand">
           <div className="t-brand-icon">EF</div>
           <span>EZANA TERMINAL</span>
@@ -321,6 +323,8 @@ export default function HomeTerminalPage() {
             {isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}
           </span>
           <span className="t-dim" style={{ marginLeft: 4 }}>{time}</span>
+        </div>
+          </div>
         </div>
       </div>
 
@@ -540,7 +544,9 @@ export default function HomeTerminalPage() {
       </div>
 
       {/* ── BOTTOM NEWS TICKER ── */}
-      <div className="t-news-bar">
+      <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--bottom">
+        <div className="dashboard-page-inset ezana-terminal-bar-inner">
+          <div className="t-news-bar">
         <div className="t-news-label">
           <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
         </div>
@@ -560,6 +566,8 @@ export default function HomeTerminalPage() {
                 <strong>EZANA</strong> Welcome to Ezana Terminal. Connect your brokerage to see live portfolio data.
               </span>
             )}
+          </div>
+        </div>
           </div>
         </div>
       </div>
