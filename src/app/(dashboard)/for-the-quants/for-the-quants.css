@@ -234,6 +234,12 @@
 }
 
 /* Backtest stats */
+.ftq-bt-divider {
+  border: 0;
+  border-top: 1px solid rgba(16, 185, 129, 0.12);
+  margin: 1rem 0 1.25rem;
+}
+
 .ftq-bt-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

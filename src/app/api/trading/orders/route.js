@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
 import { supabaseAdmin } from '@/lib/plaid';
+import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,6 +96,12 @@ export async function POST(request) {
       order_type: order.type,
       status: order.status,
     });
+
+    try {
+      await awardXP(user.id, 30, 'Placed a trade', 'trading');
+    } catch (e) {
+      console.error('orders: awardXP', e);
+    }
 
     return NextResponse.json({ success: true, order });
   } catch (error) {

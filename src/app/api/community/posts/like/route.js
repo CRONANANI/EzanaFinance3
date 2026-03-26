@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
+import { supabaseAdmin } from '@/lib/plaid';
+import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +29,20 @@ export async function POST(request) {
       const { error } = await supabase.from('post_likes').insert({ user_id: user.id, post_id });
       if (error && !error.message?.includes('duplicate') && error.code !== '23505') {
         return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      if (!error) {
+        try {
+          const { data: postRow } = await supabaseAdmin
+            .from('community_posts')
+            .select('user_id')
+            .eq('id', post_id)
+            .maybeSingle();
+          if (postRow?.user_id && postRow.user_id !== user.id) {
+            await awardXP(postRow.user_id, 5, 'Received a like on your post', 'community');
+          }
+        } catch (e) {
+          console.error('like: awardXP', e);
+        }
       }
     } else {
       const { error } = await supabase.from('post_likes').delete().eq('user_id', user.id).eq('post_id', post_id);

@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import {
   FTQ_STAT_CARDS,
   MY_STRATEGIES,
-  LATEST_BACKTEST,
+  LATEST_BACKTESTS,
+  LATEST_BACKTEST_BENCHMARK,
   LEADERBOARD,
   RISK_ANALYTICS,
   TRENDING_MARKETS,
@@ -191,37 +192,44 @@ export default function ForTheQuantsPage() {
             </h3>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
-            <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0 0 0.75rem' }}>
-              Strategy: <strong style={{ color: '#f0f6fc' }}>{LATEST_BACKTEST.strategyName}</strong>
-            </p>
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>Period: {LATEST_BACKTEST.period}</p>
-            <div className="ftq-bt-grid">
-              <div className="ftq-bt-row">
-                <span className="ftq-bt-label">Return</span>
-                <span className="ftq-bt-value positive">{LATEST_BACKTEST.returnPct}</span>
+            {LATEST_BACKTESTS.map((bt, idx) => (
+              <div key={bt.id}>
+                {idx > 0 && <hr className="ftq-bt-divider" />}
+                <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0 0 0.75rem' }}>
+                  Strategy: <strong style={{ color: '#f0f6fc' }}>{bt.strategyName}</strong>
+                </p>
+                <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem' }}>Period: {bt.period}</p>
+                <div className="ftq-bt-grid">
+                  <div className="ftq-bt-row">
+                    <span className="ftq-bt-label">Return</span>
+                    <span className="ftq-bt-value positive">{bt.returnPct}</span>
+                  </div>
+                  <div className="ftq-bt-row">
+                    <span className="ftq-bt-label">Sharpe</span>
+                    <span className="ftq-bt-value">{bt.sharpe}</span>
+                  </div>
+                  <div className="ftq-bt-row">
+                    <span className="ftq-bt-label">Max DD</span>
+                    <span className="ftq-bt-value" style={{ color: '#f87171' }}>{bt.maxDd}</span>
+                  </div>
+                  <div className="ftq-bt-row">
+                    <span className="ftq-bt-label">Win Rate</span>
+                    <span className="ftq-bt-value">{bt.winRate}</span>
+                  </div>
+                  <div className="ftq-bt-row">
+                    <span className="ftq-bt-label">Trades</span>
+                    <span className="ftq-bt-value">{bt.trades}</span>
+                  </div>
+                  <div className="ftq-bt-row">
+                    <span className="ftq-bt-label">Alpha</span>
+                    <span className="ftq-bt-value positive">{bt.alpha}</span>
+                  </div>
+                </div>
+                <MiniEquityChart seed={bt.chartSeed} />
               </div>
-              <div className="ftq-bt-row">
-                <span className="ftq-bt-label">Sharpe</span>
-                <span className="ftq-bt-value">{LATEST_BACKTEST.sharpe}</span>
-              </div>
-              <div className="ftq-bt-row">
-                <span className="ftq-bt-label">Max DD</span>
-                <span className="ftq-bt-value" style={{ color: '#f87171' }}>{LATEST_BACKTEST.maxDd}</span>
-              </div>
-              <div className="ftq-bt-row">
-                <span className="ftq-bt-label">Win Rate</span>
-                <span className="ftq-bt-value">{LATEST_BACKTEST.winRate}</span>
-              </div>
-              <div className="ftq-bt-row">
-                <span className="ftq-bt-label">Trades</span>
-                <span className="ftq-bt-value">{LATEST_BACKTEST.trades}</span>
-              </div>
-            </div>
-            <MiniEquityChart seed={11} />
+            ))}
             <div className="ftq-bench">
-              Benchmark (S&amp;P 500): {LATEST_BACKTEST.benchmark}
-              <br />
-              Alpha: <span style={{ color: '#10b981', fontWeight: 700 }}>{LATEST_BACKTEST.alpha}</span>
+              Benchmark (S&amp;P 500): {LATEST_BACKTEST_BENCHMARK}
             </div>
           </div>
         </div>

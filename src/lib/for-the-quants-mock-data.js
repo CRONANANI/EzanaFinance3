@@ -39,17 +39,35 @@ export const MY_STRATEGIES = [
   },
 ];
 
-export const LATEST_BACKTEST = {
-  strategyName: 'Moving Average Crossover',
-  period: 'Jan 2025 — Dec 2025',
-  returnPct: '+23.4%',
-  sharpe: '1.82',
-  maxDd: '-8.3%',
-  winRate: '64%',
-  trades: '47',
-  benchmark: '+12.1%',
-  alpha: '+11.3%',
-};
+/** Shared benchmark line for the Latest Backtest Results card */
+export const LATEST_BACKTEST_BENCHMARK = '+12.1%';
+
+export const LATEST_BACKTESTS = [
+  {
+    id: 'ma-cross-bt',
+    strategyName: 'Moving Average Crossover',
+    period: 'Jan 2025 — Dec 2025',
+    returnPct: '+23.4%',
+    sharpe: '1.82',
+    maxDd: '-8.3%',
+    winRate: '64%',
+    trades: '47',
+    alpha: '+11.3%',
+    chartSeed: 11,
+  },
+  {
+    id: 'sector-ml-bt',
+    strategyName: 'Sector Rotation ML',
+    period: 'Jul 2025 — Dec 2025',
+    returnPct: '+48.3%',
+    sharpe: '2.14',
+    maxDd: '-12.1%',
+    winRate: '58%',
+    trades: '23',
+    alpha: '+36.2%',
+    chartSeed: 22,
+  },
+];
 
 export const LEADERBOARD = [
   { id: 'mean-reversion-alpha', rank: 1, name: 'Mean Reversion Alpha', returnPct: '+142.3%', author: 'Emma Wilson', creatorId: 'emma-wilson', subscribers: 234, hot: true },

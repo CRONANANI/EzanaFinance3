@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/plaid';
+import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
 
@@ -177,6 +178,16 @@ export async function POST(request) {
     if (error) {
       console.error('Insert post error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    try {
+      if (isComment) {
+        await awardXP(user.id, 10, 'Commented on a community post', 'community');
+      } else {
+        await awardXP(user.id, 15, 'Made a community post', 'community');
+      }
+    } catch (e) {
+      console.error('posts POST: awardXP', e);
     }
 
     const { data: prof } = await supabaseAdmin.from('profiles').select('id, user_settings').eq('id', user.id).maybeSingle();

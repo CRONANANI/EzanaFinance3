@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
+import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
 import { buildPlaceholderContent } from '@/lib/learning-content';
 import {
@@ -227,6 +228,19 @@ export async function POST(request) {
       if (passed) {
         await updateBrokerageFlags(supabase, user.id, courseId);
         badges = await syncTrackAndBadges(supabase, user.id, course);
+
+        try {
+          if (!existing?.quiz_passed) {
+            await awardXP(user.id, 50, `Completed course quiz: ${course.title}`, 'learning');
+          }
+          for (const b of badges) {
+            if (b.key && /_level_/.test(b.key)) {
+              await awardXP(user.id, 200, `Completed track level: ${b.label}`, 'learning');
+            }
+          }
+        } catch (e) {
+          console.error('learning progress: awardXP', e);
+        }
       }
 
       return NextResponse.json({
