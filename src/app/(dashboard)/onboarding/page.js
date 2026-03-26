@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { PLANS } from '@/config/pricing';
-import '../../../app-legacy/assets/css/theme.css';
-import '../../../app-legacy/assets/css/unified-component-cards.css';
-import '../../../app-legacy/assets/css/pages-common.css';
-import '../../../app-legacy/assets/css/light-mode-fixes.css';
+import '../../../../app-legacy/assets/css/theme.css';
+import '../../../../app-legacy/assets/css/unified-component-cards.css';
+import '../../../../app-legacy/assets/css/pages-common.css';
+import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../settings/settings.css';
 import './onboarding.css';
 
