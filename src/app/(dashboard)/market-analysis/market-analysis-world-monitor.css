@@ -1046,9 +1046,6 @@ body.light-mode .ma-ticker-sep {
 .central-bank-dot.active {
   animation: goldPulse 2s infinite;
 }
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
-}
 
 .ma-city-sources {
   padding: 0 1rem 0.5rem;
