@@ -64,6 +64,7 @@ export async function POST(request) {
               current_period_end: periodEnd,
               subscription_period_end: periodEnd,
               current_plan: subscription.items?.data?.[0]?.price?.id ?? null,
+              onboarding_completed: true,
               updated_at: new Date().toISOString(),
             },
             { onConflict: 'id' }
