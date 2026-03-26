@@ -1,4 +1,4 @@
-import { ALL_COURSES, LEVEL_KEYS } from '@/lib/learning-curriculum';
+import { ALL_COURSES, LEVEL_KEYS, TRACKS } from '@/lib/learning-curriculum';
 
 export function getOrderedCoursesForTrack(trackId) {
   return ALL_COURSES.filter((c) => c.track === trackId).sort((a, b) => {
@@ -116,4 +116,19 @@ export function buildProgressMap(rows) {
     m[r.course_id] = r;
   }
   return m;
+}
+
+/** Track where the learner has an in-progress course, else first track with remaining work. */
+export function getActiveLearningTrack(progressById) {
+  for (const c of ALL_COURSES) {
+    const row = progressById[c.id];
+    if (row?.status === 'in_progress' && !isCourseFullyCompleted(row)) {
+      return c.track;
+    }
+  }
+  for (const t of TRACKS) {
+    const s = computeTrackSummary(t.id, progressById);
+    if (s.completed < s.total) return t.id;
+  }
+  return TRACKS[0]?.id || 'stocks';
 }

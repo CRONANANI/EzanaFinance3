@@ -6,22 +6,14 @@ import { LEVEL_KEYS, getLevelLabel } from '@/lib/learning-curriculum';
 import {
   buildProgressMap,
   canAccessCourse,
+  getActiveLearningTrack,
   getOrderedCoursesForTrack,
   isCourseFullyCompleted,
   isLevelUnlocked,
-  LEVEL_BADGE_LABELS,
-  TRACK_BADGE_LABELS,
 } from '@/lib/learning-progress-logic';
-
-function badgeLabel(key) {
-  if (TRACK_BADGE_LABELS[key.replace(/_track_master$/, '')] && key.endsWith('_track_master')) {
-    const t = key.replace(/_track_master$/, '');
-    return TRACK_BADGE_LABELS[t];
-  }
-  const m = key.match(/_level_(.+)$/);
-  if (m && LEVEL_BADGE_LABELS[m[1]]) return LEVEL_BADGE_LABELS[m[1]];
-  return key;
-}
+import { LearningCenterHero } from '@/components/learning/LearningCenterHero';
+import { PartnerCreatorContentCard } from '@/components/learning/PartnerCreatorContentCard';
+import { FriendsLearningCard } from '@/components/learning/FriendsLearningCard';
 
 export function LearningCenterPage() {
   const [data, setData] = useState(null);
@@ -49,6 +41,15 @@ export function LearningCenterPage() {
   }, [load]);
 
   const progressById = useMemo(() => buildProgressMap(data?.progress || []), [data?.progress]);
+
+  const viewerForHero = useMemo(() => {
+    if (data?.viewer) return data.viewer;
+    return {
+      displayName: 'Learner',
+      avatarUrl: null,
+      currentTrackId: getActiveLearningTrack(progressById),
+    };
+  }, [data?.viewer, progressById]);
 
   const trackMeta = useMemo(() => data?.tracks?.find((t) => t.id === selectedTrack), [data?.tracks, selectedTrack]);
 
@@ -89,14 +90,9 @@ export function LearningCenterPage() {
         <p className="lc2-header-desc">Master the markets — from beginner to expert</p>
       </header>
 
-      <div className="lc2-overall">
-        <div className="lc2-overall-label">
-          Overall Progress: {overall.completed}/{overall.total} courses completed ({overall.pct}%)
-        </div>
-        <div className="lc2-overall-bar">
-          <div className="lc2-overall-fill" style={{ width: `${overall.pct}%` }} />
-        </div>
-      </div>
+      <LearningCenterHero viewer={viewerForHero} overall={overall} tracks={tracks} badges={badges} />
+
+      <PartnerCreatorContentCard />
 
       <div className="lc2-track-row">
         {tracks.map((t, ti) => (
@@ -195,20 +191,7 @@ export function LearningCenterPage() {
         })}
       </div>
 
-      {badges?.length > 0 && (
-        <section style={{ marginTop: '2rem' }}>
-          <h2 className="lc2-header-title" style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>
-            Your badges
-          </h2>
-          <div className="lc2-badges">
-            {badges.map((b) => (
-              <span key={b.badge_key} className="lc2-badge" title={b.badge_key}>
-                {badgeLabel(b.badge_key)}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      <FriendsLearningCard />
     </div>
   );
 }
