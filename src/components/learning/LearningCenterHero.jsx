@@ -2,6 +2,7 @@
 
 import { getInitials } from '@/lib/community-utils';
 import { LearningTrackBadgeChips } from '@/components/learning/LearningTrackBadgeChips';
+import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
 
 export function LearningCenterHero({ viewer, overall, tracks, badges }) {
   const name = viewer?.displayName || 'Learner';
@@ -31,7 +32,15 @@ export function LearningCenterHero({ viewer, overall, tracks, badges }) {
           {overall.completed}/{overall.total} courses completed · {overall.pct}% overall
         </p>
         <p className="lc2-hero-track-line">
-          Current track: {currentTrack ? `${currentTrack.icon} ${currentTrack.shortLabel}` : '—'}
+          Current track:{' '}
+          {currentTrack ? (
+            <>
+              <i className={`bi ${learningTrackBiClass(currentTrack.id)}`} style={{ marginRight: '0.35rem' }} aria-hidden />
+              {currentTrack.shortLabel}
+            </>
+          ) : (
+            '—'
+          )}
         </p>
         <div className="lc2-hero-track-bar">
           <div className="lc2-hero-track-fill" style={{ width: `${trackPct}%` }} />

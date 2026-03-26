@@ -68,7 +68,10 @@ export function PartnerCreatorContentCard() {
   return (
     <section className="lc2-partner-card db-card" aria-label="Partner and creator content">
       <div className="lc2-sec-head">
-        <h2 className="lc2-sec-title">✨ From Partners &amp; Creators</h2>
+        <h2 className="lc2-sec-title lc2-sec-title-with-bi">
+          <i className="bi bi-stars" aria-hidden />
+          From Partners &amp; Creators
+        </h2>
       </div>
       <div className="lc2-partner-list">
         {items.map((row) => (

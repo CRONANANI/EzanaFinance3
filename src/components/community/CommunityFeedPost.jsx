@@ -176,13 +176,13 @@ export function CommunityFeedPost({
             onLike(post.id, post.liked_by_me);
           }}
         >
-          <span aria-hidden>❤️</span> {post.likes}
+          <i className={post.liked_by_me ? 'bi bi-heart-fill' : 'bi bi-heart'} aria-hidden /> {post.likes}
         </button>
         <button type="button" className="comm-engage-btn" aria-label="Comments" onClick={toggleComments}>
-          <span aria-hidden>💬</span> {post.comments}
+          <i className="bi bi-chat-dots" aria-hidden /> {post.comments}
         </button>
         <button type="button" className="comm-engage-btn" aria-label="Repost">
-          <span aria-hidden>🔄</span> {post.reposts}
+          <i className="bi bi-arrow-repeat" aria-hidden /> {post.reposts}
         </button>
         <button
           type="button"
@@ -193,7 +193,7 @@ export function CommunityFeedPost({
             onSave(post.id, post.saved_by_me);
           }}
         >
-          <span aria-hidden>📌</span> {post.saved_by_me ? 'Saved' : 'Save'}
+          <i className="bi bi-pin-angle" aria-hidden /> {post.saved_by_me ? 'Saved' : 'Save'}
         </button>
       </div>
 

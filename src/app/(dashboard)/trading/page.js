@@ -138,7 +138,7 @@ export default function TradingPage() {
       <section className="trd-feature-grid">
         <div className="trd-feature-card db-card">
           <div className="trd-feature-icon-wrap" aria-hidden>
-            <span className="trd-feature-emoji">🧬</span>
+            <i className="bi bi-bezier2 trd-feature-bi" />
           </div>
           <h3 className="trd-feature-h3">Hybrid portfolios</h3>
           <p className="trd-feature-p">
@@ -150,7 +150,7 @@ export default function TradingPage() {
 
         <div className="trd-feature-card db-card">
           <div className="trd-feature-icon-wrap" aria-hidden>
-            <span className="trd-feature-emoji">📋</span>
+            <i className="bi bi-clipboard-data trd-feature-bi" />
           </div>
           <h3 className="trd-feature-h3">Copy trading</h3>
           <p className="trd-feature-p">
@@ -162,7 +162,7 @@ export default function TradingPage() {
 
         <div className="trd-feature-card db-card">
           <div className="trd-feature-icon-wrap" aria-hidden>
-            <span className="trd-feature-emoji">📊</span>
+            <i className="bi bi-bar-chart-line trd-feature-bi" />
           </div>
           <h3 className="trd-feature-h3">Margin trading &amp; short selling</h3>
           <p className="trd-feature-p">
@@ -178,7 +178,7 @@ export default function TradingPage() {
 
         <div className="trd-feature-card db-card">
           <div className="trd-feature-icon-wrap" aria-hidden>
-            <span className="trd-feature-emoji">⚙️</span>
+            <i className="bi bi-gear trd-feature-bi" />
           </div>
           <h3 className="trd-feature-h3">Automated investing</h3>
           <p className="trd-feature-p">
@@ -190,7 +190,7 @@ export default function TradingPage() {
 
         <div className="trd-feature-card db-card">
           <div className="trd-feature-icon-wrap" aria-hidden>
-            <span className="trd-feature-emoji">💸</span>
+            <i className="bi bi-cash-coin trd-feature-bi" />
           </div>
           <h3 className="trd-feature-h3">Commission-free trading</h3>
           <p className="trd-feature-p">
@@ -204,7 +204,7 @@ export default function TradingPage() {
 
         <div className="trd-feature-card db-card">
           <div className="trd-feature-icon-wrap" aria-hidden>
-            <span className="trd-feature-emoji">🧩</span>
+            <i className="bi bi-puzzle trd-feature-bi" />
           </div>
           <h3 className="trd-feature-h3">Fractional shares</h3>
           <p className="trd-feature-p">

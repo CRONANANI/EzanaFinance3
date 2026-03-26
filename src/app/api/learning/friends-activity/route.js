@@ -118,7 +118,6 @@ export async function GET() {
         displayName,
         trackId,
         trackLabel: trackById[trackId]?.shortLabel ?? trackId,
-        trackIcon: trackById[trackId]?.icon ?? '📈',
         progressPct: displayPct,
         currentCourseTitle: currentCourse?.title ?? 'Exploring learning paths',
         badgeKeys: badgesByUser[friendId] || [],

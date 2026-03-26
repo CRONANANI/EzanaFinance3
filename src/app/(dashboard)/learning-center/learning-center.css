@@ -453,6 +453,11 @@ body.light-mode .lc2-hero-kicker {
   font-size: 1.35rem;
   margin-bottom: 0.35rem;
 }
+.lc2-track-icon .bi {
+  font-size: 1.35rem;
+  color: #10b981;
+  line-height: 1;
+}
 
 .lc2-track-name {
   font-size: 0.8125rem;

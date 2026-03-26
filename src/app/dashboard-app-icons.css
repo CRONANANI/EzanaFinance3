@@ -1,0 +1,109 @@
+/* Partner-style Bootstrap Icons: tinted box + emerald icon (regular app) */
+
+.db-h3-with-bi {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.db-h3-with-bi > .bi {
+  font-size: 1.1rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.db-greeting-waving {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  color: #10b981;
+  font-size: 1.25rem;
+}
+
+.comm-stat-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.comm-stat-icon-wrap .bi {
+  font-size: 1.15rem;
+  color: #10b981;
+}
+
+.ftq-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.ftq-section-title .bi {
+  font-size: 1.05rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.ftq-stat-icon-inner {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ftq-stat-icon-inner .bi {
+  font-size: 1.3rem;
+  color: #10b981;
+}
+
+.am-section-h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.am-section-h3 .bi {
+  font-size: 1.05rem;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.am-section-h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.am-section-h4 .bi {
+  font-size: 1rem;
+  color: #10b981;
+}
+
+.lc2-sec-title-with-bi {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.lc2-sec-title-with-bi .bi {
+  font-size: 1.05rem;
+  color: #10b981;
+}

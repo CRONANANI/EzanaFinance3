@@ -14,7 +14,7 @@
 .echo-input-title { font-size: 1.5rem !important; font-weight: 800 !important; padding: 0.875rem 1rem !important; }
 .echo-textarea-sm { min-height: 60px; resize: vertical; line-height: 1.5; }
 .echo-textarea-md { min-height: 120px; resize: vertical; line-height: 1.6; }
-.echo-textarea-lg { min-height: 400px; resize: vertical; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.8125rem !important; }
+.echo-textarea-lg { min-height: 400px; resize: vertical; line-height: 1.7; font-family: var(--font-mono); font-size: 0.8125rem !important; }
 select.echo-input { appearance: none; cursor: pointer; }
 
 .echo-msg { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.75rem; line-height: 1.5; margin-bottom: 1rem; }

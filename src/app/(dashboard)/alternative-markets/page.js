@@ -96,7 +96,7 @@ export default function AlternativeMarketsPage() {
         {stats.map((s) => (
           <div key={s.id} className="am-stat-card">
             <div className="am-stat-icon" aria-hidden>
-              {s.icon}
+              <i className={`bi ${s.biClass}`} />
             </div>
             <div className="am-stat-label">{s.label}</div>
             <div className="am-stat-price">{s.price}</div>
@@ -108,7 +108,10 @@ export default function AlternativeMarketsPage() {
       <div className="am-row-60-40">
         <div className="db-card">
           <div className="db-card-header">
-            <h3>{view === 'crypto' ? '📊 Crypto Prices' : '📊 Commodity Prices'}</h3>
+            <h3 className="am-section-h3 db-h3-with-bi">
+              <i className="bi bi-bar-chart-line" aria-hidden />
+              {view === 'crypto' ? 'Crypto Prices' : 'Commodity Prices'}
+            </h3>
             <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
               {view === 'crypto' ? '24h · Top 20' : 'Live prices'}
             </span>
@@ -188,11 +191,17 @@ export default function AlternativeMarketsPage() {
 
         <div className="db-card am-movers-card">
           <div className="db-card-header">
-            <h3>📊 Movers (24h)</h3>
+            <h3 className="am-section-h3 db-h3-with-bi">
+              <i className="bi bi-graph-up-arrow" aria-hidden />
+              Movers (24h)
+            </h3>
             <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Crypto + commodities</span>
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            <h4>🚀 Biggest Winners (24h)</h4>
+            <h4 className="am-section-h4">
+              <i className="bi bi-arrow-up-circle-fill" aria-hidden />
+              Biggest Winners (24h)
+            </h4>
             {COMBINED_WINNERS.map((w) => (
               <div key={w.sym} className="am-mover-line">
                 <span className="am-mover-rank">{w.rank}</span>
@@ -202,7 +211,10 @@ export default function AlternativeMarketsPage() {
                 </span>
               </div>
             ))}
-            <h4 className="losers">📉 Biggest Losers (24h)</h4>
+            <h4 className="am-section-h4 losers">
+              <i className="bi bi-graph-down-arrow" aria-hidden />
+              Biggest Losers (24h)
+            </h4>
             {COMBINED_LOSERS.map((w) => (
               <div key={w.sym} className="am-mover-line">
                 <span className="am-mover-rank">{w.rank}</span>
@@ -219,7 +231,10 @@ export default function AlternativeMarketsPage() {
       <div className="am-row-50">
         <div className="db-card">
           <div className="db-card-header">
-            <h3>📈 Price chart</h3>
+            <h3 className="am-section-h3 db-h3-with-bi">
+              <i className="bi bi-graph-up" aria-hidden />
+              Price chart
+            </h3>
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
             <label className="am-stat-label" style={{ display: 'block', marginBottom: '0.35rem' }} htmlFor="am-chart-select">
@@ -278,7 +293,10 @@ export default function AlternativeMarketsPage() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>💬 Community Sentiment</h3>
+            <h3 className="am-section-h3 db-h3-with-bi">
+              <i className="bi bi-chat-dots" aria-hidden />
+              Community Sentiment
+            </h3>
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
             <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0 0 1rem', fontWeight: 600 }}>
@@ -325,7 +343,10 @@ export default function AlternativeMarketsPage() {
 
       <div className="db-card" style={{ marginBottom: '1.25rem' }}>
         <div className="db-card-header">
-          <h3>{view === 'crypto' ? '⛓️ On-chain snapshot' : '📦 Supply & demand'}</h3>
+          <h3 className="am-section-h3 db-h3-with-bi">
+            <i className={view === 'crypto' ? 'bi bi-link-45deg' : 'bi bi-box-seam'} aria-hidden />
+            {view === 'crypto' ? 'On-chain snapshot' : 'Supply & demand'}
+          </h3>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           {view === 'crypto' ? (
@@ -372,7 +393,10 @@ export default function AlternativeMarketsPage() {
 
       <div className="db-card" style={{ marginBottom: '1.25rem' }}>
         <div className="db-card-header">
-          <h3>{view === 'crypto' ? '📰 Crypto news' : '📰 Commodity news'}</h3>
+          <h3 className="am-section-h3 db-h3-with-bi">
+            <i className="bi bi-newspaper" aria-hidden />
+            {view === 'crypto' ? 'Crypto news' : 'Commodity news'}
+          </h3>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           <div className="am-news-wrap">

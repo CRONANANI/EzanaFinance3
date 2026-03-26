@@ -739,7 +739,7 @@ select.settings-input {
 
 .settings-api-key code {
   flex: 1;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: #10b981;
   letter-spacing: 0.02em;

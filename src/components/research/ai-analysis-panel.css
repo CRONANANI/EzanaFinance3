@@ -377,7 +377,7 @@
 }
 
 .ai-inline-code {
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   background: rgba(16, 185, 129, 0.08);
   color: #10b981;

@@ -260,7 +260,11 @@ export default function CommunityUserProfilePage() {
                   color: '#e2e8f0',
                 }}
               >
-                <span style={{ marginRight: '0.35rem' }}>{b.icon || '🏅'}</span>
+                <i
+                  className={typeof b.icon === 'string' && b.icon.startsWith('bi-') ? b.icon : 'bi bi-award'}
+                  style={{ marginRight: '0.35rem' }}
+                  aria-hidden
+                />
                 {b.name}
               </div>
             ))}
@@ -389,7 +393,9 @@ export default function CommunityUserProfilePage() {
                 </p>
                 <span style={{ color: '#6b7280', fontSize: '0.5625rem' }}>{formatRelativeTime(post.created_at)}</span>
                 <span style={{ color: '#6b7280', fontSize: '0.5625rem', marginLeft: '0.75rem' }}>
-                  ❤️ {post.likes_count} · 💬 {post.comments_count}
+                  <i className="bi bi-heart" style={{ marginRight: '0.2rem' }} aria-hidden />
+                  {post.likes_count} · <i className="bi bi-chat-dots" style={{ marginRight: '0.2rem' }} aria-hidden />
+                  {post.comments_count}
                 </span>
               </div>
             ))

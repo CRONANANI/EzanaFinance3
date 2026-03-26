@@ -18,16 +18,16 @@ const FILTER_TABS = [
 ];
 
 const STAT_CARDS = [
-  { emoji: '👥', label: 'Members', value: '12,456', sub: '+342 this month', subTone: 'positive' },
-  { emoji: '💬', label: 'Discussions', value: '89 active', sub: '+14 today', subTone: 'positive' },
-  { emoji: '🏆', label: 'Your Rank', value: '#127', sub: 'Top 8%', subTone: 'neutral' },
-  { emoji: '🔥', label: 'Your Streak', value: '12 days', sub: 'Best: 31 days', subTone: 'neutral' },
+  { icon: 'bi-people', label: 'Members', value: '12,456', sub: '+342 this month', subTone: 'positive' },
+  { icon: 'bi-chat-dots', label: 'Discussions', value: '89 active', sub: '+14 today', subTone: 'positive' },
+  { icon: 'bi-trophy', label: 'Your Rank', value: '#127', sub: 'Top 8%', subTone: 'neutral' },
+  { icon: 'bi-fire', label: 'Your Streak', value: '12 days', sub: 'Best: 31 days', subTone: 'neutral' },
 ];
 
 const CHALLENGES = [
-  { id: 'c1', title: '7-Day Trading Streak', current: 5, total: 7, reward: '🔥 Streak Badge', ends: 'Ends in 2 days', done: false },
-  { id: 'c2', title: 'Research 5 Companies', current: 2, total: 5, reward: '📊 Analyst Badge', ends: 'Ends in 5 days', done: false },
-  { id: 'c3', title: 'Follow 3 Politicians', current: 3, total: 3, reward: '🏛️ Capitol Badge', ends: 'COMPLETED', done: true },
+  { id: 'c1', title: '7-Day Trading Streak', current: 5, total: 7, reward: 'Streak Badge', ends: 'Ends in 2 days', done: false },
+  { id: 'c2', title: 'Research 5 Companies', current: 2, total: 5, reward: 'Analyst Badge', ends: 'Ends in 5 days', done: false },
+  { id: 'c3', title: 'Follow 3 Politicians', current: 3, total: 3, reward: 'Capitol Badge', ends: 'COMPLETED', done: true },
 ];
 
 const TRENDING_TOPICS = [
@@ -41,7 +41,7 @@ const TRENDING_TOPICS = [
 const CIRCLE_ACTIVITY = [
   { initials: 'EW', name: 'Emma Wilson', userId: null, time: 'just now', action: 'Bought TSLA' },
   { initials: 'DK', name: 'David Kim', userId: null, time: '12m ago', action: 'Posted: "NVDA to $1000?"' },
-  { initials: 'LP', name: 'Lisa Park', userId: null, time: '1h ago', action: 'Completed 7-day streak 🔥' },
+  { initials: 'LP', name: 'Lisa Park', userId: null, time: '1h ago', action: 'Completed 7-day streak' },
   { initials: 'AC', name: 'Alex Chen', userId: null, time: '2h ago', action: 'Added AMZN to watchlist' },
 ];
 
@@ -434,9 +434,9 @@ export default function CommunityPageClient() {
         {STAT_CARDS.map((s) => (
           <div key={s.label} className="db-card comm-stat-card">
             <div className="comm-stat-top">
-              <span className="comm-stat-emoji" aria-hidden>
-                {s.emoji}
-              </span>
+              <div className="comm-stat-icon-wrap" aria-hidden>
+                <i className={`bi ${s.icon}`} />
+              </div>
               <div className="comm-stat-body">
                 <span className="comm-stat-label">{s.label}</span>
                 <span className="comm-stat-value">{s.value}</span>
@@ -516,7 +516,10 @@ export default function CommunityPageClient() {
         <div className="db-card">
           <div className="db-card-header">
             <div className="comm-lb-head">
-              <h3>🏆 Leaderboard</h3>
+              <h3 className="db-h3-with-bi">
+                <i className="bi bi-trophy" aria-hidden />
+                Leaderboard
+              </h3>
               <select
                 className="comm-lb-select"
                 value={lbPeriod}
@@ -537,7 +540,16 @@ export default function CommunityPageClient() {
               <div key={row.id}>
                 <Link href={`/community/profile/${row.id}`} className="comm-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <span className="comm-lb-rank">
-                    {row.rank <= 3 ? ['🥇', '🥈', '🥉'][row.rank - 1] : row.rank}
+                    {row.rank <= 3 ? (
+                      <i
+                        className={`bi ${
+                          row.rank === 1 ? 'bi-trophy-fill' : row.rank === 2 ? 'bi-award' : 'bi-star-fill'
+                        }`}
+                        aria-hidden
+                      />
+                    ) : (
+                      row.rank
+                    )}
                   </span>
                   <span className="comm-lb-name">{row.name}</span>
                   <span className="comm-lb-pct">+{row.return?.toFixed(1)}%</span>
@@ -571,7 +583,9 @@ export default function CommunityPageClient() {
                 <div className="comm-lb-bar-wrap" />
               </div>
             )}
-            <p className="comm-lb-change">▲ 14 spots from last week</p>
+            <p className="comm-lb-change">
+              <i className="bi bi-caret-up-fill" aria-hidden /> 14 spots from last week
+            </p>
             <button type="button" className="comm-card-link" style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }} onClick={() => setLbModalOpen(true)}>
               View Full Rankings <i className="bi bi-arrow-right" />
             </button>
@@ -582,7 +596,10 @@ export default function CommunityPageClient() {
       <div className="comm-row-3">
         <div className="db-card">
           <div className="db-card-header">
-            <h3>🎯 Active Challenges</h3>
+            <h3 className="db-h3-with-bi">
+              <i className="bi bi-bullseye" aria-hidden />
+              Active Challenges
+            </h3>
           </div>
           <div className="comm-inner-scroll">
             {CHALLENGES.map((c) => (
@@ -592,7 +609,8 @@ export default function CommunityPageClient() {
                   <div className="comm-progress-fill" style={{ width: `${(c.current / c.total) * 100}%` }} />
                 </div>
                 <p className="comm-challenge-meta">
-                  {c.current}/{c.total} {c.done && <strong> ✅</strong>}
+                  {c.current}/{c.total}{' '}
+                  {c.done && <i className="bi bi-check-circle-fill" style={{ color: '#10b981' }} aria-hidden />}
                   <br />
                   Reward: {c.reward}
                   <br />
@@ -608,7 +626,10 @@ export default function CommunityPageClient() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>🔥 Trending Now</h3>
+            <h3 className="db-h3-with-bi">
+              <i className="bi bi-fire" aria-hidden />
+              Trending Now
+            </h3>
           </div>
           <div className="comm-inner-scroll">
             {TRENDING_TOPICS.map((t) => (
@@ -616,11 +637,27 @@ export default function CommunityPageClient() {
                 <span className="comm-trend-rank">{t.rank}</span>
                 <span className="comm-trend-title">{t.title}</span>
                 <div className="comm-trend-meta">
-                  💬 {t.replies} replies ·{' '}
-                  {t.kind === 'hot' && <span className="comm-badge-hot">🔥 Hot</span>}
-                  {t.kind === 'rise' && <span className="comm-badge-rise">📈 Rising</span>}
-                  {t.kind === 'pop' && <span className="comm-badge-pop">⭐ Popular</span>}
-                  {t.kind === 'act' && <span className="comm-badge-act">💬 Active</span>}
+                  <i className="bi bi-chat-dots" aria-hidden /> {t.replies} replies ·{' '}
+                  {t.kind === 'hot' && (
+                    <span className="comm-badge-hot">
+                      <i className="bi bi-fire" aria-hidden /> Hot
+                    </span>
+                  )}
+                  {t.kind === 'rise' && (
+                    <span className="comm-badge-rise">
+                      <i className="bi bi-graph-up-arrow" aria-hidden /> Rising
+                    </span>
+                  )}
+                  {t.kind === 'pop' && (
+                    <span className="comm-badge-pop">
+                      <i className="bi bi-star-fill" aria-hidden /> Popular
+                    </span>
+                  )}
+                  {t.kind === 'act' && (
+                    <span className="comm-badge-act">
+                      <i className="bi bi-chat-text" aria-hidden /> Active
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
@@ -632,7 +669,10 @@ export default function CommunityPageClient() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>👥 Your Circle</h3>
+            <h3 className="db-h3-with-bi">
+              <i className="bi bi-people-fill" aria-hidden />
+              Your Circle
+            </h3>
           </div>
           <div className="comm-inner-scroll">
             <p className="comm-circle-head">Following: 23 · Followers: 47</p>
@@ -758,7 +798,10 @@ export default function CommunityPageClient() {
       <div className="comm-row-4">
         <div className="db-card">
           <div className="db-card-header">
-            <h3>🏅 Legendary Investors</h3>
+            <h3 className="db-h3-with-bi">
+              <i className="bi bi-award" aria-hidden />
+              Legendary Investors
+            </h3>
           </div>
           <p style={{ fontSize: '0.6875rem', color: '#6b7280', margin: '0 1.25rem 0.75rem', lineHeight: 1.45 }}>
             Learn from the best traders in history
@@ -782,7 +825,10 @@ export default function CommunityPageClient() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>📊 Community Insights</h3>
+            <h3 className="db-h3-with-bi">
+              <i className="bi bi-bar-chart-line" aria-hidden />
+              Community Insights
+            </h3>
           </div>
           <p style={{ fontSize: '0.6875rem', color: '#6b7280', margin: '0 1.25rem 0.5rem', lineHeight: 1.45 }}>
             What 12,456 members are doing
@@ -813,19 +859,27 @@ export default function CommunityPageClient() {
           </div>
           <div className="comm-insight-row">
             <div className="comm-insight-label">Top Badge This Week</div>
-            <div className="comm-insight-val">🔥 7-Day Streak — earned by 234 members</div>
+            <div className="comm-insight-val">
+              <i className="bi bi-fire" style={{ marginRight: '0.35rem' }} aria-hidden />
+              7-Day Streak — earned by 234 members
+            </div>
           </div>
         </div>
       </div>
 
       <div className="db-card" style={{ marginBottom: '1.25rem' }}>
         <div className="db-card-header">
-          <h3>⭐ This Week&apos;s Spotlight</h3>
+          <h3 className="db-h3-with-bi">
+            <i className="bi bi-star-fill" aria-hidden />
+            This Week&apos;s Spotlight
+          </h3>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           <div className="comm-spotlight-row">
             <div className="comm-spot-card">
-              <div className="comm-spot-tag">🏆 Top Performer</div>
+              <div className="comm-spot-tag">
+                <i className="bi bi-trophy" aria-hidden /> Top Performer
+              </div>
               {spotlight[0] ? (
                 <CommunityUserLink userId={spotlight[0].id} className="comm-spot-title" style={{ display: 'block', textDecoration: 'none' }}>
                   {spotlight[0].name}
@@ -849,7 +903,9 @@ export default function CommunityPageClient() {
               )}
             </div>
             <div className="comm-spot-card">
-              <div className="comm-spot-tag">📝 Best Post</div>
+              <div className="comm-spot-tag">
+                <i className="bi bi-pencil-square" aria-hidden /> Best Post
+              </div>
               <div className="comm-spot-title">&quot;Why I&apos;m bullish on semiconductors in 2026&quot;</div>
               <p className="comm-spot-meta">
                 89 likes · 23 comments
@@ -870,7 +926,9 @@ export default function CommunityPageClient() {
               </Link>
             </div>
             <div className="comm-spot-card">
-              <div className="comm-spot-tag">🌟 Rising Star</div>
+              <div className="comm-spot-tag">
+                <i className="bi bi-stars" aria-hidden /> Rising Star
+              </div>
               {spotlight[2] ? (
                 <CommunityUserLink userId={spotlight[2].id} className="comm-spot-title" style={{ display: 'block', textDecoration: 'none' }}>
                   {spotlight[2].name}

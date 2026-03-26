@@ -3,16 +3,16 @@
  */
 
 export const FTQ_STAT_CARDS = [
-  { id: 'built', icon: '📊', label: 'Strategies Built', value: '47', sub: '+8 this month' },
-  { id: 'top', icon: '🏆', label: 'Top Strategy Return', value: '+142.3% (6mo)', sub: 'by @EmmaWilson' },
-  { id: 'community', icon: '👥', label: 'Community Strategies', value: '1,234', sub: '+89 this week' },
-  { id: 'backtests', icon: '⚡', label: 'Active Backtests', value: '12', sub: 'running now' },
+  { id: 'built', biClass: 'bi-bar-chart-line', label: 'Strategies Built', value: '47', sub: '+8 this month' },
+  { id: 'top', biClass: 'bi-trophy', label: 'Top Strategy Return', value: '+142.3% (6mo)', sub: 'by @EmmaWilson' },
+  { id: 'community', biClass: 'bi-people', label: 'Community Strategies', value: '1,234', sub: '+89 this week' },
+  { id: 'backtests', biClass: 'bi-lightning-charge', label: 'Active Backtests', value: '12', sub: 'running now' },
 ];
 
 export const MY_STRATEGIES = [
   {
     id: 'ma-cross',
-    icon: '📈',
+    biClass: 'bi-graph-up-arrow',
     name: 'Moving Average Crossover',
     detail: 'SMA 50/200 · Backtested: +23.4% (1Y)',
     lastRun: '2h ago',
@@ -21,7 +21,7 @@ export const MY_STRATEGIES = [
   },
   {
     id: 'rsi-mom',
-    icon: '📊',
+    biClass: 'bi-speedometer2',
     name: 'RSI Momentum Strategy',
     detail: 'RSI 14 · Backtested: +18.7% (6mo)',
     lastRun: '1d ago',
@@ -30,7 +30,7 @@ export const MY_STRATEGIES = [
   },
   {
     id: 'mean-rev-draft',
-    icon: '🧬',
+    biClass: 'bi-bezier2',
     name: 'Mean Reversion + Sentiment',
     detail: 'Bollinger + News · Not backtested',
     lastRun: null,

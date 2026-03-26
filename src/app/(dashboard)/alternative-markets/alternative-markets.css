@@ -68,8 +68,20 @@
 }
 
 .am-page .am-stat-icon {
-  font-size: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 0.35rem;
+}
+
+.am-page .am-stat-icon .bi {
+  font-size: 1.3rem;
+  color: #10b981;
 }
 
 .am-page .am-stat-label {

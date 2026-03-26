@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getInitials } from '@/lib/community-utils';
 import { LearningTrackBadgeChips } from '@/components/learning/LearningTrackBadgeChips';
+import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
 
 export function FriendsLearningCard() {
   const [friends, setFriends] = useState(null);
@@ -29,7 +30,10 @@ export function FriendsLearningCard() {
   return (
     <section className="lc2-friends-card db-card" aria-label="Friends learning activity">
       <div className="lc2-sec-head">
-        <h2 className="lc2-sec-title">👥 Friends Learning Now</h2>
+        <h2 className="lc2-sec-title lc2-sec-title-with-bi">
+          <i className="bi bi-people-fill" aria-hidden />
+          Friends Learning Now
+        </h2>
       </div>
       {loading ? (
         <p className="lc2-friends-empty">Loading…</p>
@@ -46,7 +50,7 @@ export function FriendsLearningCard() {
                 <div className="lc2-friend-top">
                   <span className="lc2-friend-name">{f.displayName}</span>
                   <span className="lc2-friend-track-label">
-                    {f.trackIcon} {f.trackLabel}
+                    <i className={`bi ${learningTrackBiClass(f.trackId)}`} aria-hidden /> {f.trackLabel}
                   </span>
                   <div className="lc2-friend-bar-wrap">
                     <div className="lc2-friend-bar">

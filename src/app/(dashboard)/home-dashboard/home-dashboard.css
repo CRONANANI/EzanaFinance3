@@ -29,8 +29,13 @@
   letter-spacing: -0.02em;
 }
 
-.db-greeting-emoji {
-  display: inline-block;
+.db-greeting-waving {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.15rem;
+  vertical-align: middle;
+  color: #10b981;
+  font-size: 1.25rem;
   animation: dbWave 1.5s ease-in-out 0.5s 2;
   transform-origin: 70% 70%;
 }

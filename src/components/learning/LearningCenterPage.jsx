@@ -14,6 +14,7 @@ import {
 import { LearningCenterHero } from '@/components/learning/LearningCenterHero';
 import { PartnerCreatorContentCard } from '@/components/learning/PartnerCreatorContentCard';
 import { FriendsLearningCard } from '@/components/learning/FriendsLearningCard';
+import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
 
 export function LearningCenterPage() {
   const [data, setData] = useState(null);
@@ -103,7 +104,9 @@ export function LearningCenterPage() {
             onClick={() => setSelectedTrack(t.id)}
             data-task-target={ti === 0 ? 'learning-module-card' : undefined}
           >
-            <div className="lc2-track-icon">{t.icon}</div>
+            <div className="lc2-track-icon" aria-hidden>
+              <i className={`bi ${learningTrackBiClass(t.id)}`} />
+            </div>
             <div className="lc2-track-name">{t.shortLabel}</div>
             <div className="lc2-track-meta">
               {t.totalCourses} courses · {t.summary?.completed ?? 0}/{t.summary?.total ?? t.totalCourses} completed

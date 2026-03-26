@@ -95,7 +95,11 @@ export default function ForTheQuantsPage() {
       <div className="ftq-stat-grid">
         {FTQ_STAT_CARDS.map((s) => (
           <div key={s.id} className="ftq-stat-card">
-            <div className="ftq-stat-icon" aria-hidden>{s.icon}</div>
+            <div className="ftq-stat-icon" aria-hidden>
+              <div className="ftq-stat-icon-inner">
+                <i className={`bi ${s.biClass}`} />
+              </div>
+            </div>
             <div className="ftq-stat-label">{s.label}</div>
             <div className="ftq-stat-value">{s.value}</div>
             <div className={`ftq-stat-sub ${s.sub.includes('+') ? 'positive' : ''}`}>{s.sub}</div>
@@ -106,7 +110,10 @@ export default function ForTheQuantsPage() {
       <div className="ftq-row-60-40">
         <div className="db-card">
           <div className="db-card-header">
-            <h3>🔧 Strategy Builder</h3>
+            <h3 className="ftq-section-title">
+              <i className="bi bi-tools" aria-hidden />
+              Strategy Builder
+            </h3>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <div className="ftq-tabs">
@@ -131,7 +138,8 @@ export default function ForTheQuantsPage() {
                 {MY_STRATEGIES.map((st) => (
                   <div key={st.id} className="ftq-strategy-row">
                     <h4 className="ftq-strategy-name">
-                      <span aria-hidden>{st.icon}</span> {st.name}
+                      <i className={`bi ${st.biClass}`} style={{ marginRight: '0.35rem' }} aria-hidden />
+                      {st.name}
                     </h4>
                     <p className="ftq-strategy-detail">{st.detail}</p>
                     <div className="ftq-strategy-meta">
@@ -173,7 +181,10 @@ export default function ForTheQuantsPage() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>📈 Latest Backtest Results</h3>
+            <h3 className="ftq-section-title">
+              <i className="bi bi-graph-up-arrow" aria-hidden />
+              Latest Backtest Results
+            </h3>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <p style={{ fontSize: '0.8125rem', color: '#9ca3af', margin: '0 0 0.75rem' }}>
@@ -215,7 +226,10 @@ export default function ForTheQuantsPage() {
       <div className="ftq-row-50">
         <div className="db-card" id="ftq-leaderboard">
           <div className="db-card-header ftq-lb-head">
-            <h3>🏆 Community Strategy Leaderboard</h3>
+            <h3 className="ftq-section-title">
+              <i className="bi bi-trophy" aria-hidden />
+              Community Strategy Leaderboard
+            </h3>
             <select
               className="ftq-select"
               value={leaderPeriod}
@@ -233,7 +247,17 @@ export default function ForTheQuantsPage() {
                 <div className="ftq-lb-line1">
                   <span className="ftq-lb-rank">{row.rank}</span>
                   <span className="ftq-lb-name">{row.name}</span>
-                  <span className="ftq-lb-ret">{row.returnPct}{row.hot ? ' 🔥' : ''}</span>
+                  <span className="ftq-lb-ret">
+                    {row.returnPct}
+                    {row.hot ? (
+                      <>
+                        {' '}
+                        <i className="bi bi-fire" aria-hidden title="Hot" />
+                      </>
+                    ) : (
+                      ''
+                    )}
+                  </span>
                 </div>
                 <p className="ftq-lb-meta">
                   by {row.author} · {row.subscribers.toLocaleString()} subscribers
@@ -251,7 +275,10 @@ export default function ForTheQuantsPage() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>⚠️ Risk Analytics</h3>
+            <h3 className="ftq-section-title">
+              <i className="bi bi-exclamation-triangle" aria-hidden />
+              Risk Analytics
+            </h3>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <div className="ftq-bt-row" style={{ marginBottom: '0.25rem' }}>
@@ -295,7 +322,10 @@ export default function ForTheQuantsPage() {
       <div className="ftq-row-50">
         <div className="db-card">
           <div className="db-card-header">
-            <h3>🔮 Polymarket Research</h3>
+            <h3 className="ftq-section-title">
+              <i className="bi bi-globe2" aria-hidden />
+              Polymarket Research
+            </h3>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <div className="ftq-pm-search">
@@ -337,7 +367,10 @@ export default function ForTheQuantsPage() {
 
         <div className="db-card">
           <div className="db-card-header">
-            <h3>📊 Betting Market Analytics</h3>
+            <h3 className="ftq-section-title">
+              <i className="bi bi-bar-chart-line" aria-hidden />
+              Betting Market Analytics
+            </h3>
           </div>
           <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
             <p className="ftq-bt-label">Smart Money Flow</p>
@@ -372,7 +405,10 @@ export default function ForTheQuantsPage() {
 
       <div className="db-card" style={{ marginBottom: '1.5rem' }}>
         <div className="db-card-header">
-          <h3>📚 Technical Indicators Library</h3>
+          <h3 className="ftq-section-title">
+            <i className="bi bi-book" aria-hidden />
+            Technical Indicators Library
+          </h3>
         </div>
         <div className="ftq-card-body-pad ftq-card-body-pad--flush-top">
           <div className="ftq-ind-tabs">

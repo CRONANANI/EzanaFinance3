@@ -1,10 +1,10 @@
 /** Mock data for Crypto Research — swap for API later */
 
 export const CRYPTO_STATS = [
-  { id: 'btc', icon: '₿', label: 'Bitcoin', price: '$39,280', change: '▼ -1.92% today', positive: false },
-  { id: 'eth', icon: 'Ξ', label: 'Ethereum', price: '$2,840', change: '▲ +0.84% today', positive: true },
-  { id: 'mcap', icon: '📊', label: 'Total Market Cap', price: '$1.72T', change: '▼ -0.3% today', positive: false },
-  { id: 'fg', icon: '😨', label: 'Fear & Greed', price: '72 — Greed', change: '▲ from 65 last week', positive: true },
+  { id: 'btc', biClass: 'bi-currency-bitcoin', label: 'Bitcoin', price: '$39,280', change: '▼ -1.92% today', positive: false },
+  { id: 'eth', biClass: 'bi-lightning-charge', label: 'Ethereum', price: '$2,840', change: '▲ +0.84% today', positive: true },
+  { id: 'mcap', biClass: 'bi-pie-chart', label: 'Total Market Cap', price: '$1.72T', change: '▼ -0.3% today', positive: false },
+  { id: 'fg', biClass: 'bi-emoji-smile', label: 'Fear & Greed', price: '72 — Greed', change: '▲ from 65 last week', positive: true },
 ];
 
 export const CRYPTO_ROWS = [

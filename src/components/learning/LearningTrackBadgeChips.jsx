@@ -1,6 +1,7 @@
 'use client';
 
-import { LEVEL_COLORS, parseLearningBadgeKey, sortBadgeKeysForDisplay, trackIconForId } from '@/lib/learning-badge-ui';
+import { LEVEL_COLORS, parseLearningBadgeKey, sortBadgeKeysForDisplay } from '@/lib/learning-badge-ui';
+import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
 
 export function LearningTrackBadgeChips({ badgeKeys, className = '', style = {} }) {
   const sorted = sortBadgeKeysForDisplay(badgeKeys || []);
@@ -13,7 +14,7 @@ export function LearningTrackBadgeChips({ badgeKeys, className = '', style = {} 
         if (!parsed) return null;
         const lc = LEVEL_COLORS[parsed.levelKey];
         if (!lc) return null;
-        const icon = trackIconForId(parsed.trackId);
+        const bi = learningTrackBiClass(parsed.trackId);
         return (
           <span
             key={key}
@@ -30,7 +31,8 @@ export function LearningTrackBadgeChips({ badgeKeys, className = '', style = {} 
               border: `1px solid ${lc.color}33`,
             }}
           >
-            {icon} {lc.label}
+            <i className={`bi ${bi}`} style={{ fontSize: '0.75rem', opacity: 0.95 }} aria-hidden />
+            {lc.label}
           </span>
         );
       })}

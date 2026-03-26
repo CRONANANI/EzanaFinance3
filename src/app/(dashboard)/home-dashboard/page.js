@@ -158,7 +158,12 @@ export default function HomeDashboardPage() {
       {/* ═══ GREETING ═══ */}
       <div className="db-greeting-section">
         <div>
-          <h1 className="db-greeting">{greeting}, {userName} <span className="db-greeting-emoji">👋</span></h1>
+          <h1 className="db-greeting">
+            {greeting}, {userName}{' '}
+            <span className="db-greeting-waving" aria-hidden>
+              <i className="bi bi-hand-thumbs-up" />
+            </span>
+          </h1>
           <p className="db-greeting-sub">
             {heroData.change >= 0 ? (
               <>Today you amassed a <strong className="db-greeting-highlight">+{heroData.change}% increase</strong> in your portfolio holdings</>

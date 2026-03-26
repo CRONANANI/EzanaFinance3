@@ -17,10 +17,6 @@ const SUFFIX_TO_LEVEL = {
 
 const TRACK_IDS = new Set(TRACKS.map((t) => t.id));
 
-export function trackIconForId(trackId) {
-  return TRACKS.find((t) => t.id === trackId)?.icon ?? '📚';
-}
-
 export function trackShortLabel(trackId) {
   return TRACKS.find((t) => t.id === trackId)?.shortLabel ?? trackId;
 }

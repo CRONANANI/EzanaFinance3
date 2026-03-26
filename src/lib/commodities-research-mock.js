@@ -1,10 +1,10 @@
 /** Mock data for Commodities Research — swap for API later */
 
 export const COMMODITY_STATS = [
-  { id: 'wti', icon: '🛢️', label: 'Oil (WTI)', price: '$114.54', change: '▲ +3.60% today', positive: true },
-  { id: 'gold', icon: '🥇', label: 'Gold', price: '$404.13', change: '▲ +0.02% today', positive: true },
-  { id: 'wheat', icon: '🌾', label: 'Wheat', price: '$6.82', change: '▼ -1.2% today', positive: false },
-  { id: 'crb', icon: '📊', label: 'Commodity Index', price: 'CRB: 312.4', change: '▲ +0.8% this week', positive: true },
+  { id: 'wti', biClass: 'bi-droplet-half', label: 'Oil (WTI)', price: '$114.54', change: '▲ +3.60% today', positive: true },
+  { id: 'gold', biClass: 'bi-star-fill', label: 'Gold', price: '$404.13', change: '▲ +0.02% today', positive: true },
+  { id: 'wheat', biClass: 'bi-globe2', label: 'Wheat', price: '$6.82', change: '▼ -1.2% today', positive: false },
+  { id: 'crb', biClass: 'bi-bar-chart-line', label: 'Commodity Index', price: 'CRB: 312.4', change: '▲ +0.8% this week', positive: true },
 ];
 
 export const COMMODITY_ROWS = [
