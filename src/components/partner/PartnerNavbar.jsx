@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
+import { supabase } from '@/lib/supabase';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import '@/components/ui/animated-nav.css';
 import '@/app/(dashboard)/partner.css';
@@ -12,9 +13,15 @@ import { PARTNER_RESEARCH_ROUTES } from '@/lib/partner-chrome';
 
 export function PartnerNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { verified, partnerRole } = usePartner();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [researchOpen, setResearchOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   const isResearchActive = PARTNER_RESEARCH_ROUTES.some(
     (p) => pathname === p || pathname?.startsWith(`${p}/`)
@@ -149,6 +156,14 @@ export function PartnerNavbar() {
           <Link href="/settings" className="nav-action-btn nav-settings-gear" title="Settings" aria-label="Settings">
             <i className="bi bi-gear" />
           </Link>
+          <button
+            onClick={handleLogout}
+            className="nav-action-btn nav-logout-btn"
+            title="Log out"
+            aria-label="Log out"
+          >
+            <i className="bi bi-box-arrow-right" />
+          </button>
         </div>
       </div>
       {mobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />}

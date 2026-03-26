@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
@@ -12,6 +13,7 @@ import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isSettings = pathname?.startsWith('/settings');
@@ -20,6 +22,11 @@ export function Navbar() {
   const isHelpCenter = pathname?.startsWith('/help-center');
   const showLandingNav = isLanding || isHelpCenter;
   const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo') || pathname?.includes('/alternative-markets');
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   const userNavItems = [
     { id: 1, title: 'Dashboard', url: '/home-dashboard', icon: 'bi-speedometer2', isActive: pathname?.includes('home-dashboard') },
@@ -299,6 +306,14 @@ export function Navbar() {
           <Link href="/settings" className="nav-action-btn nav-settings-gear" title="Settings" aria-label="Settings">
             <i className="bi bi-gear"></i>
           </Link>
+          <button
+            onClick={handleLogout}
+            className="nav-action-btn nav-logout-btn"
+            title="Log out"
+            aria-label="Log out"
+          >
+            <i className="bi bi-box-arrow-right"></i>
+          </button>
         </div>
       </div>
       {mobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />}

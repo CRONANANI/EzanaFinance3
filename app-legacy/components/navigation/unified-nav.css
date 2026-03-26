@@ -238,6 +238,21 @@ body:not(.light-mode) .dropdown-menu {
   border-color: #10b981;
 }
 
+/* Logout button — same size as gear, red accent */
+.main-nav .nav-action-btn.nav-logout-btn,
+.partner-nav .nav-action-btn.nav-logout-btn {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.main-nav .nav-action-btn.nav-logout-btn:hover,
+.partner-nav .nav-action-btn.nav-logout-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
 .nav-action-btn {
   width: 32px;
   height: 32px;
