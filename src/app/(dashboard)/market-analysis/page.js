@@ -6,6 +6,16 @@ import {
   PANEL_ID_TO_CITY_KEY,
   PANEL_ID_TO_FINHUB_CITY_ID,
 } from '@/config/cityNewsSources';
+import {
+  MARKETS_DATA,
+  CENTRAL_BANKS_DATA,
+  CENTRAL_BANKS,
+  TRACKED_INDICES,
+  INDICES_DATA,
+  COMMODITIES_DATA,
+  CURRENCIES_DATA,
+  hasRecentOrUpcomingCBDecision,
+} from '@/config/marketAnalysisData';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -13,51 +23,32 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 
-const CATEGORY_DATA = {
+// Layer configuration mapping
+const LAYER_CONFIG = {
   markets: {
     title: 'MARKETS',
-    tabs: ['Major Indices', 'Sectors', 'Futures', 'Pre-Market'],
-    items: [
-      { id: 'sp500', name: 'S&P 500', region: 'United States', price: '5,892.34', change: '+0.45%', status: 'OPEN', summary: 'Extended rally to 5th consecutive week. Tech and healthcare leading gains.' },
-      { id: 'nasdaq', name: 'NASDAQ Composite', region: 'United States', price: '18,743.21', change: '+0.72%', status: 'OPEN', summary: 'AI and semiconductor stocks driving momentum. New 52-week high.' },
-      { id: 'djia', name: 'Dow Jones', region: 'United States', price: '43,127.89', change: '-0.18%', status: 'OPEN', summary: 'Industrials and energy weigh on index. Financials mixed.' },
-      { id: 'ftse', name: 'FTSE 100', region: 'United Kingdom', price: '8,234.56', change: '+0.31%', status: 'OPEN', summary: 'Mining stocks boost index. BOE rate decision pending.' },
-      { id: 'dax', name: 'DAX 40', region: 'Germany', price: '19,456.78', change: '+0.58%', status: 'CLOSED', summary: 'Automotive sector recovery lifts index. ECB dovish signals.' },
-      { id: 'nikkei', name: 'Nikkei 225', region: 'Japan', price: '39,234.56', change: '+1.24%', status: 'CLOSED', summary: 'Yen weakness supports exporters. BOJ maintains ultra-loose policy.' },
-    ],
+    tabs: Object.keys(MARKETS_DATA),
+    dataSource: MARKETS_DATA,
   },
   'central-banks': {
     title: 'CENTRAL BANKS',
-    tabs: ['Rate Decisions', 'Speeches', 'Minutes', 'Forecasts'],
-    items: [
-      { id: 'fed', name: 'Federal Reserve', region: 'United States', price: '4.25-4.50%', change: 'Hold', status: 'NEXT: Jun 18', summary: 'Powell signals patience. Inflation remains above target. 2 cuts priced for 2026.' },
-      { id: 'ecb', name: 'European Central Bank', region: 'Eurozone', price: '2.65%', change: '-25bp', status: 'NEXT: Apr 17', summary: 'Lagarde dovish pivot. Growth concerns outweigh inflation risks.' },
-      { id: 'boj', name: 'Bank of Japan', region: 'Japan', price: '0.50%', change: 'Hold', status: 'NEXT: May 1', summary: 'Ultra-loose maintained. Yen at 34-year low against USD.' },
-    ],
+    tabs: Object.keys(CENTRAL_BANKS_DATA),
+    dataSource: CENTRAL_BANKS_DATA,
   },
   indices: {
     title: 'INDICES',
-    tabs: ['Global', 'Americas', 'Europe', 'Asia-Pacific'],
-    items: [
-      { id: 'vix', name: 'VIX', region: 'Global', price: '14.32', change: '-3.2%', status: 'LOW', summary: 'Volatility near 2-year lows. Complacency risk building.' },
-      { id: 'russell', name: 'Russell 2000', region: 'United States', price: '2,089.45', change: '+0.92%', status: 'OPEN', summary: 'Small caps outperforming. Regional bank recovery.' },
-    ],
+    tabs: Object.keys(INDICES_DATA),
+    dataSource: INDICES_DATA,
   },
   commodities: {
     title: 'COMMODITIES',
-    tabs: ['Energy', 'Metals', 'Agriculture', 'Futures'],
-    items: [
-      { id: 'gold', name: 'Gold', region: 'Global', price: '$2,178.34', change: '+0.15%', status: 'TRADING', summary: 'Safe haven demand on geopolitical tensions. Central bank buying.' },
-      { id: 'wti', name: 'Crude Oil (WTI)', region: 'Global', price: '$78.45', change: '-1.23%', status: 'TRADING', summary: 'OPEC+ cuts offset by US production growth. Demand concerns.' },
-    ],
+    tabs: Object.keys(COMMODITIES_DATA),
+    dataSource: COMMODITIES_DATA,
   },
   currencies: {
     title: 'CURRENCIES',
-    tabs: ['Major Pairs', 'Crosses', 'Emerging', 'Crypto'],
-    items: [
-      { id: 'eurusd', name: 'EUR/USD', region: 'Global', price: '1.0876', change: '+0.08%', status: 'TRADING', summary: 'ECB rate differential narrowing. Euro recovery on growth data.' },
-      { id: 'btcusd', name: 'BTC/USD', region: 'Crypto', price: '$87,234', change: '+2.34%', status: 'TRADING', summary: 'Institutional inflows via ETFs. Halving cycle momentum.' },
-    ],
+    tabs: Object.keys(CURRENCIES_DATA),
+    dataSource: CURRENCIES_DATA,
   },
 };
 
@@ -100,17 +91,278 @@ const FINANCIAL_CITIES = [
   { id: 'hamilton', name: 'Hamilton', country: 'Bermuda', exchange: 'BSX', timezone: 'AST' },
 ];
 
-function CategoryPanel({ category, onClose }) {
-  const [expanded, setExpanded] = useState(null);
-  const [minimized, setMinimized] = useState(false);
-  const data = CATEGORY_DATA[category];
-  const [activeTab, setActiveTab] = useState(data?.tabs?.[0] || '');
+// Render different content based on tab type
+function renderTabContent(tabName, category, tabData) {
+  if (!tabData) return null;
 
-  if (!data) return null;
+  const displayType = tabData.displayType || tabData.type;
+
+  // SECTORS display
+  if (displayType === 'sectors-performance' && tabData.items) {
+    return (
+      <div className="ma-panel-list">
+        {tabData.items.map((item, idx) => (
+          <div key={idx} className="ma-panel-item ma-sector-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.name}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                  {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                </span>
+              </div>
+            </div>
+            <div className="ma-sector-bar">
+              <div className="ma-sector-bar-fill" style={{ width: `${item.bar}%`, backgroundColor: item.changeVal >= 0 ? '#10b981' : '#f87171' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // FUTURES display
+  if (displayType === 'futures-table' && tabData.groups) {
+    return (
+      <div className="ma-panel-list">
+        {tabData.groups.map((group, gIdx) => (
+          <div key={gIdx}>
+            <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {group.title}
+            </div>
+            {group.items.map((item, iIdx) => (
+              <div key={`${gIdx}-${iIdx}`} className="ma-panel-item">
+                <div className="ma-panel-item-row">
+                  <span className="ma-panel-item-dot" />
+                  <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                    <span className="ma-panel-item-name">{item.name}</span>
+                  </div>
+                  <div className="ma-panel-item-data">
+                    <span className="ma-panel-item-price">{item.value}</span>
+                    <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                      {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // PRE-MARKET display
+  if (displayType === 'pre-market-table' && tabData.groups) {
+    return (
+      <div className="ma-panel-list">
+        <div style={{ padding: '0.75rem 1rem', fontSize: '0.5625rem', color: '#9ca3af', fontFamily: 'var(--font-mono, monospace)' }}>
+          PRE-MARKET SESSION: {tabData.preMarketSession}
+        </div>
+        {tabData.groups.map((group, gIdx) => (
+          <div key={gIdx}>
+            <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {group.title}
+            </div>
+            {group.items.map((item, iIdx) => (
+              <div key={`${gIdx}-${iIdx}`} className="ma-panel-item">
+                <div className="ma-panel-item-row">
+                  <span className="ma-panel-item-dot" />
+                  <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                    <span className="ma-panel-item-name">{item.name}</span>
+                    {item.note && <span style={{ fontSize: '0.5rem', color: '#9ca3af', marginLeft: '0.5rem' }}>({item.note})</span>}
+                  </div>
+                  <div className="ma-panel-item-data">
+                    <span className="ma-panel-item-price">{item.value}</span>
+                    <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                      {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // RATE DECISIONS display
+  if (displayType === 'rate-decisions-table') {
+    return (
+      <div className="ma-panel-list">
+        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Upcoming Rate Decisions
+        </div>
+        {tabData.upcoming && tabData.upcoming.map((item, idx) => (
+          <div key={`u-${idx}`} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.bank}</span>
+                <span className="ma-panel-item-region">{item.date} · {item.current}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>Expected: {item.expected}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '1rem' }}>
+          Recent Decisions
+        </div>
+        {tabData.recent && tabData.recent.map((item, idx) => (
+          <div key={`r-${idx}`} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.bank}</span>
+                <span className="ma-panel-item-region">{item.date}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span style={{ fontSize: '0.75rem' }}>{item.decision} {item.outcome}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // SPEECHES display
+  if (displayType === 'speeches-table') {
+    return (
+      <div className="ma-panel-list">
+        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Upcoming Speeches
+        </div>
+        {tabData.upcoming && tabData.upcoming.map((item, idx) => (
+          <div key={`u-${idx}`} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.official}</span>
+                <span className="ma-panel-item-region">{item.title} · {item.location}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>{item.date}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+        <div style={{ padding: '0.75rem 1rem 0.5rem', fontSize: '0.625rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '1rem' }}>
+          Recent Speeches
+        </div>
+        {tabData.recent && tabData.recent.map((item, idx) => (
+          <div key={`r-${idx}`} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.official}</span>
+                <span className="ma-panel-item-region">{item.title} · {item.location}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span style={{ fontSize: '0.75rem' }}>{item.date}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // COMMODITIES display
+  if (displayType === 'commodities-list' && tabData.items) {
+    return (
+      <div className="ma-panel-list">
+        {tabData.items.map((item, idx) => (
+          <div key={idx} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.name}</span>
+                <span className="ma-panel-item-region">{item.symbol}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span className="ma-panel-item-price">{item.value}</span>
+                <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                  {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // CURRENCIES display
+  if (displayType === 'currency-list' || (tabData.items && !displayType)) {
+    return (
+      <div className="ma-panel-list">
+        {tabData.items && tabData.items.map((item, idx) => (
+          <div key={idx} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.emoji} {item.code} - {item.country}</span>
+              </div>
+              <div className="ma-panel-item-data">
+                <span className="ma-panel-item-price">{item.value}</span>
+                <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                  {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Default: indices or generic item list
+  if (tabData.items) {
+    return (
+      <div className="ma-panel-list">
+        {tabData.items.map((item, idx) => (
+          <div key={idx} className="ma-panel-item">
+            <div className="ma-panel-item-row">
+              <span className="ma-panel-item-dot" />
+              <div className="ma-panel-item-info" style={{ flex: 1 }}>
+                <span className="ma-panel-item-name">{item.name}</span>
+                {item.region && <span className="ma-panel-item-region">{item.region}</span>}
+              </div>
+              <div className="ma-panel-item-data">
+                {item.price && <span className="ma-panel-item-price">{item.price}</span>}
+                {item.change && <span className={`ma-panel-item-change ${item.changeVal >= 0 ? 'positive' : 'negative'}`}>
+                  {item.changeVal >= 0 ? '▲' : '▼'} {item.change}
+                </span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return <div style={{ padding: '1rem', color: '#6b7280' }}>No data available</div>;
+}
+
+function CategoryPanel({ category, onClose }) {
+  const [minimized, setMinimized] = useState(false);
+  const layerConfig = LAYER_CONFIG[category];
+  const [activeTab, setActiveTab] = useState(layerConfig?.tabs?.[0] || '');
+
+  if (!layerConfig) return null;
+
+  const tabData = layerConfig.dataSource[activeTab];
+
   if (minimized) {
     return (
       <div className="ma-panel ma-panel-minimized" style={{ cursor: 'pointer' }} onClick={() => setMinimized(false)}>
-        <span className="ma-panel-dot" /> {data.title}
+        <span className="ma-panel-dot" /> {layerConfig.title}
       </div>
     );
   }
@@ -118,42 +370,20 @@ function CategoryPanel({ category, onClose }) {
   return (
     <div className="ma-panel">
       <div className="ma-panel-header">
-        <span><span className="ma-panel-dot" /> {data.title}</span>
+        <span><span className="ma-panel-dot" /> {layerConfig.title}</span>
         <div className="ma-panel-actions">
           <button type="button" onClick={() => setMinimized(true)} title="Minimize">—</button>
           <button type="button" onClick={onClose} title="Close">✕</button>
         </div>
       </div>
       <div className="ma-panel-tabs">
-        {data.tabs.map((tab) => (
+        {layerConfig.tabs.map((tab) => (
           <button key={tab} type="button" className={`ma-panel-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
             {tab.toUpperCase()}
           </button>
         ))}
       </div>
-      <div className="ma-panel-list">
-        {data.items.map((item) => (
-          <div key={item.id} className={`ma-panel-item ${expanded === item.id ? 'expanded' : ''}`} onClick={() => setExpanded(expanded === item.id ? null : item.id)}>
-            <div className="ma-panel-item-row">
-              <span className="ma-panel-item-dot" />
-              <div className="ma-panel-item-info">
-                <span className="ma-panel-item-name">{item.name}</span>
-                <span className="ma-panel-item-region">{item.region}</span>
-              </div>
-              <div className="ma-panel-item-data">
-                <span className="ma-panel-item-price">{item.price}</span>
-                <span className={`ma-panel-item-change ${item.change.startsWith('+') || item.change === 'Hold' ? 'positive' : item.change.startsWith('-') ? 'negative' : ''}`}>{item.change}</span>
-              </div>
-              <span className="ma-panel-item-status">{item.status}</span>
-            </div>
-            {expanded === item.id && (
-              <div className="ma-panel-item-detail">
-                <p>{item.summary}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      {renderTabContent(activeTab, category, tabData)}
     </div>
   );
 }
@@ -424,6 +654,7 @@ function ChainView() {
 export default function MarketAnalysisPage() {
   const [view, setView] = useState('map');
   const [activeCategory, setActiveCategory] = useState(null);
+  const [activeTab, setActiveTab] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedDot, setSelectedDot] = useState(null);
@@ -452,9 +683,17 @@ export default function MarketAnalysisPage() {
   };
 
   const toggleCategory = (cat) => {
-    setActiveCategory((prev) => (prev === cat ? null : cat));
+    const newCat = activeCategory === cat ? null : cat;
+    setActiveCategory(newCat);
+    // Update map styling
+    if (mapRef.current) {
+      mapRef.current.setActiveLayers && mapRef.current.setActiveLayers(newCat);
+    }
+    // Update active tab when switching layers
+    if (newCat && LAYER_CONFIG[newCat]) {
+      setActiveTab(LAYER_CONFIG[newCat].tabs[0]);
+    }
   };
-
 
   useEffect(() => {
     const onKeyDown = (e) => { if (e.key === 'Escape') setSelectedDot(null); };
@@ -512,6 +751,8 @@ export default function MarketAnalysisPage() {
               lineColor="#10b981"
               selectedPanelId={selectedDot}
               onDotClick={handleCenterClick}
+              activeLayer={activeCategory}
+              activeLayerTab={activeTab}
               hideControls
             />
           </div>

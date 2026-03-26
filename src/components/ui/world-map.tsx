@@ -65,10 +65,14 @@ type WorldMapProps = {
   selectedPanelId?: string | null;
   /** Hide built-in +/−/reset (use external controls via ref). */
   hideControls?: boolean;
+  /** Active layer for map styling */
+  activeLayer?: string | null;
+  /** Active tab within the layer */
+  activeLayerTab?: string | null;
 };
 
 export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
-  { lineColor = "#10b981", onDotClick, selectedPanelId = null, hideControls = false },
+  { lineColor = "#10b981", onDotClick, selectedPanelId = null, hideControls = false, activeLayer = null, activeLayerTab = null },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -263,6 +267,74 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     onDotClick?.(center);
   };
 
+  // Determine dot color based on active layer
+  const getDotColor = (center: FinancialCenter): string => {
+    // If no active layer, use default lineColor (green)
+    if (!activeLayer) return lineColor;
+
+    // Central Banks layer: gold if recent/upcoming decision
+    if (activeLayer === 'central-banks') {
+      const centralBanks = [
+        { cities: ['washington-dc', 'new-york'], name: 'Federal Reserve' },
+        { cities: ['frankfurt'], name: 'ECB' },
+        { cities: ['london'], name: 'Bank of England' },
+        { cities: ['tokyo'], name: 'Bank of Japan' },
+        // Add more mappings as needed
+      ];
+      // For now, return gold for selected bank locations
+      if (center.name === 'Frankfurt') return '#D4AF37'; // ECB gold
+      if (center.name === 'New York') return '#D4AF37'; // Federal Reserve gold  
+      if (center.name === 'London') return '#D4AF37'; // BOE gold
+      if (center.name === 'Tokyo') return '#D4AF37'; // BOJ gold
+      return '#4b5563'; // Gray for inactive
+    }
+
+    // Indices layer: green if up, red if down
+    if (activeLayer === 'indices') {
+      // Map city names to their index performance
+      const indexPerformance: Record<string, number> = {
+        'New York': 0.34, // S&P 500 up
+        'London': -0.17, // FTSE down
+        'Frankfurt': 0.52, // DAX up
+        'Tokyo': 0.95, // Nikkei up
+        'Hong Kong': -0.68, // Hang Seng down
+        'Shanghai': -0.42, // Shanghai Composite down
+        'Singapore': -0.05, // STI down slight
+        'Mumbai': 1.15, // Nifty 50 up
+        'Sydney': 0.45, // ASX up
+        'São Paulo': 1.20, // Bovespa up
+        'Toronto': -0.12, // TSX down
+        'Mexico City': -0.45, // IPC down
+        'Buenos Aires': 2.10, // Merval up
+        'Santiago': -0.15, // SSE down
+        'Moscow': -1.50, // MOEX down
+        'Paris': 0.28, // CAC 40 up
+        'Madrid': 0.15, // IBEX up (mapped from generic city)
+        'Milan': -0.22, // FTSE MIB down (mapped)
+      };
+      const perf = indexPerformance[center.name];
+      if (perf === undefined) return lineColor; // Default if not mapped
+      return perf >= 0 ? '#10b981' : '#ef4444'; // Green up, red down
+    }
+
+    // Commodities layer: keep default
+    if (activeLayer === 'commodities') {
+      return lineColor;
+    }
+
+    // Currencies layer: use default  
+    if (activeLayer === 'currencies') {
+      return lineColor;
+    }
+
+    // Markets layer: use default
+    if (activeLayer === 'markets') {
+      return lineColor;
+    }
+
+    return lineColor;
+  };
+
   return (
     <div
       ref={containerRef}
@@ -358,13 +430,13 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                 onClick={(e) => handleDotClick(center, e)}
               >
                 {/* Pulse ring 1 — expands and fades */}
-                <circle cx={point.x} cy={point.y} r="0.6" fill="none" stroke={lineColor} strokeWidth="0.15" opacity="0">
+                <circle cx={point.x} cy={point.y} r="0.6" fill="none" stroke={getDotColor(center)} strokeWidth="0.15" opacity="0">
                   <animate attributeName="r" from="0.6" to="3" dur="2.5s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.6" to="0" dur="2.5s" repeatCount="indefinite" />
                   <animate attributeName="stroke-width" from="0.15" to="0.02" dur="2.5s" repeatCount="indefinite" />
                 </circle>
                 {/* Pulse ring 2 — offset by 1.25s for continuous effect */}
-                <circle cx={point.x} cy={point.y} r="0.6" fill="none" stroke={lineColor} strokeWidth="0.15" opacity="0">
+                <circle cx={point.x} cy={point.y} r="0.6" fill="none" stroke={getDotColor(center)} strokeWidth="0.15" opacity="0">
                   <animate attributeName="r" from="0.6" to="3" dur="2.5s" begin="1.25s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.6" to="0" dur="2.5s" begin="1.25s" repeatCount="indefinite" />
                   <animate attributeName="stroke-width" from="0.15" to="0.02" dur="2.5s" begin="1.25s" repeatCount="indefinite" />
@@ -375,7 +447,7 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                   cy={point.y}
                   r="1.2"
                   fill="none"
-                  stroke={lineColor}
+                  stroke={getDotColor(center)}
                   strokeWidth="0.08"
                   opacity="0.15"
                 />
@@ -384,8 +456,8 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                   cx={point.x}
                   cy={point.y}
                   r={isHovered || isSelected ? 0.9 : 0.6}
-                  fill={isSelected ? "#fff" : lineColor}
-                  stroke={isSelected ? lineColor : "none"}
+                  fill={isSelected ? "#fff" : getDotColor(center)}
+                  stroke={isSelected ? getDotColor(center) : "none"}
                   strokeWidth={isSelected ? 0.2 : 0}
                 />
 
