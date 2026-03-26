@@ -41,17 +41,78 @@ const LATEST_TRADES = [
 const PERF_WINDOWS = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y'];
 const PERF_LABELS = { '1W': '1 Week', '1M': '1 Month', '3M': '3 Months', '6M': '6 Months', '1Y': '1 Year', '3Y': '3 Years', '5Y': '5 Years', '10Y': '10 Years' };
 
-/** X-axis time context labels for the selected return window (shown along chart baseline) */
-const PERF_X_AXIS_LABELS = {
-  '1W': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  '1M': ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-  '3M': ['Jan', 'Feb', 'Mar'],
-  '6M': ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  '1Y': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  '3Y': ['2024', '2025', '2026'],
-  '5Y': ['2022', '2023', '2024', '2025', '2026'],
-  '10Y': ['2017', '2019', '2021', '2023', '2025', '2026'],
-};
+/** Dynamic X-axis labels from today's date (no hardcoded weekday strings) */
+function getPerfXAxisLabels(period) {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+
+  if (period === '1W') {
+    const out = [];
+    for (let i = 6; i >= 0; i--) {
+      const dt = new Date(now);
+      dt.setDate(dt.getDate() - i);
+      out.push(dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
+    }
+    return out;
+  }
+
+  if (period === '1M') {
+    const out = [];
+    const offsets = [28, 21, 14, 7, 0];
+    for (const off of offsets) {
+      const dt = new Date(now);
+      dt.setDate(dt.getDate() - off);
+      out.push(dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    }
+    return out;
+  }
+
+  if (period === '3M') {
+    const out = [];
+    for (let i = 2; i >= 0; i--) {
+      const dt = new Date(y, m - i, 1);
+      out.push(dt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+    }
+    return out;
+  }
+
+  if (period === '6M') {
+    const out = [];
+    for (let i = 5; i >= 0; i--) {
+      const dt = new Date(y, m - i, 1);
+      out.push(dt.toLocaleDateString('en-US', { month: 'short' }));
+    }
+    return out;
+  }
+
+  if (period === '1Y') {
+    const out = [];
+    for (let i = 11; i >= 0; i--) {
+      const dt = new Date(y, m - i, 1);
+      out.push(dt.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+    }
+    return out;
+  }
+
+  if (period === '3Y') {
+    return [y - 2, y - 1, y].map(String);
+  }
+
+  if (period === '5Y') {
+    return [y - 4, y - 3, y - 2, y - 1, y].map(String);
+  }
+
+  if (period === '10Y') {
+    const start = y - 9;
+    const yrs = [];
+    for (let yy = start; yy <= y; yy += 2) yrs.push(String(yy));
+    if (yrs[yrs.length - 1] !== String(y)) yrs.push(String(y));
+    return yrs;
+  }
+
+  return [];
+}
 
 const POLITICIAN_PERF = [
   { name: 'Nancy Pelosi', initials: 'NP', party: 'Democrat', chamber: 'House', state: 'CA',
@@ -91,7 +152,7 @@ const POLITICIAN_PERF = [
 const PC_W = 780;
 const PC_H = Math.round(392 * 0.7); /* was 392; −30% height */
 const PC_PAD = { top: 50, right: 40, bottom: 62, left: 60 };
-const PC_DOT_R = 6;
+const PC_DOT_R = 16;
 
 /** Cubic smooth path through points (similar to Chart.js tension) */
 function buildSmoothPath(points) {
@@ -130,7 +191,7 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
   const yMin = Math.min(Math.floor((Math.min(...returns) - 5) / 10) * 10, 0);
   const innerW = PC_W - PC_PAD.left - PC_PAD.right;
   const innerH = PC_H - PC_PAD.top - PC_PAD.bottom;
-  const xAxisLabels = PERF_X_AXIS_LABELS[tw] || [];
+  const xAxisLabels = useMemo(() => getPerfXAxisLabels(tw), [tw]);
 
   const getX = (i) => PC_PAD.left + (i / (sorted.length - 1)) * innerW;
   const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
@@ -157,6 +218,13 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
             <stop offset="0%" stopColor="#10b981" stopOpacity="0.1" />
             <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
           </linearGradient>
+          <linearGradient id="itcMetalDot" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#2a2a3e" />
+            <stop offset="100%" stopColor="#1a1a2e" />
+          </linearGradient>
+          <filter id="itcMetalDotShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.35" />
+          </filter>
         </defs>
 
         {yTicks.map((t) => (
@@ -201,12 +269,12 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
           const cx = getX(i);
           const cy = getY(p.returns[tw]);
           const isHov = hoveredId === i;
-          const bgColor = p.party === 'Democrat' ? '#2563eb' : '#dc2626';
+          const rDot = isHov ? PC_DOT_R + 1 : PC_DOT_R;
 
           return (
             <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }} style={{ cursor: 'pointer' }}>
-              <circle cx={cx} cy={cy} r={isHov ? PC_DOT_R + 1 : PC_DOT_R} fill={bgColor} stroke="none" strokeWidth={0} />
-              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="7" fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
+              <circle cx={cx} cy={cy} r={rDot} fill="url(#itcMetalDot)" filter="url(#itcMetalDotShadow)" stroke="none" strokeWidth={0} />
+              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="10" fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
               <text x={cx} y={cy + PC_DOT_R + 10} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize="9" fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
                 {p.returns[tw] >= 0 ? '+' : ''}{p.returns[tw]}%
               </text>

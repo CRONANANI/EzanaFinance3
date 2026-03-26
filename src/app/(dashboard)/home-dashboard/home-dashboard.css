@@ -496,12 +496,28 @@
 }
 
 /* ── Total Profits (Donut) ── */
-.db-profits-body {
+.db-profits-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  min-height: 0;
+}
+
+.db-profits-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   padding: 1.25rem;
   gap: 1rem;
+  min-height: 0;
+}
+
+.db-profits-chart-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
 }
 
 .db-donut-wrap {
@@ -553,6 +569,12 @@
 
 
 /* ── Sector Distribution ── */
+.db-sector-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .db-sector-bar-mini {
   display: flex;
   width: 80px;
@@ -568,6 +590,15 @@
 }
 
 .db-sector-list { padding: 0.5rem 0; }
+
+.db-sector-list--compact {
+  padding: 0.25rem 0 0.35rem;
+  flex: 1;
+}
+
+.db-sector-list--compact .db-sector-item {
+  padding: 0.45rem 1rem;
+}
 
 .db-sector-item {
   display: flex;

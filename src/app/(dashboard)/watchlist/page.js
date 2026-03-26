@@ -3,11 +3,14 @@
 import { useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { useChecklist } from '@/hooks/useChecklist';
+import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
+import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './watchlist.css';
 
 /* ── Helpers ── */
@@ -45,14 +48,50 @@ const TOP_STRIP = [
   { id: 'inst-point72',     type: 'institution', name: 'Point72',              ticker: 'PT72',    price: 34500000000, change: 690000000, pct: 2.04, topAssets: ['MSFT','GOOGL','AMZN','UNH'], revenue: '$34.5B AUM' },
 ];
 
-/* ── Commodities ── */
+/* ── Commodities & futures strip ── */
 const COMMODITIES = [
-  { name: 'Gold', price: 2648.50, change: 18.25, pct: 0.69 },
-  { name: 'Silver', price: 31.24, change: 0.82, pct: 2.70 },
+  { name: 'Gold', price: 2648.5, change: 18.25, pct: 0.69 },
+  { name: 'Silver', price: 31.24, change: 0.82, pct: 2.7 },
+  { name: 'Platinum', price: 1024.3, change: 12.4, pct: 1.23 },
+  { name: 'Palladium', price: 1088.0, change: -9.2, pct: -0.84 },
   { name: 'Copper', price: 4.38, change: -0.05, pct: -1.13 },
-  { name: 'Oil (WTI)', price: 78.91, change: 1.24, pct: 1.60 },
+  { name: 'Oil (WTI)', price: 78.91, change: 1.24, pct: 1.6 },
   { name: 'Nat Gas', price: 3.42, change: -0.08, pct: -2.28 },
+  { name: 'Bitcoin', price: 98240.0, change: 1240.0, pct: 1.28 },
+  { name: 'Ethereum', price: 3456.0, change: 42.3, pct: 1.24 },
+  { name: 'Solana', price: 188.4, change: 3.12, pct: 1.68 },
+  { name: 'Wheat', price: 548.25, change: -4.5, pct: -0.81 },
+  { name: 'Corn', price: 442.5, change: 2.25, pct: 0.51 },
 ];
+
+/** Legendary investors & friends holding this ticker — demo (chart initials) */
+const HOLDERS_BY_TICKER = {
+  AAPL: [
+    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson' },
+    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim' },
+    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park' },
+    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen' },
+    { initials: 'WB', name: 'Warren Buffett', userId: 'demo-warren-buffett' },
+    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio' },
+    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood' },
+    { initials: 'PB', name: 'Peter Lynch', userId: 'demo-peter-lynch' },
+    { initials: 'JM', name: 'Joel Greenblatt', userId: 'demo-joel-greenblatt' },
+    { initials: 'CM', name: 'Charlie Munger', userId: 'demo-charlie-munger' },
+  ],
+  NVDA: [
+    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson' },
+    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim' },
+    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen' },
+    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood' },
+    { initials: 'JM', name: 'Jensen Huang', userId: 'demo-jensen-huang' },
+  ],
+  MSFT: [
+    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson' },
+    { initials: 'WB', name: 'Bill Gates', userId: 'demo-bill-gates' },
+    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio' },
+    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park' },
+  ],
+};
 
 /* ── Full sidebar watchlist (superset — user's saved items) ── */
 const WATCHLIST_ITEMS = [
@@ -151,6 +190,13 @@ export default function WatchlistPage() {
 
   const isUp = selected.change >= 0;
 
+  const holderList = useMemo(() => {
+    if (selected?.type !== 'stock' || !selected.ticker) return [];
+    return (HOLDERS_BY_TICKER[selected.ticker] || []).slice(0, 10);
+  }, [selected]);
+
+  const watchlistCourses = useMemo(() => getCoursesForWatchlistPreview(4), []);
+
   return (
     <div className="wl-page dashboard-page-inset">
 
@@ -217,27 +263,62 @@ export default function WatchlistPage() {
             )}
           </div>
 
-          <div className="wl-price-row">
-            <div>
-              <div className="wl-big-price">{fmtPrice(selected.price)}</div>
-              <div className="wl-price-meta">{selected.name} · {selected.ticker}</div>
-              </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-            <div className={`wl-big-chg ${isUp?'up':'dn'}`}>
-              <i className={`bi ${isUp?'bi-arrow-up-right':'bi-arrow-down-right'}`}/>
-              {fmtPct(selected.pct)}
+          <div className={`wl-price-row ${selected.type === 'stock' ? 'wl-price-row--stock' : ''}`}>
+            <div className="wl-price-title-block">
+              {selected.type === 'stock' && (
+                <div className="wl-ticker-name-line">
+                  <span className="wl-ticker-strong">{selected.ticker}</span>
+                  <span className="wl-ticker-sep">—</span>
+                  <span className="wl-co-full-name">{selected.name}</span>
+                </div>
+              )}
+              {selected.type !== 'stock' && (
+                <>
+                  <div className="wl-big-price">{fmtPrice(selected.price)}</div>
+                  <div className="wl-price-meta">{selected.name} · {selected.ticker}</div>
+                </>
+              )}
             </div>
-            {selected.type === 'stock' && (
-              <button
-                type="button"
-                className="wl-bc-link"
-                style={{ padding: '4px 10px', fontSize: 12 }}
-                onClick={() => completeTask('watchlist_3')}
-                data-task-target="watchlist-price-alert"
-              >
-                <i className="bi bi-bell"/> Set price alert
-              </button>
-            )}
+            <div className="wl-price-right-cluster">
+              {selected.type === 'stock' && (
+                <div className="wl-price-num-block">
+                  <div className="wl-big-price">{fmtPrice(selected.price)}</div>
+                  <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
+                    <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
+                    {fmtPct(selected.pct)}
+                  </div>
+                </div>
+              )}
+              {selected.type !== 'stock' && (
+                <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
+                  <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
+                  {fmtPct(selected.pct)}
+                </div>
+              )}
+              {selected.type === 'stock' && holderList.length > 0 && (
+                <div className="wl-holder-bubbles" aria-label="Investors and friends holding this stock">
+                  {holderList.map((h) => (
+                    <Link
+                      key={h.userId + h.initials}
+                      href={`/community/profile/${h.userId}`}
+                      className="wl-holder-chip"
+                      title={h.name}
+                    >
+                      {h.initials}
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {selected.type === 'stock' && (
+                <button
+                  type="button"
+                  className="wl-bc-link wl-price-alert-btn"
+                  onClick={() => completeTask('watchlist_3')}
+                  data-task-target="watchlist-price-alert"
+                >
+                  <i className="bi bi-bell" /> Set price alert
+                </button>
+              )}
             </div>
           </div>
 
@@ -333,6 +414,13 @@ export default function WatchlistPage() {
           <button type="button" className="wl-add" data-task-target="watchlist-add-button" onClick={() => { completeTask('watchlist_1'); }}><i className="bi bi-plus-lg"/> Add to Watchlist</button>
         </aside>
       </div>
+
+      <CoursePreviewSection
+        title="Recommended Courses"
+        subtitle="Stock fundamentals, portfolio construction & core skills"
+        courses={watchlistCourses}
+        viewAllHref="/learning-center?track=stocks"
+      />
     </div>
   );
 }

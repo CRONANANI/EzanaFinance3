@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
@@ -66,11 +66,20 @@ const WATCHLIST = [
   { ticker: 'SONY', name: 'Sony Group Corp.', price: 954.7, change: 3.12 },
 ];
 
-const SECTOR_DATA = [
+const SECTOR_DATA_DEFAULT = [
   { name: 'Energy', pct: 45, value: 38096.0, color: '#10b981' },
   { name: 'Technology', pct: 20, value: 18404.0, color: '#3b82f6' },
   { name: 'Telecom', pct: 25, value: 30200.0, color: '#a78bfa' },
   { name: 'Healthcare', pct: 10, value: 9202.0, color: '#fbbf24' },
+];
+
+/** Demo account: extra sector so the card reads full */
+const SECTOR_DATA_DEMO = [
+  { name: 'Energy', pct: 40, value: 33800.0, color: '#10b981' },
+  { name: 'Technology', pct: 20, value: 18404.0, color: '#3b82f6' },
+  { name: 'Telecom', pct: 18, value: 21744.0, color: '#a78bfa' },
+  { name: 'Healthcare', pct: 10, value: 9202.0, color: '#fbbf24' },
+  { name: 'Manufacturing', pct: 12, value: 10140.0, color: '#ec4899' },
 ];
 
 const PROFIT_BREAKDOWN = [
@@ -152,6 +161,11 @@ export default function HomeDashboardPage() {
     || 'Investor';
 
   const greeting = getGreeting();
+
+  const sectorRows = useMemo(() => {
+    if (user?.email === 'axmabeto@gmail.com') return SECTOR_DATA_DEMO;
+    return SECTOR_DATA_DEFAULT;
+  }, [user?.email]);
 
   return (
     <div className="db-page dashboard-page-inset">
@@ -311,13 +325,15 @@ export default function HomeDashboardPage() {
             <button className="db-icon-btn"><i className="bi bi-box-arrow-up-right" /></button>
           </div>
           <div className="db-profits-body">
-            <DonutChart
-              segments={PROFIT_BREAKDOWN}
-              size={150}
-              strokeWidth={20}
-              centerValue="$4,030"
-              centerLabel="-$150.20 from last month"
-            />
+            <div className="db-profits-chart-wrap">
+              <DonutChart
+                segments={PROFIT_BREAKDOWN}
+                size={150}
+                strokeWidth={20}
+                centerValue="$4,030"
+                centerLabel="-$150.20 from last month"
+              />
+            </div>
             <div className="db-profits-legend">
               {PROFIT_BREAKDOWN.map((p) => (
                 <div key={p.label} className="db-profits-legend-item">
@@ -335,13 +351,13 @@ export default function HomeDashboardPage() {
           <div className="db-card-header">
             <h3>Sector Distribution</h3>
             <div className="db-sector-bar-mini">
-              {SECTOR_DATA.map((s) => (
+              {sectorRows.map((s) => (
                 <div key={s.name} className="db-sector-bar-seg" style={{ width: `${s.pct}%`, background: s.color }} />
               ))}
             </div>
           </div>
-          <div className="db-sector-list">
-            {SECTOR_DATA.map((s) => (
+          <div className="db-sector-list db-sector-list--compact">
+            {sectorRows.map((s) => (
               <div key={s.name} className="db-sector-item">
                 <div className="db-sector-item-left">
                   <span className="db-sector-dot" style={{ background: s.color }} />

@@ -254,3 +254,38 @@ export function countCoursesInLevel(track, level) {
 export function getTotalCourses() {
   return TOTAL_GRAND;
 }
+
+/** Stocks fundamentals & portfolio — basic + intermediate */
+export function getCoursesForWatchlistPreview(limit = 4) {
+  return ALL_COURSES.filter(
+    (c) => c.track === 'stocks' && (c.level === 'basic' || c.level === 'intermediate')
+  ).slice(0, limit);
+}
+
+/** Risk track + advanced quant / algorithmic topics from stocks */
+export function getCoursesForQuantsPreview(limit = 4) {
+  const risk = getCoursesByTrack('risk').slice(0, 2);
+  const quantish = ALL_COURSES.filter(
+    (c) =>
+      c.track === 'stocks' &&
+      (c.level === 'advanced' || c.level === 'expert') &&
+      /quantitative|algorithmic|factor/i.test(c.title)
+  );
+  return [...risk, ...quantish].slice(0, limit);
+}
+
+/** One course per track, rotating rounds — community “level up” strip */
+export function getMixedCoursesFromAllTracks(limit = 8) {
+  const trackOrder = ['stocks', 'crypto', 'betting', 'commodities', 'risk'];
+  const out = [];
+  let round = 0;
+  while (out.length < limit) {
+    for (const t of trackOrder) {
+      const list = getCoursesByTrack(t);
+      if (list[round]) out.push(list[round]);
+      if (out.length >= limit) break;
+    }
+    round++;
+  }
+  return out;
+}

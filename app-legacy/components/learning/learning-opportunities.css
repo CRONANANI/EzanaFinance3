@@ -101,6 +101,26 @@
   z-index: 1;
 }
 
+/* Horizontal scroll row (dashboard course previews) */
+.courses-grid--scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1.25rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.courses-grid--scroll .course-card {
+  flex: 0 0 min(280px, 88vw);
+  max-width: 300px;
+}
+
+.course-card--link {
+  text-decoration: none;
+  color: inherit;
+}
+
 .course-card {
   background: var(--card);
   border: 1px solid var(--border);

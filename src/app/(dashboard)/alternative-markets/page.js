@@ -18,7 +18,8 @@ import {
   COMM_NEWS,
 } from '@/lib/alternative-markets-mock';
 import { ResearchSparkline } from '@/components/research/ResearchSparkline';
-import { getCoursesByTrack, getLevelLabel } from '@/lib/learning-curriculum';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { getCoursesByTrack } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -412,57 +413,16 @@ export default function AlternativeMarketsPage() {
         </div>
       </div>
 
-      <section className="learning-opportunities">
-        <div className="learning-header">
-          <div className="learning-title-area">
-            <div className="learning-icon">
-              <i className="bi bi-mortarboard-fill" />
-            </div>
-            <div className="learning-title-text">
-              <h3>{view === 'crypto' ? 'Cryptocurrency & Digital Assets' : 'Commodities'}</h3>
-              <p>
-                {view === 'crypto'
-                  ? 'Courses from Track 2 — Crypto & digital assets'
-                  : 'Courses from Track 4 — Commodity markets'}
-              </p>
-            </div>
-          </div>
-          <Link href="/learning-center" className="view-all-btn">
-            View all courses
-          </Link>
-        </div>
-        <div className="courses-grid">
-          {(view === 'crypto' ? cryptoCourses : commodityCourses).map((c) => {
-            const levelUi = c.level === 'basic' ? 'beginner' : c.level === 'expert' ? 'advanced' : c.level;
-            return (
-            <div key={c.id} className="course-card">
-              <div className="course-header">
-                <span className="course-type">Course</span>
-                <span className="course-duration">
-                  <i className="bi bi-clock" /> {c.duration_minutes} min
-                </span>
-              </div>
-              <h4 className="course-title">{c.title}</h4>
-              <p className="course-description">{c.description}</p>
-              <div className="course-meta">
-                <div className="meta-item">
-                  <i className="bi bi-book" /> Quiz included
-                </div>
-                <div className="meta-item">
-                  <i className="bi bi-layers" /> {getLevelLabel(c.level)}
-                </div>
-              </div>
-              <div className="course-footer">
-                <span className={`course-level ${levelUi}`}>{getLevelLabel(c.level)}</span>
-                <Link href={`/learning-center/course/${c.id}`} className="enroll-btn" style={{ textAlign: 'center' }}>
-                  Open course
-                </Link>
-              </div>
-            </div>
-            );
-          })}
-        </div>
-      </section>
+      <CoursePreviewSection
+        title="Recommended Courses"
+        subtitle={
+          view === 'crypto'
+            ? 'Track 2 — Cryptocurrency & digital assets'
+            : 'Track 4 — Commodity markets'
+        }
+        courses={view === 'crypto' ? cryptoCourses : commodityCourses}
+        viewAllHref={view === 'crypto' ? '/learning-center?track=crypto' : '/learning-center?track=commodities'}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import '@/app/(dashboard)/community/community.css';
+import '../../../app-legacy/components/learning/learning-opportunities.css';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -10,6 +11,8 @@ import { LeaderboardModal } from '@/components/community/LeaderboardModal';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LEGENDARY_INVESTOR_LIST } from '@/config/legendaryInvestors';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { getMixedCoursesFromAllTracks } from '@/lib/learning-curriculum';
 
 const FILTER_TABS = [
   { key: 'all', label: 'All' },
@@ -356,6 +359,8 @@ export default function CommunityPageClient() {
       })),
     []
   );
+
+  const communityCourses = useMemo(() => getMixedCoursesFromAllTracks(8), []);
 
   return (
     <div className="comm-page dashboard-page-inset db-page">
@@ -954,6 +959,13 @@ export default function CommunityPageClient() {
           </div>
         </div>
       </div>
+
+      <CoursePreviewSection
+        title="Recommended Courses"
+        subtitle="Level up your skills — picks from every track"
+        courses={communityCourses}
+        viewAllHref="/learning-center"
+      />
     </div>
   );
 }

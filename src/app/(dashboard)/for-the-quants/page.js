@@ -14,12 +14,15 @@ import {
   INDICATOR_TABS,
   INDICATOR_CARDS,
 } from '@/lib/for-the-quants-mock-data';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { getCoursesForQuantsPreview } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
+import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './for-the-quants.css';
 
 function generatePoints(seed, n, min, max) {
@@ -75,6 +78,7 @@ function VolumeBars() {
 
 export default function ForTheQuantsPage() {
   const router = useRouter();
+  const quantsCourses = useMemo(() => getCoursesForQuantsPreview(4), []);
   const [builderTab, setBuilderTab] = useState('mine');
   const [pmQuery, setPmQuery] = useState('');
   const [leaderPeriod, setLeaderPeriod] = useState('month');
@@ -434,6 +438,13 @@ export default function ForTheQuantsPage() {
           </div>
         </div>
       </div>
+
+      <CoursePreviewSection
+        title="Recommended Courses"
+        subtitle="Risk management, quantitative analysis & algorithmic topics"
+        courses={quantsCourses}
+        viewAllHref="/learning-center"
+      />
     </div>
   );
 }

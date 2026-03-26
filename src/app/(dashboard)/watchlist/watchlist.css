@@ -108,7 +108,9 @@
 }
 .wl-comm-strip::-webkit-scrollbar { display: none; }
 .wl-comm {
-  flex: 0 0 150px; padding: .45rem .75rem;
+  flex: 1 1 0;
+  min-width: 92px;
+  padding: .45rem .65rem;
   background: rgba(16,185,129,.03); border: 1px solid rgba(16,185,129,.06);
   border-radius: 7px; display: flex; flex-direction: column; gap: 1px;
 }
@@ -149,6 +151,67 @@
 
 /* Price row */
 .wl-price-row { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
+.wl-price-row--stock {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.wl-price-title-block { min-width: 0; flex: 1; }
+.wl-ticker-name-line {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: .35rem .5rem;
+  font-size: .9375rem; font-weight: 700; color: var(--foreground,#f0f6fc);
+  line-height: 1.25;
+}
+.wl-ticker-strong { color: #10b981; font-weight: 800; letter-spacing: .02em; }
+.wl-ticker-sep { color: var(--muted-foreground,#6b7280); font-weight: 600; }
+.wl-co-full-name { font-weight: 600; color: #e2e8f0; }
+
+.wl-price-right-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: .65rem .75rem;
+}
+.wl-price-num-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.wl-holder-bubbles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 28px));
+  gap: 5px;
+  max-width: 72px;
+  align-content: start;
+}
+.wl-holder-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .55rem;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+  box-shadow: 0 2px 6px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.08);
+  border: none;
+  transition: transform .15s, box-shadow .15s;
+}
+.wl-holder-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(16,185,129,.25);
+}
+.wl-price-alert-btn {
+  align-self: center;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
 .wl-big-price { font-size: 2.125rem; font-weight: 800; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; letter-spacing: -.03em; line-height: 1.1; }
 .wl-price-meta { font-size: .75rem; color: var(--muted-foreground,#6b7280); margin-top: 2px; }
 .wl-big-chg { font-size: 1.0625rem; font-weight: 700; display: flex; align-items: center; gap: .3rem; font-feature-settings: 'tnum' 1; }

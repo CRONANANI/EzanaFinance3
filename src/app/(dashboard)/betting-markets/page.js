@@ -1,1147 +1,579 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useMemo, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
-import { useChecklist } from '@/hooks/useChecklist';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { getCoursesByTrack } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
-import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
-import '../../../../app-legacy/pages/betting-markets.css';
+import '../../../../app-legacy/components/learning/learning-opportunities.css';
+import './betting-markets.css';
 
-/* ── Static data (sports) ── */
-const SPORTS_ODDS = [
+const STAT_CARDS = [
   {
-    sport: 'NBA',
-    icon: 'bi-dribbble',
-    games: [
-      { time: '7:30 PM', home: 'Boston Celtics', away: 'Milwaukee Bucks', spread: '-4.5', total: '224.5', ml: '-185' },
-      { time: '8:00 PM', home: 'Denver Nuggets', away: 'LA Lakers', spread: '-6.0', total: '218.0', ml: '-240' },
-      { time: '10:00 PM', home: 'Golden State Warriors', away: 'Phoenix Suns', spread: '-2.5', total: '229.0', ml: '-135' },
-    ],
+    id: 'live',
+    icon: '🏈',
+    label: 'Live Events',
+    value: '24 today',
+    sub: 'NFL NBA NHL',
   },
   {
-    sport: 'NHL',
-    icon: 'bi-trophy',
-    games: [
-      { time: '7:00 PM', home: 'NY Rangers', away: 'Carolina Hurricanes', spread: '-1.5', total: '5.5', ml: '-130' },
-      { time: '8:00 PM', home: 'Dallas Stars', away: 'Colorado Avalanche', spread: 'PK', total: '6.0', ml: '+105' },
-    ],
+    id: 'vol',
+    icon: '💰',
+    label: 'Total Volume',
+    value: '$4.2M today',
+    sub: '▲ +12% vs yesterday',
+    subTone: 'up',
   },
   {
-    sport: 'MLB',
-    icon: 'bi-circle',
-    games: [
-      { time: '1:05 PM', home: 'NY Yankees', away: 'Boston Red Sox', spread: '-1.5', total: '8.5', ml: '-150' },
-      { time: '4:10 PM', home: 'LA Dodgers', away: 'SF Giants', spread: '-1.5', total: '7.5', ml: '-175' },
-      { time: '7:10 PM', home: 'Houston Astros', away: 'Texas Rangers', spread: '-1.5', total: '8.0', ml: '-140' },
-    ],
+    id: 'win',
+    icon: '🎯',
+    label: 'Your Win Rate',
+    value: '68% (34/50)',
+    sub: '▲ from 62%',
+    subTone: 'up',
   },
   {
-    sport: 'Soccer — Premier League',
-    icon: 'bi-globe',
-    games: [
-      { time: 'SAT 10:00', home: 'Arsenal', away: 'Manchester City', spread: '+0.5', total: '2.5', ml: '+155' },
-      { time: 'SAT 12:30', home: 'Liverpool', away: 'Chelsea', spread: '-1.0', total: '3.0', ml: '-120' },
-    ],
+    id: 'ev',
+    icon: '📊',
+    label: 'EV Opportunities',
+    value: '7 found today',
+    sub: '3 high confidence',
   },
 ];
 
-const LINE_MOVEMENTS = [
-  { game: 'Celtics vs Bucks', type: 'NBA', openSpread: '-3.0', currentSpread: '-4.5', openTotal: '226.0', currentTotal: '224.5', direction: 'up', sharp: true },
-  { game: 'Nuggets vs Lakers', type: 'NBA', openSpread: '-5.0', currentSpread: '-6.0', openTotal: '220.0', currentTotal: '218.0', direction: 'up', sharp: false },
-  { game: 'Warriors vs Suns', type: 'NBA', openSpread: '-1.0', currentSpread: '-2.5', openTotal: '231.0', currentTotal: '229.0', direction: 'up', sharp: true },
-  { game: 'Rangers vs Hurricanes', type: 'NHL', openSpread: '-1.5', currentSpread: '-1.5', openTotal: '6.0', currentTotal: '5.5', direction: 'down', sharp: false },
-  { game: 'Yankees vs Red Sox', type: 'MLB', openSpread: '-1.5', currentSpread: '-1.5', openTotal: '9.0', currentTotal: '8.5', direction: 'down', sharp: true },
-  { game: 'Dodgers vs Giants', type: 'MLB', openSpread: '-1.5', currentSpread: '-1.5', openTotal: '8.0', currentTotal: '7.5', direction: 'down', sharp: false },
-  { game: 'Arsenal vs Man City', type: 'Soccer', openSpread: 'PK', currentSpread: '+0.5', openTotal: '2.5', currentTotal: '2.5', direction: 'down', sharp: true },
-];
+const SPORT_TABS = ['NFL', 'NBA', 'NHL', 'MLB', 'Soccer'];
 
-const RESOLVED_MARKETS = [
-  { title: 'Will Fed raise rates at March 2026 FOMC?', outcome: 'no', date: 'Mar 10, 2026', finalPrice: 12 },
-  { title: 'Will Bitcoin reach $80K in February 2026?', outcome: 'yes', date: 'Feb 28, 2026', finalPrice: 91 },
-  { title: 'Will Tesla deliver 500K vehicles in Q4 2025?', outcome: 'no', date: 'Jan 15, 2026', finalPrice: 22 },
-  { title: 'Will Ukraine-Russia ceasefire happen in 2025?', outcome: 'no', date: 'Dec 31, 2025', finalPrice: 8 },
-  { title: 'Will Apple announce AR glasses at WWDC 2025?', outcome: 'no', date: 'Jun 10, 2025', finalPrice: 15 },
-  { title: 'Will GDP growth exceed 3% in Q4 2025?', outcome: 'yes', date: 'Jan 30, 2026', finalPrice: 74 },
-];
-
-const VALUE_OPPORTUNITIES = [
-  { market: 'Celtics -4.5 vs Bucks', source: 'NBA', ev: '+4.2%', type: 'positive', reason: 'Model projects Celtics by 7.1 at home, sharp money moving line from -3 to -4.5' },
-  { market: 'Arsenal +0.5 vs Man City', source: 'EPL', ev: '+3.8%', type: 'positive', reason: 'Arsenal 12-1-0 at Emirates this season. Line moved from PK — value on the dog' },
-  { market: 'Fed rate cut June — YES at 68¢', source: 'Polymarket', ev: '+5.1%', type: 'positive', reason: 'CME FedWatch shows 73% probability. Market pricing lag creates edge' },
-  { market: 'BTC > $100K — YES at 42¢', source: 'Polymarket', ev: '-2.3%', type: 'negative', reason: 'On-chain metrics show weakening demand. Market may be overpriced near resistance' },
-  { market: 'Yankees/Red Sox UNDER 8.5', source: 'MLB', ev: '+2.9%', type: 'positive', reason: 'Both starters have sub-3 ERA. Bullpen performance supports under' },
-  { market: 'S&P 6000 by Dec — YES at 55¢', source: 'Polymarket', ev: '+6.4%', type: 'positive', reason: 'Earnings growth trajectory and rate cut cycle support ~15% upside from current levels' },
-];
-
-const CATEGORIES = ['All', 'Politics', 'Economics', 'Crypto', 'Tech', 'Sports', 'Culture'];
-
-const CATEGORY_ICONS = {
-  politics: 'bi-bank',
-  economics: 'bi-graph-up',
-  crypto: 'bi-currency-bitcoin',
-  tech: 'bi-cpu',
-  sports: 'bi-trophy',
-  culture: 'bi-music-note-beamed',
-  other: 'bi-question-circle',
+const ODDS_DATA = {
+  NFL: [
+    {
+      league: 'NFL — Today',
+      games: [
+        {
+          title: 'Chiefs vs Bills',
+          time: '4:25 PM ET',
+          away: 'KC',
+          home: 'BUF',
+          spreadAway: '-2.5 (-110)',
+          spreadHome: '+2.5 (-110)',
+          total: 'O/U 48.5',
+          ml: 'Moneyline: KC -145  BUF +125',
+        },
+        {
+          title: 'Cowboys vs Eagles',
+          time: '8:20 PM ET',
+          away: 'DAL',
+          home: 'PHI',
+          spreadAway: '+3.0 (-105)',
+          spreadHome: '-3.0 (-115)',
+          total: 'O/U 44.0',
+          ml: 'Moneyline: DAL +140  PHI -160',
+        },
+      ],
+    },
+  ],
+  NBA: [
+    {
+      league: 'NBA — Today',
+      games: [
+        {
+          title: 'Lakers vs Celtics',
+          time: '7:30 PM ET',
+          away: 'LAL',
+          home: 'BOS',
+          spreadAway: '+3.5 (-110)',
+          spreadHome: '-3.5 (-110)',
+          total: 'O/U 224.5',
+          ml: 'Moneyline: LAL +145  BOS -165',
+        },
+        {
+          title: 'Warriors vs Bucks',
+          time: '8:00 PM ET',
+          away: 'GSW',
+          home: 'MIL',
+          spreadAway: '-1.5 (-105)',
+          spreadHome: '+1.5 (-115)',
+          total: 'O/U 231',
+          ml: 'Moneyline: GSW -125  MIL +105',
+        },
+        {
+          title: 'Nuggets vs Suns',
+          time: '10:00 PM ET',
+          away: 'DEN',
+          home: 'PHX',
+          spreadAway: '-4.0 (-108)',
+          spreadHome: '+4.0 (-112)',
+          total: 'O/U 226.0',
+          ml: 'Moneyline: DEN -195  PHX +168',
+        },
+      ],
+    },
+  ],
+  NHL: [
+    {
+      league: 'NHL — Today',
+      games: [
+        {
+          title: 'Canadiens vs Bruins',
+          time: '7:00 PM ET',
+          away: 'MTL',
+          home: 'BOS',
+          spreadAway: '+1.5 (-135)',
+          spreadHome: '-1.5 (+115)',
+          total: 'O/U 5.5',
+          ml: 'Moneyline: MTL +180  BOS -210',
+        },
+        {
+          title: 'Rangers vs Hurricanes',
+          time: '7:00 PM ET',
+          away: 'NYR',
+          home: 'CAR',
+          spreadAway: '-1.5 (-120)',
+          spreadHome: '+1.5 (+100)',
+          total: 'O/U 6.0',
+          ml: 'Moneyline: NYR -135  CAR +115',
+        },
+      ],
+    },
+  ],
+  MLB: [
+    {
+      league: 'MLB — Today',
+      games: [
+        {
+          title: 'Yankees vs Red Sox',
+          time: '1:05 PM ET',
+          away: 'NYY',
+          home: 'BOS',
+          spreadAway: '-1.5 (-115)',
+          spreadHome: '+1.5 (-105)',
+          total: 'O/U 8.5',
+          ml: 'Moneyline: NYY -150  BOS +130',
+        },
+      ],
+    },
+  ],
+  Soccer: [
+    {
+      league: 'Soccer — Today',
+      games: [
+        {
+          title: 'Arsenal vs Manchester City',
+          time: '12:30 PM ET',
+          away: 'ARS',
+          home: 'MCI',
+          spreadAway: '+0.5 (-110)',
+          spreadHome: '-0.5 (-110)',
+          total: 'O/U 2.5',
+          ml: 'Moneyline: ARS +155  MCI -185',
+        },
+      ],
+    },
+  ],
 };
 
-const CATEGORY_COLORS = {
-  politics: { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' },
-  economics: { bg: 'rgba(16, 185, 129, 0.15)', color: '#10b981' },
-  crypto: { bg: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24' },
-  tech: { bg: 'rgba(167, 139, 250, 0.15)', color: '#a78bfa' },
-  sports: { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' },
-  culture: { bg: 'rgba(236, 72, 153, 0.15)', color: '#ec4899' },
-  other: { bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8' },
-};
-
-const LEADERBOARD_WINDOWS = [
-  { label: '1D', value: '1d' },
-  { label: '7D', value: '7d' },
-  { label: '30D', value: '30d' },
-  { label: 'All', value: 'all' },
+const LEADER_ALL = [
+  { rank: 1, name: 'Emma Wilson', slug: 'emma-wilson', pnl: '+$4,230', win: '72% win', tag: '🔥', partner: false },
+  { rank: 2, name: 'David Kim', slug: 'david-kim', pnl: '+$3,180', win: '68% win', tag: '', partner: false },
+  { rank: 3, name: 'Alex Chen', slug: 'alex-chen', pnl: '+$2,890', win: '71% win', tag: '', partner: true },
+  { rank: 4, name: 'Lisa Park', slug: 'lisa-park', pnl: '+$2,450', win: '65% win', tag: '', partner: false },
+  { rank: 5, name: 'Sarah Johnson', slug: 'sarah-johnson', pnl: '+$1,980', win: '63% win', tag: '', partner: false },
+  { rank: 6, name: 'Mike Torres', slug: 'mike-torres', pnl: '+$1,750', win: '67% win', tag: '✅', partner: true },
+  { rank: 7, name: 'James Wilson', slug: 'james-wilson', pnl: '+$1,420', win: '61% win', tag: '', partner: false },
+  { rank: 8, name: 'Maria Garcia', slug: 'maria-garcia', pnl: '+$1,180', win: '66% win', tag: '', partner: false },
 ];
 
-const PROFILE_TABS = [
-  { key: 'positions', label: 'Positions', icon: 'bi-wallet2' },
-  { key: 'trades', label: 'Trades', icon: 'bi-arrow-left-right' },
-  { key: 'activity', label: 'Activity', icon: 'bi-activity' },
-  { key: 'analytics', label: 'Analytics', icon: 'bi-pie-chart' },
+const LEADER_FRIENDS = LEADER_ALL.filter((_, i) => [0, 1, 3, 7].includes(i));
+const LEADER_PARTNERS = LEADER_ALL.filter((r) => r.partner);
+
+const EV_ITEMS = [
+  {
+    id: 'ev1',
+    title: 'Lakers +3.5 vs Celtics',
+    ev: '+4.2%',
+    confidence: 'High',
+    analysis: {
+      headline: 'Lakers +3.5 vs Celtics',
+      implied: '47.6%',
+      model: '52.1%',
+      edge: '+4.5%',
+      evPer100: '+4.2%',
+      confidence: 'HIGH',
+      basedOn: 'Injury data, ATS trends, matchup history',
+      math: [
+        'Market odds imply Lakers cover 47.6% of the time.',
+        'Our model estimates they cover 52.1%.',
+        'This creates a +4.2% edge.',
+      ],
+      backstory: [
+        'The Lakers are 8-2 ATS in their last 10 road games. Celtics are dealing with a key injury to their starting center.',
+        'Historical ATS record in this matchup favors the underdog by 3.2 points.',
+      ],
+    },
+  },
+  {
+    id: 'ev2',
+    title: 'Warriors ML vs Bucks',
+    ev: '+2.8%',
+    confidence: 'Medium',
+    analysis: {
+      headline: 'Warriors ML vs Bucks',
+      implied: '52.0%',
+      model: '55.4%',
+      edge: '+3.4%',
+      evPer100: '+2.8%',
+      confidence: 'MEDIUM',
+      basedOn: 'Rest advantage, home court, injury report',
+      math: [
+        'Market prices Warriors win at 52% implied.',
+        'Our model: 55.4% after pace and defense adjustments.',
+      ],
+      backstory: ['Bucks on a back-to-back; Warriors defense ranks top-5 in rim protection over the last 10.'],
+    },
+  },
+  {
+    id: 'ev3',
+    title: 'Canadiens +1.5 vs Bruins',
+    ev: '+6.1%',
+    confidence: 'High',
+    analysis: {
+      headline: 'Canadiens +1.5 vs Bruins',
+      implied: '44.2%',
+      model: '51.8%',
+      edge: '+7.6%',
+      evPer100: '+6.1%',
+      confidence: 'HIGH',
+      basedOn: 'Goalie matchup, 5v5 expected goals',
+      math: ['Puck-line mispriced vs our simulation after goalie confirmation.'],
+      backstory: ['Montreal has covered +1.5 in 7 of last 10 as a road dog.'],
+    },
+  },
+  {
+    id: 'ev4',
+    title: 'Over 224.5 Lakers/Celtics',
+    ev: '+1.9%',
+    confidence: 'Low',
+    analysis: {
+      headline: 'Over 224.5 Lakers/Celtics',
+      implied: '49.0%',
+      model: '51.2%',
+      edge: '+2.2%',
+      evPer100: '+1.9%',
+      confidence: 'LOW',
+      basedOn: 'Pace projection only — thin edge',
+      math: ['Both teams top-8 in pace; total still shaded low vs model.'],
+      backstory: ['Watch late injury scratches before lock — variance is high.'],
+    },
+  },
 ];
 
-/* ── Helpers ── */
+const LINE_MOVES = [
+  {
+    id: 'lm1',
+    title: 'Lakers vs Celtics — Spread',
+    opened: 'LAL +4.5',
+    current: 'LAL +3.5',
+    move: '-1.0',
+    kind: 'spread',
+    reverse: false,
+  },
+  {
+    id: 'lm2',
+    title: 'Warriors vs Bucks — Total',
+    opened: '228.5',
+    current: '231',
+    move: '+2.5',
+    kind: 'total',
+    reverse: true,
+  },
+];
 
-function formatMoney(n) {
-  if (n == null || isNaN(n)) return '$0';
-  const abs = Math.abs(n);
-  if (abs >= 1_000_000) return `${n < 0 ? '-' : ''}$${(abs / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `${n < 0 ? '-' : ''}$${(abs / 1_000).toFixed(1)}K`;
-  return `${n < 0 ? '-' : ''}$${abs.toFixed(2)}`;
-}
-
-function formatVolume(v) {
-  if (!v) return '$0';
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
-  return `$${v.toFixed(0)}`;
-}
-
-function parseYesPrice(market) {
-  try {
-    const prices = typeof market.outcomePrices === 'string'
-      ? JSON.parse(market.outcomePrices)
-      : market.outcomePrices;
-    if (Array.isArray(prices) && prices.length > 0) {
-      return Math.round(parseFloat(prices[0]) * 100);
-    }
-  } catch { /* fallback */ }
-  return 50;
-}
-
-function guessCategory(market) {
-  const q = (market.question + ' ' + (market.category || '')).toLowerCase();
-  if (/president|election|congress|trump|biden|democrat|republican|vote|governor|senate/.test(q)) return 'politics';
-  if (/bitcoin|ethereum|crypto|btc|eth|solana|defi/.test(q)) return 'crypto';
-  if (/rate|gdp|recession|fed|inflation|s&p|market|economy|tariff/.test(q)) return 'economics';
-  if (/ai|tesla|apple|spacex|tech|openai|google|nvidia|microsoft/.test(q)) return 'tech';
-  if (/nba|nfl|mlb|soccer|sport|super bowl|champion|world cup/.test(q)) return 'sports';
-  return 'culture';
-}
-
-function timeAgo(dateStr) {
-  if (!dateStr) return '';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function getFollowed() {
-  try {
-    return JSON.parse(localStorage.getItem('polymarket_followed') || '[]');
-  } catch { return []; }
-}
-
-function setFollowed(list) {
-  localStorage.setItem('polymarket_followed', JSON.stringify(list));
-}
-
-function SkeletonRows({ count = 5 }) {
-  return Array.from({ length: count }).map((_, i) => (
-    <div key={i} className="bm-skeleton-row">
-      <div className="bm-skeleton bm-skeleton-circle" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <div className="bm-skeleton bm-skeleton-line w-3-4" />
-        <div className="bm-skeleton bm-skeleton-line w-1-2" />
-      </div>
-    </div>
-  ));
-}
-
-/* ── Category Breakdown Mini Chart ── */
-function CategoryBreakdown({ data }) {
-  if (!data || Object.keys(data).length === 0) {
-    return (
-      <div className="bm-empty-state" style={{ padding: '1rem' }}>
-        <i className="bi bi-pie-chart" />
-        <p>No category data available.</p>
-      </div>
-    );
+function seedPts(s, n = 24) {
+  let v = 50;
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    v += Math.sin(i * 0.4 + s) * 8 + (s % 7) * 0.5;
+    v = Math.max(15, Math.min(85, v));
+    out.push(v);
   }
+  return out;
+}
 
-  const total = Object.values(data).reduce((s, c) => s + c.count, 0);
-
+function MiniLineChart({ seed, up = true }) {
+  const pts = useMemo(() => seedPts(seed), [seed]);
+  const w = 400;
+  const h = 48;
+  const line = useMemo(() => {
+    const min = Math.min(...pts);
+    const max = Math.max(...pts);
+    const r = max - min || 1;
+    return pts
+      .map((p, i) => {
+        const x = (i / (pts.length - 1)) * w;
+        const y = 4 + (h - 8) * (1 - (p - min) / r);
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+  }, [pts, w, h]);
+  const col = up ? '#10b981' : '#ef4444';
   return (
-    <div className="bm-category-breakdown">
-      {Object.entries(data)
-        .sort((a, b) => b[1].count - a[1].count)
-        .map(([cat, info]) => {
-          const pct = total > 0 ? ((info.count / total) * 100).toFixed(0) : 0;
-          const colors = CATEGORY_COLORS[cat] || CATEGORY_COLORS.other;
-          return (
-            <div key={cat} className="bm-cat-row">
-              <div className="bm-cat-icon" style={{ background: colors.bg, color: colors.color }}>
-                <i className={`bi ${CATEGORY_ICONS[cat] || 'bi-question-circle'}`} />
-              </div>
-              <div className="bm-cat-info">
-                <div className="bm-cat-label">{cat.charAt(0).toUpperCase() + cat.slice(1)}</div>
-                <div className="bm-cat-bar-wrap">
-                  <div className="bm-cat-bar">
-                    <div className="bm-cat-bar-fill" style={{ width: `${pct}%`, background: colors.color }} />
-                  </div>
-                  <span className="bm-cat-pct">{pct}%</span>
-                </div>
-              </div>
-              <div className="bm-cat-stats">
-                <span className="bm-cat-count">{info.count} positions</span>
-                <span className={`bm-cat-pnl ${info.pnl >= 0 ? 'positive' : 'negative'}`}>{formatMoney(info.pnl)}</span>
-              </div>
-            </div>
-          );
-        })}
+    <div className="bm-mini-chart">
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+        <path d={line} fill="none" stroke={col} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      </svg>
     </div>
   );
 }
 
 export default function BettingMarketsPage() {
-  const { completeTask } = useChecklist();
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [sport, setSport] = useState('NBA');
+  const [lbTab, setLbTab] = useState('All');
+  const [evOpen, setEvOpen] = useState(null);
 
-  /* ── Live markets state ── */
-  const [liveMarkets, setLiveMarkets] = useState([]);
-  const [marketsLoading, setMarketsLoading] = useState(true);
+  const closeModal = useCallback(() => setEvOpen(null), []);
 
-  /* ── Leaderboard state ── */
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [lbWindow, setLbWindow] = useState('7d');
-  const [lbLoading, setLbLoading] = useState(true);
+  const leaderboardRows = useMemo(() => {
+    let rows = LEADER_ALL;
+    if (lbTab === 'Friends') rows = LEADER_FRIENDS;
+    if (lbTab === 'Partners') rows = LEADER_PARTNERS;
+    return rows.map((r, i) => ({ ...r, rank: i + 1 }));
+  }, [lbTab]);
 
-  /* ── Trader profile state ── */
-  const [traderQuery, setTraderQuery] = useState('');
-  const [traderProfile, setTraderProfile] = useState(null);
-  const [traderLoading, setTraderLoading] = useState(false);
-  const [traderError, setTraderError] = useState('');
-  const [profileTab, setProfileTab] = useState('positions');
+  const bettingCourses = useMemo(() => getCoursesByTrack('betting').slice(0, 4), []);
 
-  /* ── Copy trading / follow state ── */
-  const [followedTraders, setFollowedTraders] = useState([]);
-  const [followedFeed, setFollowedFeed] = useState([]);
-  const [feedLoading, setFeedLoading] = useState(false);
+  const oddsBlocks = ODDS_DATA[sport] || [];
 
-  const traderLookupRef = useRef(null);
-
-  useEffect(() => {
-    setFollowedTraders(getFollowed());
-  }, []);
-
-  /* ── Fetch live markets ── */
-  const fetchMarkets = useCallback(async (tag) => {
-    setMarketsLoading(true);
-    try {
-      const params = new URLSearchParams({ limit: '20', active: 'true' });
-      if (tag && tag !== 'All') params.set('tag', tag.toLowerCase());
-      const res = await fetch(`/api/polymarket/markets?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to load markets');
-      const data = await res.json();
-      setLiveMarkets(data);
-    } catch (err) {
-      console.error(err);
-      setLiveMarkets([]);
-    } finally {
-      setMarketsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchMarkets(activeCategory); }, [activeCategory, fetchMarkets]);
-
-  /* ── Fetch leaderboard ── */
-  const fetchLeaderboard = useCallback(async (window) => {
-    setLbLoading(true);
-    try {
-      const res = await fetch(`/api/polymarket/leaderboard?window=${window}&sort=profit&limit=25`);
-      if (!res.ok) throw new Error('Failed to load leaderboard');
-      const data = await res.json();
-      setLeaderboard(data);
-    } catch (err) {
-      console.error(err);
-      setLeaderboard([]);
-    } finally {
-      setLbLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchLeaderboard(lbWindow); }, [lbWindow, fetchLeaderboard]);
-
-  /* ── Fetch copy-trading feed from followed traders ── */
-  const fetchFollowedFeed = useCallback(async () => {
-    const followed = getFollowed();
-    if (followed.length === 0) { setFollowedFeed([]); return; }
-    setFeedLoading(true);
-    try {
-      const results = await Promise.allSettled(
-        followed.slice(0, 5).map(async (t) => {
-          const res = await fetch(`/api/polymarket/profile?username=${encodeURIComponent(t.username)}`);
-          if (!res.ok) return [];
-          const data = await res.json();
-          return (data.trades || []).slice(0, 10).map((trade) => ({
-            ...trade,
-            traderUsername: t.username,
-            traderImage: data.profile?.profileImage || '',
-          }));
-        })
-      );
-      const allTrades = results
-        .filter((r) => r.status === 'fulfilled')
-        .flatMap((r) => r.value)
-        .sort((a, b) => new Date(b.timestamp || b.createdAt || 0) - new Date(a.timestamp || a.createdAt || 0))
-        .slice(0, 30);
-      setFollowedFeed(allTrades);
-    } catch (err) {
-      console.error(err);
-      setFollowedFeed([]);
-    } finally {
-      setFeedLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (followedTraders.length > 0) fetchFollowedFeed();
-  }, [followedTraders, fetchFollowedFeed]);
-
-  /* ── Look up trader ── */
-  const lookupTrader = useCallback(async () => {
-    if (!traderQuery.trim()) return;
-    setTraderLoading(true);
-    setTraderError('');
-    setTraderProfile(null);
-    setProfileTab('positions');
-    try {
-      const res = await fetch(`/api/polymarket/profile?username=${encodeURIComponent(traderQuery.trim())}`);
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Not found (${res.status})`);
-      }
-      const data = await res.json();
-      setTraderProfile(data);
-      completeTask('market_1');
-    } catch (err) {
-      setTraderError(err.message);
-    } finally {
-      setTraderLoading(false);
-    }
-  }, [traderQuery, completeTask]);
-
-  const handleLeaderboardClick = (username) => {
-    setTraderQuery(username);
-    setTraderLoading(true);
-    setTraderError('');
-    setTraderProfile(null);
-    setProfileTab('positions');
-    fetch(`/api/polymarket/profile?username=${encodeURIComponent(username)}`)
-      .then((r) => r.ok ? r.json() : r.json().then((b) => { throw new Error(b.error || 'Not found'); }))
-      .then(setTraderProfile)
-      .catch((e) => setTraderError(e.message))
-      .finally(() => setTraderLoading(false));
-
-    if (traderLookupRef.current) {
-      traderLookupRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  /* ── Follow / unfollow ── */
-  const isFollowing = (username) => followedTraders.some((t) => t.username === username);
-
-  const toggleFollow = (profile) => {
-    const username = profile?.username || profile?.name;
-    if (!username) return;
-    let updated;
-    if (isFollowing(username)) {
-      updated = followedTraders.filter((t) => t.username !== username);
-    } else {
-      updated = [...followedTraders, {
-        username,
-        image: profile?.profileImage || '',
-        wallet: profile?.proxyWallet || '',
-        followedAt: new Date().toISOString(),
-      }];
-    }
-    setFollowedTraders(updated);
-    setFollowed(updated);
-  };
-
-  /* ── Derived stats ── */
-  const totalVolume = liveMarkets.reduce((s, m) => s + (m.volume24hr || 0), 0);
-  const activeMarketsCount = liveMarkets.length;
+  const reverseCount = LINE_MOVES.filter((l) => l.reverse).length;
 
   return (
-    <div className="betting-markets-container">
-      {/* Stats Grid */}
-      <div className="stats-grid condensed">
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }}>
-            <i className="bi bi-graph-up-arrow" />
+    <div className="bm-page dashboard-page-inset db-page">
+      <div className="bm-stat-row">
+        {STAT_CARDS.map((s) => (
+          <div key={s.id} className="bm-stat-card">
+            <div className="bm-stat-top">
+              <span className="bm-stat-label">
+                <span aria-hidden>{s.icon}</span> {s.label}
+              </span>
+            </div>
+            <div className="bm-stat-value">{s.value}</div>
+            <div className={`bm-stat-sub ${s.subTone === 'up' ? 'bm-stat-delta up' : ''}`}>{s.sub}</div>
           </div>
-          <div className="stat-content">
-            <div className="stat-value">{marketsLoading ? '—' : activeMarketsCount}</div>
-            <div className="stat-label">Active Markets</div>
-            <div className="stat-change positive">LIVE</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}>
-            <i className="bi bi-cash-stack" />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{marketsLoading ? '—' : formatVolume(totalVolume)}</div>
-            <div className="stat-label">24h Volume</div>
-            <div className="stat-change positive">Polymarket</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
-            <i className="bi bi-people" />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{lbLoading ? '—' : leaderboard.length}</div>
-            <div className="stat-label">Top Traders</div>
-            <div className="stat-change">{lbWindow} window</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa' }}>
-            <i className="bi bi-eye" />
-          </div>
-          <div className="stat-content">
-            <div className="stat-value">{followedTraders.length}</div>
-            <div className="stat-label">Following</div>
-            <div className="stat-change">Copy Trading</div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* ── Trader Lookup (full-width) ── */}
-      <div ref={traderLookupRef}>
-        <PinnableCard cardId="trader-lookup" title="Polymarket Trader Lookup" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={12} defaultH={3}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-person-badge" /> Polymarket Trader Lookup</h3>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Search any Polymarket trader by username</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-trader-search">
-                <input
-                  type="text"
-                  placeholder="Enter Polymarket username (e.g. ColdMath)"
-                  value={traderQuery}
-                  onChange={(e) => setTraderQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && lookupTrader()}
-                  data-task-target="polymarket-search"
-                />
-                <button onClick={lookupTrader} disabled={traderLoading || !traderQuery.trim()}>
-                  {traderLoading ? 'Searching…' : 'Look Up'}
+      <PinnableCard cardId="betting-odds-board" className="db-card bm-odds-board">
+        <div className="db-card-header">
+          <h3>Live Sports Odds</h3>
+          <button type="button" className="db-icon-btn" aria-label="Expand">
+            <i className="bi bi-box-arrow-up-right" />
+          </button>
+        </div>
+        <div style={{ padding: '0 1.25rem 1rem' }}>
+          <div className="bm-odds-head">
+            <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 800, color: '#f0f6fc', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span aria-hidden>🏈</span> Live Trending Sports Odds
+            </h3>
+            <div className="bm-sport-tabs" role="tablist" aria-label="Sport filter">
+              {SPORT_TABS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  role="tab"
+                  aria-selected={sport === t}
+                  className={`bm-sport-tab ${sport === t ? 'on' : ''}`}
+                  onClick={() => setSport(t)}
+                >
+                  {t}
                 </button>
-              </div>
-
-              {traderLoading && <SkeletonRows count={4} />}
-
-              {traderError && (
-                <div className="bm-empty-state">
-                  <i className="bi bi-exclamation-triangle" />
-                  <p>{traderError}</p>
-                </div>
-              )}
-
-              {traderProfile && !traderLoading && (
-                <div className="bm-trader-profile">
-                  {/* Profile header */}
-                  <div className="bm-profile-header">
-                    <div className="bm-profile-avatar">
-                      {traderProfile.profile?.profileImage ? (
-                        <img src={traderProfile.profile.profileImage} alt="" />
-                      ) : (
-                        <span className="avatar-fallback">{(traderProfile.profile?.username || '?')[0].toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className="bm-profile-info">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div className="bm-profile-name">{traderProfile.profile?.username || traderProfile.profile?.name}</div>
-                        <button
-                          className={`bm-follow-btn ${isFollowing(traderProfile.profile?.username || traderProfile.profile?.name) ? 'following' : ''}`}
-                          onClick={() => toggleFollow(traderProfile.profile)}
-                        >
-                          <i className={`bi ${isFollowing(traderProfile.profile?.username || traderProfile.profile?.name) ? 'bi-check-lg' : 'bi-plus-lg'}`} />
-                          {isFollowing(traderProfile.profile?.username || traderProfile.profile?.name) ? 'Following' : 'Follow'}
-                        </button>
-                        {traderProfile.profile?.proxyWallet && (
-                          <a
-                            href={`https://polymarket.com/profile/${traderProfile.profile.proxyWallet}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bm-external-link"
-                            title="View on Polymarket"
-                          >
-                            <i className="bi bi-box-arrow-up-right" />
-                          </a>
-                        )}
-                      </div>
-                      {traderProfile.profile?.bio && <div className="bm-profile-bio">{traderProfile.profile.bio}</div>}
-                      {traderProfile.profile?.proxyWallet && (
-                        <div className="bm-wallet-address">
-                          <i className="bi bi-wallet2" />
-                          <span>{traderProfile.profile.proxyWallet.slice(0, 6)}...{traderProfile.profile.proxyWallet.slice(-4)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="bm-profile-stats-row">
-                    <div className="bm-profile-stat">
-                      <div className="bm-profile-stat-value">{traderProfile.stats?.openPositions || 0}</div>
-                      <div className="bm-profile-stat-label">Open Positions</div>
-                    </div>
-                    <div className="bm-profile-stat">
-                      <div className="bm-profile-stat-value">{formatMoney(traderProfile.stats?.totalPositionsValue)}</div>
-                      <div className="bm-profile-stat-label">Positions Value</div>
-                    </div>
-                    <div className="bm-profile-stat">
-                      <div className={`bm-profile-stat-value ${(traderProfile.stats?.totalPnl || 0) >= 0 ? 'bm-profit-positive' : 'bm-profit-negative'}`}>
-                        {formatMoney(traderProfile.stats?.totalPnl)}
-                      </div>
-                      <div className="bm-profile-stat-label">Total P&L</div>
-                    </div>
-                    <div className="bm-profile-stat">
-                      <div className="bm-profile-stat-value">{traderProfile.stats?.totalTrades || 0}</div>
-                      <div className="bm-profile-stat-label">Recent Trades</div>
-                    </div>
-                    <div className="bm-profile-stat">
-                      <div className="bm-profile-stat-value">{traderProfile.stats?.buyCount || 0}</div>
-                      <div className="bm-profile-stat-label">Buys</div>
-                    </div>
-                    <div className="bm-profile-stat">
-                      <div className="bm-profile-stat-value">{traderProfile.stats?.sellCount || 0}</div>
-                      <div className="bm-profile-stat-label">Sells</div>
-                    </div>
-                  </div>
-
-                  {/* Tab navigation */}
-                  <div className="bm-profile-tabs">
-                    {PROFILE_TABS.map((tab) => (
-                      <button
-                        key={tab.key}
-                        className={`bm-profile-tab ${profileTab === tab.key ? 'active' : ''}`}
-                        onClick={() => setProfileTab(tab.key)}
-                      >
-                        <i className={`bi ${tab.icon}`} />
-                        {tab.label}
-                        {tab.key === 'positions' && traderProfile.positions?.length > 0 && (
-                          <span className="bm-tab-count">{traderProfile.positions.length}</span>
-                        )}
-                        {tab.key === 'trades' && traderProfile.trades?.length > 0 && (
-                          <span className="bm-tab-count">{traderProfile.trades.length}</span>
-                        )}
-                        {tab.key === 'activity' && traderProfile.activity?.length > 0 && (
-                          <span className="bm-tab-count">{traderProfile.activity.length}</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Tab content: Positions */}
-                  {profileTab === 'positions' && (
-                    <>
-                      {traderProfile.positions?.length > 0 ? (
-                        <div style={{ overflowX: 'auto' }}>
-                          <table className="bm-positions-table">
-                            <thead>
-                              <tr>
-                                <th>Market</th>
-                                <th>Side</th>
-                                <th>Size</th>
-                                <th>Avg Price</th>
-                                <th>Cur Price</th>
-                                <th>Value</th>
-                                <th>P&L</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {traderProfile.positions.slice(0, 30).map((p, i) => {
-                                const pnl = parseFloat(p.cashPnl) || parseFloat(p.pnl) || 0;
-                                return (
-                                  <tr key={i}>
-                                    <td className="market-title">{p.title || p.market || p.conditionId?.slice(0, 12) || '—'}</td>
-                                    <td><span className={p.outcome === 'Yes' || p.side === 'YES' ? 'bm-side-yes' : 'bm-side-no'}>{p.outcome || p.side || '—'}</span></td>
-                                    <td>{parseFloat(p.size || 0).toFixed(2)}</td>
-                                    <td>{(parseFloat(p.avgPrice || 0) * 100).toFixed(1)}¢</td>
-                                    <td>{(parseFloat(p.curPrice || p.price || 0) * 100).toFixed(1)}¢</td>
-                                    <td>{formatMoney(parseFloat(p.currentValue || 0))}</td>
-                                    <td><span className={pnl >= 0 ? 'bm-profit-positive' : 'bm-profit-negative'}>{formatMoney(pnl)}</span></td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="bm-empty-state">
-                          <i className="bi bi-inbox" />
-                          <p>No open positions found for this trader.</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Tab content: Trades */}
-                  {profileTab === 'trades' && (
-                    <>
-                      {traderProfile.trades?.length > 0 ? (
-                        <div className="bm-trades-list">
-                          {traderProfile.trades.slice(0, 30).map((t, i) => (
-                            <div key={i} className="bm-trade-item">
-                              <span className={`bm-trade-side ${t.side?.toLowerCase() === 'buy' ? 'buy' : 'sell'}`}>{t.side || '—'}</span>
-                              <span className="bm-trade-market">{t.title || t.market || t.conditionId?.slice(0, 12) || '—'}</span>
-                              <span className="bm-trade-outcome">{t.outcome || ''}</span>
-                              <span className="bm-trade-amount">{parseFloat(t.size || 0).toFixed(2)} shares</span>
-                              <span className="bm-trade-price">@ {(parseFloat(t.price || 0) * 100).toFixed(1)}¢</span>
-                              <span className="bm-trade-time">{timeAgo(t.timestamp || t.createdAt)}</span>
-                              {t.transactionHash && (
-                                <a
-                                  href={`https://polygonscan.com/tx/${t.transactionHash}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="bm-tx-link"
-                                  title="View on Polygonscan"
-                                >
-                                  <i className="bi bi-box-arrow-up-right" />
-                                </a>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="bm-empty-state">
-                          <i className="bi bi-inbox" />
-                          <p>No recent trades found for this trader.</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Tab content: Activity */}
-                  {profileTab === 'activity' && (
-                    <>
-                      {traderProfile.activity?.length > 0 ? (
-                        <div className="bm-activity-feed">
-                          {traderProfile.activity.slice(0, 30).map((a, i) => (
-                            <div key={i} className="bm-activity-item">
-                              <div className={`bm-activity-dot ${a.side?.toLowerCase() === 'buy' ? 'buy' : a.side?.toLowerCase() === 'sell' ? 'sell' : ''}`} />
-                              <div className="bm-activity-content">
-                                <div className="bm-activity-text">
-                                  <span className="bm-activity-action">{a.side || a.type || 'Action'}</span>
-                                  {' '}
-                                  <span className="bm-activity-size">{parseFloat(a.size || 0).toFixed(2)} shares</span>
-                                  {' of '}
-                                  <span className="bm-activity-market">{a.title || a.market || '—'}</span>
-                                  {a.outcome && <span className="bm-activity-outcome"> ({a.outcome})</span>}
-                                </div>
-                                <div className="bm-activity-meta">
-                                  {a.price && <span>@ {(parseFloat(a.price) * 100).toFixed(1)}¢</span>}
-                                  <span>{timeAgo(a.timestamp || a.createdAt)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="bm-empty-state">
-                          <i className="bi bi-inbox" />
-                          <p>No recent activity found for this trader.</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Tab content: Analytics */}
-                  {profileTab === 'analytics' && (
-                    <div className="bm-analytics-panel">
-                      <div className="bm-analytics-grid">
-                        <div className="bm-analytics-card">
-                          <div className="bm-analytics-card-header">
-                            <i className="bi bi-pie-chart" />
-                            <span>Category Breakdown</span>
-                          </div>
-                          <CategoryBreakdown data={traderProfile.analytics?.categoryBreakdown} />
-                        </div>
-                        <div className="bm-analytics-card">
-                          <div className="bm-analytics-card-header">
-                            <i className="bi bi-speedometer2" />
-                            <span>Performance Metrics</span>
-                          </div>
-                          <div className="bm-metrics-grid">
-                            <div className="bm-metric">
-                              <div className="bm-metric-value">{formatMoney(traderProfile.stats?.totalPositionsValue)}</div>
-                              <div className="bm-metric-label">Portfolio Value</div>
-                            </div>
-                            <div className="bm-metric">
-                              <div className={`bm-metric-value ${(traderProfile.stats?.totalPnl || 0) >= 0 ? 'bm-profit-positive' : 'bm-profit-negative'}`}>
-                                {formatMoney(traderProfile.stats?.totalPnl)}
-                              </div>
-                              <div className="bm-metric-label">Total P&L</div>
-                            </div>
-                            <div className="bm-metric">
-                              <div className={`bm-metric-value ${(traderProfile.stats?.avgPercentPnl || 0) >= 0 ? 'bm-profit-positive' : 'bm-profit-negative'}`}>
-                                {(traderProfile.stats?.avgPercentPnl || 0).toFixed(1)}%
-                              </div>
-                              <div className="bm-metric-label">Avg % P&L</div>
-                            </div>
-                            <div className="bm-metric">
-                              <div className="bm-metric-value">
-                                {(traderProfile.stats?.avgBuyPrice ? (traderProfile.stats.avgBuyPrice * 100).toFixed(1) : '0')}¢
-                              </div>
-                              <div className="bm-metric-label">Avg Buy Price</div>
-                            </div>
-                            <div className="bm-metric">
-                              <div className="bm-metric-value">{traderProfile.stats?.buyCount || 0}</div>
-                              <div className="bm-metric-label">Total Buys</div>
-                            </div>
-                            <div className="bm-metric">
-                              <div className="bm-metric-value">{traderProfile.stats?.sellCount || 0}</div>
-                              <div className="bm-metric-label">Total Sells</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!traderProfile && !traderLoading && !traderError && (
-                <div className="bm-empty-state">
-                  <i className="bi bi-search" />
-                  <p>Enter a Polymarket username above to view their profile, positions, trade history, and analytics.</p>
-                </div>
-              )}
+              ))}
             </div>
           </div>
-        </PinnableCard>
-      </div>
-
-      {/* ── Copy Trading Feed (full-width) ── */}
-      {followedTraders.length > 0 && (
-        <PinnableCard cardId="copy-trading-feed" title="Copy Trading Feed" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={12} defaultH={3}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-broadcast" /> Copy Trading Feed</h3>
-              <span className="bm-value-badge positive">LIVE</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-followed-traders-row">
-                {followedTraders.map((t) => (
-                  <div
-                    key={t.username}
-                    className="bm-followed-chip"
-                    onClick={() => handleLeaderboardClick(t.username)}
-                  >
-                    <div className="bm-followed-chip-avatar">
-                      {t.image ? <img src={t.image} alt="" /> : t.username[0]?.toUpperCase()}
+          <div className="bm-odds-scroll">
+            {oddsBlocks.map((block) => (
+              <div key={block.league}>
+                <div className="bm-league-hdr">{block.league}</div>
+                {block.games.map((g) => (
+                  <div key={g.title} className="bm-game">
+                    <div className="bm-game-title">
+                      <span>{g.title}</span>
+                      <span className="bm-game-time">{g.time}</span>
                     </div>
-                    <span>{t.username}</span>
-                    <button
-                      className="bm-followed-chip-remove"
-                      onClick={(e) => { e.stopPropagation(); toggleFollow({ username: t.username }); }}
-                      title="Unfollow"
-                    >
-                      <i className="bi bi-x" />
-                    </button>
+                    <div className="bm-game-lines">
+                      {g.away} {g.spreadAway} &nbsp;&nbsp; {g.home} {g.spreadHome} &nbsp;&nbsp; {g.total}
+                    </div>
+                    <div className="bm-game-ml">{g.ml}</div>
                   </div>
                 ))}
-                <button className="bm-refresh-feed" onClick={fetchFollowedFeed} disabled={feedLoading}>
-                  <i className={`bi bi-arrow-clockwise ${feedLoading ? 'bm-spin' : ''}`} />
-                </button>
               </div>
+            ))}
+          </div>
+        </div>
+      </PinnableCard>
 
-              {feedLoading ? (
-                <SkeletonRows count={5} />
-              ) : followedFeed.length === 0 ? (
-                <div className="bm-empty-state">
-                  <i className="bi bi-inbox" />
-                  <p>No recent trades from followed traders. Check back soon.</p>
-                </div>
-              ) : (
-                <div className="bm-copy-feed">
-                  {followedFeed.map((t, i) => (
-                    <div key={i} className="bm-copy-feed-item">
-                      <div className="bm-copy-feed-avatar">
-                        {t.traderImage ? <img src={t.traderImage} alt="" /> : (t.traderUsername || '?')[0].toUpperCase()}
-                      </div>
-                      <div className="bm-copy-feed-body">
-                        <div className="bm-copy-feed-header">
-                          <span
-                            className="bm-copy-feed-username"
-                            onClick={() => handleLeaderboardClick(t.traderUsername)}
-                          >
-                            {t.traderUsername}
-                          </span>
-                          <span className={`bm-trade-side ${t.side?.toLowerCase() === 'buy' ? 'buy' : 'sell'}`}>{t.side || '—'}</span>
-                          <span className="bm-copy-feed-time">{timeAgo(t.timestamp || t.createdAt)}</span>
-                        </div>
-                        <div className="bm-copy-feed-detail">
-                          {parseFloat(t.size || 0).toFixed(2)} shares of <strong>{t.title || t.market || '—'}</strong>
-                          {t.outcome && <span className="bm-copy-feed-outcome"> ({t.outcome})</span>}
-                          {' @ '}{(parseFloat(t.price || 0) * 100).toFixed(1)}¢
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+      <div className="bm-two-col">
+        <PinnableCard cardId="betting-leaderboard" className="db-card">
+          <div className="db-card-header">
+            <h3>Betting Leaderboard</h3>
+            <button type="button" className="db-icon-btn" aria-label="Expand">
+              <i className="bi bi-box-arrow-up-right" />
+            </button>
+          </div>
+          <div style={{ padding: '0 1.25rem 1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span aria-hidden>🏆</span> Rankings
+              </span>
+              <div className="bm-lb-tabs">
+                {['All', 'Friends', 'Partners'].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`bm-lb-tab ${lbTab === t ? 'on' : ''}`}
+                    onClick={() => setLbTab(t)}
+                    title={t === 'Partners' ? 'Partners & Creators' : undefined}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
             </div>
+            <div className="bm-leader-list">
+              {leaderboardRows.map((r) => (
+                <div key={r.name} className="bm-lb-row">
+                  <span className="bm-lb-rank">{r.rank}.</span>
+                  <Link href={`/community/profile/${r.slug}`} className="bm-lb-name">
+                    {r.name}
+                  </Link>
+                  <span className="bm-lb-pnl">{r.pnl}</span>
+                  <span className="bm-lb-meta">
+                    {r.win} {r.tag}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="bm-lb-you bm-lb-row">
+              <span className="bm-lb-rank">23</span>
+              <span className="bm-lb-name" style={{ cursor: 'default', color: '#8b949e' }}>
+                You
+              </span>
+              <span className="bm-lb-pnl">+$840</span>
+              <span className="bm-lb-meta">58% win</span>
+            </div>
+            <button type="button" className="bm-view-rankings">
+              View Full Rankings →
+            </button>
           </div>
         </PinnableCard>
+
+        <PinnableCard cardId="betting-ev-finder" className="db-card">
+          <div className="db-card-header">
+            <h3>Expected Value Finder</h3>
+            <button type="button" className="db-icon-btn" aria-label="Expand">
+              <i className="bi bi-box-arrow-up-right" />
+            </button>
+          </div>
+          <div style={{ padding: '0 1.25rem 1.25rem' }}>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>High EV Opportunities Today</p>
+            {EV_ITEMS.map((e) => (
+              <div key={e.id} className="bm-ev-item">
+                <div className="bm-ev-title">{e.title}</div>
+                <div className="bm-ev-meta">
+                  EV: {e.ev} &nbsp;·&nbsp; Confidence: {e.confidence}
+                </div>
+                <button type="button" className="bm-ev-btn" onClick={() => setEvOpen(e)}>
+                  View Analysis →
+                </button>
+              </div>
+            ))}
+          </div>
+        </PinnableCard>
+      </div>
+
+      <PinnableCard cardId="betting-line-move" className="db-card">
+        <div className="db-card-header">
+          <h3>Line Movement Tracker</h3>
+          <button type="button" className="db-icon-btn" aria-label="Expand">
+            <i className="bi bi-box-arrow-up-right" />
+          </button>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {LINE_MOVES.map((lm, idx) => (
+            <div key={lm.id} className="bm-lm-item">
+              <div className="bm-lm-title">
+                <span aria-hidden>📈</span> {lm.title}
+              </div>
+              <div className="bm-lm-stats">
+                Opened: {lm.opened} &nbsp;&nbsp; Current: {lm.current} &nbsp;&nbsp; Movement:{' '}
+                <span style={{ color: lm.move.startsWith('-') ? '#ef4444' : '#10b981' }}>{lm.move}</span>
+              </div>
+              <MiniLineChart seed={idx * 17 + lm.title.length} up={!lm.move.startsWith('-')} />
+            </div>
+          ))}
+          <div className="bm-lm-footer">🚨 Reverse line movements flagged: {reverseCount} today</div>
+        </div>
+      </PinnableCard>
+
+      <CoursePreviewSection
+        title="Recommended Courses"
+        subtitle="Track 3 — Betting Markets & Prediction Markets"
+        courses={bettingCourses}
+        viewAllHref="/learning-center?track=betting"
+      />
+
+      {evOpen && (
+        <div
+          className="bm-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bm-ev-title"
+          onClick={closeModal}
+        >
+          <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="bm-modal-hdr">
+              <h2 id="bm-ev-title">Expected Value Analysis</h2>
+              <button type="button" className="bm-modal-close" onClick={closeModal} aria-label="Close">
+                <i className="bi bi-x-lg" />
+              </button>
+            </div>
+            <div className="bm-modal-sub">{evOpen.analysis.headline}</div>
+            <div className="bm-modal-section">
+              <h3>The Math</h3>
+              {evOpen.analysis.math.map((line) => (
+                <p key={line} style={{ marginBottom: '0.5rem' }}>
+                  {line}
+                </p>
+              ))}
+            </div>
+            <dl className="bm-modal-grid">
+              <dt>Implied Probability</dt>
+              <dd>{evOpen.analysis.implied ?? '—'}</dd>
+              <dt>Model Probability</dt>
+              <dd>{evOpen.analysis.model ?? '—'}</dd>
+              <dt>Edge</dt>
+              <dd>{evOpen.analysis.edge ?? '—'}</dd>
+              <dt>Expected Value</dt>
+              <dd>{evOpen.analysis.evPer100 ?? '—'} per $100 wagered</dd>
+            </dl>
+            <div className="bm-modal-section">
+              <h3>Backstory</h3>
+              {evOpen.analysis.backstory.map((p) => (
+                <p key={p} style={{ marginBottom: '0.5rem' }}>
+                  {p}
+                </p>
+              ))}
+            </div>
+            <div className="bm-modal-conf">
+              Confidence: {evOpen.analysis.confidence}
+              <div style={{ color: '#9ca3af', fontWeight: 600, marginTop: 6 }}>Based on: {evOpen.analysis.basedOn}</div>
+            </div>
+          </div>
+        </div>
       )}
-
-      {/* Row 1: Live Prediction Markets + Sports Odds */}
-      <div className="bm-grid-2">
-        {/* Live Prediction Markets */}
-        <PinnableCard cardId="polymarket-trending" title="Live Prediction Markets" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-bar-chart-line" /> Live Prediction Markets</h3>
-              <span className="bm-value-badge positive">LIVE</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-category-pills" style={{ marginBottom: '1rem' }}>
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    className={`bm-pill ${activeCategory === cat ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(cat)}
-                    type="button"
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {marketsLoading ? (
-                <SkeletonRows count={6} />
-              ) : liveMarkets.length === 0 ? (
-                <div className="bm-empty-state">
-                  <i className="bi bi-inbox" />
-                  <p>No markets found for this category.</p>
-                </div>
-              ) : (
-                <div className="bm-prediction-list">
-                  {liveMarkets.map((m, i) => {
-                    const cat = guessCategory(m);
-                    const yesPrice = parseYesPrice(m);
-                    return (
-                      <div
-                        key={m.id || i}
-                        className="bm-prediction-card"
-                        role="button"
-                        tabIndex={0}
-                        data-task-target={i === 0 ? 'prediction-market-item' : undefined}
-                        onClick={() => completeTask('market_2')}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('market_2'); }}
-                      >
-                        <div className={`bm-prediction-icon ${cat}`}>
-                          <i className={`bi ${CATEGORY_ICONS[cat] || 'bi-question-circle'}`} />
-                        </div>
-                        <div className="bm-prediction-body">
-                          <div className="bm-prediction-title">{m.question}</div>
-                          <div className="bm-prediction-meta">
-                            <span className="bm-prediction-volume">{formatVolume(m.volume)} volume</span>
-                            <span>{formatVolume(m.liquidity)} liquidity</span>
-                            {m.endDate && <span>Ends {new Date(m.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>}
-                          </div>
-                          <div className="bm-prediction-bar-wrap">
-                            <div className="bm-yes-no"><span className="t-green">YES</span></div>
-                            <div className="bm-prediction-bar">
-                              <div className="bm-prediction-bar-fill" style={{ width: `${yesPrice}%` }} />
-                            </div>
-                            <div className="bm-prediction-pct">{yesPrice}¢</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </PinnableCard>
-
-        {/* Sports Odds Board */}
-        <PinnableCard cardId="sports-odds" title="Sports Odds Board" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
-          <div className="component-card" data-task-target="sports-odds-board">
-            <div className="card-header">
-              <h3><i className="bi bi-trophy" /> Sports Odds Board</h3>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Today&apos;s Lines</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-odds-board">
-                {SPORTS_ODDS.map((sport) => (
-                  <div key={sport.sport}>
-                    <div className="bm-sport-header">
-                      <i className={`bi ${sport.icon}`} /> {sport.sport}
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr repeat(3, 80px)', gap: 0, marginBottom: '0.25rem' }}>
-                      <div />
-                      <div />
-                      <div className="bm-odds-label">Spread</div>
-                      <div className="bm-odds-label">Total</div>
-                      <div className="bm-odds-label">ML</div>
-                    </div>
-                    {sport.games.map((g, gi) => (
-                      <div key={gi} className="bm-game-row" role="button" tabIndex={0} onClick={() => completeTask('market_3')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') completeTask('market_3'); }}>
-                        <div className="bm-game-time">{g.time}</div>
-                        <div className="bm-teams">
-                          <div className="bm-team">{g.home}</div>
-                          <div className="bm-team away">{g.away}</div>
-                        </div>
-                        <div className="bm-odds-cell">{g.spread}</div>
-                        <div className="bm-odds-cell">O/U {g.total}</div>
-                        <div className="bm-odds-cell">{g.ml}</div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </PinnableCard>
-      </div>
-
-      {/* Row 2: Leaderboard + Expected Value */}
-      <div className="bm-grid-2">
-        {/* Polymarket Leaderboard */}
-        <PinnableCard cardId="polymarket-leaderboard" title="Polymarket Leaderboard" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={3}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-award" /> Polymarket Leaderboard</h3>
-              <span className="bm-value-badge positive">LIVE</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-window-tabs">
-                {LEADERBOARD_WINDOWS.map((w) => (
-                  <button
-                    key={w.value}
-                    className={`bm-window-tab ${lbWindow === w.value ? 'active' : ''}`}
-                    onClick={() => setLbWindow(w.value)}
-                    type="button"
-                  >
-                    {w.label}
-                  </button>
-                ))}
-              </div>
-
-              {lbLoading ? (
-                <SkeletonRows count={8} />
-              ) : leaderboard.length === 0 ? (
-                <div className="bm-empty-state">
-                  <i className="bi bi-inbox" />
-                  <p>No leaderboard data available.</p>
-                </div>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="bm-leaderboard-table">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Trader</th>
-                        <th>Profit</th>
-                        <th>Volume</th>
-                        <th>Markets</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {leaderboard.map((t, i) => {
-                        const rank = i + 1;
-                        const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : 'default';
-                        const username = t.pseudonym || t.username || t.name || `0x…${(t.proxyWallet || t.userAddress || '').slice(-4)}`;
-                        const profit = parseFloat(t.profit || t.pnl || 0);
-                        const volume = parseFloat(t.volume || 0);
-                        const numMarkets = t.numMarkets || t.markets || '—';
-
-                        return (
-                          <tr key={i} onClick={() => handleLeaderboardClick(username)} title={`View ${username}'s profile`}>
-                            <td><span className={`bm-leaderboard-rank ${rankClass}`}>{rank}</span></td>
-                            <td>
-                              <div className="bm-leaderboard-user">
-                                <div className="bm-leaderboard-user-avatar">
-                                  {t.profileImage ? <img src={t.profileImage} alt="" /> : username[0]?.toUpperCase()}
-                                </div>
-                                <span className="bm-leaderboard-username">{username}</span>
-                              </div>
-                            </td>
-                            <td><span className={profit >= 0 ? 'bm-profit-positive' : 'bm-profit-negative'}>{formatMoney(profit)}</span></td>
-                            <td>{formatVolume(volume)}</td>
-                            <td>{numMarkets}</td>
-                            <td>
-                              <button
-                                className={`bm-follow-btn-sm ${isFollowing(username) ? 'following' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleFollow({ username, profileImage: t.profileImage || '', proxyWallet: t.proxyWallet || t.userAddress || '' });
-                                }}
-                                title={isFollowing(username) ? 'Unfollow' : 'Follow'}
-                              >
-                                <i className={`bi ${isFollowing(username) ? 'bi-check-lg' : 'bi-plus-lg'}`} />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </PinnableCard>
-
-        {/* Expected Value Finder */}
-        <PinnableCard cardId="ev-finder" title="Expected Value Finder" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-bullseye" /> Expected Value Finder</h3>
-              <span className="bm-value-badge positive">{VALUE_OPPORTUNITIES.filter((v) => v.type === 'positive').length} EV+ BETS</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-prediction-list">
-                {VALUE_OPPORTUNITIES.map((v, i) => (
-                  <div key={i} className="bm-prediction-card">
-                    <div className={`bm-prediction-icon ${v.type === 'positive' ? 'economics' : 'sports'}`}>
-                      <i className={`bi ${v.type === 'positive' ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
-                    </div>
-                    <div className="bm-prediction-body">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 4 }}>
-                        <span className="bm-prediction-title" style={{ marginBottom: 0 }}>{v.market}</span>
-                        <span className={`bm-value-badge ${v.type === 'positive' ? 'positive' : ''}`} style={v.type !== 'positive' ? { background: 'rgba(239,68,68,0.15)', color: '#ef4444' } : {}}>
-                          EV {v.ev}
-                        </span>
-                      </div>
-                      <div className="bm-prediction-meta">
-                        <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{v.source}</span>
-                      </div>
-                      <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{v.reason}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </PinnableCard>
-      </div>
-
-      {/* Row 3: Line Movement + Resolved Markets */}
-      <div className="bm-grid-2">
-        {/* Line Movement Tracker */}
-        <PinnableCard cardId="line-movement" title="Line Movement Tracker" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-arrow-left-right" /> Line Movement Tracker</h3>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Last 24h</span>
-            </div>
-            <div className="card-body">
-              <table className="bm-line-table">
-                <thead>
-                  <tr>
-                    <th>Game</th>
-                    <th>League</th>
-                    <th>Open Spread</th>
-                    <th>Current</th>
-                    <th>Open Total</th>
-                    <th>Current</th>
-                    <th>Sharp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {LINE_MOVEMENTS.map((l, i) => (
-                    <tr key={i}>
-                      <td className="ticker">{l.game}</td>
-                      <td>{l.type}</td>
-                      <td>{l.openSpread}</td>
-                      <td>
-                        <span className={l.openSpread !== l.currentSpread ? 'bm-arrow-up' : ''}>
-                          {l.currentSpread}
-                        </span>
-                      </td>
-                      <td>{l.openTotal}</td>
-                      <td>
-                        <span className={l.direction === 'down' ? 'bm-arrow-down' : l.direction === 'up' ? 'bm-arrow-up' : ''}>
-                          {l.currentTotal} {l.openTotal !== l.currentTotal && (l.direction === 'down' ? '↓' : '↑')}
-                        </span>
-                      </td>
-                      <td>{l.sharp && <span className="bm-value-badge arb"><i className="bi bi-lightning-fill" /> SHARP</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </PinnableCard>
-
-        {/* Resolved Markets */}
-        <PinnableCard cardId="resolved-markets" title="Recently Resolved Markets" sourcePage="/betting-markets" sourceLabel="Betting Markets" defaultW={6} defaultH={2}>
-          <div className="component-card">
-            <div className="card-header">
-              <h3><i className="bi bi-check2-circle" /> Recently Resolved Markets</h3>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted-foreground)' }}>Polymarket</span>
-            </div>
-            <div className="card-body">
-              <div className="bm-resolved-list">
-                {RESOLVED_MARKETS.map((r, i) => (
-                  <div key={i} className={`bm-resolved-item ${r.outcome === 'yes' ? 'correct' : 'incorrect'}`}>
-                    <div className={`bm-resolved-outcome ${r.outcome}`}>
-                      <i className={`bi ${r.outcome === 'yes' ? 'bi-check-lg' : 'bi-x-lg'}`} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div className="bm-resolved-text">{r.title}</div>
-                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: 4 }}>
-                        <span className="bm-resolved-date">{r.date}</span>
-                        <span style={{ fontSize: '0.625rem', fontWeight: 700, color: r.outcome === 'yes' ? '#10b981' : '#ef4444' }}>
-                          Resolved {r.outcome.toUpperCase()} at {r.finalPrice}¢
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </PinnableCard>
-      </div>
     </div>
   );
 }
