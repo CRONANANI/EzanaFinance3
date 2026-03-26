@@ -360,7 +360,7 @@ export default function CommunityPageClient() {
     []
   );
 
-  const communityCourses = useMemo(() => getMixedCoursesFromAllTracks(8), []);
+  const communityCourses = useMemo(() => getMixedCoursesFromAllTracks(4), []);
 
   return (
     <div className="comm-page dashboard-page-inset db-page">

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useChecklist } from '@/hooks/useChecklist';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { getCoursesByTrack } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -396,6 +398,21 @@ function InsideTheCapitolContent() {
   const [activePolIdx, setActivePolIdx] = useState(0);
   const [perfWindow, setPerfWindow] = useState('1Y');
 
+  const capitolCourses = useMemo(() => {
+    const stocks = getCoursesByTrack('stocks');
+    const relevant = stocks.filter(c =>
+      c.title.includes('Macroeconomics') ||
+      c.title.includes('Behavioral Finance') ||
+      c.title.includes('Reading Financial News') ||
+      c.title.includes('Fundamental Analysis 101')
+    );
+    if (relevant.length < 4) {
+      const fill = stocks.filter(c => c.level === 'basic' && !relevant.find(r => r.id === c.id));
+      return [...relevant, ...fill].slice(0, 4);
+    }
+    return relevant.slice(0, 4);
+  }, []);
+
   useEffect(() => {
     setActivePartyFilter(partyFilter || null);
   }, [partyFilter]);
@@ -695,32 +712,12 @@ function InsideTheCapitolContent() {
         </PinnableCard>
       </div>
 
-      {/* ── Learning ── */}
-      <section className="learning-opportunities">
-        <div className="learning-header">
-          <div className="learning-title-area">
-            <div className="learning-icon"><i className="bi bi-mortarboard-fill" /></div>
-            <div className="learning-title-text"><h3>Political Trading Analysis</h3><p>Learn to analyze and track congressional trading patterns</p></div>
-          </div>
-          <Link href="/learning-center" className="view-all-btn">View All Courses</Link>
-        </div>
-        <div className="courses-grid">
-          {[
-            { title: 'Congressional Trading 101', desc: 'Track, analyze, and interpret congressional stock trades.', dur: '3 hours', lessons: 10, enrolled: 3124, level: 'beginner' },
-            { title: 'Lobbying Data Analysis', desc: 'Analyze lobbying expenditures and connect them to markets.', dur: '4 hours', lessons: 12, enrolled: 1847, level: 'intermediate' },
-            { title: 'Policy Impact on Markets', desc: 'Predict market movements based on legislative proposals.', dur: '5 hours', lessons: 16, enrolled: 2456, level: 'advanced' },
-            { title: '13F Filing Deep Dive', desc: 'Read and interpret institutional 13F filings.', dur: '2 hours', lessons: 8, enrolled: 2891, level: 'beginner' },
-          ].map((c, i) => (
-            <div key={i} className="course-card">
-              <div className="course-header"><span className="course-type">{i % 2 === 0 ? 'Course' : 'Skill'}</span><span className="course-duration"><i className="bi bi-clock" /> {c.dur}</span></div>
-              <h4 className="course-title">{c.title}</h4>
-              <p className="course-description">{c.desc}</p>
-              <div className="course-meta"><div className="meta-item"><i className="bi bi-book" /> {c.lessons} lessons</div><div className="meta-item"><i className="bi bi-people" /> {c.enrolled.toLocaleString()} enrolled</div></div>
-              <div className="course-footer"><span className={`course-level ${c.level}`}>{c.level.charAt(0).toUpperCase() + c.level.slice(1)}</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <CoursePreviewSection
+        title="Political Trading Analysis"
+        subtitle="Learn to analyze and track congressional trading patterns"
+        courses={capitolCourses}
+        viewAllHref="/learning-center?track=stocks"
+      />
     </div>
   );
 }

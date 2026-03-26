@@ -17,6 +17,8 @@ import { PinnableCard } from '@/components/ui/PinnableCard';
 import { useCompanySearchFinnhub, useCompanyProfile, useStockMetric } from '@/hooks/useFinnhub';
 import { getCarouselModels } from '@/lib/ai/analysis-prompts';
 import { useChecklist } from '@/hooks/useChecklist';
+import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+import { getCoursesByTrack } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -47,6 +49,21 @@ function CompanyResearchPageInner() {
   const [activeModel, setActiveModel] = useState(null);
   const searchRef = useRef(null);
   const modelsCarouselScrollRef = useRef(null);
+
+  const researchCourses = useMemo(() => {
+    const stocks = getCoursesByTrack('stocks');
+    const relevant = stocks.filter(c =>
+      c.title.includes('Fundamental Analysis') ||
+      c.title.includes('Financial Statements') ||
+      c.title.includes('Sector Analysis') ||
+      c.title.includes('Earnings Season')
+    );
+    if (relevant.length < 4) {
+      const fill = stocks.filter(c => c.level === 'basic' && !relevant.find(r => r.id === c.id));
+      return [...relevant, ...fill].slice(0, 4);
+    }
+    return relevant.slice(0, 4);
+  }, []);
 
   const {
     query,
@@ -442,48 +459,12 @@ function CompanyResearchPageInner() {
         </section>
       )}
 
-      <section className="learning-opportunities">
-        <div className="learning-header">
-          <div className="learning-title-area">
-            <div className="learning-icon"><i className="bi bi-mortarboard-fill" /></div>
-            <div className="learning-title-text">
-              <h3>Fundamental Analysis Mastery</h3>
-              <p>Deep dive into financial statement analysis and valuation</p>
-            </div>
-          </div>
-          <Link href="/learning-center" className="view-all-btn">View All Courses</Link>
-        </div>
-        <div className="courses-grid">
-          <div className="course-card">
-            <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 6 hours</span></div>
-            <h4 className="course-title">Financial Statement Analysis</h4>
-            <p className="course-description">Master reading and analyzing income statements, balance sheets, and cash flow statements.</p>
-            <div className="course-meta"><div className="meta-item"><i className="bi bi-book" /> 20 lessons</div><div className="meta-item"><i className="bi bi-people" /> 3,241 enrolled</div></div>
-            <div className="course-footer"><span className="course-level intermediate">Intermediate</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-          </div>
-          <div className="course-card">
-            <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 8 hours</span></div>
-            <h4 className="course-title">Valuation Methods &amp; DCF Modeling</h4>
-            <p className="course-description">Learn to build discounted cash flow models and understand various valuation methodologies.</p>
-            <div className="course-meta"><div className="meta-item"><i className="bi bi-book" /> 24 lessons</div><div className="meta-item"><i className="bi bi-people" /> 2,847 enrolled</div></div>
-            <div className="course-footer"><span className="course-level advanced">Advanced</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-          </div>
-          <div className="course-card">
-            <div className="course-header"><span className="course-type">Skill</span><span className="course-duration"><i className="bi bi-clock" /> 4 hours</span></div>
-            <h4 className="course-title">Earnings Call Analysis</h4>
-            <p className="course-description">Learn to extract insights from quarterly earnings calls and management guidance.</p>
-            <div className="course-meta"><div className="meta-item"><i className="bi bi-book" /> 14 lessons</div><div className="meta-item"><i className="bi bi-people" /> 1,923 enrolled</div></div>
-            <div className="course-footer"><span className="course-level intermediate">Intermediate</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-          </div>
-          <div className="course-card">
-            <div className="course-header"><span className="course-type">Course</span><span className="course-duration"><i className="bi bi-clock" /> 5 hours</span></div>
-            <h4 className="course-title">Competitive Analysis Frameworks</h4>
-            <p className="course-description">Master Porter&apos;s Five Forces, SWOT analysis, and competitive positioning strategies.</p>
-            <div className="course-meta"><div className="meta-item"><i className="bi bi-book" /> 18 lessons</div><div className="meta-item"><i className="bi bi-people" /> 2,134 enrolled</div></div>
-            <div className="course-footer"><span className="course-level beginner">Beginner</span><button className="enroll-btn" type="button">Enroll Now</button></div>
-          </div>
-        </div>
-      </section>
+      <CoursePreviewSection
+        title="Fundamental Analysis Mastery"
+        subtitle="Deep dive into financial statement analysis and valuation"
+        courses={researchCourses}
+        viewAllHref="/learning-center?track=stocks"
+      />
     </div>
   );
 }

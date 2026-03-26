@@ -39,7 +39,7 @@ export function CoursePreviewSection({
           {viewAllLabel}
         </Link>
       </div>
-      <div className="courses-grid courses-grid--scroll">
+      <div className="courses-grid">
         {courses.map((c) => (
           <Link key={c.id} href={`/learning-center/course/${c.id}`} className="course-card course-card--link">
             <div className="course-header">
