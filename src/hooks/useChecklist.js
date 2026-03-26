@@ -68,6 +68,11 @@ export function useChecklist() {
           .eq('id', user.id)
           .then(() => {
             window.dispatchEvent(new Event('checklist-updated'));
+            fetch('/api/rewards/checklist-task', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ taskId }),
+            }).catch(() => {});
           });
         return updated;
       });

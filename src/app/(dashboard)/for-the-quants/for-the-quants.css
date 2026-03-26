@@ -79,6 +79,18 @@
   align-items: stretch;
 }
 
+.ftq-row-60-40 > .db-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ftq-row-60-40 > .db-card .ftq-card-body-pad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Row 3–4 */
 .ftq-row-50 {
   display: grid;
@@ -86,6 +98,18 @@
   gap: 1rem;
   margin-bottom: 1.25rem;
   align-items: stretch;
+}
+
+.ftq-row-50 > .db-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ftq-row-50 > .db-card .ftq-card-body-pad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .ftq-card-body-pad {

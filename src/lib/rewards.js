@@ -66,17 +66,19 @@ export async function awardXP(userId, amount, reason, category) {
     const newTier = tierForXp(newTotal);
     const perks = TIER_PERKS[newTier] || TIER_PERKS.bronze;
 
-    const { error: upErr } = await supabase.from('user_rewards').upsert(
-      {
-        user_id: userId,
-        total_xp: newTotal,
-        tier: newTier,
-        trading_credit_balance: perks.trading_credit_balance,
-        sweepstakes_entries: perks.sweepstakes_entries,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id' }
-    );
+    const row = {
+      user_id: userId,
+      total_xp: newTotal,
+      tier: newTier,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!rewards || newTier !== oldTier) {
+      row.trading_credit_balance = perks.trading_credit_balance;
+      row.sweepstakes_entries = perks.sweepstakes_entries;
+    }
+
+    const { error: upErr } = await supabase.from('user_rewards').upsert(row, { onConflict: 'user_id' });
     if (upErr) throw upErr;
 
     return { newTotal, newTier, oldTier };

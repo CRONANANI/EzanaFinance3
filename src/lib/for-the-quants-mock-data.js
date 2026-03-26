@@ -42,6 +42,7 @@ export const MY_STRATEGIES = [
 /** Shared benchmark line for the Latest Backtest Results card */
 export const LATEST_BACKTEST_BENCHMARK = '+12.1%';
 
+/** Two rows in Latest Backtest Results — pairs with Strategy Builder column height */
 export const LATEST_BACKTESTS = [
   {
     id: 'ma-cross-bt',
