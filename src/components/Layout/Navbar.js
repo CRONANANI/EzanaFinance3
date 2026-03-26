@@ -19,7 +19,7 @@ export function Navbar() {
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
   const showLandingNav = isLanding || isHelpCenter;
-  const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo') || pathname?.includes('/commodities-research') || pathname?.includes('/crypto-research');
+  const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo') || pathname?.includes('/alternative-markets');
 
   const userNavItems = [
     { id: 1, title: 'Dashboard', url: '/home-dashboard', icon: 'bi-speedometer2', isActive: pathname?.includes('home-dashboard') },
@@ -37,8 +37,7 @@ export function Navbar() {
         { id: 24, title: 'For The Quants', description: 'Quant tools', url: '/for-the-quants', icon: 'bi-calculator' },
         { id: 25, title: 'Betting Markets', description: 'Odds & predictions', url: '/betting-markets', icon: 'bi-bullseye' },
         { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
-        { id: 27, title: 'Commodities Research', description: 'Global commodity markets', url: '/commodities-research', icon: 'bi-droplet-half' },
-        { id: 28, title: 'Crypto Research', description: 'Digital assets & on-chain', url: '/crypto-research', icon: 'bi-currency-bitcoin' },
+        { id: 27, title: 'Alternative Markets', description: 'Crypto & commodities', url: '/alternative-markets', icon: 'bi-globe2' },
       ],
     },
     { id: 3, title: 'Trading', url: '/trading', icon: 'bi-graph-up-arrow', isActive: pathname?.includes('/trading') },
@@ -273,13 +272,9 @@ export function Navbar() {
                 <i className="bi bi-newspaper"></i>
                 <div><div className="item-title">Ezana Echo</div></div>
               </Link>
-              <Link href="/commodities-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-droplet-half"></i>
-                <div><div className="item-title">Commodities Research</div></div>
-              </Link>
-              <Link href="/crypto-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-currency-bitcoin"></i>
-                <div><div className="item-title">Crypto Research</div></div>
+              <Link href="/alternative-markets" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-globe2"></i>
+                <div><div className="item-title">Alternative Markets</div></div>
               </Link>
             </div>
           </div>

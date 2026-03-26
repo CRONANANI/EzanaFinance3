@@ -123,6 +123,10 @@ export function PartnerNavbar() {
                   <i className="bi bi-newspaper" />
                   <div><span className="nav-dropdown-title">Ezana Echo</span><span className="nav-dropdown-desc">Articles & insights</span></div>
                 </Link>
+                <Link href="/alternative-markets" className="nav-dropdown-item" onClick={closeResearch}>
+                  <i className="bi bi-globe2" />
+                  <div><span className="nav-dropdown-title">Alternative Markets</span><span className="nav-dropdown-desc">Crypto & commodities</span></div>
+                </Link>
                 <Link href="/financial-analytics" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-pie-chart" />
                   <div><span className="nav-dropdown-title">Financial Analytics</span><span className="nav-dropdown-desc">Deep metrics</span></div>

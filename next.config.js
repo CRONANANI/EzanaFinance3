@@ -10,6 +10,14 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      { source: '/commodities-research', destination: '/alternative-markets', permanent: true },
+      { source: '/commodities-research/:path*', destination: '/alternative-markets', permanent: true },
+      { source: '/crypto-research', destination: '/alternative-markets', permanent: true },
+      { source: '/crypto-research/:path*', destination: '/alternative-markets', permanent: true },
+    ];
+  },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },

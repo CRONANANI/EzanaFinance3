@@ -21,8 +21,7 @@ export const USER_DASHBOARD_ROUTES = [
   '/financial-analytics',
   '/inside-the-capitol',
   '/ezana-echo',
-  '/commodities-research',
-  '/crypto-research',
+  '/alternative-markets',
   '/settings',
 ];
 

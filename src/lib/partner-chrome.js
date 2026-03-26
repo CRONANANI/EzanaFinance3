@@ -13,8 +13,7 @@ export const PARTNER_SHARED_APP_ROUTES = [
   '/for-the-quants',
   '/betting-markets',
   '/ezana-echo',
-  '/commodities-research',
-  '/crypto-research',
+  '/alternative-markets',
   '/financial-analytics',
 ];
 
@@ -26,8 +25,7 @@ export const PARTNER_RESEARCH_ROUTES = [
   '/for-the-quants',
   '/betting-markets',
   '/ezana-echo',
-  '/commodities-research',
-  '/crypto-research',
+  '/alternative-markets',
   '/financial-analytics',
 ];
 
