@@ -45,6 +45,26 @@ const CIRCLE_ACTIVITY = [
   { initials: 'AC', name: 'Alex Chen', userId: null, time: '2h ago', action: 'Added AMZN to watchlist' },
 ];
 
+function PartnerOrCreatorBadge({ isPartner, partnerType }) {
+  if (!isPartner) return null;
+  return (
+    <span
+      style={{
+        background: 'rgba(245, 158, 11, 0.15)',
+        color: '#f59e0b',
+        fontSize: '0.65rem',
+        padding: '2px 6px',
+        borderRadius: '4px',
+        fontWeight: 600,
+        marginLeft: '6px',
+        flexShrink: 0,
+      }}
+    >
+      {partnerType === 'creator' ? 'Creator' : 'Partner'}
+    </span>
+  );
+}
+
 function CommunityUserLink({ userId, children, className, style }) {
   if (!userId) return (
     <span className={className} style={style}>
@@ -81,6 +101,7 @@ export default function CommunityPageClient() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchBusy, setSearchBusy] = useState(false);
   const [friendBusy, setFriendBusy] = useState({});
+  const [incomingFriendRequests, setIncomingFriendRequests] = useState([]);
 
   const fetchFeed = useCallback(async () => {
     setFeedLoading(true);
@@ -123,6 +144,27 @@ export default function CommunityPageClient() {
   useEffect(() => {
     fetchFeed();
   }, [fetchFeed]);
+
+  useEffect(() => {
+    if (!user) {
+      setIncomingFriendRequests([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/community/friend-request');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled) setIncomingFriendRequests(json.requests || []);
+      } catch {
+        if (!cancelled) setIncomingFriendRequests([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     const syms = [
@@ -205,6 +247,21 @@ export default function CommunityPageClient() {
       });
     } finally {
       setFriendBusy((b) => ({ ...b, [receiverId]: false }));
+    }
+  };
+
+  const respondIncomingFriend = async (requestId, status) => {
+    try {
+      const res = await fetch('/api/community/friend-request', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: requestId, status }),
+      });
+      if (res.ok) {
+        setIncomingFriendRequests((prev) => prev.filter((r) => r.id !== requestId));
+      }
+    } catch {
+      /* ignore */
     }
   };
 
@@ -343,10 +400,17 @@ export default function CommunityPageClient() {
                 <div key={u.id} className="comm-search-row">
                   <Link href={`/community/profile/${u.id}`} className="comm-search-hit">
                     <div className="comm-search-av" aria-hidden>
-                      {getInitials(u.full_name)}
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} alt="" className="comm-search-av-img" />
+                      ) : (
+                        getInitials(u.full_name)
+                      )}
                     </div>
                     <div className="comm-search-meta">
-                      <span className="comm-search-name">{u.full_name}</span>
+                      <span className="comm-search-name">
+                        {u.full_name}
+                        <PartnerOrCreatorBadge isPartner={u.is_partner} partnerType={u.partner_type} />
+                      </span>
                       {u.bio ? <span className="comm-search-bio">{u.bio}</span> : null}
                     </div>
                   </Link>
@@ -572,6 +636,58 @@ export default function CommunityPageClient() {
           </div>
           <div className="comm-inner-scroll">
             <p className="comm-circle-head">Following: 23 · Followers: 47</p>
+            {user && incomingFriendRequests.length > 0 ? (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <p
+                  style={{
+                    fontSize: '0.5625rem',
+                    fontWeight: 700,
+                    color: '#6b7280',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    margin: '0 0 0.35rem',
+                  }}
+                >
+                  Friend requests
+                </p>
+                {incomingFriendRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.5rem',
+                      padding: '0.4rem 0',
+                      borderBottom: '1px solid rgba(16,185,129,0.08)',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    <Link href={`/community/profile/${req.sender_id}`} className="comm-name-link" style={{ flex: 1, minWidth: 0 }}>
+                      {req.sender_name}
+                    </Link>
+                    <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        className="comm-btn-sm"
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem' }}
+                        onClick={() => respondIncomingFriend(req.id, 'accepted')}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        className="db-tf-btn"
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem' }}
+                        onClick={() => respondIncomingFriend(req.id, 'rejected')}
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
             <p
               style={{
                 fontSize: '0.5625rem',

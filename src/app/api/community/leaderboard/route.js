@@ -19,7 +19,7 @@ export async function GET(request) {
 
     const { data: profileRows, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, user_settings')
+      .select('id, user_settings, full_name')
       .order('created_at', { ascending: false })
       .limit(800);
 
@@ -32,7 +32,7 @@ export async function GET(request) {
       .map((row) => {
         const s = row.user_settings || {};
         if (s.privacy_show_on_leaderboard === false) return null;
-        const name = (s.display_name || '').trim() || 'Member';
+        const name = (row.full_name || s.display_name || '').trim() || 'Member';
         return { id: row.id, name, seed: row.id };
       })
       .filter(Boolean)

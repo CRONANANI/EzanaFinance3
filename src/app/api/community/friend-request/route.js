@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 function displayNameFromProfile(row) {
   if (!row) return 'Someone';
   const s = row.user_settings || {};
-  return (s.display_name || '').trim() || 'Member';
+  return (row.full_name || s.display_name || '').trim() || 'Member';
 }
 
 /** GET — pending incoming friend requests for current user */
@@ -34,7 +34,7 @@ export async function GET() {
     const senderIds = [...new Set((rows || []).map((r) => r.sender_id))];
     let profileMap = {};
     if (senderIds.length > 0) {
-      const { data: profs } = await supabaseAdmin.from('profiles').select('id, user_settings').in('id', senderIds);
+      const { data: profs } = await supabaseAdmin.from('profiles').select('id, full_name, user_settings').in('id', senderIds);
       profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
     }
 

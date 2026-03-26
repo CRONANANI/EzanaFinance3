@@ -136,8 +136,22 @@ export default function CommunityUserProfilePage() {
             )}
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <h1 className="db-greeting" style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>
-              {display}
+            <h1 className="db-greeting" style={{ fontSize: '1.5rem', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span>{display}</span>
+              {p.is_partner ? (
+                <span
+                  style={{
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: '#f59e0b',
+                    fontSize: '0.65rem',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {p.partner_type === 'creator' ? 'Creator' : 'Partner'}
+                </span>
+              ) : null}
             </h1>
             {p.bio ? (
               <p style={{ color: '#8b949e', fontSize: '0.8125rem', margin: 0, lineHeight: 1.45 }}>

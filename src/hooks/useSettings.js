@@ -90,9 +90,14 @@ export function useSettings() {
         return false;
       }
 
+      const displayName = (settings.display_name || '').trim();
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ user_settings: settings, updated_at: new Date().toISOString() })
+        .update({
+          user_settings: settings,
+          full_name: displayName || null,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', user.id);
 
       if (updateError) {

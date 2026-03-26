@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
 
     const { data: profileRow, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, user_settings, email')
+      .select('id, user_settings, email, full_name, is_partner, partner_type, partner_verified_at')
       .eq('id', userId)
       .maybeSingle();
 
@@ -109,9 +109,12 @@ export async function GET(request, { params }) {
     return NextResponse.json({
       profile: {
         id: profileRow.id,
-        display_name: settings.display_name || '',
+        display_name: settings.display_name || profileRow.full_name || '',
         bio: settings.bio || '',
         avatar_url: settings.avatar_url || '',
+        is_partner: profileRow.is_partner === true,
+        partner_type: profileRow.partner_type || null,
+        partner_verified_at: profileRow.partner_verified_at || null,
         privacy_show_portfolio: settings.privacy_show_portfolio === true,
         privacy_show_trades: settings.privacy_show_trades === true,
         privacy_show_holdings: settings.privacy_show_holdings === true,
