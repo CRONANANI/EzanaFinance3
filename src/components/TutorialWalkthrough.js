@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 const TUTORIAL_STEPS = [
@@ -32,23 +33,36 @@ const TUTORIAL_STEPS = [
 ];
 
 export function TutorialWalkthrough() {
+  const pathname = usePathname();
   const [currentStep, setCurrentStep] = useState(0);
   const [visible, setVisible] = useState(false);
 
   const checkIfShouldShow = useCallback(async () => {
+    // Never show on onboarding, settings, auth, or plan selection pages
+    if (pathname?.includes('/onboarding') || 
+        pathname?.includes('/settings') || 
+        pathname?.includes('/auth') ||
+        pathname?.includes('/select-plan')) {
+      return;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('has_seen_tutorial')
+      .select('has_seen_tutorial, onboarding_completed')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (profile && profile.has_seen_tutorial !== true) {
-      setVisible(true);
+    // Only show tutorial if:
+    // 1. Onboarding is completed
+    // 2. User hasn't seen the tutorial yet
+    if (profile && profile.onboarding_completed === true && profile.has_seen_tutorial !== true) {
+      // Small delay to let the home page render first
+      setTimeout(() => setVisible(true), 1000);
     }
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     checkIfShouldShow();

@@ -107,7 +107,7 @@ export async function POST(request) {
       customer: customerId,
       line_items: [{ price: plan.priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/home?checkout=success`,
       cancel_url: `${origin}${safeCancel}?canceled=true`,
       payment_method_collection: 'always',
       subscription_data: {
