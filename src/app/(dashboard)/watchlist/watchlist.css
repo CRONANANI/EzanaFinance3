@@ -113,6 +113,16 @@
   padding: .45rem .65rem;
   background: rgba(16,185,129,.03); border: 1px solid rgba(16,185,129,.06);
   border-radius: 7px; display: flex; flex-direction: column; gap: 1px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.wl-comm.active {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+.wl-comm:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.04);
 }
 .wl-comm-name { font-size: .5rem; font-weight: 700; color: var(--muted-foreground,#6b7280); text-transform: uppercase; letter-spacing: .06em; }
 .wl-comm-price { font-size: .8125rem; font-weight: 700; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; }

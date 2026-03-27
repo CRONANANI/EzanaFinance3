@@ -235,7 +235,18 @@ export function HomeTerminalSummary({
           </div>
           <div className="hts-card-body">
             <div className="hts-streak-head">
-              <span className="hts-streak-emoji" aria-hidden>🔥</span>
+              <span className="hts-streak-emoji" aria-hidden style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.15)',
+              }}>
+                <i className="bi bi-fire" style={{ fontSize: '1.1rem', color: '#f59e0b' }} />
+              </span>
               <span className="hts-streak-num">{streakDays} Days</span>
             </div>
             <div className="hts-week-dots">
@@ -359,7 +370,7 @@ export function HomeTerminalSummary({
               <span style={{ width: `${activityScore}%` }} />
             </div>
             <div className="hts-activity-label">{scoreLabel(activityScore)}</div>
-            <p className="hts-footnote">Streak: 🔥 {streakDays} days</p>
+            <p className="hts-footnote">Streak: <i className="bi bi-fire" style={{ color: '#f59e0b', marginRight: '2px' }} /> {streakDays} days</p>
             <p className="hts-subsection-title">This Week</p>
             <div className="hts-check-row">
               <i className="bi bi-check-circle-fill" />

@@ -172,6 +172,8 @@ body.light-mode .lc2-hero-kicker {
   display: flex;
   gap: 0.75rem;
   align-items: flex-start;
+  padding: 0.75rem 1rem;
+  margin: 0 -1rem;
 }
 
 .lc2-partner-avatar {

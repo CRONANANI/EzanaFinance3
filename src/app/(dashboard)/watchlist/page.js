@@ -50,18 +50,18 @@ const TOP_STRIP = [
 
 /* ── Commodities & futures strip ── */
 const COMMODITIES = [
-  { name: 'Gold', price: 2648.5, change: 18.25, pct: 0.69 },
-  { name: 'Silver', price: 31.24, change: 0.82, pct: 2.7 },
-  { name: 'Platinum', price: 1024.3, change: 12.4, pct: 1.23 },
-  { name: 'Palladium', price: 1088.0, change: -9.2, pct: -0.84 },
-  { name: 'Copper', price: 4.38, change: -0.05, pct: -1.13 },
-  { name: 'Oil (WTI)', price: 78.91, change: 1.24, pct: 1.6 },
-  { name: 'Nat Gas', price: 3.42, change: -0.08, pct: -2.28 },
-  { name: 'Bitcoin', price: 98240.0, change: 1240.0, pct: 1.28 },
-  { name: 'Ethereum', price: 3456.0, change: 42.3, pct: 1.24 },
-  { name: 'Solana', price: 188.4, change: 3.12, pct: 1.68 },
-  { name: 'Wheat', price: 548.25, change: -4.5, pct: -0.81 },
-  { name: 'Corn', price: 442.5, change: 2.25, pct: 0.51 },
+  { id: 'cmd-gold', type: 'commodity', name: 'Gold', ticker: 'GC=F', price: 2648.5, change: 18.25, pct: 0.69, topAssets: ['Mining','Central Banks','ETFs','Jewelry'] },
+  { id: 'cmd-silver', type: 'commodity', name: 'Silver', ticker: 'SI=F', price: 31.24, change: 0.82, pct: 2.7, topAssets: ['Industrial','Solar','ETFs','Jewelry'] },
+  { id: 'cmd-platinum', type: 'commodity', name: 'Platinum', ticker: 'PL=F', price: 1024.3, change: 12.4, pct: 1.23, topAssets: ['Auto','Industrial','Jewelry','Investment'] },
+  { id: 'cmd-palladium', type: 'commodity', name: 'Palladium', ticker: 'PA=F', price: 1088.0, change: -9.2, pct: -0.84, topAssets: ['Auto Catalysts','Electronics','Chemical','Dental'] },
+  { id: 'cmd-copper', type: 'commodity', name: 'Copper', ticker: 'HG=F', price: 4.38, change: -0.05, pct: -1.13, topAssets: ['Construction','Electronics','Transport','Industrial'] },
+  { id: 'cmd-oil', type: 'commodity', name: 'Oil (WTI)', ticker: 'CL=F', price: 78.91, change: 1.24, pct: 1.6, topAssets: ['Transport','Plastics','Heating','Chemical'] },
+  { id: 'cmd-natgas', type: 'commodity', name: 'Nat Gas', ticker: 'NG=F', price: 3.42, change: -0.08, pct: -2.28, topAssets: ['Heating','Power Gen','Chemical','LNG'] },
+  { id: 'cry-btc', type: 'crypto', name: 'Bitcoin', ticker: 'BTC-USD', price: 98240.0, change: 1240.0, pct: 1.28, topAssets: ['Store of Value','DeFi','Mining','Payments'] },
+  { id: 'cry-eth', type: 'crypto', name: 'Ethereum', ticker: 'ETH-USD', price: 3456.0, change: 42.3, pct: 1.24, topAssets: ['DeFi','NFTs','Layer 2','Staking'] },
+  { id: 'cry-sol', type: 'crypto', name: 'Solana', ticker: 'SOL-USD', price: 188.4, change: 3.12, pct: 1.68, topAssets: ['DeFi','NFTs','Payments','Gaming'] },
+  { id: 'cmd-wheat', type: 'commodity', name: 'Wheat', ticker: 'ZW=F', price: 548.25, change: -4.5, pct: -0.81, topAssets: ['Food','Feed','Ethanol','Export'] },
+  { id: 'cmd-corn', type: 'commodity', name: 'Corn', ticker: 'ZC=F', price: 442.5, change: 2.25, pct: 0.51, topAssets: ['Feed','Ethanol','Food','Export'] },
 ];
 
 /** Legendary investors & friends holding this ticker — demo (chart initials) */
@@ -236,11 +236,17 @@ export default function WatchlistPage() {
       {/* ═══ COMMODITIES ROW ═══ */}
       <div className="wl-comm-strip">
         {COMMODITIES.map(c => (
-          <div key={c.name} className="wl-comm">
+          <button
+            key={c.id}
+            type="button"
+            className={`wl-comm ${selected.id === c.id ? 'active' : ''}`}
+            onClick={() => selectAny(c)}
+            style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+          >
             <span className="wl-comm-name">{c.name}</span>
             <span className="wl-comm-price">${fmtSmall(c.price)}</span>
             <span className={`wl-comm-chg ${c.change>=0?'up':'dn'}`}>{fmtChg(c.change)} {fmtPct(c.pct)}</span>
-          </div>
+          </button>
         ))}
       </div>
 
