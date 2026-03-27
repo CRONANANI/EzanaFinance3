@@ -642,6 +642,28 @@ function ChainView() {
     }
   };
 
+  const handleAddToDebrief = async (event, analysis) => {
+    try {
+      const res = await fetch('/api/debrief-items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_title: event.title,
+          event_body: event.body,
+          event_country: event.country,
+          event_url: event.url,
+          event_time: event.time,
+          analysis,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      alert('✓ Event added to Debrief');
+      setAnalyzeEvent(null);
+    } catch (err) {
+      alert('✗ Failed to add to Debrief');
+    }
+  };
+
   if (loading) {
     return (
       <div className="ma-chain ma-chain--loading chain-view-scroll custom-scrollbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -718,7 +740,7 @@ function ChainView() {
           <div style={{
             position: 'fixed', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: '90%', maxWidth: '600px', maxHeight: '80vh',
+            width: 'calc(100% - 4rem)', maxWidth: '1600px', maxHeight: '80vh',
             background: '#111',
             border: '1px solid #D4AF37',
             borderRadius: '12px',
@@ -733,9 +755,39 @@ function ChainView() {
                 <i className="bi bi-lightning-charge-fill" style={{ color: '#D4AF37' }} />
                 <h3 style={{ color: '#fff', fontSize: '1rem', fontWeight: '600' }}>Event Analysis</h3>
               </div>
-              <button onClick={() => setAnalyzeEvent(null)} style={{
-                background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer',
-              }}>×</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button 
+                  onClick={() => handleAddToDebrief(analyzeEvent, analysis)}
+                  title="Add to Debrief"
+                  style={{
+                    background: 'rgba(212, 175, 55, 0.15)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: '6px',
+                    padding: '6px 10px',
+                    color: '#D4AF37',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.85rem',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.25)';
+                    e.currentTarget.style.borderColor = '#D4AF37';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
+                  }}
+                >
+                  <i className="bi bi-plus-lg" style={{ fontSize: '0.7rem' }} />
+                  Add to Debrief
+                </button>
+                <button onClick={() => setAnalyzeEvent(null)} style={{
+                  background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer',
+                }}>×</button>
+              </div>
             </div>
             <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(80vh - 60px)' }}>
               <h4 style={{ color: '#D4AF37', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{analyzeEvent.title}</h4>

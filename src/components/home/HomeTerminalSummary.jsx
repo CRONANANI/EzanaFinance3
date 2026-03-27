@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { createBrowserClient } from '@supabase/ssr';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
 import { ThisWeekOnEzana } from './ThisWeekOnEzana';
+import { generateUserMockData } from '@/lib/userMockData';
 
 const MOCK_MOVERS = [
   { ticker: 'NVDA', pctChange: 4.2 },
@@ -53,21 +55,53 @@ export function HomeTerminalSummary({
   weekTradeHistory = [],
   weekActivityLoading = true,
 }) {
+  const [mockData, setMockData] = useState(null);
+
+  // Generate unique mock data for this user on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        );
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          const data = generateUserMockData(user.id);
+          setMockData(data);
+        }
+      } catch (error) {
+        console.error('Failed to load user for mock data:', error);
+      }
+    };
+    fetchUser();
+  }, []);
+
   const hasPortfolio = enrichedHoldings.length > 0;
   const todayPct = portfolioTotal > 0 ? (portfolioChange / portfolioTotal) * 100 : 0;
   const investedPct = hasPortfolio ? Math.min(95, 82) : 0;
 
+  // Use generated mover data or fallback to MOCK_MOVERS
   const movers = useMemo(() => {
     const sorted = [...enrichedHoldings].sort(
       (a, b) => Math.abs(b.pctChange) - Math.abs(a.pctChange),
     );
     const top = sorted.slice(0, 3);
     if (top.length > 0) return top;
+    
+    // Use generated movers if available
+    if (mockData?.movers) {
+      return mockData.movers.map((m) => ({
+        ticker: m.ticker,
+        pctChange: m.change,
+      }));
+    }
+    
     return MOCK_MOVERS.map((m) => ({
       ticker: m.ticker,
       pctChange: m.pctChange,
     }));
-  }, [enrichedHoldings]);
+  }, [enrichedHoldings, mockData]);
 
   const displayValue = loading
     ? '—'
@@ -78,8 +112,9 @@ export function HomeTerminalSummary({
       ? `+$${Math.abs(portfolioChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : `-$${Math.abs(portfolioChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const activityScore = 78;
-  const streakDays = 12;
+  // Use generated or mock values
+  const activityScore = mockData?.activityScore || 78;
+  const streakDays = mockData?.streak || 12;
   const checklistDone = 9;
   const checklistTotal = 18;
 
@@ -229,15 +264,15 @@ export function HomeTerminalSummary({
               Personalized for your portfolio
             </p>
             <p className="hts-subsection-title">Your Sectors Today</p>
-            {MOCK_PULSE_SECTORS.map((s) => (
+            {(mockData?.sectors || MOCK_PULSE_SECTORS).map((s) => (
               <div key={s.name} className="hts-sector-row">
                 <span className="hts-sector-name">{s.name}</span>
-                <span className={`hts-sector-pct ${s.pct >= 0 ? 'positive' : 'negative'}`}>
-                  {s.pct >= 0 ? '▲' : '▼'} {s.pct >= 0 ? '+' : ''}
-                  {s.pct}%
+                <span className={`hts-sector-pct ${s.change >= 0 ? 'positive' : 'negative'}`}>
+                  {(s.change || s.pct) >= 0 ? '▲' : '▼'} {(s.change || s.pct) >= 0 ? '+' : ''}
+                  {s.change || s.pct}%
                 </span>
                 <div className="hts-sector-bar">
-                  <span style={{ width: `${s.bar}%` }} />
+                  <span style={{ width: `${s.bar || Math.random() * 100}%` }} />
                 </div>
               </div>
             ))}
