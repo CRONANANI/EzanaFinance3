@@ -48,7 +48,6 @@ export const FINANCIAL_CENTERS = [
   { id: "dublin", panelId: "dublin", name: "Dublin", lat: 53.3498, lng: -6.2603, exchange: "Euronext Dublin" },
   { id: "stockholm", panelId: "stockholm", name: "Stockholm", lat: 59.3293, lng: 18.0686, exchange: "Nasdaq Nordic" },
   { id: "montreal", panelId: "montreal", name: "Montreal", lat: 45.5017, lng: -73.5673, exchange: "TMX / MX" },
-  { id: "hamilton", panelId: "hamilton", name: "Hamilton", lat: 32.2949, lng: -64.782, exchange: "BSX" },
 ] as const;
 
 export type FinancialCenter = (typeof FINANCIAL_CENTERS)[number];

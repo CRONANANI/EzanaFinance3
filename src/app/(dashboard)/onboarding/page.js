@@ -183,6 +183,15 @@ export default function OnboardingPage() {
     try {
       await saveProgress();
 
+      // Also save a flag that steps 1-3 are done
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('profiles').update({
+          onboarding_step: 3,
+          user_settings: formData,
+        }).eq('id', user.id);
+      }
+
       const res = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -210,6 +219,48 @@ export default function OnboardingPage() {
   const getStateOptions = () => {
     return formData.country === 'Canada' ? CA_PROVINCES : US_STATES;
   };
+
+  useEffect(() => {
+    const loadExistingProgress = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_settings, onboarding_step, phone, date_of_birth, country, city, state, display_name, timezone, bio, investor_type, experience_level, website, twitter, linkedin')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile) {
+        // If steps 1-3 are already completed, jump to step 4
+        if (profile.onboarding_step >= 3) {
+          setStep(3);
+        }
+
+        // Pre-fill form data from saved profile
+        if (profile.user_settings) {
+          setFormData(prev => ({ ...prev, ...profile.user_settings }));
+        } else {
+          // Pre-fill individual fields if not in user_settings
+          if (profile.phone) setFormData(prev => ({ ...prev, phone: profile.phone }));
+          if (profile.date_of_birth) setFormData(prev => ({ ...prev, date_of_birth: profile.date_of_birth }));
+          if (profile.country) setFormData(prev => ({ ...prev, country: profile.country }));
+          if (profile.state) setFormData(prev => ({ ...prev, state: profile.state }));
+          if (profile.city) setFormData(prev => ({ ...prev, city: profile.city }));
+          if (profile.timezone) setFormData(prev => ({ ...prev, timezone: profile.timezone }));
+          if (profile.display_name) setFormData(prev => ({ ...prev, display_name: profile.display_name }));
+          if (profile.bio) setFormData(prev => ({ ...prev, bio: profile.bio }));
+          if (profile.investor_type) setFormData(prev => ({ ...prev, investor_type: profile.investor_type }));
+          if (profile.experience_level) setFormData(prev => ({ ...prev, experience_level: profile.experience_level }));
+          if (profile.website) setFormData(prev => ({ ...prev, website: profile.website }));
+          if (profile.twitter) setFormData(prev => ({ ...prev, twitter: profile.twitter }));
+          if (profile.linkedin) setFormData(prev => ({ ...prev, linkedin: profile.linkedin }));
+        }
+      }
+    };
+
+    loadExistingProgress();
+  }, []);
 
   const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
     month: 'long',

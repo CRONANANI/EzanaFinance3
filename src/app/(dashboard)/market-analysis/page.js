@@ -88,7 +88,6 @@ const FINANCIAL_CITIES = [
   { id: 'dublin', name: 'Dublin', country: 'Ireland', exchange: 'Euronext Dublin', timezone: 'GMT' },
   { id: 'stockholm', name: 'Stockholm', country: 'Sweden', exchange: 'Nasdaq Nordic', timezone: 'CET' },
   { id: 'montreal', name: 'Montreal', country: 'Canada', exchange: 'TMX / MX', timezone: 'EST' },
-  { id: 'hamilton', name: 'Hamilton', country: 'Bermuda', exchange: 'BSX', timezone: 'AST' },
 ];
 
 // Render different content based on tab type
@@ -588,6 +587,9 @@ function CityNewsPanel({ panelId, onClose }) {
 function ChainView() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [analyzeEvent, setAnalyzeEvent] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState('');
 
   useEffect(() => {
     fetch('/api/market-data/economic-calendar')
@@ -615,6 +617,31 @@ function ChainView() {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   };
 
+  const handleAnalyze = async (event) => {
+    setAnalyzeEvent(event);
+    setAnalyzing(true);
+    setAnalysis('');
+
+    try {
+      const res = await fetch('/api/market-data/analyze-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventTitle: event.title,
+          eventBody: event.body,
+          eventUrl: event.url,
+          eventCountry: event.country,
+        }),
+      });
+      const data = await res.json();
+      setAnalysis(data.analysis || 'Analysis unavailable.');
+    } catch {
+      setAnalysis('Failed to analyze. Please try again.');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="ma-chain ma-chain--loading chain-view-scroll custom-scrollbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -638,15 +665,96 @@ function ChainView() {
               </div>
               <div className="ma-chain-time">{formatDate(event.time)}</div>
               <p className="ma-chain-body">{event.body}</p>
-              {event.url && (
-                <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.5625rem', color: '#10b981', fontFamily: 'var(--font-mono, monospace)', textDecoration: 'none' }}>
-                  {event.source || 'Read more'} →
-                </a>
-              )}
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '0.5rem' }}>
+                {event.url && (
+                  <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.5625rem', color: '#10b981', fontFamily: 'var(--font-mono, monospace)', textDecoration: 'none' }}>
+                    {event.source || 'Read more'} →
+                  </a>
+                )}
+                <button
+                  onClick={() => handleAnalyze(event)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    background: 'rgba(212, 175, 55, 0.15)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: '4px',
+                    color: '#D4AF37',
+                    fontSize: '0.625rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-mono, monospace)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.25)';
+                    e.currentTarget.style.borderColor = '#D4AF37';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
+                  }}
+                >
+                  <i className="bi bi-lightning-charge-fill" style={{ fontSize: '0.6rem' }} />
+                  Analyze
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
+      
+      {analyzeEvent && (
+        <>
+          <div onClick={() => setAnalyzeEvent(null)} style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.85)', zIndex: 9998,
+            backdropFilter: 'blur(4px)',
+          }} />
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%', maxWidth: '600px', maxHeight: '80vh',
+            background: '#111',
+            border: '1px solid #D4AF37',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            zIndex: 9999,
+          }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '1.25rem 1.5rem', borderBottom: '1px solid #222',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="bi bi-lightning-charge-fill" style={{ color: '#D4AF37' }} />
+                <h3 style={{ color: '#fff', fontSize: '1rem', fontWeight: '600' }}>Event Analysis</h3>
+              </div>
+              <button onClick={() => setAnalyzeEvent(null)} style={{
+                background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer',
+              }}>×</button>
+            </div>
+            <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(80vh - 60px)' }}>
+              <h4 style={{ color: '#D4AF37', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{analyzeEvent.title}</h4>
+              <p style={{ color: '#666', fontSize: '0.8rem', marginBottom: '1.5rem' }}>{analyzeEvent.country} · {formatDate(analyzeEvent.time)}</p>
+              
+              {analyzing ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+                  <i className="bi bi-lightning-charge-fill" style={{ fontSize: '1.5rem', color: '#D4AF37', display: 'block', marginBottom: '0.5rem' }} />
+                  Analyzing impact on your portfolio...
+                </div>
+              ) : (
+                <div style={{ color: '#ccc', fontSize: '0.85rem', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
+                  {analysis}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

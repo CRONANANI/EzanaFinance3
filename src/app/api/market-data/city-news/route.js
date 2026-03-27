@@ -122,11 +122,42 @@ export async function GET(request) {
     unique.sort((a, b) => (b.datetime || 0) - (a.datetime || 0));
 
     const keywords = CITY_KEYWORDS[cityId] || [];
-    const relevant = unique.filter((article) => {
-      const text = `${article.headline || ''} ${article.summary || ''} ${article.related || ''}`.toLowerCase();
-      return keywords.some(kw => text.includes(kw));
-    });
-    const finalNews = relevant.length >= 3 ? relevant : unique;
+    
+    // Strict relevance scoring — article must mention city/country/keywords
+    const scored = unique.map((article) => {
+      const headline = (article.headline || '').toLowerCase();
+      const summary = (article.summary || '').toLowerCase();
+      const related = (article.related || '').toLowerCase();
+      const fullText = `${headline} ${summary} ${related}`;
+      
+      let score = 0;
+      
+      // Higher score for keyword in headline (most relevant)
+      keywords.forEach(kw => {
+        if (headline.includes(kw)) score += 3;
+        else if (summary.includes(kw)) score += 1;
+        else if (related.includes(kw)) score += 1;
+      });
+      
+      return { ...article, relevanceScore: score };
+    }).filter(a => a.relevanceScore > 0) // ONLY articles with at least 1 keyword match
+      .sort((a, b) => b.relevanceScore - a.relevanceScore); // Most relevant first
+    
+    const finalNews = scored;
+
+    if (finalNews.length === 0) {
+      return NextResponse.json({
+        news: [{
+          id: 'no-news',
+          category: 'INFO',
+          title: `No recent news specifically about ${cityId.replace(/-/g, ' ')}`,
+          summary: 'Check back later for city-specific financial news updates.',
+          source: 'Ezana',
+          url: '#',
+          time: Math.floor(Date.now() / 1000),
+        }],
+      });
+    }
 
     const formatted = finalNews.slice(0, 15).map((n) => ({
       id: n.id || n.headline?.slice(0, 20),

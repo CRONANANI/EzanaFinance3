@@ -99,8 +99,7 @@ export async function POST(request) {
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin');
 
-    const safeCancel =
-      cancelPath === '/pricing' || cancelPath === '/select-plan' ? cancelPath : '/select-plan';
+    const safeCancel = cancelPath || '/onboarding';
 
     /** All catalog plans use recurring Stripe Prices (monthly or yearly) in subscription mode. */
     const sessionParams = {
