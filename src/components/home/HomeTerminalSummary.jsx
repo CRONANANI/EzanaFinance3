@@ -120,6 +120,52 @@ export function HomeTerminalSummary({
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
+      {/* Centaur Intelligence Banner */}
+      <Link href="/centaur-intelligence" style={{ textDecoration: 'none', display: 'block' }}>
+        <div style={{
+          width: '100%',
+          background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.15) 100%)',
+          border: '1px solid rgba(212, 175, 55, 0.3)',
+          borderRadius: '10px',
+          padding: '10px 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          marginBottom: '1rem',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = '#D4AF37';
+          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.22) 100%)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
+          e.currentTarget.style.background = 'linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.15) 100%)';
+        }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <i className="bi bi-lightning-charge-fill" style={{ color: '#D4AF37', fontSize: '1rem' }} />
+            <span style={{
+              color: '#D4AF37',
+              fontSize: '0.8rem',
+              fontWeight: '700',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              fontFamily: '"Cinzel", "Playfair Display", serif',
+            }}>
+              CENTAUR INTELLIGENCE
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'rgba(212, 175, 55, 0.6)', fontSize: '0.7rem' }}>
+              Meet Yohannes, your AI advisor
+            </span>
+            <i className="bi bi-chevron-right" style={{ color: '#D4AF37', fontSize: '0.7rem' }} />
+          </div>
+        </div>
+      </Link>
+
       {/* Row 1 — three equal cards */}
       <div className="hts-row hts-row-1">
         <div className="db-card hts-card">

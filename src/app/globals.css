@@ -1,4 +1,5 @@
 /* @import must come first - otherwise browsers ignore these stylesheets */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap');
 @import './theme-variables.css';
 @import 'app-legacy/assets/css/theme-variables.css';
 @import 'app-legacy/components/navigation/unified-nav.css';
