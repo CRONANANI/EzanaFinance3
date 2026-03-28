@@ -31,6 +31,7 @@ export default function CentaurIntelligencePage() {
   const [boardroomMode, setBoardroomMode] = useState(null);
   const [sentinelReport, setSentinelReport] = useState(null);
   const [debriefItems, setDebriefItems] = useState([]);
+  const [selectedReportWeek, setSelectedReportWeek] = useState(0);
   const messagesEndRef = useRef(null);
 
   const supabase = createBrowserClient(
@@ -198,6 +199,36 @@ export default function CentaurIntelligencePage() {
           <p style={{ color: '#ccc', fontSize: '0.9rem', marginBottom: '1rem' }}>
             Your portfolio health is strong. 3 events need attention.
           </p>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            {Array.from({ length: 5 }, (_, i) => {
+              const d = new Date();
+              d.setDate(d.getDate() - (i * 7));
+              const month = d.toLocaleDateString('en-US', { month: 'short' });
+              const day = d.getDate();
+              const ordinal = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setSelectedReportWeek(i)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: selectedReportWeek === i ? '1px solid #D4AF37' : '1px solid #333',
+                    background: selectedReportWeek === i ? 'rgba(212, 175, 55, 0.1)' : '#0a0e13',
+                    color: selectedReportWeek === i ? '#D4AF37' : '#888',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                  }}
+                >
+                  <div>{month}</div>
+                  <div style={{ fontSize: '1rem', fontWeight: '700' }}>{day}{ordinal}</div>
+                </button>
+              );
+            })}
+          </div>
           <p style={{ color: '#888', fontSize: '0.8rem' }}>
             Last generated: {sentinelReport?.report_date || new Date().toLocaleDateString()}
           </p>
@@ -302,11 +333,21 @@ export default function CentaurIntelligencePage() {
                 Schedule a meeting with legendary investors to review your portfolio.
               </p>
               {LEGENDARY_INVESTORS.map(investor => (
-                <div key={investor.id} style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#ccc', fontSize: '0.85rem' }}>
-                    <span style={{ marginRight: '8px' }}>{investor.icon}</span>
-                    {investor.name}
-                  </span>
+                <div key={investor.id} style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '10px',
+                      background: 'rgba(212, 175, 55, 0.1)',
+                      border: '1px solid rgba(212, 175, 55, 0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <i className="bi bi-person-fill" style={{ color: '#D4AF37', fontSize: '1rem' }} />
+                    </div>
+                    <span style={{ color: '#ccc', fontSize: '0.85rem' }}>
+                      {investor.name}
+                    </span>
+                  </div>
                   <button
                     onClick={() => startBoardroom(investor)}
                     style={{

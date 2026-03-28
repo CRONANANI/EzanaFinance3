@@ -71,6 +71,40 @@ export const COMBINED_LOSERS = [
   { rank: 5, sym: 'CORN', chg: '-0.2%', price: '$4.95', pos: false },
 ];
 
+/** Crypto-only winners and losers */
+export const CRYPTO_WINNERS = [
+  { rank: 1, sym: 'AVAX', chg: '+8.4%', price: '$36.80', pos: true },
+  { rank: 2, sym: 'SOL', chg: '+3.2%', price: '$148.50', pos: true },
+  { rank: 3, sym: 'LINK', chg: '+1.8%', price: '$14.90', pos: true },
+  { rank: 4, sym: 'ETH', chg: '+1.2%', price: '$2,456.80', pos: true },
+  { rank: 5, sym: 'BNB', chg: '+0.9%', price: '$648.20', pos: true },
+];
+
+export const CRYPTO_LOSERS = [
+  { rank: 1, sym: 'BTC', chg: '-1.9%', price: '$39,280', pos: false },
+  { rank: 2, sym: 'ADA', chg: '-0.6%', price: '$0.45', pos: false },
+  { rank: 3, sym: 'DOT', chg: '-0.8%', price: '$8.42', pos: false },
+  { rank: 4, sym: 'XRP', chg: '-0.6%', price: '$2.18', pos: false },
+  { rank: 5, sym: 'MATIC', chg: '-0.3%', price: '$0.98', pos: false },
+];
+
+/** Commodity-only winners and losers */
+export const COMMODITY_WINNERS = [
+  { rank: 1, sym: 'COFFEE', chg: '+4.2%', price: '$2.18', pos: true },
+  { rank: 2, sym: 'OIL', chg: '+3.6%', price: '$114.54', pos: true },
+  { rank: 3, sym: 'GOLD', chg: '+2.4%', price: '$2,648.50', pos: true },
+  { rank: 4, sym: 'SILVER', chg: '+1.8%', price: '$31.20', pos: true },
+  { rank: 5, sym: 'NAT_GAS', chg: '+1.2%', price: '$2.85', pos: true },
+];
+
+export const COMMODITY_LOSERS = [
+  { rank: 1, sym: 'WHEAT', chg: '-1.2%', price: '$6.82', pos: false },
+  { rank: 2, sym: 'COPPER', chg: '-0.4%', price: '$4.52', pos: false },
+  { rank: 3, sym: 'CORN', chg: '-0.2%', price: '$4.95', pos: false },
+  { rank: 4, sym: 'SOYBEANS', chg: '-0.4%', price: '$12.45', pos: false },
+  { rank: 5, sym: 'COAL', chg: '-0.3%', price: '$85.60', pos: false },
+];
+
 export const COMMUNITY_SENTIMENT_TOPICS = [
   {
     id: '1',

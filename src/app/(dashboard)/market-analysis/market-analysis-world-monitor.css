@@ -1049,6 +1049,18 @@ body.light-mode .ma-ticker-sep {
   animation: goldPulse 2s infinite;
 }
 
+/* ═══ Toast notification animation ═══ */
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .ma-city-sources {
   padding: 0 1rem 0.5rem;
   display: flex;

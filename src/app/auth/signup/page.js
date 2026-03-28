@@ -10,10 +10,13 @@ import { supabase } from "@/lib/supabase";
 export default function SignUpPage() {
   const router = useRouter();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,19 +32,41 @@ export default function SignUpPage() {
     }
   }, []);
 
+  const isValidEmail = (email) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  };
+
+  const validatePassword = (pwd) => {
+    const errors = [];
+    if (pwd.length < 8) errors.push("at least 8 characters");
+    if (!/[A-Z]/.test(pwd)) errors.push("1 uppercase letter");
+    if (!/[a-z]/.test(pwd)) errors.push("1 lowercase letter");
+    if (!/[0-9]/.test(pwd)) errors.push("1 number");
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) errors.push("1 special character");
+    return errors;
+  };
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
       setIsLoading(false);
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    const pwdErrors = validatePassword(password);
+    if (pwdErrors.length > 0) {
+      setError(`Password must contain: ${pwdErrors.join(', ')}`);
+      setIsLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -52,7 +77,10 @@ export default function SignUpPage() {
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: `${firstName} ${lastName}`,
+            first_name: firstName,
+            last_name: lastName,
+            username: userName,
           },
         },
       });
@@ -107,18 +135,50 @@ export default function SignUpPage() {
           )}
 
           <form onSubmit={handleSignUp} className="space-y-5">
+            {/* First Name & Last Name side by side */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  First Name <span className="text-emerald-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="John"
+                  required
+                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Last Name <span className="text-emerald-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Doe"
+                  required
+                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Username */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                Full Name <span className="text-emerald-500">*</span>
+                Username <span className="text-emerald-500">*</span>
               </label>
               <input
                 type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Enter your full name"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="johndoe"
                 required
                 className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
               />
+              <p className="text-gray-600 text-xs mt-1">Letters, numbers, and underscores only</p>
             </div>
 
             <div>
@@ -144,7 +204,7 @@ export default function SignUpPage() {
                   type={isPasswordVisible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password (min 8 characters)"
+                  placeholder="Create a password"
                   required
                   className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
                 />
@@ -156,20 +216,32 @@ export default function SignUpPage() {
                   {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              <p className="text-gray-600 text-xs mt-1">
+                Min 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
+              </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Confirm Password <span className="text-emerald-500">*</span>
               </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
-                required
-                className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
-              />
+              <div className="relative">
+                <input
+                  type={isConfirmVisible ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-300"
+                  onClick={() => setIsConfirmVisible(!isConfirmVisible)}
+                >
+                  {isConfirmVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button

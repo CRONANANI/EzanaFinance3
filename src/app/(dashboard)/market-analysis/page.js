@@ -590,6 +590,7 @@ function ChainView() {
   const [analyzeEvent, setAnalyzeEvent] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState('');
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     fetch('/api/market-data/economic-calendar')
@@ -657,10 +658,12 @@ function ChainView() {
         }),
       });
       if (!res.ok) throw new Error('Failed to save');
-      alert('✓ Event added to Debrief');
+      setToast({ type: 'success', message: '✓ Event added to Debrief' });
       setAnalyzeEvent(null);
+      setTimeout(() => setToast(null), 3000);
     } catch (err) {
-      alert('✗ Failed to add to Debrief');
+      setToast({ type: 'error', message: '✗ Failed to add to Debrief' });
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
@@ -806,6 +809,25 @@ function ChainView() {
             </div>
           </div>
         </>
+      )}
+      
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          background: toast.type === 'success' ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+          color: '#fff',
+          fontSize: '0.85rem',
+          fontWeight: '500',
+          zIndex: 10000,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          animation: 'slideIn 0.3s ease-out',
+        }}>
+          {toast.message}
+        </div>
       )}
     </div>
   );
