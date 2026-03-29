@@ -42,7 +42,7 @@
   text-align: center;
 }
 
-/* Cybercore grid background — globe stacks above center glow */
+/* Aurora beams background — spans full hero, globe in front */
 .landing-page .hero-cybercore-root {
   position: relative;
   width: 100%;
@@ -52,26 +52,30 @@
   flex-direction: column;
   align-items: stretch;
   background-color: #050a08;
+  overflow: hidden;
 }
 
-/* Cyber grid only behind headline + waitlist (not the globe row). Globe stacks above via z-index. */
+/* Aurora background layer — full hero width, clipped at bottom of waitlist area */
+.landing-page .hero-aurora-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Beams fade out before reaching the very top of the hero */
+  mask-image: linear-gradient(to top, black 0%, black 55%, transparent 85%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 55%, transparent 85%);
+}
+
 .landing-page .hero-content-column {
   position: relative;
   width: 100%;
   align-self: center;
 }
 
-.landing-page .hero-content-column .hero-cybercore-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
 .landing-page .hero-content-column .hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .landing-page .hero-cybercore-root > .content-container.hero-container {
@@ -79,6 +83,7 @@
   z-index: 2;
 }
 
+/* Globe sits ABOVE the aurora beams */
 .landing-page .hero-cybercore-root .card-preview.globe-preview {
   position: relative;
   z-index: 5;

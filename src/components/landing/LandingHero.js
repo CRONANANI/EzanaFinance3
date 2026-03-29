@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
-import CybercoreBackground from '@/components/ui/cybercore-section-hero';
+import AuroraBackground from '@/components/ui/cybercore-section-hero';
 import '@/components/ui/cybercore-hero.css';
 
 export function LandingHero() {
@@ -26,11 +26,13 @@ export function LandingHero() {
 
   return (
     <div className="hero-cybercore-root">
+      {/* Aurora beams span the FULL hero width, positioned behind everything */}
+      <div className="hero-aurora-bg" aria-hidden>
+        <AuroraBackground beamCount={60} />
+      </div>
+
       <div className="content-container hero-container">
         <div className="hero-content-column">
-          <div className="hero-cybercore-bg" aria-hidden>
-            <CybercoreBackground beamCount={56} />
-          </div>
           <div className="hero-content">
             <h1 className="hero-tagline">Your network is your net worth</h1>
             <div className="hero-subtitle hero-subtitle--lead">

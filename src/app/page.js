@@ -16,12 +16,6 @@ export default function HomePage() {
 
   return (
     <div className="landing-page">
-      <div className="background-elements">
-        <div className="glow-circle" />
-        <div className="glow-circle" />
-        <div className="glow-circle" />
-      </div>
-
       <main className="main-content hero-section" id="heroSection">
         <LandingHero />
       </main>

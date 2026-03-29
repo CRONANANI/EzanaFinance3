@@ -2,15 +2,15 @@
 
 import React, { useState, useEffect, CSSProperties } from 'react';
 
-export interface CybercoreBackgroundProps {
+export interface AuroraBackgroundProps {
   /** Number of animated light beams */
   beamCount?: number;
   className?: string;
 }
 
-const DEFAULT_BEAM_COUNT = 56;
+const DEFAULT_BEAM_COUNT = 60;
 
-export const CybercoreBackground: React.FC<CybercoreBackgroundProps> = ({
+export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
   beamCount = DEFAULT_BEAM_COUNT,
   className = '',
 }) => {
@@ -20,16 +20,17 @@ export const CybercoreBackground: React.FC<CybercoreBackgroundProps> = ({
 
   useEffect(() => {
     const generated = Array.from({ length: beamCount }).map((_, i) => {
-      const riseDur = Math.random() * 3 + 5;
-      const fadeDur = riseDur;
+      const riseDur = Math.random() * 2 + 4; // 4–6s rise
+      const fadeDur = riseDur; // sync fade
       const type = Math.random() < 0.18 ? 'secondary' : 'primary';
+
       return {
         id: i,
         type,
         style: {
           left: `${Math.random() * 100}%`,
-          width: `${Math.floor(Math.random() * 2) + 1}px`,
-          animationDelay: `${Math.random() * 6}s`,
+          width: `${Math.floor(Math.random() * 3) + 1}px`,
+          animationDelay: `${Math.random() * 5}s`,
           animationDuration: `${riseDur}s, ${fadeDur}s`,
         },
       };
@@ -39,17 +40,17 @@ export const CybercoreBackground: React.FC<CybercoreBackgroundProps> = ({
 
   return (
     <div
-      className={`cybercore-scene ${className}`.trim()}
+      className={`aurora-scene ${className}`.trim()}
       role="img"
-      aria-label="Animated grid background"
+      aria-label="Animated aurora background"
     >
-      <div className="cybercore-floor" aria-hidden />
-      <div className="cybercore-main-column" aria-hidden />
-      <div className="cybercore-light-stream">
+      <div className="aurora-floor" aria-hidden />
+      <div className="aurora-main-column" aria-hidden />
+      <div className="aurora-light-stream">
         {beams.map((beam) => (
           <div
             key={beam.id}
-            className={`cybercore-light-beam cybercore-light-beam--${beam.type}`}
+            className={`aurora-light-beam aurora-light-beam--${beam.type}`}
             style={beam.style}
           />
         ))}
@@ -58,4 +59,4 @@ export const CybercoreBackground: React.FC<CybercoreBackgroundProps> = ({
   );
 };
 
-export default CybercoreBackground;
+export default AuroraBackground;
