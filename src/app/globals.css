@@ -36,7 +36,8 @@
   align-items: center;
   justify-content: center;
   padding: 60px 2rem 4rem;
-  background: transparent;
+  /* Solid hero black — avoids transparent main showing body #0f1419 above headline */
+  background-color: #050a08;
   overflow: visible;
   text-align: center;
 }
@@ -50,6 +51,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  background-color: #050a08;
 }
 
 .landing-page .hero-cybercore-bg {
@@ -387,6 +389,7 @@ body.light-mode .nav-logo-img {
 }
 
 html:has(.landing-page),
+html:has(.landing-page) body,
 body:has(.landing-page) {
   background-color: #050a08 !important;
 }
