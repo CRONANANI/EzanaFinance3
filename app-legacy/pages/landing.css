@@ -366,8 +366,8 @@ body:has(.landing-page) {
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     gap: 0;
     padding: 0;
     margin: 0 auto 0 auto;
@@ -375,8 +375,8 @@ body:has(.landing-page) {
 }
 
 .hero-content > * {
-    align-self: center !important;
-    text-align: center;
+    align-self: flex-start !important;
+    text-align: left;
 }
 
 /* Hero Title - "Ezana Finance" (no logo) */
@@ -442,13 +442,13 @@ body:has(.landing-page) {
     letter-spacing: -0.02em;
     margin: 0 0 1.5rem 0;
     padding: 0;
-    text-align: center;
+    text-align: left;
     color: #10b981 !important;
     -webkit-text-fill-color: #10b981 !important;
     background: none !important;
     background-clip: unset !important;
     white-space: normal;
-    display: inline-block;
+    display: block;
     overflow: visible;
 }
 
@@ -460,7 +460,7 @@ body:has(.landing-page) {
     margin: 0 0 0.9rem 0;
     padding: 0 0;
     max-width: 1150px;
-    text-align: center;
+    text-align: left;
     color: #9ca3af;
     letter-spacing: -0.01em;
 }
@@ -470,6 +470,11 @@ body:has(.landing-page) {
         font-size: 1rem;
         max-width: 1200px;
     }
+}
+
+.hero-subtitle--secondary {
+    margin-top: 0.35rem;
+    margin-bottom: 0.5rem;
 }
 
 /* Hero Description (landing page) */
@@ -1249,7 +1254,7 @@ body:has(.landing-page) {
     box-shadow: var(--shadow-xl);
 }
 
-/* Legacy signup: no card, just text + form, centered */
+/* Legacy signup: no card, just text + form — hero aligns with nav/headline */
 .legacy-signup .legacy-signup-inner {
     background: none;
     backdrop-filter: none;
@@ -1262,6 +1267,19 @@ body:has(.landing-page) {
     align-items: center;
     text-align: center;
     width: 100%;
+}
+
+.main-content.hero-section .legacy-signup,
+.main-content.hero-section .legacy-signup .legacy-signup-inner {
+    align-items: flex-start;
+    text-align: left;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+}
+
+.main-content.hero-section .legacy-form-row {
+    justify-content: flex-start;
 }
 
 .email-signup-form {

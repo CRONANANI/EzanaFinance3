@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export function AnimatedWaitlistForm({ className = '' }) {
+export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
@@ -60,12 +60,12 @@ export function AnimatedWaitlistForm({ className = '' }) {
   };
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
+    <div className={`flex flex-col ${alignLeft ? 'items-start' : 'items-center'} ${className}`}>
       {/* Main Form Container - DOUBLED WIDTH, REDUCED HEIGHT */}
-      <div className="relative flex items-center justify-center">
+      <div className={`relative flex items-center ${alignLeft ? 'justify-start' : 'justify-center'}`}>
         <div className="absolute z-[-1] w-full"></div>
 
-        <div id="poda" className="relative flex items-center justify-center group">
+        <div id="poda" className={`relative flex items-center ${alignLeft ? 'justify-start' : 'justify-center'} group`}>
           {/* Glow Layer 1 - Outer */}
           <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-[552px] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[999px] before:h-[999px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[60deg]
@@ -176,7 +176,7 @@ export function AnimatedWaitlistForm({ className = '' }) {
 
       {/* Status Message */}
       {message && (
-        <p className={`mt-4 text-sm text-center ${status === 'error' ? 'text-red-400' : 'text-emerald-400'}`}>
+        <p className={`mt-4 text-sm ${alignLeft ? 'text-left' : 'text-center'} ${status === 'error' ? 'text-red-400' : 'text-emerald-400'}`}>
           {message}
         </p>
       )}

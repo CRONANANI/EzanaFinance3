@@ -612,6 +612,10 @@ body {
     text-align: center;
   }
 
+  .landing-page .hero-waitlist-intro {
+    text-align: left !important;
+  }
+
   .hero-waitlist {
     max-width: 100%;
   }

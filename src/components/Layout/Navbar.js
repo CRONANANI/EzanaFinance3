@@ -47,9 +47,8 @@ export function Navbar() {
       dropdown: true,
       isActive: isResearchActive,
       items: [
-        { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
-        { id: 28, title: 'Centaur Intelligence', description: 'AI advisor & Sentinel reports', url: '/centaur-intelligence', icon: 'bi-lightning-charge-fill', variant: 'gold' },
         { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold' },
+        { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
         { id: 22, title: 'Company Research', description: 'Financial analysis', url: '/company-research', icon: 'bi-bar-chart-line' },
         { id: 23, title: 'Market Analysis', description: 'Sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
         { id: 24, title: 'For The Quants', description: 'Quant tools', url: '/for-the-quants', icon: 'bi-calculator' },
@@ -273,23 +272,16 @@ export function Navbar() {
               <span>Research</span>
             </span>
             <div className="mobile-dropdown-items">
-              <Link href="/inside-the-capitol" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-building"></i>
-                <div><div className="item-title">Inside The Capitol</div></div>
-              </Link>
-              <Link href="/centaur-intelligence" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-lightning-charge-fill"></i>
-                <div>
-                  <div className="item-title">Centaur Intelligence</div>
-                  <div className="item-desc">AI advisor &amp; Sentinel reports</div>
-                </div>
-              </Link>
               <Link href="/kairos-signal" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-cloud-sun-fill"></i>
                 <div>
                   <div className="item-title">Kairos Signal</div>
                   <div className="item-desc">Weather &amp; alternative macro data</div>
                 </div>
+              </Link>
+              <Link href="/inside-the-capitol" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-building"></i>
+                <div><div className="item-title">Inside The Capitol</div></div>
               </Link>
               <Link href="/company-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-bar-chart-line"></i>
