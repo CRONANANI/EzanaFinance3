@@ -40,14 +40,7 @@ export function LandingHero() {
             staggerMs={22}
           />
         </p>
-        <p className="hero-waitlist-intro animate-in" data-delay="1750">
-          <AnimatedWords
-            text="Sign up for early access to Ezana Finance. The first 1,000 users receive lifetime Personal Advanced access — no subscription, no limits."
-            baseDelay={1800}
-            staggerMs={25}
-          />
-        </p>
-        <div className="hero-waitlist animate-in" data-delay="2050">
+        <div className="hero-waitlist animate-in" data-delay="1750">
           <AnimatedWaitlistForm alignLeft />
         </div>
       </div>
