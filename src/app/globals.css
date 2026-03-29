@@ -378,12 +378,23 @@ body.light-mode .nav-logo-img {
    - Sign In button aligned to far-right page margin
    ===================================================== */
 
-/* Make landing navbar background transparent to blend with landing page */
+/* Landing / help marketing nav — same solid black as hero cybercore base */
 .navbar {
-  background: transparent !important;
+  background: #050a08 !important;
   backdrop-filter: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
+}
+
+html:has(.landing-page),
+body:has(.landing-page) {
+  background-color: #050a08 !important;
+}
+
+.navbar .logo.nav-home-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 /* Landing nav container: logo left, links center, sign-in far right */

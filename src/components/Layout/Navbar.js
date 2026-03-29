@@ -82,9 +82,15 @@ export function Navbar() {
     return (
       <nav className="navbar">
         <div className="nav-container nav-container-centered">
-          <Link href="/" className="logo logo-centered" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span className="logo-text" style={{ color: '#10b981' }}>Ezana Finance</span>
-            <Image src="/ezana-logo.svg" alt="Ezana Finance" width={54} height={54} className="nav-logo-img" style={{ objectFit: 'contain' }} />
+          <Link href="/" className="logo logo-centered nav-brand nav-home-btn" title="Ezana Finance">
+            <Image
+              src="/ezana-nav-logo.png"
+              alt="Ezana Finance"
+              width={60}
+              height={51}
+              className="nav-logo-img nav-logo-img--wing"
+              style={{ objectFit: 'contain', display: 'block', transform: 'scaleX(-1)' }}
+            />
           </Link>
           <button
             className="mobile-hamburger"

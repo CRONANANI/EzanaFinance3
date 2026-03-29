@@ -15,12 +15,10 @@ body {
 }
 
 /* ============================================
-   UNIFIED BACKGROUND - Same as hero, pricing, FAQ
-   No breaks throughout entire landing (including navbar)
-   Uses pricing/FAQ gradient: #0d1117 -> #161b22
+   UNIFIED BACKGROUND — matches hero / cybercore base (#050a08)
    ============================================ */
 .landing-page {
-    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+    background: #050a08;
     position: relative;
     min-height: 100vh;
 }
@@ -50,27 +48,27 @@ body {
 .landing-page .features-section,
 .landing-page #features-section-container,
 .landing-page .data-partners-section {
-    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%) !important;
-    background-color: transparent !important;
+    background: #050a08 !important;
+    background-color: #050a08 !important;
 }
 
 .landing-page .resources-section .bg-background,
 .landing-page footer.bg-background {
-    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%) !important;
+    background: #050a08 !important;
 }
 
 /* Testimonials carousel fade edges - match page background */
 .landing-page .testimonials-carousel::before {
-    background: linear-gradient(to right, #0d1117 0%, transparent 100%) !important;
+    background: linear-gradient(to right, #050a08 0%, transparent 100%) !important;
 }
 
 .landing-page .testimonials-carousel::after {
-    background: linear-gradient(to left, #161b22 0%, transparent 100%) !important;
+    background: linear-gradient(to left, #050a08 0%, transparent 100%) !important;
 }
 
 /* Body matches landing when on homepage - no breaks at edges */
 body:has(.landing-page) {
-    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%) !important;
+    background: #050a08 !important;
 }
 
 
@@ -121,11 +119,11 @@ body:has(.landing-page) {
     50% { transform: translateY(-20px) scale(1.1); }
 }
 
-/* Navigation - seamless background to match landing page */
+/* Navigation — same solid black as hero / page */
 .navbar {
     position: relative;
     z-index: 100;
-    background: transparent !important;
+    background: #050a08 !important;
     backdrop-filter: none;
     padding: 1rem 0;
 }
@@ -2546,7 +2544,7 @@ body:has(.landing-page) {
 .resources-section {
     width: 100%;
     padding: 60px 0;
-    background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+    background: #050a08;
     position: relative;
     overflow: hidden;
 }
