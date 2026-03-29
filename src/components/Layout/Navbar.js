@@ -226,7 +226,14 @@ export function Navbar() {
         {/* ── LEFT ZONE: Logo + bell + checklist (checklist right of bell) ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
-            <Image src="/ezana-nav-logo.png" alt="Ezana Finance" width={40} height={34} className="nav-logo-img" style={{ objectFit: 'contain', display: 'block' }} />
+            <Image
+              src="/ezana-nav-logo.png"
+              alt="Ezana Finance"
+              width={60}
+              height={51}
+              className="nav-logo-img nav-logo-img--wing"
+              style={{ objectFit: 'contain', display: 'block', transform: 'scaleX(-1)' }}
+            />
           </Link>
           <div className="nav-bell-checklist-wrap">
             <div className="nn-wrapper">

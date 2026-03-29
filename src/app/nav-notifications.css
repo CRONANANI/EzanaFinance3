@@ -42,20 +42,21 @@
   border-color: rgba(16, 185, 129, 0.15);
 }
 
-/* Vibrating animation when unread */
+/* Vibrating animation when unread — one shake burst every 30s */
 .nn-bell-btn.nn-has-unread i {
-  animation: nnVibrate 3s ease-in-out infinite;
+  animation: nnVibrate 30s ease-in-out infinite;
   transform-origin: top center;
 }
 
 @keyframes nnVibrate {
-  0%, 86%, 100% { transform: rotate(0deg); }
-  88% { transform: rotate(14deg); }
-  90% { transform: rotate(-12deg); }
-  92% { transform: rotate(10deg); }
-  94% { transform: rotate(-8deg); }
-  96% { transform: rotate(4deg); }
-  98% { transform: rotate(-2deg); }
+  0%, 97%, 100% { transform: rotate(0deg); }
+  97.2% { transform: rotate(14deg); }
+  97.4% { transform: rotate(-12deg); }
+  97.6% { transform: rotate(10deg); }
+  97.8% { transform: rotate(-8deg); }
+  98% { transform: rotate(4deg); }
+  98.2% { transform: rotate(-2deg); }
+  98.4%, 100% { transform: rotate(0deg); }
 }
 
 /* Unread count badge */
@@ -532,21 +533,22 @@ body.light-mode .nn-friend-decline {
     font-size: 0.8125rem;
   }
 
-  /* Bell vibrates more aggressively on mobile */
+  /* Bell: same 30s cadence as desktop */
   .nn-bell-btn.nn-has-unread i {
-    animation: nnVibrateMobile 2s ease-in-out infinite;
+    animation: nnVibrateMobile 30s ease-in-out infinite;
     transform-origin: top center;
   }
 
   @keyframes nnVibrateMobile {
-    0%, 78%, 100% { transform: rotate(0deg); }
-    80% { transform: rotate(16deg); }
-    82% { transform: rotate(-14deg); }
-    84% { transform: rotate(12deg); }
-    86% { transform: rotate(-10deg); }
-    88% { transform: rotate(8deg); }
-    90% { transform: rotate(-4deg); }
-    92% { transform: rotate(2deg); }
+    0%, 97%, 100% { transform: rotate(0deg); }
+    97.2% { transform: rotate(16deg); }
+    97.4% { transform: rotate(-14deg); }
+    97.6% { transform: rotate(12deg); }
+    97.8% { transform: rotate(-10deg); }
+    98% { transform: rotate(8deg); }
+    98.2% { transform: rotate(-4deg); }
+    98.4% { transform: rotate(2deg); }
+    98.6%, 100% { transform: rotate(0deg); }
   }
 }
 

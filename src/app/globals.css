@@ -211,6 +211,10 @@
   width: auto !important;
   height: auto !important;
 }
+/* Main / partner nav winged mark: ~50% larger than legacy 36px cap */
+.nav-logo-img--wing {
+  max-height: 54px !important;
+}
 body:not(.light-mode) .nav-logo-img {
   /* No mix-blend-mode in dark mode — multiply made logo invisible on dark nav */
   mix-blend-mode: normal;
