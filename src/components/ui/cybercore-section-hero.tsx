@@ -20,8 +20,8 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
 
   useEffect(() => {
     const generated = Array.from({ length: beamCount }).map((_, i) => {
-      const riseDur = Math.random() * 2 + 4; // 4–6s rise
-      const fadeDur = riseDur; // sync fade
+      const riseDur = Math.random() * 2 + 4;
+      const fadeDur = riseDur;
       const type = Math.random() < 0.18 ? 'secondary' : 'primary';
 
       return {
@@ -44,8 +44,13 @@ export const AuroraBackground: React.FC<AuroraBackgroundProps> = ({
       role="img"
       aria-label="Animated aurora background"
     >
+      {/* 3D perspective grid floor — renders at the bottom */}
+      <div className="aurora-grid-floor" aria-hidden />
+      {/* Soft glow on the floor horizon */}
       <div className="aurora-floor" aria-hidden />
+      {/* Center column glow */}
       <div className="aurora-main-column" aria-hidden />
+      {/* Rising light beams */}
       <div className="aurora-light-stream">
         {beams.map((beam) => (
           <div

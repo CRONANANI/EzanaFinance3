@@ -1,7 +1,7 @@
 /**
- * Aurora rising beams for landing hero (Ezana emerald palette).
- * NO grid — only vertical light beams rising from the bottom.
- * Scoped under .aurora-scene — globe sits above via z-index in parent.
+ * Aurora beams + perspective grid for landing hero (Ezana emerald palette).
+ * Includes a 3D perspective grid floor at the bottom and vertical rising beams.
+ * Globe sits above via z-index in parent layout.
  */
 
 /* ── CSS Variables ── */
@@ -29,9 +29,59 @@
       transparent 55%
     ),
     var(--aurora-bg);
+  perspective: 700px;
+  perspective-origin: 50% 40%;
 }
 
-/* ── Floor glow (soft horizon line at bottom) ── */
+/* ═══════════════════════════════════════════
+   3D PERSPECTIVE GRID FLOOR
+   This is the receding grid at the bottom
+   ═══════════════════════════════════════════ */
+.aurora-grid-floor {
+  position: absolute;
+  bottom: 0;
+  left: -60%;
+  width: 220%;
+  height: 52%;
+  transform: rotateX(72deg);
+  transform-origin: 50% 100%;
+  /* Double grid lines: major + minor */
+  background-image:
+    linear-gradient(90deg, rgba(16, 185, 129, 0.10) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(16, 185, 129, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+  background-size:
+    56px 56px,
+    56px 56px,
+    28px 28px,
+    28px 28px;
+  background-position:
+    0 0,
+    0 0,
+    14px 14px,
+    14px 14px;
+  opacity: 0.65;
+  animation: aurora-moveGrid 10s linear infinite;
+  /* Fade grid out toward the top so it blends into the scene */
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 90%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 90%);
+}
+
+/* Glow along the grid horizon */
+.aurora-grid-floor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(16, 185, 129, 0.12) 0%,
+    transparent 40%
+  );
+  animation: aurora-floorGlow 7s ease-in-out infinite;
+}
+
+/* ── Soft floor glow (horizon bloom) ── */
 .aurora-floor {
   position: absolute;
   bottom: 0;
@@ -111,7 +161,9 @@
   box-shadow: 0 0 8px rgba(110, 231, 183, 0.22);
 }
 
-/* ── Keyframes ── */
+/* ═══════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════ */
 @keyframes aurora-rise {
   0% {
     transform: translateY(100%);
@@ -160,8 +212,29 @@
   }
 }
 
+@keyframes aurora-moveGrid {
+  from {
+    background-position:
+      0 0,
+      0 0,
+      14px 14px,
+      14px 14px;
+  }
+  to {
+    background-position:
+      -100px -50px,
+      -100px -50px,
+      -86px -36px,
+      -86px -36px;
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
+  .aurora-scene {
+    perspective: 500px;
+  }
+
   .aurora-main-column {
     width: min(70vw, 360px);
     opacity: 0.4;
@@ -169,5 +242,9 @@
 
   .aurora-floor {
     opacity: 0.5;
+  }
+
+  .aurora-grid-floor {
+    opacity: 0.45;
   }
 }

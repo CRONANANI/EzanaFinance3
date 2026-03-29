@@ -42,7 +42,7 @@
   text-align: center;
 }
 
-/* Aurora beams background — spans full hero, globe in front */
+/* Aurora beams + grid background — spans full hero, globe in front */
 .landing-page .hero-cybercore-root {
   position: relative;
   width: 100%;
@@ -55,16 +55,16 @@
   overflow: hidden;
 }
 
-/* Aurora background layer — full hero width, clipped at bottom of waitlist area */
+/* Aurora background layer — full hero width, beams fade before top */
 .landing-page .hero-aurora-bg {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  /* Beams fade out before reaching the very top of the hero */
-  mask-image: linear-gradient(to top, black 0%, black 55%, transparent 85%);
-  -webkit-mask-image: linear-gradient(to top, black 0%, black 55%, transparent 85%);
+  /* Beams and grid fade out before reaching the very top of the hero */
+  mask-image: linear-gradient(to top, black 0%, black 50%, transparent 80%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 50%, transparent 80%);
 }
 
 .landing-page .hero-content-column {
@@ -73,20 +73,29 @@
   align-self: center;
 }
 
+/* Text content sits above beams */
 .landing-page .hero-content-column .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 10;
 }
 
+/* The whole hero-container sits above the aurora layer */
 .landing-page .hero-cybercore-root > .content-container.hero-container {
   position: relative;
-  z-index: 2;
+  z-index: 10;
 }
 
-/* Globe sits ABOVE the aurora beams */
+/* Globe sits IN FRONT of the aurora beams — highest z-index */
 .landing-page .hero-cybercore-root .card-preview.globe-preview {
   position: relative;
-  z-index: 5;
+  z-index: 20;
+}
+
+/* Force the globe's canvas/wrapper to also be above beams */
+.landing-page .card-preview.globe-preview canvas,
+.landing-page .card-preview.globe-preview > div {
+  position: relative;
+  z-index: 20;
 }
 
 .landing-page .content-container.hero-container {
@@ -304,6 +313,14 @@ body.light-mode .nav-logo-img {
   }
 }
 
+/* Landing page: force #050a08 on html/body to prevent #0f1419 bleed-through */
+html:has(.landing-page) {
+  background-color: #050a08 !important;
+}
+html:has(.landing-page) body {
+  background-color: #050a08 !important;
+}
+
 /* Fallback: show animated content immediately for reduced motion, or after 6s if JS fails */
 @media (prefers-reduced-motion: reduce) {
   .landing-page .word-animate,
@@ -404,12 +421,6 @@ body.light-mode .nav-logo-img {
   backdrop-filter: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
-}
-
-html:has(.landing-page),
-html:has(.landing-page) body,
-body:has(.landing-page) {
-  background-color: #050a08 !important;
 }
 
 .navbar .logo.nav-home-btn {

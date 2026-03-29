@@ -39,7 +39,10 @@ body {
     z-index: 0;
 }
 
-/* One canvas for the main landing strip — avoids banding between sections */
+/* ============================================
+   UNIFIED BLACK BACKGROUND — Every section below hero
+   All sections forced to #050a08 black. No gray, no gradients.
+   ============================================ */
 .landing-page .tl-section,
 .landing-page #features-section-container,
 .landing-page .features-section,
@@ -49,14 +52,17 @@ body {
 .landing-page .testimonials-section,
 .landing-page .testimonials-below-hero,
 .landing-page .data-partners-section {
-    background: transparent !important;
-    background-color: transparent !important;
+    background: #050a08 !important;
+    background-color: #050a08 !important;
 }
 
+/* Footer and any bg-background utility inside landing — force to #050a08 */
 .landing-page footer,
-.landing-page .resources-section .bg-background,
-.landing-page footer.bg-background {
+.landing-page footer.bg-background,
+.landing-page .bg-background,
+.landing-page .resources-section .bg-background {
     background: #050a08 !important;
+    background-color: #050a08 !important;
 }
 
 /* Why Ezana: emerald-only ambient (no blue) */
