@@ -1,0 +1,193 @@
+/**
+ * Cyber-style grid + beams for landing hero (Ezana emerald palette).
+ * Scoped under .cybercore-scene — pair with z-index so globe sits above center glow.
+ */
+
+.cybercore-scene {
+  --cc-bg: #050a08;
+  --cc-primary: #10b981;
+  --cc-primary-light: #34d399;
+  --cc-primary-mid: #059669;
+  --cc-accent: #6ee7b7;
+  --cc-accent-soft: rgba(167, 243, 208, 0.45);
+  --cc-glow-1: rgba(16, 185, 129, 0.75);
+  --cc-glow-2: rgba(5, 150, 105, 0.55);
+  --cc-glow-highlight: rgba(52, 211, 153, 0.5);
+
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 80% at 50% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(5, 150, 105, 0.04) 0%, transparent 45%), var(--cc-bg);
+  perspective: 720px;
+  perspective-origin: 50% 38%;
+}
+
+.cybercore-floor {
+  position: absolute;
+  bottom: 0;
+  left: -60%;
+  width: 220%;
+  height: 58%;
+  transform: rotateX(74deg);
+  transform-origin: 50% 100%;
+  background-image: linear-gradient(
+      90deg,
+      rgba(16, 185, 129, 0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(rgba(16, 185, 129, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(5, 150, 105, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px, 56px 56px, 28px 28px;
+  background-position: 0 0, 0 0, 14px 14px;
+  opacity: 0.55;
+  animation: cybercore-moveGrid 10s linear infinite;
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 88%);
+}
+
+.cybercore-floor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(16, 185, 129, 0.12) 0%,
+    transparent 40%
+  );
+  animation: cybercore-floorGlow 7s ease-in-out infinite;
+}
+
+.cybercore-main-column {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(42vw, 440px);
+  height: 72%;
+  background: radial-gradient(
+    ellipse 55% 100% at 50% 100%,
+    rgba(16, 185, 129, 0.22) 0%,
+    rgba(5, 150, 105, 0.08) 45%,
+    transparent 72%
+  );
+  filter: blur(28px);
+  opacity: 0.65;
+  animation: cybercore-mainGlow 5.5s ease-in-out infinite alternate;
+  /* Center column stays visually behind globe via parent z-index */
+}
+
+.cybercore-light-stream {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.cybercore-light-beam {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  transform-origin: 50% 100%;
+  animation-name: cybercore-rise, cybercore-fade;
+  animation-timing-function: linear, linear;
+  animation-iteration-count: infinite, infinite;
+}
+
+.cybercore-light-beam--primary {
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(16, 185, 129, 0.04) 15%,
+    rgba(52, 211, 153, 0.55) 45%,
+    rgba(16, 185, 129, 0.35) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.35), 0 0 28px rgba(16, 185, 129, 0.15);
+}
+
+.cybercore-light-beam--secondary {
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(5, 150, 105, 0.08) 25%,
+    rgba(110, 231, 183, 0.4) 55%,
+    rgba(167, 243, 208, 0.2) 78%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(110, 231, 183, 0.28);
+}
+
+@keyframes cybercore-rise {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-5%);
+    opacity: 0;
+  }
+}
+
+@keyframes cybercore-fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  5%,
+  85% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes cybercore-floorGlow {
+  0%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes cybercore-mainGlow {
+  from {
+    opacity: 0.45;
+    filter: blur(32px);
+  }
+  to {
+    opacity: 0.72;
+    filter: blur(22px);
+  }
+}
+
+@keyframes cybercore-moveGrid {
+  from {
+    background-position: 0 0, 0 0, 14px 14px;
+  }
+  to {
+    background-position: -100px -50px, -100px -50px, -86px -36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cybercore-scene {
+    perspective: 520px;
+  }
+
+  .cybercore-main-column {
+    width: min(70vw, 360px);
+    opacity: 0.5;
+  }
+
+  .cybercore-floor {
+    opacity: 0.42;
+  }
+}
