@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { getTrialStatus } from '@/lib/trial';
 import { hasActiveSubscription } from '@/lib/subscription';
-import { TrialBanner } from '@/components/TrialBanner';
 import { TrialExpiredGate } from '@/components/TrialExpiredGate';
 import { usePartner } from '@/contexts/PartnerContext';
 
@@ -26,14 +25,11 @@ export function DashboardTrialShell({ children }) {
   const { isPartner } = usePartner();
   const [ready, setReady] = useState(() => shouldSkipTrialCheck(pathname ?? '', isPartner));
   const [blocked, setBlocked] = useState(false);
-  const [bannerMode, setBannerMode] = useState('none');
-  const [bannerDays, setBannerDays] = useState(0);
 
   useEffect(() => {
     if (shouldSkipTrialCheck(pathname ?? '', isPartner)) {
       setReady(true);
       setBlocked(false);
-      setBannerMode('none');
       return;
     }
 
@@ -48,7 +44,6 @@ export function DashboardTrialShell({ children }) {
 
       if (!user) {
         setBlocked(false);
-        setBannerMode('none');
         setReady(true);
         return;
       }
@@ -65,30 +60,17 @@ export function DashboardTrialShell({ children }) {
 
       if (hasActiveSubscription(profile)) {
         setBlocked(false);
-        if (profile?.subscription_status === 'trialing' && trial.daysRemaining > 0) {
-          setBannerMode('stripe');
-          setBannerDays(trial.daysRemaining);
-        } else {
-          setBannerMode('none');
-        }
         setReady(true);
         return;
       }
 
       if (trial.trialExpired && trial.source === 'account') {
         setBlocked(true);
-        setBannerMode('none');
         setReady(true);
         return;
       }
 
       setBlocked(false);
-      if (trial.source === 'account' && trial.daysRemaining <= 3 && trial.daysRemaining > 0) {
-        setBannerMode('account');
-        setBannerDays(trial.daysRemaining);
-      } else {
-        setBannerMode('none');
-      }
       setReady(true);
     })();
 
@@ -115,15 +97,5 @@ export function DashboardTrialShell({ children }) {
     return <TrialExpiredGate />;
   }
 
-  return (
-    <>
-      {bannerMode === 'stripe' && (
-        <TrialBanner variant="stripe" daysRemaining={bannerDays} trialExpired={false} />
-      )}
-      {bannerMode === 'account' && (
-        <TrialBanner variant="account" daysRemaining={bannerDays} trialExpired={false} />
-      )}
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
