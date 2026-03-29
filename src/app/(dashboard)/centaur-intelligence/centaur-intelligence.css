@@ -313,30 +313,39 @@ button:active:not(:disabled) {
   margin: 0 0 1rem 0;
 }
 
-.sentinel-portfolio-health {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #d4af37;
-  margin: 0 0 1.15rem 0;
-  line-height: 1.4;
-}
-
-.sentinel-portfolio-health span {
-  color: #d4af37;
-}
-
 .sentinel-report-section {
   margin-bottom: 1.35rem;
 }
 
 .sentinel-report-section-title {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(212, 175, 55, 0.75);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: #d4af37;
   font-weight: 700;
   margin: 0;
   padding: 0;
+}
+
+.sentinel-report-section-title--gold {
+  color: #d4af37;
+}
+
+.sentinel-report-health-value {
+  margin: 0.65rem 0 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #d4af37;
+}
+
+.sentinel-report-disclaimer-block {
+  margin: 0.65rem 0 0 0;
+  font-size: 0.52rem;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  color: #d4af37;
+  font-weight: 500;
 }
 
 .sentinel-report-section-body {
@@ -421,19 +430,3 @@ button:active:not(:disabled) {
   color: #d4af37;
 }
 
-.sentinel-modal-footer {
-  padding: 0.75rem 1.5rem 1rem;
-  border-top: 1px solid rgba(212, 175, 55, 0.12);
-  text-align: center;
-}
-
-.sentinel-modal-disclaimer {
-  margin: 0;
-  font-size: 0.52rem;
-  line-height: 1.55;
-  color: #d4af37;
-  letter-spacing: 0.02em;
-  max-width: 52rem;
-  margin-left: auto;
-  margin-right: auto;
-}

@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { parseSentinelReportText } from '@/lib/sentinel-report';
+import { parseSentinelReportText, cleanSentinelField } from '@/lib/sentinel-report';
 
 const GOLD = '#D4AF37';
 const GOLD_DIM = 'rgba(212, 175, 55, 0.35)';
@@ -34,10 +34,11 @@ const DEMO_ALLOC = [
 ];
 
 function SectionBody({ text }) {
-  if (!text?.trim()) {
+  const cleaned = cleanSentinelField(text || '');
+  if (!cleaned.trim()) {
     return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
   }
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean);
   return (
     <div className="sentinel-report-section-body">
       {lines.map((line, i) => (
@@ -87,28 +88,34 @@ export function SentinelReportModal({ open, onClose, report }) {
 
         <div className="sentinel-modal-grid">
           <section className="sentinel-modal-main">
-            <p className="sentinel-portfolio-health">
-              Portfolio Health: <span>{parsed.portfolioHealth || 'Strong'}</span>
-            </p>
+            <div className="sentinel-report-section">
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Portfolio Health</h3>
+              <p className="sentinel-report-health-value">{cleanSentinelField(parsed.portfolioHealth || 'Strong')}</p>
+            </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title">Key Insights</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Key Insights</h3>
               <SectionBody text={parsed.keyInsights} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title">Top Performers</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Top Performers</h3>
               <SectionBody text={parsed.topPerformers} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title">Events to Monitor</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Events to Monitor</h3>
               <SectionBody text={parsed.events} />
             </div>
 
             <div className="sentinel-report-section">
-              <h3 className="sentinel-report-section-title">Recommendations</h3>
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Recommendations</h3>
               <SectionBody text={parsed.recommendations} />
+            </div>
+
+            <div className="sentinel-report-section">
+              <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Disclaimer</h3>
+              <p className="sentinel-report-disclaimer-block">{cleanSentinelField(parsed.disclaimer)}</p>
             </div>
           </section>
 
@@ -182,9 +189,6 @@ export function SentinelReportModal({ open, onClose, report }) {
           </aside>
         </div>
 
-        <footer className="sentinel-modal-footer">
-          <p className="sentinel-modal-disclaimer">{parsed.disclaimer}</p>
-        </footer>
       </div>
     </div>
   );

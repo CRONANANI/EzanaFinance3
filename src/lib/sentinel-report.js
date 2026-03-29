@@ -106,17 +106,35 @@ function stripLegacyHeaders(text) {
     .trim();
 }
 
+/**
+ * Remove storage markers and technical tokens from displayed copy.
+ */
+export function cleanSentinelField(s) {
+  if (!s || typeof s !== 'string') return '';
+  let t = s.replace(/@@SECTION:\w+@@\s*/g, '');
+  t = t.replace(/@+/g, '');
+  // If leaked ALL_CAPS_SNAKE ids appear as words, show spaces instead of underscores
+  t = t.replace(/\b([A-Z]{2,}(?:_[A-Z0-9]+)+)\b/g, (_, token) => token.replace(/_/g, ' '));
+  return t.trim();
+}
+
 function parseMarkedSections(text) {
   const raw = stripLegacyHeaders(text);
   if (!raw.includes('@@SECTION:')) return null;
 
   const map = {};
-  const re = /@@SECTION:(\w+)@@\s*([\s\S]*?)(?=@@SECTION:|$)/g;
-  let m;
-  while ((m = re.exec(raw)) !== null) {
-    map[m[1]] = m[2].trim();
+  const re = /@@SECTION:(\w+)@@/g;
+  const matches = [...raw.matchAll(re)];
+  if (matches.length === 0) return null;
+
+  for (let i = 0; i < matches.length; i++) {
+    const sectionKey = matches[i][1];
+    const start = matches[i].index + matches[i][0].length;
+    const end = i + 1 < matches.length ? matches[i + 1].index : raw.length;
+    map[sectionKey] = raw.slice(start, end).trim();
   }
-  return map;
+
+  return Object.keys(map).length ? map : null;
 }
 
 function parseLegacySections(text) {
@@ -124,6 +142,8 @@ function parseLegacySections(text) {
   const disclaimerMatch = raw.match(/(This report is generated for educational purposes only\.[\s\S]*)$/i);
   const disclaimer = disclaimerMatch ? disclaimerMatch[1].trim() : SENTINEL_DISCLAIMER;
   let body = disclaimerMatch ? raw.slice(0, disclaimerMatch.index).trim() : raw;
+  /* Safety: legacy path sometimes receives @@SECTION markup if the marked parser failed */
+  body = body.replace(/@@SECTION:\w+@@\s*/g, '');
 
   let portfolioHealth = 'Strong';
   const ph = body.match(/PORTFOLIO HEALTH:\s*([^\n]+)/i);
@@ -150,12 +170,12 @@ function parseLegacySections(text) {
   }
 
   return {
-    portfolioHealth,
-    keyInsights: sections.keyInsights,
-    topPerformers: sections.topPerformers,
-    events: sections.events,
-    recommendations: sections.recommendations,
-    disclaimer,
+    portfolioHealth: cleanSentinelField(portfolioHealth),
+    keyInsights: cleanSentinelField(sections.keyInsights),
+    topPerformers: cleanSentinelField(sections.topPerformers),
+    events: cleanSentinelField(sections.events),
+    recommendations: cleanSentinelField(sections.recommendations),
+    disclaimer: cleanSentinelField(disclaimer),
   };
 }
 
@@ -175,14 +195,14 @@ export function parseSentinelReportText(text) {
   }
 
   const marked = parseMarkedSections(text);
-  if (marked) {
+  if (marked && Object.keys(marked).length > 0) {
     return {
-      portfolioHealth: marked.PORTFOLIO_HEALTH || 'Strong',
-      keyInsights: marked.KEY_INSIGHTS || '',
-      topPerformers: marked.TOP_PERFORMERS || '',
-      events: marked.EVENTS || '',
-      recommendations: marked.RECOMMENDATIONS || '',
-      disclaimer: marked.DISCLAIMER || SENTINEL_DISCLAIMER,
+      portfolioHealth: cleanSentinelField(marked.PORTFOLIO_HEALTH || 'Strong'),
+      keyInsights: cleanSentinelField(marked.KEY_INSIGHTS || ''),
+      topPerformers: cleanSentinelField(marked.TOP_PERFORMERS || ''),
+      events: cleanSentinelField(marked.EVENTS || ''),
+      recommendations: cleanSentinelField(marked.RECOMMENDATIONS || ''),
+      disclaimer: cleanSentinelField(marked.DISCLAIMER || SENTINEL_DISCLAIMER),
     };
   }
 
