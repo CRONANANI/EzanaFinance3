@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useCallback, cloneElement } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
+import { HERO_DATA } from '@/lib/dashboard-hero-data';
+import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
 import './terminal.css';
@@ -34,6 +36,8 @@ async function fetchBatchQuotes(symbols) {
 
 export default function HomeTerminalPage() {
   const { user } = useAuth();
+  const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
+    usePlaidPortfolioSummary();
   const [time, setTime] = useState('');
   const [holdings, setHoldings] = useState([]);
   const [quotes, setQuotes] = useState({});
@@ -203,6 +207,18 @@ export default function HomeTerminalPage() {
     () => enrichedHoldings.reduce((s, h) => s + h.value, 0),
     [enrichedHoldings],
   );
+
+  /** Same dollar amount as /home-dashboard "Current Value" (Plaid summary or demo hero) */
+  const marqueePortfolioValue = useMemo(() => {
+    if (!user) return 0;
+    if (plaidSummaryLoading) return null;
+    if (plaidConnected) return plaidSummary?.totalValue ?? 0;
+    return HERO_DATA['1D'].value;
+  }, [user, plaidSummaryLoading, plaidConnected, plaidSummary]);
+
+  /** Hero cards match dashboard Current Value; falls back to live-enriched sum while summary loads */
+  const portfolioTotalAligned = marqueePortfolioValue ?? portfolioTotal;
+
   const portfolioChange = useMemo(
     () => enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0),
     [enrichedHoldings],
@@ -228,13 +244,15 @@ export default function HomeTerminalPage() {
     blocks.push(
       <span key="pv" className="t-news-item">
         <strong>PORTFOLIO</strong>{' '}
-        {loading ? (
+        {user && (loading || plaidSummaryLoading) ? (
+          <span className="t-dim">—</span>
+        ) : marqueePortfolioValue == null ? (
           <span className="t-dim">—</span>
         ) : (
           <>
             <strong>
               $
-              {portfolioTotal.toLocaleString('en-US', {
+              {marqueePortfolioValue.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -293,7 +311,8 @@ export default function HomeTerminalPage() {
     return blocks;
   }, [
     loading,
-    portfolioTotal,
+    plaidSummaryLoading,
+    marqueePortfolioValue,
     portfolioChange,
     indexQuotes,
     marketLoading,
@@ -328,7 +347,7 @@ export default function HomeTerminalPage() {
       </div>
 
       <HomeTerminalSummary
-        portfolioTotal={portfolioTotal}
+        portfolioTotal={portfolioTotalAligned}
         portfolioChange={portfolioChange}
         enrichedHoldings={enrichedHoldings}
         loading={loading}

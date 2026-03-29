@@ -4,17 +4,14 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
+import { HERO_DATA } from '@/lib/dashboard-hero-data';
+import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import './home-dashboard.css';
 
 /* ═══════════════════════════════════════════════════════════
    TIMEFRAME-AWARE DATA — Hero + Holdings update when 1D/1M/6M/1Y clicked
+   (Current Value dollar amount uses live Plaid summary when connected — see currentValue)
    ═══════════════════════════════════════════════════════════ */
-const HERO_DATA = {
-  '1D': { value: 220360.00, change: 4.9, changeDollar: 10297.64, companies: 26, cash: 10250, committed: 7000 },
-  '1M': { value: 224800.00, change: 7.2, changeDollar: 15068.00, companies: 26, cash: 10250, committed: 7000 },
-  '6M': { value: 248500.00, change: 18.6, changeDollar: 39012.00, companies: 26, cash: 12400, committed: 5200 },
-  '1Y': { value: 278900.00, change: 34.1, changeDollar: 71040.00, companies: 26, cash: 14800, committed: 4500 },
-};
 
 const HOLDINGS_DATA = {
   '1D': [
@@ -150,11 +147,18 @@ function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, cente
    ═══════════════════════════════════════════════════════════ */
 export default function HomeDashboardPage() {
   const { user } = useAuth();
+  const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
+    usePlaidPortfolioSummary();
   const [timeframe, setTimeframe] = useState('1D');
   const [liveQuotes, setLiveQuotes] = useState({});
   const heroData = HERO_DATA[timeframe];
   const holdings = HOLDINGS_DATA[timeframe];
   const chartPath = CHART_PATHS[timeframe];
+
+  const currentValue =
+    !plaidSummaryLoading && plaidConnected
+      ? (plaidSummary?.totalValue ?? 0)
+      : heroData.value;
 
   useEffect(() => {
     const tickers = [
@@ -234,7 +238,7 @@ export default function HomeDashboardPage() {
             <div>
               <span className="db-hero-label">Current Value <i className="bi bi-arrow-up-right" /></span>
               <div className="db-hero-value">
-                ${heroData.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${currentValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
               <span className={`db-hero-change ${heroData.change >= 0 ? 'positive' : 'negative'}`}>
                 {heroData.change >= 0 ? '+' : ''}{heroData.change}%
@@ -270,7 +274,7 @@ export default function HomeDashboardPage() {
         </div>
 
         {/* Chart area */}
-        <HeroSparkline portfolioValue={heroData.value} changePct={heroData.change} chartPath={chartPath} />
+        <HeroSparkline portfolioValue={currentValue} changePct={heroData.change} chartPath={chartPath} />
       </div>
 
       {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
