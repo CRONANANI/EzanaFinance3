@@ -54,11 +54,25 @@
   background-color: #050a08;
 }
 
-.landing-page .hero-cybercore-bg {
+/* Cyber grid only behind headline + waitlist — globe is a sibling and paints above */
+.landing-page .hero-content-column {
+  position: relative;
+  width: 100%;
+  align-self: center;
+  isolation: isolate;
+}
+
+.landing-page .hero-content-column .hero-cybercore-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-page .hero-content-column .hero-content {
+  position: relative;
+  z-index: 1;
 }
 
 .landing-page .hero-cybercore-root > .content-container.hero-container {

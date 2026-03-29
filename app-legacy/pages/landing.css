@@ -30,32 +30,70 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    /* Emerald-only wash — no blue tint so top matches hero #050a08 */
+    /* Emerald-only wash — matches Why Ezana / features ambient */
     background:
-        radial-gradient(circle at 20% 25%, rgba(16, 185, 129, 0.06) 0%, transparent 52%),
-        radial-gradient(circle at 78% 72%, rgba(5, 150, 105, 0.04) 0%, transparent 48%);
+        radial-gradient(circle at 20% 25%, rgba(16, 185, 129, 0.065) 0%, transparent 52%),
+        radial-gradient(circle at 78% 72%, rgba(5, 150, 105, 0.045) 0%, transparent 48%),
+        radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.03) 0%, transparent 55%);
     pointer-events: none;
     z-index: 0;
 }
 
+/* One canvas for the main landing strip — avoids banding between sections */
+.landing-page .tl-section,
+.landing-page #features-section-container,
+.landing-page .features-section,
 .landing-page .resources-section,
-.landing-page #pricing,
 .landing-page .pricing-section,
-.landing-page #pricing section,
 .landing-page .faq-section-wrapper,
 .landing-page .testimonials-section,
 .landing-page .testimonials-below-hero,
-.landing-page footer,
-.landing-page .features-section,
-.landing-page #features-section-container,
 .landing-page .data-partners-section {
-    background: #050a08 !important;
-    background-color: #050a08 !important;
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
+.landing-page footer,
 .landing-page .resources-section .bg-background,
 .landing-page footer.bg-background {
     background: #050a08 !important;
+}
+
+/* Why Ezana: emerald-only ambient (no blue) */
+.landing-page .features-section::before {
+    background:
+        radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.06) 0%, transparent 52%),
+        radial-gradient(circle at 80% 70%, rgba(5, 150, 105, 0.05) 0%, transparent 50%);
+}
+
+/* Data sources & pricing: same subtle wash as features (pricing-section is position relative in its CSS file) */
+.landing-page .resources-section,
+.landing-page .pricing-section {
+    position: relative;
+}
+
+.landing-page .resources-section::before,
+.landing-page .pricing-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 22% 28%, rgba(16, 185, 129, 0.05) 0%, transparent 52%),
+        radial-gradient(circle at 78% 72%, rgba(5, 150, 105, 0.045) 0%, transparent 48%);
+}
+
+.landing-page .resources-container,
+.landing-page .pricing-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Trusted logos: no horizontal rules — transition from hero is handled by cyber grid fade */
+.landing-page .tl-section {
+    border-top: none;
+    border-bottom: none;
 }
 
 /* Testimonials carousel fade edges - match page background */

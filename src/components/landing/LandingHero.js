@@ -26,28 +26,30 @@ export function LandingHero() {
 
   return (
     <div className="hero-cybercore-root">
-      <div className="hero-cybercore-bg" aria-hidden>
-        <CybercoreBackground beamCount={56} />
-      </div>
       <div className="content-container hero-container">
-        <div className="hero-content">
-          <h1 className="hero-tagline">Your network is your net worth</h1>
-          <div className="hero-subtitle hero-subtitle--lead">
-            <AnimatedWords
-              text="Better data, Better decisions, Better Returns."
-              baseDelay={300}
-              staggerMs={20}
-            />
+        <div className="hero-content-column">
+          <div className="hero-cybercore-bg" aria-hidden>
+            <CybercoreBackground beamCount={56} />
           </div>
-          <p className="hero-subtitle hero-subtitle--secondary">
-            <AnimatedWords
-              text="Ezana brings Wall Street intelligence to your portfolio."
-              baseDelay={520}
-              staggerMs={22}
-            />
-          </p>
-          <div className="hero-waitlist animate-in" data-delay="1750">
-            <AnimatedWaitlistForm />
+          <div className="hero-content">
+            <h1 className="hero-tagline">Your network is your net worth</h1>
+            <div className="hero-subtitle hero-subtitle--lead">
+              <AnimatedWords
+                text="Better data, Better decisions, Better Returns."
+                baseDelay={300}
+                staggerMs={20}
+              />
+            </div>
+            <p className="hero-subtitle hero-subtitle--secondary">
+              <AnimatedWords
+                text="Ezana brings Wall Street intelligence to your portfolio."
+                baseDelay={520}
+                staggerMs={22}
+              />
+            </p>
+            <div className="hero-waitlist animate-in" data-delay="1750">
+              <AnimatedWaitlistForm />
+            </div>
           </div>
         </div>
         <div className="card-preview globe-preview animate-in" data-delay="450">
