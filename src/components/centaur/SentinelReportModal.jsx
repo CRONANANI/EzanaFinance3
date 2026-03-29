@@ -1,0 +1,168 @@
+'use client';
+
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+const GOLD = '#D4AF37';
+const GOLD_DIM = 'rgba(212, 175, 55, 0.35)';
+
+function stripEmojis(s) {
+  if (!s) return '';
+  try {
+    return s.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+  } catch {
+    return s.trim();
+  }
+}
+
+/** Demo series for visual polish when report is plain text */
+const DEMO_TREND = [
+  { w: 'W1', v: 100 },
+  { w: 'W2', v: 102 },
+  { w: 'W3', v: 101 },
+  { w: 'W4', v: 105 },
+  { w: 'W5', v: 108 },
+  { w: 'W6', v: 107 },
+];
+
+const DEMO_ALLOC = [
+  { name: 'Equities', pct: 58 },
+  { name: 'Fixed inc.', pct: 22 },
+  { name: 'Alts', pct: 12 },
+  { name: 'Cash', pct: 8 },
+];
+
+export function SentinelReportModal({ open, onClose, report }) {
+  if (!open || !report) return null;
+
+  const body = stripEmojis(report.report_text || '');
+  const title = 'Yohannes Sentinel — Weekly Report';
+  const dateLabel = report.report_date
+    ? new Date(report.report_date + 'T12:00:00').toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
+
+  return (
+    <div
+      className="sentinel-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sentinel-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="sentinel-modal-shell">
+        <header className="sentinel-modal-header">
+          <div>
+            <p className="sentinel-modal-kicker">Confidential · Portfolio intelligence</p>
+            <h2 id="sentinel-modal-title" className="sentinel-modal-title">
+              {title}
+            </h2>
+            {dateLabel && <p className="sentinel-modal-date">{dateLabel}</p>}
+          </div>
+          <button type="button" className="sentinel-modal-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </header>
+
+        <div className="sentinel-modal-grid">
+          <section className="sentinel-modal-main">
+            <div className="sentinel-modal-section-label">Executive summary</div>
+            <div className="sentinel-modal-prose">
+              {body.split(/\n{2,}/).map((para, i) => (
+                <p key={i}>{para.trim()}</p>
+              ))}
+            </div>
+          </section>
+
+          <aside className="sentinel-modal-charts">
+            <div className="sentinel-chart-card">
+              <div className="sentinel-chart-title">Portfolio trajectory (indexed)</div>
+              <div className="sentinel-chart-h">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={DEMO_TREND} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="sentinelArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={GOLD} stopOpacity={0.35} />
+                        <stop offset="100%" stopColor={GOLD} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.12)" />
+                    <XAxis dataKey="w" tick={{ fill: '#9ca3af', fontSize: 10 }} axisLine={false} />
+                    <YAxis hide domain={['dataMin - 2', 'dataMax + 2']} />
+                    <Tooltip
+                      contentStyle={{
+                        background: '#111827',
+                        border: `1px solid ${GOLD_DIM}`,
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                      labelStyle={{ color: GOLD }}
+                    />
+                    <Area type="monotone" dataKey="v" stroke={GOLD} fill="url(#sentinelArea)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="sentinel-chart-card">
+              <div className="sentinel-chart-title">Strategic allocation</div>
+              <div className="sentinel-chart-h sentinel-chart-h--bar">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={DEMO_ALLOC} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.08)" horizontal={false} />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                    <YAxis type="category" dataKey="name" width={72} tick={{ fill: '#d1d5db', fontSize: 11 }} />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(212,175,55,0.06)' }}
+                      contentStyle={{
+                        background: '#111827',
+                        border: `1px solid ${GOLD_DIM}`,
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar dataKey="pct" fill={GOLD} radius={[0, 4, 4, 0]} maxBarSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="sentinel-kpi-row">
+              <div className="sentinel-kpi">
+                <span className="sentinel-kpi-label">Conviction</span>
+                <span className="sentinel-kpi-val">High</span>
+              </div>
+              <div className="sentinel-kpi">
+                <span className="sentinel-kpi-label">Risk posture</span>
+                <span className="sentinel-kpi-val">Balanced</span>
+              </div>
+              <div className="sentinel-kpi">
+                <span className="sentinel-kpi-label">Horizon</span>
+                <span className="sentinel-kpi-val">Multi-qtr</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <footer className="sentinel-modal-footer">
+          Educational commentary only — not investment advice. Past performance does not guarantee future results.
+        </footer>
+      </div>
+    </div>
+  );
+}

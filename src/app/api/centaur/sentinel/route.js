@@ -37,16 +37,17 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch latest sentinel report
-    const { data, error } = await supabaseAdmin
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '12', 10), 1), 48);
+
+    const { data: rows, error } = await supabaseAdmin
       .from('sentinel_reports')
       .select('*')
       .eq('user_id', user.id)
       .order('report_date', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(limit);
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('Sentinel report fetch error:', error);
       return NextResponse.json(
         { error: 'Failed to fetch report' },
@@ -54,13 +55,12 @@ export async function GET(request) {
       );
     }
 
-    // If no report exists, generate a default one
-    if (!data) {
+    if (!rows?.length) {
       const defaultReport = generateDefaultReport(user.id);
-      return NextResponse.json({ report: defaultReport });
+      return NextResponse.json({ report: defaultReport, reports: [defaultReport] });
     }
 
-    return NextResponse.json({ report: data });
+    return NextResponse.json({ report: rows[0], reports: rows });
   } catch (error) {
     console.error('Sentinel GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -129,33 +129,33 @@ function generateDefaultReport(userId) {
   return {
     id: null,
     user_id: userId,
-    report_text: `📊 YOHANNES SENTINEL — Weekly Report
+    report_text: `YOHANNES SENTINEL — Weekly Report
 Generated: ${formattedDate}
 
 PORTFOLIO HEALTH: STRONG
 
-Your portfolio is performing well. Here's what I've observed:
+Your portfolio is performing well. Here is what we are observing:
 
-🔍 KEY INSIGHTS:
-• Your diversification across sectors is solid
-• Consider reviewing your NVDA position if it's outperforming by >10%
-• Watch for Fed announcements this week — may impact fixed income
+KEY INSIGHTS
+• Your diversification across sectors is solid.
+• Consider reviewing concentrated positions if any single name is materially above policy weight.
+• Watch for central-bank communications this week — fixed-income and growth equities may respond.
 
-📈 TOP PERFORMERS:
-• Technology sector up 4.2% week-over-week
-• Your largest holdings are tracking market trends positively
+TOP PERFORMERS
+• Technology leadership has been a tailwind week over week.
+• Largest holdings are broadly tracking benchmark trends.
 
-⚠️ EVENTS TO MONITOR:
-• Federal Reserve Policy Meeting (impact: HIGH)
-• Earnings season in full swing
-• Oil prices stabilizing after recent volatility
+EVENTS TO MONITOR
+• Policy and rates calendar (high impact potential).
+• Earnings season breadth and guidance revisions.
+• Energy and FX volatility spillovers.
 
-💡 RECOMMENDATIONS:
-• Review your stop-loss levels on volatile positions
-• Consider taking partial profits if any position is up >15%
-• Monitor your debrief queue for actionable insights
+RECOMMENDATIONS
+• Revisit risk limits and stop levels on higher-beta names.
+• Consider trimming into strength if any position is extended versus your plan.
+• Use your debrief queue to tie macro events to position-level actions.
 
-This report is generated for educational purposes. Always conduct your own research before making investment decisions.`,
+This report is generated for educational purposes only. It is not investment advice. Always conduct your own research before making investment decisions.`,
     report_date: today.toISOString().split('T')[0],
     created_at: today.toISOString(),
   };

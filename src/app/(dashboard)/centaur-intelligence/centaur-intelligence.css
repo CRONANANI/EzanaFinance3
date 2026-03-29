@@ -194,3 +194,190 @@ button:active:not(:disabled) {
     max-width: 100%;
   }
 }
+
+/* Sentinel report modal */
+.sentinel-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
+}
+
+.sentinel-modal-shell {
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(165deg, #0d0f14 0%, #0a0c10 100%);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(212, 175, 55, 0.08) inset;
+}
+
+.sentinel-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.sentinel-modal-kicker {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.65);
+  margin: 0 0 0.35rem 0;
+  font-weight: 600;
+}
+
+.sentinel-modal-title {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+  color: #d4af37;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.sentinel-modal-date {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.sentinel-modal-close {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #d1d5db;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sentinel-modal-close:hover {
+  background: rgba(212, 175, 55, 0.12);
+  color: #fff;
+}
+
+.sentinel-modal-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .sentinel-modal-grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+}
+
+.sentinel-modal-main {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  border-right: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.sentinel-modal-section-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.75);
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.sentinel-modal-prose {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: #d1d5db;
+}
+
+.sentinel-modal-prose p {
+  margin: 0 0 1rem 0;
+}
+
+.sentinel-modal-charts {
+  padding: 1rem 1.25rem 1.25rem;
+  background: rgba(0, 0, 0, 0.25);
+  overflow-y: auto;
+}
+
+.sentinel-chart-card {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(15, 18, 24, 0.9);
+}
+
+.sentinel-chart-title {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.8);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.sentinel-chart-h {
+  height: 140px;
+  width: 100%;
+}
+
+.sentinel-chart-h--bar {
+  height: 160px;
+}
+
+.sentinel-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.sentinel-kpi {
+  padding: 0.65rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(10, 12, 16, 0.95);
+  text-align: center;
+}
+
+.sentinel-kpi-label {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.sentinel-kpi-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+.sentinel-modal-footer {
+  padding: 0.65rem 1.5rem;
+  font-size: 0.65rem;
+  color: #6b7280;
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  text-align: center;
+}

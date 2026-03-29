@@ -14,6 +14,8 @@ async function fetchQuote(symbol, apiKey) {
     if (!res.ok) return null;
     const data = await res.json();
     if (!data || data.c === 0) return null;
+    // Finnhub: `c` is current / last trade; when the session is closed, `c` is typically the last traded price.
+    // `pc` is previous close — useful for after-hours context alongside `c`.
     return {
       symbol,
       price: data.c,
@@ -23,6 +25,8 @@ async function fetchQuote(symbol, apiKey) {
       low: data.l,
       open: data.o,
       prevClose: data.pc,
+      /** Last price before close is reflected in `c` after the regular session ends. */
+      lastRegularSessionPrice: data.c,
     };
   } catch {
     return null;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, cloneElement } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
@@ -217,68 +217,112 @@ export default function HomeTerminalPage() {
     return day >= 1 && day <= 5 && mins >= 14 * 60 + 30 && mins < 21 * 60;
   }, []);
 
+  const marqueeBlocks = useMemo(() => {
+    const blocks = [];
+    blocks.push(
+      <span key="brand" className="t-news-item">
+        <span className="t-brand-icon t-brand-icon--inline">EF</span>{' '}
+        <strong>EZANA TERMINAL</strong>
+      </span>,
+    );
+    blocks.push(
+      <span key="pv" className="t-news-item">
+        <strong>PORTFOLIO</strong>{' '}
+        {loading ? (
+          <span className="t-dim">—</span>
+        ) : (
+          <>
+            <strong>
+              $
+              {portfolioTotal.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </strong>{' '}
+            <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
+              {portfolioChange >= 0 ? '+' : ''}
+              {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+              today
+            </span>
+          </>
+        )}
+      </span>,
+    );
+    INDEX_SYMBOLS.forEach((idx) => {
+      const q = indexQuotes[idx.symbol];
+      blocks.push(
+        <span key={idx.symbol} className="t-news-item">
+          <strong>{idx.name}</strong>{' '}
+          {q ? (
+            <>
+              {q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+              <span className={q.changePercent >= 0 ? 't-green' : 't-red'}>
+                ({q.changePercent >= 0 ? '+' : ''}
+                {q.changePercent.toFixed(2)}%)
+              </span>
+            </>
+          ) : (
+            <span className="t-dim">{marketLoading ? '…' : '—'}</span>
+          )}
+        </span>,
+      );
+    });
+    blocks.push(
+      <span key="mkt" className="t-news-item">
+        <span className={isMarketOpen ? 't-green' : 't-red'}>{isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}</span>{' '}
+        <span className="t-dim">{time}</span>
+      </span>,
+    );
+    if (enrichedHoldings.length > 0) {
+      enrichedHoldings.slice(0, 10).forEach((h, i) => {
+        blocks.push(
+          <span key={`h-${i}`} className="t-news-item">
+            <strong>{h.ticker}</strong> ${h.price.toFixed(2)} ({h.pctChange >= 0 ? '+' : ''}
+            {h.pctChange.toFixed(2)}%) — {h.shares} sh · $
+            {h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          </span>,
+        );
+      });
+    } else {
+      blocks.push(
+        <span key="empty" className="t-news-item">
+          <strong>EZANA</strong> Welcome to Ezana Terminal. Connect your brokerage to see live portfolio data.
+        </span>,
+      );
+    }
+    return blocks;
+  }, [
+    loading,
+    portfolioTotal,
+    portfolioChange,
+    indexQuotes,
+    marketLoading,
+    isMarketOpen,
+    time,
+    enrichedHoldings,
+  ]);
+
+  const marqueeTrack = useMemo(
+    () => (
+      <>
+        {marqueeBlocks.map((el, i) => cloneElement(el, { key: `m1-${i}` }))}
+        {marqueeBlocks.map((el, i) => cloneElement(el, { key: `m2-${i}` }))}
+      </>
+    ),
+    [marqueeBlocks],
+  );
+
   return (
     <div className="ezana-terminal">
       <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--top">
         <div className="dashboard-page-inset ezana-terminal-bar-inner">
-          <div className="t-ticker-bar">
-        <div className="t-brand">
-          <div className="t-brand-icon">EF</div>
-          <span>EZANA TERMINAL</span>
-        </div>
-        <div className="t-portfolio-value">
-          <span className="t-pv-label">PORTFOLIO</span>
-          {loading ? (
-            <span className="t-pv-amount t-dim">---</span>
-          ) : (
-            <>
-              <span className="t-pv-amount">
-                ${portfolioTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-              <span className={`t-pv-change ${portfolioChange >= 0 ? 't-green' : 't-red'}`}>
-                {portfolioChange >= 0 ? '+' : ''}
-                {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </>
-          )}
-        </div>
-        <div className="t-indices-scroll">
-          {INDEX_SYMBOLS.map((idx) => {
-            const q = indexQuotes[idx.symbol];
-            return (
-              <div key={idx.name} className="t-index-item">
-                <span className="t-index-name">{idx.name}</span>
-                {q ? (
-                  <>
-                    <span className="t-index-val">
-                      {q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                    <span
-                      className={q.changePercent >= 0 ? 't-green' : 't-red'}
-                      style={{ fontSize: 10, fontWeight: 600 }}
-                    >
-                      {q.changePercent >= 0 ? '+' : ''}
-                      {q.changePercent.toFixed(2)}%
-                    </span>
-                  </>
-                ) : (
-                  <span className="t-dim" style={{ fontSize: 10 }}>
-                    {marketLoading ? '...' : '—'}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <div className="t-market-status">
-          <div className={`t-status-dot ${isMarketOpen ? 'open' : 'closed'}`} />
-          <span style={{ color: isMarketOpen ? '#10b981' : '#ef4444' }}>
-            {isMarketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}
-          </span>
-          <span className="t-dim" style={{ marginLeft: 4 }}>
-            {time}
-          </span>
-        </div>
+          <div className="t-news-bar t-terminal-marquee-top">
+            <div className="t-news-label">
+              <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
+            </div>
+            <div className="t-news-scroll">
+              <div className="t-news-track">{marqueeTrack}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -293,38 +337,6 @@ export default function HomeTerminalPage() {
         weekTradeHistory={weekTradeHistory}
         weekActivityLoading={weekActivityLoading}
       />
-
-      <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--bottom">
-        <div className="dashboard-page-inset ezana-terminal-bar-inner">
-          <div className="t-news-bar">
-        <div className="t-news-label">
-          <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
-        </div>
-        <div className="t-news-scroll">
-          <div className="t-news-track">
-            {enrichedHoldings.length > 0 ? (
-              enrichedHoldings.slice(0, 10).flatMap((h, i) => [
-                <span key={`a-${i}`} className="t-news-item">
-                  <strong>{h.ticker}</strong> ${h.price.toFixed(2)} ({h.pctChange >= 0 ? '+' : ''}
-                  {h.pctChange.toFixed(2)}%) — {h.shares} shares worth $
-                  {h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                </span>,
-                <span key={`b-${i}`} className="t-news-item">
-                  <strong>{h.ticker}</strong> P&amp;L: {h.totalGain >= 0 ? '+' : ''}$
-                  {h.totalGain.toLocaleString('en-US', { maximumFractionDigits: 0 })} (
-                  {h.costBasis > 0 ? ((h.totalGain / h.costBasis) * 100).toFixed(1) : '0'}%)
-                </span>,
-              ])
-            ) : (
-              <span className="t-news-item">
-                <strong>EZANA</strong> Welcome to Ezana Terminal. Connect your brokerage to see live portfolio data.
-              </span>
-            )}
-          </div>
-        </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

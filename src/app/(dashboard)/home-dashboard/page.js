@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
@@ -90,11 +90,11 @@ const PROFIT_BREAKDOWN = [
 ];
 
 const RECENT_TRANSACTIONS = [
-  { company: 'Meta', date: '10 Dec 2025', amount: 954.7, positive: true, txId: '#784512372' },
-  { company: 'UBER', date: '10 Dec 2025', amount: 954.7, positive: false, txId: '#784512371' },
-  { company: 'NVDA', date: '09 Dec 2025', amount: 954.7, positive: true, txId: '#784512370' },
-  { company: 'Apple', date: '08 Dec 2025', amount: 1240.5, positive: true, txId: '#784512369' },
-  { company: 'MSFT', date: '07 Dec 2025', amount: 980.75, positive: true, txId: '#784512368' },
+  { company: 'Meta', ticker: 'META', date: '10 Dec 2025', amount: 954.7, positive: true, txId: '#784512372' },
+  { company: 'Uber', ticker: 'UBER', date: '10 Dec 2025', amount: 954.7, positive: false, txId: '#784512371' },
+  { company: 'NVIDIA', ticker: 'NVDA', date: '09 Dec 2025', amount: 954.7, positive: true, txId: '#784512370' },
+  { company: 'Apple', ticker: 'AAPL', date: '08 Dec 2025', amount: 1240.5, positive: true, txId: '#784512369' },
+  { company: 'Microsoft', ticker: 'MSFT', date: '07 Dec 2025', amount: 980.75, positive: true, txId: '#784512368' },
 ];
 
 function getGreeting() {
@@ -151,9 +151,41 @@ function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, cente
 export default function HomeDashboardPage() {
   const { user } = useAuth();
   const [timeframe, setTimeframe] = useState('1D');
+  const [liveQuotes, setLiveQuotes] = useState({});
   const heroData = HERO_DATA[timeframe];
   const holdings = HOLDINGS_DATA[timeframe];
   const chartPath = CHART_PATHS[timeframe];
+
+  useEffect(() => {
+    const tickers = [
+      ...new Set([
+        ...Object.values(HOLDINGS_DATA)
+          .flat()
+          .map((h) => h.ticker),
+        ...WATCHLIST.map((w) => w.ticker),
+        ...RECENT_TRANSACTIONS.map((t) => t.ticker).filter(Boolean),
+      ]),
+    ];
+    let cancelled = false;
+    fetch(`/api/market/batch-quotes?symbols=${tickers.join(',')}`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d) => {
+        if (!cancelled) setLiveQuotes(d.quotes || {});
+      })
+      .catch(() => {});
+    const id = setInterval(() => {
+      fetch(`/api/market/batch-quotes?symbols=${tickers.join(',')}`)
+        .then((r) => (r.ok ? r.json() : {}))
+        .then((d) => {
+          if (!cancelled) setLiveQuotes(d.quotes || {});
+        })
+        .catch(() => {});
+    }, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
 
   const userName = user?.user_metadata?.first_name
     || user?.user_metadata?.full_name?.split(' ')[0]
@@ -257,15 +289,21 @@ export default function HomeDashboardPage() {
             </div>
           </div>
           <div className="db-portfolio-grid">
-            {holdings.map((h) => (
-              <Link key={h.ticker} href={`/company-research?ticker=${h.ticker}`} className={`db-holding-card db-holding-card-link ${h.change >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}>
+            {holdings.map((h) => {
+              const q = liveQuotes[h.ticker];
+              const price = q?.price ?? h.price;
+              const ch = q != null ? q.changePercent : h.change;
+              const changeDollar =
+                q != null && h.qty != null ? (q.change ?? 0) * h.qty : h.changeDollar;
+              return (
+              <Link key={h.ticker} href={`/company-research?ticker=${h.ticker}`} className={`db-holding-card db-holding-card-link ${ch >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}>
                 <div className="db-holding-top">
                   <span className="db-holding-dot" style={{ background: h.color }} />
                   <div className="db-holding-info">
                     <span className="db-holding-label">{h.name} ({h.ticker})</span>
-                    <span className="db-holding-value">${h.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                    <span className={`db-holding-change ${h.change >= 0 ? 'positive' : 'negative'}`}>
-                      {h.change >= 0 ? '+' : ''}{h.change}% ({h.changeDollar >= 0 ? '+' : ''}${Math.abs(h.changeDollar).toFixed(2)})
+                    <span className="db-holding-value">${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span className={`db-holding-change ${ch >= 0 ? 'positive' : 'negative'}`}>
+                      {ch >= 0 ? '+' : ''}{ch.toFixed(2)}% ({changeDollar >= 0 ? '+' : ''}${Math.abs(changeDollar).toFixed(2)})
                     </span>
                     <span className="db-holding-qty">Quantity: {h.qty}</span>
                   </div>
@@ -273,7 +311,8 @@ export default function HomeDashboardPage() {
                 {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
                 <span className="db-holding-view-details">View Details</span>
               </Link>
-            ))}
+            );
+            })}
           </div>
         </div>
 
@@ -291,7 +330,11 @@ export default function HomeDashboardPage() {
                 <button className="db-icon-btn" style={{ marginTop: '0.75rem' }} title="Add stock"><i className="bi bi-plus-lg" /></button>
               </div>
             ) : (
-              WATCHLIST.map((w) => (
+              WATCHLIST.map((w) => {
+                const q = liveQuotes[w.ticker];
+                const px = q?.price ?? w.price;
+                const ch = q != null ? q.changePercent : w.change;
+                return (
                 <div key={w.ticker} className="db-watchlist-item">
                   <div className="db-watchlist-left">
                     <div className="db-watchlist-avatar">
@@ -303,14 +346,15 @@ export default function HomeDashboardPage() {
                     </div>
                   </div>
                   <div className="db-watchlist-right">
-                    <span className="db-watchlist-price">${w.price.toLocaleString()}</span>
-                    <span className={`db-watchlist-change ${w.change >= 0 ? 'positive' : 'negative'}`}>
-                      <i className={`bi ${w.change >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`} style={{ fontSize: '0.625rem', marginRight: 2 }} />
-                      {w.change >= 0 ? '+' : ''}{w.change}%
+                    <span className="db-watchlist-price">${px.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className={`db-watchlist-change ${ch >= 0 ? 'positive' : 'negative'}`}>
+                      <i className={`bi ${ch >= 0 ? 'bi-caret-up-fill' : 'bi-caret-down-fill'}`} style={{ fontSize: '0.625rem', marginRight: 2 }} />
+                      {ch >= 0 ? '+' : ''}{Number(ch).toFixed(2)}%
                     </span>
                   </div>
                 </div>
-              ))
+              );
+              })
             )}
           </div>
         </div>
@@ -384,13 +428,20 @@ export default function HomeDashboardPage() {
             <span>Transaction ID</span>
           </div>
           <div className="db-tx-list">
-            {RECENT_TRANSACTIONS.map((tx) => (
+            {RECENT_TRANSACTIONS.map((tx) => {
+              const q = tx.ticker ? liveQuotes[tx.ticker] : null;
+              return (
               <div key={tx.txId} className="db-tx-item">
                 <div className="db-tx-company">
                   <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
                   <div>
-                    <span className="db-tx-name">{tx.company}</span>
+                    <span className="db-tx-name">{tx.company} ({tx.ticker})</span>
                     <span className="db-tx-date">{tx.date}</span>
+                    {q && (
+                      <span className="db-tx-date" style={{ display: 'block', color: '#9ca3af' }}>
+                        Last: ${q.price.toFixed(2)}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
@@ -398,7 +449,8 @@ export default function HomeDashboardPage() {
                 </span>
                 <span className="db-tx-id">{tx.txId}</span>
               </div>
-            ))}
+            );
+            })}
           </div>
         </div>
       </div>

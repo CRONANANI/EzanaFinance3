@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { PasswordStrengthField } from "@/components/ui/password-strength-field";
+import { SpiralPasswordField } from "@/components/ui/spiral-password-field";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -195,54 +195,31 @@ export default function SignUpPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Password <span className="text-emerald-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={isPasswordVisible ? "text" : "password"}
+            <SpiralPasswordField>
+              <div className="p-4 pt-5 pb-5">
+                <PasswordStrengthField
+                  id="password"
+                  label="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={setPassword}
                   placeholder="Create a password"
-                  required
-                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  showRequirements
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-300"
-                  onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                >
-                  {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
-              <p className="text-gray-600 text-xs mt-1">
-                Min 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
-              </p>
-            </div>
+            </SpiralPasswordField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Confirm Password <span className="text-emerald-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={isConfirmVisible ? "text" : "password"}
+            <SpiralPasswordField>
+              <div className="p-4 pt-5 pb-5">
+                <PasswordStrengthField
+                  id="confirm-password"
+                  label="Confirm password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={setConfirmPassword}
                   placeholder="Confirm your password"
-                  required
-                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  showRequirements={false}
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-300"
-                  onClick={() => setIsConfirmVisible(!isConfirmVisible)}
-                >
-                  {isConfirmVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
-            </div>
+            </SpiralPasswordField>
 
             <button
               type="submit"
