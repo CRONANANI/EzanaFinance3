@@ -96,6 +96,23 @@
   font-size: 0.5625rem;
   color: #6b7280;
 }
+
+.partner-nav-dropdown .nav-dropdown-item.nav-dropdown-item--gold .nav-dropdown-title {
+  color: #d4af37;
+}
+
+.partner-nav-dropdown .nav-dropdown-item.nav-dropdown-item--gold .nav-dropdown-desc {
+  color: #c9a227;
+}
+
+.partner-nav-dropdown .nav-dropdown-item.nav-dropdown-item--gold > i {
+  color: #d4af37;
+}
+
+.partner-nav-dropdown .nav-dropdown-item.nav-dropdown-item--gold:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
 @media (max-width: 768px) {
   .partner-nav .partner-nav-dropdown {
     position: static;

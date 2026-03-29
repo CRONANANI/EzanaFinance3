@@ -135,6 +135,32 @@
   margin-top: 0.0625rem;
 }
 
+/* Premium research highlights (match Centaur / Kairos brand gold) */
+.animated-nav-dropdown-item--gold > i {
+  color: #d4af37;
+}
+
+.animated-nav-dropdown-item--gold .animated-nav-dropdown-title {
+  color: #d4af37;
+}
+
+.animated-nav-dropdown-item--gold .animated-nav-dropdown-desc {
+  color: #c9a227;
+  opacity: 0.95;
+}
+
+.animated-nav-dropdown-item--gold:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+body.light-mode .animated-nav-dropdown-item--gold .animated-nav-dropdown-title {
+  color: #b8860b;
+}
+
+body.light-mode .animated-nav-dropdown-item--gold .animated-nav-dropdown-desc {
+  color: #a67c00;
+}
+
 /* ═══ PARTNER VARIANT (gold) ═══ */
 .partner-nav .animated-nav-link:hover,
 .partner-nav .animated-nav-link.hovered {

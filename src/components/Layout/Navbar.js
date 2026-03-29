@@ -21,7 +21,16 @@ export function Navbar() {
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
   const showLandingNav = isLanding || isHelpCenter;
-  const isResearchActive = pathname?.includes('/inside-the-capitol') || pathname?.includes('/company-research') || pathname?.includes('/market-analysis') || pathname?.includes('/for-the-quants') || pathname?.includes('/betting-markets') || pathname?.includes('/ezana-echo') || pathname?.includes('/alternative-markets');
+  const isResearchActive =
+    pathname?.includes('/inside-the-capitol') ||
+    pathname?.includes('/company-research') ||
+    pathname?.includes('/market-analysis') ||
+    pathname?.includes('/for-the-quants') ||
+    pathname?.includes('/betting-markets') ||
+    pathname?.includes('/ezana-echo') ||
+    pathname?.includes('/alternative-markets') ||
+    pathname?.includes('/centaur-intelligence') ||
+    pathname?.includes('/kairos-signal');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -39,6 +48,8 @@ export function Navbar() {
       isActive: isResearchActive,
       items: [
         { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
+        { id: 28, title: 'Centaur Intelligence', description: 'AI advisor & Sentinel reports', url: '/centaur-intelligence', icon: 'bi-lightning-charge-fill', variant: 'gold' },
+        { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold' },
         { id: 22, title: 'Company Research', description: 'Financial analysis', url: '/company-research', icon: 'bi-bar-chart-line' },
         { id: 23, title: 'Market Analysis', description: 'Sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
         { id: 24, title: 'For The Quants', description: 'Quant tools', url: '/for-the-quants', icon: 'bi-calculator' },
@@ -265,6 +276,20 @@ export function Navbar() {
               <Link href="/inside-the-capitol" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-building"></i>
                 <div><div className="item-title">Inside The Capitol</div></div>
+              </Link>
+              <Link href="/centaur-intelligence" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-lightning-charge-fill"></i>
+                <div>
+                  <div className="item-title">Centaur Intelligence</div>
+                  <div className="item-desc">AI advisor &amp; Sentinel reports</div>
+                </div>
+              </Link>
+              <Link href="/kairos-signal" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-cloud-sun-fill"></i>
+                <div>
+                  <div className="item-title">Kairos Signal</div>
+                  <div className="item-desc">Weather &amp; alternative macro data</div>
+                </div>
               </Link>
               <Link href="/company-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-bar-chart-line"></i>

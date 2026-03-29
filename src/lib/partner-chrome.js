@@ -15,6 +15,8 @@ export const PARTNER_SHARED_APP_ROUTES = [
   '/ezana-echo',
   '/alternative-markets',
   '/financial-analytics',
+  '/centaur-intelligence',
+  '/kairos-signal',
 ];
 
 /** Research surfaces that show partner-only UI (ribbon, quick links). */
@@ -27,6 +29,8 @@ export const PARTNER_RESEARCH_ROUTES = [
   '/ezana-echo',
   '/alternative-markets',
   '/financial-analytics',
+  '/centaur-intelligence',
+  '/kairos-signal',
 ];
 
 export function matchesPartnerRouteList(pathname, routes) {

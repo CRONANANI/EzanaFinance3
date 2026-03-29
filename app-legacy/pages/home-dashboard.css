@@ -202,6 +202,22 @@ body.dashboard-page {
   line-height: 1.4;
 }
 
+.main-nav .dropdown-item--gold .item-title {
+  color: #d4af37;
+}
+
+.main-nav .dropdown-item--gold .item-desc {
+  color: #c9a227;
+}
+
+.main-nav .dropdown-item--gold i {
+  color: #d4af37;
+}
+
+.main-nav .dropdown-item--gold:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
 /* Theme Toggle */
 .theme-toggle {
   width: 40px;

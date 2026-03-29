@@ -117,6 +117,14 @@ export function PartnerNavbar() {
                   <i className="bi bi-bank" />
                   <div><span className="nav-dropdown-title">Inside The Capitol</span><span className="nav-dropdown-desc">Congressional trading</span></div>
                 </Link>
+                <Link href="/centaur-intelligence" className="nav-dropdown-item nav-dropdown-item--gold" onClick={closeResearch}>
+                  <i className="bi bi-lightning-charge-fill" />
+                  <div><span className="nav-dropdown-title">Centaur Intelligence</span><span className="nav-dropdown-desc">AI advisor &amp; Sentinel reports</span></div>
+                </Link>
+                <Link href="/kairos-signal" className="nav-dropdown-item nav-dropdown-item--gold" onClick={closeResearch}>
+                  <i className="bi bi-cloud-sun-fill" />
+                  <div><span className="nav-dropdown-title">Kairos Signal</span><span className="nav-dropdown-desc">Weather &amp; alternative macro data</span></div>
+                </Link>
                 <Link href="/company-research" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-building" />
                   <div><span className="nav-dropdown-title">Company Research</span><span className="nav-dropdown-desc">Financial analysis</span></div>

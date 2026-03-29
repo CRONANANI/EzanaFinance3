@@ -65,7 +65,7 @@ export function AnimatedNav({ items, accentColor = '#10b981' }) {
                         <Link
                           key={sub.id}
                           href={sub.url}
-                          className="animated-nav-dropdown-item"
+                          className={`animated-nav-dropdown-item${sub.variant === 'gold' ? ' animated-nav-dropdown-item--gold' : ''}`}
                         >
                           {sub.icon && <i className={`bi ${sub.icon}`} />}
                           <div className="animated-nav-dropdown-text">

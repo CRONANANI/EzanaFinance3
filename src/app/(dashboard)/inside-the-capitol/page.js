@@ -154,7 +154,10 @@ const POLITICIAN_PERF = [
 const PC_W = 780;
 const PC_H = Math.round(392 * 0.7); /* was 392; −30% height */
 const PC_PAD = { top: 50, right: 40, bottom: 62, left: 60 };
-const PC_DOT_R = 16;
+/** Smaller dots + initials (proportionally reduced vs. chart height) */
+const PC_DOT_R = 10;
+const PC_DOT_FONT = 7;
+const PC_DOT_PCT_FS = 7.5;
 
 /** Cubic smooth path through points (similar to Chart.js tension) */
 function buildSmoothPath(points) {
@@ -271,16 +274,16 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
           const cx = getX(i);
           const cy = getY(p.returns[tw]);
           const isHov = hoveredId === i;
-          const rDot = isHov ? PC_DOT_R + 1 : PC_DOT_R;
+          const rDot = isHov ? PC_DOT_R + 0.75 : PC_DOT_R;
 
           return (
             <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }} style={{ cursor: 'pointer' }}>
               <circle cx={cx} cy={cy} r={rDot} fill="url(#itcMetalDot)" filter="url(#itcMetalDotShadow)" stroke="none" strokeWidth={0} />
-              <text x={cx} y={cy + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="10" fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
-              <text x={cx} y={cy + PC_DOT_R + 10} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize="9" fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
+              <text x={cx} y={cy + 0.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={PC_DOT_FONT} fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
+              <text x={cx} y={cy + PC_DOT_R + 9} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize={PC_DOT_PCT_FS} fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
                 {p.returns[tw] >= 0 ? '+' : ''}{p.returns[tw]}%
               </text>
-              <circle cx={cx} cy={cy} r={PC_DOT_R + 14} fill="transparent" style={{ pointerEvents: 'all' }} />
+              <circle cx={cx} cy={cy} r={PC_DOT_R + 11} fill="transparent" style={{ pointerEvents: 'all' }} />
             </g>
           );
         })}
@@ -391,7 +394,6 @@ function InsideTheCapitolContent() {
   const stateFilter = searchParams.get('state');
   const { completeTask } = useChecklist();
 
-  const [assetFilter, setAssetFilter] = useState('Stocks Only');
   const [typeFilter, setTypeFilter] = useState('All');
   const [activePartyFilter, setActivePartyFilter] = useState(null);
   const [activeStateFilter, setActiveStateFilter] = useState(null);
@@ -481,13 +483,6 @@ function InsideTheCapitolContent() {
             <div className="itc-hdr">
               <div className="itc-hdr-left">
                 <h3>LATEST TRADES</h3>
-                <div className="itc-chips">
-                  {['Stocks Only', 'Options', 'All'].map((f) => (
-                    <button key={f} type="button" className={`itc-chip ${assetFilter === f ? 'on' : ''}`} onClick={() => setAssetFilter(f)}>
-                      {f}{assetFilter === f && <i className="bi bi-chevron-down" />}
-                    </button>
-                  ))}
-                </div>
               </div>
               <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
             </div>

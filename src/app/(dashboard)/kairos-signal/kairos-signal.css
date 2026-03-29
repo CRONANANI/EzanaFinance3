@@ -1,0 +1,222 @@
+/* Kairos Signal — alternative data / weather research surface (brand gold + emerald) */
+
+.kairos-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 0 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.kairos-hero {
+  padding: 0 2rem;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  margin: 0 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.06) 0%,
+    rgba(16, 185, 129, 0.04) 50%,
+    rgba(10, 14, 19, 0.9) 100%
+  );
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  padding: 2rem 2rem 2.25rem;
+}
+
+.kairos-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d4af37;
+  margin-bottom: 0.75rem;
+}
+
+.kairos-hero h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: #d4af37;
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+
+.kairos-hero-lead {
+  color: #9ca3af;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 52rem;
+  margin: 0;
+}
+
+.kairos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  padding: 0 2rem;
+}
+
+@media (max-width: 1024px) {
+  .kairos-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kairos-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kairos-card:hover {
+  border-color: rgba(212, 175, 55, 0.28);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.kairos-card--wide {
+  grid-column: 1 / -1;
+}
+
+.kairos-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #222;
+  color: #d4af37;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kairos-card-header i {
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+.kairos-card-body {
+  padding: 1.25rem 1.35rem 1.35rem;
+  color: #c9d1d9;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.kairos-card-body p {
+  margin: 0 0 0.75rem;
+}
+
+.kairos-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+.kairos-card-body strong {
+  color: #e6edf3;
+  font-weight: 600;
+}
+
+.kairos-subhead {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #10b981;
+  margin: 1rem 0 0.4rem;
+}
+
+.kairos-subhead:first-child {
+  margin-top: 0;
+}
+
+.kairos-list {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.kairos-list li {
+  margin-bottom: 0.45rem;
+}
+
+.kairos-list li:last-child {
+  margin-bottom: 0;
+}
+
+.kairos-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.kairos-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+.kairos-callout {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.06);
+  border-left: 3px solid #d4af37;
+  font-size: 0.82rem;
+  color: #b8c0cc;
+}
+
+.kairos-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .kairos-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .kairos-hero {
+    margin: 0 1rem;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .kairos-grid {
+    padding: 0 1rem;
+  }
+
+  .kairos-page {
+    padding-top: 1.25rem;
+  }
+}
+
+body.light-mode .kairos-card {
+  background: #fafafa;
+  border-color: #e5e7eb;
+}
+
+body.light-mode .kairos-card-body {
+  color: #374151;
+}
+
+body.light-mode .kairos-card-body strong {
+  color: #111827;
+}
+
+body.light-mode .kairos-hero-lead {
+  color: #6b7280;
+}
+
+body.light-mode .kairos-callout {
+  background: rgba(212, 175, 55, 0.08);
+  color: #4b5563;
+}
