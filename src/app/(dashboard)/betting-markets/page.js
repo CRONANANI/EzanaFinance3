@@ -2,9 +2,10 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { PinnableCard } from '@/components/ui/PinnableCard';
-import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
-import { getCoursesByTrack } from '@/lib/learning-curriculum';
+// NOTE: These components don't exist and cause Vercel build failures
+// import { PinnableCard } from '@/components/ui/PinnableCard';
+// import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+// import { getCoursesByTrack } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -344,7 +345,8 @@ export default function BettingMarketsPage() {
     return rows.map((r, i) => ({ ...r, rank: i + 1 }));
   }, [lbTab]);
 
-  const bettingCourses = useMemo(() => getCoursesByTrack('betting').slice(0, 4), []);
+  // NOTE: Commented out - getCoursesByTrack not available
+  // const bettingCourses = useMemo(() => getCoursesByTrack('betting').slice(0, 4), []);
 
   const oddsBlocks = ODDS_DATA[sport] || [];
 
@@ -366,7 +368,7 @@ export default function BettingMarketsPage() {
         ))}
       </div>
 
-      <PinnableCard cardId="betting-odds-board" className="db-card bm-odds-board">
+      <div cardId="betting-odds-board" className="db-card bm-odds-board">
         <div className="db-card-header">
           <h3>Live Sports Odds</h3>
           <button type="button" className="db-icon-btn" aria-label="Expand">
@@ -413,10 +415,10 @@ export default function BettingMarketsPage() {
             ))}
           </div>
         </div>
-      </PinnableCard>
+      </div>
 
       <div className="bm-two-col">
-        <PinnableCard cardId="betting-leaderboard" className="db-card">
+        <div cardId="betting-leaderboard" className="db-card">
           <div className="db-card-header">
             <h3>Betting Leaderboard</h3>
             <button type="button" className="db-icon-btn" aria-label="Expand">
@@ -468,9 +470,9 @@ export default function BettingMarketsPage() {
               View Full Rankings →
             </button>
           </div>
-        </PinnableCard>
+        </div>
 
-        <PinnableCard cardId="betting-ev-finder" className="db-card">
+        <div cardId="betting-ev-finder" className="db-card">
           <div className="db-card-header">
             <h3>Expected Value Finder</h3>
             <button type="button" className="db-icon-btn" aria-label="Expand">
@@ -491,10 +493,10 @@ export default function BettingMarketsPage() {
               </div>
             ))}
           </div>
-        </PinnableCard>
+        </div>
       </div>
 
-      <PinnableCard cardId="betting-line-move" className="db-card">
+      <div cardId="betting-line-move" className="db-card">
         <div className="db-card-header">
           <h3>Line Movement Tracker</h3>
           <button type="button" className="db-icon-btn" aria-label="Expand">
@@ -516,14 +518,16 @@ export default function BettingMarketsPage() {
           ))}
           <div className="bm-lm-footer">🚨 Reverse line movements flagged: {reverseCount} today</div>
         </div>
-      </PinnableCard>
+      </div>
 
+      {/* NOTE: Commented out - CoursePreviewSection and bettingCourses not available
       <CoursePreviewSection
         title="Recommended Courses"
         subtitle="Track 3 — Betting Markets & Prediction Markets"
         courses={bettingCourses}
         viewAllHref="/learning-center?track=betting"
       />
+      */}
 
       {evOpen && (
         <div

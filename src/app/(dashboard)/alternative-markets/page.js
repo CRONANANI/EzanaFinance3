@@ -21,9 +21,10 @@ import {
   CRYPTO_NEWS,
   COMM_NEWS,
 } from '@/lib/alternative-markets-mock';
-import { ResearchSparkline } from '@/components/research/ResearchSparkline';
-import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
-import { getCoursesByTrack } from '@/lib/learning-curriculum';
+// NOTE: These components don't exist and cause Vercel build failures
+// import { ResearchSparkline } from '@/components/research/ResearchSparkline';
+// import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
+// import { getCoursesByTrack } from '@/lib/learning-curriculum';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -41,8 +42,9 @@ export default function AlternativeMarketsPage() {
   const [timeframe, setTimeframe] = useState('1M');
   const [moversTimeframe, setMoversTimeframe] = useState('1D');
 
-  const cryptoCourses = useMemo(() => getCoursesByTrack('crypto').slice(0, 4), []);
-  const commodityCourses = useMemo(() => getCoursesByTrack('commodities').slice(0, 4), []);
+  // NOTE: Commented out - getCoursesByTrack not available
+  // const cryptoCourses = useMemo(() => getCoursesByTrack('crypto').slice(0, 4), []);
+  // const commodityCourses = useMemo(() => getCoursesByTrack('commodities').slice(0, 4), []);
 
   const filteredCryptoRows = useMemo(() => {
     if (tableTab === 'all') return CRYPTO_ROWS_TOP20;
@@ -158,7 +160,7 @@ export default function AlternativeMarketsPage() {
                         </span>
                         <span className="am-td-num">{row.mcap}</span>
                         <div className="am-spark">
-                          <ResearchSparkline seed={seed} height={28} />
+                          {/* <ResearchSparkline seed={seed} height={28} /> */}
                         </div>
                       </div>
                     );
@@ -185,7 +187,7 @@ export default function AlternativeMarketsPage() {
                       </span>
                       <span className="am-td-num">{row.volLabel}</span>
                       <div className="am-spark">
-                        <ResearchSparkline seed={row.sparkSeed} height={28} />
+                        {/* <ResearchSparkline seed={row.sparkSeed} height={28} /> */}
                       </div>
                     </div>
                   ))}
@@ -311,10 +313,10 @@ export default function AlternativeMarketsPage() {
                 background: 'rgba(0,0,0,0.12)',
               }}
             >
-              <ResearchSparkline
+              {/* <ResearchSparkline
                 seed={(view === 'crypto' ? chartCryptoSeed : chartCommSeed) + timeframe.charCodeAt(0)}
                 height={140}
-              />
+              /> */}
             </div>
             <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '0.5rem 0 0' }}>
               Mock series · connect market data API for live prices ({timeframe}).
@@ -443,6 +445,7 @@ export default function AlternativeMarketsPage() {
         </div>
       </div>
 
+      {/* NOTE: Commented out - CoursePreviewSection and courses not available
       <CoursePreviewSection
         title="Recommended Courses"
         subtitle={
@@ -453,6 +456,7 @@ export default function AlternativeMarketsPage() {
         courses={view === 'crypto' ? cryptoCourses : commodityCourses}
         viewAllHref={view === 'crypto' ? '/learning-center?track=crypto' : '/learning-center?track=commodities'}
       />
+      */}
     </div>
   );
 }
