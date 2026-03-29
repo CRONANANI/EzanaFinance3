@@ -24,23 +24,6 @@
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(5, 150, 105, 0.04) 0%, transparent 45%), var(--cc-bg);
   perspective: 720px;
   perspective-origin: 50% 38%;
-  /* Fade grid/beams into hero black — avoids a hard “solid” band above trusted logos */
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 48%,
-    rgba(0, 0, 0, 0.88) 68%,
-    rgba(0, 0, 0, 0.4) 86%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 48%,
-    rgba(0, 0, 0, 0.88) 68%,
-    rgba(0, 0, 0, 0.4) 86%,
-    transparent 100%
-  );
 }
 
 .cybercore-floor {
@@ -62,8 +45,8 @@
   background-position: 0 0, 0 0, 14px 14px;
   opacity: 0.55;
   animation: cybercore-moveGrid 10s linear infinite;
-  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 92%);
-  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 92%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, transparent 88%);
 }
 
 .cybercore-floor::after {

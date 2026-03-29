@@ -54,12 +54,11 @@
   background-color: #050a08;
 }
 
-/* Cyber grid only behind headline + waitlist — globe is a sibling and paints above */
+/* Cyber grid only behind headline + waitlist (not the globe row). Globe stacks above via z-index. */
 .landing-page .hero-content-column {
   position: relative;
   width: 100%;
   align-self: center;
-  isolation: isolate;
 }
 
 .landing-page .hero-content-column .hero-cybercore-bg {
