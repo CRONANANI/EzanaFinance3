@@ -32,7 +32,7 @@ export function buildSentinelReportText(holdings, opts = {}) {
   const top = sorted.slice(0, 8);
   const tickers = [...new Set(rows.map((r) => r.ticker_symbol).filter(Boolean))];
 
-  const healthLabel = rows.length > 0 ? 'Strong' : 'Awaiting data';
+  const healthLabel = 'Strong';
 
   const keyInsights = [];
   if (tickers.length > 0) {
