@@ -92,7 +92,7 @@
 
 .landing-page .hero-subtitle {
   font-size: 0.9375rem;
-  line-height: 1.65;
+  line-height: 1.5;
   font-weight: 400;
   margin: 0 0 0.75rem;
   padding: 0;
@@ -101,9 +101,14 @@
   color: #9ca3af;
 }
 
+/* Lead + secondary read as one block — no gap between lines */
+.landing-page .hero-subtitle--lead {
+  margin-bottom: 0 !important;
+}
+
 .landing-page .hero-subtitle--secondary {
-  margin-top: 0.35rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
 }
 
 @media (min-width: 1024px) {

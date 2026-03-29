@@ -455,7 +455,7 @@ body:has(.landing-page) {
 /* Hero Subtitle - 2 lines: wider container (~1100-1200px) */
 .hero-subtitle {
     font-size: 0.9375rem;
-    line-height: 1.65;
+    line-height: 1.5;
     font-weight: var(--font-weight-normal);
     margin: 0 0 0.9rem 0;
     padding: 0 0;
@@ -472,9 +472,13 @@ body:has(.landing-page) {
     }
 }
 
+.hero-subtitle--lead {
+    margin-bottom: 0 !important;
+}
+
 .hero-subtitle--secondary {
-    margin-top: 0.35rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
 }
 
 /* Hero Description (landing page) */
