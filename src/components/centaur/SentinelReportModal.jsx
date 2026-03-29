@@ -11,18 +11,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { parseSentinelReportText } from '@/lib/sentinel-report';
 
 const GOLD = '#D4AF37';
 const GOLD_DIM = 'rgba(212, 175, 55, 0.35)';
-
-function stripEmojis(s) {
-  if (!s) return '';
-  try {
-    return s.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
-  } catch {
-    return s.trim();
-  }
-}
 
 /** Demo series for visual polish when report is plain text */
 const DEMO_TREND = [
@@ -41,11 +33,25 @@ const DEMO_ALLOC = [
   { name: 'Cash', pct: 8 },
 ];
 
+function SectionBody({ text }) {
+  if (!text?.trim()) {
+    return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
+  }
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  return (
+    <div className="sentinel-report-section-body">
+      {lines.map((line, i) => (
+        <p key={i}>{line}</p>
+      ))}
+    </div>
+  );
+}
+
 export function SentinelReportModal({ open, onClose, report }) {
   if (!open || !report) return null;
 
-  const body = stripEmojis(report.report_text || '');
-  const title = 'Yohannes Sentinel — Weekly Report';
+  const parsed = parseSentinelReportText(report.report_text || '');
+  const title = 'Sentinel Weekly Report';
   const dateLabel = report.report_date
     ? new Date(report.report_date + 'T12:00:00').toLocaleDateString('en-US', {
         weekday: 'long',
@@ -81,11 +87,28 @@ export function SentinelReportModal({ open, onClose, report }) {
 
         <div className="sentinel-modal-grid">
           <section className="sentinel-modal-main">
-            <div className="sentinel-modal-section-label">Executive summary</div>
-            <div className="sentinel-modal-prose">
-              {body.split(/\n{2,}/).map((para, i) => (
-                <p key={i}>{para.trim()}</p>
-              ))}
+            <p className="sentinel-portfolio-health">
+              Portfolio Health: <span>{parsed.portfolioHealth || 'Strong'}</span>
+            </p>
+
+            <div className="sentinel-report-section">
+              <h3 className="sentinel-report-section-title">Key Insights</h3>
+              <SectionBody text={parsed.keyInsights} />
+            </div>
+
+            <div className="sentinel-report-section">
+              <h3 className="sentinel-report-section-title">Top Performers</h3>
+              <SectionBody text={parsed.topPerformers} />
+            </div>
+
+            <div className="sentinel-report-section">
+              <h3 className="sentinel-report-section-title">Events to Monitor</h3>
+              <SectionBody text={parsed.events} />
+            </div>
+
+            <div className="sentinel-report-section">
+              <h3 className="sentinel-report-section-title">Recommendations</h3>
+              <SectionBody text={parsed.recommendations} />
             </div>
           </section>
 
@@ -160,7 +183,7 @@ export function SentinelReportModal({ open, onClose, report }) {
         </div>
 
         <footer className="sentinel-modal-footer">
-          Educational commentary only — not investment advice. Past performance does not guarantee future results.
+          <p className="sentinel-modal-disclaimer">{parsed.disclaimer}</p>
         </footer>
       </div>
     </div>

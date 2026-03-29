@@ -218,7 +218,7 @@ export default function CentaurIntelligencePage() {
           <div className="centaur-card-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <i className="bi bi-journal-text" style={{ color: '#D4AF37' }} />
-              <span>YOHANNES SENTINEL — Weekly Report</span>
+              <span>Sentinel Weekly Report</span>
             </div>
             {sentinelReport && (
               <button

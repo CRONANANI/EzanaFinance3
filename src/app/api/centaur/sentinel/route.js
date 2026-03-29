@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { buildSentinelReportText } from '@/lib/sentinel-report';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +57,7 @@ export async function GET(request) {
     }
 
     if (!rows?.length) {
-      const defaultReport = generateDefaultReport(user.id);
+      const defaultReport = await generateDefaultReport(user.id);
       return NextResponse.json({ report: defaultReport, reports: [defaultReport] });
     }
 
@@ -122,40 +123,24 @@ export async function POST(request) {
   }
 }
 
-function generateDefaultReport(userId) {
+async function generateDefaultReport(userId) {
   const today = new Date();
-  const formattedDate = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const { data: holdings } = await supabaseAdmin
+    .from('plaid_holdings')
+    .select('ticker_symbol, quantity, institution_value, institution_price, institution_name, name')
+    .eq('user_id', userId)
+    .order('institution_value', { ascending: false })
+    .limit(40);
+
+  const rows = holdings || [];
+  const totalValue = rows.reduce((s, h) => s + (Number(h.institution_value) || 0), 0);
+  const report_text = buildSentinelReportText(rows, { totalValue });
 
   return {
     id: null,
     user_id: userId,
-    report_text: `YOHANNES SENTINEL — Weekly Report
-Generated: ${formattedDate}
-
-PORTFOLIO HEALTH: STRONG
-
-Your portfolio is performing well. Here is what we are observing:
-
-KEY INSIGHTS
-• Your diversification across sectors is solid.
-• Consider reviewing concentrated positions if any single name is materially above policy weight.
-• Watch for central-bank communications this week — fixed-income and growth equities may respond.
-
-TOP PERFORMERS
-• Technology leadership has been a tailwind week over week.
-• Largest holdings are broadly tracking benchmark trends.
-
-EVENTS TO MONITOR
-• Policy and rates calendar (high impact potential).
-• Earnings season breadth and guidance revisions.
-• Energy and FX volatility spillovers.
-
-RECOMMENDATIONS
-• Revisit risk limits and stop levels on higher-beta names.
-• Consider trimming into strength if any position is extended versus your plan.
-• Use your debrief queue to tie macro events to position-level actions.
-
-This report is generated for educational purposes only. It is not investment advice. Always conduct your own research before making investment decisions.`,
+    report_text,
     report_date: today.toISOString().split('T')[0],
     created_at: today.toISOString(),
   };
