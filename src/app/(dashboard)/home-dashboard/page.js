@@ -6,7 +6,35 @@ import { useAuth } from '@/components/AuthProvider';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
+import { supabase } from '@/lib/supabase';
+import { IntIcon } from '@/components/ui/interactive-animated-arrow-icon';
 import './home-dashboard.css';
+
+const HOLDINGS_PAGE_SIZE = 6;
+const LOTTIE_ARROW_LEFT =
+  'https://res.cloudinary.com/dhdupwqli/raw/upload/arrowLeftCircle_yevrp4.json';
+const LOTTIE_ARROW_RIGHT =
+  'https://res.cloudinary.com/dhdupwqli/raw/upload/arrowRightCircle_zf9kg7.json';
+
+const HOLDING_PALETTE = [
+  '#4285F4',
+  '#00a4ef',
+  '#e50914',
+  '#cc0000',
+  '#0082fb',
+  '#96bf48',
+  '#76b900',
+  '#f59e0b',
+  '#a78bfa',
+  '#ec4899',
+];
+
+function holdingColor(ticker) {
+  const t = ticker || '';
+  let h = 0;
+  for (let i = 0; i < t.length; i++) h += t.charCodeAt(i);
+  return HOLDING_PALETTE[h % HOLDING_PALETTE.length];
+}
 
 /* ═══════════════════════════════════════════════════════════
    TIMEFRAME-AWARE DATA — Hero + Holdings update when 1D/1M/6M/1Y clicked
@@ -21,6 +49,9 @@ const HOLDINGS_DATA = {
     { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 1.85, changeDollar: 13.80, qty: 5, color: '#cc0000' },
     { ticker: 'META', name: 'Meta', price: 740.00, change: -1.45, changeDollar: -10.85, qty: 9, color: '#0082fb', worst: true },
     { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -2.30, changeDollar: -14.40, qty: 11, color: '#96bf48', worst: true },
+    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 2.50, changeDollar: 40.00, qty: 4, color: '#76b900' },
+    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 1.20, changeDollar: 24.00, qty: 5, color: '#999999' },
+    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 0.80, changeDollar: 16.00, qty: 3, color: '#ff9900' },
   ],
   '1M': [
     { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 8.70, changeDollar: 105.60, qty: 7, color: '#4285F4' },
@@ -29,6 +60,9 @@ const HOLDINGS_DATA = {
     { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 3.80, changeDollar: 35.90, qty: 6, color: '#e50914' },
     { ticker: 'META', name: 'Meta', price: 740.00, change: -3.20, changeDollar: -24.50, qty: 9, color: '#0082fb', worst: true },
     { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -5.10, changeDollar: -32.80, qty: 11, color: '#96bf48', worst: true },
+    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 6.20, changeDollar: 35.00, qty: 4, color: '#76b900' },
+    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 4.10, changeDollar: 20.00, qty: 5, color: '#999999' },
+    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 3.20, changeDollar: 14.00, qty: 3, color: '#ff9900' },
   ],
   '6M': [
     { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 22.40, changeDollar: 241.60, qty: 7, color: '#4285F4' },
@@ -37,6 +71,9 @@ const HOLDINGS_DATA = {
     { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 12.10, changeDollar: 82.00, qty: 5, color: '#cc0000' },
     { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -8.60, changeDollar: -57.60, qty: 11, color: '#96bf48', worst: true },
     { ticker: 'META', name: 'Meta', price: 740.00, change: -4.30, changeDollar: -33.20, qty: 9, color: '#0082fb', worst: true },
+    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 18.00, changeDollar: 28.00, qty: 4, color: '#76b900' },
+    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 12.00, changeDollar: 18.00, qty: 5, color: '#999999' },
+    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 10.00, changeDollar: 12.00, qty: 3, color: '#ff9900' },
   ],
   '1Y': [
     { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 38.50, changeDollar: 368.40, qty: 7, color: '#4285F4' },
@@ -45,6 +82,9 @@ const HOLDINGS_DATA = {
     { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 24.50, changeDollar: 142.80, qty: 5, color: '#cc0000' },
     { ticker: 'META', name: 'Meta', price: 740.00, change: -12.40, changeDollar: -105.20, qty: 9, color: '#0082fb', worst: true },
     { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -18.70, changeDollar: -133.60, qty: 11, color: '#96bf48', worst: true },
+    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 42.00, changeDollar: 55.00, qty: 4, color: '#76b900' },
+    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 28.00, changeDollar: 32.00, qty: 5, color: '#999999' },
+    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 22.00, changeDollar: 18.00, qty: 3, color: '#ff9900' },
   ],
 };
 
@@ -151,9 +191,94 @@ export default function HomeDashboardPage() {
     usePlaidPortfolioSummary();
   const [timeframe, setTimeframe] = useState('1D');
   const [liveQuotes, setLiveQuotes] = useState({});
+  const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
+  const [holdingsPage, setHoldingsPage] = useState(0);
   const heroData = HERO_DATA[timeframe];
-  const holdings = HOLDINGS_DATA[timeframe];
   const chartPath = CHART_PATHS[timeframe];
+
+  const useLiveHoldings =
+    !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
+
+  const normalizedHoldings = useMemo(() => {
+    if (useLiveHoldings) {
+      return (plaidHoldingsPayload.aggregated || [])
+        .map((h) => {
+          const ticker = h.ticker;
+          const q = liveQuotes[ticker];
+          const qty = Number(h.totalQuantity) || 0;
+          const priceFromQuote = q?.price != null ? Number(q.price) : null;
+          const lastPrice = h.lastPrice != null ? Number(h.lastPrice) : null;
+          const totalFromApi = Number(h.totalValue) || 0;
+          const price =
+            priceFromQuote != null
+              ? priceFromQuote
+              : lastPrice != null
+                ? lastPrice
+                : qty > 0
+                  ? totalFromApi / qty
+                  : 0;
+          const positionValue =
+            priceFromQuote != null && qty > 0
+              ? priceFromQuote * qty
+              : totalFromApi > 0
+                ? totalFromApi
+                : price * qty;
+          const ch = q != null ? q.changePercent : 0;
+          const changeDollar = q != null && qty ? (q.change ?? 0) * qty : 0;
+          return {
+            ticker,
+            name: h.name || ticker,
+            qty,
+            price,
+            positionValue,
+            change: ch,
+            changeDollar,
+            color: holdingColor(ticker),
+            worst: ch < 0,
+          };
+        })
+        .sort((a, b) => b.positionValue - a.positionValue);
+    }
+    const raw = HOLDINGS_DATA[timeframe];
+    return raw
+      .map((h) => {
+        const q = liveQuotes[h.ticker];
+        const price = q?.price ?? h.price;
+        const qty = h.qty;
+        const positionValue = price * qty;
+        const ch = q != null ? q.changePercent : h.change;
+        const changeDollar =
+          q != null && h.qty != null ? (q.change ?? 0) * h.qty : h.changeDollar;
+        return {
+          ticker: h.ticker,
+          name: h.name,
+          qty,
+          price,
+          positionValue,
+          change: ch,
+          changeDollar,
+          color: h.color,
+          worst: h.worst,
+        };
+      })
+      .sort((a, b) => b.positionValue - a.positionValue);
+  }, [useLiveHoldings, plaidHoldingsPayload, timeframe, liveQuotes]);
+
+  const holdingsPageCount = Math.max(1, Math.ceil(normalizedHoldings.length / HOLDINGS_PAGE_SIZE));
+  const canHoldingsPrev = holdingsPage > 0;
+  const canHoldingsNext = holdingsPage < holdingsPageCount - 1;
+  const pagedHoldings = useMemo(
+    () =>
+      normalizedHoldings.slice(
+        holdingsPage * HOLDINGS_PAGE_SIZE,
+        holdingsPage * HOLDINGS_PAGE_SIZE + HOLDINGS_PAGE_SIZE,
+      ),
+    [normalizedHoldings, holdingsPage],
+  );
+
+  useEffect(() => {
+    setHoldingsPage(0);
+  }, [timeframe, useLiveHoldings, plaidHoldingsPayload?.aggregated?.length]);
 
   const currentValue =
     !plaidSummaryLoading && plaidConnected
@@ -161,35 +286,33 @@ export default function HomeDashboardPage() {
       : heroData.value;
 
   useEffect(() => {
+    const fromPlaid = (plaidHoldingsPayload?.aggregated || []).map((h) => h.ticker).filter(Boolean);
     const tickers = [
       ...new Set([
         ...Object.values(HOLDINGS_DATA)
           .flat()
           .map((h) => h.ticker),
+        ...fromPlaid,
         ...WATCHLIST.map((w) => w.ticker),
         ...RECENT_TRANSACTIONS.map((t) => t.ticker).filter(Boolean),
       ]),
     ];
     let cancelled = false;
-    fetch(`/api/market/batch-quotes?symbols=${tickers.join(',')}`)
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((d) => {
-        if (!cancelled) setLiveQuotes(d.quotes || {});
-      })
-      .catch(() => {});
-    const id = setInterval(() => {
+    const load = () => {
       fetch(`/api/market/batch-quotes?symbols=${tickers.join(',')}`)
         .then((r) => (r.ok ? r.json() : {}))
         .then((d) => {
           if (!cancelled) setLiveQuotes(d.quotes || {});
         })
         .catch(() => {});
-    }, 60000);
+    };
+    load();
+    const id = setInterval(load, 60000);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [plaidHoldingsPayload]);
 
   const userName = user?.user_metadata?.first_name
     || user?.user_metadata?.full_name?.split(' ')[0]
@@ -202,6 +325,29 @@ export default function HomeDashboardPage() {
     if (user?.email === 'axmabeto@gmail.com') return SECTOR_DATA_DEMO;
     return SECTOR_DATA_DEFAULT;
   }, [user?.email]);
+
+  useEffect(() => {
+    if (!user) {
+      setPlaidHoldingsPayload(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await fetch('/api/plaid/holdings', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!cancelled) setPlaidHoldingsPayload(data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   return (
     <div className="db-page dashboard-page-inset">
@@ -282,7 +428,37 @@ export default function HomeDashboardPage() {
         {/* My Holdings */}
         <div className="db-card db-portfolios-card">
           <div className="db-card-header">
-            <h3>My Holdings</h3>
+            <div className="db-holdings-header-left">
+              <button
+                type="button"
+                className="db-holdings-nav-btn"
+                disabled={!canHoldingsPrev}
+                onClick={() => setHoldingsPage((p) => Math.max(0, p - 1))}
+                aria-label="Previous holdings"
+              >
+                <IntIcon
+                  animationData={LOTTIE_ARROW_LEFT}
+                  color="white"
+                  playOnClick
+                  size={44}
+                />
+              </button>
+              <h3>My Holdings</h3>
+              <button
+                type="button"
+                className="db-holdings-nav-btn"
+                disabled={!canHoldingsNext}
+                onClick={() => setHoldingsPage((p) => Math.min(holdingsPageCount - 1, p + 1))}
+                aria-label="Next holdings"
+              >
+                <IntIcon
+                  animationData={LOTTIE_ARROW_RIGHT}
+                  color="white"
+                  playOnClick
+                  size={44}
+                />
+              </button>
+            </div>
             <div className="db-card-header-right">
               <div className="db-tf-group-sm">
                 {['1D', '1M', '6M', '1Y'].map((tf) => (
@@ -293,30 +469,51 @@ export default function HomeDashboardPage() {
             </div>
           </div>
           <div className="db-portfolio-grid">
-            {holdings.map((h) => {
-              const q = liveQuotes[h.ticker];
-              const price = q?.price ?? h.price;
-              const ch = q != null ? q.changePercent : h.change;
-              const changeDollar =
-                q != null && h.qty != null ? (q.change ?? 0) * h.qty : h.changeDollar;
-              return (
-              <Link key={h.ticker} href={`/company-research?ticker=${h.ticker}`} className={`db-holding-card db-holding-card-link ${ch >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}>
-                <div className="db-holding-top">
-                  <span className="db-holding-dot" style={{ background: h.color }} />
-                  <div className="db-holding-info">
-                    <span className="db-holding-label">{h.name} ({h.ticker})</span>
-                    <span className="db-holding-value">${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                    <span className={`db-holding-change ${ch >= 0 ? 'positive' : 'negative'}`}>
-                      {ch >= 0 ? '+' : ''}{ch.toFixed(2)}% ({changeDollar >= 0 ? '+' : ''}${Math.abs(changeDollar).toFixed(2)})
-                    </span>
-                    <span className="db-holding-qty">Quantity: {h.qty}</span>
-                  </div>
-                </div>
-                {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
-                <span className="db-holding-view-details">View Details</span>
-              </Link>
-            );
-            })}
+            {pagedHoldings.length === 0 ? (
+              <p className="db-holdings-empty">No holdings to display. Link an account to see positions here.</p>
+            ) : (
+              pagedHoldings.map((h) => {
+                const ch = Number(h.change);
+                const chSafe = Number.isFinite(ch) ? ch : 0;
+                return (
+                  <Link
+                    key={h.ticker}
+                    href={`/company-research?ticker=${h.ticker}`}
+                    className={`db-holding-card db-holding-card-link ${chSafe >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}
+                  >
+                    <div className="db-holding-top">
+                      <span className="db-holding-dot" style={{ background: h.color }} />
+                      <div className="db-holding-info">
+                        <div className="db-holding-title-row">
+                          <span className="db-holding-label">
+                            {h.name} ({h.ticker})
+                          </span>
+                          <span className="db-holding-per-share">
+                            ${h.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+                            per share
+                          </span>
+                        </div>
+                        <span className="db-holding-value">
+                          $
+                          {h.positionValue.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                        <span className={`db-holding-change ${chSafe >= 0 ? 'positive' : 'negative'}`}>
+                          {chSafe >= 0 ? '+' : ''}
+                          {chSafe.toFixed(2)}% ({h.changeDollar >= 0 ? '+' : ''}$
+                          {Math.abs(h.changeDollar).toFixed(2)})
+                        </span>
+                        <span className="db-holding-qty">Quantity: {h.qty}</span>
+                      </div>
+                    </div>
+                    {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
+                    <span className="db-holding-view-details">View Details</span>
+                  </Link>
+                );
+              })
+            )}
           </div>
         </div>
 
