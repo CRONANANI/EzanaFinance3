@@ -38,7 +38,7 @@
   padding: 60px 2rem 4rem;
   background: transparent;
   overflow: visible;
-  text-align: left;
+  text-align: center;
 }
 
 /* Cybercore grid background — globe stacks above center glow */
@@ -89,16 +89,16 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  align-items: center;
+  text-align: center;
   gap: 0;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
 }
 
 .landing-page .hero-content > * {
-  align-self: flex-start !important;
-  text-align: left;
+  align-self: center !important;
+  text-align: center;
 }
 
 .landing-page .hero-tagline {
@@ -107,9 +107,9 @@
   max-width: 900px;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  margin: 0 0 1.5rem;
+  margin: 0 auto 1.5rem;
   padding: 0;
-  text-align: left;
+  text-align: center;
   color: #10b981 !important;
   -webkit-text-fill-color: #10b981 !important;
   background: none !important;
@@ -122,10 +122,10 @@
   font-size: 0.9375rem;
   line-height: 1.5;
   font-weight: 400;
-  margin: 0 0 0.75rem;
+  margin: 0 auto 0.75rem;
   padding: 0;
   max-width: 42rem;
-  text-align: left;
+  text-align: center;
   color: #9ca3af;
 }
 
@@ -149,10 +149,10 @@
 .landing-page .hero-waitlist {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   max-width: 100%;
   width: 100%;
-  margin: 1rem 0 0.75rem;
+  margin: 1rem auto 0.75rem;
 }
 
 .landing-page .legacy-subtext,

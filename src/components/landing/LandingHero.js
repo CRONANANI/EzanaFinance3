@@ -47,7 +47,7 @@ export function LandingHero() {
             />
           </p>
           <div className="hero-waitlist animate-in" data-delay="1750">
-            <AnimatedWaitlistForm alignLeft />
+            <AnimatedWaitlistForm />
           </div>
         </div>
         <div className="card-preview globe-preview animate-in" data-delay="450">
