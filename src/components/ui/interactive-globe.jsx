@@ -1,75 +1,84 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 
-// Major financial centers (spread for visibility - London, Frankfurt, Zurich offset to avoid clustering)
-const DEFAULT_MARKERS = [
-  { lat: 40.71, lng: -74.0, label: "New York" },
-  { lat: 52.0, lng: -2.0, label: "London" },
-  { lat: 50.5, lng: 4.0, label: "Frankfurt" },
-  { lat: 22.32, lng: 114.17, label: "Hong Kong" },
-  { lat: 1.35, lng: 103.82, label: "Singapore" },
-  { lat: 46.5, lng: 11.0, label: "Zurich" },
-  { lat: 35.68, lng: 139.69, label: "Tokyo" },
-  { lat: 37.78, lng: -122.42, label: "San Francisco" },
-  { lat: 37.57, lng: 126.98, label: "Seoul" },
-  { lat: 48.86, lng: 2.35, label: "Paris" },
-];
+// ── GeoJSON point-in-polygon (no d3 dependency needed) ──
 
-// Clean, strategic connections between major financial hubs
-const DEFAULT_CONNECTIONS = [
-  // Trans-Atlantic corridor
-  { from: [40.71, -74.0], to: [52.0, -2.0] }, // New York - London
-  // European connections
-  { from: [52.0, -2.0], to: [48.86, 2.35] }, // London - Paris
-  { from: [52.0, -2.0], to: [50.5, 4.0] }, // London - Frankfurt
-  { from: [46.5, 11.0], to: [50.5, 4.0] }, // Zurich - Frankfurt
-  // Asia-Pacific connections
-  { from: [35.68, 139.69], to: [37.57, 126.98] }, // Tokyo - Seoul
-  { from: [35.68, 139.69], to: [22.32, 114.17] }, // Tokyo - Hong Kong
-  { from: [22.32, 114.17], to: [1.35, 103.82] }, // Hong Kong - Singapore
-  // Trans-Pacific corridor
-  { from: [37.78, -122.42], to: [35.68, 139.69] }, // San Francisco - Tokyo
-  // US domestic
-  { from: [40.71, -74.0], to: [37.78, -122.42] }, // New York - San Francisco
-  // Europe to Asia
-  { from: [52.0, -2.0], to: [22.32, 114.17] }, // London - Hong Kong
-];
-
-/** Convert lat/lng (degrees) to 3D Cartesian on sphere. Y-up, standard geographic convention. */
-function latLngToXYZ(lat, lng, radius) {
-  const latRad = (lat * Math.PI) / 180;
-  const lngRad = (lng * Math.PI) / 180;
-  return [
-    radius * Math.cos(latRad) * Math.sin(lngRad),
-    radius * Math.sin(latRad),
-    radius * Math.cos(latRad) * Math.cos(lngRad),
-  ];
-}
-
-/** Sample points along great circle arc between two 3D points on sphere (slerp) */
-function sampleGreatCircle(x1, y1, z1, x2, y2, z2, radius, numSegments = 32) {
-  const r = radius;
-  const u1 = [x1 / r, y1 / r, z1 / r];
-  const u2 = [x2 / r, y2 / r, z2 / r];
-  const dot = u1[0] * u2[0] + u1[1] * u2[1] + u1[2] * u2[2];
-  const omega = Math.acos(Math.max(-1, Math.min(1, dot)));
-  if (omega < 0.001) return [[x1, y1, z1], [x2, y2, z2]];
-  const sinOmega = Math.sin(omega);
-  const points = [];
-  for (let i = 0; i <= numSegments; i++) {
-    const t = i / numSegments;
-    const a = Math.sin((1 - t) * omega) / sinOmega;
-    const b = Math.sin(t * omega) / sinOmega;
-    points.push([
-      r * (a * u1[0] + b * u2[0]),
-      r * (a * u1[1] + b * u2[1]),
-      r * (a * u1[2] + b * u2[2]),
-    ]);
+function pointInRing(point, ring) {
+  const [px, py] = point;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
   }
-  return points;
+  return inside;
 }
+
+function pointInFeature(lng, lat, feature) {
+  const geom = feature.geometry;
+  if (geom.type === "Polygon") {
+    if (!pointInRing([lng, lat], geom.coordinates[0])) return false;
+    for (let i = 1; i < geom.coordinates.length; i++) {
+      if (pointInRing([lng, lat], geom.coordinates[i])) return false;
+    }
+    return true;
+  }
+  if (geom.type === "MultiPolygon") {
+    for (const polygon of geom.coordinates) {
+      if (pointInRing([lng, lat], polygon[0])) {
+        let inHole = false;
+        for (let i = 1; i < polygon.length; i++) {
+          if (pointInRing([lng, lat], polygon[i])) { inHole = true; break; }
+        }
+        if (!inHole) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function generateLandDots(landGeoJSON, stepDeg = 1.8) {
+  const dots = [];
+  for (const feature of landGeoJSON.features) {
+    // Get bounding box
+    let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
+    const coords = feature.geometry.type === "Polygon"
+      ? [feature.geometry.coordinates]
+      : feature.geometry.coordinates;
+    for (const polygon of coords) {
+      for (const ring of polygon) {
+        for (const [lng, lat] of ring) {
+          if (lng < minLng) minLng = lng;
+          if (lng > maxLng) maxLng = lng;
+          if (lat < minLat) minLat = lat;
+          if (lat > maxLat) maxLat = lat;
+        }
+      }
+    }
+    // Sample points within bounding box
+    for (let lat = minLat; lat <= maxLat; lat += stepDeg) {
+      for (let lng = minLng; lng <= maxLng; lng += stepDeg) {
+        if (pointInFeature(lng, lat, feature)) {
+          // Convert lat/lng to unit sphere xyz
+          const latRad = (lat * Math.PI) / 180;
+          const lngRad = (lng * Math.PI) / 180;
+          dots.push([
+            Math.cos(latRad) * Math.sin(lngRad),
+            Math.sin(latRad),
+            Math.cos(latRad) * Math.cos(lngRad),
+          ]);
+        }
+      }
+    }
+  }
+  return dots;
+}
+
+// ── Globe rendering (unchanged visual style) ──
 
 function rotateY(x, y, z, angle) {
   const cos = Math.cos(angle);
@@ -88,21 +97,20 @@ function project(x, y, z, cx, cy, fov) {
   return [x * scale + cx, y * scale + cy, z];
 }
 
+const LAND_GEOJSON_URL =
+  "https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/110m/physical/ne_110m_land.json";
+
 export function InteractiveGlobe({
   className,
   size = 600,
   dotColor = "rgba(16, 185, 129, ALPHA)",
-  arcColor = "rgba(16, 185, 129, 0.6)",
-  markerColor = "rgba(16, 220, 180, 1)",
-  autoRotateSpeed = 0.0015,
-  connections = DEFAULT_CONNECTIONS,
-  markers = DEFAULT_MARKERS,
+  autoRotateSpeed = 0.003,
   showConnections = true,
   showMarkers = true,
 }) {
   const canvasRef = useRef(null);
   const rotYRef = useRef(0.4);
-  const rotXRef = useRef(0.25); // Slightly less tilt for better city visibility
+  const rotXRef = useRef(0.25);
   const dragRef = useRef({
     active: false,
     startX: 0,
@@ -111,22 +119,45 @@ export function InteractiveGlobe({
     startRotX: 0,
   });
   const animRef = useRef(0);
-  const timeRef = useRef(0);
   const dotsRef = useRef([]);
+  const [loaded, setLoaded] = useState(false);
 
+  // Fetch GeoJSON land data and generate continent dots
   useEffect(() => {
-    const dots = [];
-    const numDots = 800; // Reduced for cleaner look
-    const goldenRatio = (1 + Math.sqrt(5)) / 2;
-    for (let i = 0; i < numDots; i++) {
-      const theta = (2 * Math.PI * i) / goldenRatio;
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / numDots);
-      const x = Math.cos(theta) * Math.sin(phi);
-      const y = Math.cos(phi);
-      const z = Math.sin(theta) * Math.sin(phi);
-      dots.push([x, y, z]);
+    let cancelled = false;
+
+    async function loadLand() {
+      try {
+        const res = await fetch(LAND_GEOJSON_URL);
+        if (!res.ok) throw new Error("Failed to fetch land data");
+        const landGeoJSON = await res.json();
+        if (cancelled) return;
+
+        const dots = generateLandDots(landGeoJSON, 1.6);
+        dotsRef.current = dots;
+        setLoaded(true);
+      } catch (err) {
+        console.error("Globe: failed to load land data, falling back to uniform dots", err);
+        // Fallback: uniform Fibonacci sphere (same as before)
+        const fallback = [];
+        const n = 800;
+        const gr = (1 + Math.sqrt(5)) / 2;
+        for (let i = 0; i < n; i++) {
+          const theta = (2 * Math.PI * i) / gr;
+          const phi = Math.acos(1 - (2 * (i + 0.5)) / n);
+          fallback.push([
+            Math.cos(theta) * Math.sin(phi),
+            Math.cos(phi),
+            Math.sin(theta) * Math.sin(phi),
+          ]);
+        }
+        dotsRef.current = fallback;
+        setLoaded(true);
+      }
     }
-    dotsRef.current = dots;
+
+    loadLand();
+    return () => { cancelled = true; };
   }, []);
 
   const draw = useCallback(() => {
@@ -151,19 +182,16 @@ export function InteractiveGlobe({
       rotYRef.current += autoRotateSpeed;
     }
 
-    timeRef.current += 0.012;
-    const time = timeRef.current;
-
     ctx.clearRect(0, 0, w, h);
 
-    // Subtle glow effect
+    // Subtle glow effect (unchanged)
     const glowGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.4);
     glowGrad.addColorStop(0, "rgba(16, 185, 129, 0.02)");
     glowGrad.addColorStop(1, "rgba(16, 185, 129, 0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Globe outline
+    // Globe outline (unchanged)
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(16, 185, 129, 0.08)";
@@ -173,7 +201,7 @@ export function InteractiveGlobe({
     const ry = rotYRef.current;
     const rx = rotXRef.current;
 
-    // Draw dots (globe surface)
+    // Draw continent dots (same visual style — emerald, depth-based alpha)
     const dots = dotsRef.current;
     for (let i = 0; i < dots.length; i++) {
       let [x, y, z] = dots[i];
@@ -184,11 +212,11 @@ export function InteractiveGlobe({
       [x, y, z] = rotateX(x, y, z, rx);
       [x, y, z] = rotateY(x, y, z, ry);
 
-      // Only draw dots on the back half (facing away)
+      // Only draw dots on the visible side (z < 0 means facing us)
       if (z > 0) continue;
 
       const [sx, sy] = project(x, y, z, cx, cy, fov);
-      const depthAlpha = Math.max(0.08, 0.6 - (z + radius) / (2 * radius) * 0.5);
+      const depthAlpha = Math.max(0.08, 0.6 - ((z + radius) / (2 * radius)) * 0.5);
       const dotSize = 0.8 + depthAlpha * 0.5;
 
       ctx.beginPath();
@@ -197,136 +225,14 @@ export function InteractiveGlobe({
       ctx.fill();
     }
 
-    // Draw connection arcs (great circles) - optional
-    if (showConnections) {
-    for (const conn of connections) {
-      const [lat1, lng1] = conn.from;
-      const [lat2, lng2] = conn.to;
-
-      let [x1, y1, z1] = latLngToXYZ(lat1, lng1, radius);
-      let [x2, y2, z2] = latLngToXYZ(lat2, lng2, radius);
-
-      const arcPoints = sampleGreatCircle(x1, y1, z1, x2, y2, z2, radius, 40);
-      const rotatedArc = arcPoints.map(([x, y, z]) => {
-        let [ax, ay, az] = rotateX(x, y, z, rx);
-        [ax, ay, az] = rotateY(ax, ay, az, ry);
-        return [ax, ay, az];
-      });
-
-      const projectedArc = rotatedArc.map(([x, y, z]) => project(x, y, z, cx, cy, fov));
-
-      // Draw arc with gradient based on visibility
-      ctx.beginPath();
-      let started = false;
-      let visibleSegments = 0;
-
-      for (let i = 0; i < projectedArc.length - 1; i++) {
-        const z1Val = rotatedArc[i][2];
-        const z2Val = rotatedArc[i + 1][2];
-
-        // Check if segment is on visible side (z < 0 means facing us)
-        const seg1Visible = z1Val < radius * 0.1;
-        const seg2Visible = z2Val < radius * 0.1;
-
-        if (!seg1Visible && !seg2Visible) {
-          started = false;
-          continue;
-        }
-
-        const [sx1, sy1] = projectedArc[i];
-        const [sx2, sy2] = projectedArc[i + 1];
-
-        if (!started) {
-          ctx.moveTo(sx1, sy1);
-          started = true;
-        }
-        ctx.lineTo(sx2, sy2);
-        visibleSegments++;
-      }
-
-      if (visibleSegments > 0) {
-        // Calculate average depth for opacity
-        const avgZ = rotatedArc.reduce((sum, p) => sum + p[2], 0) / rotatedArc.length;
-        const depthOpacity = Math.max(0.2, Math.min(0.8, 1 - (avgZ + radius) / (2 * radius)));
-
-        ctx.strokeStyle = `rgba(16, 185, 129, ${depthOpacity * 0.5})`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Draw animated pulse along the arc
-        const pulseT = (Math.sin(time * 0.8 + lat1 * 0.05) + 1) / 2;
-        const pulseIdx = Math.floor(pulseT * (rotatedArc.length - 1));
-
-        if (pulseIdx < rotatedArc.length && rotatedArc[pulseIdx][2] < radius * 0.1) {
-          const [px, py] = projectedArc[pulseIdx];
-
-          // Draw pulse dot
-          ctx.beginPath();
-          ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(16, 220, 180, ${depthOpacity})`;
-          ctx.fill();
-
-          // Pulse glow
-          ctx.beginPath();
-          ctx.arc(px, py, 5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(16, 185, 129, ${depthOpacity * 0.3})`;
-          ctx.fill();
-        }
-      }
-    }
-    }
-
-    // Draw city markers - optional
-    if (showMarkers) {
-    for (const marker of markers) {
-      let [x, y, z] = latLngToXYZ(marker.lat, marker.lng, radius);
-      [x, y, z] = rotateX(x, y, z, rx);
-      [x, y, z] = rotateY(x, y, z, ry);
-
-      // Only show markers on visible hemisphere
-      if (z > radius * 0.15) continue;
-
-      const [sx, sy] = project(x, y, z, cx, cy, fov);
-
-      // Calculate depth-based opacity and size
-      const depthFactor = Math.max(0.3, 1 - (z + radius) / (2 * radius));
-
-      // Outer pulse ring
-      const pulse = Math.sin(time * 1.5 + marker.lat * 0.1) * 0.5 + 0.5;
-      ctx.beginPath();
-      ctx.arc(sx, sy, 4 + pulse * 3, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(16, 220, 180, ${0.15 * depthFactor + pulse * 0.1})`;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Inner marker dot
-      ctx.beginPath();
-      ctx.arc(sx, sy, 3 * depthFactor, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(16, 220, 180, ${0.9 * depthFactor})`;
-      ctx.fill();
-
-      // Center bright dot
-      ctx.beginPath();
-      ctx.arc(sx, sy, 1.5 * depthFactor, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.8 * depthFactor})`;
-      ctx.fill();
-
-      // City label (only show when clearly visible)
-      if (marker.label && depthFactor > 0.5) {
-        ctx.font = `${9 * depthFactor}px system-ui, sans-serif`;
-        ctx.fillStyle = `rgba(16, 220, 180, ${0.7 * depthFactor})`;
-        ctx.fillText(marker.label, sx + 8, sy + 3);
-      }
-    }
-    }
-
     animRef.current = requestAnimationFrame(draw);
-  }, [dotColor, arcColor, markerColor, autoRotateSpeed, connections, markers, showConnections, showMarkers]);
+  }, [dotColor, autoRotateSpeed]);
 
   useEffect(() => {
+    if (!loaded) return;
     animRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animRef.current);
-  }, [draw]);
+  }, [draw, loaded]);
 
   const onPointerDown = useCallback((e) => {
     dragRef.current = {
@@ -362,3 +268,5 @@ export function InteractiveGlobe({
     />
   );
 }
+
+export default InteractiveGlobe;
