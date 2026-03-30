@@ -109,8 +109,8 @@ export function InteractiveGlobe({
   showMarkers = true,
 }) {
   const canvasRef = useRef(null);
-  const rotYRef = useRef(0.4);
-  const rotXRef = useRef(0.25);
+  const rotYRef = useRef(0);
+  const rotXRef = useRef(-0.4);
   const dragRef = useRef({
     active: false,
     startX: 0,
