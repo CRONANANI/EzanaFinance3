@@ -296,8 +296,10 @@ export function HomeTerminalSummary({
             </p>
             {MOCK_CAPITOL.rows.map((r) => (
               <div key={r.name} className="hts-capitol-line">
-                <span className="hts-capitol-name">{r.name}</span>
-                <span className="hts-capitol-detail">
+                <Link href="/inside-the-capitol" className="hts-capitol-name hts-capitol-name--link">
+                  {r.name}
+                </Link>
+                <span className="hts-capitol-detail hts-capitol-detail--right">
                   {r.line}
                   {r.ago ? <span className="hts-capitol-ago">  {r.ago}</span> : null}
                 </span>
@@ -321,18 +323,18 @@ export function HomeTerminalSummary({
               Personalized for your portfolio
             </p>
             <p className="hts-subsection-title">Your Sectors Today</p>
-            {(mockData?.sectors || MOCK_PULSE_SECTORS).map((s) => (
-              <div key={s.name} className="hts-sector-row">
-                <span className="hts-sector-name">{s.name}</span>
-                <span className={`hts-sector-pct ${s.change >= 0 ? 'positive' : 'negative'}`}>
-                  {(s.change || s.pct) >= 0 ? '▲' : '▼'} {(s.change || s.pct) >= 0 ? '+' : ''}
-                  {s.change || s.pct}%
-                </span>
-                <div className="hts-sector-bar">
-                  <span style={{ width: `${s.bar || Math.random() * 100}%` }} />
+            {(mockData?.sectors || MOCK_PULSE_SECTORS).map((s) => {
+              const pct = Number(s.change ?? s.pct ?? 0);
+              return (
+                <div key={s.name} className="hts-sector-row">
+                  <span className="hts-sector-name">{s.name}</span>
+                  <span className={`hts-sector-pct ${pct >= 0 ? 'positive' : 'negative'}`}>
+                    {pct >= 0 ? '▲' : '▼'} {pct >= 0 ? '+' : ''}
+                    {pct.toFixed(1)}%
+                  </span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <p className="hts-subsection-title">Stocks You Own Moving Most</p>
             <div className="hts-movers-grid">
               {MOCK_PULSE_STOCKS.map((s) => (
@@ -403,41 +405,57 @@ export function HomeTerminalSummary({
             <h3>Upcoming Events &amp; Alerts</h3>
           </div>
           <div className="hts-card-body">
-            <div className="hts-event-block">
-              <div className="hts-event-group-title">Today</div>
-              <div className="hts-event-line">
-                🔔 <strong>NVDA</strong> approaching alert price ($960)
-                <br />
-                <span className="hts-caption">Current: $954.70 — 0.6% away</span>
+            <div className="hts-events-chain">
+              <div className="hts-chain-item">
+                <div className="hts-chain-dot" />
+                <div className="hts-chain-content">
+                  <div className="hts-chain-header">
+                    <span className="hts-chain-title">NVDA Alert</span>
+                    <span className="hts-chain-severity hts-chain-elevated">ALERT</span>
+                    <span className="hts-chain-ago">Today</span>
+                  </div>
+                  <div className="hts-chain-time">Approaching target price ($960)</div>
+                  <p className="hts-chain-body">Current: $954.70 — 0.6% away from your alert</p>
+                </div>
+              </div>
+              <div className="hts-chain-item">
+                <div className="hts-chain-dot" />
+                <div className="hts-chain-content">
+                  <div className="hts-chain-header">
+                    <span className="hts-chain-title">AAPL Earnings</span>
+                    <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
+                    <span className="hts-chain-ago">Tomorrow</span>
+                  </div>
+                  <div className="hts-chain-time">After Hours</div>
+                  <p className="hts-chain-body">You hold 7 shares — watch for guidance update</p>
+                </div>
+              </div>
+              <div className="hts-chain-item">
+                <div className="hts-chain-dot" />
+                <div className="hts-chain-content">
+                  <div className="hts-chain-header">
+                    <span className="hts-chain-title">Senate Banking Hearing</span>
+                    <span className="hts-chain-severity hts-chain-moderate">CONGRESS</span>
+                    <span className="hts-chain-ago">This Week</span>
+                  </div>
+                  <div className="hts-chain-time">Committee Hearing</div>
+                  <p className="hts-chain-body">3 politicians you follow are members</p>
+                </div>
+              </div>
+              <div className="hts-chain-item">
+                <div className="hts-chain-dot" />
+                <div className="hts-chain-content">
+                  <div className="hts-chain-header">
+                    <span className="hts-chain-title">GOOGL Earnings</span>
+                    <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
+                    <span className="hts-chain-ago">Apr 2</span>
+                  </div>
+                  <div className="hts-chain-time">Earnings Report</div>
+                  <p className="hts-chain-body">You hold 10 shares</p>
+                </div>
               </div>
             </div>
-            <div className="hts-event-block">
-              <div className="hts-event-group-title">Tomorrow</div>
-              <div className="hts-event-line">
-                📊 <strong>AAPL</strong> Earnings Report (After Hours)
-                <br />
-                <span className="hts-caption">You hold 7 shares</span>
-              </div>
-            </div>
-            <div className="hts-event-block">
-              <div className="hts-event-group-title">This Week</div>
-              <div className="hts-event-line">
-                🏛️ Senate Banking Committee Hearing
-                <br />
-                <span className="hts-caption">3 politicians you follow are members</span>
-              </div>
-            </div>
-            <div className="hts-event-block">
-              <div className="hts-event-group-title">Apr 2</div>
-              <div className="hts-event-line">
-                📊 <strong>GOOGL</strong> Earnings Report
-                <br />
-                <span className="hts-caption">You hold 10 shares</span>
-              </div>
-            </div>
-            <p className="hts-events-footer">
-              3 events · 2 alerts
-            </p>
+            <p className="hts-events-footer">3 events · 2 alerts</p>
           </div>
         </div>
       </div>

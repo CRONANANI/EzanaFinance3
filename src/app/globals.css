@@ -35,8 +35,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 2rem 4rem;
-  /* Solid hero black — avoids transparent main showing body #0f1419 above headline */
+  padding: 60px 2rem 0;
   background-color: #050a08;
   overflow: visible;
   text-align: center;

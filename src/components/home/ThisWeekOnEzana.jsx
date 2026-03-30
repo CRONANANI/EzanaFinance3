@@ -50,47 +50,6 @@ function weekRangeLabel() {
   return `${a} – ${b}`;
 }
 
-/** Monday = 0 … Friday = 4 for Mon–Fri grid */
-function weekdayMonFriIndex(d) {
-  const day = d.getDay();
-  if (day === 0 || day === 6) return -1;
-  return day - 1;
-}
-
-function plaidTxDate(tx) {
-  const raw = tx.transaction_date ?? tx.date;
-  if (!raw) return null;
-  return new Date(raw);
-}
-
-function buildWeekdayCounts(plaidTxs, tradeTxs) {
-  const counts = [0, 0, 0, 0, 0];
-  for (const tx of plaidTxs) {
-    const dt = plaidTxDate(tx);
-    if (!dt || Number.isNaN(dt.getTime())) continue;
-    const wi = weekdayMonFriIndex(dt);
-    if (wi >= 0 && wi <= 4) counts[wi] += 1;
-  }
-  for (const tx of tradeTxs) {
-    const dt = new Date(tx.created_at);
-    if (Number.isNaN(dt.getTime())) continue;
-    const wi = weekdayMonFriIndex(dt);
-    if (wi >= 0 && wi <= 4) counts[wi] += 1;
-  }
-  return counts;
-}
-
-function sumPlaidVolume(plaidTxs) {
-  return plaidTxs.reduce((s, tx) => s + Math.abs(Number(tx.amount) || 0), 0);
-}
-
-function sumTradeVolume(tradeTxs) {
-  return tradeTxs.reduce((s, tx) => {
-    const n = tx.notional != null ? Number(tx.notional) : NaN;
-    return s + (Number.isFinite(n) ? Math.abs(n) : 0);
-  }, 0);
-}
-
 function YourWeekTab({
   hasUser,
   hasPortfolio,
@@ -104,15 +63,6 @@ function YourWeekTab({
 }) {
   const loading = portfolioLoading || weekActivityLoading;
   const tradeCount = weekPlaidTransactions.length + weekTradeHistory.length;
-  const counts = useMemo(
-    () => buildWeekdayCounts(weekPlaidTransactions, weekTradeHistory),
-    [weekPlaidTransactions, weekTradeHistory],
-  );
-  const activeDays = counts.map((n) => n > 0);
-  const activeDayCount = activeDays.filter(Boolean).length;
-
-  const totalVolume = sumPlaidVolume(weekPlaidTransactions) + sumTradeVolume(weekTradeHistory);
-  const avgTradeSize = tradeCount > 0 ? totalVolume / tradeCount : 0;
 
   const todayPct = portfolioTotal > 0 ? (portfolioChange / portfolioTotal) * 100 : 0;
   const changeStr =
@@ -125,8 +75,17 @@ function YourWeekTab({
     return arr.sort((a, b) => b.pctChange - a.pctChange);
   }, [enrichedHoldings]);
 
-  const best = sortedByPct[0];
-  const worst = sortedByPct.length > 1 ? sortedByPct[sortedByPct.length - 1] : null;
+  const topPositions = useMemo(() => sortedByPct.slice(0, 4), [sortedByPct]);
+  const positionChartData = useMemo(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    return days.map((day, di) => {
+      const row = { day };
+      topPositions.forEach((h, j) => {
+        row[`pos${j}`] = (h.pctChange * di) / 4;
+      });
+      return row;
+    });
+  }, [topPositions]);
 
   const greenHoldings = enrichedHoldings.filter((h) => h.totalGain > 0).length;
   const totalHoldings = enrichedHoldings.length;
@@ -162,9 +121,69 @@ function YourWeekTab({
     );
   }
 
+  const lineColors = ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
+
   return (
     <div className="hts-week-tab-inner">
-      <div className="hts-week-stat-row">
+      <p className="hts-subsection-title" style={{ marginBottom: '0.75rem' }}>
+        Your Top Positions
+      </p>
+      {topPositions.length > 0 ? (
+        <div style={{ width: '100%', height: 180, marginBottom: '1rem' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={positionChartData}>
+              <XAxis
+                dataKey="day"
+                tick={{ fill: '#6b7280', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
+              <Tooltip
+                contentStyle={{
+                  background: '#111827',
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
+                  borderRadius: 8,
+                  fontSize: 11,
+                }}
+                labelStyle={{ color: '#10b981' }}
+                formatter={(value) => [`${value > 0 ? '+' : ''}${Number(value).toFixed(2)}%`, '']}
+              />
+              {topPositions.map((h, i) => (
+                <Line
+                  key={h.ticker}
+                  type="monotone"
+                  dataKey={`pos${i}`}
+                  stroke={lineColors[i]}
+                  strokeWidth={2}
+                  dot={false}
+                  name={h.ticker}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <p className="hts-caption" style={{ marginBottom: '1rem' }}>
+          No position data to chart yet.
+        </p>
+      )}
+      <div className="hts-week-positions-grid">
+        {topPositions.map((h) => (
+          <div key={h.ticker} className="hts-week-position-item">
+            <span className="hts-week-position-ticker">{h.ticker}</span>
+            <span className="hts-week-position-value">
+              ${h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            </span>
+            <span className={`hts-week-position-change ${h.pctChange >= 0 ? 'positive' : 'negative'}`}>
+              {h.pctChange >= 0 ? '▲' : '▼'} {h.pctChange >= 0 ? '+' : ''}
+              {h.pctChange.toFixed(2)}%
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="hts-week-stat-row" style={{ marginTop: '1rem' }}>
         <div>
           <p className="hts-week-metric-label">Trades Placed</p>
           <p className="hts-week-metric-val">{tradeCount}</p>
@@ -190,83 +209,6 @@ function YourWeekTab({
           </p>
         </div>
       </div>
-
-      <div className="hts-week-best-worst">
-        <div>
-          <p className="hts-week-metric-label">Best performer</p>
-          {best ? (
-            <p className={`hts-week-metric-val ${best.pctChange >= 0 ? 'hts-week-chg-pos' : 'hts-week-chg-neg'}`}>
-              {best.ticker}{' '}
-              <span className="hts-week-metric-sub">
-                {best.pctChange >= 0 ? '▲' : '▼'} {best.pctChange >= 0 ? '+' : ''}
-                {best.pctChange.toFixed(1)}%
-              </span>
-            </p>
-          ) : (
-            <p className="hts-week-metric-val">—</p>
-          )}
-        </div>
-        <div>
-          <p className="hts-week-metric-label">Worst performer</p>
-          {worst && worst.ticker !== best?.ticker ? (
-            <p className={`hts-week-metric-val ${worst.pctChange >= 0 ? 'hts-week-chg-pos' : 'hts-week-chg-neg'}`}>
-              {worst.ticker}{' '}
-              <span className="hts-week-metric-sub">
-                {worst.pctChange >= 0 ? '▲' : '▼'} {worst.pctChange >= 0 ? '+' : ''}
-                {worst.pctChange.toFixed(1)}%
-              </span>
-            </p>
-          ) : (
-            <p className="hts-week-metric-val">—</p>
-          )}
-        </div>
-      </div>
-
-      <div className="hts-week-inline-pair">
-        <span>
-          <span className="hts-week-metric-label">Avg trade size</span>
-          <span className="hts-week-inline-val">
-            {tradeCount > 0
-              ? `$${avgTradeSize.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-              : '—'}
-          </span>
-        </span>
-        <span>
-          <span className="hts-week-metric-label">Total volume</span>
-          <span className="hts-week-inline-val">
-            {totalVolume > 0
-              ? `$${totalVolume.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-              : '—'}
-          </span>
-        </span>
-      </div>
-
-      <div className="hts-week-day-activity">
-        <div className="hts-week-day-labels">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((d) => (
-            <span key={d}>{d}</span>
-          ))}
-        </div>
-        <div className="hts-week-day-dots">
-          {activeDays.map((on, i) => (
-            <span key={String(i)} className={`hts-week-trade-dot ${on ? 'on' : ''}`} />
-          ))}
-        </div>
-        <div className="hts-week-day-counts">
-          {counts.map((n, i) => (
-            <span key={String(i)}>{n}</span>
-          ))}
-        </div>
-        <p className="hts-week-day-caption">
-          {activeDayCount} of 5 trading days with activity · trades per day
-        </p>
-      </div>
-
-      <p className="hts-week-compare">
-        <Link href="/community" className="hts-week-leaderboard-link">
-          Keep trading to climb the leaderboard <i className="bi bi-arrow-right" />
-        </Link>
-      </p>
     </div>
   );
 }

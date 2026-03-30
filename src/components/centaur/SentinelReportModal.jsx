@@ -186,6 +186,38 @@ export function SentinelReportModal({ open, onClose, report }) {
                 <span className="sentinel-kpi-val">Multi-qtr</span>
               </div>
             </div>
+
+            <div className="sentinel-news-section">
+              <div className="sentinel-chart-title" style={{ marginBottom: '0.75rem' }}>Market news</div>
+              {[
+                { title: 'Fed signals patience on rate cuts amid sticky inflation', source: 'Reuters', ago: '2h ago' },
+                { title: 'NVDA hits new high on AI datacenter demand', source: 'Bloomberg', ago: '4h ago' },
+                { title: 'Senate committee advances new crypto regulation bill', source: 'WSJ', ago: '1d ago' },
+              ].map((article, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: '0.65rem 0',
+                    borderBottom: idx < 2 ? '1px solid rgba(212, 175, 55, 0.1)' : 'none',
+                  }}
+                >
+                  <p
+                    style={{
+                      color: '#e5e7eb',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      margin: '0 0 0.2rem 0',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {article.title}
+                  </p>
+                  <p style={{ color: '#6b7280', fontSize: '0.65rem', margin: 0 }}>
+                    {article.source} · {article.ago}
+                  </p>
+                </div>
+              ))}
+            </div>
           </aside>
         </div>
 

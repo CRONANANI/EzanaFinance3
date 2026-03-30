@@ -310,7 +310,7 @@
 
 .hts-sector-row {
   display: grid;
-  grid-template-columns: 1fr auto 100px;
+  grid-template-columns: 1fr auto;
   gap: 0.5rem;
   align-items: center;
   font-size: 0.8125rem;
@@ -991,4 +991,136 @@ body.light-mode .hts-week-inline-pair {
 
 body.light-mode .hts-week-compare {
   color: #6b7280;
+}
+
+/* —— Your Week — Top positions grid —— */
+.hts-week-positions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+.hts-week-position-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+}
+.hts-week-position-ticker {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+.hts-week-position-value {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+}
+.hts-week-position-change {
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+.hts-week-position-change.positive { color: #10b981; }
+.hts-week-position-change.negative { color: #ef4444; }
+
+@media (max-width: 640px) {
+  .hts-week-positions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* —— Capitol — clickable name + right-aligned detail —— */
+.hts-capitol-name--link {
+  text-decoration: none;
+  color: #f0f6fc;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.hts-capitol-name--link:hover {
+  color: #10b981;
+  text-decoration: underline;
+}
+.hts-capitol-detail--right {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* —— Events chain view (matching market analysis chain format) —— */
+.hts-events-chain {
+  position: relative;
+  padding-left: 1rem;
+  border-left: 2px solid rgba(16, 185, 129, 0.12);
+}
+.hts-chain-item {
+  position: relative;
+  padding: 0 0 1.25rem 1rem;
+}
+.hts-chain-item:last-child {
+  padding-bottom: 0;
+}
+.hts-chain-dot {
+  position: absolute;
+  left: -1.35rem;
+  top: 0.2rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #0a0e13;
+  border: 2px solid rgba(16, 185, 129, 0.4);
+}
+.hts-chain-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+.hts-chain-title {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: #f0f6fc;
+  padding: 0.1rem 0.4rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.hts-chain-severity {
+  font-size: 0.4375rem;
+  font-weight: 800;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+.hts-chain-elevated {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+.hts-chain-moderate {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+.hts-chain-ago {
+  font-size: 0.5rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: #4b5563;
+  margin-left: auto;
+}
+.hts-chain-time {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: #10b981;
+  margin-bottom: 0.2rem;
+}
+.hts-chain-body {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: #8b949e;
+  line-height: 1.6;
+  margin: 0;
 }

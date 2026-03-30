@@ -69,7 +69,7 @@ export function PartnerCreatorContentCard() {
     <section className="lc2-partner-card db-card" aria-label="Partner and creator content">
       <div className="lc2-sec-head">
         <h2 className="lc2-sec-title lc2-sec-title-with-bi">
-          <i className="bi bi-stars" aria-hidden />
+          <i className="bi bi-fire" aria-hidden />
           From Partners &amp; Creators
         </h2>
       </div>

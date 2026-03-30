@@ -272,6 +272,12 @@ export default function CentaurIntelligencePage() {
                       textAlign: 'center',
                       fontSize: '0.75rem',
                       fontWeight: '600',
+                      width: '72px',
+                      minHeight: '52px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
                     <div>{month}</div>
@@ -283,12 +289,6 @@ export default function CentaurIntelligencePage() {
                 );
               })}
             </div>
-            <p style={{ color: '#888', fontSize: '0.8rem' }}>
-              Last generated: {sentinelReport?.report_date || new Date().toLocaleDateString()}
-            </p>
-            <p style={{ color: '#888', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-              Select a week to open the archived report, or use View Latest for the most recent file.
-            </p>
           </div>
         </div>
 
