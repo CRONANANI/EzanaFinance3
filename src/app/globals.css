@@ -90,9 +90,13 @@
   z-index: 20;
 }
 
-/* Force the globe's canvas/wrapper to also be above beams */
-.landing-page .card-preview.globe-preview canvas,
-.landing-page .card-preview.globe-preview > div {
+/* The globe wrapper needs its own stacking context */
+.landing-page .card-preview.globe-preview .globe-with-cards-wrapper {
+  position: relative;
+  z-index: 20;
+}
+
+.landing-page .card-preview.globe-preview .globe-container {
   position: relative;
   z-index: 20;
 }

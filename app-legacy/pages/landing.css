@@ -1053,6 +1053,34 @@ body:has(.landing-page) {
     position: relative;
 }
 
+/* Dark circle behind the globe to mask aurora beams from showing
+   through the transparent canvas. The globe dots render on a transparent
+   <canvas>, so without this mask, beams behind it are visible. */
+.landing-page .globe-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 85%;
+    height: 85%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+        circle,
+        #050a08 0%,
+        #050a08 65%,
+        rgba(5, 10, 8, 0.85) 80%,
+        transparent 100%
+    );
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.landing-page .globe-container canvas {
+    position: relative;
+    z-index: 1;
+}
+
 /* Globe with notification cards - wrapper, globe centered */
 .globe-with-cards-wrapper {
     position: relative;
