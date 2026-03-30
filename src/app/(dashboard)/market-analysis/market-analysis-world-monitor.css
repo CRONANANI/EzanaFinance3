@@ -1171,3 +1171,37 @@ body.light-mode .ma-ticker-sep {
     max-width: 100%;
   }
 }
+
+/* ═══ Event Analysis modal — same shell & typography as Sentinel report modal ═══ */
+.ma-event-analysis-shell {
+  max-width: 960px;
+  width: 100%;
+}
+
+.ma-event-analysis-shell .sentinel-modal-main {
+  flex: 1;
+  min-height: 0;
+  border-right: none;
+}
+
+.ma-event-analysis-debrief-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  color: #d4af37;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(212, 175, 55, 0.12);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.ma-event-analysis-debrief-btn:hover {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: rgba(212, 175, 55, 0.45);
+  color: #e8c84a;
+}

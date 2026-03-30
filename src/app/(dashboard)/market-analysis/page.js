@@ -22,6 +22,7 @@ import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
+import '../centaur-intelligence/centaur-intelligence.css';
 
 // Layer configuration mapping
 const LAYER_CONFIG = {
@@ -584,6 +585,22 @@ function CityNewsPanel({ panelId, onClose }) {
   );
 }
 
+/** Same paragraph splitting as Sentinel report modal body */
+function EventAnalysisProse({ text }) {
+  const cleaned = (text || '').trim();
+  if (!cleaned) {
+    return <p className="sentinel-report-section-body sentinel-report-section-body--empty">—</p>;
+  }
+  const lines = cleaned.split('\n').map((l) => l.trim()).filter(Boolean);
+  return (
+    <div className="sentinel-report-section-body">
+      {lines.map((line, i) => (
+        <p key={i}>{line}</p>
+      ))}
+    </div>
+  );
+}
+
 function ChainView() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -616,6 +633,18 @@ function ChainView() {
   const formatDate = (isoOrUnix) => {
     const d = typeof isoOrUnix === 'number' ? new Date(isoOrUnix * 1000) : new Date(isoOrUnix);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  };
+
+  const formatDateLong = (isoOrUnix) => {
+    const d = typeof isoOrUnix === 'number' ? new Date(isoOrUnix * 1000) : new Date(isoOrUnix);
+    return d.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   };
 
   const handleAnalyze = async (event) => {
@@ -734,81 +763,74 @@ function ChainView() {
       </div>
       
       {analyzeEvent && (
-        <>
-          <div onClick={() => setAnalyzeEvent(null)} style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.85)', zIndex: 9998,
-            backdropFilter: 'blur(4px)',
-          }} />
-          <div style={{
-            position: 'fixed', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'calc(100% - 4rem)', maxWidth: '1600px', maxHeight: '80vh',
-            background: '#111',
-            border: '1px solid #D4AF37',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            zIndex: 9999,
-          }}>
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '1.25rem 1.5rem', borderBottom: '1px solid #222',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <i className="bi bi-lightning-charge-fill" style={{ color: '#D4AF37' }} />
-                <h3 style={{ color: '#fff', fontSize: '1rem', fontWeight: '600' }}>Event Analysis</h3>
+        <div
+          className="sentinel-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ma-event-analysis-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setAnalyzeEvent(null);
+          }}
+        >
+          <div className="sentinel-modal-shell ma-event-analysis-shell">
+            <header className="sentinel-modal-header">
+              <div>
+                <p className="sentinel-modal-kicker">Confidential · Portfolio intelligence</p>
+                <h2 id="ma-event-analysis-title" className="sentinel-modal-title">
+                  Event Analysis
+                </h2>
+                <p className="sentinel-modal-date">{analyzeEvent.country} · {formatDateLong(analyzeEvent.time)}</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <button 
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="ma-event-analysis-debrief-btn"
                   onClick={() => handleAddToDebrief(analyzeEvent, analysis)}
                   title="Add to Debrief"
-                  style={{
-                    background: 'rgba(212, 175, 55, 0.15)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                    borderRadius: '6px',
-                    padding: '6px 10px',
-                    color: '#D4AF37',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '0.85rem',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.25)';
-                    e.currentTarget.style.borderColor = '#D4AF37';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
-                  }}
                 >
-                  <i className="bi bi-plus-lg" style={{ fontSize: '0.7rem' }} />
+                  <i className="bi bi-plus-lg" style={{ fontSize: '0.7rem' }} aria-hidden />
                   Add to Debrief
                 </button>
-                <button onClick={() => setAnalyzeEvent(null)} style={{
-                  background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer',
-                }}>×</button>
+                <button
+                  type="button"
+                  className="sentinel-modal-close"
+                  onClick={() => setAnalyzeEvent(null)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+            </header>
+
+            <div className="sentinel-modal-main">
+              <div className="sentinel-report-section">
+                <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Event</h3>
+                <p className="sentinel-report-health-value">{analyzeEvent.title}</p>
+                <div className="sentinel-report-section-body">
+                  <p>{analyzeEvent.body}</p>
+                </div>
+              </div>
+
+              <div className="sentinel-report-section">
+                <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">Portfolio impact</h3>
+                {analyzing ? (
+                  <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                    <i
+                      className="bi bi-lightning-charge-fill"
+                      style={{ fontSize: '1.5rem', color: '#d4af37', display: 'block', marginBottom: '0.5rem' }}
+                      aria-hidden
+                    />
+                    <p className="sentinel-modal-prose" style={{ margin: 0, color: '#9ca3af' }}>
+                      Analyzing impact on your portfolio…
+                    </p>
+                  </div>
+                ) : (
+                  <EventAnalysisProse text={analysis} />
+                )}
               </div>
             </div>
-            <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(80vh - 60px)' }}>
-              <h4 style={{ color: '#D4AF37', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{analyzeEvent.title}</h4>
-              <p style={{ color: '#666', fontSize: '0.8rem', marginBottom: '1.5rem' }}>{analyzeEvent.country} · {formatDate(analyzeEvent.time)}</p>
-              
-              {analyzing ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
-                  <i className="bi bi-lightning-charge-fill" style={{ fontSize: '1.5rem', color: '#D4AF37', display: 'block', marginBottom: '0.5rem' }} />
-                  Analyzing impact on your portfolio...
-                </div>
-              ) : (
-                <div style={{ color: '#ccc', fontSize: '0.85rem', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
-                  {analysis}
-                </div>
-              )}
-            </div>
           </div>
-        </>
+        </div>
       )}
       
       {toast && (
