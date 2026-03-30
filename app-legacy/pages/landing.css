@@ -1061,14 +1061,14 @@ body:has(.landing-page) {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 85%;
-    height: 85%;
+    width: 76%;
+    height: 76%;
     transform: translate(-50%, -50%);
     background: radial-gradient(
         circle,
         #050a08 0%,
-        #050a08 65%,
-        rgba(5, 10, 8, 0.85) 80%,
+        #050a08 85%,
+        rgba(5, 10, 8, 0.6) 93%,
         transparent 100%
     );
     border-radius: 50%;
