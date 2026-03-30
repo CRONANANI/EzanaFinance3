@@ -67,7 +67,7 @@ function generateLandDots(landGeoJSON, stepDeg = 1.8) {
           const latRad = (lat * Math.PI) / 180;
           const lngRad = (lng * Math.PI) / 180;
           dots.push([
-            Math.cos(latRad) * Math.sin(lngRad),
+            -Math.cos(latRad) * Math.sin(lngRad),
             Math.sin(latRad),
             Math.cos(latRad) * Math.cos(lngRad),
           ]);
