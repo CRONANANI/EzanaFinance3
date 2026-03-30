@@ -94,7 +94,7 @@ function rotateX(x, y, z, angle) {
 
 function project(x, y, z, cx, cy, fov) {
   const scale = fov / (fov + z);
-  return [x * scale + cx, y * scale + cy, z];
+  return [x * scale + cx, -y * scale + cy, z];
 }
 
 const LAND_GEOJSON_URL =
@@ -110,7 +110,7 @@ export function InteractiveGlobe({
 }) {
   const canvasRef = useRef(null);
   const rotYRef = useRef(0);
-  const rotXRef = useRef(-0.4);
+  const rotXRef = useRef(0.3);
   const dragRef = useRef({
     active: false,
     startX: 0,
