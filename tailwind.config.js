@@ -7,6 +7,12 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      screens: {
+        xs: '390px',
+        '3xl': '1920px',
+        '4xl': '2560px',
+        '5xl': '3440px',
+      },
       maxWidth: {
         container: "1280px",
       },

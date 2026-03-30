@@ -19,6 +19,7 @@
 @import './partner-light-mode.css';
 @import './terminal-theme.css';
 @import './dashboard-app-icons.css';
+@import './responsive-system.css';
 
 @tailwind base;
 @tailwind components;

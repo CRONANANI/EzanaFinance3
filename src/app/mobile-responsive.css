@@ -1,3 +1,6 @@
+/* NOTE: Broad layout breakpoints are now in responsive-system.css.
+   This file handles component-specific mobile overrides. */
+
 /* ============================================
    MOBILE RESPONSIVE - Ezana Finance
    Breakpoints: 480px, 768px, 1024px
