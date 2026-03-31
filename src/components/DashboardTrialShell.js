@@ -7,6 +7,7 @@ import { getTrialStatus } from '@/lib/trial';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { TrialExpiredGate } from '@/components/TrialExpiredGate';
 import { usePartner } from '@/contexts/PartnerContext';
+import { useOrg } from '@/contexts/OrgContext';
 
 function shouldSkipTrialCheck(pathname, isPartner) {
   if (isPartner) return true;
@@ -23,6 +24,7 @@ function shouldSkipTrialCheck(pathname, isPartner) {
 export function DashboardTrialShell({ children }) {
   const pathname = usePathname();
   const { isPartner } = usePartner();
+  const { isOrgUser, isLoading: orgLoading } = useOrg();
   const [ready, setReady] = useState(() => shouldSkipTrialCheck(pathname ?? '', isPartner));
   const [blocked, setBlocked] = useState(false);
 
@@ -30,6 +32,18 @@ export function DashboardTrialShell({ children }) {
     if (shouldSkipTrialCheck(pathname ?? '', isPartner)) {
       setReady(true);
       setBlocked(false);
+      return;
+    }
+
+    // Org members (university investment council) are licensed at the org level — never gate on consumer trial/plan
+    if (orgLoading) {
+      setReady(false);
+      setBlocked(false);
+      return;
+    }
+    if (isOrgUser) {
+      setBlocked(false);
+      setReady(true);
       return;
     }
 
@@ -77,7 +91,7 @@ export function DashboardTrialShell({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname, isPartner]);
+  }, [pathname, isPartner, orgLoading, isOrgUser]);
 
   if (!ready && !shouldSkipTrialCheck(pathname ?? '', isPartner)) {
     return (
