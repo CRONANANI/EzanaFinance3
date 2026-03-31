@@ -314,3 +314,81 @@ export function getMemberByEmail(email) {
   if (!email) return null;
   return MOCK_MEMBERS.find((m) => m.email.toLowerCase() === email.toLowerCase()) || null;
 }
+
+/** Mock top colleague interactions (member id → colleague member ids) — used by hierarchy UI */
+export const MOCK_TOP_INTERACTIONS = {
+  m1: ['m2', 'm3', 'm4'],
+  m2: ['m1', 'm5', 'm6'],
+  m25: ['m1', 'm3', 'm7'],
+  m3: ['m10', 'm11', 'm12'],
+  m10: ['m3', 'm11', 'm22'],
+  m11: ['m3', 'm10', 'm12'],
+  m12: ['m3', 'm10', 'm11'],
+  m20: ['m3', 'm10', 'm22'],
+  m21: ['m3', 'm22', 'm10'],
+  m22: ['m3', 'm21', 'm20'],
+  m23: ['m3', 'm24', 'm12'],
+  m24: ['m3', 'm23', 'm11'],
+  m4: ['m13', 'm14', 'm1'],
+  m5: ['m15', 'm1', 'm2'],
+  m6: ['m16', 'm1', 'm2'],
+  m7: ['m17', 'm1', 'm2'],
+  m8: ['m18', 'm1', 'm2'],
+  m9: ['m19', 'm1', 'm2'],
+  m13: ['m4', 'm14', 'm1'],
+  m14: ['m4', 'm13', 'm1'],
+  m15: ['m5', 'm1', 'm2'],
+  m16: ['m6', 'm1', 'm2'],
+  m17: ['m7', 'm1', 'm2'],
+  m18: ['m8', 'm1', 'm2'],
+  m19: ['m9', 'm1', 'm2'],
+};
+
+export function getOrgMemberReportsTo(member) {
+  if (!member) return null;
+  if (member.role === 'analyst') {
+    return (
+      MOCK_MEMBERS.find((m) => m.role === 'portfolio_manager' && m.team_id === member.team_id) || null
+    );
+  }
+  if (member.role === 'portfolio_manager') {
+    return MOCK_MEMBERS.find((m) => m.role === 'executive' && m.sub_role === 'President') || null;
+  }
+  return null;
+}
+
+export function getOrgMemberDirectReports(member) {
+  if (!member) return [];
+  if (member.role === 'executive') {
+    return MOCK_MEMBERS.filter((m) => m.role === 'portfolio_manager');
+  }
+  if (member.role === 'portfolio_manager') {
+    return MOCK_MEMBERS.filter((m) => m.role === 'analyst' && m.team_id === member.team_id);
+  }
+  return [];
+}
+
+export function getOrgMemberTopInteractions(memberId) {
+  const ids = MOCK_TOP_INTERACTIONS[memberId] || [];
+  return ids
+    .map((id) => MOCK_MEMBERS.find((m) => m.id === id))
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+/** Demo platform activity derived from mock tasks & discussions */
+export function getMockMemberActivitySummary(memberId) {
+  const myTasks = MOCK_TASKS.filter((t) => t.assigned_to === memberId);
+  const delegated = MOCK_TASKS.filter((t) => t.assigned_by === memberId);
+  const posts = MOCK_DISCUSSIONS.filter((d) => d.author === memberId);
+  const seed = memberId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const learningSessions = 3 + (seed % 12);
+  return {
+    activeTasks: myTasks.filter((t) => t.status !== 'completed').length,
+    completedTasks: myTasks.filter((t) => t.status === 'completed').length,
+    tasksDelegated: delegated.length,
+    teamPosts: posts.length,
+    learningSessions,
+    lastActive: ['Just now', '2h ago', 'Today', 'Yesterday', '3d ago'][seed % 5],
+  };
+}

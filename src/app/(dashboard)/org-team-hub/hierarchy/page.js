@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
 import Link from 'next/link';
 import {
@@ -8,6 +9,7 @@ import {
   MOCK_TEAMS,
   getMemberByEmail,
 } from '@/lib/orgMockData';
+import { OrgMemberProfileModal } from '@/components/org/OrgMemberProfileModal';
 import '../../../../../app-legacy/assets/css/theme.css';
 
 function roleColor(role) {
@@ -50,10 +52,20 @@ function AvatarCircle({ name, role, size = 40, highlight = false }) {
   );
 }
 
-function MemberNode({ member, isCurrentUser }) {
+function MemberNode({ member, isCurrentUser, onSelect }) {
   const team = MOCK_TEAMS.find((t) => t.id === member.team_id);
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Open profile for ${member.name}`}
+      onClick={() => onSelect?.(member)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect?.(member);
+        }
+      }}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -70,6 +82,20 @@ function MemberNode({ member, isCurrentUser }) {
         minWidth: '110px',
         maxWidth: '140px',
         position: 'relative',
+        cursor: 'pointer',
+        transition: 'background 0.15s ease, border-color 0.15s ease, transform 0.12s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = isCurrentUser
+          ? 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(99,102,241,0.28))'
+          : 'rgba(99,102,241,0.08)';
+        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.35)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = isCurrentUser
+          ? 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.2))'
+          : 'rgba(255,255,255,0.02)';
+        e.currentTarget.style.borderColor = isCurrentUser ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)';
       }}
     >
       {isCurrentUser && (
@@ -151,6 +177,7 @@ function TierLabel({ label }) {
 
 export default function OrgHierarchyPage() {
   const { isOrgUser, orgData, isLoading } = useOrg();
+  const [selectedMember, setSelectedMember] = useState(null);
 
   if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading...</div>;
   if (!isOrgUser) return <div style={{ padding: '2rem', color: '#888' }}>This page is for organizational members only.</div>;
@@ -167,6 +194,13 @@ export default function OrgHierarchyPage() {
 
   return (
     <div className="dashboard-page-inset">
+      <OrgMemberProfileModal
+        member={selectedMember}
+        isOpen={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+        viewerMemberId={currentMemberId}
+      />
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}>
         <Link
@@ -198,7 +232,12 @@ export default function OrgHierarchyPage() {
           }}
         >
           {executives.map((m) => (
-            <MemberNode key={m.id} member={m} isCurrentUser={m.id === currentMemberId} />
+            <MemberNode
+              key={m.id}
+              member={m}
+              isCurrentUser={m.id === currentMemberId}
+              onSelect={setSelectedMember}
+            />
           ))}
         </div>
 
@@ -241,7 +280,11 @@ export default function OrgHierarchyPage() {
               {/* PM */}
               {team.pm && (
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
-                  <MemberNode member={team.pm} isCurrentUser={team.pm.id === currentMemberId} />
+                  <MemberNode
+                    member={team.pm}
+                    isCurrentUser={team.pm.id === currentMemberId}
+                    onSelect={setSelectedMember}
+                  />
                 </div>
               )}
 
@@ -257,7 +300,12 @@ export default function OrgHierarchyPage() {
                 }}
               >
                 {team.analysts.map((a) => (
-                  <MemberNode key={a.id} member={a} isCurrentUser={a.id === currentMemberId} />
+                  <MemberNode
+                    key={a.id}
+                    member={a}
+                    isCurrentUser={a.id === currentMemberId}
+                    onSelect={setSelectedMember}
+                  />
                 ))}
               </div>
 
