@@ -7,6 +7,7 @@ import '../../../app-legacy/components/learning/learning-opportunities.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
 import { LeaderboardModal } from '@/components/community/LeaderboardModal';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LEGENDARY_INVESTOR_LIST } from '@/config/legendaryInvestors';
@@ -88,6 +89,7 @@ function tabToParam(key) {
 
 export default function CommunityPageClient() {
   const { user } = useAuth();
+  const { isOrgUser, orgData } = useOrg();
   const [filter, setFilter] = useState('all');
   const [feedTab, setFeedTab] = useState('trending');
   const [lbPeriod, setLbPeriod] = useState('weekly');
@@ -364,6 +366,38 @@ export default function CommunityPageClient() {
 
   return (
     <div className="comm-page dashboard-page-inset db-page">
+      {isOrgUser && orgData && (
+        <Link href="/org-team-hub" style={{ textDecoration: 'none', display: 'block', marginBottom: '1rem' }}>
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(99,102,241,0.15))',
+              border: '1px solid rgba(99,102,241,0.3)',
+              borderRadius: '10px',
+              padding: '10px 1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <i className="bi bi-mortarboard-fill" style={{ color: '#6366f1' }} />
+              <span
+                style={{
+                  color: '#6366f1',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {orgData.org.name} Team Hub
+              </span>
+            </div>
+            <i className="bi bi-chevron-right" style={{ color: '#6366f1', fontSize: '0.7rem' }} />
+          </div>
+        </Link>
+      )}
       <LeaderboardModal isOpen={lbModalOpen} onClose={() => setLbModalOpen(false)} period={lbPeriod} />
 
       <header className="comm-header-top">

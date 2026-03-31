@@ -25,6 +25,7 @@ export const USER_DASHBOARD_ROUTES = [
   '/centaur-intelligence',
   '/kairos-signal',
   '/settings',
+  '/org-team-hub',
 ];
 
 /** Logged-in partners; unauthenticated users go to partner login */

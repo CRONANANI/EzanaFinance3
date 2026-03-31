@@ -6,6 +6,7 @@ validateEnv();
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
 import { PartnerProvider } from '@/contexts/PartnerContext';
+import { OrgProvider } from '@/contexts/OrgContext';
 import { CongressProvider } from '@/contexts/CongressContext';
 import { PinnedCardsProvider } from '@/contexts/PinnedCardsContext';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
             <SettingsProvider>
               <ActiveTaskProvider>
                 <PartnerProvider>
+                  <OrgProvider>
                   <CongressProvider>
                     <PinnedCardsProvider>
                       <ToastProvider>
@@ -53,6 +55,7 @@ export default function RootLayout({ children }) {
                       </ToastProvider>
                     </PinnedCardsProvider>
                   </CongressProvider>
+                  </OrgProvider>
                 </PartnerProvider>
               </ActiveTaskProvider>
             </SettingsProvider>

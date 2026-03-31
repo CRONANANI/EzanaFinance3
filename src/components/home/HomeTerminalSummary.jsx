@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
 import { ThisWeekOnEzana } from './ThisWeekOnEzana';
+import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { generateUserMockData } from '@/lib/userMockData';
 
 const MOCK_MOVERS = [
@@ -165,6 +166,8 @@ export function HomeTerminalSummary({
           </div>
         </div>
       </Link>
+
+      <OrgHomeCards />
 
       {/* Row 1 — three equal cards */}
       <div className="hts-row hts-row-1">

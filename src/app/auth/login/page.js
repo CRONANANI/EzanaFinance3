@@ -47,6 +47,20 @@ export default function LoginChoicePage() {
             </div>
             <i className="bi bi-chevron-right text-[#d4a853] opacity-70 group-hover:opacity-100 transition-opacity" />
           </Link>
+
+          <Link
+            href="/auth/org-login"
+            className="flex items-center gap-4 p-4 rounded-xl border border-[#6366f1]/30 bg-[#0d1117]/80 hover:bg-[#6366f1]/10 hover:border-[#6366f1]/50 transition-all group"
+          >
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#6366f1]/20 flex items-center justify-center group-hover:bg-[#6366f1]/30 transition-colors">
+              <i className="bi bi-mortarboard-fill text-[#6366f1] text-xl" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-semibold text-white">Organizational Login</h2>
+              <p className="text-sm text-[#9ca3af]">University investment council member</p>
+            </div>
+            <i className="bi bi-chevron-right text-[#6366f1] opacity-70 group-hover:opacity-100 transition-opacity" />
+          </Link>
         </div>
 
         <p className="mt-6 text-center text-sm text-[#9ca3af]">
