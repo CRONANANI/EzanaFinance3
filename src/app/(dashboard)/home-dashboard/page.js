@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
@@ -119,6 +120,14 @@ const SECTOR_DATA_DEMO = [
   { name: 'Manufacturing', pct: 12, value: 10140.0, color: '#ec4899' },
 ];
 
+/** TMT team: industry-level breakdown instead of broad sectors */
+const TMT_INDUSTRY_DATA = [
+  { name: 'Software', detail: 'SaaS, AI', pct: 32, value: 63584.0, color: '#3b82f6' },
+  { name: 'Hardware', detail: 'Devices, Semiconductors', pct: 38, value: 75506.0, color: '#10b981' },
+  { name: 'Media', detail: 'Streaming, Advertising, Gaming', pct: 19, value: 37753.0, color: '#a78bfa' },
+  { name: 'Telecommunications', detail: '5G, Internet Services', pct: 11, value: 21857.0, color: '#f59e0b' },
+];
+
 const PROFIT_BREAKDOWN = [
   { label: 'Stocks', pct: 45, color: '#10b981' },
   { label: 'Funds', pct: 20, color: '#3b82f6' },
@@ -187,6 +196,7 @@ function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, cente
    ═══════════════════════════════════════════════════════════ */
 export default function HomeDashboardPage() {
   const { user } = useAuth();
+  const { isOrgUser, orgRole, orgData } = useOrg();
   const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
     usePlaidPortfolioSummary();
   const [timeframe, setTimeframe] = useState('1D');
@@ -321,10 +331,16 @@ export default function HomeDashboardPage() {
 
   const greeting = getGreeting();
 
+  const isTmtTeamMember =
+    isOrgUser &&
+    orgData?.team?.slug === 'technology-media-telecom' &&
+    (orgRole === 'analyst' || orgRole === 'portfolio_manager');
+
   const sectorRows = useMemo(() => {
+    if (isTmtTeamMember) return TMT_INDUSTRY_DATA;
     if (user?.email === 'axmabeto@gmail.com') return SECTOR_DATA_DEMO;
     return SECTOR_DATA_DEFAULT;
-  }, [user?.email]);
+  }, [user?.email, isTmtTeamMember]);
 
   useEffect(() => {
     if (!user) {
@@ -591,10 +607,10 @@ export default function HomeDashboardPage() {
           </div>
         </div>
 
-        {/* Sector Distribution */}
+        {/* Sector / Industry Distribution */}
         <div className="db-card db-sector-card">
           <div className="db-card-header">
-            <h3>Sector Distribution</h3>
+            <h3>{isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}</h3>
             <div className="db-sector-bar-mini">
               {sectorRows.map((s) => (
                 <div key={s.name} className="db-sector-bar-seg" style={{ width: `${s.pct}%`, background: s.color }} />
@@ -608,6 +624,7 @@ export default function HomeDashboardPage() {
                   <span className="db-sector-dot" style={{ background: s.color }} />
                   <div>
                     <span className="db-sector-name">{s.name}</span>
+                    {s.detail && <span className="db-sector-detail">{s.detail}</span>}
                     <span className="db-sector-pct">{s.pct}%</span>
                   </div>
                 </div>
