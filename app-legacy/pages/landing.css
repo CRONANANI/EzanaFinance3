@@ -1146,11 +1146,6 @@ body:has(.landing-page) {
     justify-content: center;
     font-size: 0.85rem;
     flex-shrink: 0;
-    background: rgba(5, 10, 8, 0.85);
-    border-radius: 6px;
-    padding: 4px;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
 }
 
 .globe-alert-icon.congress {
@@ -1183,14 +1178,6 @@ body:has(.landing-page) {
     color: #f0f6fc;
     margin: 0 0 0.25rem;
     text-align: left;
-    background: rgba(5, 10, 8, 0.85);
-    border-radius: 4px;
-    padding: 2px 6px;
-    display: inline;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
 }
 
 .globe-alert-text {
@@ -1199,27 +1186,11 @@ body:has(.landing-page) {
     margin: 0;
     text-align: left;
     white-space: nowrap;
-    background: rgba(5, 10, 8, 0.85);
-    border-radius: 4px;
-    padding: 2px 6px;
-    display: inline;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
 }
 
 .globe-alert-time {
     font-size: 0.65rem;
     color: #64748b;
-    background: rgba(5, 10, 8, 0.85);
-    border-radius: 4px;
-    padding: 2px 6px;
-    display: inline;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
 }
 
 @media (max-width: 1024px) {
