@@ -40,6 +40,7 @@ export function getDefaultUserSettings() {
     date_of_birth: '',
     country: 'United States',
     city: '',
+    state: '',
 
     investor_type: 'retail',
     experience_level: 'intermediate',
@@ -56,3 +57,4 @@ export function getDefaultUserSettings() {
     security_login_alerts: true,
   };
 }
+

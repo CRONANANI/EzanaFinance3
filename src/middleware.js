@@ -105,7 +105,7 @@ export async function middleware(request) {
   }
 
   /** Require onboarding completion for authenticated users accessing user dashboard (except onboarding page itself) */
-  if (user && onUserProtectedRoute && !pathname.includes('/onboarding')) {
+  if (user && onUserProtectedRoute && !pathname.includes('/onboarding') && !pathname.includes('/payment')) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_completed')
@@ -126,3 +126,4 @@ export async function middleware(request) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
+
