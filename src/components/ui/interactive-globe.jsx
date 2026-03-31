@@ -104,22 +104,23 @@ export function InteractiveGlobe({
   className,
   size = 600,
   dotColor = "rgba(16, 185, 129, ALPHA)",
-  autoRotateSpeed = 0.003,
+  autoRotateSpeed = 0.5,
   showConnections = true,
   showMarkers = true,
 }) {
   const canvasRef = useRef(null);
-  const rotYRef = useRef(0);
-  const rotXRef = useRef(0.3);
+  // Rotation stored in degrees [longitude, latitude] — matches reference component
+  const rotationRef = useRef([0, 0]);
+  const autoRotateRef = useRef(true);
   const dragRef = useRef({
     active: false,
     startX: 0,
     startY: 0,
-    startRotY: 0,
-    startRotX: 0,
+    startRotation: [0, 0],
   });
   const animRef = useRef(0);
   const dotsRef = useRef([]);
+  const resumeTimerRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
 
   // Fetch GeoJSON land data and generate continent dots
@@ -138,7 +139,6 @@ export function InteractiveGlobe({
         setLoaded(true);
       } catch (err) {
         console.error("Globe: failed to load land data, falling back to uniform dots", err);
-        // Fallback: uniform Fibonacci sphere (same as before)
         const fallback = [];
         const n = 800;
         const gr = (1 + Math.sqrt(5)) / 2;
@@ -178,9 +178,14 @@ export function InteractiveGlobe({
     const radius = Math.min(w, h) * 0.38;
     const fov = 600;
 
-    if (!dragRef.current.active) {
-      rotYRef.current += autoRotateSpeed;
+    // Auto-rotate: increment longitude in degrees each frame
+    if (autoRotateRef.current && !dragRef.current.active) {
+      rotationRef.current[0] += autoRotateSpeed;
     }
+
+    // Convert degrees to radians for rotation math
+    const ry = (rotationRef.current[0] * Math.PI) / 180;
+    const rx = (rotationRef.current[1] * Math.PI) / 180;
 
     ctx.clearRect(0, 0, w, h);
 
@@ -198,9 +203,6 @@ export function InteractiveGlobe({
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    const ry = rotYRef.current;
-    const rx = rotXRef.current;
-
     // Draw continent dots (same visual style — emerald, depth-based alpha)
     const dots = dotsRef.current;
     for (let i = 0; i < dots.length; i++) {
@@ -212,7 +214,7 @@ export function InteractiveGlobe({
       [x, y, z] = rotateX(x, y, z, rx);
       [x, y, z] = rotateY(x, y, z, ry);
 
-      // Only draw dots on the visible side (z < 0 means facing us)
+      // Only draw dots on the visible side
       if (z > 0) continue;
 
       const [sx, sy] = project(x, y, z, cx, cy, fov);
@@ -234,27 +236,43 @@ export function InteractiveGlobe({
     return () => cancelAnimationFrame(animRef.current);
   }, [draw, loaded]);
 
+  // Drag interaction — matches reference component sensitivity and behavior
   const onPointerDown = useCallback((e) => {
+    autoRotateRef.current = false;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+
     dragRef.current = {
       active: true,
       startX: e.clientX,
       startY: e.clientY,
-      startRotY: rotYRef.current,
-      startRotX: rotXRef.current,
+      startRotation: [...rotationRef.current],
     };
     e.target.setPointerCapture(e.pointerId);
   }, []);
 
   const onPointerMove = useCallback((e) => {
     if (!dragRef.current.active) return;
+    const sensitivity = 0.5;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    rotYRef.current = dragRef.current.startRotY + dx * 0.005;
-    rotXRef.current = Math.max(-0.8, Math.min(0.8, dragRef.current.startRotX + dy * 0.005));
+
+    rotationRef.current[0] = dragRef.current.startRotation[0] + dx * sensitivity;
+    rotationRef.current[1] = Math.max(-90, Math.min(90, dragRef.current.startRotation[1] - dy * sensitivity));
   }, []);
 
   const onPointerUp = useCallback(() => {
     dragRef.current.active = false;
+    // Resume auto-rotation after a short delay (matches reference component)
+    resumeTimerRef.current = setTimeout(() => {
+      autoRotateRef.current = true;
+    }, 10);
+  }, []);
+
+  // Cleanup resume timer on unmount
+  useEffect(() => {
+    return () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    };
   }, []);
 
   return (
