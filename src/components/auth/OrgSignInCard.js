@@ -27,16 +27,24 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
         return;
       }
 
-      const { data: org, error: orgErr } = await supabase
+      // Use a fresh client to avoid any session state interfering with the anon query
+      const { createClient } = await import('@/lib/supabase');
+      const anonClient = createClient();
+
+      const { data: org, error: orgErr } = await anonClient
         .from('organizations')
         .select('id, name')
         .eq('email_domain', domain)
         .eq('is_active', true)
-        .maybeSingle();
+        .limit(1)
+        .single();
 
-      if (orgErr || !org) {
+      console.log('[OrgLogin] Domain check:', domain, '| org:', org, '| error:', orgErr);
+
+      if (!org) {
         setError(
-          'Your university is not registered with Ezana Finance. Contact your organization administrator or email orgsupport@ezana.world.'
+          orgErr?.message ||
+            'Your university is not registered with Ezana Finance. Contact your organization administrator or email orgsupport@ezana.world.'
         );
         return;
       }
