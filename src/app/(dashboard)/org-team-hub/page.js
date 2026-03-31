@@ -5,6 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { OrgHierarchyCard } from '@/components/org/OrgHierarchyCard';
 import '../../../../app-legacy/assets/css/theme.css';
 
 export default function OrgTeamHubPage() {
@@ -62,7 +63,7 @@ export default function OrgTeamHubPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: orgRole === 'analyst' ? '1fr' : '2fr 1fr',
+          gridTemplateColumns: orgRole === 'analyst' ? '1fr 1fr' : '2fr 1fr',
           gap: '1.5rem',
         }}
       >
@@ -147,6 +148,7 @@ export default function OrgTeamHubPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <OrgHierarchyCard />
           <div className="db-card">
             <div className="db-card-header">
               <h3>Upcoming Events</h3>
