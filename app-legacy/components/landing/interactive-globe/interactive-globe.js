@@ -72,8 +72,9 @@
     canvas.style.cssText = 'width:100%;height:100%;cursor:grab;';
     container.appendChild(canvas);
 
-    var rotY = 0.4;
-    var rotX = 0.3;
+    // Radians: ~90° Y aligns Americas toward the camera (matches React globe)
+    var rotY = Math.PI / 2;
+    var rotX = 0;
     var drag = { active: false, startX: 0, startY: 0, startRotY: 0, startRotX: 0 };
     var animId = 0;
     var time = 0;

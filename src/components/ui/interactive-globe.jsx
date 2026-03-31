@@ -110,13 +110,14 @@ export function InteractiveGlobe({
 }) {
   const canvasRef = useRef(null);
   // Rotation stored in degrees [longitude, latitude] — matches reference component
-  const rotationRef = useRef([0, 0]);
+  // Initial ~90° Y: centers Western Hemisphere so North & South America face the viewer
+  const rotationRef = useRef([90, 0]);
   const autoRotateRef = useRef(true);
   const dragRef = useRef({
     active: false,
     startX: 0,
     startY: 0,
-    startRotation: [0, 0],
+    startRotation: [90, 0],
   });
   const animRef = useRef(0);
   const dotsRef = useRef([]);
