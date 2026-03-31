@@ -1,15 +1,37 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { LandingHero } from '@/components/landing/LandingHero';
-import { TrustedLogos } from '@/components/TrustedLogos';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { ResourcesSection } from '@/components/landing/ResourcesSection';
-import { PricingSection } from '@/components/landing/PricingSection';
-import { Faq1 } from '@/components/ui/faq1';
-import { FooterSection } from '@/components/ui/footer-section';
-import { ContactSupportDialog } from '@/components/ui/contact-support-dialog';
+
+const TrustedLogos = dynamic(
+  () => import('@/components/TrustedLogos').then((m) => ({ default: m.TrustedLogos })),
+  { loading: () => null }
+);
+const FeaturesSection = dynamic(
+  () => import('@/components/landing/FeaturesSection').then((m) => ({ default: m.FeaturesSection })),
+  { loading: () => null }
+);
+const ResourcesSection = dynamic(
+  () => import('@/components/landing/ResourcesSection').then((m) => ({ default: m.ResourcesSection })),
+  { loading: () => null }
+);
+const PricingSection = dynamic(
+  () => import('@/components/landing/PricingSection').then((m) => ({ default: m.PricingSection })),
+  { loading: () => null }
+);
+const Faq1 = dynamic(
+  () => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })),
+  { loading: () => null }
+);
+const FooterSection = dynamic(
+  () => import('@/components/ui/footer-section').then((m) => ({ default: m.FooterSection })),
+  { loading: () => null }
+);
+const ContactSupportDialog = dynamic(
+  () => import('@/components/ui/contact-support-dialog').then((m) => ({ default: m.ContactSupportDialog })),
+  { loading: () => null }
+);
 
 export default function HomePage() {
   const [supportOpen, setSupportOpen] = useState(false);

@@ -88,6 +88,7 @@ export function Navbar() {
               alt="Ezana Finance"
               width={60}
               height={51}
+              priority={isLanding}
               className="nav-logo-img nav-logo-img--wing"
               style={{ objectFit: 'contain', display: 'block', transform: 'scaleX(-1)' }}
             />

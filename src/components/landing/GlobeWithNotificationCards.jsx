@@ -31,7 +31,7 @@ function pickRandomPosition(prevSide, prevVPos) {
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
-export function GlobeWithNotificationCards({ size = 460 }) {
+export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [position, setPosition] = useState(() => pickRandomPosition(null, null));
 
@@ -87,7 +87,7 @@ export function GlobeWithNotificationCards({ size = 460 }) {
       </div>
 
       <div className="globe-container">
-        <InteractiveGlobe size={size} showConnections={false} showMarkers={false} />
+        <InteractiveGlobe size={size} showConnections={false} showMarkers={false} onReady={onGlobeReady} />
       </div>
 
       <div className="globe-notification-cards globe-cards-right">

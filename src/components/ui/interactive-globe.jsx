@@ -97,7 +97,7 @@ function project(x, y, z, cx, cy, fov) {
   return [x * scale + cx, -y * scale + cy, z];
 }
 
-const LAND_GEOJSON_URL =
+export const LAND_GEOJSON_URL =
   "https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/110m/physical/ne_110m_land.json";
 
 export function InteractiveGlobe({
@@ -107,6 +107,8 @@ export function InteractiveGlobe({
   autoRotateSpeed = 0.5,
   showConnections = true,
   showMarkers = true,
+  /** Fires once after the first frame is drawn (land data loaded). */
+  onReady,
 }) {
   const canvasRef = useRef(null);
   // Rotation stored in degrees [longitude, latitude] — matches reference component
@@ -123,6 +125,9 @@ export function InteractiveGlobe({
   const dotsRef = useRef([]);
   const resumeTimerRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
+  const readyFiredRef = useRef(false);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
 
   // Fetch GeoJSON land data and generate continent dots
   useEffect(() => {
@@ -206,6 +211,13 @@ export function InteractiveGlobe({
 
     // Draw continent dots (same visual style — emerald, depth-based alpha)
     const dots = dotsRef.current;
+    if (loaded && dots.length > 0 && !readyFiredRef.current) {
+      readyFiredRef.current = true;
+      requestAnimationFrame(() => {
+        onReadyRef.current?.();
+      });
+    }
+
     for (let i = 0; i < dots.length; i++) {
       let [x, y, z] = dots[i];
       x *= radius;
@@ -229,7 +241,7 @@ export function InteractiveGlobe({
     }
 
     animRef.current = requestAnimationFrame(draw);
-  }, [dotColor, autoRotateSpeed]);
+  }, [dotColor, autoRotateSpeed, loaded]);
 
   useEffect(() => {
     if (!loaded) return;
