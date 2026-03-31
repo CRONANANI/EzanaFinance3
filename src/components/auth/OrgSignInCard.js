@@ -30,8 +30,8 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
       const { createClient } = await import('@/lib/supabase');
       const anonClient = createClient();
 
+      // Try domain-based org lookup first
       let org = null;
-
       const { data: orgByDomain } = await anonClient
         .from('organizations')
         .select('id, name')
@@ -42,20 +42,29 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
 
       org = orgByDomain;
 
+      // Sign in the user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
+
+      // If domain didn't match, check if user is already in org_members directly.
+      // This allows test accounts with non-university emails (gmail.com, etc.) to
+      // log in through the org login page as long as they exist in org_members.
       if (!org) {
-        const { error: preSignInErr } = await supabase.auth.signInWithPassword({ email, password });
-        if (preSignInErr) {
-          setError(preSignInErr.message);
-          return;
-        }
         const {
-          data: { user: preUser },
+          data: { user: signedInUser },
         } = await supabase.auth.getUser();
-        if (preUser) {
+        if (signedInUser) {
           const { data: memberOrg } = await supabase
             .from('org_members')
             .select('org_id, organizations(*)')
-            .eq('user_id', preUser.id)
+            .eq('user_id', signedInUser.id)
             .eq('is_active', true)
             .limit(1)
             .maybeSingle();
@@ -79,18 +88,6 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
           'Your university is not registered with Ezana Finance. Contact your organization administrator or email orgsupport@ezana.world.',
         );
         return;
-      }
-
-      const { data: existingSession } = await supabase.auth.getSession();
-      if (!existingSession?.session) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) {
-          setError(signInError.message);
-          return;
-        }
       }
 
       const {
