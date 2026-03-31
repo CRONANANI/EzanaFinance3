@@ -27,36 +27,70 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
         return;
       }
 
-      // Use a fresh client to avoid any session state interfering with the anon query
       const { createClient } = await import('@/lib/supabase');
       const anonClient = createClient();
 
-      const { data: org, error: orgErr } = await anonClient
+      let org = null;
+
+      const { data: orgByDomain } = await anonClient
         .from('organizations')
         .select('id, name')
         .eq('email_domain', domain)
         .eq('is_active', true)
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      console.log('[OrgLogin] Domain check:', domain, '| org:', org, '| error:', orgErr);
+      org = orgByDomain;
+
+      if (!org) {
+        const { error: preSignInErr } = await supabase.auth.signInWithPassword({ email, password });
+        if (preSignInErr) {
+          setError(preSignInErr.message);
+          return;
+        }
+        const {
+          data: { user: preUser },
+        } = await supabase.auth.getUser();
+        if (preUser) {
+          const { data: memberOrg } = await supabase
+            .from('org_members')
+            .select('org_id, organizations(*)')
+            .eq('user_id', preUser.id)
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle();
+
+          if (memberOrg?.organizations) {
+            org = { id: memberOrg.organizations.id, name: memberOrg.organizations.name };
+          } else {
+            await supabase.auth.signOut();
+            setError(
+              'Your university is not registered with Ezana Finance. Contact your organization administrator or email orgsupport@ezana.world.',
+            );
+            return;
+          }
+        }
+      }
+
+      console.log('[OrgLogin] Org resolved:', org);
 
       if (!org) {
         setError(
-          orgErr?.message ||
-            'Your university is not registered with Ezana Finance. Contact your organization administrator or email orgsupport@ezana.world.'
+          'Your university is not registered with Ezana Finance. Contact your organization administrator or email orgsupport@ezana.world.',
         );
         return;
       }
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        setError(signInError.message);
-        return;
+      const { data: existingSession } = await supabase.auth.getSession();
+      if (!existingSession?.session) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) {
+          setError(signInError.message);
+          return;
+        }
       }
 
       const {
@@ -73,7 +107,7 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
       if (!member) {
         await supabase.auth.signOut();
         setError(
-          `Your account is not registered as a member of ${org.name}. Contact your organization administrator.`
+          `Your account is not registered as a member of ${org.name}. Contact your organization administrator.`,
         );
         return;
       }

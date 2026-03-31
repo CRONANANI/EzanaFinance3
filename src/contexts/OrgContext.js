@@ -63,7 +63,7 @@ export function OrgProvider({ children }) {
 
       setOrgData({
         org: member.organizations,
-        member,
+        member: { ...member, email: user.email },
         team,
         teams: teams || [],
       });

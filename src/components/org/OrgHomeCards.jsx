@@ -17,7 +17,20 @@ import {
   getTasksForMember,
   getTasksAssignedBy,
   getTotalPortfolioValue,
+  getMemberByEmail,
 } from '@/lib/orgMockData';
+
+/** Map Supabase team row (UUID + slug) to mock sector id (t1…t7) for demo data */
+function resolveMockTeamId(orgData) {
+  const slug = orgData?.team?.slug;
+  if (slug) {
+    const hit = MOCK_TEAMS.find((t) => t.slug === slug);
+    if (hit) return hit.id;
+  }
+  const rawId = orgData?.team?.id;
+  if (rawId && MOCK_TEAMS.some((t) => t.id === rawId)) return rawId;
+  return 't7';
+}
 
 /* ═══════════════════════════════════════════
    STATUS HELPERS
@@ -62,6 +75,12 @@ function fmtMoney(n) {
    EXECUTIVE HOME CARDS
    ═══════════════════════════════════════════ */
 function ExecutiveHomeCards({ orgData }) {
+  const emailMatch = getMemberByEmail(orgData?.member?.email);
+  const currentExecutive =
+    emailMatch && emailMatch.role === 'executive'
+      ? emailMatch
+      : MOCK_MEMBERS.find((m) => m.role === 'executive') || MOCK_MEMBERS[0];
+
   const totalValue = getTotalPortfolioValue();
   const totalDayChange = MOCK_TEAM_PERFORMANCE.reduce((s, t) => s + t.change_dollar, 0);
   const totalDayPct = totalValue > 0 ? (totalDayChange / totalValue) * 100 : 0;
@@ -79,6 +98,9 @@ function ExecutiveHomeCards({ orgData }) {
             <h3>Council Portfolio Overview</h3>
           </div>
           <div className="hts-card-body">
+            <p className="hts-label" style={{ marginBottom: '0.35rem' }}>
+              Signed in as {currentExecutive.name} · {currentExecutive.sub_role}
+            </p>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
               <div>
                 <p className="hts-label">{ORG_SHORT} · Total AUM</p>
@@ -221,8 +243,8 @@ function ExecutiveHomeCards({ orgData }) {
    PORTFOLIO MANAGER HOME CARDS
    ═══════════════════════════════════════════ */
 function PMHomeCards({ orgData }) {
-  const teamId = orgData?.team?.id || 't7';
-  const teamSlug = orgData?.team?.slug || 'tmt';
+  const teamId = resolveMockTeamId(orgData);
+  const teamSlug = orgData?.team?.slug || MOCK_TEAMS.find((t) => t.id === teamId)?.slug || 'tmt';
   const teamPerf = MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === teamId) || MOCK_TEAM_PERFORMANCE[6];
   const teamEvents = getEventsForTeam(teamId).filter((e) => e.status === 'upcoming').slice(0, 3);
   const currentPM =
@@ -368,10 +390,15 @@ function PMHomeCards({ orgData }) {
    ANALYST HOME CARDS
    ═══════════════════════════════════════════ */
 function AnalystHomeCards({ orgData }) {
-  const teamId = orgData?.team?.id || 't7';
-  const teamSlug = orgData?.team?.slug || 'tmt';
+  const teamId = resolveMockTeamId(orgData);
+  const teamSlug = orgData?.team?.slug || MOCK_TEAMS.find((t) => t.id === teamId)?.slug || 'tmt';
   const teamPerf = MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === teamId) || MOCK_TEAM_PERFORMANCE[6];
-  const currentAnalyst = MOCK_MEMBERS.find((m) => m.role === 'analyst' && m.team_id === teamId) || MOCK_MEMBERS[9];
+  const emailMatch = getMemberByEmail(orgData?.member?.email);
+  const defaultTeamAnalyst = MOCK_MEMBERS.find((m) => m.role === 'analyst' && m.team_id === teamId);
+  const currentAnalyst =
+    emailMatch && emailMatch.role === 'analyst'
+      ? emailMatch
+      : defaultTeamAnalyst || MOCK_MEMBERS.find((m) => m.id === 'm10');
   const myTasks = MOCK_TASKS.filter((t) => t.assigned_to === currentAnalyst.id);
   const teamEvents = getEventsForTeam(teamId).filter((e) => e.status === 'upcoming').slice(0, 3);
 
