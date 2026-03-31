@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -15,9 +15,11 @@ import {
   NotificationsPanel,
   IntegrationsPanel,
   ApiPanel,
+  OrgSettingsPanel,
 } from '@/components/settings';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
+import { useOrg } from '@/contexts/OrgContext';
 import './settings.css';
 import './settings-partner.css';
 
@@ -47,6 +49,7 @@ const PANEL_MAP = {
   notifications: NotificationsPanel,
   integrations: IntegrationsPanel,
   api: ApiPanel,
+  organization: OrgSettingsPanel,
 };
 
 function SettingsInner() {
@@ -54,6 +57,7 @@ function SettingsInner() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const router = useRouter();
   const { isPartner } = usePartner();
+  const { isOrgUser, orgRole } = useOrg();
   const dashboardPath = isPartner ? '/partner-home' : '/home-dashboard';
 
   const {
@@ -66,7 +70,23 @@ function SettingsInner() {
     saveSettings,
   } = useUserSettings();
 
-  const ActivePanel = PANEL_MAP[activeTab];
+  const tabs = useMemo(() => {
+    if (isOrgUser && orgRole === 'executive') {
+      return [
+        ...SETTINGS_TABS,
+        { key: 'organization', label: 'Organization', icon: 'bi-building', desc: 'Manage members & permissions' },
+      ];
+    }
+    return SETTINGS_TABS;
+  }, [isOrgUser, orgRole]);
+
+  useEffect(() => {
+    if (!tabs.some((t) => t.key === activeTab)) {
+      setActiveTab(tabs[0]?.key || 'my-details');
+    }
+  }, [tabs, activeTab]);
+
+  const ActivePanel = PANEL_MAP[activeTab] || MyDetailsPanel;
 
   const handleTabChange = (key) => {
     setActiveTab(key);
@@ -111,13 +131,13 @@ function SettingsInner() {
           onClick={() => setMobileNavOpen(!mobileNavOpen)}
           type="button"
         >
-          <i className={`bi ${SETTINGS_TABS.find((t) => t.key === activeTab)?.icon}`} />
-          <span>{SETTINGS_TABS.find((t) => t.key === activeTab)?.label}</span>
+          <i className={`bi ${tabs.find((t) => t.key === activeTab)?.icon}`} />
+          <span>{tabs.find((t) => t.key === activeTab)?.label}</span>
           <i className={`bi bi-chevron-${mobileNavOpen ? 'up' : 'down'} settings-mobile-chevron`} />
         </button>
         {mobileNavOpen && (
           <div className="settings-mobile-dropdown">
-            {SETTINGS_TABS.map((tab) => (
+            {tabs.map((tab) => (
               <button
                 key={tab.key}
                 className={`settings-mobile-item ${activeTab === tab.key ? 'active' : ''}`}
@@ -142,7 +162,7 @@ function SettingsInner() {
             <p className="settings-subtitle">Manage your account and preferences</p>
           </div>
           <nav className="settings-nav">
-            {SETTINGS_TABS.map((tab, i) => (
+            {tabs.map((tab, i) => (
               <button
                 key={tab.key}
                 className={`settings-nav-item ${activeTab === tab.key ? 'active' : ''}`}

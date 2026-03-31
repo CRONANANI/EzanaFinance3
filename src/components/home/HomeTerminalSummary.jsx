@@ -7,6 +7,7 @@ import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
 import { ThisWeekOnEzana } from './ThisWeekOnEzana';
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
+import { useOrg } from '@/contexts/OrgContext';
 import { generateUserMockData } from '@/lib/userMockData';
 
 const MOCK_MOVERS = [
@@ -57,6 +58,7 @@ export function HomeTerminalSummary({
   weekActivityLoading = true,
 }) {
   const [mockData, setMockData] = useState(null);
+  const { isOrgUser } = useOrg();
 
   // Generate unique mock data for this user on mount
   useEffect(() => {
@@ -169,6 +171,8 @@ export function HomeTerminalSummary({
 
       <OrgHomeCards />
 
+      {!isOrgUser && (
+        <>
       {/* Row 1 — three equal cards */}
       <div className="hts-row hts-row-1">
         <div className="db-card hts-card">
@@ -462,6 +466,8 @@ export function HomeTerminalSummary({
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

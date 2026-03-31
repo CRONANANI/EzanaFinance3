@@ -15,8 +15,11 @@ import { LearningCenterHero } from '@/components/learning/LearningCenterHero';
 import { PartnerCreatorContentCard } from '@/components/learning/PartnerCreatorContentCard';
 import { FriendsLearningCard } from '@/components/learning/FriendsLearningCard';
 import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
+import { useOrg } from '@/contexts/OrgContext';
+import { ORG_NAME, ORG_SHORT, MOCK_TASKS, MOCK_MEMBERS } from '@/lib/orgMockData';
 
 export function LearningCenterPage() {
+  const { isOrgUser, orgRole, orgData } = useOrg();
   const [data, setData] = useState(null);
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -92,6 +95,51 @@ export function LearningCenterPage() {
       </header>
 
       <LearningCenterHero viewer={viewerForHero} overall={overall} tracks={tracks} badges={badges} />
+
+      {isOrgUser && (
+        <div
+          className="db-card"
+          style={{
+            marginTop: '1rem',
+            padding: '1rem 1.25rem',
+            border: '1px solid rgba(99,102,241,0.25)',
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(16,185,129,0.04))',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+            <div>
+              <div style={{ color: '#6366f1', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                Assigned by your Portfolio Manager
+              </div>
+              <div style={{ color: '#f0f6fc', fontSize: '0.95rem', fontWeight: 700, marginTop: '0.35rem' }}>
+                {ORG_SHORT} Learning Assignments
+              </div>
+              <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: '0.35rem 0 0' }}>
+                Track what your council expects you to complete this week.
+              </p>
+            </div>
+            <Link href="/org-team-hub" className="lc2-course-action" style={{ textDecoration: 'none', height: 'fit-content' }}>
+              Team Hub →
+            </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginTop: '1rem' }}>
+            {[
+              { title: 'Valuation Fundamentals', status: 'in_progress', due: 'Apr 12' },
+              { title: 'Pitch Deck Writing', status: 'assigned', due: 'Apr 14' },
+              { title: 'Risk & Position Sizing', status: 'assigned', due: 'Apr 18' },
+            ].map((a) => (
+              <div key={a.title} style={{ padding: '0.75rem', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.12)', background: 'rgba(13,17,23,0.6)' }}>
+                <div style={{ color: '#f0f6fc', fontWeight: 700, fontSize: '0.8125rem' }}>{a.title}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem', fontSize: '0.6875rem' }}>
+                  <span style={{ color: a.status === 'in_progress' ? '#6366f1' : '#9ca3af', fontWeight: 700 }}>{a.status.replace('_', ' ')}</span>
+                  <span style={{ color: '#6b7280' }}>Due {a.due}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <PartnerCreatorContentCard />
 

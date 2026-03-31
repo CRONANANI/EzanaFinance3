@@ -12,3 +12,5 @@ export {
   ApiPanel,
 } from './SettingsPanels';
 
+export { OrgSettingsPanel } from './OrgSettingsPanel';
+

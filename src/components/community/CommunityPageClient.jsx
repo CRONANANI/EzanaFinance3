@@ -14,6 +14,7 @@ import { LEGENDARY_INVESTOR_LIST } from '@/config/legendaryInvestors';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getMixedCoursesFromAllTracks } from '@/lib/learning-curriculum';
+import { MOCK_DISCUSSIONS, MOCK_MEMBERS } from '@/lib/orgMockData';
 
 const FILTER_TABS = [
   { key: 'all', label: 'All' },
@@ -89,7 +90,7 @@ function tabToParam(key) {
 
 export default function CommunityPageClient() {
   const { user } = useAuth();
-  const { isOrgUser, orgData } = useOrg();
+  const { isOrgUser, orgRole, orgData } = useOrg();
   const [filter, setFilter] = useState('all');
   const [feedTab, setFeedTab] = useState('trending');
   const [lbPeriod, setLbPeriod] = useState('weekly');
@@ -108,10 +109,88 @@ export default function CommunityPageClient() {
   const [friendBusy, setFriendBusy] = useState({});
   const [incomingFriendRequests, setIncomingFriendRequests] = useState([]);
 
+  const orgTeamId = useMemo(() => {
+    if (!isOrgUser) return null;
+    if (orgRole === 'executive') return null;
+    return orgData?.team?.id || 't7';
+  }, [isOrgUser, orgRole, orgData?.team?.id]);
+
+  const effectiveFilterTabs = useMemo(() => {
+    if (!isOrgUser) return FILTER_TABS;
+    return [
+      { key: 'all', label: 'All' },
+      { key: 'my_team', label: 'My Team' },
+      { key: 'announcements', label: 'Announcements' },
+    ];
+  }, [isOrgUser]);
+
+  const effectiveStatCards = useMemo(() => {
+    if (!isOrgUser) return STAT_CARDS;
+    const members = MOCK_MEMBERS.length;
+    const activeTeams = 7;
+    const discussions = MOCK_DISCUSSIONS.length;
+    const announcements = MOCK_DISCUSSIONS.filter((d) => d.type === 'announcement').length;
+    return [
+      { icon: 'bi-mortarboard-fill', label: 'Council Members', value: String(members), sub: `${activeTeams} sector teams`, subTone: 'neutral' },
+      { icon: 'bi-chat-dots', label: 'Team Discussions', value: `${discussions}`, sub: `${announcements} announcements`, subTone: 'positive' },
+      { icon: 'bi-calendar-event', label: 'This Week', value: '5 events', sub: '2 pitches, 1 review', subTone: 'neutral' },
+      { icon: 'bi-lightning-charge', label: 'Open Tasks', value: '8', sub: '3 high priority', subTone: 'negative' },
+    ];
+  }, [isOrgUser]);
+
+  const effectiveTrendingTopics = useMemo(() => {
+    if (!isOrgUser) return TRENDING_TOPICS;
+    return [
+      { rank: 1, title: 'TMT pitch: NVDA vs AMD debate', replies: 12, kind: 'hot' },
+      { rank: 2, title: 'Healthcare: UNH earnings takeaways', replies: 7, kind: 'rise' },
+      { rank: 3, title: 'FIG: JPM comps model review', replies: 5, kind: 'pop' },
+      { rank: 4, title: 'Energy: IRA impacts on utilities', replies: 9, kind: 'act' },
+      { rank: 5, title: 'Council: next all-hands agenda', replies: 4, kind: 'act' },
+    ];
+  }, [isOrgUser]);
+
+  const effectiveCircleActivity = useMemo(() => {
+    if (!isOrgUser) return CIRCLE_ACTIVITY;
+    return MOCK_DISCUSSIONS.slice(0, 5).map((d) => ({
+      initials: getInitials(d.author_name),
+      name: d.author_name,
+      userId: null,
+      time: d.time,
+      action: d.type === 'announcement' ? 'Posted an announcement' : d.type === 'question' ? 'Asked a question' : 'Shared an update',
+    }));
+  }, [isOrgUser]);
+
   const fetchFeed = useCallback(async () => {
     setFeedLoading(true);
     setFeedMessage('');
     try {
+      if (isOrgUser) {
+        const rows = MOCK_DISCUSSIONS
+          .filter((d) => {
+            if (filter === 'announcements') return d.type === 'announcement';
+            if (filter === 'my_team') return d.team_id === orgTeamId || d.team_id === null;
+            return true;
+          })
+          .slice(0, 20)
+          .map((d) => ({
+            id: d.id,
+            text: d.content,
+            userId: null,
+            name: d.author_name,
+            initials: getInitials(d.author_name),
+            time: d.time,
+            badge: d.type === 'announcement' ? 'Announcement' : null,
+            tickerSym: extractTickerFromContent(d.content),
+            likes: 0,
+            comments: d.replies ?? 0,
+            reposts: 0,
+            liked_by_me: false,
+            saved_by_me: false,
+          }));
+        setFeedPosts(rows);
+        setFeedMessage('');
+        return;
+      }
       const tab = tabToParam(feedTab);
       const res = await fetch(`/api/community/posts?tab=${encodeURIComponent(tab)}`);
       const data = await res.json();
@@ -144,7 +223,7 @@ export default function CommunityPageClient() {
     } finally {
       setFeedLoading(false);
     }
-  }, [feedTab]);
+  }, [feedTab, isOrgUser, filter, orgTeamId]);
 
   useEffect(() => {
     fetchFeed();
@@ -403,7 +482,7 @@ export default function CommunityPageClient() {
       <header className="comm-header-top">
         <h1 className="comm-page-title">Community</h1>
         <div className="comm-header-tabs" role="tablist" aria-label="Community filter">
-          {FILTER_TABS.map((t) => (
+          {effectiveFilterTabs.map((t) => (
             <button
               key={t.key}
               type="button"
@@ -470,7 +549,7 @@ export default function CommunityPageClient() {
       </div>
 
       <div className="comm-row-1">
-        {STAT_CARDS.map((s) => (
+        {effectiveStatCards.map((s) => (
           <div key={s.label} className="db-card comm-stat-card">
             <div className="comm-stat-top">
               <div className="comm-stat-icon-wrap" aria-hidden>
@@ -671,7 +750,7 @@ export default function CommunityPageClient() {
             </h3>
           </div>
           <div className="comm-inner-scroll">
-            {TRENDING_TOPICS.map((t) => (
+            {effectiveTrendingTopics.map((t) => (
               <div key={t.rank} className="comm-trend-item" role="button" tabIndex={0}>
                 <span className="comm-trend-rank">{t.rank}</span>
                 <span className="comm-trend-title">{t.title}</span>
@@ -779,7 +858,7 @@ export default function CommunityPageClient() {
             >
               Recent Activity
             </p>
-            {CIRCLE_ACTIVITY.map((row) => (
+            {effectiveCircleActivity.map((row) => (
               <div key={row.name + row.time} className="comm-circle-row">
                 <div className="comm-avatar" aria-hidden>
                   {row.initials}
@@ -834,7 +913,7 @@ export default function CommunityPageClient() {
         </div>
       </div>
 
-      <div className="comm-row-4">
+      {!isOrgUser && <div className="comm-row-4">
         <div className="db-card">
           <div className="db-card-header">
             <h3 className="db-h3-with-bi">
@@ -904,7 +983,7 @@ export default function CommunityPageClient() {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
 
       <div className="db-card" style={{ marginBottom: '1.25rem' }}>
         <div className="db-card-header">

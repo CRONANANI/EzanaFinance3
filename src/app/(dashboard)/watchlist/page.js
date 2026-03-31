@@ -6,6 +6,8 @@ import { PinnableCard } from '@/components/ui/PinnableCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { useChecklist } from '@/hooks/useChecklist';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
+import { useOrg } from '@/contexts/OrgContext';
+import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -173,19 +175,63 @@ function TypeIcon({ item }) {
 
 export default function WatchlistPage() {
   const { completeTask } = useChecklist();
+  const { isOrgUser, orgRole, orgData } = useOrg();
   const addedStockRef = useRef(false);
-  const [selected, setSelected] = useState(TOP_STRIP[0]);
+  const [selected, setSelected] = useState(null);
   const [quoteMap, setQuoteMap] = useState({});
   const [timeRange, setTimeRange] = useState('1Y');
   const [sideTab, setSideTab] = useState('All');
   const [search, setSearch] = useState('');
 
+  const orgTeamId = useMemo(() => {
+    if (!isOrgUser) return null;
+    if (orgRole === 'executive') return null;
+    return orgData?.team?.id || 't7';
+  }, [isOrgUser, orgRole, orgData?.team?.id]);
+
+  const orgTeamPerf = useMemo(() => {
+    if (!isOrgUser) return null;
+    if (orgRole === 'executive') return null;
+    return MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === (orgTeamId || 't7')) || MOCK_TEAM_PERFORMANCE[6];
+  }, [isOrgUser, orgRole, orgTeamId]);
+
+  const stripItems = useMemo(() => {
+    if (!isOrgUser) return TOP_STRIP;
+
+    const tickers =
+      orgRole === 'executive'
+        ? [...new Set(MOCK_TEAM_PERFORMANCE.flatMap((t) => t.top_holdings))].slice(0, 12)
+        : (orgTeamPerf?.top_holdings || ['NVDA', 'AAPL', 'MSFT', 'META']);
+
+    return tickers.map((tk) => ({
+      id: `org-${tk}`,
+      type: 'stock',
+      name: tk,
+      ticker: tk,
+      quoteSymbol: tk,
+      price: 0,
+      change: 0,
+      pct: 0,
+      topAssets: [],
+    }));
+  }, [isOrgUser, orgRole, orgTeamPerf]);
+
+  useEffect(() => {
+    if (!selected && stripItems.length > 0) {
+      setSelected(stripItems[0]);
+      return;
+    }
+    if (selected && stripItems.length > 0 && !stripItems.some((i) => i.id === selected.id)) {
+      setSelected(stripItems[0]);
+    }
+  }, [stripItems, selected]);
+
   useEffect(() => {
     const symbols = [
       ...new Set([
-        ...TOP_STRIP.map((i) => i.quoteSymbol),
+        ...stripItems.map((i) => i.quoteSymbol),
         ...COMMODITIES.map((c) => c.ticker),
-        ...WATCHLIST_ITEMS.filter((x) => x.type === 'stock').map((x) => x.ticker),
+        ...(isOrgUser ? [] : WATCHLIST_ITEMS.filter((x) => x.type === 'stock').map((x) => x.ticker)),
       ]),
     ].filter(Boolean);
     let cancelled = false;
@@ -205,13 +251,24 @@ export default function WatchlistPage() {
     };
   }, []);
   const sideItems = useMemo(() => {
+    if (isOrgUser) {
+      let items = stripItems;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        items = items.filter((i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q));
+      }
+      return items;
+    }
     let items = WATCHLIST_ITEMS;
-    if (sideTab === 'Stocks') items = items.filter(i => i.type === 'stock');
-    if (sideTab === 'Politicians') items = items.filter(i => i.type === 'politician');
-    if (sideTab === 'Institutions') items = items.filter(i => i.type === 'institution');
-    if (search.trim()) { const q = search.toLowerCase(); items = items.filter(i => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q)); }
+    if (sideTab === 'Stocks') items = items.filter((i) => i.type === 'stock');
+    if (sideTab === 'Politicians') items = items.filter((i) => i.type === 'politician');
+    if (sideTab === 'Institutions') items = items.filter((i) => i.type === 'institution');
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      items = items.filter((i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q));
+    }
     return items;
-  }, [sideTab, search]);
+  }, [sideTab, search, isOrgUser, stripItems]);
 
   const selectAny = useCallback((item) => {
     setSelected(item);
@@ -240,9 +297,9 @@ export default function WatchlistPage() {
 
       {/* ═══ TOP STRIP — mixed indices, politicians, institutions ═══ */}
       <div className="wl-top-strip">
-        {TOP_STRIP.map((raw) => {
+        {stripItems.map((raw) => {
           const item = mergeFinnhubQuote(raw, quoteMap);
-          const active = selected.id === item.id;
+          const active = selected?.id === item.id;
           const up = item.change >= 0;
           return (
             <button key={item.id} type="button" className={`wl-strip-card ${item.type} ${active?'active':''}`} onClick={() => selectAny(raw)}>
@@ -280,7 +337,7 @@ export default function WatchlistPage() {
           <button
             key={c.id}
             type="button"
-            className={`wl-comm ${selected.id === c.id ? 'active' : ''}`}
+            className={`wl-comm ${selected?.id === c.id ? 'active' : ''}`}
             onClick={() => selectAny(raw)}
             style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
           >
@@ -412,7 +469,13 @@ export default function WatchlistPage() {
         {/* ── RIGHT: Sidebar ── */}
         <aside className="wl-side">
           <div className="wl-side-hdr">
-            <h3>My Watchlist</h3>
+            <h3>
+              {isOrgUser
+                ? orgRole === 'executive'
+                  ? 'Council Watchlist'
+                  : `${orgTeamPerf?.team_name || 'Team'} Watchlist`
+                : 'My Watchlist'}
+            </h3>
             <span className="wl-side-cnt">{sideItems.length}</span>
           </div>
 
@@ -422,7 +485,7 @@ export default function WatchlistPage() {
                     </div>
 
           <div className="wl-side-tabs">
-            {SIDEBAR_TABS.map((t) => (
+            {(!isOrgUser ? SIDEBAR_TABS : ['All', 'Stocks']).map((t) => (
               <button
                 key={t}
                 type="button"
@@ -463,7 +526,11 @@ export default function WatchlistPage() {
             })}
           </div>
 
-          <button type="button" className="wl-add" data-task-target="watchlist-add-button" onClick={() => { completeTask('watchlist_1'); }}><i className="bi bi-plus-lg"/> Add to Watchlist</button>
+          {!isOrgUser && (
+            <button type="button" className="wl-add" data-task-target="watchlist-add-button" onClick={() => { completeTask('watchlist_1'); }}>
+              <i className="bi bi-plus-lg"/> Add to Watchlist
+            </button>
+          )}
         </aside>
       </div>
 
