@@ -12,6 +12,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../settings/settings.css';
 import './onboarding.css';
 
+/* ───────────────────────── step definitions ───────────────────────── */
 const REGULAR_STEPS = [
   { key: 'details', label: 'My Details', number: 1 },
   { key: 'profile', label: 'Profile', number: 2 },
@@ -22,9 +23,11 @@ const REGULAR_STEPS = [
 const ORG_STEPS = [
   { key: 'details', label: 'My Details', number: 1 },
   { key: 'org_profile', label: 'Your Role', number: 2 },
-  { key: 'notifications', label: 'Notifications', number: 3 },
+  { key: 'org_preferences', label: 'Preferences', number: 3 },
+  { key: 'notifications', label: 'Notifications', number: 4 },
 ];
 
+/* ───────────────────────── constants ───────────────────────── */
 const US_STATES = [
   'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN',
   'IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH',
@@ -45,6 +48,18 @@ const TIMEZONES = [
   { value: 'Australia/Sydney', label: 'Sydney (AEST)' },
 ];
 
+const SECTOR_OPTIONS = [
+  'Technology', 'Healthcare', 'Financials', 'Energy', 'Consumer Discretionary',
+  'Consumer Staples', 'Industrials', 'Materials', 'Real Estate', 'Utilities',
+  'Communication Services', 'Crypto & Digital Assets',
+];
+
+const ASSET_CLASS_OPTIONS = [
+  'US Equities', 'International Equities', 'Fixed Income / Bonds', 'ETFs & Index Funds',
+  'Options', 'Commodities', 'REITs', 'Crypto', 'Private Equity / Venture',
+];
+
+/* ───────────────────────── component ───────────────────────── */
 export default function OnboardingPage() {
   const router = useRouter();
   const { isOrgUser, orgRole, orgData, isLoading: orgLoading } = useOrg();
@@ -67,11 +82,11 @@ export default function OnboardingPage() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
     display_name: '',
     bio: '',
-    investor_type: 'retail_investor',
-    experience_level: 'intermediate',
     website: '',
     twitter: '',
     linkedin: '',
+    investor_type: 'retail_investor',
+    experience_level: 'intermediate',
     privacy_show_profile: true,
     privacy_show_portfolio: false,
     privacy_show_trades: false,
@@ -88,15 +103,19 @@ export default function OnboardingPage() {
     email_transactional_confirmations: true,
     email_security_alerts: true,
     email_marketing: false,
+    org_year_of_study: 'sophomore',
+    org_focus_areas: [],
+    org_what_to_learn: '',
+    org_sectors_of_interest: [],
+    org_investment_thesis_style: 'value',
+    org_preferred_asset_classes: [],
+    org_risk_tolerance: 'moderate',
   });
 
   useEffect(() => {
     async function restore() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setInitialLoaded(true);
-        return;
-      }
+      if (!user) { setInitialLoaded(true); return; }
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -121,6 +140,16 @@ export default function OnboardingPage() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const toggleArrayItem = (key, item) => {
+    setFormData((prev) => {
+      const arr = prev[key] || [];
+      return {
+        ...prev,
+        [key]: arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item],
+      };
+    });
+  };
+
   const validateStep = (currentStep) => {
     setError('');
     const stepKey = STEPS[currentStep]?.key;
@@ -141,6 +170,11 @@ export default function OnboardingPage() {
     }
     if (stepKey === 'org_profile') {
       if (!formData.display_name?.trim()) { setError('Display name is required'); return false; }
+      return true;
+    }
+    if (stepKey === 'org_preferences') {
+      if (formData.org_sectors_of_interest.length === 0) { setError('Select at least one sector of interest'); return false; }
+      if (formData.org_preferred_asset_classes.length === 0) { setError('Select at least one asset class'); return false; }
       return true;
     }
     return true;
@@ -179,9 +213,7 @@ export default function OnboardingPage() {
     try {
       const nextStep = step + 1;
       await saveProgress(nextStep);
-      if (step < STEPS.length - 1) {
-        setStep(nextStep);
-      }
+      if (step < STEPS.length - 1) setStep(nextStep);
     } catch (err) {
       setError(err.message || 'Failed to save progress');
     } finally {
@@ -193,15 +225,33 @@ export default function OnboardingPage() {
     if (!validateStep(step)) return;
     setLoading(true);
     try {
-      await saveProgress(STEPS.length);
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('profiles').update({
-          onboarding_completed: true,
-          has_seen_tutorial: false,
-        }).eq('id', user.id);
-      }
-      router.push('/home');
+      if (!user) throw new Error('Not authenticated');
+
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        phone: formData.phone || null,
+        date_of_birth: formData.date_of_birth || null,
+        country: formData.country || null,
+        state: formData.state || null,
+        city: formData.city || null,
+        display_name: formData.display_name || null,
+        bio: formData.bio || null,
+        investor_type: formData.investor_type || null,
+        experience_level: formData.experience_level || null,
+        website: formData.website || null,
+        twitter: formData.twitter || null,
+        linkedin: formData.linkedin || null,
+        timezone: formData.timezone || null,
+        user_settings: formData,
+        onboarding_step: STEPS.length,
+        onboarding_completed: true,
+        has_seen_tutorial: false,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
+
+      await new Promise((r) => setTimeout(r, 300));
+      router.replace('/home');
     } catch (err) {
       setError(err.message || 'Failed to complete onboarding');
     } finally {
@@ -376,29 +426,43 @@ export default function OnboardingPage() {
           <div className="settings-panel">
             <div className="settings-panel-header">
               <h2 className="settings-panel-title">Your Role at {orgData?.org?.name || 'Your Organization'}</h2>
-              <p className="settings-panel-desc">Tell us about your position in the investment council.</p>
+              <p className="settings-panel-desc">Tell us about your position and interests on the investment council.</p>
             </div>
             <div className="settings-section">
-              <div style={{ padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.05)', marginBottom: '1.5rem' }}>
-                <p style={{ color: '#6366f1', fontWeight: 700, fontSize: '0.9rem', margin: '0 0 0.25rem' }}>
-                  {orgRole === 'executive' ? '🏛️ Executive' : orgRole === 'portfolio_manager' ? '📊 Portfolio Manager' : '📈 Analyst'}
-                </p>
-                <p style={{ color: '#9ca3af', fontSize: '0.8rem', margin: 0 }}>
-                  {orgRole === 'executive' && 'You have oversight of all teams and portfolios.'}
-                  {orgRole === 'portfolio_manager' && `You manage the ${orgData?.team?.name || 'your team'} portfolio and analysts.`}
-                  {orgRole === 'analyst' && `You are an analyst on the ${orgData?.team?.name || 'your'} team.`}
-                </p>
+              <div className="onboarding-org-role-badge">
+                <span className="onboarding-org-role-icon">
+                  {orgRole === 'executive' ? '🏛️' : orgRole === 'portfolio_manager' ? '📊' : '📈'}
+                </span>
+                <div>
+                  <p className="onboarding-org-role-title">
+                    {orgRole === 'executive' ? 'Executive' : orgRole === 'portfolio_manager' ? 'Portfolio Manager' : 'Analyst'}
+                  </p>
+                  <p className="onboarding-org-role-desc">
+                    {orgRole === 'executive' && 'You have oversight of all teams and portfolios.'}
+                    {orgRole === 'portfolio_manager' && `You manage the ${orgData?.team?.name || 'your team'} portfolio and analysts.`}
+                    {orgRole === 'analyst' && `You are an analyst on the ${orgData?.team?.name || 'your'} team.`}
+                  </p>
+                </div>
               </div>
+
               <div className="settings-row single">
-                <div className="settings-field"><label className="settings-label">Display name *</label><input type="text" className="settings-input" value={formData.display_name} onChange={(e) => updateFormData('display_name', e.target.value)} placeholder="How you appear to your team" /></div>
+                <div className="settings-field">
+                  <label className="settings-label">Display name *</label>
+                  <input type="text" className="settings-input" value={formData.display_name} onChange={(e) => updateFormData('display_name', e.target.value)} placeholder="How you appear to your team" />
+                </div>
               </div>
+
               <div className="settings-row single">
-                <div className="settings-field"><label className="settings-label">Short bio</label><textarea className="settings-input" rows={3} value={formData.bio} onChange={(e) => updateFormData('bio', e.target.value)} placeholder="Your background, interests, or focus areas" style={{ resize: 'vertical' }} /></div>
+                <div className="settings-field">
+                  <label className="settings-label">Short bio</label>
+                  <textarea className="settings-input" rows={3} value={formData.bio} onChange={(e) => updateFormData('bio', e.target.value)} placeholder="Your background, interests, or focus areas" style={{ resize: 'vertical' }} />
+                </div>
               </div>
+
               <div className="settings-row">
                 <div className="settings-field">
                   <label className="settings-label">Year of study</label>
-                  <select className="settings-input" value={formData.experience_level} onChange={(e) => updateFormData('experience_level', e.target.value)}>
+                  <select className="settings-input" value={formData.org_year_of_study} onChange={(e) => updateFormData('org_year_of_study', e.target.value)}>
                     <option value="freshman">Freshman</option>
                     <option value="sophomore">Sophomore</option>
                     <option value="junior">Junior</option>
@@ -407,7 +471,122 @@ export default function OnboardingPage() {
                     <option value="alumni">Alumni</option>
                   </select>
                 </div>
-                <div className="settings-field"><label className="settings-label">LinkedIn (optional)</label><input type="url" className="settings-input" value={formData.linkedin} onChange={(e) => updateFormData('linkedin', e.target.value)} placeholder="https://linkedin.com/in/you" /></div>
+                <div className="settings-field">
+                  <label className="settings-label">LinkedIn (optional)</label>
+                  <input type="url" className="settings-input" value={formData.linkedin} onChange={(e) => updateFormData('linkedin', e.target.value)} placeholder="https://linkedin.com/in/you" />
+                </div>
+              </div>
+
+              <div className="settings-row single">
+                <div className="settings-field">
+                  <label className="settings-label">Focus areas</label>
+                  <p className="onboarding-field-hint">Select the areas you want to focus on within the council.</p>
+                  <div className="onboarding-chip-grid">
+                    {['Equity Research', 'Fixed Income', 'Macro / Economics', 'Quantitative Analysis', 'ESG / Impact', 'Crypto / Digital', 'Risk Management', 'Portfolio Construction'].map((area) => (
+                      <button
+                        key={area}
+                        type="button"
+                        className={`onboarding-chip ${formData.org_focus_areas.includes(area) ? 'selected' : ''}`}
+                        onClick={() => toggleArrayItem('org_focus_areas', area)}
+                      >
+                        {area}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-row single">
+                <div className="settings-field">
+                  <label className="settings-label">What do you hope to learn?</label>
+                  <textarea className="settings-input" rows={2} value={formData.org_what_to_learn} onChange={(e) => updateFormData('org_what_to_learn', e.target.value)} placeholder="e.g. I want to get better at valuation modeling and macro analysis" style={{ resize: 'vertical' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isOrgUser && STEPS[step]?.key === 'org_preferences' && (
+          <div className="settings-panel">
+            <div className="settings-panel-header">
+              <h2 className="settings-panel-title">Investment Preferences</h2>
+              <p className="settings-panel-desc">Help us tailor your experience to match your investment style.</p>
+            </div>
+            <div className="settings-section">
+              <div className="settings-row single">
+                <div className="settings-field">
+                  <label className="settings-label">Sectors of interest *</label>
+                  <p className="onboarding-field-hint">Pick the sectors you follow most closely.</p>
+                  <div className="onboarding-chip-grid">
+                    {SECTOR_OPTIONS.map((sector) => (
+                      <button
+                        key={sector}
+                        type="button"
+                        className={`onboarding-chip ${formData.org_sectors_of_interest.includes(sector) ? 'selected' : ''}`}
+                        onClick={() => toggleArrayItem('org_sectors_of_interest', sector)}
+                      >
+                        {sector}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-row single">
+                <div className="settings-field">
+                  <label className="settings-label">Investment thesis style</label>
+                  <select className="settings-input" value={formData.org_investment_thesis_style} onChange={(e) => updateFormData('org_investment_thesis_style', e.target.value)}>
+                    <option value="value">Value Investing</option>
+                    <option value="growth">Growth Investing</option>
+                    <option value="momentum">Momentum / Technical</option>
+                    <option value="macro">Macro / Top-Down</option>
+                    <option value="quant">Quantitative / Systematic</option>
+                    <option value="event_driven">Event-Driven</option>
+                    <option value="mixed">Mixed / Still Exploring</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="settings-row single">
+                <div className="settings-field">
+                  <label className="settings-label">Preferred asset classes *</label>
+                  <p className="onboarding-field-hint">What types of instruments are you most interested in?</p>
+                  <div className="onboarding-chip-grid">
+                    {ASSET_CLASS_OPTIONS.map((ac) => (
+                      <button
+                        key={ac}
+                        type="button"
+                        className={`onboarding-chip ${formData.org_preferred_asset_classes.includes(ac) ? 'selected' : ''}`}
+                        onClick={() => toggleArrayItem('org_preferred_asset_classes', ac)}
+                      >
+                        {ac}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-row single">
+                <div className="settings-field">
+                  <label className="settings-label">Risk tolerance</label>
+                  <div className="onboarding-risk-selector">
+                    {[
+                      { value: 'conservative', label: 'Conservative', desc: 'Capital preservation first' },
+                      { value: 'moderate', label: 'Moderate', desc: 'Balanced risk and reward' },
+                      { value: 'aggressive', label: 'Aggressive', desc: 'Higher risk for higher return' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`onboarding-risk-card ${formData.org_risk_tolerance === opt.value ? 'selected' : ''}`}
+                        onClick={() => updateFormData('org_risk_tolerance', opt.value)}
+                      >
+                        <span className="onboarding-risk-card-label">{opt.label}</span>
+                        <span className="onboarding-risk-card-desc">{opt.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

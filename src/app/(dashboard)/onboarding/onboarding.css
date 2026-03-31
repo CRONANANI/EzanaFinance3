@@ -9,24 +9,22 @@
   min-height: 100vh;
 }
 
-/* Progress Bar */
-.onboarding-progress-container {
-  margin-bottom: 3rem;
-}
-
-.onboarding-progress {
+/* ─── Stepper (top bar) ─── */
+.onboarding-stepper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   position: relative;
+  margin-bottom: 2.5rem;
+  padding: 0 0.5rem;
 }
 
-.onboarding-progress::before {
+.onboarding-stepper::before {
   content: '';
   position: absolute;
   top: 20px;
-  left: 0;
-  right: 0;
+  left: 40px;
+  right: 40px;
   height: 2px;
   background: rgba(16, 185, 129, 0.1);
   z-index: 0;
@@ -42,12 +40,12 @@
   z-index: 1;
 }
 
-.onboarding-step-dot {
+.onboarding-step-number {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: rgba(107, 114, 128, 0.2);
-  border: 2px solid rgba(107, 114, 128, 0.3);
+  background: rgba(107, 114, 128, 0.15);
+  border: 2px solid rgba(107, 114, 128, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,17 +55,17 @@
   transition: all 0.3s ease;
 }
 
-.onboarding-step.completed .onboarding-step-dot {
+.onboarding-step.completed .onboarding-step-number {
   background: #10b981;
   border-color: #10b981;
   color: #fff;
 }
 
-.onboarding-step.active .onboarding-step-dot {
+.onboarding-step.active .onboarding-step-number {
   background: transparent;
   border-color: #10b981;
   color: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
 }
 
 .onboarding-step-label {
@@ -76,6 +74,7 @@
   color: #6b7280;
   text-align: center;
   transition: color 0.3s ease;
+  white-space: nowrap;
 }
 
 .onboarding-step.completed .onboarding-step-label,
@@ -83,24 +82,18 @@
   color: #10b981;
 }
 
-/* Content Area */
-.onboarding-content {
+/* ─── Body (animated panel area) ─── */
+.onboarding-body {
   margin-bottom: 2rem;
-  animation: slideIn 0.3s ease-out;
+  animation: onboardingSlideIn 0.3s ease-out;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes onboardingSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Error Message */
+/* ─── Error ─── */
 .onboarding-error {
   display: flex;
   align-items: center;
@@ -118,7 +111,130 @@
   font-size: 1.125rem;
 }
 
-/* Privacy & Notification Toggles */
+/* ─── Org role badge ─── */
+.onboarding-org-role-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-org-role-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.onboarding-org-role-title {
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+}
+
+.onboarding-org-role-desc {
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ─── Field hint (below label) ─── */
+.onboarding-field-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0.75rem;
+  line-height: 1.4;
+}
+
+/* ─── Chip grid (multi-select tags) ─── */
+.onboarding-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.onboarding-chip {
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 20px;
+  color: #d1d5db;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.onboarding-chip:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.onboarding-chip.selected {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ─── Risk tolerance cards ─── */
+.onboarding-risk-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.onboarding-risk-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 2px solid rgba(16, 185, 129, 0.12);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.onboarding-risk-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.onboarding-risk-card.selected {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.onboarding-risk-card-label {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin-bottom: 0.35rem;
+}
+
+.onboarding-risk-card.selected .onboarding-risk-card-label {
+  color: #10b981;
+}
+
+.onboarding-risk-card-desc {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+/* ─── Privacy & Notification Toggles ─── */
 .onboarding-privacy-toggles {
   display: flex;
   flex-direction: column;
@@ -190,7 +306,7 @@
   transform: translateX(20px);
 }
 
-/* Billing Cycle Toggle */
+/* ─── Billing Cycle Toggle ─── */
 .onboarding-billing-toggle-container {
   display: flex;
   gap: 0.75rem;
@@ -229,7 +345,7 @@
   color: #fbbf24;
 }
 
-/* Plans Grid */
+/* ─── Plans Grid ─── */
 .onboarding-plans-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -353,7 +469,7 @@
   cursor: not-allowed;
 }
 
-/* Trial Info */
+/* ─── Trial Info ─── */
 .onboarding-trial-info {
   padding: 1.5rem;
   background: rgba(16, 185, 129, 0.08);
@@ -383,7 +499,7 @@
   font-weight: 600;
 }
 
-/* Action Buttons */
+/* ─── Action Buttons ─── */
 .onboarding-actions {
   display: flex;
   gap: 1rem;
@@ -431,17 +547,63 @@
   cursor: not-allowed;
 }
 
-/* Responsive */
+/* ─── Light mode overrides ─── */
+body.light-mode .onboarding-step-number {
+  background: rgba(107, 114, 128, 0.08);
+  border-color: rgba(107, 114, 128, 0.18);
+  color: #9ca3af;
+}
+
+body.light-mode .onboarding-step.active .onboarding-step-number {
+  color: #059669;
+  border-color: #059669;
+}
+
+body.light-mode .onboarding-toggle-title {
+  color: #1f2937;
+}
+
+body.light-mode .onboarding-chip {
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.18);
+  color: #374151;
+}
+
+body.light-mode .onboarding-chip.selected {
+  background: #10b981;
+  color: #fff;
+}
+
+body.light-mode .onboarding-risk-card-label {
+  color: #1f2937;
+}
+
+body.light-mode .onboarding-risk-card.selected .onboarding-risk-card-label {
+  color: #059669;
+}
+
+body.light-mode .onboarding-org-role-badge {
+  border-color: rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
   .onboarding-page {
     padding: 1rem 0.5rem;
   }
 
-  .onboarding-progress {
-    gap: 0.5rem;
+  .onboarding-stepper {
+    margin-bottom: 1.75rem;
+    padding: 0;
   }
 
-  .onboarding-step-dot {
+  .onboarding-stepper::before {
+    left: 20px;
+    right: 20px;
+  }
+
+  .onboarding-step-number {
     width: 36px;
     height: 36px;
     font-size: 0.75rem;
@@ -465,5 +627,14 @@
 
   .onboarding-billing-toggle-container {
     flex-direction: column;
+  }
+
+  .onboarding-risk-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-chip {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
   }
 }
