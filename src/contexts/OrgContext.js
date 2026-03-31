@@ -32,6 +32,7 @@ export function OrgProvider({ children }) {
         `)
         .eq('user_id', user.id)
         .eq('is_active', true)
+        .limit(1)
         .maybeSingle();
 
       if (error || !member) {
