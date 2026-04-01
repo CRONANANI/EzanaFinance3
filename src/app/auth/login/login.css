@@ -125,7 +125,9 @@
 
 .auth-btn-primary {
   width: 100%;
-  padding: 0.75rem;
+  min-height: 2.75rem; /* 44px — same as Tailwind h-11 on user / org sign-in */
+  box-sizing: border-box;
+  padding: 0.75rem 1rem;
   background: linear-gradient(135deg, #10b981, #059669);
   color: #fff;
   border: none;

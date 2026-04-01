@@ -22,7 +22,7 @@ export default function LoginChoicePage() {
         <div className="flex flex-col gap-4">
           <Link
             href="/auth/signin"
-            className="flex items-center gap-4 p-4 rounded-xl border border-[#10b981]/30 bg-[#0d1117]/80 hover:bg-[#10b981]/10 hover:border-[#10b981]/50 transition-all group"
+            className="portal-login-choice flex min-h-[6.5rem] items-center gap-4 p-4 rounded-xl border border-[#10b981]/30 bg-[#0d1117]/80 hover:bg-[#10b981]/10 hover:border-[#10b981]/50 transition-all group"
           >
             <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#10b981]/20 flex items-center justify-center group-hover:bg-[#10b981]/30 transition-colors">
               <i className="bi bi-person text-[#10b981] text-xl" />
@@ -36,7 +36,7 @@ export default function LoginChoicePage() {
 
           <Link
             href="/auth/partner-login"
-            className="flex items-center gap-4 p-4 rounded-xl border border-[#d4a853]/30 bg-[#0d1117]/80 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/50 transition-all group"
+            className="portal-login-choice flex min-h-[6.5rem] items-center gap-4 p-4 rounded-xl border border-[#d4a853]/30 bg-[#0d1117]/80 hover:bg-[#d4a853]/10 hover:border-[#d4a853]/50 transition-all group"
           >
             <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#d4a853]/20 flex items-center justify-center group-hover:bg-[#d4a853]/30 transition-colors">
               <i className="bi bi-patch-check-fill text-[#d4a853] text-xl" />
@@ -50,7 +50,7 @@ export default function LoginChoicePage() {
 
           <Link
             href="/auth/org-login"
-            className="flex items-center gap-4 p-4 rounded-xl border border-[#6366f1]/30 bg-[#0d1117]/80 hover:bg-[#6366f1]/10 hover:border-[#6366f1]/50 transition-all group"
+            className="portal-login-choice flex min-h-[6.5rem] items-center gap-4 p-4 rounded-xl border border-[#6366f1]/30 bg-[#0d1117]/80 hover:bg-[#6366f1]/10 hover:border-[#6366f1]/50 transition-all group"
           >
             <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#6366f1]/20 flex items-center justify-center group-hover:bg-[#6366f1]/30 transition-colors">
               <i className="bi bi-mortarboard-fill text-[#6366f1] text-xl" />
