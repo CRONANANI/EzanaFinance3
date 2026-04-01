@@ -187,20 +187,24 @@ export function ProfilePageClient({ username }) {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] animate-pulse space-y-4 p-6">
-        <div className="h-24 rounded-xl bg-[#1a1a24]" />
-        <div className="h-40 rounded-xl bg-[#1a1a24]" />
+      <div className="dashboard-page-inset db-page">
+        <div className="min-h-[60vh] animate-pulse space-y-4">
+          <div className="h-28 rounded-xl bg-[#1a1a24]" />
+          <div className="h-56 rounded-xl bg-[#1a1a24]" />
+        </div>
       </div>
     );
   }
 
   if (notFound || !profile) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-lg text-[#9ca3af]">Profile not found</p>
-        <Link href="/home-dashboard" className="mt-4 inline-block text-emerald-400 hover:underline">
-          Back to dashboard
-        </Link>
+      <div className="dashboard-page-inset db-page">
+        <div className="rounded-xl border border-[#1a1a24] bg-[#111118] p-8 text-center">
+          <p className="text-lg text-[#9ca3af]">Profile not found</p>
+          <Link href="/community" className="mt-4 inline-block text-emerald-400 hover:underline">
+            Back to Community
+          </Link>
+        </div>
       </div>
     );
   }
@@ -209,10 +213,11 @@ export function ProfilePageClient({ username }) {
   const pills = badgePills(statsQuick, profile.is_partner);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
-          <div className="flex flex-wrap items-start gap-4">
+    <div className="dashboard-page-inset db-page">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_390px]">
+        <section className="min-w-0">
+          <div className="rounded-xl border border-[#1a1a24] bg-[#111118] p-5">
+            <div className="flex flex-wrap items-start gap-4">
             <div
               className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[#1a1a24] bg-[#16161f] text-2xl font-bold text-[#9ca3af]"
               style={{
@@ -224,7 +229,7 @@ export function ProfilePageClient({ username }) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold text-white">{profile.username || display}</h1>
+                <h1 className="text-3xl font-bold text-white">{profile.username || display}</h1>
                 {profile.is_partner && <span title="Partner">⚡</span>}
               </div>
               <p className="mt-1 text-sm text-[#6b7280]">{followerCount} subscribers</p>
@@ -232,7 +237,7 @@ export function ProfilePageClient({ username }) {
                 {pills.map((p) => (
                   <span
                     key={p.key}
-                    className="rounded-full border border-[#2a2a34] bg-[#1a1a24] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]"
+                    className="rounded border border-[#2a2a34] bg-[#1a1a24] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]"
                   >
                     {p.label}
                   </span>
@@ -250,7 +255,7 @@ export function ProfilePageClient({ username }) {
             </div>
           </div>
 
-          <div className="mt-8 border-b border-[#1a1a24]">
+          <div className="mt-6 border-b border-[#1a1a24]">
             <div className="flex gap-6">
               {['trades', 'bookmarked'].map((t) => (
                 <button
@@ -276,7 +281,7 @@ export function ProfilePageClient({ username }) {
                       key={s}
                       type="button"
                       onClick={() => setSubTab(s)}
-                      className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
+                      className={`rounded px-3 py-1.5 text-xs font-medium capitalize ${
                         subTab === s ? 'bg-[#1a1a24] text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
                       }`}
                     >
@@ -284,7 +289,7 @@ export function ProfilePageClient({ username }) {
                     </button>
                   ))}
                 </div>
-                <div className="flex gap-1 rounded-lg border border-[#1a1a24] p-1">
+                <div className="flex gap-1 rounded border border-[#1a1a24] p-1">
                   <button
                     type="button"
                     className={`rounded px-2 py-1 text-xs ${viewMode === 'card' ? 'bg-[#1a1a24] text-white' : 'text-[#6b7280]'}`}
@@ -307,7 +312,7 @@ export function ProfilePageClient({ username }) {
                   This user has hidden their trades.
                 </p>
               ) : (
-                <div className={`mt-6 space-y-4 ${viewMode === 'list' ? 'space-y-2' : ''}`}>
+                <div className={`mt-6 ${viewMode === 'list' ? 'space-y-2' : 'space-y-4'}`}>
                   {sortedTrades.length === 0 ? (
                     <p className="text-sm text-[#6b7280]">No trades yet.</p>
                   ) : (
@@ -327,11 +332,12 @@ export function ProfilePageClient({ username }) {
               )}
             </div>
           )}
-        </div>
+          </div>
+        </section>
 
-        <div className="lg:sticky lg:top-4 lg:self-start">
+        <aside className="xl:sticky xl:top-4 xl:self-start">
           <ProfilePerformancePanel trades={trades} benchmarkAverages={benchmark} />
-        </div>
+        </aside>
       </div>
     </div>
   );

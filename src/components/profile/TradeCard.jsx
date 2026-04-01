@@ -37,10 +37,10 @@ export function TradeCard({ trade, isOwner }) {
 
   return (
     <div className="rounded-xl border border-[#1a1a24] bg-[#111118] p-4 transition-colors hover:border-[#2a2a34]">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px] md:items-start">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-[#f5f5f5]">{trade.ticker}</span>
+            <span className="text-2xl font-bold text-[#f5f5f5]">{trade.ticker}</span>
             {trade.status === 'open' ? (
               <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
                 OPEN
@@ -51,7 +51,7 @@ export function TradeCard({ trade, isOwner }) {
               </span>
             )}
           </div>
-          <p className="mt-1 font-mono text-sm text-[#9ca3af]">{fmtContract(trade)}</p>
+          <p className="mt-1 text-sm text-[#9ca3af]">{fmtContract(trade)}</p>
           {pnl != null && (
             <span
               className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold ${
@@ -77,7 +77,9 @@ export function TradeCard({ trade, isOwner }) {
             </p>
           )}
         </div>
-        <TradeSparkline seed={trade.id} positive={pos} />
+        <div className="flex justify-start md:justify-end">
+          <TradeSparkline seed={trade.id} positive={pos} />
+        </div>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-[#1a1a24] pt-3 text-xs text-[#6b7280]">
