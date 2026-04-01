@@ -112,7 +112,7 @@ export function Navbar() {
               <a href="/#resources" className="nav-link">Resources</a>
             </li>
             <li className="nav-item">
-              <a href="/#pricing" className="nav-link">Pricing</a>
+              <Link href="/pricing" className="nav-link">Pricing</Link>
             </li>
             <li className="nav-item">
               <Link href="/ezana-echo" className="nav-link">Ezana Echo</Link>
@@ -184,15 +184,15 @@ export function Navbar() {
                     <span>Resources</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
                   </a>
-                  <a
-                    href="/#pricing"
+                  <Link
+                    href="/pricing"
                     className="mobile-nav-link"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <i className="bi bi-tag" />
                     <span>Pricing</span>
                     <i className="bi bi-chevron-right mobile-nav-chevron" />
-                  </a>
+                  </Link>
                   <Link
                     href="/ezana-echo"
                     className="mobile-nav-link"

@@ -7,9 +7,9 @@ import { PLANS } from '@/config/pricing';
 import { supabase } from '@/lib/supabase';
 import { hasActiveSubscription } from '@/lib/subscription';
 import { getTrialStatus } from '@/lib/trial';
-import './pricing.css';
+import './subscribe.css';
 
-function PricingContent() {
+function SubscribeCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const canceled = searchParams.get('canceled');
@@ -65,20 +65,20 @@ function PricingContent() {
     try {
       const session = await getSession();
       if (!session?.access_token) {
-        window.location.href = `/auth/signin?redirect=${encodeURIComponent('/pricing')}`;
+        window.location.href = `/auth/signin?redirect=${encodeURIComponent('/subscribe')}`;
         return;
       }
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ planKey, cancelPath: '/pricing' }),
+        body: JSON.stringify({ planKey, cancelPath: '/subscribe' }),
       });
       const data = await response.json();
 
       if (data.error) {
         if (response.status === 401) {
-          router.push('/auth/signin?redirect=/pricing');
+          router.push('/auth/signin?redirect=/subscribe');
           return;
         }
         setCheckoutError(data.error);
@@ -145,6 +145,11 @@ function PricingContent() {
             : `You have ${trialStatus.daysRemaining} day${trialStatus.daysRemaining !== 1 ? 's' : ''} left on your free trial.`}
         </div>
       )}
+      <p style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '0.8125rem' }}>
+        <Link href="/pricing" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+          ← Back to plans overview
+        </Link>
+      </p>
       <div className="pricing-header">
         <h1>Choose Your Plan</h1>
         <p>
@@ -153,7 +158,7 @@ function PricingContent() {
         </p>
         {!signedIn && (
           <p className="pricing-auth-hint">
-            <Link href={`/auth/signin?redirect=${encodeURIComponent('/pricing')}`}>Sign in</Link> to subscribe.
+            <Link href={`/auth/signin?redirect=${encodeURIComponent('/subscribe')}`}>Sign in</Link> to subscribe.
           </p>
         )}
         <div className="pricing-toggle">
@@ -218,10 +223,12 @@ function PricingContent() {
   );
 }
 
-export default function PricingPage() {
+export default function SubscribePage() {
   return (
-    <Suspense fallback={<div className="pricing-page"><p style={{ padding: '2rem' }}>Loading…</p></div>}>
-      <PricingContent />
-    </Suspense>
+    <div className="subscribe-checkout-page">
+      <Suspense fallback={<div className="pricing-page"><p style={{ padding: '2rem' }}>Loading…</p></div>}>
+        <SubscribeCheckoutContent />
+      </Suspense>
+    </div>
   );
 }

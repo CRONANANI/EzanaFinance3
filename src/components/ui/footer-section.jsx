@@ -53,9 +53,9 @@ export function FooterSection({ onContactClick }) {
               <a href="#features" className="block transition-colors hover:text-primary">
                 Features
               </a>
-              <a href="#pricing" className="block transition-colors hover:text-primary">
+              <Link href="/pricing" className="block transition-colors hover:text-primary">
                 Pricing
-              </a>
+              </Link>
               <a href="#faq" className="block transition-colors hover:text-primary">
                 FAQ
               </a>

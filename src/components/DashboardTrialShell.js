@@ -11,7 +11,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 function shouldSkipTrialCheck(pathname, isPartner) {
   if (isPartner) return true;
   if (!pathname) return false;
-  if (pathname === '/pricing') return true;
+  if (pathname === '/pricing' || pathname === '/subscribe') return true;
   if (pathname === '/select-plan') return true;
   if (pathname === '/onboarding') return true;
   if (pathname.startsWith('/payment/')) return true;

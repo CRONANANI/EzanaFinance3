@@ -16,10 +16,6 @@ const ResourcesSection = dynamic(
   () => import('@/components/landing/ResourcesSection').then((m) => ({ default: m.ResourcesSection })),
   { loading: () => null }
 );
-const PricingSection = dynamic(
-  () => import('@/components/landing/PricingSection').then((m) => ({ default: m.PricingSection })),
-  { loading: () => null }
-);
 const Faq1 = dynamic(
   () => import('@/components/ui/faq1').then((m) => ({ default: m.Faq1 })),
   { loading: () => null }
@@ -49,8 +45,6 @@ export default function HomePage() {
       </div>
 
       <ResourcesSection />
-
-      <PricingSection />
 
       <section id="faq" className="faq-section-wrapper">
         <Faq1 heading="FAQ" onContactClick={() => setSupportOpen(true)} />

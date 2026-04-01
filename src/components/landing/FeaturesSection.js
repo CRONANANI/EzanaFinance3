@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CountUpStat } from '@/components/ui/CountUpStat';
 
 const PORTFOLIO_METRICS = {
   '1D': [
@@ -212,9 +213,9 @@ export function FeaturesSection() {
               <h2 className="feature-title">Professional-grade portfolio analytics</h2>
               <p className="feature-text">Track your investments with institutional-quality tools. Get real-time performance metrics, automated risk assessment, dividend tracking, and sophisticated asset allocation analysis—all in one elegant dashboard.</p>
               <div className="feature-stats">
-                <div className="stat-item"><span className="stat-value">Sub-100ms</span><span className="stat-label">Response Time</span></div>
-                <div className="stat-item"><span className="stat-value">10+</span><span className="stat-label">Asset Classes</span></div>
-                <div className="stat-item"><span className="stat-value">24/7</span><span className="stat-label">Market Data</span></div>
+                <div className="stat-item"><CountUpStat value="Sub-100ms" className="stat-value" /><span className="stat-label">Response Time</span></div>
+                <div className="stat-item"><CountUpStat value="10+" className="stat-value" /><span className="stat-label">Asset Classes</span></div>
+                <div className="stat-item"><CountUpStat value="24/7" className="stat-value" /><span className="stat-label">Market Data</span></div>
               </div>
               <Link href="/auth/login" className="feature-cta"><span>See Portfolio Tools</span><i className="bi bi-arrow-right" /></Link>
             </div>
@@ -281,9 +282,9 @@ export function FeaturesSection() {
               <h2 className="feature-title">Track congressional trades in real-time</h2>
               <p className="feature-text">Monitor stock purchases and sales by members of Congress with advanced filtering, real-time alerts, and detailed portfolio analysis. Follow specific politicians and never miss a trade that could move the market.</p>
               <div className="feature-stats">
-                <div className="stat-item"><span className="stat-value">15,000+</span><span className="stat-label">Trades Tracked</span></div>
-                <div className="stat-item"><span className="stat-value">535</span><span className="stat-label">Congress Members</span></div>
-                <div className="stat-item"><span className="stat-value">Real-time</span><span className="stat-label">Updates</span></div>
+                <div className="stat-item"><CountUpStat value="15,000+" className="stat-value" /><span className="stat-label">Trades Tracked</span></div>
+                <div className="stat-item"><CountUpStat value="535" className="stat-value" /><span className="stat-label">Congress Members</span></div>
+                <div className="stat-item"><CountUpStat value="Real-time" className="stat-value" /><span className="stat-label">Updates</span></div>
               </div>
               <Link href="/auth/login" className="feature-cta"><span>Explore Congressional Trading</span><i className="bi bi-arrow-right" /></Link>
             </div>
@@ -325,9 +326,9 @@ export function FeaturesSection() {
               <h2 className="feature-title">Uncover market-moving intelligence</h2>
               <p className="feature-text">Access critical data that institutional investors use: government contract awards, lobbying expenditures, and patent filings. Identify opportunities before they become mainstream news and stay ahead of market movements.</p>
               <div className="feature-stats">
-                <div className="stat-item"><span className="stat-value">5,000+</span><span className="stat-label">Contracts/Year</span></div>
-                <div className="stat-item"><span className="stat-value">$3.7B</span><span className="stat-label">Lobbying Tracked</span></div>
-                <div className="stat-item"><span className="stat-value">100K+</span><span className="stat-label">Patents Filed</span></div>
+                <div className="stat-item"><CountUpStat value="5,000+" className="stat-value" /><span className="stat-label">Contracts/Year</span></div>
+                <div className="stat-item"><CountUpStat value="$3.7B" className="stat-value" /><span className="stat-label">Lobbying Tracked</span></div>
+                <div className="stat-item"><CountUpStat value="100K+" className="stat-value" /><span className="stat-label">Patents Filed</span></div>
               </div>
               <Link href="#resources" className="feature-cta"><span>Discover Market Intelligence</span><i className="bi bi-arrow-right" /></Link>
             </div>
@@ -366,9 +367,9 @@ export function FeaturesSection() {
               <h2 className="feature-title">Learn from collective intelligence</h2>
               <p className="feature-text">Join a thriving community of informed investors. Share research, discuss strategies, and learn from collective market intelligence. Build your reputation and connect with traders who share your investment philosophy.</p>
               <div className="feature-stats">
-                <div className="stat-item"><span className="stat-value">10,000+</span><span className="stat-label">Active Users</span></div>
-                <div className="stat-item"><span className="stat-value">50K+</span><span className="stat-label">Shared Insights</span></div>
-                <div className="stat-item"><span className="stat-value">Daily</span><span className="stat-label">Discussions</span></div>
+                <div className="stat-item"><CountUpStat value="10,000+" className="stat-value" /><span className="stat-label">Active Users</span></div>
+                <div className="stat-item"><CountUpStat value="50K+" className="stat-value" /><span className="stat-label">Shared Insights</span></div>
+                <div className="stat-item"><CountUpStat value="Daily" className="stat-value" /><span className="stat-label">Discussions</span></div>
               </div>
               <Link href="#heroSection" className="feature-cta"><span>Join the Community</span><i className="bi bi-arrow-right" /></Link>
             </div>

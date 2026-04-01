@@ -647,7 +647,7 @@ export function PlanPanel({ onSave }) {
           </div>
         </div>
         <div className="settings-btn-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
-          <Link href="/pricing" className="settings-btn-primary" style={{ textAlign: 'center', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Link href="/subscribe" className="settings-btn-primary" style={{ textAlign: 'center', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             View plans &amp; checkout
           </Link>
           <ManageBillingButton className="settings-btn-secondary" label="Manage subscription" />

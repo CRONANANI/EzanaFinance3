@@ -69,8 +69,13 @@ export async function middleware(request) {
   const onPartnerProtectedRoute = matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES);
   const onUserProtectedRoute = matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES);
 
-  /** Always allow /pricing so users can subscribe after trial (not gated by email list above) */
-  if (pathname === '/pricing' || pathname.startsWith('/pricing/')) {
+  /** Marketing pricing + Stripe checkout — public */
+  if (
+    pathname === '/pricing' ||
+    pathname.startsWith('/pricing/') ||
+    pathname === '/subscribe' ||
+    pathname.startsWith('/subscribe/')
+  ) {
     return response;
   }
 
