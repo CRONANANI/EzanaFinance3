@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import { generateMockActivityForUser, generateMockTradesForUser } from '@/lib/profileMockData';
 import { TradeCard } from './TradeCard';
 import { ProfilePerformancePanel } from './ProfilePerformancePanel';
 
@@ -30,6 +31,7 @@ export function ProfilePageClient({ username }) {
   const [subTab, setSubTab] = useState('recent');
   const [viewMode, setViewMode] = useState('card');
   const [benchmark, setBenchmark] = useState(null);
+  const [activityItems, setActivityItems] = useState([]);
 
   const isOwn = Boolean(user?.id && profile?.id === user.id);
 
@@ -144,7 +146,8 @@ export function ProfilePageClient({ username }) {
           .select('*')
           .eq('user_id', prof.id)
           .order('created_at', { ascending: false });
-        setTrades(tr || []);
+        const safeTrades = tr && tr.length > 0 ? tr : generateMockTradesForUser(prof.id);
+        setTrades(safeTrades);
       }
 
       const { data: bm } = await supabase.from('user_trade_bookmarks').select('trade_id').eq('user_id', prof.id);
@@ -159,6 +162,65 @@ export function ProfilePageClient({ username }) {
       const res = await fetch('/api/leaderboard?period=all_time&includeRising=1&limit=300&persist=0');
       const js = await res.json();
       if (js.averages) setBenchmark(js.averages);
+
+      const [followingRows, likedRows, commentRows, postRows] = await Promise.all([
+        supabase.from('user_follows').select('following_id, created_at').eq('follower_id', prof.id).limit(10),
+        supabase.from('post_likes').select('post_id, created_at').eq('user_id', prof.id).limit(10),
+        supabase
+          .from('community_posts')
+          .select('id, parent_post_id, content, created_at')
+          .eq('user_id', prof.id)
+          .not('parent_post_id', 'is', null)
+          .limit(10),
+        supabase
+          .from('community_posts')
+          .select('id, content, created_at')
+          .eq('user_id', prof.id)
+          .is('parent_post_id', null)
+          .limit(10),
+      ]);
+
+      const followIds = (followingRows.data || []).map((r) => r.following_id).filter(Boolean);
+      let followMap = {};
+      if (followIds.length > 0) {
+        const { data: followedProfiles } = await supabase.from('profiles').select('id, username, full_name').in('id', followIds);
+        followMap = Object.fromEntries((followedProfiles || []).map((p) => [p.id, p]));
+      }
+
+      const activity = [
+        ...(followingRows.data || []).map((r) => {
+          const fp = followMap[r.following_id];
+          const person = fp?.username || fp?.full_name || 'a user';
+          return {
+            id: `f-${r.following_id}-${r.created_at}`,
+            type: 'followed',
+            text: `Started following ${person}`,
+            created_at: r.created_at,
+          };
+        }),
+        ...(likedRows.data || []).map((r) => ({
+          id: `l-${r.post_id}-${r.created_at}`,
+          type: 'liked',
+          text: 'Liked a community post',
+          created_at: r.created_at,
+        })),
+        ...(commentRows.data || []).map((r) => ({
+          id: `c-${r.id}`,
+          type: 'commented',
+          text: `Commented: "${(r.content || '').slice(0, 80)}${(r.content || '').length > 80 ? '…' : ''}"`,
+          created_at: r.created_at,
+        })),
+        ...(postRows.data || []).map((r) => ({
+          id: `p-${r.id}`,
+          type: 'posted',
+          text: `Posted: "${(r.content || '').slice(0, 80)}${(r.content || '').length > 80 ? '…' : ''}"`,
+          created_at: r.created_at,
+        })),
+      ]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 20);
+
+      setActivityItems(activity.length ? activity : generateMockActivityForUser(prof.id));
     } catch (e) {
       console.error(e);
       setNotFound(true);
@@ -257,7 +319,7 @@ export function ProfilePageClient({ username }) {
 
           <div className="mt-6 border-b border-[#1a1a24]">
             <div className="flex gap-6">
-              {['trades', 'bookmarked'].map((t) => (
+              {['trades', 'activity', 'bookmarked'].map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -266,7 +328,7 @@ export function ProfilePageClient({ username }) {
                     tab === t ? 'border-emerald-500 text-white' : 'border-transparent text-[#6b7280]'
                   }`}
                 >
-                  {t === 'trades' ? 'My Trades' : 'Bookmarked'}
+                  {t === 'trades' ? 'My Trades' : t === 'activity' ? 'My Activity' : 'Bookmarked'}
                 </button>
               ))}
             </div>
@@ -329,6 +391,26 @@ export function ProfilePageClient({ username }) {
                 <p className="text-sm text-[#6b7280]">No bookmarked trades.</p>
               ) : (
                 bookmarked.map((tr) => <TradeCard key={tr.id} trade={tr} isOwner={false} />)
+              )}
+            </div>
+          )}
+
+          {tab === 'activity' && (
+            <div className="mt-6 space-y-3">
+              {activityItems.length === 0 ? (
+                <p className="text-sm text-[#6b7280]">No activity yet.</p>
+              ) : (
+                activityItems.map((item) => (
+                  <div key={item.id} className="rounded-xl border border-[#1a1a24] bg-[#111118] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm text-[#e5e7eb]">{item.text}</p>
+                      <span className="rounded bg-[#1a1a24] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#9ca3af]">
+                        {item.type}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-[#6b7280]">{new Date(item.created_at).toLocaleString()}</p>
+                  </div>
+                ))
               )}
             </div>
           )}
