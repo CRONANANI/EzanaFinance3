@@ -641,3 +641,202 @@ html:has(.landing-page) body {
     opacity: 1;
   }
 }
+
+/* ═══════════════════════════════════════════
+   STICKY NAVBAR FOR LANDING PAGE
+   Makes the navbar sticky on scroll
+   ═══════════════════════════════════════════ */
+
+.navbar-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(5, 10, 8, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  transition: all 0.3s ease;
+}
+
+/* Add shadow when scrolled */
+.navbar-sticky.scrolled {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  background: rgba(5, 10, 8, 0.98) !important;
+}
+
+/* ═══════════════════════════════════════════
+   LANDING PAGE FAQ SECTION
+   Matches the pricing page FAQ style
+   ═══════════════════════════════════════════ */
+
+.landing-faq-section {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.landing-faq-container {
+  width: 100%;
+}
+
+.landing-faq-heading {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 2rem;
+}
+
+.landing-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.landing-faq-item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.landing-faq-item:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.landing-faq-question {
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+  cursor: pointer;
+  list-style: none;
+  transition: color 0.2s;
+}
+
+.landing-faq-question:hover {
+  color: #fff;
+}
+
+.landing-faq-question::-webkit-details-marker {
+  display: none;
+}
+
+.landing-faq-question::after {
+  content: '+';
+  float: right;
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 1.25rem;
+  transition: transform 0.2s;
+}
+
+.landing-faq-item[open] .landing-faq-question::after {
+  content: '−';
+}
+
+.landing-faq-answer {
+  padding: 0 1.25rem 1rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.landing-faq-help-link {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.landing-faq-help-link a {
+  font-size: 0.8125rem;
+  color: #9ca3af;
+  text-decoration: none;
+  transition: color 0.2s;
+  border-bottom: 1px solid transparent;
+}
+
+.landing-faq-help-link a:hover {
+  color: #6366f1;
+  border-bottom-color: #6366f1;
+}
+
+.landing-faq-contact-box {
+  margin-top: 3rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 2rem;
+  text-align: center;
+}
+
+.landing-faq-contact-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.75rem;
+}
+
+.landing-faq-contact-text {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.landing-faq-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background: #10b981;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.landing-faq-contact-btn:hover {
+  background: #0d9668;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.landing-faq-contact-btn svg {
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .landing-faq-section {
+    padding: 3rem 1.5rem;
+  }
+
+  .landing-faq-heading {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .landing-faq-question {
+    font-size: 0.85rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .landing-faq-answer {
+    font-size: 0.8125rem;
+    padding: 0 1rem 0.875rem;
+  }
+
+  .landing-faq-contact-box {
+    padding: 1.5rem;
+  }
+
+  .landing-faq-contact-title {
+    font-size: 1.125rem;
+  }
+}

@@ -2,35 +2,35 @@
 
 import { Fragment, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Check, X, ArrowRight } from 'lucide-react';
 import './pricing-standalone.css';
 
 const PLANS = [
   {
-    name: 'Free',
-    tagline: 'Explore the platform',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
+    name: 'Starter',
+    tagline: 'Perfect for beginners',
+    monthlyPrice: 5,
+    yearlyPrice: 4,
     cta: 'Get Started',
-    ctaHref: '/auth/signup',
+    ctaHref: '/auth/signup?plan=starter',
     highlight: false,
     features: [
-      'Congressional trade alerts (48hr delay)',
+      'Congressional trade alerts (24hr delay)',
       'Basic portfolio dashboard',
       'Market news feed',
       'Community access (read only)',
-      '3 watchlist slots',
+      '5 watchlist slots',
       'Weekly market digest email',
+      'Mobile app access',
     ],
   },
   {
-    name: 'Pro',
+    name: 'Advanced',
     tagline: 'For serious investors',
-    monthlyPrice: 15,
-    yearlyPrice: 10,
+    monthlyPrice: 20,
+    yearlyPrice: 16,
     cta: 'Start 14-Day Free Trial',
-    ctaHref: '/auth/signup?plan=pro',
+    ctaHref: '/auth/signup?plan=advanced',
     highlight: true,
     badge: 'Most Popular',
     features: [
@@ -44,28 +44,49 @@ const PLANS = [
       'Sector exposure analysis',
       'Contract & lobbying data',
       'Email & push notifications',
+      'API access (limited)',
+    ],
+  },
+  {
+    name: 'Family',
+    tagline: 'Share with your family',
+    monthlyPrice: 60,
+    yearlyPrice: 48,
+    cta: 'Get Started',
+    ctaHref: '/auth/signup?plan=family',
+    highlight: false,
+    features: [
+      'Everything in Advanced',
+      'Up to 5 family members',
+      'Shared watchlists & portfolios',
+      'Family dashboard',
+      'Individual accounts per member',
+      'Parental controls',
+      'Family investment insights',
+      'Priority support',
     ],
   },
   {
     name: 'Enterprise',
     tagline: 'For teams & institutions',
-    monthlyPrice: 49,
-    yearlyPrice: 35,
+    monthlyPrice: null,
+    yearlyPrice: null,
     cta: 'Contact Sales',
     ctaHref: 'mailto:enterprise@ezana.world',
     highlight: false,
     external: true,
     features: [
-      'Everything in Pro',
+      'Everything in Family',
+      'Custom team size',
       'Team dashboards & shared watchlists',
-      'API access',
+      'Full API access',
       'Custom alerts & reports',
-      'Priority support',
       'Organization management (Team Hub)',
       'Dedicated account manager',
       'SSO / SAML authentication',
       'Data export & compliance tools',
       'Custom integrations',
+      'White-label options',
     ],
   },
 ];
@@ -74,40 +95,50 @@ const COMPARISON_FEATURES = [
   {
     category: 'Core Platform',
     features: [
-      { name: 'Portfolio Dashboard', free: true, pro: true, enterprise: true },
-      { name: 'Real-Time Market Data', free: 'Delayed', pro: true, enterprise: true },
-      { name: 'Watchlists', free: '3 slots', pro: 'Unlimited', enterprise: 'Unlimited' },
-      { name: 'Market News Feed', free: true, pro: true, enterprise: true },
+      { name: 'Portfolio Dashboard', starter: true, advanced: true, family: true, enterprise: true },
+      { name: 'Real-Time Market Data', starter: 'Delayed', advanced: true, family: true, enterprise: true },
+      { name: 'Watchlists', starter: '5 slots', advanced: 'Unlimited', family: 'Unlimited', enterprise: 'Unlimited' },
+      { name: 'Market News Feed', starter: true, advanced: true, family: true, enterprise: true },
+      { name: 'Mobile App Access', starter: true, advanced: true, family: true, enterprise: true },
     ],
   },
   {
     category: 'Congressional Trading',
     features: [
-      { name: 'Trade Alerts', free: '48hr delay', pro: 'Real-time', enterprise: 'Real-time' },
-      { name: 'Politician Filtering', free: false, pro: true, enterprise: true },
-      { name: 'Historical Trade Database', free: '90 days', pro: 'Full history', enterprise: 'Full history' },
-      { name: 'Trade Pattern Analysis', free: false, pro: true, enterprise: true },
+      { name: 'Trade Alerts', starter: '24hr delay', advanced: 'Real-time', family: 'Real-time', enterprise: 'Real-time' },
+      { name: 'Politician Filtering', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Historical Trade Database', starter: '90 days', advanced: 'Full history', family: 'Full history', enterprise: 'Full history' },
+      { name: 'Trade Pattern Analysis', starter: false, advanced: true, family: true, enterprise: true },
     ],
   },
   {
     category: 'Analytics & Intelligence',
     features: [
-      { name: 'Portfolio Risk Scoring', free: false, pro: true, enterprise: true },
-      { name: 'Sector Exposure Analysis', free: false, pro: true, enterprise: true },
-      { name: 'Government Contract Data', free: false, pro: true, enterprise: true },
-      { name: 'Lobbying Expenditure Tracking', free: false, pro: true, enterprise: true },
-      { name: 'Patent Filing Intelligence', free: false, pro: true, enterprise: true },
-      { name: 'Custom Reports & Export', free: false, pro: false, enterprise: true },
+      { name: 'Portfolio Risk Scoring', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Sector Exposure Analysis', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Government Contract Data', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Lobbying Expenditure Tracking', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Patent Filing Intelligence', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Custom Reports & Export', starter: false, advanced: false, family: true, enterprise: true },
+    ],
+  },
+  {
+    category: 'Family & Team Features',
+    features: [
+      { name: 'Multiple User Accounts', starter: '1', advanced: '1', family: 'Up to 5', enterprise: 'Unlimited' },
+      { name: 'Shared Watchlists', starter: false, advanced: false, family: true, enterprise: true },
+      { name: 'Family Dashboard', starter: false, advanced: false, family: true, enterprise: true },
+      { name: 'Team Management', starter: false, advanced: false, family: false, enterprise: true },
+      { name: 'Organization Hub', starter: false, advanced: false, family: false, enterprise: true },
     ],
   },
   {
     category: 'Community & Support',
     features: [
-      { name: 'Community Access', free: 'Read only', pro: 'Full access', enterprise: 'Full access' },
-      { name: 'Notifications', free: 'Email only', pro: 'Email + Push', enterprise: 'Email + Push + API' },
-      { name: 'Support', free: 'Help center', pro: 'Email support', enterprise: 'Priority + dedicated' },
-      { name: 'API Access', free: false, pro: false, enterprise: true },
-      { name: 'Team Management', free: false, pro: false, enterprise: true },
+      { name: 'Community Access', starter: 'Read only', advanced: 'Full access', family: 'Full access', enterprise: 'Full access' },
+      { name: 'Notifications', starter: 'Email only', advanced: 'Email + Push', family: 'Email + Push', enterprise: 'Email + Push + API' },
+      { name: 'Support', starter: 'Help center', advanced: 'Email support', family: 'Priority support', enterprise: 'Dedicated + Priority' },
+      { name: 'API Access', starter: false, advanced: 'Limited', family: 'Full', enterprise: 'Full + Custom' },
     ],
   },
 ];
@@ -128,6 +159,14 @@ const FAQ_ITEMS = [
   {
     q: 'Do you offer refunds?',
     a: 'Contact support for billing questions. Enterprise contracts are customized and may include separate terms.',
+  },
+  {
+    q: 'How does the Family plan work?',
+    a: 'The Family plan allows up to 5 family members to have their own individual accounts while sharing premium features. Each member gets their own login, personalized dashboard, and can collaborate through shared watchlists and portfolios.',
+  },
+  {
+    q: 'What happens when I need more than the Family plan offers?',
+    a: 'If you need more than 5 users or require advanced features like custom integrations, SSO, or white-label options, our Enterprise plan is perfect for you. Contact our sales team for a custom quote tailored to your needs.',
   },
 ];
 
@@ -160,31 +199,11 @@ export default function PricingPage() {
 
   return (
     <div className="pricing-page--standalone">
-      <nav className="pricing-nav" aria-label="Pricing page">
-        <Link href="/" className="pricing-nav-brand">
-          <Image src="/ezana-nav-logo.png" alt="Ezana Finance" width={60} height={28} style={{ height: 28, width: 'auto' }} />
-        </Link>
-        <div className="pricing-nav-links">
-          <Link href="/#features" className="nav-indigo">
-            Features
-          </Link>
-          <Link href="/pricing" className="active">
-            Pricing
-          </Link>
-          <Link href="/subscribe" className="nav-indigo">
-            Subscribe
-          </Link>
-          <Link href="/auth/login" className="pricing-nav-cta">
-            Sign In
-          </Link>
-        </div>
-      </nav>
-
       <header className="pricing-hero">
         <p className="pricing-eyebrow">Pricing</p>
         <h1>Explore which plan fits you best</h1>
         <p className="pricing-subtitle">
-          Start free. Upgrade when you need more power. Paid subscriptions use a free trial where configured.{' '}
+          Start with our affordable plans. Upgrade when you need more power. Paid subscriptions include a free trial where configured.{' '}
           <Link href="/subscribe">Open Stripe checkout</Link> when you are ready to bill a card.
         </p>
 
@@ -201,13 +220,13 @@ export default function PricingPage() {
             className={`billing-btn ${billing === 'yearly' ? 'active' : ''}`}
             onClick={() => setBilling('yearly')}
           >
-            Annual <span className="save-pill">Save 33%</span>
+            Annual <span className="save-pill">Save 20%</span>
           </button>
         </div>
       </header>
 
       <section className="pricing-cards-section" aria-label="Plans">
-        <div className="pricing-cards-grid">
+        <div className="pricing-cards-grid pricing-cards-grid--four">
           {PLANS.map((plan) => {
             const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
             return (
@@ -216,11 +235,19 @@ export default function PricingPage() {
                 <h3 className="plan-name">{plan.name}</h3>
                 <p className="plan-tagline">{plan.tagline}</p>
                 <div className="plan-price">
-                  <span className="plan-price-amount">{price === 0 ? 'Free' : `$${price}`}</span>
-                  {price > 0 ? <span className="plan-price-interval">/month</span> : null}
+                  {price === null ? (
+                    <span className="plan-price-amount">Custom</span>
+                  ) : (
+                    <>
+                      <span className="plan-price-amount">${price}</span>
+                      <span className="plan-price-interval">/month</span>
+                    </>
+                  )}
                 </div>
-                {billing === 'yearly' && price > 0 ? (
+                {billing === 'yearly' && price !== null ? (
                   <p className="plan-annual-note">${price * 12}/year billed annually</p>
+                ) : price === null ? (
+                  <p className="plan-annual-note">Contact us for pricing</p>
                 ) : null}
                 <PlanCta plan={plan} />
                 {plan.highlight ? (
@@ -249,8 +276,9 @@ export default function PricingPage() {
             <thead>
               <tr>
                 <th className="comp-feature-col">Feature</th>
-                <th>Free</th>
-                <th className="comp-highlight-col">Pro</th>
+                <th>Starter</th>
+                <th className="comp-highlight-col">Advanced</th>
+                <th>Family</th>
                 <th>Enterprise</th>
               </tr>
             </thead>
@@ -258,16 +286,19 @@ export default function PricingPage() {
               {COMPARISON_FEATURES.map((category) => (
                 <Fragment key={category.category}>
                   <tr className="comp-category-row">
-                    <td colSpan={4}>{category.category}</td>
+                    <td colSpan={5}>{category.category}</td>
                   </tr>
                   {category.features.map((f) => (
                     <tr key={f.name}>
                       <td className="comp-feature-name">{f.name}</td>
                       <td>
-                        <CellValue value={f.free} />
+                        <CellValue value={f.starter} />
                       </td>
                       <td className="comp-highlight-col">
-                        <CellValue value={f.pro} />
+                        <CellValue value={f.advanced} />
+                      </td>
+                      <td>
+                        <CellValue value={f.family} />
                       </td>
                       <td>
                         <CellValue value={f.enterprise} />
@@ -297,7 +328,7 @@ export default function PricingPage() {
         <h2>Start making smarter investment decisions today</h2>
         <p>Join thousands of investors using Ezana Finance for institutional-grade insights.</p>
         <Link href="/auth/signup" className="pricing-bottom-btn">
-          Get Started Free <ArrowRight size={18} aria-hidden />
+          Get Started <ArrowRight size={18} aria-hidden />
         </Link>
       </section>
 

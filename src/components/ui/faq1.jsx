@@ -1,12 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const DEFAULT_ITEMS = [
   {
@@ -47,41 +41,32 @@ export function Faq1({
   onContactClick,
 }) {
   return (
-    <section className="py-20 md:py-32">
-      <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="mb-4 text-3xl font-semibold text-foreground md:mb-11 md:text-5xl">
-          {heading}
-        </h2>
-        <Accordion type="single" collapsible className="w-full">
+    <section className="landing-faq-section">
+      <div className="landing-faq-container">
+        <h2 className="landing-faq-heading">{heading}</h2>
+        <div className="landing-faq-list">
           {items.map((item, index) => (
-            <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="text-left text-foreground hover:text-foreground/80 hover:no-underline">
-                {item.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {item.answer}
-              </AccordionContent>
-            </AccordionItem>
+            <details key={index} className="landing-faq-item">
+              <summary className="landing-faq-question">{item.question}</summary>
+              <p className="landing-faq-answer">{item.answer}</p>
+            </details>
           ))}
-        </Accordion>
-        <p className="mt-6 text-center">
-          <Link
-            href="/help-center"
-            className="text-[11px] text-muted-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
-          >
+        </div>
+        <p className="landing-faq-help-link">
+          <Link href="/help-center">
             view our more in depth help center
           </Link>
         </p>
         {onContactClick && (
-          <div className="mt-12 rounded-xl border border-border/50 bg-transparent p-8 text-center">
-            <h3 className="mb-2 text-xl font-semibold text-foreground">Still have questions?</h3>
-            <p className="mb-4 text-muted-foreground">
+          <div className="landing-faq-contact-box">
+            <h3 className="landing-faq-contact-title">Still have questions?</h3>
+            <p className="landing-faq-contact-text">
               Can&apos;t find the answer you&apos;re looking for? Our support team is here to help.
             </p>
             <button
               type="button"
               onClick={onContactClick}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="landing-faq-contact-btn"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -16,11 +16,13 @@ export function Navbar() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const landingNavRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');
   const isLanding = pathname === '/';
+  const isPricing = pathname === '/pricing';
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
-  const showLandingNav = isLanding || isHelpCenter;
+  const showLandingNav = isLanding || isHelpCenter || isPricing;
   const isResearchActive =
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
@@ -76,11 +78,23 @@ export function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    if (!showLandingNav) return undefined;
+    const el = landingNavRef.current;
+    if (!el) return undefined;
+    const onScroll = () => {
+      el.classList.toggle('scrolled', window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [showLandingNav, pathname]);
+
   if (isAuthPage || isSettings) return null;
 
   if (showLandingNav) {
     return (
-      <nav className="navbar">
+      <nav ref={landingNavRef} className="navbar navbar-sticky">
         <div className="nav-container nav-container-centered">
           <Link href="/" className="logo logo-centered nav-brand nav-home-btn" title="Ezana Finance">
             <Image
@@ -88,7 +102,7 @@ export function Navbar() {
               alt="Ezana Finance"
               width={60}
               height={51}
-              priority={isLanding}
+              priority={isLanding || isPricing}
               className="nav-logo-img nav-logo-img--wing"
               style={{ objectFit: 'contain', display: 'block', transform: 'scaleX(-1)' }}
             />
