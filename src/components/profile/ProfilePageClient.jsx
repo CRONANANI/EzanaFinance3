@@ -32,6 +32,7 @@ export function ProfilePageClient({ username }) {
   const [viewMode, setViewMode] = useState('card');
   const [benchmark, setBenchmark] = useState(null);
   const [activityItems, setActivityItems] = useState([]);
+  const [followingItems, setFollowingItems] = useState([]);
 
   const isOwn = Boolean(user?.id && profile?.id === user.id);
 
@@ -183,9 +184,28 @@ export function ProfilePageClient({ username }) {
       const followIds = (followingRows.data || []).map((r) => r.following_id).filter(Boolean);
       let followMap = {};
       if (followIds.length > 0) {
-        const { data: followedProfiles } = await supabase.from('profiles').select('id, username, full_name').in('id', followIds);
+        const { data: followedProfiles } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url, is_partner, partner_type')
+          .in('id', followIds);
         followMap = Object.fromEntries((followedProfiles || []).map((p) => [p.id, p]));
       }
+
+      const followingFeed = (followingRows.data || [])
+        .map((r) => {
+          const fp = followMap[r.following_id];
+          return {
+            id: r.following_id,
+            username: fp?.username || '',
+            name: fp?.full_name || fp?.username || 'User',
+            avatar_url: fp?.avatar_url || '',
+            is_partner: Boolean(fp?.is_partner),
+            partner_type: fp?.partner_type || '',
+            created_at: r.created_at,
+          };
+        })
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setFollowingItems(followingFeed);
 
       const activity = [
         ...(followingRows.data || []).map((r) => {
@@ -319,7 +339,7 @@ export function ProfilePageClient({ username }) {
 
           <div className="mt-6 border-b border-[#1a1a24]">
             <div className="flex gap-6">
-              {['trades', 'activity', 'bookmarked'].map((t) => (
+              {['trades', 'following', 'activity', 'bookmarked'].map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -328,7 +348,13 @@ export function ProfilePageClient({ username }) {
                     tab === t ? 'border-emerald-500 text-white' : 'border-transparent text-[#6b7280]'
                   }`}
                 >
-                  {t === 'trades' ? 'My Trades' : t === 'activity' ? 'My Activity' : 'Bookmarked'}
+                  {t === 'trades'
+                    ? 'My Trades'
+                    : t === 'following'
+                      ? 'Following'
+                      : t === 'activity'
+                        ? 'My Activity'
+                        : 'Bookmarked'}
                 </button>
               ))}
             </div>
@@ -410,6 +436,45 @@ export function ProfilePageClient({ username }) {
                     </div>
                     <p className="mt-2 text-xs text-[#6b7280]">{new Date(item.created_at).toLocaleString()}</p>
                   </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {tab === 'following' && (
+            <div className="mt-6 space-y-3">
+              {followingItems.length === 0 ? (
+                <p className="text-sm text-[#6b7280]">This user is not following anyone yet.</p>
+              ) : (
+                followingItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/profile/${item.username || item.id}`}
+                    className="block rounded-xl border border-[#1a1a24] bg-[#111118] p-4 transition-colors hover:border-[#2a2a34]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#1a1a24] bg-[#16161f] text-sm font-semibold text-[#9ca3af]"
+                          style={{ backgroundImage: item.avatar_url ? `url(${item.avatar_url})` : undefined, backgroundSize: 'cover' }}
+                        >
+                          {!item.avatar_url && (item.name?.[0] || '?').toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[#f5f5f5]">{item.name}</p>
+                          <p className="truncate text-xs text-[#6b7280]">
+                            @{item.username || item.id}
+                            {item.is_partner ? ` · ${item.partner_type || 'Legendary Investor'}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      {item.is_partner && (
+                        <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+                          Legendary
+                        </span>
+                      )}
+                    </div>
+                  </Link>
                 ))
               )}
             </div>

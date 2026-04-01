@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 
 const TABS = [
-  { key: 'week', label: 'Your Week' },
   { key: 'market', label: 'Market Performance' },
   { key: 'activity', label: 'Platform Activity' },
   { key: 'community', label: 'Community' },
@@ -48,169 +47,6 @@ function weekRangeLabel() {
   const a = mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const b = sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   return `${a} – ${b}`;
-}
-
-function YourWeekTab({
-  hasUser,
-  hasPortfolio,
-  portfolioTotal,
-  portfolioChange,
-  enrichedHoldings,
-  portfolioLoading,
-  weekPlaidTransactions,
-  weekTradeHistory,
-  weekActivityLoading,
-}) {
-  const loading = portfolioLoading || weekActivityLoading;
-  const tradeCount = weekPlaidTransactions.length + weekTradeHistory.length;
-
-  const todayPct = portfolioTotal > 0 ? (portfolioChange / portfolioTotal) * 100 : 0;
-  const changeStr =
-    portfolioChange >= 0
-      ? `+$${Math.abs(portfolioChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : `-$${Math.abs(portfolioChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-  const sortedByPct = useMemo(() => {
-    const arr = [...enrichedHoldings].filter((h) => h.ticker);
-    return arr.sort((a, b) => b.pctChange - a.pctChange);
-  }, [enrichedHoldings]);
-
-  const topPositions = useMemo(() => sortedByPct.slice(0, 4), [sortedByPct]);
-  const positionChartData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    return days.map((day, di) => {
-      const row = { day };
-      topPositions.forEach((h, j) => {
-        row[`pos${j}`] = (h.pctChange * di) / 4;
-      });
-      return row;
-    });
-  }, [topPositions]);
-
-  const greenHoldings = enrichedHoldings.filter((h) => h.totalGain > 0).length;
-  const totalHoldings = enrichedHoldings.length;
-  const winPct =
-    totalHoldings > 0 ? Math.round((greenHoldings / totalHoldings) * 100) : null;
-
-  if (!hasUser) {
-    return (
-      <div className="hts-week-tab-inner hts-week-tab-empty">
-        <p>Sign in to see your weekly recap.</p>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="hts-week-tab-inner hts-week-tab-empty">
-        <p className="hts-week-loading">Loading your week…</p>
-      </div>
-    );
-  }
-
-  if (!hasPortfolio && tradeCount === 0) {
-    return (
-      <div className="hts-week-tab-inner hts-week-tab-empty">
-        <p>No trades this week yet.</p>
-        <p className="hts-label">
-          <Link href="/trading" className="hts-card-link" style={{ marginTop: '0.5rem', display: 'inline-flex' }}>
-            Visit the Trading page to get started <i className="bi bi-arrow-right" />
-          </Link>
-        </p>
-      </div>
-    );
-  }
-
-  const lineColors = ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'];
-
-  return (
-    <div className="hts-week-tab-inner">
-      <p className="hts-subsection-title" style={{ marginBottom: '0.75rem' }}>
-        Your Top Positions
-      </p>
-      {topPositions.length > 0 ? (
-        <div style={{ width: '100%', height: 180, marginBottom: '1rem' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={positionChartData}>
-              <XAxis
-                dataKey="day"
-                tick={{ fill: '#6b7280', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
-              <Tooltip
-                contentStyle={{
-                  background: '#111827',
-                  border: '1px solid rgba(16, 185, 129, 0.2)',
-                  borderRadius: 8,
-                  fontSize: 11,
-                }}
-                labelStyle={{ color: '#10b981' }}
-                formatter={(value) => [`${value > 0 ? '+' : ''}${Number(value).toFixed(2)}%`, '']}
-              />
-              {topPositions.map((h, i) => (
-                <Line
-                  key={h.ticker}
-                  type="monotone"
-                  dataKey={`pos${i}`}
-                  stroke={lineColors[i]}
-                  strokeWidth={2}
-                  dot={false}
-                  name={h.ticker}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      ) : (
-        <p className="hts-caption" style={{ marginBottom: '1rem' }}>
-          No position data to chart yet.
-        </p>
-      )}
-      <div className="hts-week-positions-grid">
-        {topPositions.map((h) => (
-          <div key={h.ticker} className="hts-week-position-item">
-            <span className="hts-week-position-ticker">{h.ticker}</span>
-            <span className="hts-week-position-value">
-              ${h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-            </span>
-            <span className={`hts-week-position-change ${h.pctChange >= 0 ? 'positive' : 'negative'}`}>
-              {h.pctChange >= 0 ? '▲' : '▼'} {h.pctChange >= 0 ? '+' : ''}
-              {h.pctChange.toFixed(2)}%
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="hts-week-stat-row" style={{ marginTop: '1rem' }}>
-        <div>
-          <p className="hts-week-metric-label">Trades Placed</p>
-          <p className="hts-week-metric-val">{tradeCount}</p>
-        </div>
-        <div>
-          <p className="hts-week-metric-label">Today&apos;s change</p>
-          <p
-            className={`hts-week-metric-val ${
-              portfolioChange >= 0 ? 'hts-week-chg-pos' : 'hts-week-chg-neg'
-            }`}
-          >
-            {changeStr}{' '}
-            <span className="hts-week-metric-sub">
-              ({todayPct >= 0 ? '+' : ''}
-              {todayPct.toFixed(2)}%)
-            </span>
-          </p>
-        </div>
-        <div>
-          <p className="hts-week-metric-label">Positions green</p>
-          <p className="hts-week-metric-val">
-            {totalHoldings > 0 ? `${greenHoldings}/${totalHoldings} (${winPct}%)` : '—'}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function MarketPerformanceTab() {
@@ -338,18 +174,8 @@ function CommunityTab() {
   );
 }
 
-export function ThisWeekOnEzana({
-  hasPortfolio = false,
-  hasUser = false,
-  portfolioTotal = 0,
-  portfolioChange = 0,
-  enrichedHoldings = [],
-  portfolioLoading = false,
-  weekPlaidTransactions = [],
-  weekTradeHistory = [],
-  weekActivityLoading = true,
-}) {
-  const [activeTab, setActiveTab] = useState('week');
+export function ThisWeekOnEzana() {
+  const [activeTab, setActiveTab] = useState('market');
   const range = useMemo(() => weekRangeLabel(), []);
 
   return (
@@ -389,19 +215,6 @@ export function ThisWeekOnEzana({
           className={`hts-week-panel ${activeTab === 'activity' ? 'hts-week-panel--scroll' : ''}`}
           role="tabpanel"
         >
-          {activeTab === 'week' && (
-            <YourWeekTab
-              hasUser={hasUser}
-              hasPortfolio={hasPortfolio}
-              portfolioTotal={portfolioTotal}
-              portfolioChange={portfolioChange}
-              enrichedHoldings={enrichedHoldings}
-              portfolioLoading={portfolioLoading}
-              weekPlaidTransactions={weekPlaidTransactions}
-              weekTradeHistory={weekTradeHistory}
-              weekActivityLoading={weekActivityLoading}
-            />
-          )}
           {activeTab === 'market' && <MarketPerformanceTab />}
           {activeTab === 'activity' && <PlatformActivityTab />}
           {activeTab === 'community' && <CommunityTab />}
