@@ -63,18 +63,46 @@ export function ProfilePageClient({ username }) {
     setNotFound(false);
     try {
       let prof = null;
-      const { data: p1, error: e1 } = await supabase.from('profiles').select('*').eq('username', username).maybeSingle();
-      if (e1) {
-        console.error(e1);
-        setNotFound(true);
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
-      if (p1) prof = p1;
-      else {
-        const { data: p2 } = await supabase.from('profiles').select('*').ilike('username', username).maybeSingle();
-        prof = p2;
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
+
+      if (isUUID) {
+        const { data: p1, error: e1 } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', username)
+          .maybeSingle();
+        if (e1) {
+          console.error(e1);
+          setNotFound(true);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        prof = p1;
+      } else {
+        const { data: p1, error: e1 } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', username)
+          .maybeSingle();
+        if (e1) {
+          console.error(e1);
+          setNotFound(true);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        if (p1) {
+          prof = p1;
+        } else {
+          const { data: p2 } = await supabase
+            .from('profiles')
+            .select('*')
+            .ilike('username', username)
+            .maybeSingle();
+          prof = p2;
+        }
       }
 
       if (!prof) {
