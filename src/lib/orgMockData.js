@@ -200,6 +200,176 @@ export const MOCK_TASKS = [
   { id: 'tk16', title: 'Draft semiconductor thesis summary slide', team_id: 't7', assigned_to: 'm21', assigned_by: 'm3', status: 'in_progress', priority: 'urgent', due_date: '2026-05-01', event_id: 'e6' },
 ];
 
+// ── Enhanced Task Data for All Roles ──
+export const EXECUTIVE_TASKS = [
+  { id: 'etk1', title: 'Review Q2 budget allocation across all teams', team_id: null, assigned_to: 'm1', assigned_by: null, status: 'in_progress', priority: 'urgent', due_date: '2026-04-10', category: 'strategic' },
+  { id: 'etk2', title: 'Approve Healthcare team stock pitch presentation', team_id: 't1', assigned_to: 'm1', assigned_by: 'm4', status: 'pending', priority: 'high', due_date: '2026-04-12', category: 'oversight' },
+  { id: 'etk3', title: 'Prepare board of directors quarterly report', team_id: null, assigned_to: 'm2', assigned_by: 'm1', status: 'in_progress', priority: 'high', due_date: '2026-04-15', category: 'reporting' },
+  { id: 'etk4', title: 'Interview candidates for Junior PM position (Industrials)', team_id: 't5', assigned_to: 'm25', assigned_by: null, status: 'pending', priority: 'medium', due_date: '2026-04-18', category: 'hiring' },
+  { id: 'etk5', title: 'Strategic planning session - FY27 goals', team_id: null, assigned_to: 'm1', assigned_by: null, status: 'pending', priority: 'high', due_date: '2026-04-20', category: 'strategic' },
+  { id: 'etk6', title: 'Review and approve TMT semiconductor thesis', team_id: 't7', assigned_to: 'm2', assigned_by: 'm3', status: 'completed', priority: 'high', due_date: '2026-04-05', category: 'oversight' },
+  { id: 'etk7', title: 'Evaluate risk management protocols org-wide', team_id: null, assigned_to: 'm25', assigned_by: 'm1', status: 'in_progress', priority: 'medium', due_date: '2026-04-22', category: 'compliance' },
+  { id: 'etk8', title: 'Approve portfolio rebalancing recommendations', team_id: null, assigned_to: 'm1', assigned_by: 'm3', status: 'pending', priority: 'high', due_date: '2026-04-14', category: 'investment' },
+];
+
+export const PORTFOLIO_MANAGER_TASKS = [
+  { id: 'pmtk1', title: "Review Emma Liu's NVDA DCF model v3", team_id: 't7', assigned_to: 'm3', assigned_by: 'm10', status: 'in_progress', priority: 'high', due_date: '2026-04-09', category: 'review' },
+  { id: 'pmtk2', title: 'Finalize TMT stock pitch deck for exec presentation', team_id: 't7', assigned_to: 'm3', assigned_by: 'm1', status: 'in_progress', priority: 'urgent', due_date: '2026-04-11', category: 'presentation' },
+  { id: 'pmtk3', title: 'One-on-one meetings with all TMT analysts', team_id: 't7', assigned_to: 'm3', assigned_by: null, status: 'in_progress', priority: 'medium', due_date: '2026-04-12', category: 'management' },
+  { id: 'pmtk4', title: 'Update TMT portfolio risk metrics for quarterly review', team_id: 't7', assigned_to: 'm3', assigned_by: 'm2', status: 'pending', priority: 'high', due_date: '2026-04-16', category: 'reporting' },
+  { id: 'pmtk5', title: 'Assign AMD coverage initiation to analyst', team_id: 't7', assigned_to: 'm3', assigned_by: null, status: 'completed', priority: 'medium', due_date: '2026-04-03', category: 'delegation' },
+  { id: 'pmtk6', title: 'Review Healthcare sector macro headwinds analysis', team_id: 't1', assigned_to: 'm4', assigned_by: 'm13', status: 'pending', priority: 'medium', due_date: '2026-04-14', category: 'review' },
+  { id: 'pmtk7', title: 'Prepare Energy team weekly sync agenda', team_id: 't3', assigned_to: 'm5', assigned_by: null, status: 'pending', priority: 'low', due_date: '2026-04-10', category: 'management' },
+  { id: 'pmtk8', title: 'Review Financial Institutions Q1 performance attribution', team_id: 't4', assigned_to: 'm6', assigned_by: 'm1', status: 'in_progress', priority: 'high', due_date: '2026-04-15', category: 'analysis' },
+];
+
+export const ANALYST_TASKS = [
+  { id: 'atk1', title: 'Complete NVDA DCF model with sensitivity analysis', team_id: 't7', assigned_to: 'm10', assigned_by: 'm3', status: 'in_progress', priority: 'urgent', due_date: '2026-04-09', category: 'modeling' },
+  { id: 'atk2', title: 'Draft one-page MSFT investment thesis summary', team_id: 't7', assigned_to: 'm11', assigned_by: 'm3', status: 'in_progress', priority: 'high', due_date: '2026-04-10', category: 'research' },
+  { id: 'atk3', title: 'Research AAPL India manufacturing expansion impact', team_id: 't7', assigned_to: 'm12', assigned_by: 'm3', status: 'pending', priority: 'medium', due_date: '2026-04-11', category: 'research' },
+  { id: 'atk4', title: 'Build AMD comparable company analysis model', team_id: 't7', assigned_to: 'm20', assigned_by: 'm3', status: 'in_progress', priority: 'high', due_date: '2026-04-13', category: 'modeling' },
+  { id: 'atk5', title: 'Update META ad revenue forecast model', team_id: 't7', assigned_to: 'm20', assigned_by: 'm3', status: 'pending', priority: 'medium', due_date: '2026-04-15', category: 'modeling' },
+  { id: 'atk6', title: 'Complete AVGO VMware synergies analysis', team_id: 't7', assigned_to: 'm22', assigned_by: 'm3', status: 'in_progress', priority: 'high', due_date: '2026-04-12', category: 'research' },
+  { id: 'atk7', title: 'Draft TSM geopolitical risk assessment memo', team_id: 't7', assigned_to: 'm23', assigned_by: 'm3', status: 'pending', priority: 'medium', due_date: '2026-04-14', category: 'research' },
+  { id: 'atk8', title: 'Build NFLX subscriber model with ad tier assumptions', team_id: 't7', assigned_to: 'm20', assigned_by: 'm3', status: 'pending', priority: 'medium', due_date: '2026-04-17', category: 'modeling' },
+  { id: 'atk9', title: 'Research CRWD platform consolidation thesis', team_id: 't7', assigned_to: 'm21', assigned_by: 'm3', status: 'in_progress', priority: 'high', due_date: '2026-04-16', category: 'research' },
+  { id: 'atk10', title: 'Update TMT coverage universe watchlist', team_id: 't7', assigned_to: 'm24', assigned_by: 'm3', status: 'completed', priority: 'low', due_date: '2026-04-06', category: 'maintenance' },
+];
+
+// ── Performance Metrics Mock Data ──
+export const PERFORMANCE_METRICS = {
+  executive: {
+    orgPortfolioValue: 846500,
+    orgChange: '+2.3%',
+    orgChangeDollar: 19043,
+    bestPerformingTeam: 't7',
+    worstPerformingTeam: 't5',
+    avgTeamReturn: 9.5,
+    tasksAssignedThisWeek: 12,
+    tasksCompletedThisWeek: 8,
+    upcomingPresentations: 3,
+  },
+  portfolio_manager: {
+    t7: {
+      portfolioValue: 198700,
+      change: '+1.5%',
+      changeDollar: 2935,
+      ytdReturn: 14.2,
+      activePositions: 15,
+      analystCount: 8,
+      tasksCompleted: 24,
+      tasksActive: 11,
+    },
+    t1: {
+      portfolioValue: 142500,
+      change: '+1.8%',
+      changeDollar: 2520,
+      ytdReturn: 8.4,
+      activePositions: 12,
+      analystCount: 2,
+      tasksCompleted: 18,
+      tasksActive: 7,
+    },
+  },
+  analyst: {
+    m10: {
+      stocksCovered: 3,
+      activeTasks: 4,
+      completedTasks: 12,
+      avgTaskCompletionTime: '2.3 days',
+      recentDeliverables: 8,
+      coverageRating: 'Strong Buy: 2, Hold: 1',
+    },
+    m20: {
+      stocksCovered: 5,
+      activeTasks: 6,
+      completedTasks: 15,
+      avgTaskCompletionTime: '2.8 days',
+      recentDeliverables: 11,
+      coverageRating: 'Buy: 3, Hold: 2',
+    },
+  },
+};
+
+// ── Strategic Overview Data (Executive-specific) ──
+export const STRATEGIC_OVERVIEW = {
+  totalAUM: 846500,
+  targetAUM: 1000000,
+  headcount: 25,
+  targetHeadcount: 30,
+  avgPortfolioReturn: 9.5,
+  benchmarkReturn: 7.2,
+  riskAdjustedReturn: 1.32,
+  teamUtilization: 87,
+  upcomingMilestones: [
+    { title: 'Q2 Board Presentation', date: '2026-04-25', owner: 'Jordan Nguyen' },
+    { title: 'Summer Analyst Hiring', date: '2026-05-15', owner: 'Noah Raymond-Leigh' },
+    { title: 'Portfolio Rebalancing Review', date: '2026-04-30', owner: 'Priya Sharma' },
+  ],
+};
+
+// ── Coverage Pipeline Data (PM-specific) ──
+export const COVERAGE_PIPELINE = {
+  t7: [
+    { ticker: 'NVDA', analyst: 'Emma Liu', status: 'Active', rating: 'Buy', nextUpdate: '2026-04-15' },
+    { ticker: 'AMD', analyst: 'Blackberry Analyst', status: 'Active', rating: 'Buy', nextUpdate: '2026-04-18' },
+    { ticker: 'META', analyst: 'Blackberry Analyst', status: 'Active', rating: 'Hold', nextUpdate: '2026-04-20' },
+    { ticker: 'AVGO', analyst: 'Sophia Nakamura', status: 'Active', rating: 'Buy', nextUpdate: '2026-04-16' },
+    { ticker: 'TSM', analyst: 'Amir Hassan', status: 'Initiating', rating: 'TBD', nextUpdate: '2026-04-25' },
+    { ticker: 'CRWD', analyst: 'Raj Venkatesh', status: 'Active', rating: 'Buy', nextUpdate: '2026-04-22' },
+  ],
+};
+
+// ── Analyst Coverage Data ──
+export const ANALYST_COVERAGE = {
+  m10: [
+    { ticker: 'NVDA', rating: 'Buy', targetPrice: 950, lastUpdated: '2026-04-05', nextEarnings: '2026-05-22' },
+    { ticker: 'MSFT', rating: 'Buy', targetPrice: 485, lastUpdated: '2026-03-28', nextEarnings: '2026-04-25' },
+    { ticker: 'CRM', rating: 'Hold', targetPrice: 310, lastUpdated: '2026-03-15', nextEarnings: '2026-05-29' },
+  ],
+  m20: [
+    { ticker: 'AMD', rating: 'Buy', targetPrice: 195, lastUpdated: '2026-04-03', nextEarnings: '2026-04-30' },
+    { ticker: 'META', rating: 'Hold', targetPrice: 530, lastUpdated: '2026-03-20', nextEarnings: '2026-04-24' },
+    { ticker: 'GOOGL', rating: 'Buy', targetPrice: 185, lastUpdated: '2026-03-22', nextEarnings: '2026-04-23' },
+    { ticker: 'NFLX', rating: 'Hold', targetPrice: 650, lastUpdated: '2026-03-18', nextEarnings: '2026-04-18' },
+  ],
+};
+
+// ── Resource Allocation Data (Executive) ──
+export const RESOURCE_ALLOCATION = {
+  teams: [
+    { name: 'TMT', analysts: 8, budget: 285000, budgetUsed: 198700, utilization: 69.7 },
+    { name: 'Healthcare', analysts: 2, budget: 180000, budgetUsed: 142500, utilization: 79.2 },
+    { name: 'Financial Institutions', analysts: 1, budget: 175000, budgetUsed: 135600, utilization: 77.5 },
+    { name: 'Consumer Goods', analysts: 1, budget: 150000, budgetUsed: 118300, utilization: 78.9 },
+    { name: 'Energy & Utilities', analysts: 1, budget: 125000, budgetUsed: 97800, utilization: 78.2 },
+    { name: 'Industrials', analysts: 1, budget: 115000, budgetUsed: 89400, utilization: 77.7 },
+    { name: 'Metals & Mining', analysts: 1, budget: 90000, budgetUsed: 64200, utilization: 71.3 },
+  ],
+  quarterlyBudget: 1120000,
+  quarterlySpend: 846500,
+  headcountTarget: 30,
+  currentHeadcount: 25,
+};
+
+// ── Skill Development (Analyst-specific) ──
+export const ANALYST_SKILL_DEVELOPMENT = {
+  m10: {
+    completedCourses: ['Advanced DCF Modeling', 'Semiconductor Industry Deep Dive', 'Python for Finance'],
+    inProgressCourses: ['Machine Learning for Portfolio Management'],
+    certifications: ['CFA Level II Candidate'],
+    nextMilestone: 'CFA Level II Exam - June 2026',
+    skillRatings: { modeling: 95, research: 92, presentation: 88 },
+  },
+  m20: {
+    completedCourses: ['Equity Valuation Fundamentals', 'Digital Advertising Economics'],
+    inProgressCourses: ['Advanced Excel for Finance', 'Behavioral Finance'],
+    certifications: ['Bloomberg Market Concepts'],
+    nextMilestone: 'CFA Level I Exam - August 2026',
+    skillRatings: { modeling: 78, research: 85, presentation: 80 },
+  },
+};
+
 // ── Team discussions (expanded) ──
 export const MOCK_DISCUSSIONS = [
   { id: 'd1', team_id: 't7', author: 'm3', author_name: 'Marcus Chen', content: 'Updated the NVDA thesis — added AI data center TAM estimates. Please review before the pitch.', time: '2h ago', replies: 3, type: 'update' },
@@ -391,4 +561,72 @@ export function getMockMemberActivitySummary(memberId) {
     learningSessions,
     lastActive: ['Just now', '2h ago', 'Today', 'Yesterday', '3d ago'][seed % 5],
   };
+}
+
+export function getTasksByRole(role, memberId = null) {
+  if (role === 'executive') return EXECUTIVE_TASKS;
+  if (role === 'portfolio_manager') {
+    if (memberId) {
+      return PORTFOLIO_MANAGER_TASKS.filter((t) => t.assigned_to === memberId);
+    }
+    return PORTFOLIO_MANAGER_TASKS;
+  }
+  if (role === 'analyst') {
+    if (memberId) {
+      return ANALYST_TASKS.filter((t) => t.assigned_to === memberId);
+    }
+    return ANALYST_TASKS;
+  }
+  return [];
+}
+
+export function getPerformanceMetrics(role, memberId = null) {
+  if (role === 'executive') return PERFORMANCE_METRICS.executive;
+  if (role === 'portfolio_manager') {
+    const member = MOCK_MEMBERS.find((m) => m.id === memberId);
+    const tid = member?.team_id;
+    const direct = tid ? PERFORMANCE_METRICS.portfolio_manager[tid] : null;
+    if (direct) return direct;
+    const teamPerf = MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === tid);
+    if (teamPerf && tid) {
+      const analystsOnTeam = getMembersByTeam(tid).filter((m) => m.role === 'analyst').length;
+      return {
+        portfolioValue: teamPerf.value,
+        change: `${teamPerf.change_pct >= 0 ? '+' : ''}${teamPerf.change_pct}%`,
+        changeDollar: teamPerf.change_dollar,
+        ytdReturn: teamPerf.ytd_return,
+        activePositions: 10,
+        analystCount: analystsOnTeam || 1,
+        tasksCompleted: 12,
+        tasksActive: 6,
+      };
+    }
+    return null;
+  }
+  if (role === 'analyst') {
+    if (memberId && PERFORMANCE_METRICS.analyst[memberId]) {
+      return PERFORMANCE_METRICS.analyst[memberId];
+    }
+    return {
+      stocksCovered: 2,
+      activeTasks: 2,
+      completedTasks: 5,
+      avgTaskCompletionTime: '3.0 days',
+      recentDeliverables: 4,
+      coverageRating: 'See coverage list',
+    };
+  }
+  return null;
+}
+
+export function getCoveragePipeline(teamId) {
+  return COVERAGE_PIPELINE[teamId] || [];
+}
+
+export function getAnalystCoverage(analystId) {
+  return ANALYST_COVERAGE[analystId] || [];
+}
+
+export function getSkillDevelopment(analystId) {
+  return ANALYST_SKILL_DEVELOPMENT[analystId] || null;
 }

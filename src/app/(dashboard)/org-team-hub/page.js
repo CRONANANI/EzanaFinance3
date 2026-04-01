@@ -1,52 +1,48 @@
 'use client';
 
 import { useOrg } from '@/contexts/OrgContext';
-import { useAuth } from '@/components/AuthProvider';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import Link from 'next/link';
 import { OrgHierarchyCard } from '@/components/org/OrgHierarchyCard';
+import { PerformanceMetricsCard } from '@/components/org/PerformanceMetricsCard';
+import { UpcomingDeadlinesCard } from '@/components/org/UpcomingDeadlinesCard';
+import {
+  StrategicOverviewCard,
+  TeamPerformanceComparisonCard,
+  ResourceAllocationCard,
+} from '@/components/org/ExecutiveCards';
+import {
+  TeamPortfolioSummaryCard,
+  AnalystWorkloadCard,
+  CoveragePipelineCard,
+} from '@/components/org/PortfolioManagerCards';
+import {
+  MyCoverageCard,
+  ResearchDeliverablesCard,
+  SkillDevelopmentCard,
+} from '@/components/org/AnalystCards';
+import { getTasksByRole, getMemberByEmail, MOCK_MEMBERS } from '@/lib/orgMockData';
 import '../../../../app-legacy/assets/css/theme.css';
 
 export default function OrgTeamHubPage() {
-  const { user } = useAuth();
   const { isOrgUser, orgRole, orgData, isLoading } = useOrg();
   const [tasks, setTasks] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     if (!isOrgUser || !orgData) return;
-    const orgId = orgData.org.id;
 
-    supabase
-      .from('org_tasks')
-      .select('*')
-      .eq('org_id', orgId)
-      .order('created_at', { ascending: false })
-      .limit(20)
-      .then(({ data }) => setTasks(data || []));
-
-    supabase
-      .from('org_events')
-      .select('*')
-      .eq('org_id', orgId)
-      .order('event_date', { ascending: true })
-      .limit(10)
-      .then(({ data }) => setEvents(data || []));
-
-    supabase
-      .from('org_posts')
-      .select('*')
-      .eq('org_id', orgId)
-      .order('created_at', { ascending: false })
-      .limit(20)
-      .then(({ data }) => setPosts(data || []));
-  }, [isOrgUser, orgData]);
+    const emailMatch = getMemberByEmail(orgData?.member?.email);
+    const currentMember = emailMatch || MOCK_MEMBERS.find((m) => m.role === orgRole) || MOCK_MEMBERS[0];
+    const roleTasks = getTasksByRole(orgRole, currentMember.id);
+    setTasks(roleTasks);
+  }, [isOrgUser, orgData, orgRole]);
 
   if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading Team Hub...</div>;
   if (!isOrgUser)
     return <div style={{ padding: '2rem', color: '#888' }}>This page is for organizational members only.</div>;
+
+  const isExecutive = orgRole === 'executive';
+  const isPortfolioManager = orgRole === 'portfolio_manager';
+  const isAnalyst = orgRole === 'analyst';
 
   return (
     <div className="dashboard-page-inset">
@@ -63,21 +59,24 @@ export default function OrgTeamHubPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: orgRole === 'analyst' ? '1fr 1fr' : '2fr 1fr',
+          gridTemplateColumns: isAnalyst ? '1fr 1fr' : '2fr 1fr',
           gap: '1.5rem',
         }}
       >
+        {/* LEFT COLUMN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="db-card">
             <div className="db-card-header">
-              <h3>{orgRole === 'analyst' ? 'My Tasks' : 'Task Management'}</h3>
+              <h3>
+                <i className="bi bi-list-task" style={{ marginRight: '0.5rem', color: '#6366f1' }} />
+                {isAnalyst ? 'My Tasks' : 'Task Management'}
+              </h3>
             </div>
             <div style={{ padding: '1rem' }}>
               {tasks.length === 0 ? (
                 <p style={{ color: '#666', fontSize: '0.85rem' }}>No tasks yet.</p>
               ) : (
                 tasks
-                  .filter((t) => (orgRole === 'analyst' ? t.assigned_to === user?.id : true))
                   .slice(0, 8)
                   .map((t) => (
                     <div
@@ -96,6 +95,7 @@ export default function OrgTeamHubPage() {
                         </p>
                         <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: '2px 0 0' }}>
                           {t.status} · {t.priority} priority
+                          {t.category && ` · ${t.category}`}
                         </p>
                       </div>
                       <span
@@ -126,67 +126,26 @@ export default function OrgTeamHubPage() {
             </div>
           </div>
 
-          <div className="db-card">
-            <div className="db-card-header">
-              <h3>Team Discussion</h3>
-            </div>
-            <div style={{ padding: '1rem' }}>
-              {posts.length === 0 ? (
-                <p style={{ color: '#666', fontSize: '0.85rem' }}>No posts yet. Start a discussion!</p>
-              ) : (
-                posts.slice(0, 5).map((p) => (
-                  <div key={p.id} style={{ padding: '0.75rem 0', borderBottom: '1px solid rgba(99,102,241,0.06)' }}>
-                    <p style={{ color: '#e5e7eb', fontSize: '0.8125rem', margin: 0 }}>{p.content}</p>
-                    <p style={{ color: '#6b7280', fontSize: '0.625rem', margin: '4px 0 0' }}>
-                      {new Date(p.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          <PerformanceMetricsCard />
+
+          {isExecutive && <StrategicOverviewCard />}
+          {isPortfolioManager && <TeamPortfolioSummaryCard />}
+          {isAnalyst && <MyCoverageCard />}
+
+          {isExecutive && <TeamPerformanceComparisonCard />}
+          {isPortfolioManager && <AnalystWorkloadCard />}
+          {isAnalyst && <ResearchDeliverablesCard />}
         </div>
 
+        {/* RIGHT COLUMN */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <OrgHierarchyCard />
-          <div className="db-card">
-            <div className="db-card-header">
-              <h3>Upcoming Events</h3>
-            </div>
-            <div style={{ padding: '1rem' }}>
-              {events.length === 0 ? (
-                <p style={{ color: '#666', fontSize: '0.85rem' }}>No upcoming events.</p>
-              ) : (
-                events.slice(0, 5).map((e) => (
-                  <div key={e.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid rgba(99,102,241,0.06)' }}>
-                    <p style={{ color: '#f0f6fc', fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>{e.title}</p>
-                    <p style={{ color: '#6366f1', fontSize: '0.625rem', margin: '2px 0 0' }}>
-                      {new Date(e.event_date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
 
-          {orgRole === 'analyst' && (
-            <div className="db-card">
-              <div className="db-card-header">
-                <h3>Assigned Learning</h3>
-              </div>
-              <div style={{ padding: '1rem' }}>
-                <p style={{ color: '#666', fontSize: '0.85rem' }}>Check the Learning Center for assigned content.</p>
-                <Link href="/learning-center" style={{ color: '#6366f1', fontSize: '0.8125rem', textDecoration: 'none' }}>
-                  Go to Learning Center →
-                </Link>
-              </div>
-            </div>
-          )}
+          <UpcomingDeadlinesCard />
+
+          {isExecutive && <ResourceAllocationCard />}
+          {isPortfolioManager && <CoveragePipelineCard />}
+          {isAnalyst && <SkillDevelopmentCard />}
         </div>
       </div>
     </div>
