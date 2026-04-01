@@ -11,6 +11,7 @@ function mapRow(row) {
   const displayName = privacyOk ? fromColumn || fromSettings || 'Member' : 'Member';
   return {
     id: row.id,
+    username: row.username || '',
     full_name: displayName,
     avatar_url: privacyOk ? s.avatar_url || '' : '',
     bio: privacyOk ? (s.bio || '').slice(0, 160) : '',
@@ -28,7 +29,7 @@ export async function GET(request) {
     }
 
     const pattern = `%${raw}%`;
-    const cols = 'id, full_name, user_settings, is_partner, partner_type';
+    const cols = 'id, username, full_name, user_settings, is_partner, partner_type';
 
     const { data: byFull, error: e1 } = await supabaseAdmin
       .from('profiles')

@@ -8,10 +8,10 @@ import { formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { useAuth } from '@/components/AuthProvider';
 
 function mapProfileToAuthor(prof) {
-  if (!prof) return { id: null, name: 'Member', initials: '?' };
+  if (!prof) return { id: null, username: '', name: 'Member', initials: '?' };
   const s = prof.user_settings || {};
   const name = (s.display_name || '').trim() || 'Member';
-  return { id: prof.id, name, initials: getInitials(name) };
+  return { id: prof.id, username: prof.username || '', name, initials: getInitials(name) };
 }
 
 export function CommunityFeedPost({
@@ -51,7 +51,7 @@ export function CommunityFeedPost({
       const ids = [...new Set((rows || []).map((r) => r.user_id))];
       let profMap = {};
       if (ids.length > 0) {
-        const { data: profs } = await supabase.from('profiles').select('id, user_settings').in('id', ids);
+        const { data: profs } = await supabase.from('profiles').select('id, username, user_settings').in('id', ids);
         profMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
       }
       setComments(
@@ -123,12 +123,12 @@ export function CommunityFeedPost({
                   className="comm-name-link comm-post-name"
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`/community/profile/${post.userId}`);
+                    router.push(`/profile/${post.username || post.userId}`);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.stopPropagation();
-                      router.push(`/community/profile/${post.userId}`);
+                      router.push(`/profile/${post.username || post.userId}`);
                     }
                   }}
                 >
@@ -215,7 +215,7 @@ export function CommunityFeedPost({
                 <div className="comm-comment-body">
                   <div className="comm-comment-meta">
                     {c.author.id ? (
-                      <Link href={`/community/profile/${c.author.id}`} className="comm-name-link" onClick={(e) => e.stopPropagation()}>
+                      <Link href={`/profile/${c.author.username || c.author.id}`} className="comm-name-link" onClick={(e) => e.stopPropagation()}>
                         {c.author.name}
                       </Link>
                     ) : (

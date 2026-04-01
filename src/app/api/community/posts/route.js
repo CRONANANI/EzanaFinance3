@@ -22,6 +22,7 @@ function mapAuthor(prof, viewerId) {
   }
   return {
     id: prof.id,
+    username: prof.username || '',
     display_name: settings.display_name || '',
     bio: settings.bio || '',
     avatar_url: settings.avatar_url || '',
@@ -89,7 +90,7 @@ export async function GET(request) {
 
     let profileMap = {};
     if (userIds.length > 0) {
-      const { data: profs } = await supabaseAdmin.from('profiles').select('id, user_settings').in('id', userIds);
+      const { data: profs } = await supabaseAdmin.from('profiles').select('id, username, user_settings').in('id', userIds);
       profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
     }
 
@@ -190,7 +191,7 @@ export async function POST(request) {
       console.error('posts POST: awardXP', e);
     }
 
-    const { data: prof } = await supabaseAdmin.from('profiles').select('id, user_settings').eq('id', user.id).maybeSingle();
+    const { data: prof } = await supabaseAdmin.from('profiles').select('id, username, user_settings').eq('id', user.id).maybeSingle();
 
     return NextResponse.json({
       post: {

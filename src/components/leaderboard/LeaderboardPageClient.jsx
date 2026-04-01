@@ -79,6 +79,9 @@ export function LeaderboardPageClient() {
 
   return (
     <div className="relative mx-auto max-w-7xl px-4 py-8 pb-24 text-[#e5e7eb]">
+      <Link href="/community" className="mb-4 inline-flex items-center gap-1 text-sm text-emerald-400 hover:underline">
+        ← Back to Community
+      </Link>
       <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">

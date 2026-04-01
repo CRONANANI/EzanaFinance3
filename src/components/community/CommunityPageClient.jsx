@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
-import { LeaderboardModal } from '@/components/community/LeaderboardModal';
+import { supabase } from '@/lib/supabase';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LEGENDARY_INVESTOR_LIST } from '@/config/legendaryInvestors';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
@@ -70,14 +70,14 @@ function PartnerOrCreatorBadge({ isPartner, partnerType }) {
   );
 }
 
-function CommunityUserLink({ userId, children, className, style }) {
+function CommunityUserLink({ userId, username, children, className, style }) {
   if (!userId) return (
     <span className={className} style={style}>
       {children}
     </span>
   );
   return (
-    <Link href={`/community/profile/${userId}`} className={className} style={style}>
+    <Link href={`/profile/${username || userId}`} className={className} style={style}>
       {children}
     </Link>
   );
@@ -103,7 +103,7 @@ export default function CommunityPageClient() {
   const [posting, setPosting] = useState(false);
   const [quoteMap, setQuoteMap] = useState({});
   const [lbRows, setLbRows] = useState([]);
-  const [lbModalOpen, setLbModalOpen] = useState(false);
+  const [myUsername, setMyUsername] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchBusy, setSearchBusy] = useState(false);
   const [friendBusy, setFriendBusy] = useState({});
@@ -204,6 +204,7 @@ export default function CommunityPageClient() {
         id: p.id,
         text: p.content,
         userId: p.author?.id,
+        username: p.author?.username || '',
         name: p.author?.display_name?.trim() || 'Member',
         initials: getInitials(p.author?.display_name),
         time: formatRelativeTime(p.created_at),
@@ -224,6 +225,21 @@ export default function CommunityPageClient() {
       setFeedLoading(false);
     }
   }, [feedTab, isOrgUser, filter, orgTeamId]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setMyUsername('');
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from('profiles').select('username').eq('id', user.id).maybeSingle();
+      if (!cancelled) setMyUsername(data?.username || '');
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchFeed();
@@ -477,8 +493,6 @@ export default function CommunityPageClient() {
           </div>
         </Link>
       )}
-      <LeaderboardModal isOpen={lbModalOpen} onClose={() => setLbModalOpen(false)} period={lbPeriod} />
-
       <header className="comm-header-top">
         <h1 className="comm-page-title">Community</h1>
         <div className="comm-header-tabs" role="tablist" aria-label="Community filter">
@@ -516,7 +530,7 @@ export default function CommunityPageClient() {
             {!searchBusy &&
               searchResults.map((u) => (
                 <div key={u.id} className="comm-search-row">
-                  <Link href={`/community/profile/${u.id}`} className="comm-search-hit">
+                  <Link href={`/profile/${u.username || u.id}`} className="comm-search-hit">
                     <div className="comm-search-av" aria-hidden>
                       {u.avatar_url ? (
                         <img src={u.avatar_url} alt="" className="comm-search-av-img" />
@@ -656,7 +670,7 @@ export default function CommunityPageClient() {
           <div className="comm-lb-scroll">
             {lbRows.map((row) => (
               <div key={row.id}>
-                <Link href={`/community/profile/${row.id}`} className="comm-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link href={`/profile/${row.username || row.id}`} className="comm-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <span className="comm-lb-rank">
                     {row.rank <= 3 ? (
                       <i
@@ -685,7 +699,7 @@ export default function CommunityPageClient() {
           </div>
           <div className="comm-lb-you" style={{ padding: '0 1.25rem 1rem' }}>
             {user ? (
-              <Link href={`/community/profile/${user.id}`} className="comm-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/profile/${myUsername || user.id}`} className="comm-lb-row" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <span className="comm-lb-rank">127</span>
                 <span className="comm-lb-name">You</span>
                 <span className="comm-lb-pct">+12.4%</span>
@@ -704,9 +718,9 @@ export default function CommunityPageClient() {
             <p className="comm-lb-change">
               <i className="bi bi-caret-up-fill" aria-hidden /> 14 spots from last week
             </p>
-            <button type="button" className="comm-card-link" style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }} onClick={() => setLbModalOpen(true)}>
+            <Link href="/leaderboard" className="comm-card-link" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
               View Full Rankings <i className="bi bi-arrow-right" />
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -821,7 +835,7 @@ export default function CommunityPageClient() {
                       fontSize: '0.75rem',
                     }}
                   >
-                    <Link href={`/community/profile/${req.sender_id}`} className="comm-name-link" style={{ flex: 1, minWidth: 0 }}>
+                    <Link href={`/profile/${req.sender_username || req.sender_id}`} className="comm-name-link" style={{ flex: 1, minWidth: 0 }}>
                       {req.sender_name}
                     </Link>
                     <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
@@ -864,7 +878,7 @@ export default function CommunityPageClient() {
                   {row.initials}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <CommunityUserLink userId={row.userId} className="comm-name-link" style={{ fontSize: '0.8125rem' }}>
+                  <CommunityUserLink userId={row.userId} username={row.username} className="comm-name-link" style={{ fontSize: '0.8125rem' }}>
                     {row.name}
                   </CommunityUserLink>
                   <div style={{ fontSize: '0.5625rem', color: '#6b7280' }}>{row.time}</div>
@@ -877,7 +891,7 @@ export default function CommunityPageClient() {
                 <div className="comm-suggest-txt">
                   Suggested:{' '}
                   {lbRows[0] ? (
-                    <CommunityUserLink userId={lbRows[0].id} className="comm-name-link">
+                    <CommunityUserLink userId={lbRows[0].id} username={lbRows[0].username} className="comm-name-link">
                       {lbRows[0].name}
                     </CommunityUserLink>
                   ) : (
@@ -999,7 +1013,7 @@ export default function CommunityPageClient() {
                 <i className="bi bi-trophy" aria-hidden /> Top Performer
               </div>
               {spotlight[0] ? (
-                <CommunityUserLink userId={spotlight[0].id} className="comm-spot-title" style={{ display: 'block', textDecoration: 'none' }}>
+                <CommunityUserLink userId={spotlight[0].id} username={spotlight[0].username} className="comm-spot-title" style={{ display: 'block', textDecoration: 'none' }}>
                   {spotlight[0].name}
                 </CommunityUserLink>
               ) : (
@@ -1011,7 +1025,7 @@ export default function CommunityPageClient() {
                 {spotlight[0] ? `${spotlight[0].trades} trades · ${spotlight[0].winRate}% win rate` : '12 trades · 89% win rate'}
               </p>
               {spotlight[0] ? (
-                <Link href={`/community/profile/${spotlight[0].id}`} className="comm-card-link" style={{ marginTop: 0 }}>
+                <Link href={`/profile/${spotlight[0].username || spotlight[0].id}`} className="comm-card-link" style={{ marginTop: 0 }}>
                   View Profile <i className="bi bi-arrow-right" />
                 </Link>
               ) : (
@@ -1031,7 +1045,7 @@ export default function CommunityPageClient() {
                 {spotlight[1] ? (
                   <>
                     by{' '}
-                    <CommunityUserLink userId={spotlight[1].id} className="comm-name-link">
+                    <CommunityUserLink userId={spotlight[1].id} username={spotlight[1].username} className="comm-name-link">
                       {spotlight[1].name}
                     </CommunityUserLink>
                   </>
@@ -1048,7 +1062,7 @@ export default function CommunityPageClient() {
                 <i className="bi bi-stars" aria-hidden /> Rising Star
               </div>
               {spotlight[2] ? (
-                <CommunityUserLink userId={spotlight[2].id} className="comm-spot-title" style={{ display: 'block', textDecoration: 'none' }}>
+                <CommunityUserLink userId={spotlight[2].id} username={spotlight[2].username} className="comm-spot-title" style={{ display: 'block', textDecoration: 'none' }}>
                   {spotlight[2].name}
                 </CommunityUserLink>
               ) : (
@@ -1060,7 +1074,7 @@ export default function CommunityPageClient() {
                 Completed 15 tasks in first week
               </p>
               {spotlight[2] ? (
-                <Link href={`/community/profile/${spotlight[2].id}`} className="comm-card-link" style={{ marginTop: 0 }}>
+                <Link href={`/profile/${spotlight[2].username || spotlight[2].id}`} className="comm-card-link" style={{ marginTop: 0 }}>
                   Follow <i className="bi bi-arrow-right" />
                 </Link>
               ) : (

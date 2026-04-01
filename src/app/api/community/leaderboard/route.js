@@ -19,7 +19,7 @@ export async function GET(request) {
 
     const { data: profileRows, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, user_settings, full_name')
+      .select('id, username, user_settings, full_name')
       .order('created_at', { ascending: false })
       .limit(800);
 
@@ -33,7 +33,7 @@ export async function GET(request) {
         const s = row.user_settings || {};
         if (s.privacy_show_on_leaderboard === false) return null;
         const name = (row.full_name || s.display_name || '').trim() || 'Member';
-        return { id: row.id, name, seed: row.id };
+        return { id: row.id, username: row.username || '', name, seed: row.id };
       })
       .filter(Boolean)
       .slice(0, limit)
@@ -45,6 +45,7 @@ export async function GET(request) {
         const bar = Math.max(8, 100 - i * 2 - (h % 20));
         return {
           id: row.id,
+          username: row.username || '',
           rank: i + 1,
           name: row.name,
           return: Math.round(ret * 10) / 10,
