@@ -96,105 +96,123 @@ export function CommunityFeedPost({
     }
   };
 
+  const returnStr = post.returnBadge;
+  const retNum = returnStr ? parseFloat(String(returnStr).replace(/[^0-9.-]/g, '')) : null;
+  const retPositive = retNum == null || retNum >= 0;
+
   return (
-    <div className="comm-post-block">
-      <div
-        className="comm-post"
-        role="button"
-        tabIndex={0}
-        onClick={() => onToggle(post.id)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onToggle(post.id);
-          }
-        }}
-      >
-        <div className="comm-post-head">
-          <div className="comm-post-meta">
-            <div className="comm-avatar" aria-hidden>
-              {post.initials}
+    <div className="db-card comm-feed-post-card">
+      <div className="comm-post-block comm-post-block--card">
+        <div
+          className="comm-post comm-post--card"
+          role="button"
+          tabIndex={0}
+          onClick={() => onToggle(post.id)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onToggle(post.id);
+            }
+          }}
+        >
+          <div className="comm-post-head comm-post-head--card">
+            <div className="comm-post-meta comm-post-meta--card">
+              <div className="comm-avatar comm-avatar--feed" aria-hidden>
+                {post.initials}
+              </div>
+              <div className="comm-post-author-block">
+                <div className="comm-post-title-row">
+                  {post.userId ? (
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      className="comm-name-link comm-post-name"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/profile/${post.username || post.userId}`);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.stopPropagation();
+                          router.push(`/profile/${post.username || post.userId}`);
+                        }
+                      }}
+                    >
+                      {post.name}
+                    </span>
+                  ) : (
+                    <span className="comm-post-name">{post.name}</span>
+                  )}
+                  {post.isPartner && <span className="comm-post-partner-pill">Partner</span>}
+                  {returnStr && (
+                    <span className={`comm-post-return-badge ${retPositive ? 'is-pos' : 'is-neg'}`}>{returnStr}</span>
+                  )}
+                  <button type="button" className="comm-post-menu-btn" aria-label="Post menu" onClick={(e) => e.stopPropagation()}>
+                    ···
+                  </button>
+                </div>
+                <div className="comm-post-subrow">
+                  <span className="comm-post-handle">@{post.username || (post.userId ? post.userId.slice(0, 8) : 'member')}</span>
+                  <span className="comm-post-time"> · {post.time}</span>
+                </div>
+              </div>
             </div>
-            <div>
-              {post.userId ? (
-                <span
-                  role="link"
-                  tabIndex={0}
-                  className="comm-name-link comm-post-name"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/profile/${post.username || post.userId}`);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.stopPropagation();
-                      router.push(`/profile/${post.username || post.userId}`);
-                    }
-                  }}
-                >
-                  {post.name}
-                </span>
+            {post.badge && <span className="comm-post-badge">{post.badge}</span>}
+          </div>
+          <p className="comm-post-text comm-post-text--card">
+            {shown}
+            {long && !expanded && <span className="comm-post-expand"> read more</span>}
+          </p>
+          {post.tickerSym && (
+            <div className="comm-ticker-embed comm-ticker-embed--card">
+              <span className="comm-ticker-sym">${post.tickerSym}</span>
+              {quote ? (
+                <>
+                  <span className="comm-ticker-price">${quote.price?.toFixed(2) ?? '—'}</span>
+                  <span className={`comm-ticker-chg ${(quote.changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}>
+                    {(quote.changePercent ?? 0) >= 0 ? '▲' : '▼'}{' '}
+                    {(quote.changePercent ?? 0) >= 0 ? '+' : ''}
+                    {(quote.changePercent ?? 0).toFixed(2)}%
+                  </span>
+                </>
               ) : (
-                <span className="comm-post-name">{post.name}</span>
-              )}
-              <span className="comm-post-time"> · {post.time}</span>
-            </div>
-          </div>
-          {post.badge && <span className="comm-post-badge">{post.badge}</span>}
-        </div>
-        <p className="comm-post-text">
-          {shown}
-          {long && !expanded && <span className="comm-post-expand"> read more</span>}
-        </p>
-        {post.tickerSym && (
-          <div className="comm-ticker-embed">
-            <span className="comm-ticker-sym">{post.tickerSym}</span>
-            {quote ? (
-              <>
-                <span className="comm-ticker-price">${quote.price?.toFixed(2) ?? '—'}</span>
-                <span className={`comm-ticker-chg ${(quote.changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}>
-                  {(quote.changePercent ?? 0) >= 0 ? '▲' : '▼'}{' '}
-                  {(quote.changePercent ?? 0) >= 0 ? '+' : ''}
-                  {(quote.changePercent ?? 0).toFixed(2)}%
+                <span className="comm-ticker-price" style={{ color: '#6b7280', fontSize: '0.6875rem' }}>
+                  Quote unavailable
                 </span>
-              </>
-            ) : (
-              <span className="comm-ticker-price" style={{ color: '#6b7280', fontSize: '0.6875rem' }}>
-                Quote unavailable
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-      <div className="comm-engage">
-        <button
-          type="button"
-          className="comm-engage-btn"
-          aria-label="Like"
-          onClick={(e) => {
-            e.stopPropagation();
-            onLike(post.id, post.liked_by_me);
-          }}
-        >
-          <i className={post.liked_by_me ? 'bi bi-heart-fill' : 'bi bi-heart'} aria-hidden /> {post.likes}
-        </button>
-        <button type="button" className="comm-engage-btn" aria-label="Comments" onClick={toggleComments}>
-          <i className="bi bi-chat-dots" aria-hidden /> {post.comments}
-        </button>
-        <button type="button" className="comm-engage-btn" aria-label="Repost">
-          <i className="bi bi-arrow-repeat" aria-hidden /> {post.reposts}
-        </button>
-        <button
-          type="button"
-          className="comm-engage-btn"
-          aria-label="Save"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSave(post.id, post.saved_by_me);
-          }}
-        >
-          <i className="bi bi-pin-angle" aria-hidden /> {post.saved_by_me ? 'Saved' : 'Save'}
-        </button>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="comm-engage comm-engage--card">
+          <button
+            type="button"
+            className="comm-engage-btn"
+            aria-label="Like"
+            onClick={(e) => {
+              e.stopPropagation();
+              onLike(post.id, post.liked_by_me);
+            }}
+          >
+            <i className={post.liked_by_me ? 'bi bi-heart-fill' : 'bi bi-heart'} aria-hidden /> {post.likes}
+          </button>
+          <button type="button" className="comm-engage-btn" aria-label="Comments" onClick={toggleComments}>
+            <i className="bi bi-chat-dots" aria-hidden /> {post.comments}
+          </button>
+          <button type="button" className="comm-engage-btn" aria-label="Share">
+            <i className="bi bi-share" aria-hidden /> Share
+          </button>
+          <button
+            type="button"
+            className="comm-engage-btn"
+            aria-label="Save"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSave(post.id, post.saved_by_me);
+            }}
+          >
+            <i className="bi bi-bookmark" aria-hidden /> {post.saved_by_me ? 'Saved' : 'Save'}
+          </button>
+        </div>
       </div>
 
       {commentsOpen && (
@@ -251,3 +269,4 @@ export function CommunityFeedPost({
     </div>
   );
 }
+
