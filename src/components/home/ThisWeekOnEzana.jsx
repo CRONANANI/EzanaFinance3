@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   Line,
   LineChart,
@@ -16,94 +16,152 @@ const TABS = [
   { key: 'activity', label: 'Platform Activity' },
 ];
 
-/** Absolute index levels Mon–Fri (reference layout) */
-const INDEX_CHART_DATA = [
-  { day: 'Mon', sp500: 5420, nasdaq: 16100, dow: 35800 },
-  { day: 'Tue', sp500: 5450, nasdaq: 16150, dow: 35900 },
-  { day: 'Wed', sp500: 5480, nasdaq: 16200, dow: 36000 },
-  { day: 'Thu', sp500: 5500, nasdaq: 16280, dow: 36050 },
-  { day: 'Fri', sp500: 5523, nasdaq: 16302, dow: 36107 },
+const FALLBACK_CARDS = [
+  { name: 'S&P 500', value: '—', pct: '—', positive: true, badge: 'LIVE', cap: 'ETF proxy', status: 'Loading' },
+  { name: 'NASDAQ', value: '—', pct: '—', positive: true, badge: 'LIVE', cap: 'ETF proxy', status: 'Loading' },
+  { name: 'SCOP1', value: '—', pct: '—', positive: true, badge: 'LIVE', cap: 'DIA proxy', status: 'Loading' },
 ];
 
-const INDEX_CARDS = [
-  {
-    name: 'S&P 500',
-    value: '5,522.9',
-    pct: '+1.32%',
-    positive: true,
-    badge: 'PARTIAL',
-    cap: '$42.1T cap',
-    status: 'Rebounding',
-  },
-  {
-    name: 'NASDAQ',
-    value: '16,302',
-    pct: '+1.29%',
-    positive: true,
-    badge: 'SUCCESS',
-    cap: '$18.4T cap',
-    status: 'Alternating',
-  },
-  {
-    name: 'SCOP1',
-    value: '36,167',
-    pct: '+1.39%',
-    positive: true,
-    badge: 'SUCCESS',
-    cap: 'Composite',
-    status: 'Rebounding',
-  },
-];
-
-function weekRangeLabel() {
-  const now = new Date();
-  const day = now.getDay();
-  const toMonday = day === 0 ? -6 : 1 - day;
-  const mon = new Date(now);
-  mon.setDate(now.getDate() + toMonday);
-  const sun = new Date(mon);
-  sun.setDate(mon.getDate() + 6);
-  const a = mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const b = sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return `${a} – ${b}`;
+function addDaysYmd(ymd, delta) {
+  const [Y, M, D] = ymd.split('-').map(Number);
+  const t = Date.UTC(Y, M - 1, D) + delta * 86400000;
+  return new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
-function MarketPerformanceTab({ compact = false }) {
-  const chartH = compact ? 150 : 220;
+function weekdayLongNyFromYmd(ymd) {
+  const [Y, M, D] = ymd.split('-').map(Number);
+  return new Date(Date.UTC(Y, M - 1, D, 12, 0, 0)).toLocaleDateString('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'long',
+  });
+}
+
+function weekRangeLabel() {
+  const fmt = { timeZone: 'America/New_York', month: 'short', day: 'numeric' };
+  let cur = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  for (let i = 0; i < 10; i++) {
+    if (weekdayLongNyFromYmd(cur) === 'Monday') break;
+    cur = addDaysYmd(cur, -1);
+  }
+  const sun = addDaysYmd(cur, 6);
+  const fmtYmd = (ymd) => {
+    const [y, m, d] = ymd.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0)).toLocaleDateString('en-US', fmt);
+  };
+  return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
+}
+
+/** Index to 100 at first row with all three closes so lines are comparable (not flat at bottom). */
+function normalizeWeekSeries(series) {
+  if (!Array.isArray(series) || series.length === 0) return [];
+  let baseSp;
+  let baseNq;
+  let baseDj;
+  for (const row of series) {
+    if (row.sp500 != null && row.nasdaq != null && row.dow != null) {
+      baseSp = row.sp500;
+      baseNq = row.nasdaq;
+      baseDj = row.dow;
+      break;
+    }
+  }
+  if (baseSp == null) return series.map((r) => ({ ...r, sp500: null, nasdaq: null, dow: null }));
+  return series.map((r) => ({
+    day: r.day,
+    sp500: r.sp500 != null ? (r.sp500 / baseSp) * 100 : null,
+    nasdaq: r.nasdaq != null ? (r.nasdaq / baseNq) * 100 : null,
+    dow: r.dow != null ? (r.dow / baseDj) * 100 : null,
+  }));
+}
+
+function buildIndexCards(apiPayload) {
+  const c = apiPayload?.cards;
+  if (!c) return FALLBACK_CARDS;
+  const week = apiPayload?.series;
+  let wtdSp = null;
+  let wtdNq = null;
+  let wtdDj = null;
+  if (Array.isArray(week) && week.length) {
+    const first = week.find((r) => r.sp500 != null);
+    const last = [...week].reverse().find((r) => r.sp500 != null);
+    if (first && last && first !== last) {
+      wtdSp = ((last.sp500 - first.sp500) / first.sp500) * 100;
+      wtdNq = ((last.nasdaq - first.nasdaq) / first.nasdaq) * 100;
+      wtdDj = ((last.dow - first.dow) / first.dow) * 100;
+    }
+  }
+  const fmtPct = (x) => (x == null || Number.isNaN(x) ? '—' : `${x >= 0 ? '+' : ''}${x.toFixed(2)}%`);
+  return [
+    {
+      name: 'S&P 500',
+      value: c.sp500 ?? '—',
+      pct: fmtPct(wtdSp),
+      positive: wtdSp == null || wtdSp >= 0,
+      badge: 'LIVE',
+      cap: 'SPY daily close',
+      status: apiPayload?.ok === false ? 'Demo' : 'Week',
+    },
+    {
+      name: 'NASDAQ',
+      value: c.nasdaq ?? '—',
+      pct: fmtPct(wtdNq),
+      positive: wtdNq == null || wtdNq >= 0,
+      badge: 'LIVE',
+      cap: 'QQQ daily close',
+      status: apiPayload?.ok === false ? 'Demo' : 'Week',
+    },
+    {
+      name: 'SCOP1',
+      value: c.scop1 ?? '—',
+      pct: fmtPct(wtdDj),
+      positive: wtdDj == null || wtdDj >= 0,
+      badge: 'LIVE',
+      cap: 'DIA daily close',
+      status: apiPayload?.ok === false ? 'Demo' : 'Week',
+    },
+  ];
+}
+
+function MarketPerformanceTab({ compact = false, indexPayload }) {
+  const chartH = compact ? 168 : 220;
   const idxTitle = compact ? '0.6875rem' : '0.75rem';
   const idxValue = compact ? '0.9375rem' : '1.125rem';
-  const gridCols = compact ? 'minmax(0, 128px) minmax(0, 1fr)' : 'minmax(0, 200px) minmax(0, 1fr)';
-  const cardPad = compact ? '0.5rem 0.6rem' : '0.75rem 0.85rem';
-  const gap = compact ? '0.5rem' : '1.25rem';
+  const cardPad = compact ? '0.45rem 0.5rem' : '0.75rem 0.85rem';
+  const cards = useMemo(() => buildIndexCards(indexPayload), [indexPayload]);
+  const chartData = useMemo(() => normalizeWeekSeries(indexPayload?.series || []), [indexPayload]);
+
+  const noData =
+    indexPayload &&
+    (!chartData.length || chartData.every((r) => r.sp500 == null && r.nasdaq == null && r.dow == null));
 
   return (
-    <div
-      className="hts-week-tab-inner hts-week-market-v2"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: gridCols,
-        gap,
-        alignItems: 'stretch',
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '0.35rem' : '0.65rem' }}>
-        {INDEX_CARDS.map((idx) => (
+    <div className="hts-week-tab-inner hts-week-market-v3">
+      <div
+        className="hts-week-index-cards-row"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: compact ? '0.4rem' : '0.65rem',
+        }}
+      >
+        {cards.map((idx) => (
           <div
             key={idx.name}
             style={{
               padding: cardPad,
-              borderRadius: 12,
+              borderRadius: 10,
               background: 'rgba(16, 185, 129, 0.04)',
               border: '1px solid rgba(16, 185, 129, 0.08)',
+              minWidth: 0,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
               <span style={{ fontSize: idxTitle, fontWeight: 800, color: '#f0f6fc' }}>{idx.name}</span>
               <span
                 style={{
-                  fontSize: compact ? '0.5rem' : '0.5625rem',
+                  fontSize: compact ? '0.45rem' : '0.5625rem',
                   fontWeight: 700,
-                  padding: '0.15rem 0.4rem',
+                  padding: '0.1rem 0.3rem',
                   borderRadius: 4,
                   background: idx.badge === 'SUCCESS' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.12)',
                   color: idx.badge === 'SUCCESS' ? '#10b981' : '#f59e0b',
@@ -115,43 +173,52 @@ function MarketPerformanceTab({ compact = false }) {
             <p style={{ margin: 0, fontSize: idxValue, fontWeight: 800, color: '#f0f6fc', letterSpacing: '-0.02em' }}>
               {idx.value}
             </p>
-            <p style={{ margin: '0.25rem 0 0', fontSize: compact ? '0.6rem' : '0.6875rem', color: '#6b7280' }}>{idx.cap}</p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-              <span style={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 700, color: idx.positive ? '#10b981' : '#ef4444' }}>
+            <p style={{ margin: '0.15rem 0 0', fontSize: compact ? '0.55rem' : '0.6875rem', color: '#6b7280' }}>{idx.cap}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+              <span
+                style={{
+                  fontSize: compact ? '0.6rem' : '0.75rem',
+                  fontWeight: 700,
+                  color: idx.positive ? '#10b981' : '#ef4444',
+                }}
+              >
                 {idx.pct}
               </span>
-              <span style={{ fontSize: compact ? '0.55rem' : '0.625rem', color: '#8b949e' }}>{idx.status}</span>
+              <span style={{ fontSize: compact ? '0.5rem' : '0.625rem', color: '#8b949e' }}>{idx.status}</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="hts-week-chart-wrap" style={{ minHeight: chartH }}>
+      <div className="hts-week-chart-wrap hts-week-chart-wrap--full" style={{ minHeight: chartH, flex: 1, minWidth: 0 }}>
+        {noData && (
+          <p className="hts-week-loading" style={{ margin: '0.5rem 0', textAlign: 'center' }}>
+            {indexPayload?.ok === false
+              ? 'Add FINNHUB_API_KEY for live index data.'
+              : 'No OHLC data for this week yet.'}
+          </p>
+        )}
         <ResponsiveContainer width="100%" height={chartH}>
-          <LineChart data={INDEX_CHART_DATA} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
-            <XAxis
-              dataKey="day"
-              tick={{ fill: '#6b7280', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
+          <LineChart data={chartData.length ? chartData : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
+            <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis hide domain={['auto', 'auto']} />
             <Tooltip
+              formatter={(value) => (typeof value === 'number' ? `${value.toFixed(3)} (idx)` : '—')}
               contentStyle={{
                 background: '#161b22',
                 border: '1px solid rgba(16, 185, 129, 0.15)',
                 borderRadius: '8px',
-                fontSize: '0.75rem',
+                fontSize: '0.7rem',
                 color: '#e2e8f0',
               }}
             />
             <Legend
-              wrapperStyle={{ fontSize: compact ? '0.6rem' : '0.6875rem', color: '#8b949e', paddingTop: compact ? 4 : 8 }}
+              wrapperStyle={{ fontSize: compact ? '0.55rem' : '0.6875rem', color: '#8b949e', paddingTop: 4 }}
               formatter={(value) => <span style={{ color: '#e2e8f0' }}>{value}</span>}
             />
-            <Line type="monotone" dataKey="sp500" stroke="#ef4444" strokeWidth={2} dot={false} name="S&P 500" />
-            <Line type="monotone" dataKey="nasdaq" stroke="#10b981" strokeWidth={2} dot={false} name="NASDAQ" />
-            <Line type="monotone" dataKey="dow" stroke="#f59e0b" strokeWidth={2} dot={false} name="Dow Jones" />
+            <Line type="monotone" dataKey="sp500" stroke="#ef4444" strokeWidth={2} dot={false} connectNulls={false} name="S&P 500" isAnimationActive={false} />
+            <Line type="monotone" dataKey="nasdaq" stroke="#10b981" strokeWidth={2} dot={false} connectNulls={false} name="NASDAQ" isAnimationActive={false} />
+            <Line type="monotone" dataKey="dow" stroke="#f59e0b" strokeWidth={2} dot={false} connectNulls={false} name="SCOP1" isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -255,7 +322,23 @@ function PlatformActivityTab() {
 
 export function ThisWeekOnEzana({ compact = false }) {
   const [activeTab, setActiveTab] = useState('market');
+  const [indexPayload, setIndexPayload] = useState(null);
   const range = useMemo(() => weekRangeLabel(), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/market/index-week')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setIndexPayload(data);
+      })
+      .catch(() => {
+        if (!cancelled) setIndexPayload({ ok: false, series: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -290,7 +373,7 @@ export function ThisWeekOnEzana({ compact = false }) {
           className={`hts-week-panel ${activeTab === 'activity' ? 'hts-week-panel--scroll' : ''}`}
           role="tabpanel"
         >
-          {activeTab === 'market' && <MarketPerformanceTab compact={compact} />}
+          {activeTab === 'market' && <MarketPerformanceTab compact={compact} indexPayload={indexPayload} />}
           {activeTab === 'activity' && <PlatformActivityTab />}
         </div>
       </div>

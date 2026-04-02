@@ -12,9 +12,45 @@ import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
-/** Matches home-dashboard 1D path for HeroSparkline */
-const CHART_PATH_1D =
-  'M0,65 C40,60 80,45 120,50 C160,55 200,35 240,30 C280,25 320,40 360,20 C400,15 440,25 480,10';
+const PORTFOLIO_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+const CHART_PATHS_BY_DAY = [
+  'M0,62 C96,58 192,52 288,46 C352,42 416,38 480,34',
+  'M0,50 C80,54 160,42 240,36 C320,30 400,28 480,32',
+  'M0,44 C100,48 200,40 300,34 C380,28 440,22 480,26',
+  'M0,58 C120,52 220,44 320,38 C400,33 452,30 480,28',
+  'M0,40 C90,46 180,38 270,32 C360,26 430,24 480,20',
+];
+
+function defaultNyDowIndex() {
+  const wd = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' });
+  const key = wd.slice(0, 3);
+  const map = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4 };
+  return map[key] ?? 4;
+}
+
+function buildDailyPortfolioSnapshots({ portfolioTotal, portfolioChange, hasPortfolio, hero1d }) {
+  const baseValue = hasPortfolio && portfolioTotal > 0 ? portfolioTotal : hero1d.value;
+  const baseChange = hasPortfolio ? portfolioChange : hero1d.changeDollar;
+  const mults = [0.988, 0.994, 1.002, 0.997, 1.008];
+  const drift = [-0.004, 0.002, 0.003, -0.0015, 0.0025];
+
+  return PORTFOLIO_DAY_LABELS.map((label, i) => {
+    const v = baseValue * mults[i] + baseValue * drift[i] * 0.12;
+    const ch = baseChange * (0.45 + i * 0.12) + baseValue * drift[i] * 0.06;
+    const pct = v > 0 ? (ch / v) * 100 : 0;
+    const trades = Math.max(0, Math.round((hero1d.companies ?? 8) * (0.55 + i * 0.11)));
+    return {
+      label,
+      displayValue: v,
+      changeDollar: ch,
+      pct,
+      gainToday: Math.max(0, ch * 0.42),
+      trades,
+      chartPath: CHART_PATHS_BY_DAY[i],
+    };
+  });
+}
 
 const MOCK_CONGRESS_TRADES = [
   { name: 'Nancy Pelosi', party: 'D', ticker: 'NVDA', type: 'Bought', amount: '+$37.06', positive: true },
@@ -54,12 +90,6 @@ const SCORE_GOALS = [
   { label: 'Engaged in 3 community posts', current: 3, total: 3, done: true },
   { label: 'Reviewed 10 capitol trades', current: 3, total: 10, done: false },
   { label: 'Complete 5 learning modules', current: 3, total: 5, done: false },
-];
-
-const PLATFORM_SCORE_ROWS = [
-  { label: 'NVDA is the most discussed', score: '+9/5' },
-  { label: 'Completed 5 different valuation models', score: '+2/3' },
-  { label: 'Engaged in 3 community posts', score: '+0/5' },
 ];
 
 const TICKER_COLORS = [
@@ -133,6 +163,7 @@ export function HomeTerminalSummary({
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
   const [scoreDetailTab, setScoreDetailTab] = useState('platform');
+  const [portfolioDayIdx, setPortfolioDayIdx] = useState(defaultNyDowIndex);
   const { isOrgUser } = useOrg();
 
   useEffect(() => {
@@ -143,23 +174,30 @@ export function HomeTerminalSummary({
 
   const hasPortfolio = enrichedHoldings.length > 0;
   const hero1d = HERO_DATA['1D'];
-  const todayPct =
-    portfolioTotal > 0 ? (portfolioChange / portfolioTotal) * 100 : 0;
 
-  const displayPct = hasPortfolio && portfolioTotal > 0 ? todayPct : hero1d.change;
-  const displayChangeDollar = hasPortfolio ? portfolioChange : 9079.44;
-  const gainTodayDisplay = hasPortfolio ? portfolioChange : 2556.08;
+  const daySnapshots = useMemo(
+    () =>
+      buildDailyPortfolioSnapshots({
+        portfolioTotal,
+        portfolioChange,
+        hasPortfolio,
+        hero1d,
+      }),
+    [portfolioTotal, portfolioChange, hasPortfolio, hero1d],
+  );
 
-  const tradesTodayCount = useMemo(() => {
-    const n = weekPlaidTransactions.length + weekTradeHistory.length;
-    return n > 0 ? n : hero1d.companies;
-  }, [weekPlaidTransactions, weekTradeHistory, hero1d.companies]);
+  const sel = daySnapshots[Math.min(portfolioDayIdx, daySnapshots.length - 1)] ?? daySnapshots[0];
+  const displayPct = sel.pct;
+  const displayChangeDollar = sel.changeDollar;
+  const gainTodayDisplay = sel.gainToday;
+  const tradesTodayCount = sel.trades;
 
   const currentValue = loading && hasUser ? 0 : portfolioTotal;
+  const snapshotValueNum = loading && hasUser ? 0 : sel.displayValue;
   const displayValue =
     loading && hasUser
       ? '—'
-      : `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      : `$${snapshotValueNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const changePctStr = `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%`;
   const changeDollarStr = `${displayChangeDollar >= 0 ? '+' : '-'}$${Math.abs(displayChangeDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -171,7 +209,7 @@ export function HomeTerminalSummary({
     'Investor';
 
   const greeting = getGreeting();
-  const streakDays = mockData?.streak ?? 12;
+  const streakDays = mockData?.streak ?? 13;
   const ringValue = 83;
   const ringMax = 90;
   const circumference = 2 * Math.PI * 52;
@@ -248,9 +286,9 @@ export function HomeTerminalSummary({
             <p className="db-greeting-date">{formatLongDate()}</p>
           </div>
 
-          <div className="home-snapshot-week-row">
-            <div className="home-snapshot-col">
-              <div className="db-card" style={{ padding: '1.25rem' }}>
+          <div className="home-terminal-main-grid">
+            <div className="home-snapshot-col home-terminal-r1c1">
+              <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -310,23 +348,24 @@ export function HomeTerminalSummary({
                   {changePctStr} ({changeDollarStr}){' '}
                   <span style={{ color: '#6b7280', fontWeight: 400 }}>Committed Frees</span>
                 </p>
-                <div style={{ height: 120, marginBottom: '0.75rem' }}>
+                <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: '0.75rem' }}>
                   <HeroSparkline
-                    portfolioValue={currentValue}
+                    portfolioValue={snapshotValueNum || currentValue}
                     changePct={displayPct}
-                    chartPath={CHART_PATH_1D}
+                    chartPath={sel.chartPath}
                   />
                 </div>
                 <div
                   className="db-tf-group-sm"
                   style={{ marginBottom: '0.85rem', justifyContent: 'space-between' }}
                 >
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
+                  {PORTFOLIO_DAY_LABELS.map((d, i) => (
                     <button
                       key={d}
                       type="button"
-                      className={`db-tf-btn-sm ${i === 4 ? 'active' : ''}`}
+                      className={`db-tf-btn-sm ${i === portfolioDayIdx ? 'active' : ''}`}
                       style={{ padding: '0.2rem 0.35rem', fontSize: '0.65rem' }}
+                      onClick={() => setPortfolioDayIdx(i)}
                     >
                       {d}
                     </button>
@@ -374,17 +413,133 @@ export function HomeTerminalSummary({
                 </div>
               </div>
             </div>
-            <div className="home-week-col">
-              <div className="db-card hts-card hts-week-card hts-week-card--compact">
+            <div className="home-week-col home-terminal-r1c2">
+              <div className="db-card hts-card hts-week-card hts-week-card--compact" style={{ height: '100%' }}>
                 <ThisWeekOnEzana compact />
               </div>
             </div>
-          </div>
+            <div className="home-terminal-r1c3 home-streak-ezana-pair">
+              <div className="db-card home-mini-streak" style={{ padding: '0.65rem 0.75rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span aria-hidden style={{ fontSize: '1rem' }}>
+                        🔥
+                      </span>
+                      <h3 style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, color: '#f0f6fc' }}>
+                        {streakDays} Day Streak
+                      </h3>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.65rem', color: '#8b949e', lineHeight: 1.35 }}>
+                      Active every day for {streakDays} days.
+                    </p>
+                  </div>
+                  <svg width={72} height={72} viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(16, 185, 129, 0.1)" strokeWidth="8" />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="8"
+                      strokeDasharray={`${ringDash} ${circumference}`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 60 60)"
+                    />
+                    <text x="60" y="58" textAnchor="middle" fill="#f0f6fc" fontSize="22" fontWeight="800">
+                      {ringValue}
+                    </text>
+                    <text x="60" y="74" textAnchor="middle" fill="#6b7280" fontSize="9" fontWeight="600">
+                      90DA
+                    </text>
+                  </svg>
+                </div>
+              </div>
+              <div className="db-card home-mini-ezana" style={{ padding: 0, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <div className="db-card-header" style={{ padding: '0.65rem 0.75rem 0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <h3 style={{ margin: 0, fontSize: '0.8125rem' }}>Ezana Score</h3>
+                    <span
+                      style={{
+                        minWidth: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        color: '#fff',
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {ezanaScore}
+                    </span>
+                  </div>
+                  <Link href="/home-dashboard" style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
+                    See All
+                  </Link>
+                </div>
+                <div style={{ padding: '0 0.75rem 0.65rem', flex: 1, minHeight: 0, overflow: 'auto' }}>
+                  <p style={{ fontSize: '0.6rem', color: '#6b7280', margin: '0 0 0.5rem' }}>Weekly progress</p>
+                  <div className="db-tf-group-sm" style={{ marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className={`db-tf-btn-sm ${scoreDetailTab === 'market' ? 'active' : ''}`}
+                      onClick={() => setScoreDetailTab('market')}
+                      style={{ fontSize: '0.58rem', padding: '0.2rem 0.35rem' }}
+                    >
+                      Market
+                    </button>
+                    <button
+                      type="button"
+                      className={`db-tf-btn-sm ${scoreDetailTab === 'platform' ? 'active' : ''}`}
+                      onClick={() => setScoreDetailTab('platform')}
+                      style={{ fontSize: '0.58rem', padding: '0.2rem 0.35rem' }}
+                    >
+                      Platform
+                    </button>
+                  </div>
+                  {SCORE_GOALS.slice(0, 3).map((g, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.35rem 0',
+                        borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: '50%',
+                          background: g.done ? '#10b981' : 'rgba(16, 185, 129, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.55rem',
+                          color: g.done ? '#fff' : '#6b7280',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {g.done ? '✓' : ''}
+                      </div>
+                      <p style={{ flex: 1, color: '#e2e8f0', fontSize: '0.65rem', margin: 0, minWidth: 0, lineHeight: 1.3 }}>{g.label}</p>
+                      <span style={{ color: '#6b7280', fontSize: '0.58rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {g.current}/{g.total}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-          <div className="home-3col">
-            {/* —— Left column —— */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="home-terminal-r2c1">
+              <div className="db-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Congressional Tracker</h3>
                 </div>
@@ -470,9 +625,8 @@ export function HomeTerminalSummary({
               </div>
             </div>
 
-            {/* —— Center column —— */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="home-terminal-r2c2">
+              <div className="db-card home-top-movers-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Top Movers Today</h3>
                   <div style={{ display: 'flex', gap: 4 }}>
@@ -620,35 +774,37 @@ export function HomeTerminalSummary({
                   </Link>
                 </div>
               </div>
+            </div>
 
-              <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <h3 style={{ margin: 0 }}>Market Pulse</h3>
+            <div className="home-terminal-r2c3 home-pulse-events-split">
+              <div className="db-card home-pulse-compact" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
+                <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <h3 style={{ margin: 0, fontSize: '0.875rem' }}>Market Pulse</h3>
                     <span
                       style={{
-                        width: 6,
-                        height: 6,
+                        width: 5,
+                        height: 5,
                         borderRadius: '50%',
                         background: '#10b981',
-                        boxShadow: '0 0 8px rgba(16,185,129,0.6)',
+                        boxShadow: '0 0 6px rgba(16,185,129,0.55)',
                       }}
                     />
                   </div>
-                  <Link href="/ezana-echo" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
+                  <Link href="/ezana-echo" style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
                     View All
                   </Link>
                 </div>
-                <div style={{ padding: '0 1.25rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ padding: '0 0.85rem 0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', flex: 1, minHeight: 0 }}>
                   <div>
                     <p
                       style={{
-                        fontSize: '0.625rem',
+                        fontSize: '0.55rem',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                         color: '#10b981',
-                        margin: '0 0 0.5rem',
+                        margin: '0 0 0.35rem',
                       }}
                     >
                       Top 3
@@ -659,8 +815,8 @@ export function HomeTerminalSummary({
                         style={{
                           display: 'flex',
                           justifyContent: 'space-between',
-                          padding: '0.35rem 0',
-                          fontSize: '0.75rem',
+                          padding: '0.25rem 0',
+                          fontSize: '0.68rem',
                           color: '#e2e8f0',
                         }}
                       >
@@ -672,12 +828,12 @@ export function HomeTerminalSummary({
                   <div>
                     <p
                       style={{
-                        fontSize: '0.625rem',
+                        fontSize: '0.55rem',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                         color: '#ef4444',
-                        margin: '0 0 0.5rem',
+                        margin: '0 0 0.35rem',
                       }}
                     >
                       Worst 5
@@ -688,8 +844,8 @@ export function HomeTerminalSummary({
                         style={{
                           display: 'flex',
                           justifyContent: 'space-between',
-                          padding: '0.35rem 0',
-                          fontSize: '0.75rem',
+                          padding: '0.25rem 0',
+                          fontSize: '0.68rem',
                           color: '#e2e8f0',
                         }}
                       >
@@ -700,310 +856,64 @@ export function HomeTerminalSummary({
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* —— Right column —— */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="db-card" style={{ padding: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <span aria-hidden style={{ fontSize: '1.25rem' }}>
-                        🔥
-                      </span>
-                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#f0f6fc' }}>
-                        {streakDays} Day Streak
-                      </h3>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#8b949e', maxWidth: 200 }}>
-                      Keep it going! You&apos;ve been active every day for the past {streakDays} days.
-                    </p>
-                    <p style={{ margin: '0.75rem 0 0', fontSize: '0.6875rem', color: '#6b7280' }}>
-                      Log in tomorrow to reach a new milestone!
-                    </p>
-                  </div>
-                  <svg width={120} height={120} viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(16, 185, 129, 0.1)" strokeWidth="8" />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="8"
-                      strokeDasharray={`${ringDash} ${circumference}`}
-                      strokeLinecap="round"
-                      transform="rotate(-90 60 60)"
-                    />
-                    <text x="60" y="58" textAnchor="middle" fill="#f0f6fc" fontSize="26" fontWeight="800">
-                      {ringValue}
-                    </text>
-                    <text x="60" y="76" textAnchor="middle" fill="#6b7280" fontSize="10" fontWeight="600">
-                      90DA
-                    </text>
-                  </svg>
+              <div className="db-card hts-card home-events-compact" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%', overflow: 'hidden' }}>
+                <div className="db-card-header" style={{ padding: '0.65rem 1rem' }}>
+                  <h3 style={{ fontSize: '0.875rem', margin: 0 }}>Upcoming Events &amp; Alerts</h3>
                 </div>
-              </div>
-
-              <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <h3 style={{ margin: 0 }}>Ezana Score</h3>
-                    <span
-                      style={{
-                        minWidth: 28,
-                        height: 28,
-                        borderRadius: '50%',
-                        background: '#10b981',
-                        color: '#fff',
-                        fontSize: '0.75rem',
-                        fontWeight: 800,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {ezanaScore}
-                    </span>
-                    <i className="bi bi-arrow-up-short" style={{ color: '#10b981', fontSize: '1.25rem' }} />
-                  </div>
-                  <Link href="/home-dashboard" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
-                    See All
-                  </Link>
-                </div>
-                <div style={{ padding: '0 1.25rem 1rem' }}>
-                  <p style={{ fontSize: '0.6875rem', color: '#6b7280', margin: '0 0 0.75rem' }}>
-                    Offset your coded progress for week.
-                  </p>
-                  <div className="db-tf-group-sm" style={{ marginBottom: '0.85rem' }}>
-                    <button
-                      type="button"
-                      className={`db-tf-btn-sm ${scoreDetailTab === 'market' ? 'active' : ''}`}
-                      onClick={() => setScoreDetailTab('market')}
-                    >
-                      Market Performance
-                    </button>
-                    <button
-                      type="button"
-                      className={`db-tf-btn-sm ${scoreDetailTab === 'platform' ? 'active' : ''}`}
-                      onClick={() => setScoreDetailTab('platform')}
-                    >
-                      Platform Activity
-                    </button>
-                  </div>
-
-                  {SCORE_GOALS.map((g, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.65rem',
-                        padding: '0.55rem 0',
-                        borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: '50%',
-                          background: g.done ? '#10b981' : 'rgba(16, 185, 129, 0.08)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.65rem',
-                          color: g.done ? '#fff' : '#6b7280',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {g.done ? '✓' : ''}
-                      </div>
-                      <p style={{ flex: 1, color: '#e2e8f0', fontSize: '0.75rem', margin: 0, minWidth: 0 }}>{g.label}</p>
-                      <span
-                        style={{
-                          color: '#6b7280',
-                          fontSize: '0.6875rem',
-                          fontWeight: 600,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {g.current}/{g.total}
-                      </span>
-                      <div
-                        style={{
-                          width: 50,
-                          height: 4,
-                          borderRadius: 2,
-                          background: 'rgba(16, 185, 129, 0.1)',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${Math.min(100, (g.current / g.total) * 100)}%`,
-                            height: '100%',
-                            borderRadius: 2,
-                            background: '#10b981',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  <div
-                    style={{
-                      marginTop: '1rem',
-                      padding: '1rem',
-                      borderRadius: 12,
-                      background: 'rgba(16, 185, 129, 0.06)',
-                      border: '1px solid rgba(16, 185, 129, 0.1)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#f0f6fc' }}>Ezana Score</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span
-                          style={{
-                            width: 26,
-                            height: 26,
-                            borderRadius: '50%',
-                            background: '#10b981',
-                            color: '#fff',
-                            fontSize: '0.7rem',
-                            fontWeight: 800,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {ezanaScore}
-                        </span>
-                        <i className="bi bi-arrow-up-short" style={{ color: '#10b981' }} />
-                      </div>
-                    </div>
-                    <div className="db-tf-group-sm" style={{ marginBottom: '0.65rem' }}>
-                      <button
-                        type="button"
-                        className={`db-tf-btn-sm ${scoreDetailTab === 'market' ? 'active' : ''}`}
-                        onClick={() => setScoreDetailTab('market')}
-                        style={{ fontSize: '0.65rem' }}
-                      >
-                        Market Performance
-                      </button>
-                      <button
-                        type="button"
-                        className={`db-tf-btn-sm ${scoreDetailTab === 'platform' ? 'active' : ''}`}
-                        onClick={() => setScoreDetailTab('platform')}
-                        style={{ fontSize: '0.65rem' }}
-                      >
-                        Platform Activity
-                      </button>
-                    </div>
-                    {scoreDetailTab === 'platform' &&
-                      PLATFORM_SCORE_ROWS.map((row) => (
-                        <div
-                          key={row.label}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10,
-                            padding: '0.45rem 0',
-                            borderBottom: '1px solid rgba(16, 185, 129, 0.06)',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: '50%',
-                              background: 'rgba(16, 185, 129, 0.15)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <i className="bi bi-check-lg" style={{ color: '#10b981', fontSize: '0.75rem' }} />
-                          </div>
-                          <p style={{ flex: 1, margin: 0, fontSize: '0.72rem', color: '#e2e8f0' }}>{row.label}</p>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#10b981' }}>{row.score}</span>
+                <div className="hts-card-body home-events-compact-body">
+                  <div className="hts-events-chain">
+                    <div className="hts-chain-item">
+                      <div className="hts-chain-dot" />
+                      <div className="hts-chain-content">
+                        <div className="hts-chain-header">
+                          <span className="hts-chain-title">NVDA Alert</span>
+                          <span className="hts-chain-severity hts-chain-elevated">ALERT</span>
+                          <span className="hts-chain-ago">Today</span>
                         </div>
-                      ))}
-                    {scoreDetailTab === 'market' && (
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#8b949e' }}>
-                        Market contribution is tracking the benchmark. Open the full dashboard for sector breakdown.
-                      </p>
-                    )}
-                    <p style={{ margin: '0.75rem 0 0', fontSize: '0.65rem', color: '#6b7280' }}>
-                      <i className="bi bi-bar-chart-line" style={{ marginRight: 6, color: '#10b981' }} />8 Ranked from last month
-                    </p>
+                        <div className="hts-chain-time">Approaching target ($960)</div>
+                        <p className="hts-chain-body">Current: $954.70 — 0.6% away</p>
+                      </div>
+                    </div>
+                    <div className="hts-chain-item">
+                      <div className="hts-chain-dot" />
+                      <div className="hts-chain-content">
+                        <div className="hts-chain-header">
+                          <span className="hts-chain-title">AAPL Earnings</span>
+                          <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
+                          <span className="hts-chain-ago">Tomorrow</span>
+                        </div>
+                        <div className="hts-chain-time">After Hours</div>
+                        <p className="hts-chain-body">7 shares — guidance watch</p>
+                      </div>
+                    </div>
+                    <div className="hts-chain-item">
+                      <div className="hts-chain-dot" />
+                      <div className="hts-chain-content">
+                        <div className="hts-chain-header">
+                          <span className="hts-chain-title">Senate Banking</span>
+                          <span className="hts-chain-severity hts-chain-congress">CONGRESS</span>
+                          <span className="hts-chain-ago">This Week</span>
+                        </div>
+                        <div className="hts-chain-time">Hearing</div>
+                        <p className="hts-chain-body">3 follows on committee</p>
+                      </div>
+                    </div>
+                    <div className="hts-chain-item">
+                      <div className="hts-chain-dot" />
+                      <div className="hts-chain-content">
+                        <div className="hts-chain-header">
+                          <span className="hts-chain-title">GOOGL Earnings</span>
+                          <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
+                          <span className="hts-chain-ago">Apr 2</span>
+                        </div>
+                        <div className="hts-chain-time">Report</div>
+                        <p className="hts-chain-body">10 shares</p>
+                      </div>
+                    </div>
                   </div>
+                  <p className="hts-events-footer">3 events · 2 alerts</p>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="home-events-row" style={{ marginTop: '1.25rem' }}>
-            <div className="db-card hts-card">
-              <div className="db-card-header">
-                <h3>Upcoming Events &amp; Alerts</h3>
-              </div>
-              <div className="hts-card-body">
-                <div className="hts-events-chain">
-                  <div className="hts-chain-item">
-                    <div className="hts-chain-dot" />
-                    <div className="hts-chain-content">
-                      <div className="hts-chain-header">
-                        <span className="hts-chain-title">NVDA Alert</span>
-                        <span className="hts-chain-severity hts-chain-elevated">ALERT</span>
-                        <span className="hts-chain-ago">Today</span>
-                      </div>
-                      <div className="hts-chain-time">Approaching target price ($960)</div>
-                      <p className="hts-chain-body">
-                        Current: $954.70 — 0.6% away from your alert
-                      </p>
-                    </div>
-                  </div>
-                  <div className="hts-chain-item">
-                    <div className="hts-chain-dot" />
-                    <div className="hts-chain-content">
-                      <div className="hts-chain-header">
-                        <span className="hts-chain-title">AAPL Earnings</span>
-                        <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
-                        <span className="hts-chain-ago">Tomorrow</span>
-                      </div>
-                      <div className="hts-chain-time">After Hours</div>
-                      <p className="hts-chain-body">
-                        You hold 7 shares — watch for guidance update
-                      </p>
-                    </div>
-                  </div>
-                  <div className="hts-chain-item">
-                    <div className="hts-chain-dot" />
-                    <div className="hts-chain-content">
-                      <div className="hts-chain-header">
-                        <span className="hts-chain-title">Senate Banking Hearing</span>
-                        <span className="hts-chain-severity hts-chain-congress">CONGRESS</span>
-                        <span className="hts-chain-ago">This Week</span>
-                      </div>
-                      <div className="hts-chain-time">Committee Hearing</div>
-                      <p className="hts-chain-body">3 politicians you follow are members</p>
-                    </div>
-                  </div>
-                  <div className="hts-chain-item">
-                    <div className="hts-chain-dot" />
-                    <div className="hts-chain-content">
-                      <div className="hts-chain-header">
-                        <span className="hts-chain-title">GOOGL Earnings</span>
-                        <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
-                        <span className="hts-chain-ago">Apr 2</span>
-                      </div>
-                      <div className="hts-chain-time">Earnings Report</div>
-                      <p className="hts-chain-body">You hold 10 shares</p>
-                    </div>
-                  </div>
-                </div>
-                <p className="hts-events-footer">3 events · 2 alerts</p>
               </div>
             </div>
           </div>
