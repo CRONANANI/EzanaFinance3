@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
@@ -132,7 +131,6 @@ export function HomeTerminalSummary({
   weekTradeHistory = [],
 }) {
   const { user } = useAuth();
-  const pathname = usePathname();
   const [mockData, setMockData] = useState(null);
   const [scoreDetailTab, setScoreDetailTab] = useState('platform');
   const { isOrgUser } = useOrg();
@@ -180,15 +178,6 @@ export function HomeTerminalSummary({
   const ringDash = (ringValue / ringMax) * circumference;
 
   const ezanaScore = mockData?.activityScore != null ? Math.min(99, Math.round(mockData.activityScore / 4.5)) : 22;
-
-  const pageTabs = [
-    { href: '/home', label: 'Overview', icon: 'bi-grid-1x2' },
-    { href: '/home-dashboard', label: 'Portfolio', icon: 'bi-pie-chart' },
-    { href: '/community', label: 'Community', icon: 'bi-people' },
-    { href: '/ezana-echo', label: 'Messages', icon: 'bi-chat-dots' },
-    { href: '/trading', label: '', icon: 'bi-arrow-right-circle', iconOnly: true },
-    { href: '/user-profile-settings', label: 'Notifications', icon: 'bi-bell' },
-  ];
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
@@ -246,118 +235,23 @@ export function HomeTerminalSummary({
 
       {!isOrgUser && (
         <>
-          <div className="home-greet-row" style={{ marginBottom: '1rem' }}>
-            <div className="db-greeting-section" style={{ flex: '1 1 280px', marginBottom: 0 }}>
-              <h1 className="db-greeting">
-                {greeting}, {userName}{' '}
-                <span className="db-greeting-waving" aria-hidden>
-                  👋
-                </span>
-              </h1>
-              <p className="db-greeting-sub">
-                Welcome back. Here&apos;s a snapshot of your portfolio and latest market activity.
-              </p>
-              <p className="db-greeting-date">{formatLongDate()}</p>
-            </div>
-            <div
-              className="home-greet-actions"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}
-            >
-              <div style={{ position: 'relative', minWidth: 160 }}>
-                <i
-                  className="bi bi-search"
-                  style={{
-                    position: 'absolute',
-                    left: '0.65rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    fontSize: '0.75rem',
-                    color: '#6b7280',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <input
-                  type="search"
-                  placeholder="Search.."
-                  aria-label="Search"
-                  className="home-search-input"
-                  style={{ width: '100%', maxWidth: 220, paddingLeft: '2rem' }}
-                />
-              </div>
-              <button
-                type="button"
-                className="home-icon-btn"
-                aria-label="Notifications"
-                style={{
-                  position: 'relative',
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  border: '1px solid rgba(16, 185, 129, 0.12)',
-                  background: 'rgba(16, 185, 129, 0.06)',
-                  color: '#e2e8f0',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <i className="bi bi-bell" />
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 9,
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    background: '#10b981',
-                  }}
-                />
-              </button>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #10b981, #059669)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.875rem',
-                  fontWeight: 800,
-                  color: '#fff',
-                }}
-              >
-                {initials(userName)}
-              </div>
-            </div>
+          <div className="db-greeting-section" style={{ marginBottom: '1.25rem' }}>
+            <h1 className="db-greeting">
+              {greeting}, {userName}{' '}
+              <span className="db-greeting-waving" aria-hidden>
+                👋
+              </span>
+            </h1>
+            <p className="db-greeting-sub">
+              Welcome back. Here&apos;s a snapshot of your portfolio and latest market activity.
+            </p>
+            <p className="db-greeting-date">{formatLongDate()}</p>
           </div>
 
-          <div className="home-page-tabs comm-header-tabs" style={{ marginBottom: '1.25rem' }}>
-            {pageTabs.map((tab) => {
-              const active =
-                tab.href === '/home'
-                  ? pathname === '/home'
-                  : pathname === tab.href || pathname?.startsWith(`${tab.href}/`);
-              return (
-                <Link
-                  key={tab.href + tab.label}
-                  href={tab.href}
-                  className={`db-tf-btn-sm ${active ? 'active' : ''}`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    textDecoration: 'none',
-                  }}
-                  aria-label={tab.iconOnly ? 'Trading' : undefined}
-                >
-                  <i className={`bi ${tab.icon}`} aria-hidden />
-                  {!tab.iconOnly && tab.label}
-                </Link>
-              );
-            })}
+          <div className="home-week-full" style={{ marginBottom: '1.25rem' }}>
+            <div className="db-card hts-card hts-week-card">
+              <ThisWeekOnEzana />
+            </div>
           </div>
 
           <div className="home-3col">
@@ -1108,12 +1002,6 @@ export function HomeTerminalSummary({
                 </div>
                 <p className="hts-events-footer">3 events · 2 alerts</p>
               </div>
-            </div>
-          </div>
-
-          <div className="home-week-full" style={{ marginTop: '1.25rem' }}>
-            <div className="db-card hts-card hts-week-card">
-              <ThisWeekOnEzana />
             </div>
           </div>
         </>
