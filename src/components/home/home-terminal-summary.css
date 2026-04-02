@@ -1104,6 +1104,10 @@ body.light-mode .hts-week-compare {
   background: rgba(16, 185, 129, 0.15);
   color: #10b981;
 }
+.hts-chain-congress {
+  background: rgba(6, 95, 70, 0.35);
+  color: #6ee7b7;
+}
 .hts-chain-ago {
   font-size: 0.5rem;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -1123,4 +1127,85 @@ body.light-mode .hts-week-compare {
   color: #8b949e;
   line-height: 1.6;
   margin: 0;
+}
+
+/* ═══ /home terminal — 3-column layout + search (home page only) ═══ */
+.home-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 340px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.home-greet-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.home-search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  background: rgba(17, 24, 39, 0.4);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 8px;
+  color: #f0f6fc;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.home-search-input::placeholder {
+  color: #6b7280;
+}
+
+.home-search-input:focus {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.home-page-tabs {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.home-page-tabs a.db-tf-btn-sm.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.hts-week-market-v2 {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .home-3col {
+    grid-template-columns: 1fr 1fr;
+  }
+  .home-3col > div:last-child {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-3col {
+    grid-template-columns: 1fr;
+  }
+  .home-3col > div:last-child {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hts-week-market-v2 {
+    grid-template-columns: 1fr !important;
+  }
 }
