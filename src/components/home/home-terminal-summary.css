@@ -1129,6 +1129,58 @@ body.light-mode .hts-week-compare {
   margin: 0;
 }
 
+/* ═══ /home terminal — portfolio + This Week on Ezana (same row) ═══ */
+.home-snapshot-week-row {
+  display: grid;
+  grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+  margin-bottom: 1.25rem;
+}
+
+.home-snapshot-col {
+  min-width: 0;
+}
+
+.home-week-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-week-col .hts-week-card--compact {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 560px;
+}
+
+.home-week-col .hts-week-card--compact .hts-week-card-body--compact {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.65rem;
+  padding-bottom: 0.75rem;
+}
+
+.home-week-col .hts-week-card--compact .hts-week-panel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+@media (max-width: 1100px) {
+  .home-snapshot-week-row {
+    grid-template-columns: 1fr;
+  }
+
+  .home-week-col .hts-week-card--compact {
+    max-height: none;
+  }
+}
+
 /* ═══ /home terminal — 3-column layout (home page only) ═══ */
 .home-3col {
   display: grid;

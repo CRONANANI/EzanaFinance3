@@ -355,7 +355,7 @@
     margin-right: auto !important;
   }
 
-  .dashboard-main .dashboard-container {
+  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) .dashboard-container {
     max-width: 1900px;
     margin-left: auto;
     margin-right: auto;
@@ -425,7 +425,7 @@
     max-width: 2000px !important;
   }
 
-  .dashboard-main .dashboard-container {
+  .dashboard-main.dashboard-main-content:not(.dashboard-main-content--fullscreen) .dashboard-container {
     max-width: 2100px !important;
     margin-left: auto !important;
     margin-right: auto !important;

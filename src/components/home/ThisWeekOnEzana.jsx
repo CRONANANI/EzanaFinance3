@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
 import {
   Line,
   LineChart,
@@ -9,31 +8,51 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  Legend,
 } from 'recharts';
 
 const TABS = [
   { key: 'market', label: 'Market Performance' },
   { key: 'activity', label: 'Platform Activity' },
-  { key: 'community', label: 'Community' },
 ];
 
-const INDEX_DATA = [
-  { day: 'Mon', sp500: 0, nasdaq: 0, dow: 0 },
-  { day: 'Tue', sp500: 0.3, nasdaq: 0.5, dow: -0.1 },
-  { day: 'Wed', sp500: 0.7, nasdaq: 1.0, dow: 0.1 },
-  { day: 'Thu', sp500: 0.9, nasdaq: 1.4, dow: -0.2 },
-  { day: 'Fri', sp500: 1.2, nasdaq: 1.8, dow: -0.3 },
+/** Absolute index levels Mon–Fri (reference layout) */
+const INDEX_CHART_DATA = [
+  { day: 'Mon', sp500: 5420, nasdaq: 16100, dow: 35800 },
+  { day: 'Tue', sp500: 5450, nasdaq: 16150, dow: 35900 },
+  { day: 'Wed', sp500: 5480, nasdaq: 16200, dow: 36000 },
+  { day: 'Thu', sp500: 5500, nasdaq: 16280, dow: 36050 },
+  { day: 'Fri', sp500: 5523, nasdaq: 16302, dow: 36107 },
 ];
 
-const ACTIVITY_ROWS = [
-  { href: '/inside-the-capitol', icon: '🏛️', cat: 'Congress', text: 'Pelosi bought $1M–5M of NVDA', ago: '2d' },
-  { href: '/inside-the-capitol', icon: '🏛️', cat: 'Congress', text: 'Tuberville sold $100K–250K of KMB', ago: '1d' },
-  { href: '/community', icon: '💬', cat: 'Community', text: '3 new discussions in topics you follow', ago: '' },
-  { href: '/company-research', icon: '📊', cat: 'Earnings', text: 'AAPL (Wed AH) · MSFT (Thu AH) this week', ago: '' },
-  { href: '/watchlist', icon: '🔔', cat: 'Alert', text: 'NVDA within 0.6% of your $960 target', ago: '' },
-  { href: '/home-dashboard', icon: '📈', cat: 'Movers', text: 'SMCI +18.4% · RIVN -9.2% this week', ago: '' },
-  { href: '/home-dashboard', icon: '🎯', cat: 'Checklist', text: 'You completed 2 new tasks this week', ago: '' },
-  { href: '/community', icon: '🏆', cat: 'Leaderboard', text: 'You moved up 14 spots to #127', ago: '' },
+const INDEX_CARDS = [
+  {
+    name: 'S&P 500',
+    value: '5,522.9',
+    pct: '+1.32%',
+    positive: true,
+    badge: 'PARTIAL',
+    cap: '$42.1T cap',
+    status: 'Rebounding',
+  },
+  {
+    name: 'NASDAQ',
+    value: '16,302',
+    pct: '+1.29%',
+    positive: true,
+    badge: 'SUCCESS',
+    cap: '$18.4T cap',
+    status: 'Alternating',
+  },
+  {
+    name: 'SCOP1',
+    value: '36,167',
+    pct: '+1.39%',
+    positive: true,
+    badge: 'SUCCESS',
+    cap: 'Composite',
+    status: 'Rebounding',
+  },
 ];
 
 function weekRangeLabel() {
@@ -49,27 +68,67 @@ function weekRangeLabel() {
   return `${a} – ${b}`;
 }
 
-function MarketPerformanceTab() {
+function MarketPerformanceTab({ compact = false }) {
+  const chartH = compact ? 150 : 220;
+  const idxTitle = compact ? '0.6875rem' : '0.75rem';
+  const idxValue = compact ? '0.9375rem' : '1.125rem';
+  const gridCols = compact ? 'minmax(0, 128px) minmax(0, 1fr)' : 'minmax(0, 200px) minmax(0, 1fr)';
+  const cardPad = compact ? '0.5rem 0.6rem' : '0.75rem 0.85rem';
+  const gap = compact ? '0.5rem' : '1.25rem';
+
   return (
-    <div className="hts-week-tab-inner hts-week-market">
-      <div className="hts-week-legend-row">
-        <span>
-          <i className="hts-week-legend-dot" style={{ background: '#10b981' }} /> S&amp;P 500{' '}
-          <span className="hts-week-chg-pos">▲ +1.2%</span>
-        </span>
-        <span>
-          <i className="hts-week-legend-dot" style={{ background: '#3b82f6' }} /> NASDAQ{' '}
-          <span className="hts-week-chg-pos">▲ +1.8%</span>
-        </span>
-        <span>
-          <i className="hts-week-legend-dot" style={{ background: '#f59e0b' }} /> DOW{' '}
-          <span className="hts-week-chg-neg">▼ -0.3%</span>
-        </span>
+    <div
+      className="hts-week-tab-inner hts-week-market-v2"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: gridCols,
+        gap,
+        alignItems: 'stretch',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '0.35rem' : '0.65rem' }}>
+        {INDEX_CARDS.map((idx) => (
+          <div
+            key={idx.name}
+            style={{
+              padding: cardPad,
+              borderRadius: 12,
+              background: 'rgba(16, 185, 129, 0.04)',
+              border: '1px solid rgba(16, 185, 129, 0.08)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: idxTitle, fontWeight: 800, color: '#f0f6fc' }}>{idx.name}</span>
+              <span
+                style={{
+                  fontSize: compact ? '0.5rem' : '0.5625rem',
+                  fontWeight: 700,
+                  padding: '0.15rem 0.4rem',
+                  borderRadius: 4,
+                  background: idx.badge === 'SUCCESS' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.12)',
+                  color: idx.badge === 'SUCCESS' ? '#10b981' : '#f59e0b',
+                }}
+              >
+                {idx.badge}
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: idxValue, fontWeight: 800, color: '#f0f6fc', letterSpacing: '-0.02em' }}>
+              {idx.value}
+            </p>
+            <p style={{ margin: '0.25rem 0 0', fontSize: compact ? '0.6rem' : '0.6875rem', color: '#6b7280' }}>{idx.cap}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+              <span style={{ fontSize: compact ? '0.65rem' : '0.75rem', fontWeight: 700, color: idx.positive ? '#10b981' : '#ef4444' }}>
+                {idx.pct}
+              </span>
+              <span style={{ fontSize: compact ? '0.55rem' : '0.625rem', color: '#8b949e' }}>{idx.status}</span>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="hts-week-chart-wrap">
-        <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={INDEX_DATA} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+      <div className="hts-week-chart-wrap" style={{ minHeight: chartH }}>
+        <ResponsiveContainer width="100%" height={chartH}>
+          <LineChart data={INDEX_CHART_DATA} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
             <XAxis
               dataKey="day"
               tick={{ fill: '#6b7280', fontSize: 11 }}
@@ -85,96 +144,116 @@ function MarketPerformanceTab() {
                 fontSize: '0.75rem',
                 color: '#e2e8f0',
               }}
-              formatter={(value) => [`${value > 0 ? '+' : ''}${value}%`, '']}
             />
-            <Line type="monotone" dataKey="sp500" stroke="#10b981" strokeWidth={2} dot={false} name="S&P 500" />
-            <Line type="monotone" dataKey="nasdaq" stroke="#3b82f6" strokeWidth={2} dot={false} name="NASDAQ" />
-            <Line type="monotone" dataKey="dow" stroke="#f59e0b" strokeWidth={2} dot={false} name="DOW" />
+            <Legend
+              wrapperStyle={{ fontSize: compact ? '0.6rem' : '0.6875rem', color: '#8b949e', paddingTop: compact ? 4 : 8 }}
+              formatter={(value) => <span style={{ color: '#e2e8f0' }}>{value}</span>}
+            />
+            <Line type="monotone" dataKey="sp500" stroke="#ef4444" strokeWidth={2} dot={false} name="S&P 500" />
+            <Line type="monotone" dataKey="nasdaq" stroke="#10b981" strokeWidth={2} dot={false} name="NASDAQ" />
+            <Line type="monotone" dataKey="dow" stroke="#f59e0b" strokeWidth={2} dot={false} name="Dow Jones" />
           </LineChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="hts-week-market-footer">
-        <span>VIX: 33.84 (+2.11%)</span>
-        <span>Gold: $404.13</span>
-        <span>Oil: $114.54</span>
       </div>
     </div>
   );
 }
 
 function PlatformActivityTab() {
-  return (
-    <div className="hts-week-tab-inner hts-week-activity-list">
-      {ACTIVITY_ROWS.map((row) => (
-        <Link key={row.text} href={row.href} className="hts-week-activity-row">
-          <span className="hts-week-activity-icon" aria-hidden>
-            {row.icon}
-          </span>
-          <span className="hts-week-activity-cat">{row.cat}</span>
-          <span className="hts-week-activity-desc">{row.text}</span>
-          {row.ago ? <span className="hts-week-activity-ago">{row.ago}</span> : null}
-        </Link>
-      ))}
-    </div>
-  );
-}
+  const rows = [
+    {
+      title: 'NVDA is the most discussed stock',
+      sub: '900 mentions this week',
+      score: '+9 / 5',
+      pct: 85,
+    },
+    {
+      title: 'Community sentiment is bullish',
+      sub: '72% buying activity this month',
+      score: '72%',
+      pct: 72,
+    },
+    {
+      title: 'Engaged in 3 community posts',
+      sub: 'Keep the streak alive',
+      score: '+0 / 5',
+      pct: 60,
+    },
+    {
+      title: 'Reviewed 10 capitol trades',
+      sub: 'Capitol watchlist',
+      score: '+7 / 10',
+      pct: 70,
+    },
+  ];
 
-function CommunityTab() {
   return (
-    <div className="hts-week-tab-inner hts-week-community">
-      <div className="hts-week-community-grid">
-        <div>
-          <p className="hts-week-metric-label">Most Discussed Stock</p>
-          <p className="hts-week-metric-val">NVDA — 847 mentions</p>
-          <div className="hts-week-mini-bar">
-            <span style={{ width: '85%' }} />
+    <div className="hts-week-tab-inner hts-week-activity-v2" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      {rows.map((row) => (
+        <div
+          key={row.title}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.65rem 0',
+            borderBottom: '1px solid rgba(16, 185, 129, 0.06)',
+          }}
+        >
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'rgba(16, 185, 129, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <i className="bi bi-graph-up-arrow" style={{ color: '#10b981', fontSize: '0.9rem' }} />
           </div>
-        </div>
-        <div>
-          <p className="hts-week-metric-label">Community Sentiment</p>
-          <div className="hts-week-sentiment-inline">
-            <div className="hts-sentiment-bar hts-week-sentiment-track">
-              <div className="hts-sentiment-fill" style={{ width: '72%' }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: '#f0f6fc' }}>{row.title}</p>
+            <p style={{ margin: '0.15rem 0 0', fontSize: '0.6875rem', color: '#6b7280' }}>{row.sub}</p>
+            <div
+              style={{
+                marginTop: 6,
+                height: 4,
+                borderRadius: 2,
+                background: 'rgba(16, 185, 129, 0.1)',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{ width: `${row.pct}%`, height: '100%', borderRadius: 2, background: '#10b981' }} />
             </div>
-            <span className="hts-week-sentiment-pct">Bullish 72%</span>
           </div>
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>{row.score}</span>
         </div>
-      </div>
+      ))}
 
-      <div className="hts-week-community-grid">
-        <div>
-          <p className="hts-week-metric-label">Trending Topic</p>
-          <p className="hts-week-body">AI Stocks — 154 discussions</p>
+      <div style={{ marginTop: '0.5rem' }}>
+        <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', margin: '0 0 0.5rem' }}>
+          Your standing
+        </p>
+        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: '#e2e8f0' }}>
+          You&apos;re more active than <strong style={{ color: '#10b981' }}>60%</strong> of users
+        </p>
+        <div style={{ height: 8, borderRadius: 4, background: 'rgba(16, 185, 129, 0.1)', overflow: 'hidden', marginBottom: '0.65rem' }}>
+          <div style={{ width: '60%', height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
         </div>
-        <div>
-          <p className="hts-week-metric-label">Most Followed Politician</p>
-          <p className="hts-week-body">Nancy Pelosi — 3,420 followers</p>
-        </div>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: '#8b949e' }}>
+          <i className="bi bi-bar-chart-line" style={{ marginRight: 6, color: '#10b981' }} />
+          Ranked <strong style={{ color: '#f0f6fc' }}>#8</strong> amongst friends{' '}
+          <span style={{ color: '#10b981' }}>(up 2 spots from last month)</span>
+        </p>
       </div>
-
-      <div className="hts-week-community-divider" />
-
-      <p className="hts-week-metric-label">Your Standing</p>
-      <div className="hts-week-standing-row">
-        <span>
-          More active than <span className="hts-accent-stat">68%</span> of users
-        </span>
-        <div className="hts-week-mini-bar wide">
-          <span style={{ width: '68%' }} />
-        </div>
-      </div>
-      <p className="hts-week-body">
-        Rank: <strong>#127</strong> (<span className="hts-week-chg-pos">▲14</span> from last week)
-      </p>
-      <p className="hts-week-body">
-        <span aria-hidden>🔥</span> 12-day login streak
-      </p>
     </div>
   );
 }
 
-export function ThisWeekOnEzana() {
+export function ThisWeekOnEzana({ compact = false }) {
   const [activeTab, setActiveTab] = useState('market');
   const range = useMemo(() => weekRangeLabel(), []);
 
@@ -191,12 +270,8 @@ export function ThisWeekOnEzana() {
           <span className="hts-week-date-range">{range}</span>
         </div>
       </div>
-      <div className="hts-card-body hts-week-card-body">
-        <div
-          className="hts-week-tabs db-tf-group-sm"
-          role="tablist"
-          aria-label="Weekly recap sections"
-        >
+      <div className={`hts-card-body hts-week-card-body${compact ? ' hts-week-card-body--compact' : ''}`}>
+        <div className="hts-week-tabs db-tf-group-sm" role="tablist" aria-label="Weekly recap sections">
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -215,9 +290,8 @@ export function ThisWeekOnEzana() {
           className={`hts-week-panel ${activeTab === 'activity' ? 'hts-week-panel--scroll' : ''}`}
           role="tabpanel"
         >
-          {activeTab === 'market' && <MarketPerformanceTab />}
+          {activeTab === 'market' && <MarketPerformanceTab compact={compact} />}
           {activeTab === 'activity' && <PlatformActivityTab />}
-          {activeTab === 'community' && <CommunityTab />}
         </div>
       </div>
     </>

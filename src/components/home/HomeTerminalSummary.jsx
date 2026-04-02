@@ -248,15 +248,8 @@ export function HomeTerminalSummary({
             <p className="db-greeting-date">{formatLongDate()}</p>
           </div>
 
-          <div className="home-week-full" style={{ marginBottom: '1.25rem' }}>
-            <div className="db-card hts-card hts-week-card">
-              <ThisWeekOnEzana />
-            </div>
-          </div>
-
-          <div className="home-3col">
-            {/* —— Left column —— */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="home-snapshot-week-row">
+            <div className="home-snapshot-col">
               <div className="db-card" style={{ padding: '1.25rem' }}>
                 <div
                   style={{
@@ -380,7 +373,17 @@ export function HomeTerminalSummary({
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="home-week-col">
+              <div className="db-card hts-card hts-week-card hts-week-card--compact">
+                <ThisWeekOnEzana compact />
+              </div>
+            </div>
+          </div>
 
+          <div className="home-3col">
+            {/* —— Left column —— */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Congressional Tracker</h3>

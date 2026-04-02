@@ -28,6 +28,14 @@
   box-sizing: border-box;
 }
 
+/* Edge-to-edge map: responsive-system caps .dashboard-container on large screens — exempt fullscreen */
+.dashboard-main.dashboard-main-content.dashboard-main-content--fullscreen .dashboard-container {
+  max-width: none !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .dashboard-main .dashboard-container,
 .dashboard-container {
   padding: 0;
