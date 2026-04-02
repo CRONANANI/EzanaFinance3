@@ -287,8 +287,10 @@ export function HomeTerminalSummary({
           </div>
 
           <div className="home-terminal-main-grid">
-            <div className="home-snapshot-col home-terminal-r1c1">
-              <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div className="home-terminal-left-col">
+              <div className="home-terminal-top-row">
+            <div className="home-snapshot-col">
+              <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
                 <div
                   style={{
                     display: 'flex',
@@ -413,20 +415,173 @@ export function HomeTerminalSummary({
                 </div>
               </div>
             </div>
-            <div className="home-week-col home-terminal-r1c2">
-              <div className="db-card hts-card hts-week-card hts-week-card--compact" style={{ height: '100%' }}>
-                <ThisWeekOnEzana compact />
+            <div className="home-week-col">
+              <div className="db-card hts-card hts-week-card hts-week-card--compact">
+                <ThisWeekOnEzana compact marketChartOnly />
               </div>
             </div>
-            <div className="home-terminal-r1c3 home-streak-ezana-pair">
-              <div className="db-card home-mini-streak" style={{ padding: '0.65rem 0.75rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+              </div>
+
+              <div className="home-terminal-left-below">
+                <div className="db-card hts-card home-events-compact home-events-rail-wide">
+                  <div className="db-card-header" style={{ padding: '0.75rem 1.25rem' }}>
+                    <h3 style={{ margin: 0 }}>Upcoming Events &amp; Alerts</h3>
+                  </div>
+                  <div className="hts-card-body home-events-compact-body">
+                    <div className="hts-events-chain">
+                      <div className="hts-chain-item">
+                        <div className="hts-chain-dot" />
+                        <div className="hts-chain-content">
+                          <div className="hts-chain-header">
+                            <span className="hts-chain-title">NVDA Alert</span>
+                            <span className="hts-chain-severity hts-chain-elevated">ALERT</span>
+                            <span className="hts-chain-ago">Today</span>
+                          </div>
+                          <div className="hts-chain-time">Approaching target ($960)</div>
+                          <p className="hts-chain-body">Current: $954.70 — 0.6% away</p>
+                        </div>
+                      </div>
+                      <div className="hts-chain-item">
+                        <div className="hts-chain-dot" />
+                        <div className="hts-chain-content">
+                          <div className="hts-chain-header">
+                            <span className="hts-chain-title">AAPL Earnings</span>
+                            <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
+                            <span className="hts-chain-ago">Tomorrow</span>
+                          </div>
+                          <div className="hts-chain-time">After Hours</div>
+                          <p className="hts-chain-body">7 shares — guidance watch</p>
+                        </div>
+                      </div>
+                      <div className="hts-chain-item">
+                        <div className="hts-chain-dot" />
+                        <div className="hts-chain-content">
+                          <div className="hts-chain-header">
+                            <span className="hts-chain-title">Senate Banking</span>
+                            <span className="hts-chain-severity hts-chain-congress">CONGRESS</span>
+                            <span className="hts-chain-ago">This Week</span>
+                          </div>
+                          <div className="hts-chain-time">Hearing</div>
+                          <p className="hts-chain-body">3 follows on committee</p>
+                        </div>
+                      </div>
+                      <div className="hts-chain-item">
+                        <div className="hts-chain-dot" />
+                        <div className="hts-chain-content">
+                          <div className="hts-chain-header">
+                            <span className="hts-chain-title">GOOGL Earnings</span>
+                            <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
+                            <span className="hts-chain-ago">Apr 2</span>
+                          </div>
+                          <div className="hts-chain-time">Report</div>
+                          <p className="hts-chain-body">10 shares</p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="hts-events-footer">3 events · 2 alerts</p>
+                  </div>
+                </div>
+
+                <div className="db-card home-pulse-compact home-pulse-rail-wide">
+                  <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <h3 style={{ margin: 0 }}>Market Pulse</h3>
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          background: '#10b981',
+                          boxShadow: '0 0 8px rgba(16,185,129,0.6)',
+                        }}
+                      />
+                    </div>
+                    <Link href="/ezana-echo" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
+                      View All
+                    </Link>
+                  </div>
+                  <div style={{ padding: '0 1.25rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div>
+                      <p
+                        style={{
+                          fontSize: '0.625rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          color: '#10b981',
+                          margin: '0 0 0.5rem',
+                        }}
+                      >
+                        Top 3
+                      </p>
+                      {TOP_SECTORS.map((s) => (
+                        <div
+                          key={s.name}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            padding: '0.35rem 0',
+                            fontSize: '0.75rem',
+                            color: '#e2e8f0',
+                          }}
+                        >
+                          <span>{s.name}</span>
+                          <span style={{ color: '#10b981', fontWeight: 700 }}>{s.change}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <p
+                        style={{
+                          fontSize: '0.625rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          color: '#ef4444',
+                          margin: '0 0 0.5rem',
+                        }}
+                      >
+                        Worst 5
+                      </p>
+                      {WORST_SECTORS.map((s) => (
+                        <div
+                          key={s.name}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            padding: '0.35rem 0',
+                            fontSize: '0.75rem',
+                            color: '#e2e8f0',
+                          }}
+                        >
+                          <span>{s.name}</span>
+                          <span style={{ color: '#ef4444', fontWeight: 700 }}>{s.change}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="home-terminal-right-col">
+              <div className="home-streak-ezana-pair home-rail-streak-ezana">
+              <div className="db-card home-mini-streak" style={{ padding: '0.75rem 0.9rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: 1 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <span aria-hidden style={{ fontSize: '1rem' }}>
                         🔥
                       </span>
-                      <h3 style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, color: '#f0f6fc' }}>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontSize: '0.875rem',
+                          fontWeight: 800,
+                          color: '#f0f6fc',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
                         {streakDays} Day Streak
                       </h3>
                     </div>
@@ -457,9 +612,9 @@ export function HomeTerminalSummary({
                 </div>
               </div>
               <div className="db-card home-mini-ezana" style={{ padding: 0, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <div className="db-card-header" style={{ padding: '0.65rem 0.75rem 0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <h3 style={{ margin: 0, fontSize: '0.8125rem' }}>Ezana Score</h3>
+                <div className="db-card-header" style={{ padding: '0.65rem 0.85rem 0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                    <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, whiteSpace: 'nowrap' }}>Ezana Score</h3>
                     <span
                       style={{
                         minWidth: 24,
@@ -536,10 +691,10 @@ export function HomeTerminalSummary({
                   ))}
                 </div>
               </div>
-            </div>
+              </div>
 
-            <div className="home-terminal-r2c1">
-              <div className="db-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div className="home-rail-congress">
+              <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Congressional Tracker</h3>
                 </div>
@@ -623,10 +778,10 @@ export function HomeTerminalSummary({
                   </Link>
                 </div>
               </div>
-            </div>
+              </div>
 
-            <div className="home-terminal-r2c2">
-              <div className="db-card home-top-movers-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div className="home-rail-movers">
+              <div className="db-card home-top-movers-card" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Top Movers Today</h3>
                   <div style={{ display: 'flex', gap: 4 }}>
@@ -774,146 +929,6 @@ export function HomeTerminalSummary({
                   </Link>
                 </div>
               </div>
-            </div>
-
-            <div className="home-terminal-r2c3 home-pulse-events-split">
-              <div className="db-card home-pulse-compact" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
-                <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <h3 style={{ margin: 0, fontSize: '0.875rem' }}>Market Pulse</h3>
-                    <span
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: '50%',
-                        background: '#10b981',
-                        boxShadow: '0 0 6px rgba(16,185,129,0.55)',
-                      }}
-                    />
-                  </div>
-                  <Link href="/ezana-echo" style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
-                    View All
-                  </Link>
-                </div>
-                <div style={{ padding: '0 0.85rem 0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', flex: 1, minHeight: 0 }}>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: '0.55rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        color: '#10b981',
-                        margin: '0 0 0.35rem',
-                      }}
-                    >
-                      Top 3
-                    </p>
-                    {TOP_SECTORS.map((s) => (
-                      <div
-                        key={s.name}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          padding: '0.25rem 0',
-                          fontSize: '0.68rem',
-                          color: '#e2e8f0',
-                        }}
-                      >
-                        <span>{s.name}</span>
-                        <span style={{ color: '#10b981', fontWeight: 700 }}>{s.change}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: '0.55rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        color: '#ef4444',
-                        margin: '0 0 0.35rem',
-                      }}
-                    >
-                      Worst 5
-                    </p>
-                    {WORST_SECTORS.map((s) => (
-                      <div
-                        key={s.name}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          padding: '0.25rem 0',
-                          fontSize: '0.68rem',
-                          color: '#e2e8f0',
-                        }}
-                      >
-                        <span>{s.name}</span>
-                        <span style={{ color: '#ef4444', fontWeight: 700 }}>{s.change}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="db-card hts-card home-events-compact" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%', overflow: 'hidden' }}>
-                <div className="db-card-header" style={{ padding: '0.65rem 1rem' }}>
-                  <h3 style={{ fontSize: '0.875rem', margin: 0 }}>Upcoming Events &amp; Alerts</h3>
-                </div>
-                <div className="hts-card-body home-events-compact-body">
-                  <div className="hts-events-chain">
-                    <div className="hts-chain-item">
-                      <div className="hts-chain-dot" />
-                      <div className="hts-chain-content">
-                        <div className="hts-chain-header">
-                          <span className="hts-chain-title">NVDA Alert</span>
-                          <span className="hts-chain-severity hts-chain-elevated">ALERT</span>
-                          <span className="hts-chain-ago">Today</span>
-                        </div>
-                        <div className="hts-chain-time">Approaching target ($960)</div>
-                        <p className="hts-chain-body">Current: $954.70 — 0.6% away</p>
-                      </div>
-                    </div>
-                    <div className="hts-chain-item">
-                      <div className="hts-chain-dot" />
-                      <div className="hts-chain-content">
-                        <div className="hts-chain-header">
-                          <span className="hts-chain-title">AAPL Earnings</span>
-                          <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
-                          <span className="hts-chain-ago">Tomorrow</span>
-                        </div>
-                        <div className="hts-chain-time">After Hours</div>
-                        <p className="hts-chain-body">7 shares — guidance watch</p>
-                      </div>
-                    </div>
-                    <div className="hts-chain-item">
-                      <div className="hts-chain-dot" />
-                      <div className="hts-chain-content">
-                        <div className="hts-chain-header">
-                          <span className="hts-chain-title">Senate Banking</span>
-                          <span className="hts-chain-severity hts-chain-congress">CONGRESS</span>
-                          <span className="hts-chain-ago">This Week</span>
-                        </div>
-                        <div className="hts-chain-time">Hearing</div>
-                        <p className="hts-chain-body">3 follows on committee</p>
-                      </div>
-                    </div>
-                    <div className="hts-chain-item">
-                      <div className="hts-chain-dot" />
-                      <div className="hts-chain-content">
-                        <div className="hts-chain-header">
-                          <span className="hts-chain-title">GOOGL Earnings</span>
-                          <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
-                          <span className="hts-chain-ago">Apr 2</span>
-                        </div>
-                        <div className="hts-chain-time">Report</div>
-                        <p className="hts-chain-body">10 shares</p>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="hts-events-footer">3 events · 2 alerts</p>
-                </div>
               </div>
             </div>
           </div>

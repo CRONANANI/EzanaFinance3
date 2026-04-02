@@ -1129,75 +1129,68 @@ body.light-mode .hts-week-compare {
   margin: 0;
 }
 
-/* ═══ /home terminal — top band + row 2 (Congress, movers, pulse | events) ═══ */
+/* ═══ /home terminal — left (portfolio + week + events + pulse) | right rail ═══ */
 .home-terminal-main-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(220px, min(32vw, 360px));
-  grid-template-rows: auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
   gap: 1.25rem;
-  align-items: stretch;
+  align-items: start;
   margin-bottom: 1.25rem;
 }
 
-.home-terminal-r1c1 {
-  grid-column: 1;
-  grid-row: 1;
-  min-width: 0;
-}
-
-.home-terminal-r1c2 {
-  grid-column: 2;
-  grid-row: 1;
+.home-terminal-left-col {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
 }
 
-.home-terminal-r1c3 {
-  grid-column: 3;
-  grid-row: 1;
+/* Portfolio ~40% narrower than an even split → ~30% of row; This Week ~70% */
+.home-terminal-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.home-terminal-left-below {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.home-terminal-right-col {
   min-width: 0;
   display: flex;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
 }
 
-.home-streak-ezana-pair {
+.home-rail-streak-ezana.home-streak-ezana-pair {
   flex-direction: row;
   align-items: stretch;
+  gap: 0.85rem;
 }
 
-.home-streak-ezana-pair > .home-mini-streak,
-.home-streak-ezana-pair > .home-mini-ezana {
+.home-rail-streak-ezana.home-streak-ezana-pair > .home-mini-streak,
+.home-rail-streak-ezana.home-streak-ezana-pair > .home-mini-ezana {
   flex: 1;
-}
-
-.home-terminal-r2c1 {
-  grid-column: 1;
-  grid-row: 2;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-.home-terminal-r2c2 {
-  grid-column: 2;
-  grid-row: 2;
+.home-rail-congress,
+.home-rail-movers {
+  width: 100%;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-.home-terminal-r2c3 {
-  grid-column: 3;
-  grid-row: 2;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  align-items: stretch;
+.home-events-rail-wide .home-events-compact-body {
+  max-height: 280px;
 }
 
-.home-pulse-events-split > .db-card {
+.home-pulse-rail-wide {
   min-width: 0;
 }
 
@@ -1280,7 +1273,7 @@ body.light-mode .hts-week-compare {
   min-height: 0;
   overflow: auto;
   height: auto;
-  min-height: 280px;
+  min-height: 300px;
   max-height: none;
 }
 
@@ -1292,76 +1285,39 @@ body.light-mode .hts-week-compare {
   gap: 0.5rem;
 }
 
+.hts-week-market-v3--chart-only {
+  flex: 1;
+  min-height: 260px;
+  justify-content: flex-end;
+}
+
 .hts-week-market-v3 .hts-week-chart-wrap--full {
   width: 100%;
 }
 
 @media (max-width: 1200px) {
   .home-terminal-main-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-  }
-
-  .home-terminal-r1c3 {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    flex-direction: row;
-  }
-
-  .home-terminal-r2c1 {
-    grid-column: 1;
-    grid-row: 3;
-  }
-
-  .home-terminal-r2c2 {
-    grid-column: 2;
-    grid-row: 3;
-  }
-
-  .home-terminal-r2c3 {
-    grid-column: 1 / -1;
-    grid-row: 4;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .home-terminal-main-grid {
     grid-template-columns: 1fr;
   }
 
-  .home-terminal-r1c1,
-  .home-terminal-r1c2,
-  .home-terminal-r1c3,
-  .home-terminal-r2c1,
-  .home-terminal-r2c2,
-  .home-terminal-r2c3 {
-    grid-column: 1;
+  .home-terminal-top-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
+}
 
-  .home-terminal-r1c1 {
-    grid-row: 1;
-  }
-
-  .home-terminal-r1c2 {
-    grid-row: 2;
-  }
-
-  .home-terminal-r1c3 {
-    grid-row: 3;
-    flex-direction: column;
-  }
-
-  .home-terminal-r2c1 {
-    grid-row: 4;
-  }
-
-  .home-terminal-r2c2 {
-    grid-row: 5;
-  }
-
-  .home-terminal-r2c3 {
-    grid-row: 6;
+@media (max-width: 768px) {
+  .home-terminal-top-row {
     grid-template-columns: 1fr;
+  }
+
+  .home-rail-streak-ezana.home-streak-ezana-pair {
+    flex-direction: column;
   }
 
   .hts-week-market-v2 {
@@ -1371,10 +1327,4 @@ body.light-mode .hts-week-compare {
 
 .hts-week-market-v2 {
   min-width: 0;
-}
-
-@media (max-width: 768px) {
-  .hts-week-market-v2 {
-    grid-template-columns: 1fr !important;
-  }
 }
