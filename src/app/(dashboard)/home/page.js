@@ -46,7 +46,6 @@ export default function HomeTerminalPage() {
   const [marketLoading, setMarketLoading] = useState(true);
   const [weekPlaidTransactions, setWeekPlaidTransactions] = useState([]);
   const [weekTradeHistory, setWeekTradeHistory] = useState([]);
-  const [weekActivityLoading, setWeekActivityLoading] = useState(true);
 
   useEffect(() => {
     const tick = () =>
@@ -107,10 +106,8 @@ export default function HomeTerminalPage() {
     if (!user) {
       setWeekPlaidTransactions([]);
       setWeekTradeHistory([]);
-      setWeekActivityLoading(false);
       return;
     }
-    setWeekActivityLoading(true);
     try {
       const monday = new Date();
       const dow = monday.getDay();
@@ -151,8 +148,6 @@ export default function HomeTerminalPage() {
       console.error('Week recap fetch error:', err);
       setWeekPlaidTransactions([]);
       setWeekTradeHistory([]);
-    } finally {
-      setWeekActivityLoading(false);
     }
   }, [user]);
 
@@ -354,7 +349,6 @@ export default function HomeTerminalPage() {
         hasUser={!!user}
         weekPlaidTransactions={weekPlaidTransactions}
         weekTradeHistory={weekTradeHistory}
-        weekActivityLoading={weekActivityLoading}
       />
     </div>
   );
