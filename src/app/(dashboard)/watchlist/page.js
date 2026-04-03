@@ -122,7 +122,7 @@ const SIDEBAR_TABS = ['All','Stocks','Politicians','Institutions'];
 function genPts(seed, n = 100, up = true) {
   const pts = []; let v = 50;
   for (let i = 0; i < n; i++) {
-    v += Math.sin(i*.3+seed)*2.5 + (up?.12:-.08) + Math.sin(i*.7+seed*2)*1.2 + (Math.random()-.5)*.8;
+    v += Math.sin(i * 0.3 + seed) * 2.5 + (up ? 0.12 : -0.08) + Math.sin(i * 0.7 + seed * 2) * 1.2 + (Math.random() - 0.5) * 0.8;
     v = Math.max(4, Math.min(96, v));
     pts.push(v);
   }
@@ -177,7 +177,8 @@ export default function WatchlistPage() {
   const { completeTask } = useChecklist();
   const { isOrgUser, orgRole, orgData } = useOrg();
   const addedStockRef = useRef(false);
-  const [selected, setSelected] = useState(null);
+  /** User-picked row; effective selection is derived so first paint always has a valid `selected`. */
+  const [manualSelected, setManualSelected] = useState(null);
   const [quoteMap, setQuoteMap] = useState({});
   const [timeRange, setTimeRange] = useState('1Y');
   const [sideTab, setSideTab] = useState('All');
@@ -216,15 +217,13 @@ export default function WatchlistPage() {
     }));
   }, [isOrgUser, orgRole, orgTeamPerf]);
 
-  useEffect(() => {
-    if (!selected && stripItems.length > 0) {
-      setSelected(stripItems[0]);
-      return;
+  const selected = useMemo(() => {
+    if (!stripItems.length) return null;
+    if (manualSelected && stripItems.some((i) => i.id === manualSelected.id)) {
+      return manualSelected;
     }
-    if (selected && stripItems.length > 0 && !stripItems.some((i) => i.id === selected.id)) {
-      setSelected(stripItems[0]);
-    }
-  }, [stripItems, selected]);
+    return stripItems[0];
+  }, [stripItems, manualSelected]);
 
   useEffect(() => {
     const symbols = [
@@ -249,7 +248,7 @@ export default function WatchlistPage() {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [stripItems, isOrgUser]);
   const sideItems = useMemo(() => {
     if (isOrgUser) {
       let items = stripItems;
@@ -271,7 +270,7 @@ export default function WatchlistPage() {
   }, [sideTab, search, isOrgUser, stripItems]);
 
   const selectAny = useCallback((item) => {
-    setSelected(item);
+    setManualSelected(item);
     if (item?.type === 'stock' && !addedStockRef.current) {
       addedStockRef.current = true;
       completeTask('watchlist_1');
@@ -291,6 +290,16 @@ export default function WatchlistPage() {
   }, [selected]);
 
   const watchlistCourses = useMemo(() => getCoursesForWatchlistPreview(4), []);
+
+  if (!selected) {
+    return (
+      <div className="wl-page dashboard-page-inset">
+        <p style={{ color: '#8b949e', padding: '2rem 0', textAlign: 'center' }}>
+          No watchlist items to display.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="wl-page dashboard-page-inset">
