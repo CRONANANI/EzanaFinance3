@@ -133,8 +133,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
             {indexPayload?.error === 'no_key'
               ? 'Add FINNHUB_API_KEY for live index data.'
               : indexPayload?.ok === false || indexPayload?.error === 'fetch_failed'
-                ? 'Could not load market data. Check FINNHUB_API_KEY and try again.'
-                : 'No OHLC data for this week yet.'}
+                ? 'Could not load market data — check Vercel logs and FINNHUB_API_KEY.'
+                : indexPayload?._debug?.hasAnyData === false
+                  ? 'Finnhub returned empty data — this may be a rate limit issue or the market is closed. Check Vercel function logs.'
+                  : 'No OHLC data for this week yet.'}
           </p>
         )}
         <ResponsiveContainer width="100%" height={chartH}>
