@@ -4,6 +4,15 @@ export const dynamic = 'force-dynamic';
 
 const FINNHUB = 'https://finnhub.io/api/v1';
 
+/** Try index tickers first, then liquid ETF proxies if candles are empty. */
+const SERIES_CHAINS = {
+  spx: ['^GSPC', 'SPY'],
+  ixic: ['^IXIC', 'QQQ'],
+  rut: ['^RUT', 'IWM'],
+  dji: ['^DJI', 'DIA'],
+  vix: ['^VIX', 'VIXY'],
+};
+
 function nyDateKeyFromUnix(tSec) {
   return new Date(tSec * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
@@ -51,16 +60,71 @@ function buildCloseMap(candleJson) {
   return map;
 }
 
-/** Scale ETF closes to rough “index” style headline numbers for UI cards */
-function cardDisplay(spyClose, qqqClose, diaClose) {
-  if (spyClose == null || qqqClose == null || diaClose == null) return null;
-  const sp = spyClose * 10.11;
-  const nq = qqqClose * 35.8;
-  const dj = diaClose * 173.2;
+function pickCloseForDay(ymd, todayKey, map, quoteClose) {
+  const fromMap = map.get(ymd);
+  if (fromMap != null) return fromMap;
+  if (ymd === todayKey && quoteClose != null && Number.isFinite(quoteClose)) return quoteClose;
+  return null;
+}
+
+async function fetchCandle(sym, apiKey, from, to) {
+  try {
+    const res = await fetch(
+      `${FINNHUB}/stock/candle?symbol=${encodeURIComponent(sym)}&resolution=D&from=${from}&to=${to}&token=${apiKey}`,
+      { next: { revalidate: 120 } },
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+/** First symbol in chain that returns at least one daily close; else last attempted map (may be empty). */
+async function resolveCloseMap(chain, apiKey, from, to) {
+  let lastMap = new Map();
+  let symbolUsed = chain[0] ?? null;
+  for (const sym of chain) {
+    symbolUsed = sym;
+    const json = await fetchCandle(sym, apiKey, from, to);
+    const map = buildCloseMap(json);
+    lastMap = map;
+    if (map.size > 0) return { symbol: sym, map };
+  }
+  return { symbol: symbolUsed, map: lastMap };
+}
+
+async function fetchQuoteClose(sym, apiKey) {
+  if (!sym) return null;
+  try {
+    const res = await fetch(`${FINNHUB}/quote?symbol=${encodeURIComponent(sym)}&token=${apiKey}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const c = data?.c;
+    return typeof c === 'number' && c > 0 ? c : null;
+  } catch {
+    return null;
+  }
+}
+
+function latestCloseFromMap(map) {
+  const entries = [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const last = entries.pop();
+  return last ? last[1] : null;
+}
+
+/** Headline numbers: show approximate index levels when using ETFs (still useful). */
+function cardDisplay(latest) {
+  const { spx, ixic, rut, dji, vix } = latest;
+  if (spx == null || ixic == null || dji == null) return null;
   return {
-    sp500: sp.toLocaleString('en-US', { maximumFractionDigits: 1 }),
-    nasdaq: nq.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-    scop1: dj.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+    spx: spx.toLocaleString('en-US', { maximumFractionDigits: 1 }),
+    ixic: ixic.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+    rut: rut != null ? rut.toLocaleString('en-US', { maximumFractionDigits: 1 }) : '—',
+    dji: dji.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+    vix: vix != null ? vix.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '—',
   };
 }
 
@@ -69,76 +133,75 @@ export async function GET() {
   const weekSlots = currentWeekMonFriKeys();
   const todayKey = todayNyKey();
 
+  const emptyRow = (s) => ({
+    day: s.label,
+    spx: null,
+    ixic: null,
+    rut: null,
+    dji: null,
+    vix: null,
+  });
+
   if (!apiKey) {
-    const emptySeries = weekSlots.map((s) => ({ day: s.label, sp500: null, nasdaq: null, dow: null }));
+    const emptySeries = weekSlots.map(emptyRow);
     return NextResponse.json({ ok: false, error: 'no_key', series: emptySeries, week: emptySeries });
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const from = now - 86400 * 21;
+  const from = now - 86400 * 35;
 
-  async function candle(sym) {
-    try {
-      const res = await fetch(
-        `${FINNHUB}/stock/candle?symbol=${sym}&resolution=D&from=${from}&to=${now}&token=${apiKey}`,
-        { next: { revalidate: 120 } },
-      );
-      if (!res.ok) return null;
-      return res.json();
-    } catch {
-      return null;
-    }
-  }
+  const [spxR, ixicR, rutR, djiR, vixR] = await Promise.all([
+    resolveCloseMap(SERIES_CHAINS.spx, apiKey, from, now),
+    resolveCloseMap(SERIES_CHAINS.ixic, apiKey, from, now),
+    resolveCloseMap(SERIES_CHAINS.rut, apiKey, from, now),
+    resolveCloseMap(SERIES_CHAINS.dji, apiKey, from, now),
+    resolveCloseMap(SERIES_CHAINS.vix, apiKey, from, now),
+  ]);
 
-  const [spyC, qqqC, diaC] = await Promise.all([candle('SPY'), candle('QQQ'), candle('DIA')]);
-  const spyMap = buildCloseMap(spyC);
-  const qqqMap = buildCloseMap(qqqC);
-  const diaMap = buildCloseMap(diaC);
+  const [qSpx, qIxic, qRut, qDji, qVix] = await Promise.all([
+    fetchQuoteClose(spxR.symbol, apiKey),
+    fetchQuoteClose(ixicR.symbol, apiKey),
+    fetchQuoteClose(rutR.symbol, apiKey),
+    fetchQuoteClose(djiR.symbol, apiKey),
+    fetchQuoteClose(vixR.symbol, apiKey),
+  ]);
 
-  const series = weekSlots.map(({ label, ymd }) => {
-    const sessionCompleteForChart = ymd < todayKey;
-    const sp = spyMap.get(ymd);
-    const nq = qqqMap.get(ymd);
-    const dj = diaMap.get(ymd);
-    const has = sp != null && nq != null && dj != null;
-    return {
-      day: label,
-      sp500: sessionCompleteForChart && has ? sp : null,
-      nasdaq: sessionCompleteForChart && has ? nq : null,
-      dow: sessionCompleteForChart && has ? dj : null,
-    };
-  });
+  const series = weekSlots.map(({ label, ymd }) => ({
+    day: label,
+    spx: pickCloseForDay(ymd, todayKey, spxR.map, qSpx),
+    ixic: pickCloseForDay(ymd, todayKey, ixicR.map, qIxic),
+    rut: pickCloseForDay(ymd, todayKey, rutR.map, qRut),
+    dji: pickCloseForDay(ymd, todayKey, djiR.map, qDji),
+    vix: pickCloseForDay(ymd, todayKey, vixR.map, qVix),
+  }));
 
-  let latestSpy;
-  let latestQqq;
-  let latestDia;
+  const latest = { spx: null, ixic: null, rut: null, dji: null, vix: null };
+  const LATEST_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
   for (let i = series.length - 1; i >= 0; i--) {
-    if (series[i].sp500 != null) {
-      latestSpy = series[i].sp500;
-      latestQqq = series[i].nasdaq;
-      latestDia = series[i].dow;
-      break;
+    const row = series[i];
+    for (const k of LATEST_KEYS) {
+      if (latest[k] == null && row[k] != null) latest[k] = row[k];
     }
   }
-  if (latestSpy == null) {
-    const lastSpy = [...spyMap.entries()].sort((a, b) => a[0].localeCompare(b[0])).pop();
-    if (lastSpy) latestSpy = lastSpy[1];
-  }
-  if (latestQqq == null) {
-    const lastQ = [...qqqMap.entries()].sort((a, b) => a[0].localeCompare(b[0])).pop();
-    if (lastQ) latestQqq = lastQ[1];
-  }
-  if (latestDia == null) {
-    const lastD = [...diaMap.entries()].sort((a, b) => a[0].localeCompare(b[0])).pop();
-    if (lastD) latestDia = lastD[1];
+  const quoteByKey = { spx: qSpx, ixic: qIxic, rut: qRut, dji: qDji, vix: qVix };
+  const mapByKey = { spx: spxR.map, ixic: ixicR.map, rut: rutR.map, dji: djiR.map, vix: vixR.map };
+  for (const k of LATEST_KEYS) {
+    if (latest[k] == null) latest[k] = quoteByKey[k] ?? latestCloseFromMap(mapByKey[k]);
   }
 
-  const cards = cardDisplay(latestSpy, latestQqq, latestDia);
+  const cards = cardDisplay(latest);
 
   return NextResponse.json({
     ok: true,
     series,
     cards,
+    symbolsResolved: {
+      spx: spxR.symbol,
+      ixic: ixicR.symbol,
+      rut: rutR.symbol,
+      dji: djiR.symbol,
+      vix: vixR.symbol,
+    },
     todayKey,
   });
 }

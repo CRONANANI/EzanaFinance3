@@ -45,27 +45,25 @@ function weekRangeLabel() {
   return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
 }
 
-/** Index to 100 at first row with all three closes so lines are comparable (not flat at bottom). */
+const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
+
+/** Each series indexed to 100 from its own first available close this week (scales differ: VIX vs SPX). */
 function normalizeWeekSeries(series) {
   if (!Array.isArray(series) || series.length === 0) return [];
-  let baseSp;
-  let baseNq;
-  let baseDj;
+  const bases = Object.fromEntries(CHART_KEYS.map((k) => [k, undefined]));
   for (const row of series) {
-    if (row.sp500 != null && row.nasdaq != null && row.dow != null) {
-      baseSp = row.sp500;
-      baseNq = row.nasdaq;
-      baseDj = row.dow;
-      break;
+    for (const k of CHART_KEYS) {
+      if (bases[k] == null && row[k] != null) bases[k] = row[k];
     }
   }
-  if (baseSp == null) return series.map((r) => ({ ...r, sp500: null, nasdaq: null, dow: null }));
-  return series.map((r) => ({
-    day: r.day,
-    sp500: r.sp500 != null ? (r.sp500 / baseSp) * 100 : null,
-    nasdaq: r.nasdaq != null ? (r.nasdaq / baseNq) * 100 : null,
-    dow: r.dow != null ? (r.dow / baseDj) * 100 : null,
-  }));
+  return series.map((r) => {
+    const out = { day: r.day };
+    for (const k of CHART_KEYS) {
+      const b = bases[k];
+      out[k] = r[k] != null && b != null ? (r[k] / b) * 100 : null;
+    }
+    return out;
+  });
 }
 
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
@@ -74,7 +72,8 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
   const noData =
     indexPayload &&
-    (!chartData.length || chartData.every((r) => r.sp500 == null && r.nasdaq == null && r.dow == null));
+    (!chartData.length ||
+      chartData.every((r) => CHART_KEYS.every((k) => r[k] == null)));
 
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
@@ -94,7 +93,13 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
             data={chartData.length ? chartData : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]}
             margin={{ top: 10, right: 10, left: 4, bottom: chartOnly ? 28 : 4 }}
           >
-            <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="day"
+              interval={0}
+              tick={{ fill: '#6b7280', fontSize: 10 }}
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis hide domain={['auto', 'auto']} />
             <Tooltip
               formatter={(value) => (typeof value === 'number' ? `${value.toFixed(3)} (idx)` : '—')}
@@ -110,9 +115,11 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               wrapperStyle={{ fontSize: compact ? '0.55rem' : '0.6875rem', color: '#8b949e', paddingTop: 4 }}
               formatter={(value) => <span style={{ color: '#e2e8f0' }}>{value}</span>}
             />
-            <Line type="monotone" dataKey="sp500" stroke="#ef4444" strokeWidth={2} dot={false} connectNulls={false} name="S&P 500" isAnimationActive={false} />
-            <Line type="monotone" dataKey="nasdaq" stroke="#10b981" strokeWidth={2} dot={false} connectNulls={false} name="NASDAQ" isAnimationActive={false} />
-            <Line type="monotone" dataKey="dow" stroke="#f59e0b" strokeWidth={2} dot={false} connectNulls={false} name="SCOP1" isAnimationActive={false} />
+            <Line type="monotone" dataKey="spx" stroke="#ef4444" strokeWidth={2} dot={false} connectNulls={false} name="S&P 500 (SPX)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="ixic" stroke="#10b981" strokeWidth={2} dot={false} connectNulls={false} name="NASDAQ (IXIC)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="rut" stroke="#8b5cf6" strokeWidth={2} dot={false} connectNulls={false} name="Russell 2000 (RUT)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="dji" stroke="#f59e0b" strokeWidth={2} dot={false} connectNulls={false} name="Dow (DJIA)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="vix" stroke="#ec4899" strokeWidth={1.5} dot={false} connectNulls={false} name="VIX" isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
