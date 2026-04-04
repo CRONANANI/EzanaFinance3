@@ -240,6 +240,13 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   color: #92731d;
 }
 
+/* Gold separator — thin divider above the first gold item (follows last emerald row) */
+.animated-nav-dropdown-item:not(.animated-nav-dropdown-item--gold) + .animated-nav-dropdown-item--gold {
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
 /* ═══ MOBILE — Hide AnimatedNav, show hamburger menu ═══ */
 @media (max-width: 768px) {
   .animated-nav {

@@ -32,8 +32,8 @@
 }
 
 .ftq-stat-card {
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  background: rgba(212, 175, 55, 0.02);
+  border: 1px solid rgba(212, 175, 55, 0.08);
   border-radius: 16px;
   padding: 1rem 1.25rem;
   min-height: 100px;
@@ -133,8 +133,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #8b949e;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.12);
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
@@ -146,13 +146,13 @@
 }
 
 .ftq-tab.active {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #10b981;
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.35);
+  color: #d4af37;
 }
 
 .ftq-strategy-list {
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.08);
   border-radius: 12px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.15);
@@ -160,7 +160,7 @@
 
 .ftq-strategy-row {
   padding: 1rem 1.1rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.06);
 }
 
 .ftq-strategy-row:last-child {
@@ -224,9 +224,9 @@
   padding: 0.35rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #10b981;
+  color: #d4af37;
   background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
@@ -234,8 +234,8 @@
 }
 
 .ftq-btn-ghost:hover {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
 .ftq-btn-primary {
@@ -245,7 +245,7 @@
   font-size: 0.875rem;
   font-weight: 700;
   color: #fff;
-  background: #10b981;
+  background: #d4af37;
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -260,7 +260,7 @@
 /* Backtest stats */
 .ftq-bt-divider {
   border: 0;
-  border-top: 1px solid rgba(16, 185, 129, 0.12);
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
   margin: 1rem 0 1.25rem;
 }
 
@@ -295,8 +295,8 @@
   height: 72px;
   margin: 0.75rem 0;
   border-radius: 8px;
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  background: rgba(212, 175, 55, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.08);
   overflow: hidden;
 }
 
@@ -305,7 +305,7 @@
   color: #8b949e;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  border-top: 1px solid rgba(212, 175, 55, 0.08);
 }
 
 /* Leaderboard */
@@ -321,15 +321,15 @@
   font-size: 0.75rem;
   padding: 0.35rem 0.65rem;
   border-radius: 8px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   color: #e2e8f0;
   font-family: inherit;
 }
 
 .ftq-lb-entry {
   padding: 0.85rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.06);
 }
 
 .ftq-lb-entry:last-of-type {
@@ -358,7 +358,7 @@
 
 .ftq-lb-ret {
   font-weight: 800;
-  color: #10b981;
+  color: #d4af37;
   font-feature-settings: 'tnum' 1;
 }
 
@@ -375,7 +375,7 @@
   padding: 0;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #10b981;
+  color: #d4af37;
   background: none;
   border: none;
   cursor: pointer;
@@ -385,7 +385,7 @@
 }
 
 .ftq-link-btn:hover {
-  color: #34d399;
+  color: #e6c35a;
 }
 
 .ftq-view-all {
@@ -393,7 +393,7 @@
   margin-top: 1rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #10b981;
+  color: #d4af37;
   text-decoration: none;
 }
 
@@ -405,7 +405,7 @@
 .ftq-risk-bar {
   height: 8px;
   border-radius: 4px;
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(212, 175, 55, 0.1);
   overflow: hidden;
   margin: 0.35rem 0 0.75rem;
 }
@@ -413,7 +413,7 @@
 .ftq-risk-bar-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #d4af37, #b8962e);
 }
 
 .ftq-sector-row {
@@ -440,13 +440,13 @@
 .ftq-sector-bar {
   height: 6px;
   border-radius: 3px;
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(212, 175, 55, 0.1);
   overflow: hidden;
 }
 
 .ftq-sector-bar-fill {
   height: 100%;
-  background: rgba(16, 185, 129, 0.45);
+  background: rgba(212, 175, 55, 0.45);
   border-radius: 3px;
 }
 
@@ -465,7 +465,7 @@
   font-size: 0.875rem;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.12);
   color: #f0f6fc;
   font-family: inherit;
 }
@@ -475,7 +475,7 @@
 }
 
 .ftq-betting-list {
-  border: 1px solid rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.08);
   border-radius: 12px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.12);
@@ -483,13 +483,13 @@
 
 .ftq-betting-row {
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.06);
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .ftq-betting-row:hover {
-  background: rgba(16, 185, 129, 0.04);
+  background: rgba(212, 175, 55, 0.04);
 }
 
 .ftq-betting-row:last-child {
@@ -505,7 +505,7 @@
 
 .ftq-bt-side {
   font-size: 0.8125rem;
-  color: #10b981;
+  color: #d4af37;
   font-weight: 600;
 }
 
@@ -527,14 +527,14 @@
 
 .ftq-smart-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #d4af37, #b8962e);
   border-radius: 5px;
 }
 
 .ftq-pos-row {
   font-size: 0.8125rem;
   padding: 0.35rem 0;
-  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.06);
   color: #d1d5db;
 }
 
@@ -558,7 +558,7 @@
 
 .ftq-vol-bar {
   flex: 1;
-  background: rgba(16, 185, 129, 0.35);
+  background: rgba(212, 175, 55, 0.35);
   border-radius: 3px 3px 0 0;
   min-height: 4px;
 }
@@ -580,7 +580,7 @@
 .ftq-ind-card {
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.1);
   background: rgba(0, 0, 0, 0.12);
 }
 
@@ -628,7 +628,7 @@ body.light-mode .ftq-subtitle {
 body.light-mode .ftq-stat-card,
 body.light-mode .db-card {
   background: #ffffff;
-  border-color: rgba(5, 150, 105, 0.12);
+  border-color: rgba(212, 175, 55, 0.12);
 }
 
 body.light-mode .ftq-stat-value,
