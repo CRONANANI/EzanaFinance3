@@ -51,9 +51,12 @@ function currentWeekMonFriKeys() {
 
 function buildCloseMap(candleJson) {
   const map = new Map();
-  if (!candleJson || candleJson.s !== 'ok' || !Array.isArray(candleJson.t)) return map;
+  if (!candleJson || candleJson.s !== 'ok' || !Array.isArray(candleJson.t) || !Array.isArray(candleJson.c)) return map;
   for (let i = 0; i < candleJson.t.length; i++) {
-    const key = nyDateKeyFromUnix(candleJson.t[i]);
+    const ts = candleJson.t[i];
+    const tSec = typeof ts === 'number' ? ts : parseInt(String(ts), 10);
+    if (!Number.isFinite(tSec)) continue;
+    const key = nyDateKeyFromUnix(tSec);
     const c = candleJson.c[i];
     const n = typeof c === 'number' ? c : parseFloat(c);
     if (Number.isFinite(n)) map.set(key, n);
@@ -88,7 +91,9 @@ async function fetchCandle(sym, apiKey, from, to) {
       { cache: 'no-store' },
     );
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    if (!data || data.error) return null;
+    return data;
   } catch {
     return null;
   }
@@ -115,6 +120,7 @@ async function fetchQuoteClose(sym, apiKey) {
     });
     if (!res.ok) return null;
     const data = await res.json();
+    if (!data || data.error) return null;
     const c = data?.c;
     const pc = data?.pc;
     if (typeof c === 'number' && Number.isFinite(c) && c > 0) return c;
@@ -176,8 +182,27 @@ function buildEnrichedFiveSeries(weekSlots, todayKey, resolved, quotes) {
   });
 }
 
+/** Fill any remaining null (Mon→today) with live quote so the chart is not empty if candles lag or fail. */
+function applyQuoteGapFill(series, weekSlots, todayKey, quotes) {
+  return series.map((row, idx) => {
+    const ymd = weekSlots[idx].ymd;
+    if (ymd > todayKey) return row;
+    const out = { ...row };
+    for (let i = 0; i < SERIES_KEYS.length; i++) {
+      const k = SERIES_KEYS[i];
+      if (out[k] == null && quotes[i] != null) out[k] = quotes[i];
+    }
+    return out;
+  });
+}
+
+function readFinnhubKey() {
+  const raw = process.env.FINNHUB_API_KEY || process.env.FINNHUB_KEY;
+  return typeof raw === 'string' ? raw.trim() : '';
+}
+
 export async function GET() {
-  const apiKey = process.env.FINNHUB_API_KEY;
+  const apiKey = readFinnhubKey();
   const weekSlots = currentWeekMonFriKeys();
   const todayKey = todayNyKey();
 
@@ -196,7 +221,7 @@ export async function GET() {
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const from = now - 86400 * 35;
+  const from = now - 86400 * 120;
 
   const [spxR, ixicR, rutR, djiR, vixR] = await Promise.all([
     resolveCloseMap(SERIES_CHAINS.spx, apiKey, from, now),
@@ -218,6 +243,7 @@ export async function GET() {
   const quotes = [q0, q1, q2, q3, q4];
 
   let series = buildEnrichedFiveSeries(weekSlots, todayKey, resolved, quotes);
+  series = applyQuoteGapFill(series, weekSlots, todayKey, quotes);
 
   const latest = { spx: null, ixic: null, rut: null, dji: null, vix: null };
   for (let i = series.length - 1; i >= 0; i--) {
