@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 const FINNHUB = 'https://finnhub.io/api/v1';
 
-/** ETFs first (reliable on all tiers); index symbols as fallback for plans that expose them. */
+/** ETFs first (reliable on Finnhub); index symbols as fallback. */
 const SERIES_CHAINS = {
   spx: ['SPY', '^GSPC'],
   ixic: ['QQQ', '^IXIC'],
@@ -21,7 +21,6 @@ function todayNyKey() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
-/** Advance calendar days in America/New_York (midnight UTC would shift the NY calendar date). */
 function addDaysYmd(ymd, delta) {
   const [Y, M, D] = ymd.split('-').map(Number);
   const ms = Date.UTC(Y, M - 1, D, 12, 0, 0) + delta * 86400000;
@@ -36,7 +35,6 @@ function weekdayLongNy(ymd) {
   });
 }
 
-/** Monday–Friday calendar dates (YYYY-MM-DD) for the current week in America/New_York */
 function currentWeekMonFriKeys() {
   const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
   let cur = todayNyKey();
@@ -56,7 +54,9 @@ function buildCloseMap(candleJson) {
   if (!candleJson || candleJson.s !== 'ok' || !Array.isArray(candleJson.t)) return map;
   for (let i = 0; i < candleJson.t.length; i++) {
     const key = nyDateKeyFromUnix(candleJson.t[i]);
-    map.set(key, candleJson.c[i]);
+    const c = candleJson.c[i];
+    const n = typeof c === 'number' ? c : parseFloat(c);
+    if (Number.isFinite(n)) map.set(key, n);
   }
   return map;
 }
@@ -68,7 +68,6 @@ function pickCloseForDay(ymd, todayKey, map, quoteClose) {
   return null;
 }
 
-/** Latest daily close on or before `ymd` (handles holidays / sparse bars). */
 function lastCloseOnOrBefore(ymd, map) {
   let bestKey = '';
   let bestVal = null;
@@ -95,7 +94,6 @@ async function fetchCandle(sym, apiKey, from, to) {
   }
 }
 
-/** First symbol in chain that returns at least one daily close; else last attempted map (may be empty). */
 async function resolveCloseMap(chain, apiKey, from, to) {
   let lastMap = new Map();
   let symbolUsed = chain[0] ?? null;
@@ -133,7 +131,6 @@ function latestCloseFromMap(map) {
   return last ? last[1] : null;
 }
 
-/** Headline numbers from latest quote / candle (partial OK). */
 function cardDisplay(latest) {
   const { spx, ixic, rut, dji, vix } = latest;
   if (spx == null && ixic == null && dji == null && rut == null && vix == null) return null;
@@ -146,6 +143,37 @@ function cardDisplay(latest) {
     dji: n(dji, 0),
     vix: n(vix, 2),
   };
+}
+
+const SERIES_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
+
+function buildEnrichedFiveSeries(weekSlots, todayKey, resolved, quotes) {
+  const maps = resolved.map((r) => r.map);
+  const raw = weekSlots.map(({ label, ymd }) => {
+    const row = { day: label };
+    for (let i = 0; i < 5; i++) {
+      const k = SERIES_KEYS[i];
+      row[k] =
+        pickCloseForDay(ymd, todayKey, maps[i], quotes[i]) ??
+        (ymd <= todayKey ? lastCloseOnOrBefore(ymd, maps[i]) : null);
+    }
+    return row;
+  });
+
+  return raw.map((row, i) => {
+    const ymd = weekSlots[i].ymd;
+    if (ymd > todayKey) return row;
+    const out = { ...row };
+    for (const k of SERIES_KEYS) {
+      if (out[k] != null) continue;
+      let prev = null;
+      for (let j = 0; j < i; j++) {
+        if (raw[j][k] != null) prev = raw[j][k];
+      }
+      if (prev != null) out[k] = prev;
+    }
+    return out;
+  });
 }
 
 export async function GET() {
@@ -178,50 +206,29 @@ export async function GET() {
     resolveCloseMap(SERIES_CHAINS.vix, apiKey, from, now),
   ]);
 
-  const [qSpx, qIxic, qRut, qDji, qVix] = await Promise.all([
+  const resolved = [spxR, ixicR, rutR, djiR, vixR];
+
+  const [q0, q1, q2, q3, q4] = await Promise.all([
     fetchQuoteClose(spxR.symbol, apiKey),
     fetchQuoteClose(ixicR.symbol, apiKey),
     fetchQuoteClose(rutR.symbol, apiKey),
     fetchQuoteClose(djiR.symbol, apiKey),
     fetchQuoteClose(vixR.symbol, apiKey),
   ]);
+  const quotes = [q0, q1, q2, q3, q4];
 
-  let series = weekSlots.map(({ label, ymd }) => ({
-    day: label,
-    spx: pickCloseForDay(ymd, todayKey, spxR.map, qSpx) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, spxR.map) : null),
-    ixic: pickCloseForDay(ymd, todayKey, ixicR.map, qIxic) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, ixicR.map) : null),
-    rut: pickCloseForDay(ymd, todayKey, rutR.map, qRut) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, rutR.map) : null),
-    dji: pickCloseForDay(ymd, todayKey, djiR.map, qDji) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, djiR.map) : null),
-    vix: pickCloseForDay(ymd, todayKey, vixR.map, qVix) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, vixR.map) : null),
-  }));
-
-  const KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
-  series = series.map((row, i) => {
-    const ymd = weekSlots[i].ymd;
-    if (ymd > todayKey) return row;
-    const out = { ...row };
-    for (const k of KEYS) {
-      if (out[k] != null) continue;
-      let prev = null;
-      for (let j = 0; j < i; j++) {
-        if (series[j][k] != null) prev = series[j][k];
-      }
-      if (prev != null) out[k] = prev;
-    }
-    return out;
-  });
+  let series = buildEnrichedFiveSeries(weekSlots, todayKey, resolved, quotes);
 
   const latest = { spx: null, ixic: null, rut: null, dji: null, vix: null };
-  const LATEST_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
   for (let i = series.length - 1; i >= 0; i--) {
     const row = series[i];
-    for (const k of LATEST_KEYS) {
+    for (const k of SERIES_KEYS) {
       if (latest[k] == null && row[k] != null) latest[k] = row[k];
     }
   }
-  const quoteByKey = { spx: qSpx, ixic: qIxic, rut: qRut, dji: qDji, vix: qVix };
+  const quoteByKey = { spx: q0, ixic: q1, rut: q2, dji: q3, vix: q4 };
   const mapByKey = { spx: spxR.map, ixic: ixicR.map, rut: rutR.map, dji: djiR.map, vix: vixR.map };
-  for (const k of LATEST_KEYS) {
+  for (const k of SERIES_KEYS) {
     if (latest[k] == null) latest[k] = quoteByKey[k] ?? latestCloseFromMap(mapByKey[k]);
   }
 

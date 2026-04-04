@@ -721,18 +721,6 @@
   width: 100%;
 }
 
-/* Recharts: explicit surface size (flex parents + global svg rules can yield 0-height charts) */
-.hts-week-chart-wrap--full .recharts-responsive-container {
-  min-height: 140px;
-}
-
-.hts-week-chart-wrap--full svg.recharts-surface {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none;
-}
-
 .hts-week-market-footer {
   display: flex;
   flex-wrap: wrap;
@@ -1305,6 +1293,17 @@ body.light-mode .hts-week-compare {
 
 .hts-week-market-v3 .hts-week-chart-wrap--full {
   width: 100%;
+}
+
+/* Uniform small legend swatches (Recharts scales longer labels with larger icons by default) */
+.hts-week-market-v3 .recharts-legend-item svg {
+  width: 14px !important;
+  height: 8px !important;
+  flex-shrink: 0;
+}
+
+.hts-week-market-v3 .recharts-legend-item-text {
+  padding-left: 4px !important;
 }
 
 @media (max-width: 1200px) {
