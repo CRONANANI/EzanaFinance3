@@ -4,13 +4,13 @@ export const dynamic = 'force-dynamic';
 
 const FINNHUB = 'https://finnhub.io/api/v1';
 
-/** Try index tickers first, then liquid ETF proxies if candles are empty. */
+/** ETFs first (reliable on all tiers); index symbols as fallback for plans that expose them. */
 const SERIES_CHAINS = {
-  spx: ['^GSPC', 'SPY'],
-  ixic: ['^IXIC', 'QQQ'],
-  rut: ['^RUT', 'IWM'],
-  dji: ['^DJI', 'DIA'],
-  vix: ['^VIX', 'VIXY'],
+  spx: ['SPY', '^GSPC'],
+  ixic: ['QQQ', '^IXIC'],
+  rut: ['IWM', '^RUT'],
+  dji: ['DIA', '^DJI'],
+  vix: ['VIXY', '^VIX'],
 };
 
 function nyDateKeyFromUnix(tSec) {
@@ -21,10 +21,11 @@ function todayNyKey() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
+/** Advance calendar days in America/New_York (midnight UTC would shift the NY calendar date). */
 function addDaysYmd(ymd, delta) {
   const [Y, M, D] = ymd.split('-').map(Number);
-  const t = Date.UTC(Y, M - 1, D) + delta * 86400000;
-  return new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const ms = Date.UTC(Y, M - 1, D, 12, 0, 0) + delta * 86400000;
+  return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
 function weekdayLongNy(ymd) {
@@ -71,7 +72,7 @@ async function fetchCandle(sym, apiKey, from, to) {
   try {
     const res = await fetch(
       `${FINNHUB}/stock/candle?symbol=${encodeURIComponent(sym)}&resolution=D&from=${from}&to=${to}&token=${apiKey}`,
-      { next: { revalidate: 120 } },
+      { cache: 'no-store' },
     );
     if (!res.ok) return null;
     return res.json();
@@ -98,12 +99,15 @@ async function fetchQuoteClose(sym, apiKey) {
   if (!sym) return null;
   try {
     const res = await fetch(`${FINNHUB}/quote?symbol=${encodeURIComponent(sym)}&token=${apiKey}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) return null;
     const data = await res.json();
     const c = data?.c;
-    return typeof c === 'number' && c > 0 ? c : null;
+    const pc = data?.pc;
+    if (typeof c === 'number' && Number.isFinite(c) && c > 0) return c;
+    if (typeof pc === 'number' && Number.isFinite(pc) && pc > 0) return pc;
+    return null;
   } catch {
     return null;
   }
@@ -115,16 +119,18 @@ function latestCloseFromMap(map) {
   return last ? last[1] : null;
 }
 
-/** Headline numbers: show approximate index levels when using ETFs (still useful). */
+/** Headline numbers from latest quote / candle (partial OK). */
 function cardDisplay(latest) {
   const { spx, ixic, rut, dji, vix } = latest;
-  if (spx == null || ixic == null || dji == null) return null;
+  if (spx == null && ixic == null && dji == null && rut == null && vix == null) return null;
+  const n = (v, fd) =>
+    v != null && Number.isFinite(v) ? v.toLocaleString('en-US', { maximumFractionDigits: fd }) : '—';
   return {
-    spx: spx.toLocaleString('en-US', { maximumFractionDigits: 1 }),
-    ixic: ixic.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-    rut: rut != null ? rut.toLocaleString('en-US', { maximumFractionDigits: 1 }) : '—',
-    dji: dji.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-    vix: vix != null ? vix.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '—',
+    spx: n(spx, 1),
+    ixic: n(ixic, 0),
+    rut: n(rut, 1),
+    dji: n(dji, 0),
+    vix: n(vix, 2),
   };
 }
 

@@ -18,8 +18,8 @@ const TABS = [
 
 function addDaysYmd(ymd, delta) {
   const [Y, M, D] = ymd.split('-').map(Number);
-  const t = Date.UTC(Y, M - 1, D) + delta * 86400000;
-  return new Date(t).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const ms = Date.UTC(Y, M - 1, D, 12, 0, 0) + delta * 86400000;
+  return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
 function weekdayLongNyFromYmd(ymd) {
@@ -50,17 +50,20 @@ const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
 /** Each series indexed to 100 from its own first available close this week (scales differ: VIX vs SPX). */
 function normalizeWeekSeries(series) {
   if (!Array.isArray(series) || series.length === 0) return [];
+  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : typeof v === 'string' ? parseFloat(v) : NaN);
   const bases = Object.fromEntries(CHART_KEYS.map((k) => [k, undefined]));
   for (const row of series) {
     for (const k of CHART_KEYS) {
-      if (bases[k] == null && row[k] != null) bases[k] = row[k];
+      const parsed = num(row[k]);
+      if (bases[k] == null && !Number.isNaN(parsed)) bases[k] = parsed;
     }
   }
   return series.map((r) => {
     const out = { day: r.day };
     for (const k of CHART_KEYS) {
       const b = bases[k];
-      out[k] = r[k] != null && b != null ? (r[k] / b) * 100 : null;
+      const parsed = num(r[k]);
+      out[k] = !Number.isNaN(parsed) && b != null && b !== 0 ? (parsed / b) * 100 : null;
     }
     return out;
   });
@@ -69,23 +72,62 @@ function normalizeWeekSeries(series) {
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
   const chartH = chartOnly ? (compact ? 268 : 300) : compact ? 168 : 220;
   const chartData = useMemo(() => normalizeWeekSeries(indexPayload?.series || []), [indexPayload]);
+  const loading = indexPayload === null;
+  const cards = indexPayload?.cards;
 
   const noData =
+    !loading &&
     indexPayload &&
     (!chartData.length ||
       chartData.every((r) => CHART_KEYS.every((k) => r[k] == null)));
 
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
+      {loading && (
+        <p className="hts-week-loading" style={{ margin: '0 0 0.35rem', textAlign: 'center' }}>
+          Loading market data…
+        </p>
+      )}
+      {cards && !loading && (
+        <div
+          className="hts-week-index-strip"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+            gap: compact ? '2px 4px' : '4px 6px',
+            marginBottom: '0.35rem',
+            fontSize: compact ? '0.5625rem' : '0.625rem',
+          }}
+        >
+          {[
+            { label: 'SPX', val: cards.spx },
+            { label: 'IXIC', val: cards.ixic },
+            { label: 'RUT', val: cards.rut },
+            { label: 'DJIA', val: cards.dji },
+            { label: 'VIX', val: cards.vix },
+          ].map(({ label, val }) => (
+            <div key={label} style={{ minWidth: 0, textAlign: 'center' }}>
+              <div className="hts-week-metric-label" style={{ marginBottom: 2 }}>
+                {label}
+              </div>
+              <div className="hts-week-metric-val" style={{ fontSize: compact ? '0.65rem' : '0.75rem', lineHeight: 1.2 }}>
+                {val}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div
         className="hts-week-chart-wrap hts-week-chart-wrap--full"
         style={{ minHeight: chartH, flex: chartOnly ? 1 : undefined, minWidth: 0, width: '100%' }}
       >
         {noData && (
           <p className="hts-week-loading" style={{ margin: '0.5rem 0', textAlign: 'center' }}>
-            {indexPayload?.ok === false
+            {indexPayload?.error === 'no_key'
               ? 'Add FINNHUB_API_KEY for live index data.'
-              : 'No OHLC data for this week yet.'}
+              : indexPayload?.ok === false || indexPayload?.error === 'fetch_failed'
+                ? 'Could not load market data. Check FINNHUB_API_KEY and try again.'
+                : 'No OHLC data for this week yet.'}
           </p>
         )}
         <ResponsiveContainer width="100%" height={chartH}>
@@ -229,12 +271,23 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
   useEffect(() => {
     let cancelled = false;
     fetch('/api/market/index-week')
-      .then((r) => r.json())
+      .then(async (r) => {
+        let data = {};
+        try {
+          data = await r.json();
+        } catch {
+          data = {};
+        }
+        if (!r.ok) {
+          return { ok: false, error: 'fetch_failed', series: Array.isArray(data.series) ? data.series : [] };
+        }
+        return data;
+      })
       .then((data) => {
         if (!cancelled) setIndexPayload(data);
       })
       .catch(() => {
-        if (!cancelled) setIndexPayload({ ok: false, series: [] });
+        if (!cancelled) setIndexPayload({ ok: false, error: 'fetch_failed', series: [] });
       });
     return () => {
       cancelled = true;
