@@ -903,7 +903,11 @@ body {
     word-break: break-word;
   }
 
-  img, svg, video, canvas {
+  /* Exclude Recharts root SVG — `height: auto` collapses charts to invisible lines */
+  img,
+  svg:not(.recharts-surface),
+  video,
+  canvas {
     max-width: 100%;
     height: auto;
   }

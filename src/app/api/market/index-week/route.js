@@ -68,6 +68,20 @@ function pickCloseForDay(ymd, todayKey, map, quoteClose) {
   return null;
 }
 
+/** Latest daily close on or before `ymd` (handles holidays / sparse bars). */
+function lastCloseOnOrBefore(ymd, map) {
+  let bestKey = '';
+  let bestVal = null;
+  for (const [k, v] of map) {
+    if (k > ymd || v == null || !Number.isFinite(Number(v))) continue;
+    if (k > bestKey) {
+      bestKey = k;
+      bestVal = Number(v);
+    }
+  }
+  return bestVal;
+}
+
 async function fetchCandle(sym, apiKey, from, to) {
   try {
     const res = await fetch(
@@ -172,14 +186,30 @@ export async function GET() {
     fetchQuoteClose(vixR.symbol, apiKey),
   ]);
 
-  const series = weekSlots.map(({ label, ymd }) => ({
+  let series = weekSlots.map(({ label, ymd }) => ({
     day: label,
-    spx: pickCloseForDay(ymd, todayKey, spxR.map, qSpx),
-    ixic: pickCloseForDay(ymd, todayKey, ixicR.map, qIxic),
-    rut: pickCloseForDay(ymd, todayKey, rutR.map, qRut),
-    dji: pickCloseForDay(ymd, todayKey, djiR.map, qDji),
-    vix: pickCloseForDay(ymd, todayKey, vixR.map, qVix),
+    spx: pickCloseForDay(ymd, todayKey, spxR.map, qSpx) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, spxR.map) : null),
+    ixic: pickCloseForDay(ymd, todayKey, ixicR.map, qIxic) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, ixicR.map) : null),
+    rut: pickCloseForDay(ymd, todayKey, rutR.map, qRut) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, rutR.map) : null),
+    dji: pickCloseForDay(ymd, todayKey, djiR.map, qDji) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, djiR.map) : null),
+    vix: pickCloseForDay(ymd, todayKey, vixR.map, qVix) ?? (ymd <= todayKey ? lastCloseOnOrBefore(ymd, vixR.map) : null),
   }));
+
+  const KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
+  series = series.map((row, i) => {
+    const ymd = weekSlots[i].ymd;
+    if (ymd > todayKey) return row;
+    const out = { ...row };
+    for (const k of KEYS) {
+      if (out[k] != null) continue;
+      let prev = null;
+      for (let j = 0; j < i; j++) {
+        if (series[j][k] != null) prev = series[j][k];
+      }
+      if (prev != null) out[k] = prev;
+    }
+    return out;
+  });
 
   const latest = { spx: null, ixic: null, rut: null, dji: null, vix: null };
   const LATEST_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];

@@ -721,6 +721,18 @@
   width: 100%;
 }
 
+/* Recharts: explicit surface size (flex parents + global svg rules can yield 0-height charts) */
+.hts-week-chart-wrap--full .recharts-responsive-container {
+  min-height: 140px;
+}
+
+.hts-week-chart-wrap--full svg.recharts-surface {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none;
+}
+
 .hts-week-market-footer {
   display: flex;
   flex-wrap: wrap;

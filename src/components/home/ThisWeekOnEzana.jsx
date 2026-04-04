@@ -119,7 +119,14 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
       )}
       <div
         className="hts-week-chart-wrap hts-week-chart-wrap--full"
-        style={{ minHeight: chartH, flex: chartOnly ? 1 : undefined, minWidth: 0, width: '100%' }}
+        style={{
+          height: chartH,
+          minHeight: chartH,
+          flex: chartOnly ? '1 1 auto' : undefined,
+          minWidth: 0,
+          width: '100%',
+          position: 'relative',
+        }}
       >
         {noData && (
           <p className="hts-week-loading" style={{ margin: '0.5rem 0', textAlign: 'center' }}>
@@ -157,11 +164,11 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               wrapperStyle={{ fontSize: compact ? '0.55rem' : '0.6875rem', color: '#8b949e', paddingTop: 4 }}
               formatter={(value) => <span style={{ color: '#e2e8f0' }}>{value}</span>}
             />
-            <Line type="monotone" dataKey="spx" stroke="#ef4444" strokeWidth={2} dot={false} connectNulls={false} name="S&P 500 (SPX)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="ixic" stroke="#10b981" strokeWidth={2} dot={false} connectNulls={false} name="NASDAQ (IXIC)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="rut" stroke="#8b5cf6" strokeWidth={2} dot={false} connectNulls={false} name="Russell 2000 (RUT)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="dji" stroke="#f59e0b" strokeWidth={2} dot={false} connectNulls={false} name="Dow (DJIA)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="vix" stroke="#ec4899" strokeWidth={1.5} dot={false} connectNulls={false} name="VIX" isAnimationActive={false} />
+            <Line type="monotone" dataKey="spx" stroke="#ef4444" strokeWidth={2} dot={false} connectNulls name="S&P 500 (SPX)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="ixic" stroke="#10b981" strokeWidth={2} dot={false} connectNulls name="NASDAQ (IXIC)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="rut" stroke="#8b5cf6" strokeWidth={2} dot={false} connectNulls name="Russell 2000 (RUT)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="dji" stroke="#f59e0b" strokeWidth={2} dot={false} connectNulls name="Dow (DJIA)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="vix" stroke="#ec4899" strokeWidth={1.5} dot={false} connectNulls name="VIX" isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
