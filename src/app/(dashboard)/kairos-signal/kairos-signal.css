@@ -1,4 +1,4 @@
-/* Kairos Signal — alternative data / weather research surface (brand gold + emerald) */
+/* Kairos Signal — interactive weather × market research (gold + emerald on dark) */
 
 .kairos-page {
   display: flex;
@@ -9,8 +9,8 @@
   margin: 0 auto;
 }
 
-.kairos-hero {
-  padding: 0 2rem;
+/* ── Hero (40% shorter, centered) ──────────────────────────── */
+.kairos-hero.kairos-hero--compact {
   position: relative;
   overflow: hidden;
   border-radius: 16px;
@@ -22,37 +22,97 @@
     rgba(10, 14, 19, 0.9) 100%
   );
   border: 1px solid rgba(212, 175, 55, 0.15);
-  padding: 2rem 2rem 2.25rem;
+  padding: 1.25rem 2rem 1.35rem;
+}
+
+.kairos-hero-inner {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto;
 }
 
 .kairos-hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #d4af37;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.4rem;
 }
 
 .kairos-hero h1 {
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
   font-weight: 700;
   color: #d4af37;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
   line-height: 1.2;
 }
 
 .kairos-hero-lead {
   color: #9ca3af;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  max-width: 52rem;
+  font-size: 0.825rem;
+  line-height: 1.5;
   margin: 0;
 }
 
+/* ── Controls bar ──────────────────────────────────────────── */
+.kairos-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 2rem;
+  flex-wrap: wrap;
+}
+
+.kairos-select {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  padding: 0.45rem 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.kairos-select:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.kairos-tf-group {
+  display: inline-flex;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.kairos-tf-btn {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #6b7280;
+  transition: background 0.15s, color 0.15s;
+}
+
+.kairos-tf-btn:hover {
+  color: #e2e8f0;
+}
+
+.kairos-tf-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
+}
+
+/* ── Grid ──────────────────────────────────────────────────── */
 .kairos-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -66,6 +126,7 @@
   }
 }
 
+/* ── Cards ─────────────────────────────────────────────────── */
 .kairos-card {
   background: #111;
   border: 1px solid #222;
@@ -86,30 +147,42 @@
 .kairos-card-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 1.25rem;
   border-bottom: 1px solid #222;
+}
+
+.kairos-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: #d4af37;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.kairos-card-header i {
+.kairos-card-header-left i {
   font-size: 1rem;
   opacity: 0.95;
 }
 
+.kairos-card-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
 .kairos-card-body {
-  padding: 1.25rem 1.35rem 1.35rem;
+  padding: 1rem 1.25rem 1.25rem;
   color: #c9d1d9;
-  font-size: 0.875rem;
-  line-height: 1.55;
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
 .kairos-card-body p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.65rem;
 }
 
 .kairos-card-body p:last-child {
@@ -121,84 +194,341 @@
   font-weight: 600;
 }
 
-.kairos-subhead {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #10b981;
-  margin: 1rem 0 0.4rem;
+.kairos-card-hint {
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.45;
+  margin: 0 0 0.5rem;
 }
 
-.kairos-subhead:first-child {
-  margin-top: 0;
-}
-
-.kairos-list {
-  margin: 0;
-  padding-left: 1.15rem;
-}
-
-.kairos-list li {
-  margin-bottom: 0.45rem;
-}
-
-.kairos-list li:last-child {
-  margin-bottom: 0;
-}
-
-.kairos-pill-row {
+/* ── Stat row ──────────────────────────────────────────────── */
+.kairos-stat-row {
   display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
-  gap: 0.4rem;
+}
+
+.kairos-mini-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kairos-mini-stat-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+.kairos-mini-stat-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.kairos-mini-stat-value.positive {
+  color: #10b981;
+}
+
+.kairos-mini-stat-value.negative {
+  color: #ef4444;
+}
+
+.kairos-mini-stat-value small {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* ── Chart wrap ────────────────────────────────────────────── */
+.kairos-chart-wrap {
   margin-top: 0.5rem;
 }
 
-.kairos-pill {
-  display: inline-block;
-  font-size: 0.7rem;
-  padding: 0.25rem 0.55rem;
+.kairos-chart-wrap--centered {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Pill selector ─────────────────────────────────────────── */
+.kairos-pill-selector {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+}
+
+.kairos-pill-btn {
+  font-family: inherit;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
   border-radius: 6px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  color: #6ee7b7;
+  border: 1px solid #333;
+  background: transparent;
+  color: #8b949e;
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
-.kairos-callout {
-  margin-top: 0.75rem;
-  padding: 0.75rem 1rem;
+.kairos-pill-btn:hover {
+  border-color: #d4af37;
+  color: #e2e8f0;
+}
+
+.kairos-pill-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: #d4af37;
+}
+
+/* ── Signal strength card ──────────────────────────────────── */
+.kairos-signal-overall {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 8px;
-  background: rgba(212, 175, 55, 0.06);
-  border-left: 3px solid #d4af37;
-  font-size: 0.82rem;
-  color: #b8c0cc;
+  border-left: 3px solid #10b981;
+  margin-bottom: 0.75rem;
 }
 
-.kairos-two-col {
+.kairos-signal-level {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kairos-signal-region {
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+.kairos-signal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kairos-signal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.kairos-signal-item:last-child {
+  border-bottom: none;
+}
+
+.kairos-signal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.kairos-signal-item strong {
+  display: block;
+  font-size: 0.78rem;
+  color: #e2e8f0;
+}
+
+.kairos-signal-item span {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  text-transform: capitalize;
+}
+
+.kairos-signal-item small {
+  display: block;
+  font-size: 0.65rem;
+  color: #6b7280;
+  margin-top: 1px;
+}
+
+/* ── Critical windows table ────────────────────────────────── */
+.kairos-windows-table {
+  overflow-x: auto;
+}
+
+.kairos-windows-header,
+.kairos-windows-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: 120px repeat(12, 1fr);
+  gap: 2px;
+  align-items: center;
 }
 
-@media (max-width: 640px) {
-  .kairos-two-col {
-    grid-template-columns: 1fr;
-  }
+.kairos-windows-header {
+  margin-bottom: 4px;
+}
 
-  .kairos-hero {
+.kairos-windows-crop {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.25rem;
+}
+
+.kairos-windows-crop strong {
+  display: block;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+}
+
+.kairos-windows-crop small {
+  color: #6b7280;
+  font-size: 0.6rem;
+}
+
+.kairos-windows-month {
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6b7280;
+  padding: 0.25rem 0;
+}
+
+.kairos-windows-month.current {
+  color: #d4af37;
+}
+
+.kairos-windows-cell {
+  height: 22px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kairos-windows-cell.active {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.kairos-windows-cell.current {
+  box-shadow: inset 0 0 0 1.5px rgba(212, 175, 55, 0.5);
+}
+
+.kairos-windows-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  display: inline-block;
+}
+
+.kairos-windows-legend {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.62rem;
+  color: #6b7280;
+}
+
+.kairos-windows-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.kairos-windows-current-marker {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  display: inline-block;
+}
+
+/* ── Loading & empty ───────────────────────────────────────── */
+.kairos-loading-pulse {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.kairos-loading-pulse span {
+  animation: kairos-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes kairos-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.kairos-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+}
+
+.kairos-empty i {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.kairos-retry-btn {
+  margin-top: 0.75rem;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(212, 175, 55, 0.08);
+  color: #d4af37;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.kairos-retry-btn:hover {
+  background: rgba(212, 175, 55, 0.18);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .kairos-hero.kairos-hero--compact {
     margin: 0 1rem;
-    padding: 1.5rem 1.25rem;
+    padding: 1rem 1.25rem;
   }
 
   .kairos-grid {
     padding: 0 1rem;
   }
 
+  .kairos-controls {
+    padding: 0 1rem;
+  }
+
   .kairos-page {
     padding-top: 1.25rem;
   }
+
+  .kairos-windows-header,
+  .kairos-windows-row {
+    grid-template-columns: 90px repeat(12, 1fr);
+  }
+
+  .kairos-pill-selector {
+    display: none;
+  }
 }
 
+/* ── Light mode ────────────────────────────────────────────── */
 body.light-mode .kairos-card {
   background: #fafafa;
   border-color: #e5e7eb;
@@ -216,7 +546,24 @@ body.light-mode .kairos-hero-lead {
   color: #6b7280;
 }
 
-body.light-mode .kairos-callout {
-  background: rgba(212, 175, 55, 0.08);
-  color: #4b5563;
+body.light-mode .kairos-select {
+  background: #fff;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+body.light-mode .kairos-mini-stat-value {
+  color: #111827;
+}
+
+body.light-mode .kairos-signal-overall {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-mode .kairos-windows-cell {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-mode .kairos-windows-cell.active {
+  background: rgba(16, 185, 129, 0.08);
 }
