@@ -1425,3 +1425,75 @@ body.light-mode .comm-comment-thread {
   padding-top: 0.75rem;
   border-top: 1px solid rgba(16, 185, 129, 0.06);
 }
+
+/* Learning Center topic badges (Community tab) — partner-style 3-column grid */
+.comm-lc-badges-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.comm-lc-badges-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.comm-lc-badges-filter-tab {
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 168, 83, 0.12);
+  background: rgba(16, 185, 129, 0.03);
+  color: #8b949e;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans, inherit);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.comm-lc-badges-filter-tab:hover {
+  color: #e2e8f0;
+  border-color: rgba(212, 168, 83, 0.22);
+}
+
+.comm-lc-badges-filter-tab--active {
+  background: rgba(212, 168, 83, 0.1);
+  border-color: rgba(212, 168, 83, 0.28);
+  color: #d4a853;
+}
+
+.comm-lc-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.comm-lc-badge-card {
+  margin: 0 !important;
+}
+
+body.light-mode .comm-lc-badges-filter-tab {
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #64748b;
+}
+
+body.light-mode .comm-lc-badges-filter-tab--active {
+  background: rgba(184, 146, 47, 0.12);
+  color: #92731d;
+  border-color: rgba(184, 146, 47, 0.25);
+}
+
+@media (max-width: 900px) {
+  .comm-lc-badges-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .comm-lc-badges-grid {
+    grid-template-columns: 1fr;
+  }
+}

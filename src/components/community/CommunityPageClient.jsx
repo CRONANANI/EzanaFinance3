@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
+import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { supabase } from '@/lib/supabase';
 import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
@@ -37,10 +38,11 @@ const TRENDING_DISCUSSIONS = [
   { title: 'Green Energy Stocks', author: '@green_future', comments: 43, color: '#6366f1' },
 ];
 
-const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions'];
+const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
 const PAGE_TABS = ['Overview', 'Portfolio', 'Community', 'Messages', 'Notifications'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
+  if (feedTab === 'Badges') return 'trending';
   if (feedTab === 'Following' || feedTab === 'Friends') return 'following';
   if (feedTab === 'Discussions') return 'trending';
   if (feedTab === 'Feed') {
@@ -100,6 +102,11 @@ export default function CommunityPageClient() {
   }, [userProfile, user]);
 
   const fetchFeed = useCallback(async () => {
+    if (feedTab === 'Badges') {
+      setFeedLoading(false);
+      setFeedMessage('');
+      return;
+    }
     setFeedLoading(true);
     setFeedMessage('');
     try {
@@ -691,110 +698,6 @@ export default function CommunityPageClient() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="db-card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: 'rgba(16, 185, 129, 0.08)',
-                  border: '1px solid rgba(16, 185, 129, 0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#10b981',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  fontFamily: 'var(--font-sans)',
-                }}
-              >
-                {getInitials(userProfile?.full_name || userProfile?.display_name || user?.email || 'U')}
-              </div>
-              <textarea
-                id="comm-composer"
-                placeholder="Share something with the community..."
-                value={composerText}
-                onChange={(e) => setComposerText(e.target.value)}
-                rows={2}
-                disabled={!user}
-                style={{
-                  flex: 1,
-                  resize: 'none',
-                  background: 'rgba(16, 185, 129, 0.02)',
-                  border: '1px solid rgba(16, 185, 129, 0.06)',
-                  borderRadius: '10px',
-                  padding: '0.65rem 0.85rem',
-                  color: '#e2e8f0',
-                  fontSize: '0.8125rem',
-                  outline: 'none',
-                  fontFamily: 'var(--font-sans)',
-                }}
-              />
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: '0.75rem',
-                paddingLeft: '52px',
-                flexWrap: 'wrap',
-                gap: '0.5rem',
-              }}
-            >
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                {[
-                  { icon: 'bi-image', label: 'Image' },
-                  { icon: 'bi-bar-chart', label: 'Poll' },
-                  { icon: 'bi-graph-up', label: 'Ticker' },
-                ].map((a) => (
-                  <button
-                    key={a.label}
-                    type="button"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: 'transparent',
-                      color: '#6b7280',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                      fontFamily: 'var(--font-sans)',
-                    }}
-                  >
-                    <i className={`bi ${a.icon}`} /> {a.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={handlePost}
-                disabled={!composerText.trim() || posting || !user}
-                style={{
-                  padding: '0.4rem 1rem',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: composerText.trim() && user ? '#10b981' : 'rgba(16, 185, 129, 0.15)',
-                  color: '#fff',
-                  fontSize: '0.8125rem',
-                  fontWeight: 700,
-                  cursor: composerText.trim() && user ? 'pointer' : 'not-allowed',
-                  fontFamily: 'var(--font-sans)',
-                }}
-              >
-                Post
-              </button>
-            </div>
-            {!user && (
-              <p style={{ color: '#6b7280', fontSize: '0.75rem', margin: '0.5rem 0 0 52px' }}>Sign in to post.</p>
-            )}
-          </div>
-
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
               {FEED_TABS.map((t) => (
@@ -812,61 +715,177 @@ export default function CommunityPageClient() {
                     background: feedTab === t ? '#10b981' : 'rgba(16, 185, 129, 0.04)',
                     color: feedTab === t ? '#fff' : '#8b949e',
                     fontFamily: 'var(--font-sans)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
                   }}
                 >
+                  {t === 'Badges' && <i className="bi bi-award" aria-hidden />}
                   {t}
                 </button>
               ))}
             </div>
-            <select
-              value={feedSort}
-              onChange={(e) => setFeedSort(e.target.value)}
-              style={{
-                background: 'rgba(16, 185, 129, 0.04)',
-                border: '1px solid rgba(16, 185, 129, 0.08)',
-                borderRadius: '8px',
-                padding: '0.4rem 0.6rem',
-                color: '#8b949e',
-                fontSize: '0.75rem',
-                outline: 'none',
-                fontFamily: 'var(--font-sans)',
-              }}
-            >
-              <option>Latest</option>
-              <option>Popular</option>
-              <option>Following</option>
-            </select>
+            {feedTab !== 'Badges' && (
+              <select
+                value={feedSort}
+                onChange={(e) => setFeedSort(e.target.value)}
+                style={{
+                  background: 'rgba(16, 185, 129, 0.04)',
+                  border: '1px solid rgba(16, 185, 129, 0.08)',
+                  borderRadius: '8px',
+                  padding: '0.4rem 0.6rem',
+                  color: '#8b949e',
+                  fontSize: '0.75rem',
+                  outline: 'none',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                <option>Latest</option>
+                <option>Popular</option>
+                <option>Following</option>
+              </select>
+            )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {feedMessage && !feedLoading && (
-              <div className="db-card" style={{ padding: '1rem', textAlign: 'center' }}>
-                <p style={{ color: '#8b949e', fontSize: '0.8125rem', margin: 0 }}>{feedMessage}</p>
+          {feedTab === 'Badges' ? (
+            <LearningCommunityBadgesPanel />
+          ) : (
+            <>
+              <div className="db-card" style={{ padding: '1.25rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: 'rgba(16, 185, 129, 0.08)',
+                      border: '1px solid rgba(16, 185, 129, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#10b981',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      flexShrink: 0,
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    {getInitials(userProfile?.full_name || userProfile?.display_name || user?.email || 'U')}
+                  </div>
+                  <textarea
+                    id="comm-composer"
+                    placeholder="Share something with the community..."
+                    value={composerText}
+                    onChange={(e) => setComposerText(e.target.value)}
+                    rows={2}
+                    disabled={!user}
+                    style={{
+                      flex: 1,
+                      resize: 'none',
+                      background: 'rgba(16, 185, 129, 0.02)',
+                      border: '1px solid rgba(16, 185, 129, 0.06)',
+                      borderRadius: '10px',
+                      padding: '0.65rem 0.85rem',
+                      color: '#e2e8f0',
+                      fontSize: '0.8125rem',
+                      outline: 'none',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '0.75rem',
+                    paddingLeft: '52px',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    {[
+                      { icon: 'bi-image', label: 'Image' },
+                      { icon: 'bi-bar-chart', label: 'Poll' },
+                      { icon: 'bi-graph-up', label: 'Ticker' },
+                    ].map((a) => (
+                      <button
+                        key={a.label}
+                        type="button"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '6px',
+                          border: 'none',
+                          background: 'transparent',
+                          color: '#6b7280',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        <i className={`bi ${a.icon}`} /> {a.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePost}
+                    disabled={!composerText.trim() || posting || !user}
+                    style={{
+                      padding: '0.4rem 1rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: composerText.trim() && user ? '#10b981' : 'rgba(16, 185, 129, 0.15)',
+                      color: '#fff',
+                      fontSize: '0.8125rem',
+                      fontWeight: 700,
+                      cursor: composerText.trim() && user ? 'pointer' : 'not-allowed',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    Post
+                  </button>
+                </div>
+                {!user && (
+                  <p style={{ color: '#6b7280', fontSize: '0.75rem', margin: '0.5rem 0 0 52px' }}>Sign in to post.</p>
+                )}
               </div>
-            )}
-            {feedLoading ? (
-              <div className="db-card" style={{ padding: '2rem', textAlign: 'center' }}>
-                <p style={{ color: '#6b7280', fontSize: '0.8125rem' }}>Loading posts…</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {feedMessage && !feedLoading && (
+                  <div className="db-card" style={{ padding: '1rem', textAlign: 'center' }}>
+                    <p style={{ color: '#8b949e', fontSize: '0.8125rem', margin: 0 }}>{feedMessage}</p>
+                  </div>
+                )}
+                {feedLoading ? (
+                  <div className="db-card" style={{ padding: '2rem', textAlign: 'center' }}>
+                    <p style={{ color: '#6b7280', fontSize: '0.8125rem' }}>Loading posts…</p>
+                  </div>
+                ) : feedPosts.length === 0 ? (
+                  <div className="db-card" style={{ padding: '2rem', textAlign: 'center' }}>
+                    <p style={{ color: '#6b7280', fontSize: '0.8125rem' }}>No posts yet. Be the first to share!</p>
+                  </div>
+                ) : (
+                  feedPosts.map((post) => (
+                    <CommunityFeedPost
+                      key={post.id}
+                      post={post}
+                      expanded={expandedId === post.id}
+                      onToggle={toggleExpand}
+                      onLike={handleLike}
+                      onSave={handleSave}
+                      quote={post.tickerSym ? quoteMap[post.tickerSym] : undefined}
+                      onCommentPosted={handleCommentPosted}
+                    />
+                  ))
+                )}
               </div>
-            ) : feedPosts.length === 0 ? (
-              <div className="db-card" style={{ padding: '2rem', textAlign: 'center' }}>
-                <p style={{ color: '#6b7280', fontSize: '0.8125rem' }}>No posts yet. Be the first to share!</p>
-              </div>
-            ) : (
-              feedPosts.map((post) => (
-                <CommunityFeedPost
-                  key={post.id}
-                  post={post}
-                  expanded={expandedId === post.id}
-                  onToggle={toggleExpand}
-                  onLike={handleLike}
-                  onSave={handleSave}
-                  quote={post.tickerSym ? quoteMap[post.tickerSym] : undefined}
-                  onCommentPosted={handleCommentPosted}
-                />
-              ))
-            )}
-          </div>
+            </>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
