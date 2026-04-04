@@ -140,10 +140,10 @@ export function PartnerCreatorContentCard({ items: itemsProp }) {
   );
 
   return (
-    <section className="db-card lc3-partner-section" aria-label="Partner and creator content" style={{ padding: '1.25rem', marginBottom: '1.25rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '.85rem', borderBottom: '1px solid rgba(16,185,129,0.05)', marginBottom: '.85rem' }}>
-        <h3 style={{ fontSize: '.9375rem', fontWeight: 800, margin: 0, color: '#f0f6fc' }}>From Partners &amp; Creators</h3>
-        <Link href="/ezana-echo" style={{ color: '#10b981', fontSize: '.6875rem', fontWeight: 600, textDecoration: 'none' }}>
+    <section className="db-card lc3-partner-section" aria-label="Partner and creator content">
+      <div className="lc3-partner-section-header">
+        <h3 className="lc3-partner-section-title">From Partners &amp; Creators</h3>
+        <Link href="/ezana-echo" className="lc3-partner-section-link">
           View All
         </Link>
       </div>
@@ -180,11 +180,9 @@ export function PartnerCreatorContentCard({ items: itemsProp }) {
                   </span>
                 </div>
               </div>
-              <p className="lc3-partner-cell-kicker">New course</p>
               <p className="lc3-partner-cell-title">&quot;{row.title}&quot;</p>
               <p className="lc3-partner-cell-meta">
-                {row.typeLabel} · {row.durationMinutes} min · {row.topic}
-                <br />
+                {row.typeLabel} · {row.durationMinutes} min · {row.topic} ·{' '}
                 <span className="lc3-partner-cell-time">{formatRelativeTime(row.publishedAt) || 'recently'}</span>
               </p>
             </article>
