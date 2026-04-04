@@ -12,36 +12,17 @@ import {
 } from '@/lib/learning-progress-logic';
 import { parseLearningBadgeKey, sortBadgeKeysForDisplay } from '@/lib/learning-badge-ui';
 import { LearningTrackBadgeChips } from '@/components/learning/LearningTrackBadgeChips';
-import { PartnerCreatorContentCard } from '@/components/learning/PartnerCreatorContentCard';
+import {
+  PartnerCreatorContentCard,
+  PARTNER_CREATOR_FALLBACK_ITEMS,
+  PARTNER_CREATOR_GRID_MAX,
+} from '@/components/learning/PartnerCreatorContentCard';
 import { FriendsLearningCard } from '@/components/learning/FriendsLearningCard';
 import { getInitials } from '@/lib/community-utils';
 import { useOrg } from '@/contexts/OrgContext';
 import { ORG_SHORT } from '@/lib/orgMockData';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import '@/app/(dashboard)/learning-center/learning-center.css';
-
-const FALLBACK_PARTNER_ITEMS = [
-  {
-    id: 'mock-1',
-    name: 'Sarah Chen',
-    role: 'Creator',
-    title: 'Advanced Options Strategies for Volatile Markets',
-    typeLabel: 'Course',
-    durationMinutes: 25,
-    topic: 'Options Trading',
-    publishedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-  },
-  {
-    id: 'mock-2',
-    name: 'Ezana Research',
-    role: 'Partner',
-    title: 'Crypto Portfolio Allocation Framework 2026',
-    typeLabel: 'Course',
-    durationMinutes: 30,
-    topic: 'Crypto & Digital Assets',
-    publishedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-  },
-];
 
 const TRACK_COLORS = {
   stocks: '#10b981',
@@ -104,9 +85,11 @@ export function LearningCenterPage() {
     try {
       const res = await fetch('/api/learning/partner-content', { cache: 'no-store' });
       const json = await res.json();
-      setPartnerItems(json.items?.length ? json.items : FALLBACK_PARTNER_ITEMS);
+      setPartnerItems(
+        json.items?.length ? json.items.slice(0, PARTNER_CREATOR_GRID_MAX) : PARTNER_CREATOR_FALLBACK_ITEMS,
+      );
     } catch {
-      setPartnerItems(FALLBACK_PARTNER_ITEMS);
+      setPartnerItems(PARTNER_CREATOR_FALLBACK_ITEMS);
     }
   }, []);
 

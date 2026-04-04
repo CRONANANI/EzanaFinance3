@@ -41,7 +41,7 @@ export async function GET() {
     const profileById = new Map((profiles || []).map((p) => [p.id, p]));
     const partnerArticles = articles.filter((a) => a.author_id && profileById.get(a.author_id)?.is_partner);
 
-    const items = partnerArticles.slice(0, 8).map((a) => {
+    const items = partnerArticles.slice(0, 9).map((a) => {
       const p = profileById.get(a.author_id);
       const role = p?.partner_type === 'creator' ? 'Creator' : 'Partner';
       const name = (p?.full_name || a.author_name || 'Partner').trim();
