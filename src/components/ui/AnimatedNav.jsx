@@ -30,7 +30,7 @@ export function AnimatedNav({ items, accentColor = '#10b981' }) {
               ) : (
                 <Link
                   href={item.url}
-                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}`}
+                  className={`animated-nav-link ${item.isActive ? 'active' : ''} ${hovered === item.id ? 'hovered' : ''}${item.variant === 'purple' ? ' animated-nav-link--purple' : ''}`}
                   style={{ '--accent': accentColor }}
                 >
                   <i className={`bi ${item.icon}`} />
@@ -42,7 +42,7 @@ export function AnimatedNav({ items, accentColor = '#10b981' }) {
                 <motion.div
                   layoutId="nav-cursor"
                   className="animated-nav-underline"
-                  style={{ background: accentColor }}
+                  style={{ background: item.variant === 'purple' ? '#6366f1' : accentColor }}
                 />
               )}
 

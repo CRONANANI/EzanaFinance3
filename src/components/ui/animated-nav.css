@@ -247,6 +247,30 @@ body.light-mode .partner-nav .animated-nav-dropdown-item > i {
   border-top: 1px solid rgba(212, 175, 55, 0.12);
 }
 
+/* Purple nav item (Team Hub) — always purple text */
+.animated-nav-link--purple {
+  color: #818cf8 !important;
+}
+
+.animated-nav-link--purple:hover,
+.animated-nav-link--purple.hovered {
+  color: #6366f1 !important;
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.animated-nav-link--purple.active {
+  color: #6366f1 !important;
+}
+
+/* Mobile fallback purple */
+.nav-link.nav-link--purple {
+  color: #818cf8 !important;
+}
+
+.nav-link.nav-link--purple.active {
+  color: #6366f1 !important;
+}
+
 /* ═══ MOBILE — Hide AnimatedNav, show hamburger menu ═══ */
 @media (max-width: 768px) {
   .animated-nav {

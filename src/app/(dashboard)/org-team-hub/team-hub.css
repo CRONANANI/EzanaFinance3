@@ -686,6 +686,162 @@
   }
 }
 
+/* ── Team Ranking Row ──────────────────────────────────────── */
+.th-ranking-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.th-ranking-card {
+  flex: 0 0 auto;
+  min-width: 160px;
+  background: rgba(99, 102, 241, 0.03);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.th-ranking-card:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.th-ranking-rank {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #6366f1;
+  margin-bottom: 0.2rem;
+}
+
+.th-ranking-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.th-ranking-roi {
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-bottom: 0.15rem;
+  font-feature-settings: 'tnum' 1;
+}
+
+.th-ranking-roi.positive {
+  color: #10b981;
+}
+.th-ranking-roi.negative {
+  color: #ef4444;
+}
+
+.th-ranking-value {
+  font-size: 0.65rem;
+  color: #6b7280;
+  margin-bottom: 0.35rem;
+}
+
+.th-ranking-tickers {
+  display: flex;
+  justify-content: center;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+}
+
+.th-ticker-pill {
+  font-size: 0.5rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+}
+
+/* ── Task + File side by side ──────────────────────────────── */
+.th-row-task-file {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.th-row-task-file > .th-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.th-task-col {
+  max-height: 480px;
+}
+
+.th-task-scroll {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 380px;
+}
+
+/* ── Filter bar (multi-select) ─────────────────────────────── */
+.th-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.th-filter-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 0.15rem;
+}
+
+.th-filter-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(99, 102, 241, 0.12);
+  margin: 0 0.35rem;
+}
+
+/* ── Compact row (3-col) ───────────────────────────────────── */
+.th-row-compact {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.th-compact-card {
+  max-height: 260px;
+  overflow: hidden;
+}
+
+.th-compact-card > .db-card,
+.th-compact-card > div {
+  height: 100%;
+  max-height: 260px;
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .th-row-task-file {
+    grid-template-columns: 1fr;
+  }
+  .th-row-compact {
+    grid-template-columns: 1fr;
+  }
+  .th-ranking-row {
+    flex-wrap: wrap;
+  }
+}
+
 /* ── Light mode ────────────────────────────────────────────── */
 body.light-mode .th-card {
   background: #fafafa;
@@ -734,4 +890,26 @@ body.light-mode .th-stat-value {
 
 body.light-mode .th-hero-sub {
   color: #6b7280;
+}
+
+body.light-mode .th-ranking-card {
+  background: rgba(99, 102, 241, 0.04);
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+body.light-mode .th-ranking-name {
+  color: #111827;
+}
+
+body.light-mode .th-ranking-value {
+  color: #6b7280;
+}
+
+body.light-mode .th-ticker-pill {
+  background: rgba(99, 102, 241, 0.08);
+  color: #4f46e5;
+}
+
+body.light-mode .th-filter-label {
+  color: #9ca3af;
 }

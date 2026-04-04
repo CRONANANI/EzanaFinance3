@@ -651,3 +651,138 @@ body.light-mode .theme-toggle-btn:hover {
   background: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.12);
 }
+
+/* ── Global text visibility fixes ──────────────────────────── */
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4 {
+  color: #111827;
+}
+
+body.light-mode p {
+  color: #374151;
+}
+
+body.light-mode .db-card-header h3 {
+  color: #111827;
+}
+
+body.light-mode .db-card {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+body.light-mode .db-card-header {
+  border-bottom-color: #e5e7eb;
+}
+
+/* Task & file text */
+body.light-mode .th-task-title,
+body.light-mode .th-file-name {
+  color: #111827;
+}
+
+body.light-mode .th-task-meta,
+body.light-mode .th-file-meta {
+  color: #6b7280;
+}
+
+body.light-mode .th-hero h1 {
+  color: #111827;
+}
+
+body.light-mode .th-hero-stat-value {
+  color: #111827;
+}
+
+/* Kairos cards light mode */
+body.light-mode .kairos-card-header-left {
+  color: #92731d;
+}
+
+body.light-mode .kairos-mini-stat-label {
+  color: #9ca3af;
+}
+
+/* Betting markets light mode */
+body.light-mode .bm-stat-card {
+  background: rgba(212, 175, 55, 0.03);
+  border-color: rgba(212, 175, 55, 0.1);
+}
+
+body.light-mode .bm-stat-value,
+body.light-mode .bm-stat-label {
+  color: #111827;
+}
+
+body.light-mode .bm-game {
+  background: #fafafa;
+  border-color: #e5e7eb;
+}
+
+body.light-mode .bm-game-title {
+  color: #111827;
+}
+
+/* For the quants light mode text */
+body.light-mode .ftq-strategy-name {
+  color: #111827;
+}
+
+body.light-mode .ftq-bt-q {
+  color: #111827;
+}
+
+body.light-mode .ftq-lb-name {
+  color: #111827;
+}
+
+body.light-mode .ftq-ind-name {
+  color: #111827;
+}
+
+/* Partner pages light mode */
+body.light-mode .partner-card {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+body.light-mode .partner-card h3 {
+  color: #111827;
+}
+
+/* Generic component card light mode */
+body.light-mode .component-card {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+body.light-mode .component-card h3 {
+  color: #111827;
+}
+
+body.light-mode .card-header {
+  border-bottom-color: #e5e7eb;
+}
+
+/* Team Hub nav — purple in light mode (override emerald nav-link rules) */
+body.light-mode .animated-nav-link--purple,
+body.light-mode .animated-nav-link--purple:hover,
+body.light-mode .animated-nav-link--purple.hovered,
+body.light-mode .animated-nav-link--purple.active {
+  color: #6366f1 !important;
+}
+
+body.light-mode .animated-nav-link--purple:hover,
+body.light-mode .animated-nav-link--purple.hovered {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+body.light-mode .nav-link.nav-link--purple {
+  color: #818cf8 !important;
+}
+
+body.light-mode .nav-link.nav-link--purple.active {
+  color: #6366f1 !important;
+}
