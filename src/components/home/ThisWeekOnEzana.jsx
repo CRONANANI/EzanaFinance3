@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
   Legend,
+  ReferenceLine,
 } from 'recharts';
 
 const TABS = [
@@ -47,31 +48,83 @@ function weekRangeLabel() {
 
 const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
 
-/** Each series indexed to 100 from its own first available close this week (scales differ: VIX vs SPX). */
-function normalizeWeekSeries(series) {
+const SERIES_COLORS = {
+  spx: '#ef4444',
+  ixic: '#10b981',
+  rut: '#8b5cf6',
+  dji: '#f59e0b',
+  vix: '#ec4899',
+};
+
+const SERIES_NAMES = {
+  spx: 'S&P 500 (SPX)',
+  ixic: 'NASDAQ (IXIC)',
+  rut: 'Russell 2000 (RUT)',
+  dji: 'Dow (DJIA)',
+  vix: 'VIX',
+};
+
+/**
+ * Convert raw close prices to % change from Monday's close.
+ * Monday = 0%, Tuesday = ((Tue - Mon) / Mon) * 100, etc.
+ * This spreads the lines apart since different indices move by different %s.
+ */
+function normalizeToPercentChange(series) {
   if (!Array.isArray(series) || series.length === 0) return [];
-  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : typeof v === 'string' ? parseFloat(v) : NaN);
-  const bases = Object.fromEntries(CHART_KEYS.map((k) => [k, undefined]));
-  for (const row of series) {
-    for (const k of CHART_KEYS) {
+
+  const num = (v) =>
+    typeof v === 'number' && Number.isFinite(v)
+      ? v
+      : typeof v === 'string'
+        ? parseFloat(v)
+        : NaN;
+
+  // Find the first valid value for each key (Monday's close = baseline)
+  const bases = {};
+  for (const k of CHART_KEYS) {
+    bases[k] = null;
+    for (const row of series) {
       const parsed = num(row[k]);
-      if (bases[k] == null && !Number.isNaN(parsed)) bases[k] = parsed;
+      if (!Number.isNaN(parsed) && parsed !== 0) {
+        bases[k] = parsed;
+        break;
+      }
     }
   }
+
   return series.map((r) => {
     const out = { day: r.day };
     for (const k of CHART_KEYS) {
       const b = bases[k];
       const parsed = num(r[k]);
-      out[k] = !Number.isNaN(parsed) && b != null && b !== 0 ? (parsed / b) * 100 : null;
+      if (!Number.isNaN(parsed) && b != null && b !== 0) {
+        out[k] = ((parsed - b) / b) * 100;
+      } else {
+        out[k] = null;
+      }
     }
     return out;
   });
 }
 
+/** Returns true if any series has day-to-day variation (not a single flat value). */
+function hasVariation(chartData) {
+  for (const k of CHART_KEYS) {
+    const vals = chartData.map((r) => r[k]).filter((v) => v != null);
+    if (vals.length >= 2) {
+      const first = vals[0];
+      if (vals.some((v) => Math.abs(v - first) > 0.001)) return true;
+    }
+  }
+  return false;
+}
+
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
   const chartH = chartOnly ? (compact ? 268 : 300) : compact ? 168 : 220;
-  const chartData = useMemo(() => normalizeWeekSeries(indexPayload?.series || []), [indexPayload]);
+  const chartData = useMemo(
+    () => normalizeToPercentChange(indexPayload?.series || []),
+    [indexPayload],
+  );
   const loading = indexPayload === null;
   const cards = indexPayload?.cards;
 
@@ -81,10 +134,38 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     (!chartData.length ||
       chartData.every((r) => CHART_KEYS.every((k) => r[k] == null)));
 
+  // Check if data exists but is all flat (same quote gap-filled everywhere)
+  const dataIsFlat = !noData && chartData.length > 0 && !hasVariation(chartData);
+
+  // Compute Y domain with some padding so lines don't hug the edges
+  const yDomain = useMemo(() => {
+    if (!chartData.length) return [-2, 2];
+    let min = 0;
+    let max = 0;
+    for (const row of chartData) {
+      for (const k of CHART_KEYS) {
+        const v = row[k];
+        if (v != null) {
+          if (v < min) min = v;
+          if (v > max) max = v;
+        }
+      }
+    }
+    // If all values are 0 (flat), show a reasonable range
+    if (min === 0 && max === 0) return [-2, 2];
+    const pad = Math.max(Math.abs(max - min) * 0.2, 0.5);
+    return [Math.floor((min - pad) * 10) / 10, Math.ceil((max + pad) * 10) / 10];
+  }, [chartData]);
+
   return (
-    <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
+    <div
+      className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}
+    >
       {loading && (
-        <p className="hts-week-loading" style={{ margin: '0 0 0.35rem', textAlign: 'center' }}>
+        <p
+          className="hts-week-loading"
+          style={{ margin: '0 0 0.35rem', textAlign: 'center' }}
+        >
           Loading market data…
         </p>
       )}
@@ -110,7 +191,13 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               <div className="hts-week-metric-label" style={{ marginBottom: 2 }}>
                 {label}
               </div>
-              <div className="hts-week-metric-val" style={{ fontSize: compact ? '0.65rem' : '0.75rem', lineHeight: 1.2 }}>
+              <div
+                className="hts-week-metric-val"
+                style={{
+                  fontSize: compact ? '0.65rem' : '0.75rem',
+                  lineHeight: 1.2,
+                }}
+              >
                 {val}
               </div>
             </div>
@@ -129,7 +216,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
         }}
       >
         {noData && (
-          <p className="hts-week-loading" style={{ margin: '0.5rem 0', textAlign: 'center' }}>
+          <p
+            className="hts-week-loading"
+            style={{ margin: '0.5rem 0', textAlign: 'center' }}
+          >
             {indexPayload?.error === 'no_key'
               ? 'Add FINNHUB_API_KEY for live index data.'
               : indexPayload?.ok === false || indexPayload?.error === 'fetch_failed'
@@ -139,13 +229,41 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                   : 'No OHLC data for this week yet.'}
           </p>
         )}
+        {dataIsFlat && !noData && (
+          <p
+            className="hts-week-loading"
+            style={{
+              margin: '0',
+              textAlign: 'center',
+              fontSize: '0.625rem',
+              color: '#6b7280',
+              position: 'absolute',
+              top: 4,
+              left: 0,
+              right: 0,
+              zIndex: 2,
+            }}
+          >
+            Showing latest available prices — intraweek candle data may be delayed.
+          </p>
+        )}
         <ResponsiveContainer width="100%" height={chartH}>
           <LineChart
-            data={chartData.length ? chartData : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]}
+            data={
+              chartData.length
+                ? chartData
+                : [
+                    { day: 'Mon' },
+                    { day: 'Tue' },
+                    { day: 'Wed' },
+                    { day: 'Thu' },
+                    { day: 'Fri' },
+                  ]
+            }
             margin={{
               top: 8,
-              right: 8,
-              left: 2,
+              right: 12,
+              left: compact ? -4 : 4,
               bottom: chartOnly ? 52 : 40,
             }}
           >
@@ -157,9 +275,22 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               axisLine={false}
               tickLine={false}
             />
-            <YAxis hide domain={['auto', 'auto']} />
+            <YAxis
+              domain={yDomain}
+              tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`}
+              tick={{ fill: '#6b7280', fontSize: 9 }}
+              axisLine={false}
+              tickLine={false}
+              width={compact ? 38 : 44}
+              tickCount={5}
+            />
+            <ReferenceLine y={0} stroke="rgba(107, 114, 128, 0.3)" strokeDasharray="3 3" />
             <Tooltip
-              formatter={(value) => (typeof value === 'number' ? `${value.toFixed(3)} (idx)` : '—')}
+              formatter={(value, name) => {
+                if (typeof value !== 'number') return ['—', name];
+                const sign = value >= 0 ? '+' : '';
+                return [`${sign}${value.toFixed(2)}%`, name];
+              }}
               contentStyle={{
                 background: '#161b22',
                 border: '1px solid rgba(16, 185, 129, 0.15)',
@@ -167,6 +298,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                 fontSize: '0.7rem',
                 color: '#e2e8f0',
               }}
+              labelStyle={{ color: '#8b949e', fontWeight: 600, marginBottom: 4 }}
             />
             <Legend
               iconType="plainline"
@@ -177,13 +309,24 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                 paddingTop: 2,
                 lineHeight: 1.2,
               }}
-              formatter={(value) => <span style={{ color: '#e2e8f0' }}>{value}</span>}
+              formatter={(value) => (
+                <span style={{ color: '#e2e8f0' }}>{value}</span>
+              )}
             />
-            <Line type="monotone" dataKey="spx" stroke="#ef4444" strokeWidth={1.5} dot={false} connectNulls name="S&P 500 (SPX)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="ixic" stroke="#10b981" strokeWidth={1.5} dot={false} connectNulls name="NASDAQ (IXIC)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="rut" stroke="#8b5cf6" strokeWidth={1.5} dot={false} connectNulls name="Russell 2000 (RUT)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="dji" stroke="#f59e0b" strokeWidth={1.5} dot={false} connectNulls name="Dow (DJIA)" isAnimationActive={false} />
-            <Line type="monotone" dataKey="vix" stroke="#ec4899" strokeWidth={1.5} dot={false} connectNulls name="VIX" isAnimationActive={false} />
+            {CHART_KEYS.map((k) => (
+              <Line
+                key={k}
+                type="monotone"
+                dataKey={k}
+                stroke={SERIES_COLORS[k]}
+                strokeWidth={1.8}
+                dot={{ r: 2.5, fill: SERIES_COLORS[k], strokeWidth: 0 }}
+                activeDot={{ r: 4, strokeWidth: 1.5, stroke: '#161b22' }}
+                connectNulls
+                name={SERIES_NAMES[k]}
+                isAnimationActive={false}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -220,7 +363,10 @@ function PlatformActivityTab() {
   ];
 
   return (
-    <div className="hts-week-tab-inner hts-week-activity-v2" style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+    <div
+      className="hts-week-tab-inner hts-week-activity-v2"
+      style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
+    >
       {rows.map((row) => (
         <div
           key={row.title}
@@ -244,11 +390,31 @@ function PlatformActivityTab() {
               flexShrink: 0,
             }}
           >
-            <i className="bi bi-graph-up-arrow" style={{ color: '#10b981', fontSize: '0.9rem' }} />
+            <i
+              className="bi bi-graph-up-arrow"
+              style={{ color: '#10b981', fontSize: '0.9rem' }}
+            />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: '#f0f6fc' }}>{row.title}</p>
-            <p style={{ margin: '0.15rem 0 0', fontSize: '0.6875rem', color: '#6b7280' }}>{row.sub}</p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '0.8125rem',
+                fontWeight: 700,
+                color: '#f0f6fc',
+              }}
+            >
+              {row.title}
+            </p>
+            <p
+              style={{
+                margin: '0.15rem 0 0',
+                fontSize: '0.6875rem',
+                color: '#6b7280',
+              }}
+            >
+              {row.sub}
+            </p>
             <div
               style={{
                 marginTop: 6,
@@ -258,27 +424,80 @@ function PlatformActivityTab() {
                 overflow: 'hidden',
               }}
             >
-              <div style={{ width: `${row.pct}%`, height: '100%', borderRadius: 2, background: '#10b981' }} />
+              <div
+                style={{
+                  width: `${row.pct}%`,
+                  height: '100%',
+                  borderRadius: 2,
+                  background: '#10b981',
+                }}
+              />
             </div>
           </div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981', whiteSpace: 'nowrap' }}>{row.score}</span>
+          <span
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              color: '#10b981',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {row.score}
+          </span>
         </div>
       ))}
 
       <div style={{ marginTop: '0.5rem' }}>
-        <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b7280', margin: '0 0 0.5rem' }}>
+        <p
+          style={{
+            fontSize: '0.625rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            color: '#6b7280',
+            margin: '0 0 0.5rem',
+          }}
+        >
           Your standing
         </p>
-        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: '#e2e8f0' }}>
-          You&apos;re more active than <strong style={{ color: '#10b981' }}>60%</strong> of users
+        <p
+          style={{
+            margin: '0 0 0.5rem',
+            fontSize: '0.8125rem',
+            color: '#e2e8f0',
+          }}
+        >
+          You&apos;re more active than{' '}
+          <strong style={{ color: '#10b981' }}>60%</strong> of users
         </p>
-        <div style={{ height: 8, borderRadius: 4, background: 'rgba(16, 185, 129, 0.1)', overflow: 'hidden', marginBottom: '0.65rem' }}>
-          <div style={{ width: '60%', height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, #10b981, #34d399)' }} />
+        <div
+          style={{
+            height: 8,
+            borderRadius: 4,
+            background: 'rgba(16, 185, 129, 0.1)',
+            overflow: 'hidden',
+            marginBottom: '0.65rem',
+          }}
+        >
+          <div
+            style={{
+              width: '60%',
+              height: '100%',
+              borderRadius: 4,
+              background: 'linear-gradient(90deg, #10b981, #34d399)',
+            }}
+          />
         </div>
         <p style={{ margin: 0, fontSize: '0.75rem', color: '#8b949e' }}>
-          <i className="bi bi-bar-chart-line" style={{ marginRight: 6, color: '#10b981' }} />
-          Ranked <strong style={{ color: '#f0f6fc' }}>#8</strong> amongst friends{' '}
-          <span style={{ color: '#10b981' }}>(up 2 spots from last month)</span>
+          <i
+            className="bi bi-bar-chart-line"
+            style={{ marginRight: 6, color: '#10b981' }}
+          />
+          Ranked <strong style={{ color: '#f0f6fc' }}>#8</strong> amongst
+          friends{' '}
+          <span style={{ color: '#10b981' }}>
+            (up 2 spots from last month)
+          </span>
         </p>
       </div>
     </div>
@@ -301,7 +520,11 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
           data = {};
         }
         if (!r.ok) {
-          return { ok: false, error: 'fetch_failed', series: Array.isArray(data.series) ? data.series : [] };
+          return {
+            ok: false,
+            error: 'fetch_failed',
+            series: Array.isArray(data.series) ? data.series : [],
+          };
         }
         return data;
       })
@@ -309,7 +532,8 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
         if (!cancelled) setIndexPayload(data);
       })
       .catch(() => {
-        if (!cancelled) setIndexPayload({ ok: false, error: 'fetch_failed', series: [] });
+        if (!cancelled)
+          setIndexPayload({ ok: false, error: 'fetch_failed', series: [] });
       });
     return () => {
       cancelled = true;
@@ -329,8 +553,14 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
           <span className="hts-week-date-range">{range}</span>
         </div>
       </div>
-      <div className={`hts-card-body hts-week-card-body${compact ? ' hts-week-card-body--compact' : ''}`}>
-        <div className="hts-week-tabs db-tf-group-sm" role="tablist" aria-label="Weekly recap sections">
+      <div
+        className={`hts-card-body hts-week-card-body${compact ? ' hts-week-card-body--compact' : ''}`}
+      >
+        <div
+          className="hts-week-tabs db-tf-group-sm"
+          role="tablist"
+          aria-label="Weekly recap sections"
+        >
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -350,7 +580,11 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
           role="tabpanel"
         >
           {activeTab === 'market' && (
-            <MarketPerformanceTab compact={compact} indexPayload={indexPayload} chartOnly={marketChartOnly} />
+            <MarketPerformanceTab
+              compact={compact}
+              indexPayload={indexPayload}
+              chartOnly={marketChartOnly}
+            />
           )}
           {activeTab === 'activity' && <PlatformActivityTab />}
         </div>
