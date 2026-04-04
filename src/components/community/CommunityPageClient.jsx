@@ -39,7 +39,7 @@ const TRENDING_DISCUSSIONS = [
 ];
 
 const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
-const PAGE_TABS = ['Overview', 'Portfolio', 'Community', 'Messages', 'Notifications'];
+const PAGE_TABS = ['Overview', 'Community', 'Messages'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
   if (feedTab === 'Badges') return 'trending';
@@ -376,8 +376,7 @@ export default function CommunityPageClient() {
 
   const onPageTab = (t) => {
     if (t === 'Overview') router.push('/home-dashboard');
-    else if (t === 'Portfolio') router.push('/trading');
-    else if (t === 'Messages' || t === 'Notifications') router.push('/community');
+    else if (t === 'Messages') router.push('/community');
   };
 
   return (
@@ -507,23 +506,9 @@ export default function CommunityPageClient() {
             }}
           >
             {t === 'Overview' && <i className="bi bi-grid" />}
-            {t === 'Portfolio' && <i className="bi bi-briefcase" />}
             {t === 'Community' && <i className="bi bi-people" />}
             {t === 'Messages' && <i className="bi bi-chat-dots" />}
-            {t === 'Notifications' && <i className="bi bi-bell" />}
             {t}
-            {t === 'Notifications' && (
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: '#ef4444',
-                  display: 'inline-block',
-                  marginLeft: '0.15rem',
-                }}
-              />
-            )}
           </button>
         ))}
       </div>
