@@ -254,7 +254,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 80px;
-  align-items: center;
+  /* stretch so both columns share row height; visual cards can height:100% match congress ledger */
+  align-items: stretch;
 }
 
 /* Reverse layout for alternating features */
@@ -273,6 +274,10 @@
 
 .feature-visual {
   position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .visual-container {
@@ -1242,6 +1247,9 @@
 .congress-visual,
 .intelligence-visual,
 .community-visual {
+  box-sizing: border-box;
+  width: 100%;
+  flex: 1 1 auto;
   background: linear-gradient(180deg, rgba(22, 27, 34, 0.95) 0%, rgba(13, 17, 23, 0.98) 100%);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 16px;
@@ -1249,7 +1257,36 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 380px;
+  min-height: 420px;
+}
+
+/* Inner mocks fill the card like .ledger-table (flex:1) so all four look the same height */
+.portfolio-visual .portfolio-dashboard,
+.intelligence-visual .intelligence-dashboard,
+.community-visual .community-feed {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.portfolio-visual .mini-chart {
+  flex: 1 1 auto;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+}
+
+.intelligence-visual .intel-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.community-visual .community-items {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* Remove any old .congress-ledger styles that created nested card */
