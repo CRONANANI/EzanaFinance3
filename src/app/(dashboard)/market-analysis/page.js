@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { WorldMap } from '@/components/ui/world-map';
 import {
   PANEL_ID_TO_CITY_KEY,
@@ -944,6 +945,10 @@ export default function MarketAnalysisPage() {
         <div className="ma-view-toggle">
           <button type="button" className={`ma-view-btn ${view === 'map' ? 'active' : ''}`} onClick={() => setView('map')}>THE MAP</button>
           <button type="button" className={`ma-view-btn ${view === 'chain' ? 'active' : ''}`} onClick={() => setView('chain')}>THE CHAIN</button>
+          <Link href="/empire-ranking" className="ma-view-btn ma-view-btn--gold">
+            <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
+            EMPIRE RANKING &amp; ANALYSIS
+          </Link>
         </div>
       </div>
 

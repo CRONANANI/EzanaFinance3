@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Market Analysis - Ezana Finance",
+  title: "Global Market Analysis - Ezana Finance",
   description: "Sector trends, market indices, and economic calendar.",
 };
 

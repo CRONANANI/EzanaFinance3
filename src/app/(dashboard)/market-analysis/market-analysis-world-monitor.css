@@ -56,6 +56,27 @@
 
 .ma-view-btn:hover { color: #10b981; }
 
+/* Gold variant for Empire Ranking button */
+.ma-view-btn.ma-view-btn--gold {
+  color: #d4af37;
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 1px solid rgba(212, 175, 55, 0.25);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  font-weight: 800;
+  padding: 0.375rem 1.25rem;
+}
+
+.ma-view-btn.ma-view-btn--gold:hover {
+  color: #e6c35a;
+  background: rgba(212, 175, 55, 0.15);
+}
+
 /* ═══ Map area ═══ */
 .ma-map-area {
   position: absolute;

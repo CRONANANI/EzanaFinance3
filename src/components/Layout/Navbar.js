@@ -29,6 +29,7 @@ export function Navbar() {
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
     pathname?.includes('/market-analysis') ||
+    pathname?.includes('/empire-ranking') ||
     pathname?.includes('/for-the-quants') ||
     pathname?.includes('/betting-markets') ||
     pathname?.includes('/ezana-echo') ||
@@ -53,7 +54,7 @@ export function Navbar() {
       items: [
         { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
         { id: 22, title: 'Company Research', description: 'Financial analysis', url: '/company-research', icon: 'bi-bar-chart-line' },
-        { id: 23, title: 'Market Analysis', description: 'Sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
+        { id: 23, title: 'Global Market Analysis', description: 'Worldwide sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
         { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
         { id: 27, title: 'Alternative Markets', description: 'Crypto & commodities', url: '/alternative-markets', icon: 'bi-globe2' },
         { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold' },
@@ -307,7 +308,7 @@ export function Navbar() {
               </Link>
               <Link href="/market-analysis" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-graph-up-arrow"></i>
-                <div><div className="item-title">Market Analysis</div></div>
+                <div><div className="item-title">Global Market Analysis</div></div>
               </Link>
               <Link href="/ezana-echo" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-newspaper"></i>

@@ -1,0 +1,344 @@
+/* Empire Ranking & Analysis — gold + emerald on dark, Dalio-inspired */
+
+.er-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+/* ── Hero ──────────────────────────────────────────────── */
+.er-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.06) 0%,
+    rgba(16, 185, 129, 0.03) 50%,
+    rgba(10, 14, 19, 0.95) 100%
+  );
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.er-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #8b949e;
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+  transition: color 0.15s;
+}
+
+.er-back-link:hover {
+  color: #d4af37;
+}
+
+.er-hero-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.er-hero-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.er-hero h1 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #d4af37;
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+.er-hero-sub {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin: 0;
+  max-width: 620px;
+  line-height: 1.5;
+}
+
+.er-hero-sub em {
+  color: #e2e8f0;
+  font-style: italic;
+}
+
+.er-hero-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #d4af37;
+  white-space: nowrap;
+}
+
+/* ── Grid ──────────────────────────────────────────────── */
+.er-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .er-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Cards ─────────────────────────────────────────────── */
+.er-card {
+  background: rgba(212, 175, 55, 0.02);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.er-card:hover {
+  border-color: rgba(212, 175, 55, 0.28);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.er-card--wide {
+  grid-column: 1 / -1;
+}
+
+.er-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.08);
+  flex-wrap: wrap;
+}
+
+.er-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.er-card-header-left > i {
+  font-size: 1.05rem;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.er-card-header h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.er-card-subtitle {
+  font-size: 0.68rem;
+  color: #6b7280;
+  margin: 2px 0 0;
+}
+
+.er-card-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.er-card-body {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+/* ── Select ────────────────────────────────────────────── */
+.er-select {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.er-select:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+/* ── Big Cycle stat row ────────────────────────────────── */
+.er-cycle-stat-row {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.08);
+}
+
+.er-cycle-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.er-cycle-stat-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.er-cycle-stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f0f6fc;
+}
+
+/* ── Scorecard grid ────────────────────────────────────── */
+.er-scorecard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.er-scorecard {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  transition: border-color 0.15s;
+}
+
+.er-scorecard:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+.er-scorecard-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.5rem;
+}
+
+.er-scorecard-flag {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.er-scorecard-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f0f6fc;
+}
+
+.er-scorecard-code {
+  font-size: 0.6rem;
+  color: #6b7280;
+  font-family: monospace;
+}
+
+.er-scorecard-rank {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #d4af37;
+  background: rgba(212, 175, 55, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.er-scorecard-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.er-scorecard-score {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #d4af37;
+  font-feature-settings: 'tnum' 1;
+}
+
+.er-scorecard-trajectory {
+  font-size: 1.1rem;
+}
+
+.er-scorecard-bar-track {
+  height: 4px;
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.er-scorecard-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4af37, #e6c35a);
+  border-radius: 2px;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .er-hero {
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+  }
+
+  .er-scorecard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Light mode ────────────────────────────────────────── */
+body.light-mode .er-card {
+  background: #ffffff;
+  border-color: rgba(212, 175, 55, 0.18);
+}
+
+body.light-mode .er-card-header h3 {
+  color: #111827;
+}
+
+body.light-mode .er-hero {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+body.light-mode .er-scorecard {
+  background: #fafafa;
+}
+
+body.light-mode .er-scorecard-name {
+  color: #111827;
+}
+
+body.light-mode .er-cycle-stat-value {
+  color: #111827;
+}

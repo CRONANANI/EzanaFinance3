@@ -127,7 +127,7 @@ export function PartnerNavbar() {
                 </Link>
                 <Link href="/market-analysis" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-graph-up" />
-                  <div><span className="nav-dropdown-title">Market Analysis</span><span className="nav-dropdown-desc">Global markets</span></div>
+                  <div><span className="nav-dropdown-title">Global Market Analysis</span><span className="nav-dropdown-desc">Worldwide sector trends</span></div>
                 </Link>
                 <Link href="/for-the-quants" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-calculator" />
