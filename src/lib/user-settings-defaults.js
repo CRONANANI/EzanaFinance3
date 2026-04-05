@@ -4,7 +4,7 @@
  */
 export function getDefaultUserSettings() {
   return {
-    theme: 'dark',
+    theme: 'light',
     language: 'en',
     currency: 'USD',
     timezone:
