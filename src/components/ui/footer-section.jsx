@@ -144,9 +144,9 @@ export function FooterSection({ onContactClick }) {
             <Link href="/help-center" className="transition-colors hover:text-primary">
               Help Center
             </Link>
-            <a href="#" className="transition-colors hover:text-primary">
+            <Link href="/privacy-policy" className="transition-colors hover:text-primary">
               Privacy Policy
-            </a>
+            </Link>
             <a href="#" className="transition-colors hover:text-primary">
               Terms of Service
             </a>
