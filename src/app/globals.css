@@ -16,6 +16,7 @@
 @import './nav-notifications.css';
 @import './ui-improvements.css';
 @import './light-mode.css';
+@import './landing-light-mode.css';
 @import './partner-light-mode.css';
 @import './terminal-theme.css';
 @import './dashboard-app-icons.css';
@@ -353,11 +354,11 @@ body.light-mode .nav-logo-img {
   }
 }
 
-/* Landing page: force #050a08 on html/body to prevent #0f1419 bleed-through */
-html:has(.landing-page) {
+/* Landing (dark only): force #050a08 on html/body to prevent #0f1419 bleed-through */
+html:has(.landing-page):not(:has(body.light-mode)) {
   background-color: #050a08 !important;
 }
-html:has(.landing-page) body {
+html:has(.landing-page) body:not(.light-mode) {
   background-color: #050a08 !important;
 }
 

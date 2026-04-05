@@ -5,6 +5,7 @@ import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm'
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
 import { FallingPattern } from '@/components/ui/falling-pattern';
+import { useTheme } from '@/components/ThemeProvider';
 import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
 
 /**
@@ -18,6 +19,8 @@ const RUN_ANIM_MS = 100;
 const CTA_PHASE_MS = 2550;
 
 export function LandingHero() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [ctaPhaseDone, setCtaPhaseDone] = useState(false);
   const [globeReady, setGlobeReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -82,12 +85,16 @@ export function LandingHero() {
           aria-hidden
         >
           <FallingPattern
-            color="#10b981"
-            backgroundColor="#050a08"
+            color={isLight ? '#059669' : '#10b981'}
+            backgroundColor={isLight ? '#f8fafb' : '#050a08'}
             duration={120}
             blurIntensity="0.6em"
-            density={1.5}
-            className="h-full w-full [mask-image:radial-gradient(ellipse_at_center,transparent,#050a08)]"
+            density={isLight ? 1.25 : 1.5}
+            className={
+              isLight
+                ? 'h-full w-full [mask-image:radial-gradient(ellipse_at_center,transparent,#f8fafb)]'
+                : 'h-full w-full [mask-image:radial-gradient(ellipse_at_center,transparent,#050a08)]'
+            }
           />
         </div>
       )}

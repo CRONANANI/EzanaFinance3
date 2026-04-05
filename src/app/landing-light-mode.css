@@ -1,0 +1,418 @@
+/* ═══════════════════════════════════════════════════════════
+   LANDING PAGE — LIGHT THEME (matches app light-mode tokens)
+   Loaded after light-mode.css; only applies with body.light-mode
+   ═══════════════════════════════════════════════════════════ */
+
+body.light-mode:has(.landing-page) {
+  background: var(--bg-primary) !important;
+}
+
+body.light-mode .landing-page {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+/* ── Sections forced to #050a08 in landing.css ── */
+body.light-mode .landing-page .tl-section,
+body.light-mode .landing-page #features-section-container,
+body.light-mode .landing-page .features-section,
+body.light-mode .landing-page .resources-section,
+body.light-mode .landing-page .pricing-section,
+body.light-mode .landing-page .faq-section-wrapper,
+body.light-mode .landing-page .testimonials-section,
+body.light-mode .landing-page .testimonials-below-hero,
+body.light-mode .landing-page .data-partners-section {
+  background: var(--bg-primary) !important;
+  background-color: var(--bg-primary) !important;
+}
+
+body.light-mode .landing-page footer,
+body.light-mode .landing-page footer.bg-background,
+body.light-mode .landing-page .bg-background,
+body.light-mode .landing-page .resources-section .bg-background {
+  background: var(--bg-primary) !important;
+  background-color: var(--bg-primary) !important;
+}
+
+body.light-mode .landing-page .testimonials-carousel::before,
+body.light-mode .landing-page .testimonials-carousel::after {
+  background: linear-gradient(to right, var(--bg-primary) 0%, transparent 100%) !important;
+}
+
+body.light-mode .landing-page .testimonials-carousel::after {
+  background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%) !important;
+}
+
+/* ── Landing navbar (landing.css uses !important on dark) ── */
+body.light-mode:has(.landing-page) .navbar,
+body.light-mode:has(.landing-page) .navbar.navbar-sticky {
+  background: var(--nav-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid var(--nav-border) !important;
+}
+
+body.light-mode:has(.landing-page) .navbar.navbar-sticky.scrolled {
+  background: var(--nav-bg) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ── Hero (globals.css) ── */
+body.light-mode .landing-page .main-content.hero-section,
+body.light-mode .landing-page .hero-cybercore-root {
+  background-color: var(--bg-primary);
+}
+
+body.light-mode .landing-page .hero-tagline {
+  color: var(--emerald-text) !important;
+  -webkit-text-fill-color: var(--emerald-text) !important;
+}
+
+body.light-mode .landing-page .hero-subtitle {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .legacy-subtext,
+body.light-mode .landing-page [class*='no-spam'] {
+  color: var(--text-faint);
+}
+
+body.light-mode .landing-page .globe-alert-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .globe-alert-text {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .globe-alert-time {
+  color: var(--text-faint);
+}
+
+body.light-mode .landing-page .word-animate:hover {
+  text-shadow: 0 0 20px rgba(5, 150, 105, 0.25);
+}
+
+/* Waitlist input (Tailwind arbitrary dark bg) */
+body.light-mode .landing-page #main input[type='email'] {
+  background-color: #ffffff !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-input) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .landing-page #main input[type='email']::placeholder {
+  color: var(--text-faint);
+}
+
+/* ── Trusted logos strip ── */
+body.light-mode .landing-page .tl-section {
+  border-top-color: var(--border-secondary);
+  border-bottom-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .tl-subheading {
+  color: var(--text-muted);
+}
+
+/* ── Features section ── */
+body.light-mode .landing-page .features-section .features-grid-header h2 {
+  background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.light-mode .landing-page .features-section .features-grid-header .section-subtitle {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .feature-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .landing-page .feature-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+
+body.light-mode .landing-page .feature-card-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .feature-card-description {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .feature-card-link {
+  color: var(--emerald-text);
+}
+
+body.light-mode .landing-page .feature-card-link:hover {
+  color: var(--emerald-hover);
+}
+
+body.light-mode .landing-page .feature-title {
+  background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.light-mode .landing-page .feature-text {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .stat-item .stat-value {
+  color: var(--emerald-text);
+}
+
+body.light-mode .landing-page .stat-item .stat-label {
+  color: var(--text-faint);
+}
+
+body.light-mode .landing-page .visual-container:not(.portfolio-visual):not(.congress-visual):not(.intelligence-visual):not(.community-visual) {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+body.light-mode .landing-page .visual-container:not(.portfolio-visual):not(.congress-visual):not(.intelligence-visual):not(.community-visual):hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+body.light-mode .landing-page .portfolio-visual,
+body.light-mode .landing-page .congress-visual,
+body.light-mode .landing-page .intelligence-visual,
+body.light-mode .landing-page .community-visual {
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg-tertiary) 100%);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+/* Mock dashboards / feeds inside feature visuals */
+body.light-mode .landing-page .dashboard-header h4,
+body.light-mode .landing-page .value-amount,
+body.light-mode .landing-page .metric-value {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .metric-unit {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .time-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .time-btn.active {
+  background: var(--emerald-bg);
+  border-color: var(--emerald);
+  color: var(--emerald-text);
+}
+
+body.light-mode .landing-page .mini-chart,
+body.light-mode .landing-page .metric-mini {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .intel-tab {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .intel-tab.active {
+  color: var(--emerald-text);
+}
+
+body.light-mode .landing-page .intelligence-tabs {
+  border-bottom-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .feed-header,
+body.light-mode .landing-page .ledger-header {
+  color: var(--text-primary);
+  border-bottom-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .trading-feed,
+body.light-mode .landing-page .ledger-table,
+body.light-mode .landing-page .feed-items,
+body.light-mode .landing-page .portfolio-dashboard,
+body.light-mode .landing-page .intelligence-dashboard,
+body.light-mode .landing-page .community-feed {
+  color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .feed-item,
+body.light-mode .landing-page .ledger-row {
+  border-color: var(--border-secondary);
+}
+
+/* ── Resources / data sources ── */
+body.light-mode .landing-page .resources-section {
+  color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .resources-header h2 {
+  background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.light-mode .landing-page .resources-header p {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .data-source-card {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+body.light-mode .landing-page .data-source-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+body.light-mode .landing-page .data-source-card.active {
+  background: var(--emerald-bg);
+}
+
+body.light-mode .landing-page .data-source-label {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .data-source-details {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .landing-page .data-source-details-content ul {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .data-trusted-section {
+  border-top-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .data-trusted-section h3 {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .trusted-logo-item {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+body.light-mode .landing-page .trusted-logo-text {
+  color: var(--text-faint);
+}
+
+/* ── FAQ (globals.css) ── */
+body.light-mode .landing-page .landing-faq-heading {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .landing-faq-item {
+  border-color: var(--border-primary);
+  background: var(--surface-card);
+}
+
+body.light-mode .landing-page .landing-faq-item:hover {
+  border-color: var(--border-hover);
+}
+
+body.light-mode .landing-page .landing-faq-question {
+  color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .landing-faq-question:hover {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .landing-faq-answer {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .landing-faq-help-link a {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .landing-faq-contact-box {
+  border-color: var(--border-primary);
+  background: var(--surface-card);
+}
+
+body.light-mode .landing-page .landing-faq-contact-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .landing-faq-contact-text {
+  color: var(--text-muted);
+}
+
+/* ── Testimonials (if used under .landing-page) ── */
+body.light-mode .landing-page .testimonials-title {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .testimonials-description {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .testimonials-carousel::before {
+  background: linear-gradient(to right, var(--bg-primary) 0%, transparent 100%);
+}
+
+body.light-mode .landing-page .testimonials-carousel::after {
+  background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%);
+}
+
+body.light-mode .landing-page .testimonial-card {
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg-tertiary) 100%);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .landing-page .testimonial-text {
+  color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .author-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .author-handle,
+body.light-mode .landing-page .social-link {
+  color: var(--text-faint);
+}
+
+body.light-mode .landing-page .testimonials-below-hero {
+  border-top-color: var(--border-secondary);
+  border-bottom-color: var(--border-secondary);
+}
+
+/* ── Footer (Tailwind marketing footer; static dark tokens) ── */
+body.light-mode .landing-page > footer {
+  background-color: #ffffff !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+body.light-mode .landing-page > footer .text-muted-foreground {
+  color: #64748b !important;
+}
+
+body.light-mode .landing-page > footer .border-border {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .landing-page > footer h2,
+body.light-mode .landing-page > footer .text-foreground {
+  color: #0f172a !important;
+}
