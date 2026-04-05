@@ -13,4 +13,5 @@ export {
 } from './SettingsPanels';
 
 export { OrgSettingsPanel } from './OrgSettingsPanel';
+export { DataRequestPanel } from './DataRequestPanel';
 

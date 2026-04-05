@@ -225,6 +225,29 @@ export default function UserProfileSettingsPage() {
             </div>
           </div>
         </div>
+
+        <div className="component-card p-8 mt-8 max-w-4xl mx-auto">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-primary/15 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i className="bi bi-shield-lock text-primary text-xl" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold text-foreground mb-2">Privacy &amp; personal data</h2>
+              <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
+                Submit a request to view, update, or delete personal information we hold about your account
+                (including partner and organization roles). This opens the same Privacy &amp; data section as
+                the main Settings page.
+              </p>
+              <Link
+                href="/settings?tab=privacy-data"
+                className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
+              >
+                Open data requests in Settings
+                <i className="bi bi-arrow-right" aria-hidden />
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

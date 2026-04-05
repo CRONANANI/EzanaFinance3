@@ -1181,3 +1181,201 @@ body.light-mode .settings-api-key { background: rgba(0, 0, 0, 0.03); }
   body.light-mode .settings-mobile-dropdown { background: rgba(255, 255, 255, 0.98); }
   body.light-mode .settings-mobile-item-label { color: #1f2937; }
 }
+
+/* ══════════════════════════════
+   PRIVACY & DATA REQUESTS
+   ══════════════════════════════ */
+.settings-data-request-hint {
+  margin-top: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.settings-data-request-hint strong {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+
+.settings-data-request-account-line {
+  opacity: 0.92;
+}
+
+.settings-data-request-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.settings-data-request-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  background: rgba(16, 185, 129, 0.03);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.settings-data-request-option:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.settings-data-request-option.is-selected {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.settings-data-request-option input {
+  margin-top: 0.2rem;
+  accent-color: #10b981;
+  flex-shrink: 0;
+}
+
+.settings-data-request-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.settings-data-request-option-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.settings-data-request-option-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.settings-data-request-alert {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.settings-data-request-alert--error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.settings-data-request-alert--ok {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+}
+
+.settings-data-request-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-data-request-list-item {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.settings-data-request-list-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settings-data-request-list-type {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.settings-data-request-list-details {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.settings-data-request-list-time {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.settings-data-request-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.settings-data-request-status--pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.settings-data-request-status--in_progress {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+.settings-data-request-status--completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.settings-data-request-status--rejected {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+}
+
+body.light-mode .settings-data-request-option {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .settings-data-request-option:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+body.light-mode .settings-data-request-option.is-selected {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+body.light-mode .settings-data-request-option-label { color: #111827; }
+body.light-mode .settings-data-request-option-desc { color: #64748b; }
+
+body.light-mode .settings-data-request-list-item {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .settings-data-request-list-type { color: #111827; }
+body.light-mode .settings-data-request-list-details { color: #64748b; }
+
+body.light-mode .settings-data-request-hint {
+  color: #64748b;
+}
+
+body.light-mode .settings-data-request-hint strong {
+  color: #111827;
+}

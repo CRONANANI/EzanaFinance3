@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   MyDetailsPanel,
@@ -16,6 +16,7 @@ import {
   IntegrationsPanel,
   ApiPanel,
   OrgSettingsPanel,
+  DataRequestPanel,
 } from '@/components/settings';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
@@ -35,6 +36,7 @@ const SETTINGS_TABS = [
   { key: 'notifications', label: 'Notifications', icon: 'bi-bell', desc: 'Alert & push settings' },
   { key: 'integrations', label: 'Integrations', icon: 'bi-plug', desc: 'Connected services' },
   { key: 'api', label: 'API', icon: 'bi-code-slash', desc: 'API keys & access' },
+  { key: 'privacy-data', label: 'Privacy & data', icon: 'bi-shield-lock', desc: 'Access, correct, or delete your data' },
 ];
 
 const PANEL_MAP = {
@@ -50,9 +52,11 @@ const PANEL_MAP = {
   integrations: IntegrationsPanel,
   api: ApiPanel,
   organization: OrgSettingsPanel,
+  'privacy-data': DataRequestPanel,
 };
 
 function SettingsInner() {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('my-details');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const router = useRouter();
@@ -85,6 +89,12 @@ function SettingsInner() {
       setActiveTab(tabs[0]?.key || 'my-details');
     }
   }, [tabs, activeTab]);
+
+  const tabFromUrl = searchParams.get('tab');
+  useEffect(() => {
+    if (!tabFromUrl || !PANEL_MAP[tabFromUrl] || !tabs.some((t) => t.key === tabFromUrl)) return;
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl, tabs]);
 
   const ActivePanel = PANEL_MAP[activeTab] || MyDetailsPanel;
 
@@ -200,6 +210,7 @@ function SettingsInner() {
 
       <div
         className="settings-global-save"
+        hidden={activeTab === 'privacy-data'}
         style={{
           position: 'sticky',
           bottom: 0,
@@ -244,5 +255,17 @@ function SettingsInner() {
 }
 
 export default function SettingsPage() {
-  return <SettingsInner />;
+  return (
+    <Suspense
+      fallback={
+        <div className="settings-page">
+          <div style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+            Loading settings…
+          </div>
+        </div>
+      }
+    >
+      <SettingsInner />
+    </Suspense>
+  );
 }
