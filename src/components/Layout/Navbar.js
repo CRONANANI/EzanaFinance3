@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
 import { supabase } from '@/lib/supabase';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
@@ -15,6 +16,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const { isOrgUser } = useOrg();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const landingNavRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');
@@ -61,7 +63,9 @@ export function Navbar() {
     },
     { id: 3, title: 'Trading', url: '/trading', icon: 'bi-graph-up-arrow', isActive: pathname?.includes('/trading') },
     { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
-    { id: 5, title: 'Team Hub', url: '/org-team-hub', icon: 'bi-building', isActive: pathname?.includes('/org-team-hub'), variant: 'purple' },
+    isOrgUser
+      ? { id: 5, title: 'Team Hub', url: '/org-team-hub', icon: 'bi-building', isActive: pathname?.includes('/org-team-hub'), variant: 'purple' }
+      : { id: 5, title: 'Community', url: '/community', icon: 'bi-people', isActive: pathname?.includes('/community') },
     { id: 6, title: 'Learning Center', url: '/learning-center', icon: 'bi-mortarboard', isActive: pathname?.includes('/learning-center') },
   ];
 
@@ -344,10 +348,17 @@ export function Navbar() {
             <i className="bi bi-bookmark"></i>
             <span>Watchlist</span>
           </Link>
-          <Link href="/org-team-hub" className={`nav-link nav-link--purple ${pathname?.includes('org-team-hub') ? 'active' : ''}`} data-page="org-team-hub" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-building"></i>
-            <span>Team Hub</span>
-          </Link>
+          {isOrgUser ? (
+            <Link href="/org-team-hub" className={`nav-link nav-link--purple ${pathname?.includes('org-team-hub') ? 'active' : ''}`} data-page="org-team-hub" onClick={() => setMobileMenuOpen(false)}>
+              <i className="bi bi-building"></i>
+              <span>Team Hub</span>
+            </Link>
+          ) : (
+            <Link href="/community" className={`nav-link ${pathname?.includes('community') ? 'active' : ''}`} data-page="community" onClick={() => setMobileMenuOpen(false)}>
+              <i className="bi bi-people"></i>
+              <span>Community</span>
+            </Link>
+          )}
           <Link href="/learning-center" className={`nav-link ${pathname?.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-mortarboard"></i>
             <span>Learning Center</span>
