@@ -1237,7 +1237,11 @@
    ===================================================== */
 
 /* The visual container IS the card - no inner wrapper needed */
-.congress-visual {
+/* All 4 feature visual cards share the same dimensions as the congressional ledger */
+.portfolio-visual,
+.congress-visual,
+.intelligence-visual,
+.community-visual {
   background: linear-gradient(180deg, rgba(22, 27, 34, 0.95) 0%, rgba(13, 17, 23, 0.98) 100%);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 16px;
