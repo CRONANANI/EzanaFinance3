@@ -65,8 +65,8 @@ function KairosCard({ icon, title, children, wide, actions }) {
     <section className={`kairos-card${wide ? ' kairos-card--wide' : ''}`}>
       <div className="kairos-card-header">
         <div className="kairos-card-header-left">
-          <i className={`bi ${icon}`} aria-hidden />
-          {title}
+        <i className={`bi ${icon}`} aria-hidden />
+        {title}
         </div>
         {actions && <div className="kairos-card-actions">{actions}</div>}
       </div>
@@ -520,7 +520,7 @@ function CommoditySensitivityCard() {
             />
           </RadarChart>
         </ResponsiveContainer>
-      </div>
+          </div>
       <p className="kairos-card-hint">
         Sensitivity score (0–100) estimates how strongly each weather dimension affects the commodity&apos;s supply and
         price.
@@ -618,7 +618,7 @@ function CriticalWindowsCard() {
         <span>
           <span className="kairos-windows-current-marker" /> Current month
         </span>
-      </div>
+          </div>
     </KairosCard>
   );
 }
@@ -679,7 +679,7 @@ function SignalDashboardCard({ weatherData, region }) {
         <span className="kairos-signal-region">
           {region.label} — {region.commodity}
         </span>
-      </div>
+            </div>
       <div className="kairos-signal-grid">
         {signals.map((s) => (
           <div key={s.dim} className="kairos-signal-item">
