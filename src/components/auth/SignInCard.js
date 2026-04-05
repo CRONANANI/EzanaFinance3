@@ -78,16 +78,15 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl overflow-hidden rounded-2xl flex bg-[#0d1117] border border-emerald-500/20 shadow-2xl shadow-emerald-500/10"
+        className="flex w-full max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-200/50"
       >
         {/* Left side - Network Visualization */}
-        <div className="hidden md:block w-1/2 h-[600px] relative overflow-hidden border-r border-emerald-500/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0a0f0a] via-[#0d1117] to-[#061212]">
+        <div className="relative hidden h-[600px] w-1/2 overflow-hidden border-r border-gray-100 md:block">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-slate-50">
             <AuthDotMap />
 
-            {/* Logo and text overlay - 70% white transparent bg for readability over green lines */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10">
-              <div className="bg-white/35 rounded-2xl px-8 py-6 max-w-sm">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8">
+              <div className="max-w-sm rounded-2xl border border-white/80 bg-white/90 px-8 py-6 shadow-sm backdrop-blur-sm">
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -139,26 +138,25 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
         </div>
 
         {/* Right side - Sign In Form */}
-        <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-center bg-[#0d1117]">
+        <div className="flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:p-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             {/* Mobile logo */}
-            <div className="md:hidden flex items-center justify-center mb-8">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
-                <TrendingUp className="text-white h-6 w-6" />
+            <div className="mb-8 flex items-center justify-center md:hidden">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-emerald-500">Ezana Finance</span>
+              <span className="ml-3 text-xl font-bold text-emerald-700">Ezana Finance</span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold mb-1 text-white">Welcome back</h1>
-            <p className="text-gray-500 mb-8">Sign in to your account</p>
+            <h1 className="mb-1 text-2xl font-bold text-gray-900 md:text-3xl">Welcome back</h1>
+            <p className="mb-8 text-gray-600">Sign in to your account</p>
 
-            {/* Error message */}
             {error && (
-              <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                 {error}
               </div>
             )}
@@ -166,8 +164,8 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
             {/* Sign In Form */}
             <form onSubmit={handleSignIn} className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                  Email <span className="text-emerald-500">*</span>
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+                  Email <span className="text-emerald-600">*</span>
                 </label>
                 <input
                   id="email"
@@ -176,13 +174,13 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
                   required
-                  className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                  className="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-gray-900 placeholder-gray-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-                  Password <span className="text-emerald-500">*</span>
+                <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+                  Password <span className="text-emerald-600">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -192,11 +190,11 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
-                    className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                    className="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 pr-12 text-gray-900 placeholder-gray-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-300 transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 transition-colors hover:text-gray-700"
                     onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                   >
                     {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -253,21 +251,20 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
               <div className="text-center">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-emerald-500 hover:text-emerald-400 text-sm transition-colors"
+                  className="text-sm font-medium text-emerald-700 transition-colors hover:text-emerald-800"
                 >
                   Forgot password?
                 </Link>
               </div>
             </form>
 
-            {/* Sign Up Link / Partner CTA */}
-            <div className="mt-8 text-center text-sm text-gray-500">
+            <div className="mt-8 text-center text-sm text-gray-600">
               {variant === "partner" ? (
                 <>
                   Not a partner but interested in becoming one? Reach out to{" "}
                   <a
                     href="mailto:partnersupport@ezana.world"
-                    className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors"
+                    className="font-medium text-emerald-700 transition-colors hover:text-emerald-800"
                   >
                     partnersupport@ezana.world
                   </a>
@@ -277,7 +274,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
                   Don&apos;t have an account?{" "}
                   <Link
                     href="/auth/signup"
-                    className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors"
+                    className="font-medium text-emerald-700 transition-colors hover:text-emerald-800"
                   >
                     Sign up
                   </Link>
@@ -285,17 +282,18 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
               )}
             </div>
 
-            {/* Partner or Creator? — only on user variant */}
             {variant === "user" && (
-              <div className="mt-6 pt-6 border-t border-gray-700/50">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <div className="flex-1 h-px bg-gray-700/50" />
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Partner or Creator?</span>
-                  <div className="flex-1 h-px bg-gray-700/50" />
+              <div className="mt-6 border-t border-gray-200 pt-6">
+                <div className="mb-3 flex items-center justify-center gap-2">
+                  <div className="h-px flex-1 bg-gray-200" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Partner or Creator?
+                  </span>
+                  <div className="h-px flex-1 bg-gray-200" />
                 </div>
                 <Link
                   href="/auth/partner-login"
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-amber-500/30 bg-amber-500/5 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10 transition-all font-medium text-sm"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 py-3 text-sm font-medium text-amber-900 transition-all hover:border-amber-300 hover:bg-amber-100"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.636.622-.01.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.636.89.01a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.636-.622.01-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01-.622-.636z" />

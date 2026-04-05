@@ -7,11 +7,10 @@ export const metadata = {
 
 export default function PartnerSignInPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a]">
-      {/* Background gradient effects - match landing page */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#f4f7f5]">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-emerald-400/25 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl" />
       </div>
 
       <SignInCard variant="partner" />

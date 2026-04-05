@@ -16,14 +16,15 @@
   right: -15%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(212, 168, 83, 0.12) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
 .partner-auth-card {
-  border-color: rgba(212, 168, 83, 0.15);
-  background: rgba(212, 168, 83, 0.02);
+  border-color: rgba(212, 168, 83, 0.25);
+  background: #fff;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
   position: relative;
   z-index: 1;
 }
@@ -43,16 +44,17 @@
 }
 .pauth-badge i { font-size: 0.875rem; }
 
-.pauth-title { color: #f0f6fc; }
+.pauth-title { color: #111827; }
 
 .pauth-input {
-  background: rgba(212, 168, 83, 0.03);
-  border-color: rgba(212, 168, 83, 0.1);
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #111827;
 }
 .pauth-input:focus {
-  border-color: rgba(212, 168, 83, 0.4);
-  background: rgba(212, 168, 83, 0.05);
-  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.08);
+  border-color: rgba(212, 168, 83, 0.45);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
 }
 
 .pauth-link { color: #d4a853; }
@@ -77,6 +79,34 @@
 
 .pauth-error {
   border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* Partner login page shell — light theme aligned with main landing */
+.partner-auth-page.auth-page {
+  background: #f4f7f5;
+}
+
+.partner-auth-page .auth-subtitle {
+  color: #4b5563 !important;
+}
+
+.partner-auth-page .auth-label {
+  color: #374151 !important;
+}
+
+.partner-auth-page .auth-footer-text {
+  color: #6b7280 !important;
+}
+
+.partner-auth-page .auth-checkbox-wrap {
+  color: #4b5563 !important;
+}
+
+.partner-auth-page .auth-error,
+.partner-auth-page .pauth-error {
+  color: #b91c1c !important;
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
 }
 
 body.light-mode .partner-auth-card {

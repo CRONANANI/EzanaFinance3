@@ -123,28 +123,28 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md overflow-hidden rounded-2xl bg-[#0d1117] border border-indigo-500/20 shadow-2xl shadow-indigo-500/10 p-8"
+        className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-xl shadow-gray-200/50"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center">
-            <GraduationCap className="text-white h-6 w-6" />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700">
+            <GraduationCap className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Organizational Login</h1>
-            <p className="text-gray-500 text-sm">University Investment Council</p>
+            <h1 className="text-2xl font-bold text-gray-900">Organizational Login</h1>
+            <p className="text-sm text-gray-600">University Investment Council</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSignIn} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              University Email <span className="text-indigo-400">*</span>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              University Email <span className="text-indigo-600">*</span>
             </label>
             <input
               type="email"
@@ -152,14 +152,14 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@university.edu"
               required
-              className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+              className="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
-            <p className="mt-1 text-xs text-gray-500">Use your recognized university email address</p>
+            <p className="mt-1 text-xs text-gray-600">Use your recognized university email address</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Password <span className="text-indigo-400">*</span>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Password <span className="text-indigo-600">*</span>
             </label>
             <div className="relative">
               <input
@@ -168,11 +168,11 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 pr-12 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 pr-12 text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-300"
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-700"
                 onClick={() => setIsPasswordVisible(!isPasswordVisible)}
               >
                 {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -195,15 +195,15 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <Link href="/auth/forgot-password" className="text-indigo-400 hover:text-indigo-300">
+        <div className="mt-6 text-center text-sm">
+          <Link href="/auth/forgot-password" className="font-medium text-indigo-700 hover:text-indigo-800">
             Forgot password?
           </Link>
         </div>
 
         <div className="mt-4 text-center text-xs text-gray-600">
           Not a member? Contact your university investment council executive team or email{' '}
-          <a href="mailto:orgsupport@ezana.world" className="text-indigo-400">
+          <a href="mailto:orgsupport@ezana.world" className="font-medium text-indigo-700 hover:text-indigo-800">
             orgsupport@ezana.world
           </a>
         </div>
