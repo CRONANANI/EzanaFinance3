@@ -66,11 +66,14 @@ const SERIES_NAMES = {
 
 /**
  * Convert raw close prices to % change from Monday's close.
- * Monday = 0%, Tuesday = ((Tue - Mon) / Mon) * 100, etc.
- * This spreads the lines apart since different indices move by different %s.
+ * When data is flat (all identical), spread lines across a small visual band
+ * so all 5 indices are visible rather than stacking on top of each other at 0.
+ * @returns {{ data: Array, sourceWasFlat: boolean }}
  */
 function normalizeToPercentChange(series) {
-  if (!Array.isArray(series) || series.length === 0) return [];
+  if (!Array.isArray(series) || series.length === 0) {
+    return { data: [], sourceWasFlat: false };
+  }
 
   const num = (v) =>
     typeof v === 'number' && Number.isFinite(v)
@@ -92,7 +95,7 @@ function normalizeToPercentChange(series) {
     }
   }
 
-  return series.map((r) => {
+  const normalized = series.map((r) => {
     const out = { day: r.day };
     for (const k of CHART_KEYS) {
       const b = bases[k];
@@ -105,23 +108,39 @@ function normalizeToPercentChange(series) {
     }
     return out;
   });
-}
 
-/** Returns true if any series has day-to-day variation (not a single flat value). */
-function hasVariation(chartData) {
+  // Check if all values are flat (same across all days for every series)
+  let isFlat = true;
   for (const k of CHART_KEYS) {
-    const vals = chartData.map((r) => r[k]).filter((v) => v != null);
+    const vals = normalized.map((r) => r[k]).filter((v) => v != null);
     if (vals.length >= 2) {
       const first = vals[0];
-      if (vals.some((v) => Math.abs(v - first) > 0.001)) return true;
+      if (vals.some((v) => Math.abs(v - first) > 0.001)) {
+        isFlat = false;
+        break;
+      }
     }
   }
-  return false;
+
+  // If flat, offset each series by a small visual amount (±0.2%) so lines are distinct
+  if (isFlat && normalized.length > 0) {
+    const offsets = { spx: 0.4, ixic: 0.2, rut: 0, dji: -0.2, vix: -0.4 };
+    const data = normalized.map((r) => {
+      const out = { day: r.day };
+      for (const k of CHART_KEYS) {
+        out[k] = r[k] != null ? r[k] + offsets[k] : null;
+      }
+      return out;
+    });
+    return { data, sourceWasFlat: true };
+  }
+
+  return { data: normalized, sourceWasFlat: false };
 }
 
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
   const chartH = chartOnly ? (compact ? 268 : 300) : compact ? 168 : 220;
-  const chartData = useMemo(
+  const { data: chartData, sourceWasFlat } = useMemo(
     () => normalizeToPercentChange(indexPayload?.series || []),
     [indexPayload],
   );
@@ -134,8 +153,8 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     (!chartData.length ||
       chartData.every((r) => CHART_KEYS.every((k) => r[k] == null)));
 
-  // Check if data exists but is all flat (same quote gap-filled everywhere)
-  const dataIsFlat = !noData && chartData.length > 0 && !hasVariation(chartData);
+  // Same quote gap-filled → flat before offsets; sourceWasFlat preserves the warning after visual offsets
+  const dataIsFlat = !noData && chartData.length > 0 && sourceWasFlat;
 
   // Compute Y domain with some padding so lines don't hug the edges
   const yDomain = useMemo(() => {
@@ -341,31 +360,43 @@ function PlatformActivityTab() {
       sub: '900 mentions this week',
       score: '+9 / 5',
       pct: 85,
+      color: '#3b82f6',
     },
     {
       title: 'Community sentiment is bullish',
       sub: '72% buying activity this month',
       score: '72%',
       pct: 72,
+      color: '#10b981',
     },
     {
       title: 'Engaged in 3 community posts',
       sub: 'Keep the streak alive',
       score: '+0 / 5',
       pct: 60,
+      color: '#f59e0b',
     },
     {
       title: 'Reviewed 10 capitol trades',
       sub: 'Capitol watchlist',
       score: '+7 / 10',
       pct: 70,
+      color: '#8b5cf6',
     },
   ];
 
   return (
     <div
       className="hts-week-tab-inner hts-week-activity-v2"
-      style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.6rem',
+        height: 260,
+        maxHeight: 260,
+        overflowY: 'auto',
+        paddingRight: 4,
+      }}
     >
       {rows.map((row) => (
         <div
@@ -374,8 +405,8 @@ function PlatformActivityTab() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
-            padding: '0.65rem 0',
-            borderBottom: '1px solid rgba(16, 185, 129, 0.06)',
+            padding: '0.45rem 0',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
           }}
         >
           <div
@@ -383,7 +414,7 @@ function PlatformActivityTab() {
               width: 36,
               height: 36,
               borderRadius: '50%',
-              background: 'rgba(16, 185, 129, 0.12)',
+              background: `${row.color}1f`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -392,7 +423,7 @@ function PlatformActivityTab() {
           >
             <i
               className="bi bi-graph-up-arrow"
-              style={{ color: '#10b981', fontSize: '0.9rem' }}
+              style={{ color: row.color, fontSize: '0.9rem' }}
             />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -420,7 +451,7 @@ function PlatformActivityTab() {
                 marginTop: 6,
                 height: 4,
                 borderRadius: 2,
-                background: 'rgba(16, 185, 129, 0.1)',
+                background: `${row.color}1a`,
                 overflow: 'hidden',
               }}
             >
@@ -429,7 +460,7 @@ function PlatformActivityTab() {
                   width: `${row.pct}%`,
                   height: '100%',
                   borderRadius: 2,
-                  background: '#10b981',
+                  background: row.color,
                 }}
               />
             </div>
@@ -438,7 +469,7 @@ function PlatformActivityTab() {
             style={{
               fontSize: '0.75rem',
               fontWeight: 800,
-              color: '#10b981',
+              color: row.color,
               whiteSpace: 'nowrap',
             }}
           >

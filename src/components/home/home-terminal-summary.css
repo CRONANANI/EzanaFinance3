@@ -1150,7 +1150,7 @@ body.light-mode .hts-week-compare {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .home-terminal-left-below {
@@ -1244,6 +1244,14 @@ body.light-mode .hts-week-compare {
 
 .home-snapshot-col {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-snapshot-col > .db-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .home-week-col {
