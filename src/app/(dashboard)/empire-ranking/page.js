@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { fetchEmpireRankings } from '@/lib/empire-db';
 import {
   LineChart,
   Line,
@@ -341,6 +342,8 @@ const EMPIRE_DATA = [
   },
 ];
 
+const USE_LIVE_DATA = process.env.NEXT_PUBLIC_EMPIRE_LIVE_DATA === 'true';
+
 const POWER_DIMENSIONS = [
   'Debt Burden',
   'Expected Growth',
@@ -425,8 +428,8 @@ function trajectoryIcon(t) {
   return { icon: 'bi-dash-lg', color: '#9ca3af' };
 }
 
-function PowerRankingsCard() {
-  const data = [...EMPIRE_DATA]
+function PowerRankingsCard({ empireData }) {
+  const data = [...empireData]
     .sort((a, b) => b.score - a.score)
     .map((d) => ({
       name: `${d.flag} ${d.code}`,
@@ -472,13 +475,13 @@ function PowerRankingsCard() {
   );
 }
 
-function PowerDimensionRadar() {
+function PowerDimensionRadar({ empireData }) {
   const [countryA, setCountryA] = useState('USA');
   const [countryB, setCountryB] = useState('CHN');
 
   const data = POWER_DIMENSIONS.map((dim) => {
-    const a = EMPIRE_DATA.find((e) => e.code === countryA)?.scores[dim] ?? 0;
-    const b = EMPIRE_DATA.find((e) => e.code === countryB)?.scores[dim] ?? 0;
+    const a = empireData.find((e) => e.code === countryA)?.scores[dim] ?? 0;
+    const b = empireData.find((e) => e.code === countryB)?.scores[dim] ?? 0;
     return {
       dimension: dim.length > 16 ? `${dim.substring(0, 14)}…` : dim,
       [countryA]: a + 3,
@@ -494,14 +497,14 @@ function PowerDimensionRadar() {
       actions={
         <div style={{ display: 'flex', gap: 6 }}>
           <select className="er-select" value={countryA} onChange={(e) => setCountryA(e.target.value)}>
-            {EMPIRE_DATA.map((c) => (
+            {empireData.map((c) => (
               <option key={c.code} value={c.code}>
                 {c.flag} {c.name}
               </option>
             ))}
           </select>
           <select className="er-select" value={countryB} onChange={(e) => setCountryB(e.target.value)}>
-            {EMPIRE_DATA.map((c) => (
+            {empireData.map((c) => (
               <option key={c.code} value={c.code}>
                 {c.flag} {c.name}
               </option>
@@ -540,10 +543,10 @@ function PowerDimensionRadar() {
   );
 }
 
-function BigCycleCard() {
+function BigCycleCard({ empireData }) {
   const [country, setCountry] = useState('USA');
   const data = useMemo(() => generateBigCycle(country), [country]);
-  const current = EMPIRE_DATA.find((e) => e.code === country);
+  const current = empireData.find((e) => e.code === country);
   const traj = current ? trajectoryIcon(current.trajectory) : null;
 
   return (
@@ -553,7 +556,7 @@ function BigCycleCard() {
       subtitle="Historical power trajectory (1500–2030, mock data)"
       actions={
         <select className="er-select" value={country} onChange={(e) => setCountry(e.target.value)}>
-          {EMPIRE_DATA.map((c) => (
+          {empireData.map((c) => (
             <option key={c.code} value={c.code}>
               {c.flag} {c.name}
             </option>
@@ -738,11 +741,11 @@ function ReserveCurrencyCard() {
   );
 }
 
-function ScorecardGrid() {
+function ScorecardGrid({ empireData }) {
   return (
     <Card icon="bi-grid-3x3-gap" title="Country Scorecards" subtitle="All 11 major powers at a glance" wide>
       <div className="er-scorecard-grid">
-        {EMPIRE_DATA.map((c) => {
+        {empireData.map((c) => {
           const traj = trajectoryIcon(c.trajectory);
           return (
             <div key={c.code} className="er-scorecard">
@@ -770,6 +773,61 @@ function ScorecardGrid() {
 }
 
 export default function EmpireRankingPage() {
+  const [empireData, setEmpireData] = useState(EMPIRE_DATA);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!USE_LIVE_DATA) return;
+
+    let cancelled = false;
+    setLoading(true);
+
+    fetchEmpireRankings()
+      .then((rows) => {
+        if (cancelled) return;
+        if (rows.length > 0) {
+          const merged = rows.map((liveRow) => {
+            const staticRow = EMPIRE_DATA.find((e) => e.code === liveRow.code);
+            return {
+              ...(staticRow || {
+                code: liveRow.code,
+                name: liveRow.name,
+                flag: liveRow.flag,
+                score: liveRow.score,
+                rank: liveRow.rank,
+                trajectory: liveRow.trajectory,
+                scores: {},
+              }),
+              code: liveRow.code,
+              name: liveRow.name,
+              flag: liveRow.flag,
+              score: liveRow.score,
+              rank: liveRow.rank,
+              trajectory: liveRow.trajectory,
+              scores: staticRow?.scores || {},
+            };
+          });
+          setEmpireData(merged);
+        }
+      })
+      .catch((err) => {
+        console.error('[empire-ranking] failed to load live data, falling back to mock:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const heroBadge = !USE_LIVE_DATA
+    ? 'MOCK DATA · APIs PENDING'
+    : loading
+      ? 'LOADING RANKINGS…'
+      : 'LIVE RANKINGS · MOCK CHART DATA';
+
   return (
     <div className="dashboard-page-inset er-page">
       <div className="er-hero">
@@ -790,14 +848,14 @@ export default function EmpireRankingPage() {
             </div>
           </div>
         </div>
-        <div className="er-hero-badge">MOCK DATA · APIs PENDING</div>
+        <div className="er-hero-badge">{heroBadge}</div>
       </div>
 
       <div className="er-grid">
-        <PowerRankingsCard />
-        <ScorecardGrid />
-        <PowerDimensionRadar />
-        <BigCycleCard />
+        <PowerRankingsCard empireData={empireData} />
+        <ScorecardGrid empireData={empireData} />
+        <PowerDimensionRadar empireData={empireData} />
+        <BigCycleCard empireData={empireData} />
         <DebtCycleCard />
         <MilitaryCard />
         <ReserveCurrencyCard />
