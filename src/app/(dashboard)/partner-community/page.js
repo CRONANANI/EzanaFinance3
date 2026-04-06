@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { BadgeRow } from '@/components/partner/BadgeDisplay';
+import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import '../partner.css';
 import '@/components/partner/badges.css';
 
@@ -210,19 +211,22 @@ export default function PartnerCommunityPage() {
             ))}
           </div>
 
-          <div className="ptr-card">
-            <div className="ptr-card-header"><h3>Follower Activity</h3></div>
-            <div className="ptr-activity-list">
-              {FOLLOWER_ACTIVITY.map((f, i) => (
-                <div key={i} className="ptr-activity-item">
-                  <div className="ptr-follower-avatar">{f.avatar}</div>
-                  <div className="ptr-activity-body">
-                    <span className="ptr-activity-text"><strong>{f.name}</strong> {f.action}</span>
-                    <span className="ptr-activity-time">{f.time}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1, minWidth: 0 }}>
+            <div className="ptr-card">
+              <div className="ptr-card-header"><h3>Follower Activity</h3></div>
+              <div className="ptr-activity-list">
+                {FOLLOWER_ACTIVITY.map((f, i) => (
+                  <div key={i} className="ptr-activity-item">
+                    <div className="ptr-follower-avatar">{f.avatar}</div>
+                    <div className="ptr-activity-body">
+                      <span className="ptr-activity-text"><strong>{f.name}</strong> {f.action}</span>
+                      <span className="ptr-activity-time">{f.time}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+            <CommunitySocialConnectCard variant="partner" />
           </div>
         </div>
       )}

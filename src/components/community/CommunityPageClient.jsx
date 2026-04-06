@@ -8,8 +8,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
+import { usePartner } from '@/contexts/PartnerContext';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
+import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { supabase } from '@/lib/supabase';
 import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
@@ -78,6 +80,7 @@ export default function CommunityPageClient() {
   const router = useRouter();
   const { user } = useAuth();
   const { isOrgUser } = useOrg();
+  const { isPartner } = usePartner();
 
   const [userProfile, setUserProfile] = useState(null);
   const [feedTab, setFeedTab] = useState('Feed');
@@ -551,6 +554,8 @@ export default function CommunityPageClient() {
               </div>
             </div>
           </div>
+
+          <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
 
           <div className="db-card">
             <div className="db-card-header">

@@ -1,0 +1,158 @@
+/* Social connect card — user: emerald · partner: gold (matches dashboard / partner hub) */
+
+.comm-social-connect {
+  --comm-sc-accent: #10b981;
+  --comm-sc-accent-dim: rgba(16, 185, 129, 0.12);
+  --comm-sc-accent-border: rgba(16, 185, 129, 0.22);
+  --comm-sc-accent-glow: rgba(16, 185, 129, 0.08);
+}
+
+.comm-social-connect.comm-social-connect--partner {
+  --comm-sc-accent: #d4a853;
+  --comm-sc-accent-dim: rgba(212, 168, 83, 0.12);
+  --comm-sc-accent-border: rgba(212, 168, 83, 0.28);
+  --comm-sc-accent-glow: rgba(212, 168, 83, 0.06);
+}
+
+.comm-social-connect .comm-social-connect__header {
+  padding: 1.25rem 1.25rem 0.5rem;
+}
+
+.comm-social-connect .comm-social-connect__title {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.comm-social-connect .comm-social-connect__subtitle {
+  color: var(--text-faint, #6b7280);
+  font-size: 0.75rem;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.comm-social-connect .comm-social-connect__list {
+  padding: 0.5rem 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comm-social-connect .comm-social-connect__row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: var(--comm-sc-accent-glow);
+  border: 1px solid var(--comm-sc-accent-border);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.comm-social-connect .comm-social-connect__row:hover {
+  border-color: var(--comm-sc-accent);
+  background: var(--comm-sc-accent-dim);
+}
+
+.comm-social-connect .comm-social-connect__icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.comm-social-connect .comm-social-connect__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.comm-social-connect .comm-social-connect__name {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-secondary, #e2e8f0);
+  margin: 0;
+}
+
+.comm-social-connect .comm-social-connect__hint {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--text-faint, #6b7280);
+  margin: 0.1rem 0 0;
+}
+
+.comm-social-connect .comm-social-connect__action {
+  flex-shrink: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: 1px solid var(--comm-sc-accent-border);
+  background: var(--comm-sc-accent-dim);
+  color: var(--comm-sc-accent);
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.comm-social-connect .comm-social-connect__action:hover:not(:disabled) {
+  background: var(--comm-sc-accent);
+  color: #0a0e13;
+  border-color: var(--comm-sc-accent);
+}
+
+.comm-social-connect.comm-social-connect--partner .comm-social-connect__action:hover:not(:disabled) {
+  color: #0a0e13;
+}
+
+.comm-social-connect .comm-social-connect__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.comm-social-connect .comm-social-connect__action--connected {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.comm-social-connect.comm-social-connect--partner .comm-social-connect__action--connected {
+  background: rgba(212, 168, 83, 0.2);
+  border-color: rgba(212, 168, 83, 0.4);
+  color: #e8c97a;
+}
+
+.comm-social-connect .comm-social-connect__footer {
+  padding: 0 1.25rem 1.15rem;
+  margin-top: -0.15rem;
+}
+
+.comm-social-connect .comm-social-connect__footer p {
+  margin: 0;
+  font-size: 0.625rem;
+  color: var(--text-faint, #6b7280);
+  line-height: 1.4;
+}
+
+body.light-mode .comm-social-connect .comm-social-connect__title {
+  color: var(--text-primary);
+}
+
+body.light-mode .comm-social-connect .comm-social-connect__name {
+  color: var(--text-secondary);
+}
+
+body.light-mode .comm-social-connect .comm-social-connect__action:hover:not(:disabled) {
+  color: #fff;
+}
+
+body.light-mode .comm-social-connect.comm-social-connect--partner .comm-social-connect__action:hover:not(:disabled) {
+  color: #0f172a;
+}
