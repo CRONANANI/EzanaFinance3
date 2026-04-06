@@ -229,7 +229,7 @@ export default function DatabaseWithRestApi({
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
           />
           <div
-            className="relative grid h-[52px] w-[52px] place-items-center rounded-full border-2 bg-[#141516] font-semibold text-sm shadow-lg z-10"
+            className="relative grid h-[52px] w-[52px] place-items-center rounded-full border-2 bg-[#141516] font-semibold text-sm text-white shadow-lg z-10"
             style={{
               borderColor: accentColor,
               boxShadow: `0 0 25px ${accentColor}50, 0 0 50px ${accentColor}25`,
