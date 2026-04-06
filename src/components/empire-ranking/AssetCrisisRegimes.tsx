@@ -86,99 +86,105 @@ export default function AssetCrisisRegimes() {
   const maxAbs = Math.max(...regime.assets.map((a) => Math.abs(a.ret)));
 
   return (
-    <div className="bg-[#0d1117] border border-gray-800 rounded-2xl p-6 w-full">
-      <div className="mb-6">
-        <h2 className="text-white text-lg font-semibold">
-          Asset Performance During Crisis Regimes
-        </h2>
-        <p className="text-gray-400 text-sm mt-1">
-          What works — and what doesn&apos;t — across macro regimes
+    <section className="er-card w-full">
+      <div className="er-card-header">
+        <div className="er-card-header-left">
+          <i className="bi bi-graph-up" aria-hidden />
+          <div>
+            <h3>Asset Performance During Crisis Regimes</h3>
+            <p className="er-card-subtitle">What works — and what doesn&apos;t — across macro regimes</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="er-card-body">
+        <div className="er-pill-toggle-group">
+          {regimes.map((r) => {
+            const isOn = active === r;
+            return (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setActive(r)}
+                className={`er-pill-toggle${isOn ? " er-pill-toggle--active" : ""}`}
+                style={
+                  isOn
+                    ? {
+                        color: regimeData[r].color,
+                        borderColor: `${regimeData[r].color}55`,
+                        background: `${regimeData[r].color}14`,
+                      }
+                    : undefined
+                }
+              >
+                {regimeData[r].label}
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="er-analytics-muted" style={{ fontSize: "0.68rem", marginBottom: "0.85rem", fontStyle: "italic" }}>
+          {regime.description}
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+          {regime.assets.map((asset) => {
+            const isPositive = asset.ret >= 0;
+            const barWidth = (Math.abs(asset.ret) / maxAbs) * 50;
+
+            return (
+              <div key={asset.name} className="flex items-center gap-3">
+                <div className="w-24 flex items-center gap-2 shrink-0">
+                  <span className="text-sm">{asset.icon}</span>
+                  <span className="text-xs" style={{ color: "#e2e8f0" }}>
+                    {asset.name}
+                  </span>
+                </div>
+
+                <div className="flex-1 flex items-center min-w-0">
+                  <div className="w-1/2 flex justify-end pr-1">
+                    {!isPositive && (
+                      <div
+                        className="h-5 rounded-l transition-all duration-500"
+                        style={{
+                          width: `${barWidth}%`,
+                          background: "#EF444466",
+                          borderLeft: "2px solid #EF4444",
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="w-px h-5 shrink-0" style={{ background: "rgba(212,175,55,0.15)" }} />
+                  <div className="w-1/2 flex justify-start pl-1">
+                    {isPositive && (
+                      <div
+                        className="h-5 rounded-r transition-all duration-500"
+                        style={{
+                          width: `${barWidth}%`,
+                          background: "#22C55E66",
+                          borderRight: "2px solid #22C55E",
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <span
+                  className="w-11 text-right text-xs font-mono shrink-0"
+                  style={{ color: isPositive ? "#22C55E" : "#EF4444" }}
+                >
+                  {isPositive ? "+" : ""}
+                  {asset.ret}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="er-analytics-muted" style={{ fontSize: "0.65rem", marginTop: "1rem", marginBottom: 0 }}>
+          Returns are historical averages across comparable regimes. Not investment advice.
         </p>
       </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        {regimes.map((r) => (
-          <button
-            key={r}
-            type="button"
-            onClick={() => setActive(r)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={
-              active === r
-                ? {
-                    background: `${regimeData[r].color}22`,
-                    border: `1px solid ${regimeData[r].color}`,
-                    color: regimeData[r].color,
-                  }
-                : {
-                    background: "transparent",
-                    border: "1px solid #374151",
-                    color: "#6B7280",
-                  }
-            }
-          >
-            {regimeData[r].label}
-          </button>
-        ))}
-      </div>
-
-      <p className="text-xs text-gray-500 mb-4 italic">{regime.description}</p>
-
-      <div className="space-y-3">
-        {regime.assets.map((asset) => {
-          const isPositive = asset.ret >= 0;
-          const barWidth = (Math.abs(asset.ret) / maxAbs) * 50;
-
-          return (
-            <div key={asset.name} className="flex items-center gap-3">
-              <div className="w-24 flex items-center gap-2 shrink-0">
-                <span className="text-base">{asset.icon}</span>
-                <span className="text-xs text-gray-300">{asset.name}</span>
-              </div>
-
-              <div className="flex-1 flex items-center">
-                <div className="w-1/2 flex justify-end pr-1">
-                  {!isPositive && (
-                    <div
-                      className="h-6 rounded-l transition-all duration-500"
-                      style={{
-                        width: `${barWidth}%`,
-                        background: "#EF444466",
-                        borderLeft: "2px solid #EF4444",
-                      }}
-                    />
-                  )}
-                </div>
-                <div className="w-px h-6 bg-gray-700" />
-                <div className="w-1/2 flex justify-start pl-1">
-                  {isPositive && (
-                    <div
-                      className="h-6 rounded-r transition-all duration-500"
-                      style={{
-                        width: `${barWidth}%`,
-                        background: "#22C55E66",
-                        borderRight: "2px solid #22C55E",
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              <span
-                className="w-12 text-right text-xs font-mono shrink-0"
-                style={{ color: isPositive ? "#22C55E" : "#EF4444" }}
-              >
-                {isPositive ? "+" : ""}
-                {asset.ret}%
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-4 text-xs text-gray-600">
-        Returns are historical averages across comparable regimes. Not investment advice.
-      </div>
-    </div>
+    </section>
   );
 }

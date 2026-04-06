@@ -79,99 +79,91 @@ export default function InnovationLeadershipIndex() {
   );
 
   return (
-    <div className="bg-[#0d1117] border border-gray-800 rounded-2xl p-6 w-full">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h2 className="text-white text-lg font-semibold">
-            Innovation Leadership Index
-          </h2>
-          <p className="text-gray-400 text-sm mt-1">
-            Countries ranked by technological innovation capacity
-          </p>
+    <section className="er-card w-full">
+      <div className="er-card-header">
+        <div className="er-card-header-left">
+          <i className="bi bi-lightning-charge" aria-hidden />
+          <div>
+            <h3>Innovation Leadership Index</h3>
+            <p className="er-card-subtitle">Countries ranked by technological innovation capacity</p>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {metrics.map((m) => (
-          <button
-            key={m.key}
-            type="button"
-            onClick={() => setActiveMetric(m.key)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={
-              activeMetric === m.key
-                ? {
-                    background: "#6366F122",
-                    border: "1px solid #6366F1",
-                    color: "#6366F1",
-                  }
-                : {
-                    background: "transparent",
-                    border: "1px solid #374151",
-                    color: "#6B7280",
-                  }
-            }
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-2">
-        {sorted.map((country, rank) => {
-          const pct = (country.scores[activeMetric] / maxVal) * 100;
-          const isTopTwo = rank < 2;
-          return (
-            <div
-              key={country.name}
-              className="flex items-center gap-3 p-2 rounded-lg transition-all hover:bg-gray-900"
+      <div className="er-card-body">
+        <div className="er-pill-toggle-group">
+          {metrics.map((m) => (
+            <button
+              key={m.key}
+              type="button"
+              onClick={() => setActiveMetric(m.key)}
+              className={`er-pill-toggle${activeMetric === m.key ? " er-pill-toggle--active" : ""}`}
             >
-              <div className="w-6 shrink-0">
-                {rank === 0 ? (
-                  <span className="text-sm">🥇</span>
-                ) : rank === 1 ? (
-                  <span className="text-sm">🥈</span>
-                ) : rank === 2 ? (
-                  <span className="text-sm">🥉</span>
-                ) : (
-                  <span className="text-xs text-gray-600 font-mono">#{rank + 1}</span>
-                )}
-              </div>
+              {m.label}
+            </button>
+          ))}
+        </div>
 
-              <div className="w-36 flex items-center gap-2 shrink-0">
-                <span className="text-base">{country.flag}</span>
-                <span
-                  className="text-sm truncate"
-                  style={{ color: isTopTwo ? country.color : "#D1D5DB" }}
-                >
-                  {country.name}
-                </span>
-              </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+          {sorted.map((country, rank) => {
+            const pct = (country.scores[activeMetric] / maxVal) * 100;
+            const isTopTwo = rank < 2;
+            return (
+              <div
+                key={country.name}
+                className="flex items-center gap-3 p-2 rounded-lg transition-all"
+                style={{
+                  background: "rgba(0,0,0,0.12)",
+                  border: "1px solid rgba(212, 175, 55, 0.06)",
+                }}
+              >
+                <div className="w-6 shrink-0 text-center">
+                  {rank === 0 ? (
+                    <span className="text-sm">🥇</span>
+                  ) : rank === 1 ? (
+                    <span className="text-sm">🥈</span>
+                  ) : rank === 2 ? (
+                    <span className="text-sm">🥉</span>
+                  ) : (
+                    <span className="text-xs font-mono er-analytics-muted">#{rank + 1}</span>
+                  )}
+                </div>
 
-              <div className="flex-1 h-5 bg-gray-900 rounded overflow-hidden">
-                <div
-                  className="h-full rounded transition-all duration-700"
-                  style={{
-                    width: `${pct}%`,
-                    background: `${country.color}99`,
-                    borderRight: `2px solid ${country.color}`,
-                  }}
-                />
-              </div>
+                <div className="w-32 flex items-center gap-2 shrink-0 min-w-0">
+                  <span className="text-sm leading-none">{country.flag}</span>
+                  <span
+                    className="text-sm truncate font-medium"
+                    style={{ color: isTopTwo ? country.color : "#e2e8f0" }}
+                  >
+                    {country.name}
+                  </span>
+                </div>
 
-              <div className="w-20 text-right shrink-0">
-                <span className="text-xs font-mono" style={{ color: country.color }}>
-                  {country.scores[activeMetric].toLocaleString()} {metric.unit}
-                </span>
+                <div className="er-analytics-bar-track flex-1 h-5">
+                  <div
+                    className="h-full rounded transition-all duration-700"
+                    style={{
+                      width: `${pct}%`,
+                      background: `${country.color}88`,
+                      borderRight: `2px solid ${country.color}`,
+                    }}
+                  />
+                </div>
+
+                <div className="w-[5.5rem] text-right shrink-0">
+                  <span className="text-xs font-mono" style={{ color: country.color }}>
+                    {country.scores[activeMetric].toLocaleString()} {metric.unit}
+                  </span>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        <p className="er-analytics-muted" style={{ fontSize: "0.65rem", marginTop: "1rem", marginBottom: 0 }}>
+          Data: WIPO patents, OECD R&D, arXiv AI publications, PitchBook funding. ~2023 estimates.
+        </p>
       </div>
-
-      <div className="mt-4 text-xs text-gray-600">
-        Data: WIPO patents, OECD R&D, arXiv AI publications, PitchBook funding. ~2023 estimates.
-      </div>
-    </div>
+    </section>
   );
 }

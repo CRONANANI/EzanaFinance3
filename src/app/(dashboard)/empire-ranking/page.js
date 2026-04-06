@@ -798,6 +798,11 @@ function EmpireRankingPageContent() {
     [layersParam]
   );
   const hasIncoming = activeLayers.length > 0;
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    setBannerDismissed(false);
+  }, [layersParam]);
 
   useEffect(() => {
     if (!layersParam) return;
@@ -879,7 +884,7 @@ function EmpireRankingPageContent() {
               <i className="bi bi-globe-americas" />
             </div>
             <div>
-              <h1>Empire Ranking &amp; Analysis</h1>
+              <h1>Data &amp; Charts For Empire Rankings</h1>
               <p className="er-hero-sub">
                 Quantitative empire scoring inspired by Ray Dalio&apos;s <em>Changing World Order</em> framework. Power
                 measured across 18 dimensions for the world&apos;s top 11 nations.
@@ -890,10 +895,10 @@ function EmpireRankingPageContent() {
         <div className="er-hero-badge">{heroBadge}</div>
       </div>
 
-      {hasIncoming && (
+      {hasIncoming && !bannerDismissed && (
         <div className="er-layers-from-map-banner" role="status">
           <div>
-            <p className="er-layers-from-map-title">Showing data for your selected power layers</p>
+            <p className="er-layers-from-map-title">Showing data for your selected Global Power Map layers</p>
             <div className="er-layers-from-map-tags">
               {activeLayers.map((layer) => (
                 <span key={layer} className="er-layers-from-map-tag">
@@ -902,6 +907,14 @@ function EmpireRankingPageContent() {
               ))}
             </div>
           </div>
+          <button
+            type="button"
+            className="er-layers-from-map-dismiss"
+            onClick={() => setBannerDismissed(true)}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -942,7 +955,7 @@ export default function EmpireRankingPage() {
                   <i className="bi bi-globe-americas" />
                 </div>
                 <div>
-                  <h1>Empire Ranking &amp; Analysis</h1>
+                  <h1>Data &amp; Charts For Empire Rankings</h1>
                   <p className="er-hero-sub">Loading…</p>
                 </div>
               </div>

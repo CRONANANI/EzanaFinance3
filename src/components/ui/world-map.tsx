@@ -11,56 +11,19 @@ import {
 } from "react";
 import DottedMap from "dotted-map";
 import Image from "next/image";
+import proj4 from "proj4";
 import type { CountryScore } from "@/hooks/useGlobalPowerMap";
+import { latLngToAlpha2Cached } from "@/lib/latLngToCountryAlpha2";
 
-/** Approximate country centroids (ISO 3166-1 alpha-2) for power-map heat blobs */
-const POWER_COUNTRY_CENTROIDS: Record<string, { lat: number; lng: number }> = {
-  US: { lat: 39.8283, lng: -98.5795 },
-  CN: { lat: 35.8617, lng: 104.1954 },
-  DE: { lat: 51.1657, lng: 10.4515 },
-  JP: { lat: 36.2048, lng: 138.2529 },
-  KR: { lat: 35.9078, lng: 127.7669 },
-  NL: { lat: 52.1326, lng: 5.2913 },
-  GB: { lat: 55.3781, lng: -3.436 },
-  FR: { lat: 46.2276, lng: 2.2137 },
-  IN: { lat: 20.5937, lng: 78.9629 },
-  BR: { lat: -14.235, lng: -51.9253 },
-  MX: { lat: 23.6345, lng: -102.5528 },
-  RU: { lat: 61.524, lng: 105.3188 },
-  CA: { lat: 56.1304, lng: -106.3468 },
-  AU: { lat: -25.2744, lng: 133.7751 },
-  IT: { lat: 41.8719, lng: 12.5674 },
-  SG: { lat: 1.3521, lng: 103.8198 },
-  NG: { lat: 9.082, lng: 8.6753 },
-  SD: { lat: 12.8628, lng: 30.2176 },
-  SY: { lat: 34.8021, lng: 38.9968 },
-  IQ: { lat: 33.2232, lng: 43.6793 },
-  AF: { lat: 33.9391, lng: 67.71 },
-  ET: { lat: 9.145, lng: 40.4897 },
-  MM: { lat: 21.9162, lng: 95.956 },
-  ML: { lat: 17.5707, lng: -3.9962 },
-  TR: { lat: 38.9637, lng: 35.2433 },
-  AR: { lat: -38.4161, lng: -63.6167 },
-  ZA: { lat: -30.5595, lng: 22.9375 },
-  ES: { lat: 40.4637, lng: -3.7492 },
-  SA: { lat: 23.8859, lng: 45.0792 },
-  AE: { lat: 23.4241, lng: 53.8478 },
-  NO: { lat: 60.472, lng: 8.4689 },
-  QA: { lat: 25.3548, lng: 51.1839 },
-  IL: { lat: 31.0461, lng: 34.8516 },
-  PK: { lat: 30.3753, lng: 69.3451 },
-  ID: { lat: -0.7893, lng: 113.9213 },
-  EG: { lat: 26.8206, lng: 30.8025 },
-  BD: { lat: 23.685, lng: 90.3563 },
-  PH: { lat: 12.8797, lng: 121.774 },
-  VN: { lat: 14.0583, lng: 108.2772 },
-  KZ: { lat: 48.0196, lng: 66.9237 },
-  FI: { lat: 61.9241, lng: 25.7482 },
-  DK: { lat: 56.2639, lng: 9.5018 },
-  NZ: { lat: -40.9006, lng: 174.886 },
-  SE: { lat: 60.1282, lng: 18.6435 },
-  CH: { lat: 46.8182, lng: 8.2275 },
-  AT: { lat: 47.5162, lng: 14.5501 },
+type DottedMapInternals = {
+  points: Record<string, { x: number; y: number }>;
+  X_MIN: number;
+  Y_MAX: number;
+  X_RANGE: number;
+  Y_RANGE: number;
+  width: number;
+  height: number;
+  proj4String: string;
 };
 
 function scoreToColor(score: number): string {
@@ -69,10 +32,6 @@ function scoreToColor(score: number): string {
   if (score >= 50) return "#FACC15";
   if (score >= 35) return "#F97316";
   return "#EF4444";
-}
-
-function scoreToOpacity(score: number): number {
-  return 0.4 + (score / 100) * 0.5;
 }
 
 export const FINANCIAL_CENTERS = [
@@ -133,7 +92,7 @@ type WorldMapProps = {
   activeLayerTab?: string | null;
   /** When true, hide financial-center pulse dots (e.g. Global Power Map active). */
   hideFinancialDots?: boolean;
-  /** Country composite scores for heat blobs (ISO2). */
+  /** Country composite scores for per-dot colouring (ISO 3166-1 alpha-2). */
   powerCountryScores?: CountryScore[];
 };
 
@@ -158,17 +117,63 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
   const dragMovedRef = useRef(false);
   const panPointerStartRef = useRef({ ex: 0, ey: 0 });
 
-  const { map, svgMap, width, height } = useMemo(() => {
+  const { map, svgMap, width, height, baseDots } = useMemo(() => {
     const m = new DottedMap({ height: 100, grid: "diagonal" });
+    const dm = m as unknown as DottedMapInternals;
     const svg = m.getSVG({
       radius: 0.22,
       color: "#FFFFFF40",
       shape: "circle",
       backgroundColor: "transparent",
     });
-    const inst = m as unknown as { width: number; height: number };
-    return { map: m, svgMap: svg, width: inst.width, height: inst.height };
+    const pts = Object.values(dm.points);
+    const dots = pts.map((p, idx) => {
+      const inverse = proj4(dm.proj4String, "WGS84", [
+        (p.x * dm.X_RANGE) / dm.width + dm.X_MIN,
+        dm.Y_MAX - (p.y * dm.Y_RANGE) / dm.height,
+      ]) as [number, number];
+      const [lng, lat] = inverse;
+      return { x: p.x, y: p.y, lng, lat, idx };
+    });
+    return { map: m, svgMap: svg, width: dm.width, height: dm.height, baseDots: dots };
   }, []);
+
+  const [dotIsos, setDotIsos] = useState<(string | null)[] | null>(null);
+
+  useEffect(() => {
+    if (baseDots.length === 0) return;
+    setDotIsos(null);
+    let cancelled = false;
+    const out: (string | null)[] = new Array(baseDots.length);
+    let i = 0;
+    const CHUNK = 200;
+    const tick = () => {
+      const end = Math.min(i + CHUNK, baseDots.length);
+      for (; i < end; i++) {
+        const d = baseDots[i];
+        out[i] = latLngToAlpha2Cached(d.lng, d.lat);
+      }
+      if (cancelled) return;
+      if (i >= baseDots.length) {
+        setDotIsos(out);
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [baseDots]);
+
+  const isPowerMapActive = powerCountryScores.length > 0;
+  const scoreByIso = useMemo(() => {
+    const o: Record<string, string> = {};
+    powerCountryScores.forEach((c) => {
+      o[c.iso] = scoreToColor(c.score);
+    });
+    return o;
+  }, [powerCountryScores]);
 
   const projectPoint = useCallback(
     (lat: number, lng: number) => {
@@ -458,16 +463,18 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
         }}
       >
         <div className="world-map-wrapper" style={{ position: "relative", width: "100%", height: "100%" }}>
-          <Image
-            src={dataUrl}
-            className="world-map-image"
-            alt=""
-            height={height}
-            width={width}
-            draggable={false}
-            unoptimized
-            style={{ objectFit: "contain" }}
-          />
+          {!(isPowerMapActive && dotIsos) && (
+            <Image
+              src={dataUrl}
+              className="world-map-image"
+              alt=""
+              height={height}
+              width={width}
+              draggable={false}
+              unoptimized
+              style={{ objectFit: "contain" }}
+            />
+          )}
           <svg
             viewBox={`0 0 ${width} ${height}`}
             className="world-map-svg world-map-svg--interactive"
@@ -480,28 +487,23 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               height: "100%",
             }}
           >
-          {powerCountryScores.map((c) => {
-            const geo = POWER_COUNTRY_CENTROIDS[c.iso];
-            if (!geo) return null;
-            const point = projectPoint(geo.lat, geo.lng);
-            const fill = scoreToColor(c.score);
-            const op = scoreToOpacity(c.score);
-            const r = 1.8 + (c.score / 100) * 5.5;
-            return (
-              <g key={`power-${c.iso}`} pointerEvents="none">
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={r}
-                  fill={fill}
-                  fillOpacity={op * 0.85}
-                  stroke={fill}
-                  strokeWidth={0.12}
-                  strokeOpacity={0.9}
-                />
-              </g>
-            );
-          })}
+          {isPowerMapActive && dotIsos
+            ? baseDots.map((d, i) => {
+                const iso = dotIsos[i];
+                const hasScore = Boolean(iso && scoreByIso[iso]);
+                return (
+                  <circle
+                    key={`pd-${d.idx}`}
+                    cx={d.x}
+                    cy={d.y}
+                    r={0.22}
+                    fill={hasScore ? scoreByIso[iso as string] : "#1f2937"}
+                    fillOpacity={hasScore ? 0.85 : 0.12}
+                    pointerEvents="none"
+                  />
+                );
+              })
+            : null}
           {!hideFinancialDots &&
             FINANCIAL_CENTERS.map((center) => {
             const point = projectPoint(center.lat, center.lng);

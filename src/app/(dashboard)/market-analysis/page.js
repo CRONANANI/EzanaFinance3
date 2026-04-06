@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { WorldMap } from '@/components/ui/world-map';
 import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
@@ -868,7 +867,6 @@ export default function MarketAnalysisPage() {
   const [selectedDot, setSelectedDot] = useState(null);
   const [tickerData, setTickerData] = useState([]);
   const mapRef = useRef(null);
-  const router = useRouter();
   const selectedLayers = useGlobalPowerMap((s) => s.selectedLayers);
   const countryScores = useGlobalPowerMap((s) => s.countryScores);
   const isPowerMapActive = selectedLayers.length > 0;
@@ -952,19 +950,20 @@ export default function MarketAnalysisPage() {
         <div className="ma-view-toggle">
           <button type="button" className={`ma-view-btn ${view === 'map' ? 'active' : ''}`} onClick={() => setView('map')}>THE MAP</button>
           <button type="button" className={`ma-view-btn ${view === 'chain' ? 'active' : ''}`} onClick={() => setView('chain')}>THE CHAIN</button>
-          <Link href="/empire-ranking" className="ma-view-btn ma-view-btn--gold">
-            <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
-            EMPIRE RANKING &amp; ANALYSIS
-          </Link>
-          {view === 'map' && isPowerMapActive && (
-            <button
-              type="button"
-              className="ma-view-btn ma-view-btn--purple"
-              onClick={() => router.push(`/empire-ranking?layers=${selectedLayers.join(',')}`)}
-            >
-              SHOW ME THE DATA →
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <Link href="/empire-ranking" className="ma-view-btn ma-view-btn--gold">
+              <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
+              EMPIRE RANKING &amp; ANALYSIS
+            </Link>
+            {view === 'map' && isPowerMapActive && (
+              <Link
+                href={`/empire-ranking?layers=${selectedLayers.join(',')}`}
+                className="ma-power-map-data-link"
+              >
+                Show me the data →
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

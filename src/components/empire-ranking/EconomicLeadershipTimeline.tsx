@@ -69,79 +69,75 @@ const timelineData = [
 
 export default function EconomicLeadershipTimeline() {
   return (
-    <div className="bg-[#0d1117] border border-gray-800 rounded-2xl p-6 w-full">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-white text-lg font-semibold">
-            Global Economic Leadership Timeline
-          </h2>
-          <p className="text-gray-400 text-sm mt-1">
-            Century-long shifts in dominant economic powers
-          </p>
-        </div>
-        <span className="text-xs text-gray-500 bg-gray-800 px-3 py-1 rounded-full">
-          Inspired by Dalio
-        </span>
-      </div>
-
-      <div className="relative">
-        {timelineData.map((item, i) => (
-          <div key={item.era} className="flex items-stretch gap-4 mb-2 group">
-            <div className="w-24 shrink-0 flex items-center justify-end">
-              <span className="text-xs text-gray-500 text-right leading-tight">
-                {item.era}
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center w-6 shrink-0">
-              <div
-                className="w-3 h-3 rounded-full border-2 shrink-0 mt-1"
-                style={{ borderColor: item.color, background: `${item.color}33` }}
-              />
-              {i < timelineData.length - 1 && (
-                <div className="w-0.5 flex-1 mt-1" style={{ background: `${item.color}44` }} />
-              )}
-            </div>
-
-            <div
-              className="flex-1 rounded-lg p-3 mb-1 border transition-all duration-200 group-hover:border-opacity-60"
-              style={{
-                background: `${item.color}10`,
-                borderColor: `${item.color}33`,
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{item.flag}</span>
-                  <span className="text-white text-sm font-medium">
-                    {item.leader}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-24 h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${(item.gdpShare / 40) * 100}%`,
-                        background: item.color,
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs font-mono" style={{ color: item.color }}>
-                    ~{item.gdpShare}%
-                  </span>
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs mt-1">{item.description}</p>
-            </div>
+    <section className="er-card w-full">
+      <div className="er-card-header">
+        <div className="er-card-header-left">
+          <i className="bi bi-clock-history" aria-hidden />
+          <div>
+            <h3>Global Economic Leadership Timeline</h3>
+            <p className="er-card-subtitle">Century-long shifts in dominant economic powers</p>
           </div>
-        ))}
+        </div>
+        <span className="er-analytics-badge">Inspired by Dalio</span>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 text-xs text-gray-600">
-        <span className="w-3 h-0.5 bg-gray-600 inline-block" />
-        Bar width = estimated share of global GDP at peak
+      <div className="er-card-body">
+        <div className="relative">
+          {timelineData.map((item, i) => (
+            <div key={item.era} className="flex items-stretch gap-3 mb-2 group" style={{ marginBottom: "0.35rem" }}>
+              <div className="w-20 shrink-0 flex items-center justify-end">
+                <span className="er-analytics-timeline-era">{item.era}</span>
+              </div>
+
+              <div className="flex flex-col items-center w-5 shrink-0">
+                <div
+                  className="w-2.5 h-2.5 rounded-full border-2 shrink-0 mt-1"
+                  style={{ borderColor: item.color, background: `${item.color}33` }}
+                />
+                {i < timelineData.length - 1 && (
+                  <div className="w-px flex-1 mt-1 min-h-[0.5rem]" style={{ background: `${item.color}44` }} />
+                )}
+              </div>
+
+              <div
+                className="flex-1 rounded-lg p-3 mb-0.5 border transition-all duration-200"
+                style={{
+                  background: `${item.color}12`,
+                  borderColor: `${item.color}35`,
+                }}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-base leading-none">{item.flag}</span>
+                    <span className="text-sm font-semibold" style={{ color: "#f0f6fc" }}>
+                      {item.leader}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="er-analytics-bar-track w-24">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${(item.gdpShare / 40) * 100}%`,
+                          background: item.color,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-mono shrink-0" style={{ color: item.color }}>
+                      ~{item.gdpShare}%
+                    </span>
+                  </div>
+                </div>
+                <p className="er-analytics-timeline-body">{item.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="er-analytics-muted" style={{ fontSize: "0.65rem", marginTop: "0.75rem", marginBottom: 0 }}>
+          Bar width = estimated share of global GDP at peak
+        </p>
       </div>
-    </div>
+    </section>
   );
 }
