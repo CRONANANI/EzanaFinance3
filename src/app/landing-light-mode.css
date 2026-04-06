@@ -460,3 +460,82 @@ body.light-mode .landing-page > footer h2,
 body.light-mode .landing-page > footer .text-foreground {
   color: #0f172a !important;
 }
+
+/* ── Privacy policy — light document; marketing nav matches light landing
+   (page has no .landing-page, so the rules above would not apply) ── */
+html:has(.privacy-policy-page) .navbar,
+html:has(.privacy-policy-page) .navbar.navbar-sticky {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html:has(.privacy-policy-page) .navbar.navbar-sticky.scrolled {
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+
+html:has(.privacy-policy-page) .navbar .nav-link,
+html:has(.privacy-policy-page) .navbar .nav-link-text {
+  color: #64748b !important;
+}
+
+html:has(.privacy-policy-page) .navbar .nav-link:hover,
+html:has(.privacy-policy-page) .navbar .nav-link-text:hover {
+  color: #059669 !important;
+  background: rgba(16, 185, 129, 0.06) !important;
+}
+
+html:has(.privacy-policy-page) .navbar .mobile-hamburger {
+  color: #1e293b !important;
+}
+
+html:has(.privacy-policy-page) .nav-logo-img {
+  mix-blend-mode: darken;
+}
+
+@media (max-width: 768px) {
+  html:has(.privacy-policy-page) .mobile-nav-menu {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%) !important;
+    border-left-color: rgba(16, 185, 129, 0.15) !important;
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-link {
+    color: #1f2937 !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-link:hover,
+  html:has(.privacy-policy-page) .mobile-nav-link:active {
+    background: rgba(16, 185, 129, 0.06) !important;
+    color: #059669 !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-link i:first-child {
+    color: #9ca3af !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-partner {
+    color: #059669 !important;
+    border-color: rgba(5, 150, 105, 0.25) !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-brand {
+    color: #059669 !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-tagline {
+    color: #9ca3af !important;
+  }
+
+  html:has(.privacy-policy-page) .mobile-nav-divider {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(16, 185, 129, 0.15) 20%,
+      rgba(16, 185, 129, 0.15) 80%,
+      transparent 100%
+    ) !important;
+  }
+}

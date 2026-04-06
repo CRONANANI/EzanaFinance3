@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
   const { css, html } = extractStylesAndBody(raw);
 
   return (
-    <div className="min-h-screen bg-white text-neutral-800">
+    <div className="privacy-policy-page min-h-screen bg-white text-neutral-800">
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <main
         className="privacy-policy-termly mx-auto max-w-4xl overflow-x-auto px-4 py-8 pb-16"
