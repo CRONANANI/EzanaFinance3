@@ -24,9 +24,9 @@
 }
 
 .ezana-terminal-bar-strip--top {
-  background: var(--nav-bg, rgba(15, 20, 25, 0.95));
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border, rgba(16, 185, 129, 0.1));
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: none;
 }
 
 .ezana-terminal-bar-strip--bottom {
@@ -557,14 +557,15 @@
   font-feature-settings: 'tnum' 1;
 }
 
-/* ── TOP LIVE MARQUEE (replaces legacy top ticker row + bottom bar) ── */
+/* ── TOP LIVE MARQUEE (flush strip — no extra “card” frame around the row) ── */
 .t-terminal-marquee-top {
-  min-height: 44px;
+  min-height: 40px;
   height: auto;
   margin: 0 0 var(--space-md, 1rem);
-  border-radius: var(--radius-md, 1rem);
-  border: 1px solid var(--card-border, rgba(16, 185, 129, 0.12));
-  border-top: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .t-brand-icon--inline {
@@ -583,19 +584,25 @@
   font-family: var(--font-sans);
 }
 
-/* ── NEWS TICKER (bottom bar) ── */
+/* ── NEWS TICKER (top live strip + legacy bottom bar) ── */
 .t-news-bar {
-  height: 36px;
+  min-height: 40px;
+  height: auto;
   display: flex;
   align-items: center;
-  background: var(--nav-bg, rgba(15, 20, 25, 0.95));
-  backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border, rgba(16, 185, 129, 0.1));
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  border-bottom: 1px solid var(--border, rgba(16, 185, 129, 0.08));
   overflow: hidden;
   flex-shrink: 0;
   margin: 0 var(--space-md, 1rem) var(--space-md, 1rem);
-  border-radius: var(--radius-md, 1rem);
-  border: 1px solid var(--card-border, rgba(16, 185, 129, 0.1));
+  border-radius: 0;
+}
+
+/* Top terminal marquee: divider only, no boxed chrome */
+.t-news-bar.t-terminal-marquee-top {
+  margin-bottom: var(--space-md, 1rem);
 }
 
 /* When live bar sits inside .dashboard-page-inset — align with cards, drop side margins */
@@ -619,16 +626,19 @@
 
 .t-news-scroll {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   position: relative;
+  padding-left: 0.5rem;
 }
 
 .t-news-track {
   display: flex;
+  width: max-content;
   gap: 3rem;
-  animation: t-scroll-news 60s linear infinite;
+  animation: t-scroll-news-loop 55s linear infinite;
   white-space: nowrap;
-  padding-left: 100%;
+  will-change: transform;
 }
 
 .t-news-track:hover {
@@ -647,9 +657,15 @@
   font-weight: 600;
 }
 
-@keyframes t-scroll-news {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
+/* Pause ~5s at load (5/55 ≈ 9.09%), then scroll; -50% = one copy — seamless with duplicated track */
+@keyframes t-scroll-news-loop {
+  0%,
+  9.09% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* ── LOADING ── */

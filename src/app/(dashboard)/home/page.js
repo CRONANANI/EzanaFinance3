@@ -286,6 +286,58 @@ export default function HomeTerminalPage() {
         <span className="t-dim">{time}</span>
       </span>,
     );
+    blocks.push(
+      <span key="flow" className="t-news-item">
+        <strong>FLOWS</strong>{' '}
+        <span className="t-dim">
+          Equities +$2.1B · IG credit tight 2bps · <span className="t-green">HY</span> issuance light
+        </span>
+      </span>,
+    );
+    blocks.push(
+      <span key="cong" className="t-news-item">
+        <strong>CONGRESS</strong>{' '}
+        <span className="t-dim">
+          14 STOCK Act filings (24h) · committees: Energy, Intel, Banking · watch semis &amp; defense
+        </span>
+      </span>,
+    );
+    blocks.push(
+      <span key="13f" className="t-news-item">
+        <strong>13F</strong>{' '}
+        <span className="t-dim">Quarterly window: elevated adds in AI infra · trims in legacy retail</span>
+      </span>,
+    );
+    blocks.push(
+      <span key="fed" className="t-news-item">
+        <strong>FED WATCH</strong>{' '}
+        <span className="t-dim">Speakers on deck · front-end yields leading risk tone</span>
+      </span>,
+    );
+    blocks.push(
+      <span key="vol" className="t-news-item">
+        <strong>VOL</strong>{' '}
+        <span className="t-dim">Index complex bid · single-name skew elevated into earnings cluster</span>
+      </span>,
+    );
+    blocks.push(
+      <span key="fx" className="t-news-item">
+        <strong>FX</strong>{' '}
+        <span className="t-dim">DXY steady · carry quiet · EMFX mixed on commodity patch</span>
+      </span>,
+    );
+    blocks.push(
+      <span key="echo" className="t-news-item">
+        <strong>EZANA ECHO</strong>{' '}
+        <span className="t-dim">New: disclosure lag vs. price — how to read filing dates vs. trade dates</span>
+      </span>,
+    );
+    blocks.push(
+      <span key="alerts" className="t-news-item">
+        <strong>ALERTS</strong>{' '}
+        <span className="t-dim">Price targets · congressional mentions · watchlist gaps · portfolio risk</span>
+      </span>,
+    );
     if (enrichedHoldings.length > 0) {
       enrichedHoldings.slice(0, 10).forEach((h, i) => {
         blocks.push(
