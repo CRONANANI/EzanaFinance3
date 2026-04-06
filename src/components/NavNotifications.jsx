@@ -17,6 +17,7 @@ const SAMPLE_NOTIFICATIONS = [
   { id: '6', type: 'market_news', title: 'Market Analysis Update', content: 'New quantitative research report on your TSLA position shows strong buy signals across 4 of 6 models.', time: Date.now() - 6 * 60 * 60 * 1000, read: true, icon: 'bi-graph-up', badge: 'Research', priority: 'medium' },
   { id: '7', type: 'portfolio_alerts', title: 'Dividend Payment', content: 'Received $127.50 quarterly dividend payment from MSFT (Microsoft Corp). DRIP reinvested at $428.30/share.', time: Date.now() - 24 * 60 * 60 * 1000, read: true, icon: 'bi-cash-coin', badge: 'Payment', priority: 'low' },
   { id: '8', type: 'congress', title: 'Senate Trading Activity', content: 'Sen. Richard Burr sold $1.8M in airline stocks ahead of pandemic briefing. SEC investigation ongoing.', time: Date.now() - 2 * 24 * 60 * 60 * 1000, read: true, icon: 'bi-building', badge: 'Congress', priority: 'high' },
+  { id: '9', type: 'learning', title: 'Learning Center', content: 'New module available: DCF Modeling Basics — pick up where you left off.', time: Date.now() - 3 * 60 * 60 * 1000, read: false, icon: 'bi-mortarboard', badge: 'Learning', priority: 'low' },
 ];
 
 function getTimeAgo(ts) {
@@ -185,6 +186,7 @@ export function NavNotifications() {
         { key: 'market_news', label: 'Market' },
         { key: 'portfolio_alerts', label: 'Portfolio' },
         { key: 'community', label: 'Community' },
+        { key: 'learning', label: 'Learning' },
       ].map((f) => (
         <button
           key={f.key}
