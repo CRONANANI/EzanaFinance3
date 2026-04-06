@@ -15,6 +15,7 @@ import proj4 from "proj4";
 import type { CountryScore } from "@/hooks/useGlobalPowerMap";
 import { useGlobalPowerMap } from "@/hooks/useGlobalPowerMap";
 import { latLngToAlpha2Cached } from "@/lib/latLngToCountryAlpha2";
+import { COUNTRY_BORDER_PATHS } from "@/lib/countryBorderPaths";
 
 const NE_COUNTRIES_GEOJSON =
   "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson";
@@ -138,12 +139,15 @@ type DottedMapInternals = {
   proj4String: string;
 };
 
-function scoreToColor(score: number): string {
-  if (score >= 80) return "#22C55E";
-  if (score >= 65) return "#4ADE80";
-  if (score >= 50) return "#FACC15";
-  if (score >= 35) return "#F97316";
-  return "#EF4444";
+export function scoreToColor(score: number): string {
+  if (score >= 90) return "#FFD700";   // gold        — #1 tier (elite)
+  if (score >= 78) return "#22c55e";   // bright green — strong
+  if (score >= 66) return "#4ade80";   // light green  — above average
+  if (score >= 54) return "#a3e635";   // yellow-green — average
+  if (score >= 42) return "#facc15";   // yellow       — below average
+  if (score >= 30) return "#fb923c";   // orange       — weak
+  if (score >= 18) return "#f87171";   // light red    — very weak
+  return "#ef4444";                    // red          — bottom
 }
 
 export const FINANCIAL_CENTERS = [
@@ -690,25 +694,63 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                     cx={d.x}
                     cy={d.y}
                     r={0.22}
-                    fill={hasScore ? scoreByIso[iso as string] : "#1f2937"}
-                    fillOpacity={hasScore ? 0.85 : 0.12}
+                    fill={hasScore ? scoreByIso[iso as string] : "#10b981"}
+                    fillOpacity={0.7}
                     pointerEvents="none"
                   />
                 );
               })
             : null}
-          {isPowerMapActive && borderFeatures.length > 0 && (
+          {isPowerMapActive && powerCountryScores.length > 0 && (
             <g pointerEvents="none">
-              {borderFeatures.map((feat) => (
-                <g key={`b-${feat.iso}`}>
-                  {feat.paths.map((d, i) => (
-                    <g key={`b-${feat.iso}-${i}`}>
-                      <path d={d} className="power-map-border-base" />
-                      <path d={d} className="power-map-border-pulse" />
-                    </g>
-                  ))}
-                </g>
-              ))}
+              {powerCountryScores.map((cs, idx) => {
+                const pathDef = COUNTRY_BORDER_PATHS[cs.iso];
+                if (!pathDef) return null;
+
+                const colour = scoreToColor(cs.score);
+                // Stagger each country's animation by index so they don't all pulse together
+                const delay = (idx * 0.4) % 3;
+                const pathId = `border-path-${cs.iso}`;
+
+                return (
+                  <g key={cs.iso}>
+                    {/* Static base line — thin, low opacity */}
+                    <path
+                      id={pathId}
+                      d={pathDef}
+                      fill="none"
+                      stroke={colour}
+                      strokeWidth="0.6"
+                      opacity="0.35"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Running dot that travels around the border */}
+                    <circle r="1.4" fill={colour} opacity="0.95">
+                      <animateMotion
+                        dur="4s"
+                        begin={`${delay}s`}
+                        repeatCount="indefinite"
+                        rotate="auto"
+                      >
+                        <mpath href={`#${pathId}`} />
+                      </animateMotion>
+                    </circle>
+
+                    {/* Glow halo around the running dot */}
+                    <circle r="2.8" fill={colour} opacity="0.25">
+                      <animateMotion
+                        dur="4s"
+                        begin={`${delay}s`}
+                        repeatCount="indefinite"
+                        rotate="auto"
+                      >
+                        <mpath href={`#${pathId}`} />
+                      </animateMotion>
+                    </circle>
+                  </g>
+                );
+              })}
             </g>
           )}
           {isPowerMapActive && borderFeatures.length > 0 && (

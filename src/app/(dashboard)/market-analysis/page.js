@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { WorldMap } from '@/components/ui/world-map';
+import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
@@ -1105,18 +1105,180 @@ export default function MarketAnalysisPage() {
               setClickedCountry(null);
             }}
           >
-            <WorldMap
-              ref={mapRef}
-              lineColor="#10b981"
-              selectedPanelId={selectedDot}
-              onDotClick={handleCenterClick}
-              onPowerCountryClick={handlePowerCountryClick}
-              activeLayer={activeCategory}
-              activeLayerTab={activeTab}
-              hideControls
-              hideFinancialDots={isPowerMapActive}
-              powerCountryScores={countryScores}
-            />
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <WorldMap
+                ref={mapRef}
+                lineColor="#10b981"
+                selectedPanelId={selectedDot}
+                onDotClick={handleCenterClick}
+                onPowerCountryClick={handlePowerCountryClick}
+                activeLayer={activeCategory}
+                activeLayerTab={activeTab}
+                hideControls
+                hideFinancialDots={isPowerMapActive}
+                powerCountryScores={countryScores}
+              />
+
+              {/* Top 5 ranking bar */}
+              {isPowerMapActive && countryScores.length > 0 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    background: 'rgba(10, 14, 19, 0.82)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                    pointerEvents: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {/* Label */}
+                  <span
+                    style={{
+                      fontSize: '0.58rem',
+                      fontWeight: 700,
+                      color: 'rgba(255,255,255,0.35)',
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      marginRight: '4px',
+                    }}
+                  >
+                    Power Rank
+                  </span>
+
+                  {/* Divider */}
+                  <div
+                    style={{
+                      width: '1px',
+                      height: '24px',
+                      background: 'rgba(255,255,255,0.1)',
+                      marginRight: '4px',
+                    }}
+                  />
+
+                  {/* Top 5 countries */}
+                  {countryScores.slice(0, 5).map((cs, rank) => {
+                    const colour = scoreToColor(cs.score);
+                    const medals = ['🥇', '🥈', '🥉'];
+                    const medal = medals[rank] ?? null;
+
+                    // Country flag emoji from ISO 2-letter code
+                    const flag = cs.iso
+                      .toUpperCase()
+                      .split('')
+                      .map(c => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+                      .join('');
+
+                    return (
+                      <div
+                        key={cs.iso}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          background: colour + '15',
+                          border: `1px solid ${colour}30`,
+                          minWidth: '64px',
+                        }}
+                      >
+                        {/* Rank + flag */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          {medal ? (
+                            <span style={{ fontSize: '0.7rem', lineHeight: 1 }}>
+                              {medal}
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                fontSize: '0.6rem',
+                                fontWeight: 700,
+                                color: colour,
+                                lineHeight: 1,
+                              }}
+                            >
+                              #{rank + 1}
+                            </span>
+                          )}
+                          <span style={{ fontSize: '0.85rem', lineHeight: 1 }}>
+                            {flag}
+                          </span>
+                        </div>
+
+                        {/* Country name — truncated */}
+                        <span
+                          style={{
+                            fontSize: '0.58rem',
+                            fontWeight: 600,
+                            color: '#f0f6fc',
+                            maxWidth: '60px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            lineHeight: 1,
+                          }}
+                        >
+                          {cs.name}
+                        </span>
+
+                        {/* Score bar + number */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            width: '100%',
+                          }}
+                        >
+                          <div
+                            style={{
+                              flex: 1,
+                              height: '2px',
+                              background: 'rgba(255,255,255,0.08)',
+                              borderRadius: '1px',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${cs.score}%`,
+                                height: '100%',
+                                background: colour,
+                                borderRadius: '1px',
+                                transition: 'width 0.4s ease',
+                              }}
+                            />
+                          </div>
+                          <span
+                            style={{
+                              fontSize: '0.58rem',
+                              fontWeight: 700,
+                              color: colour,
+                              lineHeight: 1,
+                              fontVariantNumeric: 'tabular-nums',
+                            }}
+                          >
+                            {cs.score}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="ma-sidebar">
