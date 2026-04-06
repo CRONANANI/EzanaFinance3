@@ -1448,3 +1448,33 @@ body.light-mode .ma-ticker-sep {
   border-color: rgba(212, 175, 55, 0.45);
   color: #e8c84a;
 }
+
+/* ── Global Power Map — country border animations ── */
+
+.power-border {
+  fill:            none;
+  stroke-linecap:  round;
+  stroke-linejoin: round;
+  vector-effect:   non-scaling-stroke;
+}
+
+/* Default state: thin, low-opacity static line (no layer selected) */
+.power-border--idle {
+  stroke-width:    0.5;
+  stroke-opacity:  0.18;
+  stroke:          #10b981;
+}
+
+/* Active state: flowing dash animation when a layer is selected */
+.power-border--active {
+  stroke-width:    0.8;
+  stroke-dasharray: 6 10;
+  animation: power-border-flow var(--border-dur, 3s) linear infinite;
+  animation-delay: var(--border-delay, 0s);
+}
+
+@keyframes power-border-flow {
+  0%   { stroke-dashoffset: 0;  stroke-opacity: 0.85; }
+  50%  {                        stroke-opacity: 1;    }
+  100% { stroke-dashoffset: 16; stroke-opacity: 0.85; }
+}

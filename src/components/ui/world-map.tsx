@@ -15,6 +15,7 @@ import proj4 from "proj4";
 import type { CountryScore } from "@/hooks/useGlobalPowerMap";
 import { useGlobalPowerMap } from "@/hooks/useGlobalPowerMap";
 import { latLngToAlpha2Cached } from "@/lib/latLngToCountryAlpha2";
+import { COUNTRY_BORDERS } from "@/lib/powerMapBorders";
 
 const NE_COUNTRIES_GEOJSON =
   "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson";
@@ -139,14 +140,16 @@ type DottedMapInternals = {
 };
 
 export function scoreToColor(score: number): string {
-  if (score >= 90) return "#FFD700";   // gold        — #1 tier (elite)
-  if (score >= 78) return "#22c55e";   // bright green — strong
-  if (score >= 66) return "#4ade80";   // light green  — above average
-  if (score >= 54) return "#a3e635";   // yellow-green — average
-  if (score >= 42) return "#facc15";   // yellow       — below average
-  if (score >= 30) return "#fb923c";   // orange       — weak
-  if (score >= 18) return "#f87171";   // light red    — very weak
-  return "#ef4444";                    // red          — bottom
+  if (score >= 92) return "#FFD700";   // Gold      — rank 1 tier (elite)
+  if (score >= 82) return "#00E5FF";   // Cyan      — rank 2 tier
+  if (score >= 72) return "#00FF88";   // Lime green — rank 3 tier
+  if (score >= 62) return "#39FF14";   // Neon green — rank 4 tier
+  if (score >= 52) return "#ADFF2F";   // Yellow-green — rank 5 tier
+  if (score >= 42) return "#FFE066";   // Pale gold  — rank 6 tier
+  if (score >= 32) return "#FF9F1C";   // Orange     — rank 7 tier
+  if (score >= 22) return "#FF5733";   // Red-orange — rank 8 tier
+  if (score >= 12) return "#FF2D55";   // Red-pink   — rank 9 tier
+  return "#BF0000";                    // Dark red   — rank 10 tier (weakest)
 }
 
 export const FINANCIAL_CENTERS = [
@@ -748,6 +751,27 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               ))}
             </g>
           )}
+          {/* ── Country border outlines ── */}
+          {Object.entries(COUNTRY_BORDERS).map(([iso, pathD], idx) => {
+            const isScored = isPowerMapActive && scoreByIso[iso];
+            const colour   = isScored ? scoreByIso[iso] : "#10b981";
+            const delay    = ((idx * 0.18) % 4).toFixed(2);
+            const dur      = (2.8 + (idx % 5) * 0.3).toFixed(1);   // 2.8s–4.0s — vary per country
+
+            return (
+              <path
+                key={`border-${iso}`}
+                d={pathD}
+                className={`power-border ${isPowerMapActive ? "power-border--active" : "power-border--idle"}`}
+                stroke={colour}
+                style={{
+                  // @ts-ignore
+                  "--border-delay": `${delay}s`,
+                  "--border-dur":   `${dur}s`,
+                }}
+              />
+            );
+          })}
           {!hideFinancialDots &&
             FINANCIAL_CENTERS.map((center) => {
             const point = projectPoint(center.lat, center.lng);

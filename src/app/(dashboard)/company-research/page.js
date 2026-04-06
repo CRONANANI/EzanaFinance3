@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
+import StockPriceChart from '@/components/research/StockPriceChart';
 import {
   KeyMetrics,
   AnalystRecommendations,
@@ -184,18 +185,7 @@ function CompanyResearchPageInner() {
   useEffect(() => {
     if (scriptLoadedRef.current) return;
     scriptLoadedRef.current = true;
-    const loadScript = (src) => new Promise((resolve, reject) => {
-      const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) { resolve(); return; }
-      const s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error(`Failed to load ${src}`));
-      document.body.appendChild(s);
-    });
-    loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js').catch(() => {});
-    loadScript('/app-legacy/pages/company-research.js').catch(() => {});
+    // Legacy scripts removed - using React components instead
   }, []);
 
   const resetStats = () => setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
@@ -352,12 +342,12 @@ function CompanyResearchPageInner() {
                   <div className="cr-merged-title-row">
                     <div className="cr-merged-names">
                       <span className="cr-merged-ticker">{selectedStock}</span>
-                      {profile?.name ? <span className="cr-merged-long-name"> — {profile.name}</span> : null}
-                      <span id="stockChartTitle" className="sr-only">{selectedStock}</span>
-                    </div>
-                    <div className="market-chart-meta cr-merged-quote" id="stockChartMeta">
-                      <span className="market-price" id="stockPrice">--</span>
-                      <span className="market-change" id="stockChange">--</span>
+                      {profile?.name ? (
+                        <span className="cr-merged-long-name"> — {profile.name}</span>
+                      ) : null}
+                      <span id="stockChartTitle" className="sr-only">
+                        {selectedStock}
+                      </span>
                     </div>
                   </div>
                   <p className="cr-merged-meta-line">{companyMetaLine}</p>
@@ -380,34 +370,43 @@ function CompanyResearchPageInner() {
                     >
                       <i className="bi bi-grid-3x3-gap" /> Heatmap
                     </button>
-                    <div className="time-range-selector compact" id="stockTimeRange">
-                      <button className="time-btn" type="button" data-range="1D">1D</button>
-                      <button className="time-btn" type="button" data-range="1W">1W</button>
-                      <button className="time-btn active" type="button" data-range="1M">1M</button>
-                      <button className="time-btn" type="button" data-range="3M">3M</button>
-                      <button className="time-btn" type="button" data-range="6M">6M</button>
-                      <button className="time-btn" type="button" data-range="1Y">1Y</button>
+                  </div>
+                </div>
+
+                {/* New React-based chart component */}
+                <div style={{ padding: '1rem 0' }}>
+                  <StockPriceChart symbol={selectedStock} />
+                </div>
+
+                <div
+                  className="cr-merged-stats market-chart-footer"
+                  id="stockChartFooter"
+                >
+                  <div className="cr-merged-stats-row cr-merged-stats-row--secondary">
+                    <div className="market-stat">
+                      <span className="market-stat-label">P/E</span>
+                      <span className="market-stat-value">{stats.pe}</span>
+                    </div>
+                    <div className="market-stat">
+                      <span className="market-stat-label">EPS</span>
+                      <span className="market-stat-value">{stats.eps}</span>
+                    </div>
+                    <div className="market-stat">
+                      <span className="market-stat-label">Div Yield</span>
+                      <span className="market-stat-value">{stats.divYield}</span>
+                    </div>
+                    <div className="market-stat">
+                      <span className="market-stat-label">Market Cap</span>
+                      <span className="market-stat-value">{stats.mcap}</span>
                     </div>
                   </div>
                 </div>
-                <div className="chart-container compact cr-chart-shorter" id="stockChartContainer">
-                  <div className="chart-loading" id="stockChartLoading">
-                    <i className="bi bi-arrow-repeat spin" />
-                    <span>Loading stock data...</span>
-                  </div>
-                  <canvas id="stockChart" />
-                </div>
-                <div className="cr-merged-stats market-chart-footer" id="stockChartFooter">
-                  <div className="cr-merged-stats-row">
-                    <div className="market-stat"><span className="market-stat-label">Open</span><span className="market-stat-value" id="mstatOpen">--</span></div>
-                    <div className="market-stat"><span className="market-stat-label">High</span><span className="market-stat-value" id="mstatHigh">--</span></div>
-                    <div className="market-stat"><span className="market-stat-label">Low</span><span className="market-stat-value" id="mstatLow">--</span></div>
-                    <div className="market-stat"><span className="market-stat-label">Volume</span><span className="market-stat-value" id="mstatVolume">--</span></div>
-                  </div>
-                  <div className="cr-merged-stats-row cr-merged-stats-row--secondary">
-                    <div className="market-stat"><span className="market-stat-label">P/E</span><span className="market-stat-value">{stats.pe}</span></div>
-                    <div className="market-stat"><span className="market-stat-label">EPS</span><span className="market-stat-value">{stats.eps}</span></div>
-                    <div className="market-stat"><span className="market-stat-label">Div Yield</span><span className="market-stat-value">{stats.divYield}</span></div>
+              </div>
+            </PinnableCard>
+          )}
+          {selectedStock && (
+            <PinnableCard cardId="stock-key-metrics" section="research">
+              <KeyMetrics symbol={selectedStock} />
                     <div className="market-stat"><span className="market-stat-label">52W range</span><span className="market-stat-value">{w52Range}</span></div>
                   </div>
                   <span id="mstatPrevClose" className="sr-only" aria-hidden>--</span>

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
+import { COUNTRY_BORDERS } from '@/lib/powerMapBorders';
 import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
@@ -1165,6 +1166,23 @@ export default function MarketAnalysisPage() {
                       marginRight: '4px',
                     }}
                   />
+
+                  {/* Legend */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px' }}>
+                    {[
+                      { label: '#1',  colour: '#FFD700' },
+                      { label: '#2',  colour: '#00E5FF' },
+                      { label: '#3',  colour: '#00FF88' },
+                      { label: 'low', colour: '#BF0000' },
+                    ].map(({ label, colour }) => (
+                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colour }} />
+                        <span style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', fontVariantNumeric: 'tabular-nums' }}>
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
 
                   {/* Top 5 countries */}
                   {countryScores.slice(0, 5).map((cs, rank) => {
