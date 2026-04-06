@@ -14,6 +14,90 @@ body.light-mode .ci-page .er-card-body {
   color: #374151;
 }
 
+/* Hero — same horizontal rhythm as .sentinel-card; vertical padding only; centred copy */
+.ci-page .ci-hero-centered {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 0 !important;
+  margin-left: 2rem;
+  margin-right: 2rem;
+  width: auto;
+}
+
+.ci-page .ci-hero-centered .er-hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 720px;
+}
+
+.ci-page .ci-hero-centered .er-back-link {
+  align-self: center;
+}
+
+.ci-page .ci-hero-centered .er-hero-title-row {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ci-page .ci-hero-centered .er-hero-icon {
+  margin-bottom: 0.5rem;
+}
+
+.ci-page .ci-hero-centered .ci-hero-title-block,
+.ci-page .ci-hero-centered .ci-hero-title-block .er-hero-sub {
+  text-align: center;
+}
+
+.ci-page .ci-hero-centered .er-hero-sub {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ci-page .ci-hero-centered h1 {
+  text-align: center;
+}
+
+.ci-page .ci-hero-centered .er-hero-badge {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .ci-page .ci-hero-centered {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}
+
+/* Sentinel week chips: month on top, day number below */
+.ci-sentinel-date-btn {
+  width: 72px;
+  min-height: 52px;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px;
+  padding: 8px 12px !important;
+}
+
+.ci-sentinel-date-month {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.ci-sentinel-date-day {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .sentinel-card {
   max-width: 100%;
   margin-left: 2rem;
@@ -351,17 +435,17 @@ button:active:not(:disabled) {
 }
 
 .sentinel-report-section-title {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   letter-spacing: 0.02em;
   text-transform: none;
-  color: #d4af37;
+  color: #d4af37 !important;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 0.4rem 0;
   padding: 0;
 }
 
 .sentinel-report-section-title--gold {
-  color: #d4af37;
+  color: #d4af37 !important;
 }
 
 .sentinel-report-health-value {
@@ -369,7 +453,8 @@ button:active:not(:disabled) {
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.5;
-  color: #d4af37;
+  color: #ffffff !important;
+  opacity: 1;
 }
 
 .sentinel-report-disclaimer-block {
@@ -377,29 +462,40 @@ button:active:not(:disabled) {
   font-size: 0.52rem;
   line-height: 1.55;
   letter-spacing: 0.02em;
-  color: #d4af37;
+  color: #ffffff !important;
   font-weight: 500;
+  opacity: 1;
 }
 
 .sentinel-report-section-body {
   margin-top: 0.65rem;
-  font-size: 0.88rem;
-  line-height: 1.75;
-  color: #d1d5db;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #ffffff !important;
+  opacity: 1;
 }
 
 .sentinel-report-section-body p {
   margin: 0 0 0.5rem 0;
+  color: #ffffff !important;
+  opacity: 1;
 }
 
 .sentinel-report-section-body p:last-child {
   margin-bottom: 0;
 }
 
+.sentinel-report-section-body li,
+.sentinel-report-section-body span {
+  color: #ffffff !important;
+  opacity: 1;
+}
+
 .sentinel-report-section-body--empty {
-  color: #6b7280;
+  color: #6b7280 !important;
   font-style: italic;
   margin: 0.65rem 0 0 0;
+  opacity: 1;
 }
 
 .sentinel-modal-charts {

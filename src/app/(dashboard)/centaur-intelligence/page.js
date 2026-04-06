@@ -221,7 +221,7 @@ export default function CentaurIntelligencePage() {
   return (
     <TooltipProvider delayDuration={120}>
       <div className="dashboard-page-inset er-page ci-page">
-        <div className="er-hero ci-hero-wrap">
+        <div className="er-hero ci-hero-centered ci-hero-wrap">
           <div className="er-hero-left">
             <Link href="/home" className="er-back-link">
               <i className="bi bi-chevron-left" /> Back to Home
@@ -230,7 +230,7 @@ export default function CentaurIntelligencePage() {
               <div className="er-hero-icon">
                 <i className="bi bi-lightning-charge-fill" />
               </div>
-              <div>
+              <div className="ci-hero-title-block">
                 <h1>Centaur Intelligence</h1>
                 <p className="er-hero-sub">Your AI-powered investment command center — advisor chat, boardroom personas, and briefings.</p>
               </div>
@@ -265,10 +265,8 @@ export default function CentaurIntelligencePage() {
               {Array.from({ length: 5 }, (_, i) => {
                 const d = new Date();
                 d.setDate(d.getDate() - i * 7);
-                const month = d.toLocaleDateString('en-US', { month: 'short' });
+                const month = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
                 const day = d.getDate();
-                const ordinal =
-                  day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
                 const rep = reportForWeekIndex(sentinelReports, i);
                 return (
                   <button
@@ -279,14 +277,10 @@ export default function CentaurIntelligencePage() {
                       const r = rep || sentinelReport;
                       if (r) openSentinelModal(r);
                     }}
-                    className={`er-pill-toggle${selectedReportWeek === i ? ' er-pill-toggle--active' : ''}`}
-                    style={{ width: '72px', minHeight: '52px', flexDirection: 'column', justifyContent: 'center' }}
+                    className={`er-pill-toggle ci-sentinel-date-btn${selectedReportWeek === i ? ' er-pill-toggle--active' : ''}`}
                   >
-                    <span>{month}</span>
-                    <span style={{ fontSize: '1rem', fontWeight: 700 }}>
-                      {day}
-                      {ordinal}
-                    </span>
+                    <span className="ci-sentinel-date-month">{month}</span>
+                    <span className="ci-sentinel-date-day">{day}</span>
                   </button>
                 );
               })}
