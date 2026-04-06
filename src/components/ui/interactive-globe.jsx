@@ -103,7 +103,10 @@ export const LAND_GEOJSON_URL =
 export function InteractiveGlobe({
   className,
   size = 600,
-  dotColor = "rgba(16, 185, 129, ALPHA)",
+  /** Land dots — slightly brighter emerald so hero particles can sit a shade deeper without beating the globe. */
+  dotColor = "rgba(52, 211, 153, ALPHA)",
+  /** Ocean fill inside the sphere (darker than typical landing bg #050a08). */
+  oceanFill = "#020403",
   autoRotateSpeed = 0.5,
   showConnections = true,
   showMarkers = true,
@@ -195,14 +198,20 @@ export function InteractiveGlobe({
 
     ctx.clearRect(0, 0, w, h);
 
-    // Subtle glow effect (unchanged)
+    // Subtle glow behind the sphere
     const glowGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.4);
     glowGrad.addColorStop(0, "rgba(16, 185, 129, 0.02)");
     glowGrad.addColorStop(1, "rgba(16, 185, 129, 0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, w, h);
 
-    // Globe outline (unchanged)
+    // Ocean — solid disk darker than page background, under land dots
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = oceanFill;
+    ctx.fill();
+
+    // Globe outline
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(16, 185, 129, 0.08)";
@@ -241,7 +250,7 @@ export function InteractiveGlobe({
     }
 
     animRef.current = requestAnimationFrame(draw);
-  }, [dotColor, autoRotateSpeed, loaded]);
+  }, [dotColor, oceanFill, autoRotateSpeed, loaded]);
 
   useEffect(() => {
     if (!loaded) return;

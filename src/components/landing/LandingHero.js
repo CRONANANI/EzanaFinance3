@@ -85,7 +85,7 @@ export function LandingHero() {
           aria-hidden
         >
           <FallingPattern
-            color={isLight ? '#059669' : '#10b981'}
+            color={isLight ? '#059669' : '#0d9f6e'}
             backgroundColor={isLight ? '#f8fafb' : '#050a08'}
             duration={120}
             blurIntensity="0.6em"

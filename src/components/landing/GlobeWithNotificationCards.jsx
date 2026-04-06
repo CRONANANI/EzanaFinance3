@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { InteractiveGlobe } from "@/components/ui/interactive-globe";
+import { useTheme } from "@/components/ThemeProvider";
 
 const HERO_NOTIFICATIONS = [
   { id: "n1", type: "congress", title: "Congressional Trade Alert", content: "Nancy Pelosi disclosed new NVIDIA purchases worth $1.2M", badge: "Congress", icon: "bi-building" },
@@ -32,6 +33,8 @@ function pickRandomPosition(prevSide, prevVPos) {
 }
 
 export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [activeIndex, setActiveIndex] = useState(0);
   const [position, setPosition] = useState(() => pickRandomPosition(null, null));
 
@@ -87,7 +90,14 @@ export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
       </div>
 
       <div className="globe-container">
-        <InteractiveGlobe size={size} showConnections={false} showMarkers={false} onReady={onGlobeReady} />
+        <InteractiveGlobe
+          size={size}
+          showConnections={false}
+          showMarkers={false}
+          onReady={onGlobeReady}
+          oceanFill={isLight ? "#dce3ea" : "#020403"}
+          dotColor={isLight ? "rgba(16, 185, 129, ALPHA)" : "rgba(52, 211, 153, ALPHA)"}
+        />
       </div>
 
       <div className="globe-notification-cards globe-cards-right">

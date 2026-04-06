@@ -60,7 +60,8 @@
 
   function initGlobe(container, opts) {
     opts = opts || {};
-    var dotColor = opts.dotColor || 'rgba(16, 185, 129, ALPHA)';
+    var dotColor = opts.dotColor || 'rgba(52, 211, 153, ALPHA)';
+    var oceanFill = opts.oceanFill || '#020403';
     var arcColor = opts.arcColor || 'rgba(16, 185, 129, 0.5)';
     var markerColor = opts.markerColor || 'rgba(16, 220, 180, 1)';
     var autoRotateSpeed = opts.autoRotateSpeed || 0.002;
@@ -117,6 +118,11 @@
       glowGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
       ctx.fillStyle = glowGrad;
       ctx.fillRect(0, 0, w, h);
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = oceanFill;
+      ctx.fill();
 
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);

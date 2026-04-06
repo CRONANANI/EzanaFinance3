@@ -251,7 +251,51 @@ body.light-mode .landing-page .community-feed {
 
 body.light-mode .landing-page .feed-item,
 body.light-mode .landing-page .ledger-row {
-  border-color: var(--border-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+body.light-mode .landing-page .ledger-row:hover {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+body.light-mode .landing-page .intel-item {
+  background: var(--surface-card);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+body.light-mode .landing-page .intel-item:hover {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+body.light-mode .landing-page .intel-amount {
+  color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .community-post {
+  background: var(--surface-card);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+body.light-mode .landing-page .community-post:hover {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+body.light-mode .landing-page .post-content p {
+  color: var(--text-secondary);
+}
+
+body.light-mode .landing-page .post-stats .stat {
+  color: var(--text-muted);
+}
+
+body.light-mode .landing-page .feed-action {
+  background: var(--bg-tertiary);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  color: var(--text-secondary);
 }
 
 /* ── Resources / data sources ── */
