@@ -15,7 +15,6 @@ import proj4 from "proj4";
 import type { CountryScore } from "@/hooks/useGlobalPowerMap";
 import { useGlobalPowerMap } from "@/hooks/useGlobalPowerMap";
 import { latLngToAlpha2Cached } from "@/lib/latLngToCountryAlpha2";
-import { COUNTRY_BORDER_PATHS } from "@/lib/countryBorderPaths";
 
 const NE_COUNTRIES_GEOJSON =
   "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson";
@@ -701,58 +700,6 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                 );
               })
             : null}
-          {isPowerMapActive && powerCountryScores.length > 0 && (
-            <g pointerEvents="none">
-              {powerCountryScores.map((cs, idx) => {
-                const pathDef = COUNTRY_BORDER_PATHS[cs.iso];
-                if (!pathDef) return null;
-
-                const colour = scoreToColor(cs.score);
-                // Stagger each country's animation by index so they don't all pulse together
-                const delay = (idx * 0.4) % 3;
-                const pathId = `border-path-${cs.iso}`;
-
-                return (
-                  <g key={cs.iso}>
-                    {/* Static base line — thin, low opacity */}
-                    <path
-                      id={pathId}
-                      d={pathDef}
-                      fill="none"
-                      stroke={colour}
-                      strokeWidth="0.6"
-                      opacity="0.35"
-                      strokeLinejoin="round"
-                    />
-
-                    {/* Running dot that travels around the border */}
-                    <circle r="1.4" fill={colour} opacity="0.95">
-                      <animateMotion
-                        dur="4s"
-                        begin={`${delay}s`}
-                        repeatCount="indefinite"
-                        rotate="auto"
-                      >
-                        <mpath href={`#${pathId}`} />
-                      </animateMotion>
-                    </circle>
-
-                    {/* Glow halo around the running dot */}
-                    <circle r="2.8" fill={colour} opacity="0.25">
-                      <animateMotion
-                        dur="4s"
-                        begin={`${delay}s`}
-                        repeatCount="indefinite"
-                        rotate="auto"
-                      >
-                        <mpath href={`#${pathId}`} />
-                      </animateMotion>
-                    </circle>
-                  </g>
-                );
-              })}
-            </g>
-          )}
           {isPowerMapActive && borderFeatures.length > 0 && (
             <g pointerEvents="auto">
               {borderFeatures.map((feat) => (
