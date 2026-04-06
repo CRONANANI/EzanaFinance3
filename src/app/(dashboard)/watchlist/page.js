@@ -8,6 +8,11 @@ import { useChecklist } from '@/hooks/useChecklist';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
+import { getComparableAssets } from '@/lib/comparableAssets';
+import { MOCK_WATCHLISTS as INITIAL_MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
+import { getTickerMeta } from '@/lib/tickerSearchData';
+import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
+import { ChevronDown, Check } from 'lucide-react';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -102,21 +107,7 @@ const HOLDERS_BY_TICKER = {
   ],
 };
 
-/* ── Full sidebar watchlist (superset — user's saved items) ── */
-const WATCHLIST_ITEMS = [
-  { id: 'NVDA', type: 'stock', name: 'NVIDIA Corp', ticker: 'NVDA', price: 875.20, change: 12.40, pct: 1.44, topAssets: ['GPUs','Data Center','AI Chips','Auto'] },
-  { id: 'AAPL', type: 'stock', name: 'Apple Inc', ticker: 'AAPL', price: 192.30, change: 2.10, pct: 1.10, topAssets: ['iPhone','Services','Mac','Wearables'] },
-  { id: 'MSFT', type: 'stock', name: 'Microsoft Corp', ticker: 'MSFT', price: 428.75, change: 3.30, pct: 0.78, topAssets: ['Azure','Office 365','Windows','Gaming'] },
-  { id: 'TSLA', type: 'stock', name: 'Tesla Inc', ticker: 'TSLA', price: 248.50, change: -8.20, pct: -3.19, topAssets: ['Model Y','Energy','FSD','Cybertruck'] },
-  { id: 'META', type: 'stock', name: 'Meta Platforms', ticker: 'META', price: 512.80, change: 6.40, pct: 1.26, topAssets: ['Instagram','WhatsApp','Reality Labs','Ads'] },
-  { id: 'AMZN', type: 'stock', name: 'Amazon.com', ticker: 'AMZN', price: 188.75, change: 4.20, pct: 2.27, topAssets: ['AWS','E-commerce','Prime','Ads'] },
-  { id: 'GOOGL', type: 'stock', name: 'Alphabet Inc', ticker: 'GOOGL', price: 172.30, change: 1.85, pct: 1.09, topAssets: ['Search','YouTube','Cloud','Waymo'] },
-  ...TOP_STRIP.filter(i => i.type === 'politician'),
-  ...TOP_STRIP.filter(i => i.type === 'institution'),
-];
-
 const TIME_RANGES = ['1D','5D','1M','YTD','6M','1Y','5Y','MAX'];
-const SIDEBAR_TABS = ['All','Stocks','Politicians','Institutions'];
 
 /* ── Chart point generator ── */
 function genPts(seed, n = 100, up = true) {
@@ -183,6 +174,10 @@ export default function WatchlistPage() {
   const [timeRange, setTimeRange] = useState('1Y');
   const [sideTab, setSideTab] = useState('All');
   const [search, setSearch] = useState('');
+  const [mockWatchlists, setMockWatchlists] = useState(() => INITIAL_MOCK_WATCHLISTS);
+  const [selectedWatchlistId, setSelectedWatchlistId] = useState('all-stocks');
+  const [wlDropdownOpen, setWlDropdownOpen] = useState(false);
+  const wlDropdownRef = useRef(null);
 
   const orgTeamId = useMemo(() => {
     if (!isOrgUser) return null;
@@ -217,20 +212,40 @@ export default function WatchlistPage() {
     }));
   }, [isOrgUser, orgRole, orgTeamPerf]);
 
+  const ALL_SELECTABLE = useMemo(() => [...stripItems, ...COMMODITIES], [stripItems]);
+
   const selected = useMemo(() => {
-    if (!stripItems.length) return null;
-    if (manualSelected && stripItems.some((i) => i.id === manualSelected.id)) {
+    if (!ALL_SELECTABLE.length) return null;
+    if (manualSelected && ALL_SELECTABLE.some((i) => i.id === manualSelected.id)) {
       return manualSelected;
     }
-    return stripItems[0];
-  }, [stripItems, manualSelected]);
+    return stripItems[0] ?? COMMODITIES[0] ?? null;
+  }, [stripItems, manualSelected, ALL_SELECTABLE]);
+
+  useEffect(() => {
+    function closeWlDrop(e) {
+      if (wlDropdownRef.current && !wlDropdownRef.current.contains(e.target)) {
+        setWlDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', closeWlDrop);
+    return () => document.removeEventListener('mousedown', closeWlDrop);
+  }, []);
+
+  const watchlistTickerSymbols = useMemo(
+    () =>
+      isOrgUser
+        ? []
+        : [...new Set(mockWatchlists.flatMap((w) => w.stocks.map((s) => s.ticker)))],
+    [isOrgUser, mockWatchlists],
+  );
 
   useEffect(() => {
     const symbols = [
       ...new Set([
         ...stripItems.map((i) => i.quoteSymbol),
         ...COMMODITIES.map((c) => c.ticker),
-        ...(isOrgUser ? [] : WATCHLIST_ITEMS.filter((x) => x.type === 'stock').map((x) => x.ticker)),
+        ...watchlistTickerSymbols,
       ]),
     ].filter(Boolean);
     let cancelled = false;
@@ -248,26 +263,68 @@ export default function WatchlistPage() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [stripItems, isOrgUser]);
+  }, [stripItems, isOrgUser, watchlistTickerSymbols]);
+
+  const onAddStock = useCallback((ticker, watchlistId) => {
+    const meta = getTickerMeta(ticker);
+    if (!meta) return;
+    setMockWatchlists((prev) =>
+      prev.map((list) => {
+        if (list.id !== watchlistId) return list;
+        if (list.stocks.some((s) => s.ticker === ticker)) return list;
+        return {
+          ...list,
+          stocks: [
+            ...list.stocks,
+            {
+              ticker,
+              name: meta.name,
+              price: 0,
+              change: 0,
+              changePct: 0,
+              marketCap: '—',
+              volume: '—',
+              sector: meta.sector,
+            },
+          ],
+        };
+      }),
+    );
+  }, []);
+
   const sideItems = useMemo(() => {
     if (isOrgUser) {
       let items = stripItems;
+      if (sideTab === 'Stocks') items = items.filter((i) => i.type === 'stock');
       if (search.trim()) {
         const q = search.toLowerCase();
         items = items.filter((i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q));
       }
       return items;
     }
-    let items = WATCHLIST_ITEMS;
-    if (sideTab === 'Stocks') items = items.filter((i) => i.type === 'stock');
-    if (sideTab === 'Politicians') items = items.filter((i) => i.type === 'politician');
-    if (sideTab === 'Institutions') items = items.filter((i) => i.type === 'institution');
+    const wl = mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0];
+    let items = (wl?.stocks || []).map((s) => ({
+      id: s.ticker,
+      type: 'stock',
+      name: s.name,
+      ticker: s.ticker,
+      price: s.price,
+      change: s.change,
+      pct: s.changePct,
+      topAssets: [s.sector],
+    }));
     if (search.trim()) {
       const q = search.toLowerCase();
       items = items.filter((i) => i.name.toLowerCase().includes(q) || i.ticker.toLowerCase().includes(q));
     }
     return items;
-  }, [sideTab, search, isOrgUser, stripItems]);
+  }, [search, isOrgUser, stripItems, mockWatchlists, selectedWatchlistId, sideTab]);
+
+  const comparableRows = useMemo(() => {
+    if (!selected) return [];
+    const sym = (selected.quoteSymbol || selected.ticker || '').toUpperCase().replace(/\./g, '-');
+    return getComparableAssets(sym);
+  }, [selected]);
 
   const selectAny = useCallback((item) => {
     setManualSelected(item);
@@ -442,12 +499,25 @@ export default function WatchlistPage() {
 
           <Chart item={selectedMerged} timeRange={timeRange}/>
 
-          <div className="wl-top-assets">
-            <h4>{selected.type === 'stock' ? 'Revenue Segments' : selected.type === 'index' ? 'Top Constituents' : 'Top Holdings'}</h4>
-            <div className="wl-ta-grid">
-              {selected.topAssets.map(a => (
-                <div key={a} className="wl-ta-chip">
-                  <span className="wl-ta-dot"/>{a}
+          <div className="wl-top-assets wl-comp-section">
+            <h4>Comparable Assets</h4>
+            <div className="wl-comp-table">
+              <div className="wl-comp-head">
+                <span>Ticker</span>
+                <span>Name</span>
+                <span>Price</span>
+                <span>Chg</span>
+                <span>Mkt cap</span>
+                <span>Vol</span>
+              </div>
+              {comparableRows.map((row) => (
+                <div key={row.ticker} className="wl-comp-row">
+                  <span className="wl-comp-tk">{row.ticker}</span>
+                  <span>{row.name}</span>
+                  <span>{fmtSmall(row.price)}</span>
+                  <span className={`wl-comp-chg ${row.changePct >= 0 ? 'up' : 'dn'}`}>{fmtPct(row.changePct)}</span>
+                  <span>{row.marketCap}</span>
+                  <span>{row.volume}</span>
                 </div>
               ))}
             </div>
@@ -488,27 +558,80 @@ export default function WatchlistPage() {
             <span className="wl-side-cnt">{sideItems.length}</span>
           </div>
 
-          <div className="wl-side-search">
-            <i className="bi bi-search"/>
-            <input type="text" placeholder="Search stocks, portfolios, funds…" value={search} onChange={e => setSearch(e.target.value)}/>
-                    </div>
-
-          <div className="wl-side-tabs">
-            {(!isOrgUser ? SIDEBAR_TABS : ['All', 'Stocks']).map((t) => (
-              <button
-                key={t}
-                type="button"
-                className={`wl-st ${sideTab === t ? 'on' : ''}`}
-                data-task-target={t === 'Stocks' ? 'watchlist-create-list' : undefined}
-                onClick={() => {
-                  setSideTab(t);
-                  if (t !== 'All') completeTask('watchlist_2');
-                }}
-              >
-                {t}
-              </button>
-            ))}
+          {!isOrgUser ? (
+            <>
+              <div ref={wlDropdownRef} className="wl-wl-dropdown">
+                <button
+                  type="button"
+                  className="wl-wl-trigger"
+                  onClick={() => setWlDropdownOpen((o) => !o)}
+                  aria-expanded={wlDropdownOpen}
+                >
+                  <span>{(mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0]).label}</span>
+                  <ChevronDown size={14} className={wlDropdownOpen ? 'wl-wl-chev-open' : ''} style={{ flexShrink: 0, opacity: 0.8 }} />
+                </button>
+                {wlDropdownOpen && (
+                  <div className="wl-wl-panel" role="listbox">
+                    {mockWatchlists.map((list) => (
+                      <button
+                        key={list.id}
+                        type="button"
+                        role="option"
+                        aria-selected={selectedWatchlistId === list.id}
+                        className={`wl-wl-opt ${selectedWatchlistId === list.id ? 'on' : ''}`}
+                        onClick={() => {
+                          setSelectedWatchlistId(list.id);
+                          setWlDropdownOpen(false);
+                          completeTask('watchlist_2');
+                        }}
+                      >
+                        <span>{list.label}</span>
+                        <span className="wl-wl-meta">
+                          {list.stocks.length} stocks
+                          {selectedWatchlistId === list.id ? <Check size={12} style={{ marginLeft: 6 }} /> : null}
+                        </span>
+                      </button>
+                    ))}
                   </div>
+                )}
+              </div>
+              <WatchlistSearch
+                query={search}
+                onQueryChange={setSearch}
+                mockWatchlists={mockWatchlists}
+                onAddStock={onAddStock}
+              />
+            </>
+          ) : (
+            <div className="wl-side-search">
+              <i className="bi bi-search" />
+              <input
+                type="text"
+                placeholder="Search stocks, portfolios, funds…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          )}
+
+          {isOrgUser && (
+            <div className="wl-side-tabs">
+              {['All', 'Stocks'].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`wl-st ${sideTab === t ? 'on' : ''}`}
+                  data-task-target={t === 'Stocks' ? 'watchlist-create-list' : undefined}
+                  onClick={() => {
+                    setSideTab(t);
+                    if (t !== 'All') completeTask('watchlist_2');
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="wl-side-list">
             {sideItems.map(raw => {
