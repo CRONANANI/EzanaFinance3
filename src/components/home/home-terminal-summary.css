@@ -563,20 +563,12 @@ body.light-mode .home-terminal-body {
   overflow: hidden;
 }
 
-.hts-week-panel--scroll {
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(16, 185, 129, 0.35) transparent;
-}
-
-.hts-week-panel--scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.hts-week-panel--scroll::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.35);
-  border-radius: 3px;
+/* Platform Activity tab: grow to fit all rows without scrolling */
+.hts-week-panel--fit {
+  height: auto !important;
+  min-height: 280px;
+  max-height: none;
+  overflow: visible !important;
 }
 
 .hts-week-tab-inner {
@@ -1246,7 +1238,7 @@ body.light-mode .hts-week-standing-row {
 }
 
 .home-events-rail-wide .home-events-compact-body {
-  max-height: 280px;
+  max-height: none;
 }
 
 .home-pulse-rail-wide {
@@ -1278,7 +1270,7 @@ body.light-mode .hts-week-standing-row {
   padding: 0 0.75rem 0.65rem !important;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -1324,6 +1316,7 @@ body.light-mode .hts-week-standing-row {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: visible;
 }
 
 .home-week-col .hts-week-card--compact .hts-week-card-body--compact {
@@ -1342,6 +1335,11 @@ body.light-mode .hts-week-standing-row {
   height: auto;
   min-height: 300px;
   max-height: none;
+}
+
+.home-week-col .hts-week-card--compact .hts-week-panel.hts-week-panel--fit {
+  overflow: visible !important;
+  min-height: auto;
 }
 
 .hts-week-market-v3 {

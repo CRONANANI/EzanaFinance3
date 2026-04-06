@@ -23,7 +23,7 @@ function generateDataPoints() {
   return pts;
 }
 
-export function HeroSparkline({ portfolioValue, changePct, chartPath }) {
+export function HeroSparkline({ portfolioValue, changePct, chartPath, axisLabels }) {
   const [hover, setHover] = useState(null);
   const [crosshairX, setCrosshairX] = useState(null);
   const svgRef = useRef(null);
@@ -51,6 +51,10 @@ export function HeroSparkline({ portfolioValue, changePct, chartPath }) {
 
   if (chartPath) {
     const areaPath = `${chartPath} L${W_CUSTOM},${H_CUSTOM} L0,${H_CUSTOM} Z`;
+    const axis =
+      Array.isArray(axisLabels) && axisLabels.length > 0
+        ? axisLabels
+        : ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Dec'];
     return (
       <div className="db-hero-chart" style={{ position: 'relative' }}>
         <svg viewBox={`0 0 ${W_CUSTOM} ${H_CUSTOM}`} preserveAspectRatio="none" className="db-sparkline-svg">
@@ -64,7 +68,9 @@ export function HeroSparkline({ portfolioValue, changePct, chartPath }) {
           <path d={chartPath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <div className="db-chart-axis">
-          <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Dec</span>
+          {axis.map((label, i) => (
+            <span key={`${label}-${i}`}>{label}</span>
+          ))}
         </div>
       </div>
     );

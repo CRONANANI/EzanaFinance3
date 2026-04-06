@@ -12,44 +12,59 @@ import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
-const PORTFOLIO_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const CHART_PATHS_BY_DAY = [
-  'M0,62 C96,58 192,52 288,46 C352,42 416,38 480,34',
-  'M0,50 C80,54 160,42 240,36 C320,30 400,28 480,32',
-  'M0,44 C100,48 200,40 300,34 C380,28 440,22 480,26',
-  'M0,58 C120,52 220,44 320,38 C400,33 452,30 480,28',
-  'M0,40 C90,46 180,38 270,32 C360,26 430,24 480,20',
-];
-
-function defaultNyDowIndex() {
-  const wd = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' });
-  const key = wd.slice(0, 3);
-  const map = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4 };
-  return map[key] ?? 4;
+/** YTD sparkline path: one segment per month Jan → current month */
+function buildYtdChartPath(monthCount) {
+  const w = 480;
+  const baseY = 46;
+  if (monthCount <= 1) {
+    return `M0,${baseY} L${w},${baseY - 10}`;
+  }
+  const parts = [];
+  for (let i = 0; i < monthCount; i++) {
+    const t = i / (monthCount - 1);
+    const x = t * w;
+    const y = baseY - 14 * Math.sin(t * Math.PI * 0.92) + t * 10;
+    const clamped = Math.min(72, Math.max(10, y));
+    parts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${clamped.toFixed(1)}`);
+  }
+  return parts.join(' ');
 }
 
-function buildDailyPortfolioSnapshots({ portfolioTotal, portfolioChange, hasPortfolio, hero1d }) {
+function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfolio, hero1d }) {
   const baseValue = hasPortfolio && portfolioTotal > 0 ? portfolioTotal : hero1d.value;
   const baseChange = hasPortfolio ? portfolioChange : hero1d.changeDollar;
-  const mults = [0.988, 0.994, 1.002, 0.997, 1.008];
-  const drift = [-0.004, 0.002, 0.003, -0.0015, 0.0025];
+  const monthIdx = new Date().getMonth();
+  const n = monthIdx + 1;
+  const drift = [-0.004, 0.002, 0.003, -0.0015, 0.0025, -0.002, 0.0015, 0.002, -0.001, 0.0025, -0.0015, 0.002];
 
-  return PORTFOLIO_DAY_LABELS.map((label, i) => {
-    const v = baseValue * mults[i] + baseValue * drift[i] * 0.12;
-    const ch = baseChange * (0.45 + i * 0.12) + baseValue * drift[i] * 0.06;
+  const rows = [];
+  for (let i = 0; i < n; i++) {
+    const t = n > 1 ? i / (n - 1) : 0;
+    const mult = 0.94 + t * 0.06;
+    const d = drift[i % drift.length];
+    const v =
+      i === n - 1
+        ? baseValue
+        : baseValue * mult + baseValue * d * 0.08;
+    const ch =
+      i === n - 1
+        ? baseChange
+        : baseChange * (0.35 + t * 0.55) + baseValue * d * 0.04;
     const pct = v > 0 ? (ch / v) * 100 : 0;
-    const trades = Math.max(0, Math.round((hero1d.companies ?? 8) * (0.55 + i * 0.11)));
-    return {
-      label,
+    const trades = Math.max(0, Math.round((hero1d.companies ?? 8) * (0.45 + t * 0.4)));
+    rows.push({
+      label: MONTH_SHORT[i],
       displayValue: v,
       changeDollar: ch,
       pct,
       gainToday: Math.max(0, ch * 0.42),
       trades,
-      chartPath: CHART_PATHS_BY_DAY[i],
-    };
-  });
+    });
+  }
+  const path = buildYtdChartPath(n);
+  return { rows, chartPath: path };
 }
 
 const MOCK_CONGRESS_TRADES = [
@@ -163,7 +178,6 @@ export function HomeTerminalSummary({
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
   const [scoreDetailTab, setScoreDetailTab] = useState('platform');
-  const [portfolioDayIdx, setPortfolioDayIdx] = useState(defaultNyDowIndex);
   const { isOrgUser } = useOrg();
 
   useEffect(() => {
@@ -175,9 +189,9 @@ export function HomeTerminalSummary({
   const hasPortfolio = enrichedHoldings.length > 0;
   const hero1d = HERO_DATA['1D'];
 
-  const daySnapshots = useMemo(
+  const { rows: monthSnapshots, chartPath: ytdChartPath } = useMemo(
     () =>
-      buildDailyPortfolioSnapshots({
+      buildYtdMonthlySnapshots({
         portfolioTotal,
         portfolioChange,
         hasPortfolio,
@@ -186,7 +200,7 @@ export function HomeTerminalSummary({
     [portfolioTotal, portfolioChange, hasPortfolio, hero1d],
   );
 
-  const sel = daySnapshots[Math.min(portfolioDayIdx, daySnapshots.length - 1)] ?? daySnapshots[0];
+  const sel = monthSnapshots[monthSnapshots.length - 1] ?? monthSnapshots[0];
   const displayPct = sel.pct;
   const displayChangeDollar = sel.changeDollar;
   const gainTodayDisplay = sel.gainToday;
@@ -354,24 +368,9 @@ export function HomeTerminalSummary({
                   <HeroSparkline
                     portfolioValue={snapshotValueNum || currentValue}
                     changePct={displayPct}
-                    chartPath={sel.chartPath}
+                    chartPath={ytdChartPath}
+                    axisLabels={monthSnapshots.map((m) => m.label)}
                   />
-                </div>
-                <div
-                  className="db-tf-group-sm"
-                  style={{ marginBottom: '0.85rem', justifyContent: 'space-between' }}
-                >
-                  {PORTFOLIO_DAY_LABELS.map((d, i) => (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`db-tf-btn-sm ${i === portfolioDayIdx ? 'active' : ''}`}
-                      style={{ padding: '0.2rem 0.35rem', fontSize: '0.65rem' }}
-                      onClick={() => setPortfolioDayIdx(i)}
-                    >
-                      {d}
-                    </button>
-                  ))}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>

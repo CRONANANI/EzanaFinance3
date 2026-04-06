@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { Calendar } from 'lucide-react';
 import {
   Line,
   LineChart,
@@ -391,11 +392,7 @@ function PlatformActivityTab() {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.6rem',
-        height: 260,
-        maxHeight: 260,
-        overflowY: 'auto',
-        paddingRight: 4,
+        gap: '0.5rem',
       }}
     >
       {rows.map((row) => (
@@ -405,7 +402,7 @@ function PlatformActivityTab() {
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
-            padding: '0.45rem 0',
+            padding: '0.3rem 0',
             borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
           }}
         >
@@ -478,7 +475,7 @@ function PlatformActivityTab() {
         </div>
       ))}
 
-      <div style={{ marginTop: '0.5rem' }}>
+      <div style={{ marginTop: '0.35rem' }}>
         <p
           style={{
             fontSize: '0.625rem',
@@ -575,10 +572,14 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
     <>
       <div className="db-card-header hts-week-header">
         <div className="hts-week-header-titles">
-          <h3>
-            <span className="hts-week-title-ico" aria-hidden>
-              📊{' '}
-            </span>
+          <h3 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Calendar
+              className="hts-week-title-ico"
+              size={18}
+              strokeWidth={2}
+              aria-hidden
+              style={{ flexShrink: 0, color: 'var(--home-heading)' }}
+            />
             This Week on Ezana
           </h3>
           <span className="hts-week-date-range">{range}</span>
@@ -607,7 +608,7 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
         </div>
 
         <div
-          className={`hts-week-panel ${activeTab === 'activity' ? 'hts-week-panel--scroll' : ''}`}
+          className={`hts-week-panel ${activeTab === 'activity' ? 'hts-week-panel--fit' : ''}`}
           role="tabpanel"
         >
           {activeTab === 'market' && (
