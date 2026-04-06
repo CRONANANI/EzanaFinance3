@@ -70,27 +70,50 @@ function AvatarCircle({ name, role, size = 22 }) {
 
 /* ── Mock files (with team_id + tag) ──────────────────────── */
 const MOCK_FILES = [
-  { id: 'f1', name: 'Q2 TMT Stock Pitch.pptx', size: 4200000, uploadedBy: 'm3', sharedWith: ['m1', 'm2', 'm10'], uploadedAt: '2026-04-02', team_id: 't7', tag: null },
-  { id: 'f2', name: 'AAPL Valuation Model.xlsx', size: 890000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-01', team_id: 't7', tag: null },
-  { id: 'f3', name: 'Healthcare Sector Primer.pdf', size: 2100000, uploadedBy: 'm4', sharedWith: ['m1', 'm13', 'm14'], uploadedAt: '2026-03-30', team_id: 't1', tag: null },
-  { id: 'f4', name: 'Weekly Investment Committee Recording 04/04/2026.mp4', size: 156000000, uploadedBy: 'm1', sharedWith: ['m2', 'm3', 'm4', 'm5', 'm6'], uploadedAt: '2026-04-04', team_id: null, tag: 'administrative' },
-  { id: 'f5', name: 'Comparable Company Analysis - Semis.xlsx', size: 1200000, uploadedBy: 'm22', sharedWith: ['m3', 'm10'], uploadedAt: '2026-03-27', team_id: 't7', tag: null },
-  { id: 'f6', name: 'Energy Sector Update Q1.pdf', size: 3400000, uploadedBy: 'm5', sharedWith: ['m1', 'm2', 'm15'], uploadedAt: '2026-03-25', team_id: 't3', tag: null },
-  { id: 'f7', name: '2026 New Analyst Onboarding.pdf', size: 780000, uploadedBy: 'm2', sharedWith: ['m12', 'm23', 'm18'], uploadedAt: '2026-03-20', team_id: null, tag: 'administrative' },
-  { id: 'f8', name: 'Portfolio Risk Review - March.pptx', size: 5600000, uploadedBy: 'm6', sharedWith: ['m1', 'm2'], uploadedAt: '2026-03-18', team_id: 't4', tag: null },
-  { id: 'f9', name: 'Metals & Mining Deep Dive.pdf', size: 2800000, uploadedBy: 'm9', sharedWith: ['m1', 'm19'], uploadedAt: '2026-03-15', team_id: 't6', tag: null },
-  { id: 'f10', name: 'Consumer Staples Earnings Preview.pptx', size: 3100000, uploadedBy: 'm7', sharedWith: ['m1', 'm17'], uploadedAt: '2026-03-12', team_id: 't2', tag: null },
-  { id: 'f11', name: 'Industrials Capex Model.xlsx', size: 1500000, uploadedBy: 'm8', sharedWith: ['m1', 'm18'], uploadedAt: '2026-03-10', team_id: 't5', tag: null },
+  { id: 'f1', name: 'Q2 TMT Stock Pitch.pptx', size: 4200000, uploadedBy: 'm3', sharedWith: ['m1', 'm2', 'm10'], uploadedAt: '2026-04-02', team_id: 't7', tag: null, contentType: 'valuations' },
+  { id: 'f2', name: 'AAPL Valuation Model.xlsx', size: 890000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-01', team_id: 't7', tag: null, contentType: 'models_dcf' },
+  { id: 'f3', name: 'Healthcare Sector Primer.pdf', size: 2100000, uploadedBy: 'm4', sharedWith: ['m1', 'm13', 'm14'], uploadedAt: '2026-03-30', team_id: 't1', tag: null, contentType: 'primer' },
+  { id: 'f4', name: 'Weekly Investment Committee Recording 04/04/2026.mp4', size: 156000000, uploadedBy: 'm1', sharedWith: ['m2', 'm3', 'm4', 'm5', 'm6'], uploadedAt: '2026-04-04', team_id: null, tag: 'administrative', contentType: null },
+  { id: 'f5', name: 'Comparable Company Analysis - Semis.xlsx', size: 1200000, uploadedBy: 'm22', sharedWith: ['m3', 'm10'], uploadedAt: '2026-03-27', team_id: 't7', tag: null, contentType: 'models_comparable_companies' },
+  { id: 'f6', name: 'Energy Sector Update Q1.pdf', size: 3400000, uploadedBy: 'm5', sharedWith: ['m1', 'm2', 'm15'], uploadedAt: '2026-03-25', team_id: 't3', tag: null, contentType: 'annual_report' },
+  { id: 'f7', name: '2026 New Analyst Onboarding.pdf', size: 780000, uploadedBy: 'm2', sharedWith: ['m12', 'm23', 'm18'], uploadedAt: '2026-03-20', team_id: null, tag: 'administrative', contentType: null },
+  { id: 'f8', name: 'Portfolio Risk Review - March.pptx', size: 5600000, uploadedBy: 'm6', sharedWith: ['m1', 'm2'], uploadedAt: '2026-03-18', team_id: 't4', tag: null, contentType: 'valuations' },
+  { id: 'f9', name: 'Metals & Mining Deep Dive.pdf', size: 2800000, uploadedBy: 'm9', sharedWith: ['m1', 'm19'], uploadedAt: '2026-03-15', team_id: 't6', tag: null, contentType: 'primer' },
+  { id: 'f10', name: 'Consumer Staples Earnings Preview.pptx', size: 3100000, uploadedBy: 'm7', sharedWith: ['m1', 'm17'], uploadedAt: '2026-03-12', team_id: 't2', tag: null, contentType: 'valuations' },
+  { id: 'f11', name: 'Industrials Capex Model.xlsx', size: 1500000, uploadedBy: 'm8', sharedWith: ['m1', 'm18'], uploadedAt: '2026-03-10', team_id: 't5', tag: null, contentType: 'models_capex' },
+  { id: 'f12', name: 'Utilities Dividend Discount Model.xlsx', size: 920000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-03', team_id: 't7', tag: null, contentType: 'models_ddm' },
 ];
 
-const TYPE_FILTERS = [
+/** File extension / MIME-style categories (Format filter) */
+const FORMAT_FILTERS = [
   { id: 'spreadsheet', label: 'Spreadsheet' },
-  { id: 'powerpoint', label: 'PowerPoints' },
+  { id: 'powerpoint', label: 'PowerPoint' },
   { id: 'video', label: 'Video' },
   { id: 'pdf', label: 'PDF' },
 ];
 
+const MODEL_SUBTYPES = [
+  { id: 'models_capex', label: 'Capex' },
+  { id: 'models_dcf', label: 'DCF' },
+  { id: 'models_comparable_companies', label: 'Comparable companies' },
+  { id: 'models_ddm', label: 'DDM' },
+];
+
 const TEAM_FILTERS = MOCK_TEAMS.map((t) => ({ id: t.id, label: t.name }));
+
+const CONTENT_TYPE_LABELS = {
+  primer: 'Primer',
+  valuations: 'Valuations',
+  annual_report: 'Annual Report',
+  models_capex: 'Models · Capex',
+  models_dcf: 'Models · DCF',
+  models_comparable_companies: 'Models · Comparable companies',
+  models_ddm: 'Models · DDM',
+};
+
+function contentTypeLabel(id) {
+  return CONTENT_TYPE_LABELS[id] || id;
+}
 
 /* ── Team Ranking Cards (horizontal row) ──────────────────── */
 function TeamRankingRow() {
@@ -278,17 +301,173 @@ function UploadModal({ isOpen, onClose, members }) {
   );
 }
 
-/* ── File Portal Card (multi-select filters) ──────────────── */
+/* ── Filter dropdowns (Format / Team / Type) ─────────────── */
+function useCloseOnOutsideClick(open, setOpen, ref) {
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open, setOpen, ref]);
+}
+
+function TeamFilterDropdown({ teamFilters, toggleTeam, clearTeams }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useCloseOnOutsideClick(open, setOpen, ref);
+  const summary =
+    teamFilters.length === 0 ? 'All teams' : `${teamFilters.length} team${teamFilters.length === 1 ? '' : 's'}`;
+
+  return (
+    <div className="th-filter-dd" ref={ref}>
+      <span className="th-filter-label">Team</span>
+      <button
+        type="button"
+        className={`th-filter-dd-trigger${open ? ' open' : ''}${teamFilters.length ? ' has-value' : ''}`}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {summary}
+        <i className="bi bi-chevron-down th-filter-dd-chevron" aria-hidden />
+      </button>
+      {open && (
+        <div className="th-filter-dd-panel" role="listbox">
+          {teamFilters.length > 0 && (
+            <button type="button" className="th-filter-dd-clear" onClick={() => clearTeams()}>
+              Clear teams
+            </button>
+          )}
+          {TEAM_FILTERS.map((t) => (
+            <label key={t.id} className="th-filter-dd-checkrow">
+              <input type="checkbox" checked={teamFilters.includes(t.id)} onChange={() => toggleTeam(t.id)} />
+              <span>{t.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TypeFilterDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useCloseOnOutsideClick(open, setOpen, ref);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  const display = value ? contentTypeLabel(value) : 'All types';
+
+  return (
+    <div className="th-filter-dd" ref={ref}>
+      <span className="th-filter-label">Type</span>
+      <button
+        type="button"
+        className={`th-filter-dd-trigger${open ? ' open' : ''}${value ? ' has-value' : ''}`}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {display}
+        <i className="bi bi-chevron-down th-filter-dd-chevron" aria-hidden />
+      </button>
+      {open && (
+        <div className="th-filter-dd-panel th-type-dd-panel" role="menu">
+          <button
+            type="button"
+            role="menuitem"
+            className={`th-filter-dd-item${value === 'primer' ? ' active' : ''}`}
+            onClick={() => {
+              onChange('primer');
+              setOpen(false);
+            }}
+          >
+            Primer
+          </button>
+          <div className="th-type-models-wrap">
+            <div className="th-type-models-row">
+              <span className="th-type-models-label">Models</span>
+              <i className="bi bi-chevron-right th-type-models-chevron" aria-hidden />
+            </div>
+            <div className="th-type-flyout" role="menu">
+              {MODEL_SUBTYPES.map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  role="menuitem"
+                  className={`th-filter-dd-item${value === sub.id ? ' active' : ''}`}
+                  onClick={() => {
+                    onChange(sub.id);
+                    setOpen(false);
+                  }}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            role="menuitem"
+            className={`th-filter-dd-item${value === 'valuations' ? ' active' : ''}`}
+            onClick={() => {
+              onChange('valuations');
+              setOpen(false);
+            }}
+          >
+            Valuations
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`th-filter-dd-item${value === 'annual_report' ? ' active' : ''}`}
+            onClick={() => {
+              onChange('annual_report');
+              setOpen(false);
+            }}
+          >
+            Annual Report
+          </button>
+          {value && (
+            <button
+              type="button"
+              className="th-filter-dd-clear th-filter-dd-clear--inline"
+              onClick={() => {
+                onChange('');
+                setOpen(false);
+              }}
+            >
+              Clear type
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── File Portal Card (dropdown filters) ─────────────────── */
 function FilePortalCard({ members }) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [sendFile, setSendFile] = useState(null);
   const [search, setSearch] = useState('');
-  const [typeFilters, setTypeFilters] = useState([]);
+  const [formatFilter, setFormatFilter] = useState('');
   const [teamFilters, setTeamFilters] = useState([]);
+  const [contentTypeFilter, setContentTypeFilter] = useState('');
   const [showAdmin, setShowAdmin] = useState(false);
 
-  const toggleType = (id) => setTypeFilters((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const toggleTeam = (id) => setTeamFilters((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const clearTeams = () => setTeamFilters([]);
 
   const filtered = useMemo(() => {
     let list = MOCK_FILES;
@@ -296,14 +475,15 @@ function FilePortalCard({ members }) {
       const q = search.toLowerCase();
       list = list.filter((f) => f.name.toLowerCase().includes(q));
     }
-    if (typeFilters.length > 0) list = list.filter((f) => typeFilters.includes(getFileTypeInfo(f.name).category));
+    if (formatFilter) list = list.filter((f) => getFileTypeInfo(f.name).category === formatFilter);
     if (teamFilters.length > 0) list = list.filter((f) => f.team_id && teamFilters.includes(f.team_id));
+    if (contentTypeFilter) list = list.filter((f) => f.contentType === contentTypeFilter);
     if (showAdmin) list = list.filter((f) => f.tag === 'administrative');
     return list;
-  }, [search, typeFilters, teamFilters, showAdmin]);
+  }, [search, formatFilter, teamFilters, contentTypeFilter, showAdmin]);
 
   return (
-    <div className="th-card">
+    <div className="th-card th-file-portal-card">
       <UploadModal isOpen={uploadOpen} onClose={() => setUploadOpen(false)} members={members} />
       {sendFile && (
         <div className="th-modal-overlay" onClick={() => setSendFile(null)} role="presentation">
@@ -346,21 +526,26 @@ function FilePortalCard({ members }) {
             aria-label="Search files"
           />
         </div>
-        <div className="th-filter-bar">
-          <span className="th-filter-label">Type:</span>
-          {TYPE_FILTERS.map((f) => (
-            <button key={f.id} type="button" className={`th-filter-btn${typeFilters.includes(f.id) ? ' active' : ''}`} onClick={() => toggleType(f.id)}>
-              {f.label}
-            </button>
-          ))}
-          <span className="th-filter-divider" />
-          <span className="th-filter-label">Team:</span>
-          {TEAM_FILTERS.map((f) => (
-            <button key={f.id} type="button" className={`th-filter-btn${teamFilters.includes(f.id) ? ' active' : ''}`} onClick={() => toggleTeam(f.id)}>
-              {f.label}
-            </button>
-          ))}
-          <span className="th-filter-divider" />
+        <div className="th-filter-bar th-filter-bar--dropdowns">
+          <div className="th-filter-dd">
+            <span className="th-filter-label">Format</span>
+            <select
+              className="th-filter-select"
+              value={formatFilter}
+              onChange={(e) => setFormatFilter(e.target.value)}
+              aria-label="Filter by file format"
+            >
+              <option value="">All formats</option>
+              {FORMAT_FILTERS.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <TeamFilterDropdown teamFilters={teamFilters} toggleTeam={toggleTeam} clearTeams={clearTeams} />
+          <TypeFilterDropdown value={contentTypeFilter} onChange={setContentTypeFilter} />
+          <span className="th-filter-divider" aria-hidden />
           <button type="button" className={`th-filter-btn${showAdmin ? ' active' : ''}`} onClick={() => setShowAdmin(!showAdmin)}>
             Administrative
           </button>
@@ -384,6 +569,7 @@ function FilePortalCard({ members }) {
                   <p className="th-file-meta">
                     {formatSize(file.size)} · {uploader?.name || '?'} · {file.uploadedAt}
                     {team ? ` · ${team.name}` : ''}
+                    {file.contentType ? ` · ${contentTypeLabel(file.contentType)}` : ''}
                     {file.tag === 'administrative' ? ' · Admin' : ''}
                   </p>
                 </div>
