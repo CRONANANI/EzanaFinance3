@@ -348,7 +348,7 @@ export function HomeTerminalSummary({
                   }}
                 >
                   {changePctStr} ({changeDollarStr}){' '}
-                  <span style={{ color: '#6b7280', fontWeight: 400 }}>Committed Frees</span>
+                  <span style={{ color: 'var(--home-muted)', fontWeight: 400 }}>Committed Frees</span>
                 </p>
                 <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: '0.75rem' }}>
                   <HeroSparkline
@@ -381,7 +381,7 @@ export function HomeTerminalSummary({
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        color: '#6b7280',
+                        color: 'var(--home-muted)',
                         margin: 0,
                       }}
                     >
@@ -402,7 +402,7 @@ export function HomeTerminalSummary({
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        color: '#6b7280',
+                        color: 'var(--home-muted)',
                         margin: 0,
                       }}
                     >
@@ -522,7 +522,7 @@ export function HomeTerminalSummary({
                             justifyContent: 'space-between',
                             padding: '0.35rem 0',
                             fontSize: '0.75rem',
-                            color: '#e2e8f0',
+                            color: 'var(--home-row-text)',
                           }}
                         >
                           <span>{s.name}</span>
@@ -551,7 +551,7 @@ export function HomeTerminalSummary({
                             justifyContent: 'space-between',
                             padding: '0.35rem 0',
                             fontSize: '0.75rem',
-                            color: '#e2e8f0',
+                            color: 'var(--home-row-text)',
                           }}
                         >
                           <span>{s.name}</span>
@@ -585,7 +585,7 @@ export function HomeTerminalSummary({
                         {streakDays} Day Streak
                       </h3>
                     </div>
-                    <p style={{ margin: 0, fontSize: '0.65rem', color: '#8b949e', lineHeight: 1.35 }}>
+                    <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--home-muted-soft)', lineHeight: 1.35 }}>
                       Active every day for {streakDays} days.
                     </p>
                   </div>
@@ -605,7 +605,7 @@ export function HomeTerminalSummary({
                     <text x="60" y="58" textAnchor="middle" fill="#f0f6fc" fontSize="22" fontWeight="800">
                       {ringValue}
                     </text>
-                    <text x="60" y="74" textAnchor="middle" fill="#6b7280" fontSize="9" fontWeight="600">
+                    <text x="60" y="74" textAnchor="middle" fill="var(--home-muted)" fontSize="9" fontWeight="600">
                       90DA
                     </text>
                   </svg>
@@ -637,7 +637,7 @@ export function HomeTerminalSummary({
                   </Link>
                 </div>
                 <div style={{ padding: '0 0.75rem 0.65rem', flex: 1, minHeight: 0, overflow: 'auto' }}>
-                  <p style={{ fontSize: '0.6rem', color: '#6b7280', margin: '0 0 0.5rem' }}>Weekly progress</p>
+                  <p style={{ fontSize: '0.6rem', color: 'var(--home-muted)', margin: '0 0 0.5rem' }}>Weekly progress</p>
                   <div className="db-tf-group-sm" style={{ marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                     <button
                       type="button"
@@ -677,14 +677,14 @@ export function HomeTerminalSummary({
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: '0.55rem',
-                          color: g.done ? '#fff' : '#6b7280',
+                          color: g.done ? '#fff' : 'var(--home-muted)',
                           flexShrink: 0,
                         }}
                       >
                         {g.done ? '✓' : ''}
                       </div>
-                      <p style={{ flex: 1, color: '#e2e8f0', fontSize: '0.65rem', margin: 0, minWidth: 0, lineHeight: 1.3 }}>{g.label}</p>
-                      <span style={{ color: '#6b7280', fontSize: '0.58rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <p style={{ flex: 1, color: 'var(--home-row-text)', fontSize: '0.65rem', margin: 0, minWidth: 0, lineHeight: 1.3 }}>{g.label}</p>
+                      <span style={{ color: 'var(--home-muted)', fontSize: '0.58rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
                         {g.current}/{g.total}
                       </span>
                     </div>
@@ -730,9 +730,9 @@ export function HomeTerminalSummary({
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ color: '#f0f6fc', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>
                           {row.name}{' '}
-                          <span style={{ color: '#6b7280', fontSize: '0.6875rem' }}>({row.party})</span>
+                          <span style={{ color: 'var(--home-muted)', fontSize: '0.6875rem' }}>({row.party})</span>
                         </p>
-                        <p style={{ color: '#8b949e', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>
+                        <p style={{ color: 'var(--home-muted-soft)', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>
                           {row.type} {row.ticker}
                         </p>
                       </div>
@@ -799,7 +799,7 @@ export function HomeTerminalSummary({
                       fontSize: '0.625rem',
                       fontWeight: 700,
                       letterSpacing: '0.08em',
-                      color: '#6b7280',
+                      color: 'var(--home-muted)',
                       margin: '0 0 0.5rem',
                     }}
                   >
@@ -845,9 +845,9 @@ export function HomeTerminalSummary({
                       >
                         {m.change}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: '#8b949e' }}>{m.dollarChange}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
                       <MiniSparkline positive={m.positive} />
-                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: '#6b7280' }}>{m.volume}</span>
+                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
                     </div>
                   ))}
                   <p
@@ -855,7 +855,7 @@ export function HomeTerminalSummary({
                       fontSize: '0.625rem',
                       fontWeight: 700,
                       letterSpacing: '0.08em',
-                      color: '#6b7280',
+                      color: 'var(--home-muted)',
                       margin: '1rem 0 0.5rem',
                     }}
                   >
@@ -901,9 +901,9 @@ export function HomeTerminalSummary({
                       >
                         {m.change}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: '#8b949e' }}>{m.dollarChange}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
                       <MiniSparkline positive={m.positive} />
-                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: '#6b7280' }}>{m.volume}</span>
+                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
                     </div>
                   ))}
                 </div>
@@ -915,16 +915,16 @@ export function HomeTerminalSummary({
                     gap: '0.75rem',
                     flexWrap: 'wrap',
                     fontSize: '0.6875rem',
-                    color: '#6b7280',
+                    color: 'var(--home-muted)',
                   }}
                 >
                   <span style={{ color: '#10b981', fontWeight: 700 }}>Latest now</span>
                   <span>|</span>
-                  <Link href="/community" style={{ color: '#8b949e', textDecoration: 'none' }}>
+                  <Link href="/community" style={{ color: 'var(--home-muted-soft)', textDecoration: 'none' }}>
                     Community
                   </Link>
                   <span>|</span>
-                  <Link href="/watchlist" style={{ color: '#8b949e', textDecoration: 'none' }}>
+                  <Link href="/watchlist" style={{ color: 'var(--home-muted-soft)', textDecoration: 'none' }}>
                     Watchlist
                   </Link>
                 </div>

@@ -255,7 +255,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               margin: '0',
               textAlign: 'center',
               fontSize: '0.625rem',
-              color: '#6b7280',
+              color: 'var(--home-muted)',
               position: 'absolute',
               top: 4,
               left: 0,
@@ -290,14 +290,14 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               dataKey="day"
               interval={0}
               padding={{ left: 12, right: 8 }}
-              tick={{ fill: '#6b7280', fontSize: 10 }}
+              tick={{ fill: 'var(--home-muted)', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={yDomain}
               tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`}
-              tick={{ fill: '#6b7280', fontSize: 9 }}
+              tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
               axisLine={false}
               tickLine={false}
               width={compact ? 38 : 44}
@@ -317,19 +317,19 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                 fontSize: '0.7rem',
                 color: '#e2e8f0',
               }}
-              labelStyle={{ color: '#8b949e', fontWeight: 600, marginBottom: 4 }}
+              labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
             />
             <Legend
               iconType="plainline"
               iconSize={8}
               wrapperStyle={{
                 fontSize: compact ? '0.5rem' : '0.5625rem',
-                color: '#8b949e',
+                color: 'var(--home-muted-soft)',
                 paddingTop: 2,
                 lineHeight: 1.2,
               }}
               formatter={(value) => (
-                <span style={{ color: '#e2e8f0' }}>{value}</span>
+                <span style={{ color: 'var(--home-row-text)' }}>{value}</span>
               )}
             />
             {CHART_KEYS.map((k) => (
@@ -441,7 +441,7 @@ function PlatformActivityTab() {
               style={{
                 margin: '0.15rem 0 0',
                 fontSize: '0.6875rem',
-                color: '#6b7280',
+                color: 'var(--home-muted)',
               }}
             >
               {row.sub}
@@ -485,7 +485,7 @@ function PlatformActivityTab() {
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-            color: '#6b7280',
+                color: 'var(--home-muted)',
             margin: '0 0 0.5rem',
           }}
         >
@@ -495,7 +495,7 @@ function PlatformActivityTab() {
           style={{
             margin: '0 0 0.5rem',
             fontSize: '0.8125rem',
-            color: '#e2e8f0',
+            color: 'var(--home-row-text)',
           }}
         >
           You&apos;re more active than{' '}
@@ -519,7 +519,7 @@ function PlatformActivityTab() {
             }}
           />
         </div>
-        <p style={{ margin: 0, fontSize: '0.75rem', color: '#8b949e' }}>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>
           <i
             className="bi bi-bar-chart-line"
             style={{ marginRight: 6, color: '#10b981' }}
