@@ -5,7 +5,7 @@
  * publication logos in a smooth infinite-scroll carousel.
  *
  * Logos: Financial Times, Reuters, Washington Post,
- *        Wall Street Journal, Fox Business
+ *        Wall Street Journal, Fox Business, QUIC, Western Investment Club
  *
  * Drop the logo PNGs into /public/logos/
  */
@@ -21,6 +21,18 @@ const LOGOS = [
   { name: 'The Washington Post', src: '/logos/washington-post.png', width: 200, height: 30 },
   { name: 'The Wall Street Journal', src: '/logos/wall-street-journal.png', width: 140, height: 55 },
   { name: 'Fox Business', src: '/logos/fox-business.png', width: 130, height: 55 },
+  {
+    name: "Queen's University Investment Counsel (QUIC)",
+    src: '/logos/quic-queens-university-investment-counsel.png',
+    width: 200,
+    height: 97,
+  },
+  {
+    name: 'Western Investment Club',
+    src: '/logos/western-investment-club.png',
+    width: 280,
+    height: 48,
+  },
 ];
 
 export function TrustedLogos() {
