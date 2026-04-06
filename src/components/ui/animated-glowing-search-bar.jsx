@@ -43,8 +43,8 @@ export function AnimatedGlowingSearchBar({
             autoComplete="off"
             className="bg-[#010201] border border-gray-700 w-full h-[56px] rounded-lg text-white pl-12 pr-14 text-base focus:outline-none focus:border-gray-500 placeholder:text-gray-400"
           />
-          <div className="absolute top-2 right-2 flex items-center justify-center z-[2] max-h-10 max-w-[38px] h-full w-full rounded-lg bg-[#0d1f18] border border-gray-700">
-            <SlidersHorizontal className="w-5 h-5 text-[#6ee7b7]" strokeWidth={1.5} />
+          <div className="absolute top-2 right-2 flex items-center justify-center z-[2] pr-3">
+            <SlidersHorizontal className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
           </div>
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
             <Search className="w-5 h-5 text-gray-400" strokeWidth={2} />

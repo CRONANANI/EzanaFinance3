@@ -57,6 +57,8 @@ function heatmapColor(changePct) {
 
 export function StockHeatmap({ onSelectStock }) {
   const [stocks, setStocks] = useState([]);
+  const [hoveredTicker, setHoveredTicker] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const allStocks = [];
@@ -81,6 +83,7 @@ export function StockHeatmap({ onSelectStock }) {
 
         const w = Math.max(pct * 1.8, 3);
         const sign = stock.ch >= 0 ? '+' : '';
+        const changePct = stock.ch;
 
         return (
           <div
@@ -94,12 +97,50 @@ export function StockHeatmap({ onSelectStock }) {
             }}
             title={`${stock.t} | ${stock.sector} | ${sign}${stock.ch.toFixed(2)}%`}
             onClick={() => onSelectStock?.(stock.t)}
+            onMouseEnter={(e) => {
+              setHoveredTicker(stock.t);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setTooltipPos({
+                x: rect.left + rect.width / 2,
+                y: rect.top - 8,
+              });
+            }}
+            onMouseLeave={() => setHoveredTicker(null)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && onSelectStock?.(stock.t)}
           >
             <span className="heatmap-cell-ticker">{stock.t}</span>
             <span className="heatmap-cell-change">{sign}{stock.ch.toFixed(1)}%</span>
+
+            {hoveredTicker === stock.t && (
+              <div style={{
+                position: 'fixed',
+                left: tooltipPos.x,
+                top: tooltipPos.y,
+                transform: 'translate(-50%, -100%)',
+                zIndex: 9999,
+                background: '#0d1117',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '6px',
+                padding: '5px 10px',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+              }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f0f6fc' }}>
+                  {stock.t}
+                </span>
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: (changePct ?? 0) >= 0 ? '#10b981' : '#ef4444',
+                  marginLeft: '6px',
+                }}>
+                  {(changePct ?? 0) > 0 ? '+' : ''}{(changePct ?? 0).toFixed(2)}%
+                </span>
+              </div>
+            )}
           </div>
         );
       })}

@@ -144,7 +144,7 @@ function CompanyResearchPageInner() {
     const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
     setSelectedStock(sym);
     setViewMode('stock');
-    setQuery(sym);
+    setQuery('');
     clearSuggestions();
     completeTask('research_1');
     if (opts?.fromPeer) completeTask('research_3');
@@ -156,8 +156,8 @@ function CompanyResearchPageInner() {
   }, [setQuery]);
 
   const handleSelectSuggestion = useCallback((item) => {
-    setQuery(item.symbol);
     clearSuggestions();
+    setQuery('');
     handleSelectStock(item.symbol);
   }, [handleSelectStock, setQuery, clearSuggestions]);
 
@@ -214,18 +214,44 @@ function CompanyResearchPageInner() {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
+        style={!model.flagship ? {
+          background: 'rgba(212, 175, 55, 0.08)',
+          border: '1px solid rgba(212, 175, 55, 0.3)',
+          borderRadius: '8px',
+          transition: 'all 0.15s ease',
+          cursor: 'pointer',
+        } : {}}
+        onMouseEnter={(e) => {
+          if (!model.flagship) {
+            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.18)';
+            e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.7)';
+            e.currentTarget.style.boxShadow = '0 0 12px rgba(212, 175, 55, 0.15)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!model.flagship) {
+            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
+            e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
+            e.currentTarget.style.boxShadow = 'none';
+          }
+        }}
       >
         {model.flagship ? (
           <div className="grpv-brand-logo">
             <img src="/ezana-logo.svg" alt="Ezana Finance" className="grpv-logo-img" />
           </div>
         ) : (
-          <div className={`model-metric-icon ${model.id}`} style={{ background: `${model.color}20`, color: model.color }}>
+          <div className={`model-metric-icon ${model.id}`} style={{ 
+            background: 'rgba(212, 175, 55, 0.15)',
+            color: '#D4AF37',
+            borderRadius: '8px',
+            padding: '8px',
+          }}>
             <i className={`bi ${model.icon}`} />
           </div>
         )}
         <div className="model-metric-content">
-          <span className="model-metric-label">{model.name}</span>
+          <span className="model-metric-label" style={!model.flagship ? { color: '#D4AF37' } : {}}>{model.name}</span>
           <span className="model-metric-value">{model.description}</span>
           <span className="model-metric-change">
             {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
