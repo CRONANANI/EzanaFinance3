@@ -5,7 +5,8 @@
  * publication logos in a smooth infinite-scroll carousel.
  *
  * Logos: Financial Times, Reuters, Washington Post,
- *        Wall Street Journal, Fox Business, QUIC, Western Investment Club
+ *        Wall Street Journal, Fox Business, QUIC, Western Investment Club,
+ *        McGill Investment Club, JMIS
  *
  * Drop the logo PNGs into /public/logos/
  */
@@ -33,6 +34,19 @@ const LOGOS = [
     width: 280,
     height: 48,
   },
+  {
+    name: 'McGill Investment Club',
+    src: '/logos/mcgill-investment-club.png',
+    width: 260,
+    height: 52,
+    embedLightBg: true,
+  },
+  {
+    name: 'JMIS',
+    src: '/logos/jmis.png',
+    width: 200,
+    height: 56,
+  },
 ];
 
 export function TrustedLogos() {
@@ -47,7 +61,10 @@ export function TrustedLogos() {
       <div className="tl-carousel-mask">
         <div className="tl-carousel-track">
           {doubled.map((logo, i) => (
-            <div key={`${logo.name}-${i}`} className="tl-logo-item">
+            <div
+              key={`${logo.name}-${i}`}
+              className={`tl-logo-item${logo.embedLightBg ? ' tl-logo-item--light-embed' : ''}`}
+            >
               <Image
                 src={logo.src}
                 alt={logo.name}
