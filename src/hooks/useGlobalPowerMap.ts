@@ -21,9 +21,13 @@ interface GlobalPowerMapState {
   isOpen: boolean;
   selectedLayers: PowerLayer[];
   countryScores: CountryScore[];
+  hoveredCountry: string | null;
+  clickedCountry: string | null;
   toggleOpen: () => void;
   toggleLayer: (layer: PowerLayer) => void;
   clearLayers: () => void;
+  setHoveredCountry: (iso: string | null) => void;
+  setClickedCountry: (iso: string | null) => void;
 }
 
 const layerScores: Record<PowerLayer, Record<string, number>> = {
@@ -354,6 +358,8 @@ export const useGlobalPowerMap = create<GlobalPowerMapState>((set, get) => ({
   isOpen: false,
   selectedLayers: [],
   countryScores: [],
+  hoveredCountry: null,
+  clickedCountry: null,
   toggleOpen: () => set((s) => ({ isOpen: !s.isOpen })),
   toggleLayer: (layer) => {
     const current = get().selectedLayers;
@@ -362,5 +368,8 @@ export const useGlobalPowerMap = create<GlobalPowerMapState>((set, get) => ({
       : [...current, layer];
     set({ selectedLayers: next, countryScores: computeCompositeScores(next) });
   },
-  clearLayers: () => set({ selectedLayers: [], countryScores: [] }),
+  clearLayers: () =>
+    set({ selectedLayers: [], countryScores: [], hoveredCountry: null, clickedCountry: null }),
+  setHoveredCountry: (iso) => set({ hoveredCountry: iso }),
+  setClickedCountry: (iso) => set({ clickedCountry: iso }),
 }));

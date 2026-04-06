@@ -13,7 +13,119 @@ import DottedMap from "dotted-map";
 import Image from "next/image";
 import proj4 from "proj4";
 import type { CountryScore } from "@/hooks/useGlobalPowerMap";
+import { useGlobalPowerMap } from "@/hooks/useGlobalPowerMap";
 import { latLngToAlpha2Cached } from "@/lib/latLngToCountryAlpha2";
+
+const NE_COUNTRIES_GEOJSON =
+  "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson";
+
+type Ring = number[][];
+
+function ringToPathD(
+  ring: Ring,
+  project: (lat: number, lng: number) => { x: number; y: number }
+): string {
+  if (ring.length < 2) return "";
+  const [lng0, lat0] = ring[0];
+  const p0 = project(lat0, lng0);
+  let d = `M ${p0.x} ${p0.y}`;
+  for (let i = 1; i < ring.length; i++) {
+    const [lng, lat] = ring[i];
+    const p = project(lat, lng);
+    d += ` L ${p.x} ${p.y}`;
+  }
+  d += " Z";
+  return d;
+}
+
+function geometryToPathDs(
+  geometry: { type: string; coordinates: unknown },
+  project: (lat: number, lng: number) => { x: number; y: number }
+): string[] {
+  const out: string[] = [];
+  if (geometry.type === "Polygon") {
+    const coords = geometry.coordinates as Ring[];
+    if (coords[0]) out.push(ringToPathD(coords[0], project));
+  } else if (geometry.type === "MultiPolygon") {
+    const multi = geometry.coordinates as Ring[][][];
+    for (const poly of multi) {
+      if (poly[0]) out.push(ringToPathD(poly[0], project));
+    }
+  }
+  return out;
+}
+
+/** Natural Earth often uses ISO_A2 "-99" for France, Norway, etc. */
+const ADM0_A3_TO_ISO2: Record<string, string> = {
+  FRA: "FR",
+  NOR: "NO",
+  KOS: "XK",
+  NCL: "NC",
+  ATF: "TF",
+  SOL: "SB",
+};
+
+function featureIso(props: Record<string, unknown> | undefined): string | null {
+  if (!props) return null;
+  const raw = String(props.ISO_A2 || props.WB_A2 || props.iso_a2 || "").trim();
+  let a = raw.toUpperCase();
+  if (a && a !== "-99") return a;
+  const adm = String(props.ADM0_A3 || "").toUpperCase();
+  return ADM0_A3_TO_ISO2[adm] || null;
+}
+
+function featureCentroid(
+  props: Record<string, unknown>,
+  geometry: { type: string; coordinates: unknown }
+): { lng: number; lat: number } {
+  const lx = Number(props.LABEL_X);
+  const ly = Number(props.LABEL_Y);
+  if (Number.isFinite(lx) && Number.isFinite(ly)) {
+    return { lng: lx, lat: ly };
+  }
+  if (geometry.type === "Polygon") {
+    const coords = geometry.coordinates as Ring[];
+    const ring = coords[0];
+    if (ring?.length) {
+      let sx = 0;
+      let sy = 0;
+      for (const [lng, lat] of ring) {
+        sx += lng;
+        sy += lat;
+      }
+      const n = ring.length;
+      return { lng: sx / n, lat: sy / n };
+    }
+  } else if (geometry.type === "MultiPolygon") {
+    const multi = geometry.coordinates as Ring[][][];
+    const ring = multi[0]?.[0];
+    if (ring?.length) {
+      let sx = 0;
+      let sy = 0;
+      for (const [lng, lat] of ring) {
+        sx += lng;
+        sy += lat;
+      }
+      const n = ring.length;
+      return { lng: sx / n, lat: sy / n };
+    }
+  }
+  return { lng: 0, lat: 0 };
+}
+
+type BorderFeat = {
+  iso: string;
+  name: string;
+  paths: string[];
+  centroid: { lng: number; lat: number };
+};
+
+let neCountriesGeoJsonCache: {
+  features: Array<{
+    properties?: Record<string, unknown>;
+    geometry: { type: string; coordinates: unknown };
+  }>;
+} | null = null;
 
 type DottedMapInternals = {
   points: Record<string, { x: number; y: number }>;
@@ -94,6 +206,13 @@ type WorldMapProps = {
   hideFinancialDots?: boolean;
   /** Country composite scores for per-dot colouring (ISO 3166-1 alpha-2). */
   powerCountryScores?: CountryScore[];
+  /** Country border click (power map); same UX as city dots for news panel. */
+  onPowerCountryClick?: (p: {
+    iso: string;
+    name: string;
+    lng: number;
+    lat: number;
+  }) => void;
 };
 
 export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
@@ -106,6 +225,7 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     activeLayerTab = null,
     hideFinancialDots = false,
     powerCountryScores = [],
+    onPowerCountryClick,
   },
   ref
 ) {
@@ -116,6 +236,18 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
   const [hoveredDot, setHoveredDot] = useState<string | null>(null);
   const dragMovedRef = useRef(false);
   const panPointerStartRef = useRef({ ex: 0, ey: 0 });
+
+  const setHoveredCountry = useGlobalPowerMap((s) => s.setHoveredCountry);
+  const setClickedCountry = useGlobalPowerMap((s) => s.setClickedCountry);
+
+  const [borderFeatures, setBorderFeatures] = useState<BorderFeat[]>([]);
+  const [countryHover, setCountryHover] = useState<{
+    clientX: number;
+    clientY: number;
+    name: string;
+    iso: string;
+    score: number | null;
+  } | null>(null);
 
   const { map, svgMap, width, height, baseDots } = useMemo(() => {
     const m = new DottedMap({ height: 100, grid: "diagonal" });
@@ -184,6 +316,63 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     [map, width, height]
   );
 
+  useEffect(() => {
+    if (!isPowerMapActive || powerCountryScores.length === 0) {
+      setBorderFeatures([]);
+      setCountryHover(null);
+      setHoveredCountry(null);
+      return;
+    }
+    const needed = new Set(powerCountryScores.map((c) => c.iso));
+    let cancelled = false;
+
+    (async () => {
+      try {
+        if (!neCountriesGeoJsonCache) {
+          const res = await fetch(NE_COUNTRIES_GEOJSON);
+          if (!res.ok) throw new Error("geojson");
+          neCountriesGeoJsonCache = (await res.json()) as NonNullable<
+            typeof neCountriesGeoJsonCache
+          >;
+        }
+        if (cancelled) return;
+        const fc = neCountriesGeoJsonCache!;
+        const out: BorderFeat[] = [];
+        for (const f of fc.features) {
+          const iso = featureIso(f.properties);
+          if (!iso || !needed.has(iso)) continue;
+          const paths = geometryToPathDs(
+            f.geometry as { type: string; coordinates: unknown },
+            projectPoint
+          );
+          if (paths.length === 0) continue;
+          const p = f.properties || {};
+          const nameFromProp =
+            String(p.NAME_EN || p.NAME || p.ADMIN || "").trim() ||
+            powerCountryScores.find((c) => c.iso === iso)?.name ||
+            iso;
+          const centroid = featureCentroid(
+            p,
+            f.geometry as { type: string; coordinates: unknown }
+          );
+          out.push({
+            iso,
+            name: nameFromProp,
+            paths,
+            centroid,
+          });
+        }
+        if (!cancelled) setBorderFeatures(out);
+      } catch {
+        if (!cancelled) setBorderFeatures([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPowerMapActive, powerCountryScores, projectPoint, setHoveredCountry]);
+
   const zoomTowardCenter = useCallback((factor: number) => {
     setTransform((prev) => {
       const rect = containerRef.current?.getBoundingClientRect();
@@ -238,7 +427,11 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
   const isInteractiveTarget = (target: EventTarget | null) => {
     const el = target as HTMLElement | null;
     if (!el?.closest) return false;
-    return Boolean(el.closest(".world-map-controls") || el.closest("[data-world-map-dot='1']"));
+    return Boolean(
+      el.closest(".world-map-controls") ||
+        el.closest("[data-world-map-dot='1']") ||
+        el.closest("[data-world-map-country='1']")
+    );
   };
 
   const handleMouseDown = useCallback(
@@ -504,6 +697,68 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
                 );
               })
             : null}
+          {isPowerMapActive && borderFeatures.length > 0 && (
+            <g pointerEvents="none">
+              {borderFeatures.map((feat) => (
+                <g key={`b-${feat.iso}`}>
+                  {feat.paths.map((d, i) => (
+                    <g key={`b-${feat.iso}-${i}`}>
+                      <path d={d} className="power-map-border-base" />
+                      <path d={d} className="power-map-border-pulse" />
+                    </g>
+                  ))}
+                </g>
+              ))}
+            </g>
+          )}
+          {isPowerMapActive && borderFeatures.length > 0 && (
+            <g pointerEvents="auto">
+              {borderFeatures.map((feat) => (
+                <g key={`hit-${feat.iso}`}>
+                  {feat.paths.map((d, i) => (
+                    <path
+                      key={`hit-${feat.iso}-${i}`}
+                      d={d}
+                      className="power-map-border-hit"
+                      data-world-map-country="1"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        dragMovedRef.current = false;
+                      }}
+                      onMouseMove={(e) => {
+                        e.stopPropagation();
+                        const score =
+                          powerCountryScores.find((c) => c.iso === feat.iso)?.score ?? null;
+                        setCountryHover({
+                          clientX: e.clientX,
+                          clientY: e.clientY,
+                          name: feat.name,
+                          iso: feat.iso,
+                          score,
+                        });
+                        setHoveredCountry(feat.iso);
+                      }}
+                      onMouseLeave={() => {
+                        setCountryHover(null);
+                        setHoveredCountry(null);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (dragMovedRef.current) return;
+                        setClickedCountry(feat.iso);
+                        onPowerCountryClick?.({
+                          iso: feat.iso,
+                          name: feat.name,
+                          lng: feat.centroid.lng,
+                          lat: feat.centroid.lat,
+                        });
+                      }}
+                    />
+                  ))}
+                </g>
+              ))}
+            </g>
+          )}
           {!hideFinancialDots &&
             FINANCIAL_CENTERS.map((center) => {
             const point = projectPoint(center.lat, center.lng);
@@ -602,6 +857,19 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
         </svg>
         </div>
       </div>
+      {countryHover && (
+        <div
+          className="ma-power-map-country-tooltip"
+          style={{ left: countryHover.clientX, top: countryHover.clientY }}
+        >
+          <h4>{countryHover.name}</h4>
+          {countryHover.score != null ? (
+            <p>Power score: {countryHover.score}/100</p>
+          ) : (
+            <p className="ma-pm-muted">No data</p>
+          )}
+        </div>
+      )}
     </div>
   );
 });

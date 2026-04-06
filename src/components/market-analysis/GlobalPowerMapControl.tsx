@@ -29,12 +29,17 @@ export default function GlobalPowerMapControl() {
     <div className="ma-power-map-root">
       <button
         type="button"
-        className={`ma-sidebar-btn ${isOpen || hasSelection ? "active" : ""}`}
+        className={`ma-view-btn ma-view-btn--gold ma-power-map-trigger ${isOpen || hasSelection ? "ma-power-map-trigger--on" : ""}`}
         onClick={toggleOpen}
         aria-expanded={isOpen}
       >
-        <i className="bi bi-globe2" />
+        <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
         GLOBAL POWER MAP
+        {hasSelection && (
+          <span className="ma-power-map-trigger-badge" aria-hidden>
+            {selectedLayers.length}
+          </span>
+        )}
       </button>
 
       {isOpen && (

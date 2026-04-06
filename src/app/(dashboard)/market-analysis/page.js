@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { WorldMap } from '@/components/ui/world-map';
 import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
+import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
+import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
 import {
   PANEL_ID_TO_CITY_KEY,
   PANEL_ID_TO_FINHUB_CITY_ID,
@@ -455,7 +457,7 @@ function SettingsPanel({ onClose }) {
   );
 }
 
-function CityNewsPanel({ panelId, onClose }) {
+function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, onClose }) {
   const finhubCityId = panelId ? PANEL_ID_TO_FINHUB_CITY_ID[panelId] : null;
   const cityKey = panelId ? PANEL_ID_TO_CITY_KEY[panelId] : null;
   const city = finhubCityId ? FINANCIAL_CITIES.find((c) => c.id === finhubCityId) : null;
@@ -466,6 +468,11 @@ function CityNewsPanel({ panelId, onClose }) {
   const [loadingNews, setLoadingNews] = useState(true);
 
   useEffect(() => {
+    if (powerCountry) {
+      setRegional(null);
+      setLoadingRegional(false);
+      return;
+    }
     if (!cityKey) {
       setRegional(null);
       setLoadingRegional(false);
@@ -482,9 +489,21 @@ function CityNewsPanel({ panelId, onClose }) {
         setRegional(null);
         setLoadingRegional(false);
       });
-  }, [cityKey]);
+  }, [cityKey, powerCountry]);
 
   useEffect(() => {
+    if (powerCountry) {
+      setLoadingNews(true);
+      const q = buildArticleQuery(powerCountry.name, selectedLayers);
+      fetch(`/api/market-data/power-map-news?q=${encodeURIComponent(q)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setNews(data.news || []);
+          setLoadingNews(false);
+        })
+        .catch(() => setLoadingNews(false));
+      return;
+    }
     if (!finhubCityId) {
       setNews([]);
       setLoadingNews(false);
@@ -498,7 +517,7 @@ function CityNewsPanel({ panelId, onClose }) {
         setLoadingNews(false);
       })
       .catch(() => setLoadingNews(false));
-  }, [finhubCityId]);
+  }, [finhubCityId, powerCountry, selectedLayers]);
 
   const timeAgo = (unixOrIso) => {
     const ms = typeof unixOrIso === 'number'
@@ -510,6 +529,100 @@ function CityNewsPanel({ panelId, onClose }) {
     if (hours < 24) return `${hours}h ago`;
     return `${Math.floor(hours / 24)}d ago`;
   };
+
+  if (powerCountry) {
+    const powerScore = countryScores?.find((c) => c.iso === powerCountry.iso)?.score;
+    return (
+      <div className="ma-city-panel">
+        <div className="ma-city-panel-header">
+          <div>
+            <h3 className="ma-city-panel-name">{powerCountry.name}</h3>
+            <span className="ma-city-panel-meta">
+              {selectedLayers.length} power layer{selectedLayers.length !== 1 ? 's' : ''} selected
+            </span>
+          </div>
+          <button type="button" className="ma-city-panel-close" onClick={onClose} aria-label="Close"><i className="bi bi-x-lg" /></button>
+        </div>
+
+        <div className="ma-city-panel-body">
+          {selectedLayers.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.75rem' }}>
+              {selectedLayers.map((layer) => (
+                <span
+                  key={layer}
+                  style={{
+                    fontSize: '0.65rem',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '9999px',
+                    background: 'rgba(168, 85, 247, 0.15)',
+                    color: '#c4b5fd',
+                    border: '1px solid rgba(168, 85, 247, 0.25)',
+                    textTransform: 'capitalize',
+                    fontFamily: 'var(--font-mono, monospace)',
+                  }}
+                >
+                  {layer.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          )}
+          {powerScore != null && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>Power score</span>
+              <div style={{ flex: 1, height: '6px', background: '#1f2937', borderRadius: '4px', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    height: '100%',
+                    borderRadius: '4px',
+                    width: `${powerScore}%`,
+                    background: powerScore >= 70 ? '#22c55e' : powerScore >= 45 ? '#facc15' : '#ef4444',
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontSize: '0.65rem',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontWeight: 700,
+                  color: powerScore >= 70 ? '#22c55e' : powerScore >= 45 ? '#facc15' : '#ef4444',
+                }}
+              >
+                {powerScore}/100
+              </span>
+            </div>
+          )}
+
+          <div className="ma-city-panel-section-label">Latest headlines</div>
+          <div className="ma-city-panel-count">
+            {loadingNews ? 'LOADING…' : `${news.length} ARTICLES (AGGREGATED)`}
+          </div>
+
+          <div className="ma-city-panel-list">
+            {loadingNews ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+                Fetching latest news…
+              </div>
+            ) : news.length === 0 ? (
+              <div style={{ padding: '1rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
+                No recent headlines for this query.
+              </div>
+            ) : (
+              news.map((item) => (
+                <a key={item.id} href={item.url || '#'} className="ma-city-news-item" target="_blank" rel="noopener noreferrer">
+                  <div className="ma-city-news-top">
+                    <span className="ma-city-news-badge">{item.category}</span>
+                    <span className="ma-city-news-time">{timeAgo(item.time)}</span>
+                  </div>
+                  <p className="ma-city-news-title">{item.title}</p>
+                  <span className="ma-city-news-source">{item.source || 'Finnhub'} →</span>
+                </a>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!city || !cityKey) return null;
 
@@ -865,10 +978,12 @@ export default function MarketAnalysisPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedDot, setSelectedDot] = useState(null);
+  const [selectedPowerCountry, setSelectedPowerCountry] = useState(null);
   const [tickerData, setTickerData] = useState([]);
   const mapRef = useRef(null);
   const selectedLayers = useGlobalPowerMap((s) => s.selectedLayers);
   const countryScores = useGlobalPowerMap((s) => s.countryScores);
+  const setClickedCountry = useGlobalPowerMap((s) => s.setClickedCountry);
   const isPowerMapActive = selectedLayers.length > 0;
 
   useEffect(() => {
@@ -889,8 +1004,22 @@ export default function MarketAnalysisPage() {
   }, []);
 
   const handleCenterClick = (center) => {
+    setSelectedPowerCountry(null);
     setSelectedDot((prev) => (prev === center.panelId ? null : center.panelId));
   };
+
+  const handlePowerCountryClick = ({ iso, name, lng, lat }) => {
+    setSelectedDot(null);
+    setSelectedPowerCountry((prev) =>
+      prev?.iso === iso ? null : { iso, name, lng, lat }
+    );
+  };
+
+  useEffect(() => {
+    if (!isPowerMapActive) {
+      setSelectedPowerCountry(null);
+    }
+  }, [isPowerMapActive]);
 
   const toggleCategory = (cat) => {
     const newCat = activeCategory === cat ? null : cat;
@@ -906,10 +1035,16 @@ export default function MarketAnalysisPage() {
   };
 
   useEffect(() => {
-    const onKeyDown = (e) => { if (e.key === 'Escape') setSelectedDot(null); };
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setSelectedDot(null);
+        setSelectedPowerCountry(null);
+        setClickedCountry(null);
+      }
+    };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [setClickedCountry]);
 
   return (
     <div className={`ma-fullscreen ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}>
@@ -955,26 +1090,27 @@ export default function MarketAnalysisPage() {
               <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
               EMPIRE RANKING &amp; ANALYSIS
             </Link>
-            {view === 'map' && isPowerMapActive && (
-              <Link
-                href={`/empire-ranking?layers=${selectedLayers.join(',')}`}
-                className="ma-power-map-data-link"
-              >
-                Show me the data →
-              </Link>
-            )}
+            {view === 'map' && isPowerMapActive && <ShowMeDataButton />}
           </div>
         </div>
       </div>
 
       {view === 'map' ? (
         <>
-          <div className="ma-map-area" onClick={() => setSelectedDot(null)}>
+          <div
+            className="ma-map-area"
+            onClick={() => {
+              setSelectedDot(null);
+              setSelectedPowerCountry(null);
+              setClickedCountry(null);
+            }}
+          >
             <WorldMap
               ref={mapRef}
               lineColor="#10b981"
               selectedPanelId={selectedDot}
               onDotClick={handleCenterClick}
+              onPowerCountryClick={handlePowerCountryClick}
               activeLayer={activeCategory}
               activeLayerTab={activeTab}
               hideControls
@@ -1017,8 +1153,18 @@ export default function MarketAnalysisPage() {
           {filterOpen && <FilterPanel onClose={() => setFilterOpen(false)} />}
           {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
-          {selectedDot && (
-            <CityNewsPanel panelId={selectedDot} onClose={() => setSelectedDot(null)} />
+          {(selectedDot || selectedPowerCountry) && (
+            <CityNewsPanel
+              panelId={selectedDot}
+              powerCountry={selectedPowerCountry}
+              selectedLayers={selectedLayers}
+              countryScores={countryScores}
+              onClose={() => {
+                setSelectedDot(null);
+                setSelectedPowerCountry(null);
+                setClickedCountry(null);
+              }}
+            />
           )}
         </>
       ) : (

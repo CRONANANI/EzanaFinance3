@@ -841,3 +841,82 @@ html:has(.landing-page) body:not(.light-mode) {
     font-size: 1.125rem;
   }
 }
+
+/* ── Global Power Map: “Show me the data” pulsating rings ── */
+@keyframes powermap-ring-1 {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes powermap-ring-2 {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+@keyframes powermap-ring-3 {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+@keyframes powermap-pulse-bg {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(168, 85, 247, 0);
+  }
+}
+@keyframes powermap-dot-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.powermap-ring-a {
+  position: absolute;
+  inset: 0;
+  background: rgba(168, 85, 247, 0.25);
+  animation: powermap-ring-1 1.8s ease-out infinite;
+  animation-delay: 0s;
+}
+.powermap-ring-b {
+  position: absolute;
+  inset: 0;
+  background: rgba(168, 85, 247, 0.18);
+  animation: powermap-ring-2 1.8s ease-out infinite;
+  animation-delay: 0.35s;
+}
+.powermap-ring-c {
+  position: absolute;
+  inset: 0;
+  background: rgba(168, 85, 247, 0.1);
+  animation: powermap-ring-3 1.8s ease-out infinite;
+  animation-delay: 0.7s;
+}
+.powermap-data-btn-inner {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  animation: powermap-pulse-bg 2s ease-in-out infinite;
+}
+.powermap-dot-pulse {
+  animation: powermap-dot-blink 1.2s ease-in-out infinite;
+}
