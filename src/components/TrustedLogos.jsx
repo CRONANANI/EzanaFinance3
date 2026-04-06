@@ -16,8 +16,8 @@ import Image from 'next/image';
 import './trusted-logos.css';
 
 const LOGOS = [
-  { name: 'Financial Times', src: '/logos/financial-times.png', width: 120, height: 60 },
-  { name: 'Reuters', src: '/logos/reuters.png', width: 160, height: 45 },
+  { name: 'Financial Times', src: '/logos/financial-times.png', width: 80, height: 80 },
+  { name: 'Reuters', src: '/logos/reuters.png', width: 200, height: 51 },
   { name: 'The Washington Post', src: '/logos/washington-post.png', width: 200, height: 30 },
   { name: 'The Wall Street Journal', src: '/logos/wall-street-journal.png', width: 140, height: 55 },
   { name: 'Fox Business', src: '/logos/fox-business.png', width: 130, height: 55 },
