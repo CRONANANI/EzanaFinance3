@@ -1,50 +1,17 @@
-.centaur-page {
+/* Page shell — cards use Empire Rankings .er-card* (see empire-ranking.css import on page) */
+.ci-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding: 2rem 0;
 }
 
-.centaur-header {
-  padding: 0 2rem;
+.ci-page .er-card-body {
+  color: #d1d5db;
 }
 
-.centaur-header h1 {
-  color: #D4AF37;
-}
-
-.centaur-header p {
-  color: #888;
-}
-
-.centaur-card {
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.centaur-card:hover {
-  border-color: rgba(212, 175, 55, 0.3);
-}
-
-.centaur-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #222;
-  color: #D4AF37;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.centaur-card-body {
-  padding: 1.5rem;
-  color: #ccc;
+body.light-mode .ci-page .er-card-body {
+  color: #374151;
 }
 
 .sentinel-card {
@@ -53,9 +20,13 @@
   margin-right: 2rem;
 }
 
-.sentinel-card .centaur-card-body {
+.sentinel-card .er-card-body {
   background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.08) 100%);
   padding-bottom: 1rem;
+}
+
+body.light-mode .sentinel-card .er-card-body {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.06) 0%, rgba(255, 255, 255, 0.95) 100%);
 }
 
 .centaur-grid {
@@ -77,8 +48,50 @@
   height: 600px;
 }
 
-.chat-card .centaur-card-body {
+/* Only hide a direct body under chat-card (none today); nested .er-card in messages keeps its body visible */
+.chat-card > .er-card-body {
   display: none;
+}
+
+/* Ray Dalio intro — nested er-card inside chat */
+.ci-dalio-banner {
+  flex-shrink: 0;
+}
+
+.ci-dalio-banner .er-card-body {
+  display: block;
+  padding: 0.85rem 1rem 1rem;
+}
+
+.ci-dalio-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+body.light-mode .ci-dalio-avatar {
+  background: rgba(212, 175, 55, 0.15);
+  color: #b45309;
+}
+
+.ci-dalio-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+body.light-mode .ci-dalio-name {
+  color: #111827;
 }
 
 .chat-messages {
@@ -152,7 +165,7 @@
   gap: 1.5rem;
 }
 
-.centaur-column .centaur-card {
+.centaur-column .er-card {
   margin-right: 2rem;
 }
 
@@ -176,14 +189,14 @@ button:active:not(:disabled) {
     gap: 1rem;
   }
 
-  .centaur-header,
+  .ci-hero-wrap,
   .sentinel-card,
   .centaur-grid {
     padding-left: 1rem;
     padding-right: 1rem;
   }
 
-  .centaur-column .centaur-card {
+  .centaur-column .er-card {
     margin-right: 0;
   }
 

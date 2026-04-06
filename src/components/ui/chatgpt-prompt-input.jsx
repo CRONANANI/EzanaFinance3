@@ -130,10 +130,26 @@ export function CentaurPromptBox({
   disabled = false,
   placeholder = 'Message Yohannes…',
   className,
+  /** When set with onValueChange, the textarea is controlled (e.g. suggested prompts). */
+  value: valueProp,
+  onValueChange,
 }) {
   const internalTextareaRef = React.useRef(null);
   const fileInputRef = React.useRef(null);
-  const [value, setValue] = React.useState('');
+  const [internalValue, setInternalValue] = React.useState('');
+  const isControlled = valueProp !== undefined;
+  const value = isControlled ? valueProp : internalValue;
+  const setValue = React.useCallback(
+    (updater) => {
+      if (isControlled) {
+        const next = typeof updater === 'function' ? updater(valueProp ?? '') : updater;
+        onValueChange?.(next);
+      } else {
+        setInternalValue(updater);
+      }
+    },
+    [isControlled, valueProp, onValueChange],
+  );
   const [imagePreview, setImagePreview] = React.useState(null);
   const [fileNames, setFileNames] = React.useState([]);
   const [selectedTool, setSelectedTool] = React.useState(null);

@@ -9,6 +9,7 @@ import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import './centaur-intelligence.css';
+import '../empire-ranking/empire-ranking.css';
 import { CentaurPromptBox } from '@/components/ui/chatgpt-prompt-input';
 import { SentinelReportModal } from '@/components/centaur/SentinelReportModal';
 
@@ -19,6 +20,15 @@ const LEGENDARY_INVESTORS = [
   { id: 'ray-dalio', name: 'Ray Dalio', style: 'macro analysis' },
   { id: 'cathie-wood', name: 'Cathie Wood', style: 'growth outlook' },
   { id: 'paul-tudor-jones', name: 'Paul Tudor Jones', style: 'macro trading' },
+];
+
+const RAY_DALIO_SUGGESTED_PROMPTS = [
+  'Where are we in the big cycle?',
+  'Is the dollar losing reserve status?',
+  'How does the US-China rivalry end?',
+  'What happens when debt hits 0% interest rates?',
+  'What should I own in a currency devaluation?',
+  'How did the Dutch Empire fall?',
 ];
 
 function reportForWeekIndex(reports, weekIndex) {
@@ -39,6 +49,7 @@ export default function CentaurIntelligencePage() {
   ]);
   const [chatLoading, setChatLoading] = useState(false);
   const [boardroomMode, setBoardroomMode] = useState(null);
+  const [promptValue, setPromptValue] = useState('');
   const [sentinelReport, setSentinelReport] = useState(null);
   const [sentinelReports, setSentinelReports] = useState([]);
   const [debriefItems, setDebriefItems] = useState([]);
@@ -125,6 +136,7 @@ export default function CentaurIntelligencePage() {
     const history = [...messagesRef.current, userMsg];
     setMessages((prev) => [...prev, userMsg]);
     setChatLoading(true);
+    setPromptValue('');
 
     try {
       const res = await fetch('/api/centaur/chat', {
@@ -149,16 +161,22 @@ export default function CentaurIntelligencePage() {
 
   const startBoardroom = (investor) => {
     setBoardroomMode(investor.name);
+    setPromptValue('');
+    const welcome =
+      investor.id === 'ray-dalio'
+        ? `Welcome to the boardroom. I want to think with you the way I do in my work on The Changing World Order — through long cycles, money and credit, internal and external conflict, and how empires rise and decline. I've reviewed your portfolio context. What would you like to explore?`
+        : `Welcome to the boardroom. I'm channeling the investment philosophy of ${investor.name}. I've reviewed your portfolio. Let's discuss your positions from a ${investor.style} perspective. What would you like to focus on?`;
     setMessages([
       {
         role: 'assistant',
-        content: `Welcome to the boardroom. I'm channeling the investment philosophy of ${investor.name}. I've reviewed your portfolio. Let's discuss your positions from a ${investor.style} perspective. What would you like to focus on?`,
+        content: welcome,
       },
     ]);
   };
 
   const exitBoardroom = () => {
     setBoardroomMode(null);
+    setPromptValue('');
     setMessages([
       {
         role: 'assistant',
@@ -167,9 +185,12 @@ export default function CentaurIntelligencePage() {
     ]);
   };
 
+  const showDalioBanner =
+    boardroomMode === 'Ray Dalio' && messages.filter((m) => m.role === 'user').length === 0;
+
   if (loading) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
+      <div className="dashboard-page-inset er-page ci-page" style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
         <i className="bi bi-hourglass" style={{ fontSize: '2rem', display: 'block', marginBottom: '1rem' }} />
         Loading Centaur Intelligence...
       </div>
@@ -178,73 +199,48 @@ export default function CentaurIntelligencePage() {
 
   return (
     <TooltipProvider delayDuration={120}>
-      <div className="centaur-page">
-        <div className="centaur-header">
-          <Link
-            href="/home"
-            style={{
-              color: '#888',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: '1rem',
-            }}
-          >
-            <i className="bi bi-chevron-left" /> Back to Home
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <i className="bi bi-lightning-charge-fill" style={{ color: '#D4AF37', fontSize: '1.5rem' }} />
-            <div>
-              <h1
-                style={{
-                  color: '#fff',
-                  fontSize: '1.8rem',
-                  fontWeight: '700',
-                  margin: 0,
-                  fontFamily: '"Cinzel", serif',
-                }}
-              >
-                CENTAUR INTELLIGENCE
-              </h1>
-              <p style={{ color: '#888', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
-                Your AI-Powered Investment Command Center
-              </p>
+      <div className="dashboard-page-inset er-page ci-page">
+        <div className="er-hero ci-hero-wrap">
+          <div className="er-hero-left">
+            <Link href="/home" className="er-back-link">
+              <i className="bi bi-chevron-left" /> Back to Home
+            </Link>
+            <div className="er-hero-title-row">
+              <div className="er-hero-icon">
+                <i className="bi bi-lightning-charge-fill" />
+              </div>
+              <div>
+                <h1>Centaur Intelligence</h1>
+                <p className="er-hero-sub">Your AI-powered investment command center — advisor chat, boardroom personas, and briefings.</p>
+              </div>
             </div>
           </div>
+          <div className="er-hero-badge">COMMAND CENTER</div>
         </div>
 
-        <div className="centaur-card sentinel-card">
-          <div className="centaur-card-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <i className="bi bi-journal-text" style={{ color: '#D4AF37' }} />
-              <span>Sentinel Weekly Report</span>
+        <div className="er-card sentinel-card">
+          <div className="er-card-header">
+            <div className="er-card-header-left">
+              <i className="bi bi-journal-text" aria-hidden />
+              <div>
+                <h3>Sentinel Weekly Report</h3>
+                <p className="er-card-subtitle">Portfolio health & weekly briefing</p>
+              </div>
             </div>
             {sentinelReport && (
-              <button
-                type="button"
-                onClick={() => openSentinelModal(sentinelReport)}
-                style={{
-                  background: 'rgba(212, 175, 55, 0.15)',
-                  border: '1px solid #D4AF37',
-                  color: '#D4AF37',
-                  padding: '4px 12px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '0.7rem',
-                  fontWeight: '600',
-                }}
-              >
-                View Latest
-              </button>
+              <div className="er-card-actions">
+                <button type="button" onClick={() => openSentinelModal(sentinelReport)} className="er-pill-toggle er-pill-toggle--active">
+                  View Latest
+                </button>
+              </div>
             )}
           </div>
-          <div className="centaur-card-body">
-            <p style={{ color: '#D4AF37', fontWeight: '600', marginBottom: '0.5rem' }}>Portfolio Status: STRONG</p>
-            <p style={{ color: '#ccc', fontSize: '0.9rem', marginBottom: '1rem' }}>
+          <div className="er-card-body">
+            <p style={{ color: '#d4af37', fontWeight: 600, marginBottom: '0.5rem' }}>Portfolio Status: STRONG</p>
+            <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
               Your portfolio health is strong. Review the full report for highlights and actions.
             </p>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <div className="er-pill-toggle-group">
               {Array.from({ length: 5 }, (_, i) => {
                 const d = new Date();
                 d.setDate(d.getDate() - i * 7);
@@ -262,29 +258,14 @@ export default function CentaurIntelligencePage() {
                       const r = rep || sentinelReport;
                       if (r) openSentinelModal(r);
                     }}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: selectedReportWeek === i ? '1px solid #D4AF37' : '1px solid #333',
-                      background: selectedReportWeek === i ? 'rgba(212, 175, 55, 0.1)' : '#0a0e13',
-                      color: selectedReportWeek === i ? '#D4AF37' : '#888',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      width: '72px',
-                      minHeight: '52px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    className={`er-pill-toggle${selectedReportWeek === i ? ' er-pill-toggle--active' : ''}`}
+                    style={{ width: '72px', minHeight: '52px', flexDirection: 'column', justifyContent: 'center' }}
                   >
-                    <div>{month}</div>
-                    <div style={{ fontSize: '1rem', fontWeight: '700' }}>
+                    <span>{month}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: 700 }}>
                       {day}
                       {ordinal}
-                    </div>
+                    </span>
                   </button>
                 );
               })}
@@ -293,51 +274,62 @@ export default function CentaurIntelligencePage() {
         </div>
 
         <div className="centaur-grid">
-          <div className="centaur-card chat-card">
-            <div className="centaur-card-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <i className="bi bi-chat-dots" style={{ color: '#D4AF37' }} />
-                <span>Chat with {boardroomMode || 'Yohannes'}</span>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginLeft: 'auto' }}>
-                  <button
-                    type="button"
-                    onClick={exitBoardroom}
-                    style={{
-                      background: boardroomMode ? 'rgba(212, 175, 55, 0.12)' : 'rgba(212, 175, 55, 0.25)',
-                      border: '1px solid rgba(212, 175, 55, 0.45)',
-                      color: '#D4AF37',
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '0.65rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Yohannes
-                  </button>
-                  {LEGENDARY_INVESTORS.map((inv) => (
-                    <button
-                      key={inv.id}
-                      type="button"
-                      onClick={() => startBoardroom(inv)}
-                      style={{
-                        background:
-                          boardroomMode === inv.name ? 'rgba(212, 175, 55, 0.22)' : 'transparent',
-                        border: '1px solid #333',
-                        color: '#aaa',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '0.65rem',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {inv.name.split(' ')[0]}
-                    </button>
-                  ))}
+          <div className="er-card chat-card">
+            <div className="er-card-header">
+              <div className="er-card-header-left" style={{ flexWrap: 'wrap', rowGap: '0.5rem' }}>
+                <i className="bi bi-chat-dots" aria-hidden />
+                <div>
+                  <h3>Chat with {boardroomMode || 'Yohannes'}</h3>
+                  <p className="er-card-subtitle">{boardroomMode ? 'Boardroom meeting mode' : 'Default advisor'}</p>
                 </div>
+              </div>
+              <div className="er-card-actions">
+                <button
+                  type="button"
+                  onClick={() => boardroomMode && exitBoardroom()}
+                  className={`er-pill-toggle${!boardroomMode ? ' er-pill-toggle--active' : ''}`}
+                >
+                  Yohannes
+                </button>
+                {LEGENDARY_INVESTORS.map((inv) => (
+                  <button
+                    key={inv.id}
+                    type="button"
+                    onClick={() => startBoardroom(inv)}
+                    className={`er-pill-toggle${boardroomMode === inv.name ? ' er-pill-toggle--active' : ''}`}
+                  >
+                    {inv.name.split(' ')[0]}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="chat-messages">
+              {showDalioBanner && (
+                <div className="er-card ci-dalio-banner">
+                  <div className="er-card-body">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div className="ci-dalio-avatar">RD</div>
+                      <div>
+                        <h3 className="ci-dalio-name">Ray Dalio</h3>
+                        <p className="er-card-subtitle" style={{ margin: '2px 0 0' }}>
+                          Founder, Bridgewater Associates · Author, <em>The Changing World Order</em>
+                        </p>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.82rem', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
+                      Ask me about macro cycles, empire rises and declines, money and debt dynamics, the US–China transition, reserve currency history,
+                      or how to think about investing through major regime changes.
+                    </p>
+                    <div className="er-pill-toggle-group" style={{ marginBottom: 0 }}>
+                      {RAY_DALIO_SUGGESTED_PROMPTS.map((prompt) => (
+                        <button key={prompt} type="button" className="er-pill-toggle" onClick={() => setPromptValue(prompt)}>
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               {messages.map((msg, idx) => (
                 <div key={idx} className={`chat-bubble chat-bubble-${msg.role}`}>
                   <div
@@ -362,23 +354,11 @@ export default function CentaurIntelligencePage() {
                 onSend={sendMessage}
                 disabled={chatLoading}
                 placeholder={chatLoading ? 'Waiting for reply…' : `Message ${boardroomMode || 'Yohannes'}…`}
+                value={promptValue}
+                onValueChange={setPromptValue}
               />
               {boardroomMode && (
-                <button
-                  type="button"
-                  onClick={exitBoardroom}
-                  style={{
-                    marginTop: '8px',
-                    background: '#333',
-                    color: '#888',
-                    border: '1px solid #555',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                    width: '100%',
-                  }}
-                >
+                <button type="button" onClick={exitBoardroom} className="er-pill-toggle" style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}>
                   Exit boardroom (back to Yohannes)
                 </button>
               )}
@@ -386,17 +366,18 @@ export default function CentaurIntelligencePage() {
           </div>
 
           <div className="centaur-column">
-            <div className="centaur-card">
-              <div className="centaur-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <i className="bi bi-building" style={{ color: '#D4AF37' }} />
-                  <span>Boardroom Meetings</span>
+            <div className="er-card">
+              <div className="er-card-header">
+                <div className="er-card-header-left">
+                  <i className="bi bi-building" aria-hidden />
+                  <div>
+                    <h3>Boardroom Meetings</h3>
+                    <p className="er-card-subtitle">Legendary investor perspectives</p>
+                  </div>
                 </div>
               </div>
-              <div className="centaur-card-body">
-                <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                  Schedule a meeting with legendary investors to review your portfolio.
-                </p>
+              <div className="er-card-body">
+                <p style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Schedule a meeting with legendary investors to review your portfolio.</p>
                 {LEGENDARY_INVESTORS.map((investor) => (
                   <div
                     key={investor.id}
@@ -424,22 +405,9 @@ export default function CentaurIntelligencePage() {
                       >
                         <i className="bi bi-person-fill" style={{ color: '#D4AF37', fontSize: '1rem' }} />
                       </div>
-                      <span style={{ color: '#ccc', fontSize: '0.85rem' }}>{investor.name}</span>
+                      <span style={{ fontSize: '0.85rem' }}>{investor.name}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => startBoardroom(investor)}
-                      style={{
-                        background: 'rgba(212, 175, 55, 0.15)',
-                        border: '1px solid rgba(212, 175, 55, 0.3)',
-                        color: '#D4AF37',
-                        padding: '4px 10px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '0.7rem',
-                        fontWeight: '600',
-                      }}
-                    >
+                    <button type="button" onClick={() => startBoardroom(investor)} className="er-pill-toggle er-pill-toggle--active">
                       Start
                     </button>
                   </div>
@@ -447,43 +415,40 @@ export default function CentaurIntelligencePage() {
               </div>
             </div>
 
-            <div className="centaur-card">
-              <div className="centaur-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <i className="bi bi-inbox" style={{ color: '#D4AF37' }} />
-                  <span>Debrief Queue</span>
+            <div className="er-card">
+              <div className="er-card-header">
+                <div className="er-card-header-left">
+                  <i className="bi bi-inbox" aria-hidden />
+                  <div>
+                    <h3>Debrief Queue</h3>
+                    <p className="er-card-subtitle">Events from market analysis</p>
+                  </div>
                 </div>
               </div>
-              <div className="centaur-card-body">
+              <div className="er-card-body">
                 {debriefItems.length === 0 ? (
-                  <p style={{ color: '#666', fontSize: '0.85rem' }}>
+                  <p style={{ fontSize: '0.85rem' }}>
                     No events in your debrief queue yet. Use the market analysis tool to add events.
                   </p>
                 ) : (
                   <>
-                    <p style={{ color: '#D4AF37', fontWeight: '600', marginBottom: '0.75rem' }}>
+                    <p style={{ color: '#d4af37', fontWeight: 600, marginBottom: '0.75rem' }}>
                       {debriefItems.length} Events Pending
                     </p>
                     {debriefItems.slice(0, 3).map((item, idx) => (
-                      <div key={idx} style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid #333' }}>
-                        <p style={{ color: '#ccc', fontSize: '0.8rem', margin: '0 0 4px 0', fontWeight: '600' }}>
+                      <div
+                        key={idx}
+                        style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid rgba(212, 175, 55, 0.08)' }}
+                      >
+                        <p style={{ fontSize: '0.8rem', margin: '0 0 4px 0', fontWeight: 600 }}>
                           {item.event_title}
                         </p>
-                        <p style={{ color: '#888', fontSize: '0.75rem', margin: 0 }}>
+                        <p style={{ fontSize: '0.75rem', margin: 0, color: '#6b7280' }}>
                           {item.event_country} · {item.reviewed ? 'Reviewed' : 'Pending'}
                         </p>
                       </div>
                     ))}
-                    <Link
-                      href="/market-analysis"
-                      style={{
-                        display: 'inline-block',
-                        color: '#D4AF37',
-                        fontSize: '0.8rem',
-                        marginTop: '1rem',
-                        textDecoration: 'none',
-                      }}
-                    >
+                    <Link href="/market-analysis" style={{ display: 'inline-block', color: '#d4af37', fontSize: '0.8rem', marginTop: '1rem', textDecoration: 'none' }}>
                       Review Debrief →
                     </Link>
                   </>
