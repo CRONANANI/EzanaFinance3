@@ -19,9 +19,9 @@ export function StockQuote({ symbol }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading quote...
         </div>
@@ -33,11 +33,11 @@ export function StockQuote({ symbol }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
         <div className="text-center py-8">
           <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400">Quote data not available</p>
+          <p className="text-gray-500 dark:text-gray-400">Quote data not available</p>
           <button
             type="button"
             onClick={refetch}
@@ -66,15 +66,15 @@ export function StockQuote({ symbol }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">Stock Quote</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Quote</h3>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={refetch}
-            className="p-1.5 text-gray-500 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-1.5 text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -86,8 +86,8 @@ export function StockQuote({ symbol }) {
         </div>
       </div>
       <div className="mb-6">
-        <p className="text-4xl font-bold text-white tracking-tight">{formatPrice(price)}</p>
-        <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+        <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">{formatPrice(price)}</p>
+        <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'}`}>
           {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
           <span className="font-semibold text-lg">
             {isPositive ? '+' : ''}{formatPrice(change)} ({isPositive ? '+' : ''}{Number(changePct).toFixed(2)}%)
@@ -95,33 +95,33 @@ export function StockQuote({ symbol }) {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-[#161b22] rounded-xl p-3">
+        <div className="bg-gray-100 dark:bg-[#161b22] rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-1">Open</p>
-          <p className="text-white font-semibold">{formatPrice(data.o)}</p>
+          <p className="text-gray-900 dark:text-white font-semibold">{formatPrice(data.o)}</p>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-3">
+        <div className="bg-gray-100 dark:bg-[#161b22] rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-1">Previous Close</p>
-          <p className="text-white font-semibold">{formatPrice(data.pc)}</p>
+          <p className="text-gray-900 dark:text-white font-semibold">{formatPrice(data.pc)}</p>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-3">
+        <div className="bg-gray-100 dark:bg-[#161b22] rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-1">Day High</p>
-          <p className="text-emerald-400 font-semibold">{formatPrice(data.h)}</p>
+          <p className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatPrice(data.h)}</p>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-3">
+        <div className="bg-gray-100 dark:bg-[#161b22] rounded-xl p-3">
           <p className="text-xs text-gray-500 mb-1">Day Low</p>
-          <p className="text-red-400 font-semibold">{formatPrice(data.l)}</p>
+          <p className="text-red-600 dark:text-red-400 font-semibold">{formatPrice(data.l)}</p>
         </div>
       </div>
       {data.h !== data.l && (
-        <div className="mt-4 pt-4 border-t border-gray-700">
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex justify-between text-xs text-gray-500 mb-2">
             <span>Day Range</span>
             <span>{formatPrice(data.l)} - {formatPrice(data.h)}</span>
           </div>
-          <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div className="absolute h-full bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500 rounded-full w-full" />
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg border-2 border-gray-800"
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg border-2 border-gray-300 dark:border-gray-800"
               style={{
                 left: `${((price - data.l) / (data.h - data.l)) * 100}%`,
                 transform: 'translate(-50%, -50%)',

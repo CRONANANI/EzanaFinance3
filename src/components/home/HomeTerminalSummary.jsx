@@ -303,7 +303,7 @@ export function HomeTerminalSummary({
                     style={{
                       fontSize: '0.9375rem',
                       fontWeight: 800,
-                      color: '#f0f6fc',
+                      color: 'var(--home-heading)',
                       margin: 0,
                     }}
                   >
@@ -332,7 +332,7 @@ export function HomeTerminalSummary({
                   style={{
                     fontSize: '2.25rem',
                     fontWeight: 800,
-                    color: '#f0f6fc',
+                    color: 'var(--home-heading)',
                     margin: '0 0 0.25rem',
                     letterSpacing: '-0.02em',
                   }}
@@ -387,7 +387,7 @@ export function HomeTerminalSummary({
                     >
                       Gain Today
                     </p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f0f6fc', margin: 0 }}>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
                       $
                       {gainTodayDisplay.toLocaleString('en-US', {
                         minimumFractionDigits: 2,
@@ -408,7 +408,7 @@ export function HomeTerminalSummary({
                     >
                       Today&apos;s Trades
                     </p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f0f6fc', margin: 0 }}>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
                       {tradesTodayCount}
                     </p>
                   </div>
@@ -578,7 +578,7 @@ export function HomeTerminalSummary({
                           margin: 0,
                           fontSize: '0.875rem',
                           fontWeight: 800,
-                          color: '#f0f6fc',
+                          color: 'var(--home-heading)',
                           whiteSpace: 'nowrap',
                         }}
                       >
@@ -602,7 +602,7 @@ export function HomeTerminalSummary({
                       strokeLinecap="round"
                       transform="rotate(-90 60 60)"
                     />
-                    <text x="60" y="58" textAnchor="middle" fill="#f0f6fc" fontSize="22" fontWeight="800">
+                    <text x="60" y="58" textAnchor="middle" fill="var(--home-heading)" fontSize="22" fontWeight="800">
                       {ringValue}
                     </text>
                     <text x="60" y="74" textAnchor="middle" fill="var(--home-muted)" fontSize="9" fontWeight="600">
@@ -728,7 +728,7 @@ export function HomeTerminalSummary({
                         {initials(row.name)}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: '#f0f6fc', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>
+                        <p style={{ color: 'var(--home-heading)', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>
                           {row.name}{' '}
                           <span style={{ color: 'var(--home-muted)', fontSize: '0.6875rem' }}>({row.party})</span>
                         </p>
@@ -832,7 +832,7 @@ export function HomeTerminalSummary({
                       >
                         {m.ticker[0]}
                       </div>
-                      <span style={{ fontWeight: 800, color: '#f0f6fc', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
                       <span
                         style={{
                           padding: '0.15rem 0.4rem',
@@ -888,7 +888,7 @@ export function HomeTerminalSummary({
                       >
                         {m.ticker[0]}
                       </div>
-                      <span style={{ fontWeight: 800, color: '#f0f6fc', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
                       <span
                         style={{
                           padding: '0.15rem 0.4rem',

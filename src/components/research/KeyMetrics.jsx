@@ -39,9 +39,9 @@ export function KeyMetrics({ symbol }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading metrics...
         </div>
@@ -53,9 +53,9 @@ export function KeyMetrics({ symbol }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
-        <p className="text-gray-400">Key metrics unavailable.</p>
+        <p className="text-gray-500 dark:text-gray-400">Key metrics unavailable.</p>
       </motion.div>
     );
   }
@@ -67,16 +67,16 @@ export function KeyMetrics({ symbol }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
     >
-      <h3 className="text-lg font-semibold text-white mb-4">Key Financial Metrics</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Key Financial Metrics</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {entries.slice(0, 12).map(([key, value]) => (
-          <div key={key} className="bg-[#161b22] rounded-lg p-3">
+          <div key={key} className="bg-gray-100 dark:bg-[#161b22] rounded-lg p-3">
             <span className="text-xs text-gray-500 block">
               {METRIC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').trim()}
             </span>
-            <p className="text-white font-medium mt-1">{fmt(value)}</p>
+            <p className="text-gray-900 dark:text-white font-medium mt-1">{fmt(value)}</p>
           </div>
         ))}
       </div>

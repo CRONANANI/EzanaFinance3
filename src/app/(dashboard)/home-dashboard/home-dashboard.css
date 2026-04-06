@@ -18,9 +18,9 @@
 }
 
 body.light-mode .db-page {
-  --db-muted: #10b981;
-  --db-muted-soft: #10b981;
-  --db-muted-ink: #10b981;
+  --db-muted: #64748b;
+  --db-muted-soft: #64748b;
+  --db-muted-ink: #475569;
 }
 
 /* ══════════════════════════════
@@ -848,3 +848,12 @@ body.light-mode .db-sector-name { color: #111827; }
 body.light-mode .db-sector-detail { color: var(--db-muted); }
 body.light-mode .db-sector-value { color: #111827; }
 body.light-mode .db-tx-name { color: #111827; }
+
+body.light-mode .db-sector-name { color: #111827; }
+body.light-mode .db-watchlist-price { color: #111827; }
+body.light-mode .db-legend-pct { color: #374151; }
+
+body.light-mode .db-tf-btn:hover,
+body.light-mode .db-tf-btn-sm:hover {
+  color: #111827;
+}

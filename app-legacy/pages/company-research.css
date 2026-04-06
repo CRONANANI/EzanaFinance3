@@ -1629,3 +1629,15 @@ body.light-mode .cr-merged-ticker {
 body.light-mode .cr-merged-meta-line {
   color: #4b5563;
 }
+
+body.light-mode .cr-page .research-card {
+  color: #111827 !important;
+}
+
+body.light-mode .cr-page .research-card h3 {
+  color: #111827 !important;
+}
+
+body.light-mode .cr-section-heading {
+  color: #111827;
+}

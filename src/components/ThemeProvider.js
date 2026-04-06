@@ -16,12 +16,15 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     if (!mounted) return;
+    const root = document.documentElement;
     if (theme === 'light') {
-      document.documentElement.classList.add('light-mode');
+      root.classList.add('light-mode');
       document.body.classList.add('light-mode');
+      root.classList.remove('dark');
     } else {
-      document.documentElement.classList.remove('light-mode');
+      root.classList.remove('light-mode');
       document.body.classList.remove('light-mode');
+      root.classList.add('dark');
     }
     localStorage.setItem('ezana-theme', theme);
   }, [theme, mounted]);

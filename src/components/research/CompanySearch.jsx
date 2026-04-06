@@ -134,7 +134,7 @@ export function CompanySearch({
           }}
         />
 
-        <div className="relative bg-[#0d1117] rounded-2xl">
+        <div className="relative bg-white dark:bg-[#0d1117] rounded-2xl">
           <div className="relative flex items-center">
             <div
               className={`absolute left-5 transition-colors duration-300 ${
@@ -153,7 +153,7 @@ export function CompanySearch({
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              className="w-full h-14 pl-14 pr-14 bg-[#161b22] border border-gray-700/50 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-transparent transition-all text-lg font-medium"
+              className="w-full h-14 pl-14 pr-14 bg-gray-50 dark:bg-[#161b22] border border-gray-200 dark:border-gray-700/50 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-transparent transition-all text-lg font-medium"
               autoComplete="off"
               spellCheck="false"
             />
@@ -168,7 +168,7 @@ export function CompanySearch({
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-5 text-gray-500 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700"
+                className="absolute right-5 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -185,7 +185,7 @@ export function CompanySearch({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute z-50 w-full mt-3 bg-[#161b22] border border-gray-700/50 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
+            className="absolute z-50 w-full mt-3 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-700/50 rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/50 overflow-hidden"
           >
             <div className="py-2 max-h-[400px] overflow-y-auto">
               {filteredResults.map((result, index) => (
@@ -197,12 +197,12 @@ export function CompanySearch({
                   className={`w-full px-4 py-3 flex items-center gap-4 transition-all duration-150 ${
                     index === selectedIndex
                       ? 'bg-emerald-500/10'
-                      : 'hover:bg-gray-800/50'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
                   }`}
                 >
                   <div
                     className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
-                      index === selectedIndex ? 'bg-emerald-500/20' : 'bg-gray-800'
+                      index === selectedIndex ? 'bg-emerald-500/20' : 'bg-gray-200 dark:bg-gray-800'
                     }`}
                   >
                     {result.type === 'ETF' ? (
@@ -223,7 +223,7 @@ export function CompanySearch({
                     <div className="flex items-center gap-2">
                       <span
                         className={`font-bold text-base ${
-                          index === selectedIndex ? 'text-emerald-400' : 'text-white'
+                          index === selectedIndex ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'
                         }`}
                       >
                         {result.symbol || result.displaySymbol}
@@ -232,8 +232,8 @@ export function CompanySearch({
                         <span
                           className={`text-xs px-2 py-0.5 rounded-md ${
                             index === selectedIndex
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : 'bg-gray-700 text-gray-400'
+                              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                           }`}
                         >
                           {result.type}
@@ -249,22 +249,22 @@ export function CompanySearch({
               {isLoading && filteredResults.length === 0 && (
                 <div className="px-4 py-8 text-center">
                   <Loader2 className="w-6 h-6 animate-spin text-emerald-500 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">Searching...</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Searching...</p>
                 </div>
               )}
             </div>
-            <div className="px-4 py-3 border-t border-gray-700/50 flex items-center justify-between text-xs text-gray-500 bg-[#0d1117]">
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700/50 flex items-center justify-between text-xs text-gray-500 bg-gray-50 dark:bg-[#0d1117]">
               <span className="flex items-center gap-1.5">
-                <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400 font-mono">↑</kbd>
-                <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400 font-mono">↓</kbd>
+                <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono">↑</kbd>
+                <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono">↓</kbd>
                 <span>navigate</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="px-2 py-0.5 bg-gray-800 rounded text-gray-400 font-mono text-[10px]">Enter</kbd>
+                <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-[10px]">Enter</kbd>
                 <span>select</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <kbd className="px-2 py-0.5 bg-gray-800 rounded text-gray-400 font-mono text-[10px]">Esc</kbd>
+                <kbd className="px-2 py-0.5 bg-gray-200 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-[10px]">Esc</kbd>
                 <span>close</span>
               </span>
             </div>
@@ -276,12 +276,12 @@ export function CompanySearch({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-3 bg-[#161b22] border border-gray-700/50 rounded-2xl shadow-2xl p-8 text-center"
+            className="absolute z-50 w-full mt-3 bg-white dark:bg-[#161b22] border border-gray-200 dark:border-gray-700/50 rounded-2xl shadow-2xl p-8 text-center"
           >
-            <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
               <Search className="w-6 h-6 text-gray-500" />
             </div>
-            <p className="text-gray-300 font-medium">No results found</p>
+            <p className="text-gray-700 dark:text-gray-300 font-medium">No results found</p>
             <p className="text-sm text-gray-500 mt-1">
               Try searching for a different company name or ticker symbol
             </p>

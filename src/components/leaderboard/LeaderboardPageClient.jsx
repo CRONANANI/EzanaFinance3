@@ -15,8 +15,8 @@ const PERIODS = [
 function formatChange(c) {
   if (c == null || Number.isNaN(c)) return '—';
   if (c === 0) return '—';
-  if (c > 0) return <span className="text-emerald-400">↑{c}</span>;
-  return <span className="text-red-400">↓{Math.abs(c)}</span>;
+  if (c > 0) return <span className="text-emerald-600 dark:text-emerald-400">↑{c}</span>;
+  return <span className="text-red-600 dark:text-red-400">↓{Math.abs(c)}</span>;
 }
 
 export function LeaderboardPageClient() {
@@ -78,11 +78,11 @@ export function LeaderboardPageClient() {
   }, [rows, search]);
 
   return (
-    <div className="relative mx-auto max-w-7xl px-4 py-8 pb-24 text-[#e5e7eb]">
+    <div className="relative mx-auto max-w-7xl px-4 py-8 pb-24 text-gray-700 dark:text-[#e5e7eb]">
       <Link href="/community" className="mb-4 inline-flex items-center gap-1 text-sm text-emerald-400 hover:underline">
         ← Back to Community
       </Link>
-      <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leaderboard</h1>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
@@ -92,7 +92,7 @@ export function LeaderboardPageClient() {
               type="button"
               onClick={() => setPeriod(p.id)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold ${
-                period === p.id ? 'bg-[#1a1a24] text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
+                period === p.id ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
               }`}
             >
               {p.label}
@@ -105,7 +105,7 @@ export function LeaderboardPageClient() {
               type="checkbox"
               checked={includeRising}
               onChange={(e) => setIncludeRising(e.target.checked)}
-              className="rounded border-[#1a1a24] bg-[#0d0d14]"
+              className="rounded border-gray-300 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14]"
             />
             Include rising traders
           </label>
@@ -115,19 +115,19 @@ export function LeaderboardPageClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by username"
-              className="w-56 rounded-lg border border-[#1a1a24] bg-[#0d0d14] py-2 pl-9 pr-3 text-sm text-white placeholder:text-[#6b7280]"
+              className="w-56 rounded-lg border border-gray-300 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14] py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder:text-[#6b7280]"
             />
           </div>
         </div>
       </div>
 
-      <div className="mt-8 overflow-x-auto rounded-xl border border-[#1a1a24] bg-[#0d0d14]">
+      <div className="mt-8 overflow-x-auto rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14]">
         {loading ? (
           <div className="animate-pulse p-8 text-[#6b7280]">Loading…</div>
         ) : (
           <table className="w-full min-w-[960px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-[#1a1a24] text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]">
+              <tr className="border-b border-gray-200 dark:border-[#1a1a24] text-[10px] font-semibold uppercase tracking-wider text-[#6b7280]">
                 <th className="px-4 py-3">#</th>
                 <th className="px-2 py-3">Δ</th>
                 <th className="px-4 py-3">Username</th>
@@ -154,7 +154,7 @@ export function LeaderboardPageClient() {
                 return (
                   <tr
                     key={r.userId}
-                    className={`border-b border-[#1a1a24]/80 transition ${
+                    className={`border-b border-gray-200/80 dark:border-[#1a1a24]/80 transition ${
                       isSelf ? 'bg-emerald-500/10' : ''
                     } ${top ? 'bg-amber-500/[0.04]' : ''}`}
                   >
@@ -163,7 +163,7 @@ export function LeaderboardPageClient() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/profile/${encodeURIComponent(r.username)}`}
-                        className="inline-flex items-center gap-2 font-semibold text-white hover:text-emerald-400"
+                        className="inline-flex items-center gap-2 font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400"
                         title={`${r.username} — ${r.winRate.toFixed(1)}% win · ${r.totalTrades} trades`}
                       >
                         {r.rank === 1 && '👑 '}
@@ -174,13 +174,13 @@ export function LeaderboardPageClient() {
                         <span>{r.username}</span>
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-emerald-400/90">{r.winRate.toFixed(1)}%</td>
+                    <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400/90">{r.winRate.toFixed(1)}%</td>
                     <td className="px-4 py-3">{r.avgGain.toFixed(2)}%</td>
                     <td className="px-4 py-3">{r.avgReturn.toFixed(2)}%</td>
                     <td className="px-4 py-3">{r.avgMax.toFixed(2)}%</td>
                     <td className="px-4 py-3">{r.activeTrades}</td>
                     <td className="px-4 py-3">{r.totalTrades}</td>
-                    <td className="px-4 py-3 font-semibold text-emerald-400">{r.score.toFixed(0)}</td>
+                    <td className="px-4 py-3 font-semibold text-emerald-600 dark:text-emerald-400">{r.score.toFixed(0)}</td>
                   </tr>
                 );
               })}
@@ -190,7 +190,7 @@ export function LeaderboardPageClient() {
       </div>
 
       {user?.id && myRanks && (
-        <div className="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2 rounded-xl border border-[#1a1a24] bg-[#0d0d14]/95 p-3 text-xs backdrop-blur">
+        <div className="fixed bottom-4 left-4 z-40 flex flex-wrap gap-2 rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white/95 dark:bg-[#0d0d14]/95 p-3 text-xs backdrop-blur">
           {['all_time', 'year', 'month', 'week'].map((p) => {
             const x = myRanks[p];
             if (!x) return null;

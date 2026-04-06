@@ -12,9 +12,9 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
-        <div className="flex items-center gap-3 text-gray-400">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <div className="w-5 h-5 border-2 border-emerald-500/50 border-t-emerald-500 rounded-full animate-spin" />
           Loading peers...
         </div>
@@ -26,9 +26,9 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+        className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
       >
-        <p className="text-gray-400">Peer companies unavailable.</p>
+        <p className="text-gray-500 dark:text-gray-400">Peer companies unavailable.</p>
       </motion.div>
     );
   }
@@ -39,16 +39,16 @@ export function CompetitorsCard({ symbol, onSelectPeer }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="research-card bg-[#0d1117] border border-gray-700 rounded-xl p-6"
+      className="research-card bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-gray-700 rounded-xl p-6"
     >
-      <h3 className="text-lg font-semibold text-white mb-4">Peer Companies</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Peer Companies</h3>
       <div className="flex flex-wrap gap-2">
         {peers.map((peer, pi) => (
           <button
             key={peer}
             type="button"
             onClick={() => onSelectPeer?.(peer)}
-            className="px-3 py-1.5 rounded-lg bg-[#161b22] hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 transition-colors text-sm font-medium"
+            className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-[#161b22] hover:bg-emerald-500/20 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
             data-task-target={pi === 0 ? 'research-compare-button' : undefined}
           >
             {peer}

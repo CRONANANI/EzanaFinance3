@@ -298,7 +298,7 @@ export function ProfilePageClient({ username }) {
     <div className="dashboard-page-inset db-page">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_390px]">
         <section className="min-w-0">
-          <div className="rounded-xl border border-[#1a1a24] bg-[#111118] p-5">
+          <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-5">
             <div className="flex flex-wrap items-start gap-4">
             <div
               className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[#1a1a24] bg-[#16161f] text-2xl font-bold text-[#9ca3af]"
@@ -311,7 +311,7 @@ export function ProfilePageClient({ username }) {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-3xl font-bold text-white">{profile.username || display}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{profile.username || display}</h1>
                 {profile.is_partner && <span title="Partner">⚡</span>}
               </div>
               <p className="mt-1 text-sm text-[#6b7280]">{followerCount} subscribers</p>
@@ -337,7 +337,7 @@ export function ProfilePageClient({ username }) {
             </div>
           </div>
 
-          <div className="mt-6 border-b border-[#1a1a24]">
+          <div className="mt-6 border-b border-gray-200 dark:border-[#1a1a24]">
             <div className="flex gap-6">
               {['trades', 'following', 'activity', 'bookmarked'].map((t) => (
                 <button
@@ -345,7 +345,7 @@ export function ProfilePageClient({ username }) {
                   type="button"
                   onClick={() => setTab(t)}
                   className={`border-b-2 pb-3 text-sm font-semibold transition ${
-                    tab === t ? 'border-emerald-500 text-white' : 'border-transparent text-[#6b7280]'
+                    tab === t ? 'border-emerald-500 text-gray-900 dark:text-white' : 'border-transparent text-[#6b7280]'
                   }`}
                 >
                   {t === 'trades'
@@ -370,24 +370,24 @@ export function ProfilePageClient({ username }) {
                       type="button"
                       onClick={() => setSubTab(s)}
                       className={`rounded px-3 py-1.5 text-xs font-medium capitalize ${
-                        subTab === s ? 'bg-[#1a1a24] text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
+                        subTab === s ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
                       }`}
                     >
                       {s === 'recent' ? 'Recents' : s}
                     </button>
                   ))}
                 </div>
-                <div className="flex gap-1 rounded border border-[#1a1a24] p-1">
+                <div className="flex gap-1 rounded border border-gray-200 dark:border-[#1a1a24] p-1">
                   <button
                     type="button"
-                    className={`rounded px-2 py-1 text-xs ${viewMode === 'card' ? 'bg-[#1a1a24] text-white' : 'text-[#6b7280]'}`}
+                    className={`rounded px-2 py-1 text-xs ${viewMode === 'card' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280]'}`}
                     onClick={() => setViewMode('card')}
                   >
                     ▦
                   </button>
                   <button
                     type="button"
-                    className={`rounded px-2 py-1 text-xs ${viewMode === 'list' ? 'bg-[#1a1a24] text-white' : 'text-[#6b7280]'}`}
+                    className={`rounded px-2 py-1 text-xs ${viewMode === 'list' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280]'}`}
                     onClick={() => setViewMode('list')}
                   >
                     ☰
@@ -427,9 +427,9 @@ export function ProfilePageClient({ username }) {
                 <p className="text-sm text-[#6b7280]">No activity yet.</p>
               ) : (
                 activityItems.map((item) => (
-                  <div key={item.id} className="rounded-xl border border-[#1a1a24] bg-[#111118] p-4">
+                  <div key={item.id} className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-gray-50 dark:bg-[#111118] p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm text-[#e5e7eb]">{item.text}</p>
+                      <p className="text-sm text-gray-800 dark:text-[#e5e7eb]">{item.text}</p>
                       <span className="rounded bg-[#1a1a24] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#9ca3af]">
                         {item.type}
                       </span>
