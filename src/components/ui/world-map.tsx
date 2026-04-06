@@ -11,6 +11,69 @@ import {
 } from "react";
 import DottedMap from "dotted-map";
 import Image from "next/image";
+import type { CountryScore } from "@/hooks/useGlobalPowerMap";
+
+/** Approximate country centroids (ISO 3166-1 alpha-2) for power-map heat blobs */
+const POWER_COUNTRY_CENTROIDS: Record<string, { lat: number; lng: number }> = {
+  US: { lat: 39.8283, lng: -98.5795 },
+  CN: { lat: 35.8617, lng: 104.1954 },
+  DE: { lat: 51.1657, lng: 10.4515 },
+  JP: { lat: 36.2048, lng: 138.2529 },
+  KR: { lat: 35.9078, lng: 127.7669 },
+  NL: { lat: 52.1326, lng: 5.2913 },
+  GB: { lat: 55.3781, lng: -3.436 },
+  FR: { lat: 46.2276, lng: 2.2137 },
+  IN: { lat: 20.5937, lng: 78.9629 },
+  BR: { lat: -14.235, lng: -51.9253 },
+  MX: { lat: 23.6345, lng: -102.5528 },
+  RU: { lat: 61.524, lng: 105.3188 },
+  CA: { lat: 56.1304, lng: -106.3468 },
+  AU: { lat: -25.2744, lng: 133.7751 },
+  IT: { lat: 41.8719, lng: 12.5674 },
+  SG: { lat: 1.3521, lng: 103.8198 },
+  NG: { lat: 9.082, lng: 8.6753 },
+  SD: { lat: 12.8628, lng: 30.2176 },
+  SY: { lat: 34.8021, lng: 38.9968 },
+  IQ: { lat: 33.2232, lng: 43.6793 },
+  AF: { lat: 33.9391, lng: 67.71 },
+  ET: { lat: 9.145, lng: 40.4897 },
+  MM: { lat: 21.9162, lng: 95.956 },
+  ML: { lat: 17.5707, lng: -3.9962 },
+  TR: { lat: 38.9637, lng: 35.2433 },
+  AR: { lat: -38.4161, lng: -63.6167 },
+  ZA: { lat: -30.5595, lng: 22.9375 },
+  ES: { lat: 40.4637, lng: -3.7492 },
+  SA: { lat: 23.8859, lng: 45.0792 },
+  AE: { lat: 23.4241, lng: 53.8478 },
+  NO: { lat: 60.472, lng: 8.4689 },
+  QA: { lat: 25.3548, lng: 51.1839 },
+  IL: { lat: 31.0461, lng: 34.8516 },
+  PK: { lat: 30.3753, lng: 69.3451 },
+  ID: { lat: -0.7893, lng: 113.9213 },
+  EG: { lat: 26.8206, lng: 30.8025 },
+  BD: { lat: 23.685, lng: 90.3563 },
+  PH: { lat: 12.8797, lng: 121.774 },
+  VN: { lat: 14.0583, lng: 108.2772 },
+  KZ: { lat: 48.0196, lng: 66.9237 },
+  FI: { lat: 61.9241, lng: 25.7482 },
+  DK: { lat: 56.2639, lng: 9.5018 },
+  NZ: { lat: -40.9006, lng: 174.886 },
+  SE: { lat: 60.1282, lng: 18.6435 },
+  CH: { lat: 46.8182, lng: 8.2275 },
+  AT: { lat: 47.5162, lng: 14.5501 },
+};
+
+function scoreToColor(score: number): string {
+  if (score >= 80) return "#22C55E";
+  if (score >= 65) return "#4ADE80";
+  if (score >= 50) return "#FACC15";
+  if (score >= 35) return "#F97316";
+  return "#EF4444";
+}
+
+function scoreToOpacity(score: number): number {
+  return 0.4 + (score / 100) * 0.5;
+}
 
 export const FINANCIAL_CENTERS = [
   { id: "toronto", panelId: "toronto", name: "Toronto", lat: 43.6532, lng: -79.3832, exchange: "TSX" },
@@ -68,10 +131,23 @@ type WorldMapProps = {
   activeLayer?: string | null;
   /** Active tab within the layer */
   activeLayerTab?: string | null;
+  /** When true, hide financial-center pulse dots (e.g. Global Power Map active). */
+  hideFinancialDots?: boolean;
+  /** Country composite scores for heat blobs (ISO2). */
+  powerCountryScores?: CountryScore[];
 };
 
 export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
-  { lineColor = "#10b981", onDotClick, selectedPanelId = null, hideControls = false, activeLayer = null, activeLayerTab = null },
+  {
+    lineColor = "#10b981",
+    onDotClick,
+    selectedPanelId = null,
+    hideControls = false,
+    activeLayer = null,
+    activeLayerTab = null,
+    hideFinancialDots = false,
+    powerCountryScores = [],
+  },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -404,7 +480,30 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               height: "100%",
             }}
           >
-          {FINANCIAL_CENTERS.map((center) => {
+          {powerCountryScores.map((c) => {
+            const geo = POWER_COUNTRY_CENTROIDS[c.iso];
+            if (!geo) return null;
+            const point = projectPoint(geo.lat, geo.lng);
+            const fill = scoreToColor(c.score);
+            const op = scoreToOpacity(c.score);
+            const r = 1.8 + (c.score / 100) * 5.5;
+            return (
+              <g key={`power-${c.iso}`} pointerEvents="none">
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={r}
+                  fill={fill}
+                  fillOpacity={op * 0.85}
+                  stroke={fill}
+                  strokeWidth={0.12}
+                  strokeOpacity={0.9}
+                />
+              </g>
+            );
+          })}
+          {!hideFinancialDots &&
+            FINANCIAL_CENTERS.map((center) => {
             const point = projectPoint(center.lat, center.lng);
             const isHovered = hoveredDot === center.id;
             const isSelected = selectedPanelId === center.panelId;

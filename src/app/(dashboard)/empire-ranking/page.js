@@ -1,7 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import EconomicLeadershipTimeline from '@/components/empire-ranking/EconomicLeadershipTimeline';
+import AssetCrisisRegimes from '@/components/empire-ranking/AssetCrisisRegimes';
+import InnovationLeadershipIndex from '@/components/empire-ranking/InnovationLeadershipIndex';
 import { fetchEmpireRankings } from '@/lib/empire-db';
 import {
   LineChart,
@@ -29,6 +33,18 @@ import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import './empire-ranking.css';
+
+const LAYER_SECTION_MAP = {
+  trade: 'section-trade-power',
+  conflict: 'section-conflict-risk',
+  interest_rates: 'section-interest-rates',
+  economic: 'section-economic-power',
+  military: 'section-military-power',
+  energy: 'section-energy-power',
+  demographic: 'section-demographic-power',
+  governance: 'section-governance',
+  infrastructure: 'section-infrastructure',
+};
 
 /* Dalio-style empire scores — illustrative mock data for UI */
 const EMPIRE_DATA = [
@@ -396,9 +412,9 @@ function generateBigCycle(country) {
   return points;
 }
 
-function Card({ icon, title, subtitle, children, wide, actions, className = '' }) {
+function Card({ icon, title, subtitle, children, wide, actions, className = '', id }) {
   return (
-    <section className={`er-card${wide ? ' er-card--wide' : ''} ${className}`}>
+    <section id={id || undefined} className={`er-card${wide ? ' er-card--wide' : ''} ${className}`}>
       <div className="er-card-header">
         <div className="er-card-header-left">
           <i className={`bi ${icon}`} aria-hidden />
@@ -439,7 +455,7 @@ function PowerRankingsCard({ empireData }) {
     }));
 
   return (
-    <Card icon="bi-trophy" title="Global Power Rankings" subtitle="Overall Empire Score (0–1)" wide>
+    <Card id="section-economic-power" icon="bi-trophy" title="Global Power Rankings" subtitle="Overall Empire Score (0–1)" wide>
       <div style={{ height: 380 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
@@ -491,6 +507,7 @@ function PowerDimensionRadar({ empireData }) {
 
   return (
     <Card
+      id="section-energy-power"
       icon="bi-diagram-3"
       title="Power Dimension Comparison"
       subtitle="Head-to-head across 18 measures of power"
@@ -551,6 +568,7 @@ function BigCycleCard({ empireData }) {
 
   return (
     <Card
+      id="section-conflict-risk"
       icon="bi-graph-up-arrow"
       title="The Big Cycle — Rise & Fall"
       subtitle="Historical power trajectory (1500–2030, mock data)"
@@ -632,7 +650,7 @@ function DebtCycleCard() {
   });
 
   return (
-    <Card icon="bi-cash-stack" title="Debt Burden Cycles" subtitle="Debt-to-GDP ratio across major empires (%)">
+    <Card id="section-interest-rates" icon="bi-cash-stack" title="Debt Burden Cycles" subtitle="Debt-to-GDP ratio across major empires (%)">
       <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -672,7 +690,7 @@ function MilitaryCard() {
   ];
 
   return (
-    <Card icon="bi-shield-fill" title="Military Strength" subtitle="Defense spending (2023 est., USD bn)">
+    <Card id="section-military-power" icon="bi-shield-fill" title="Military Strength" subtitle="Defense spending (2023 est., USD bn)">
       <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -715,7 +733,7 @@ function ReserveCurrencyCard() {
   });
 
   return (
-    <Card icon="bi-currency-exchange" title="Reserve Currency Share" subtitle="% of global forex reserves">
+    <Card id="section-governance" icon="bi-currency-exchange" title="Reserve Currency Share" subtitle="% of global forex reserves">
       <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }} stackOffset="expand">
@@ -772,7 +790,28 @@ function ScorecardGrid({ empireData }) {
   );
 }
 
-export default function EmpireRankingPage() {
+function EmpireRankingPageContent() {
+  const searchParams = useSearchParams();
+  const layersParam = searchParams.get('layers');
+  const activeLayers = useMemo(
+    () => (layersParam ? layersParam.split(',').map((s) => s.trim()).filter(Boolean) : []),
+    [layersParam]
+  );
+  const hasIncoming = activeLayers.length > 0;
+
+  useEffect(() => {
+    if (!layersParam) return;
+    const layers = layersParam.split(',').map((s) => s.trim()).filter(Boolean);
+    if (layers.length === 0) return;
+    const t = setTimeout(() => {
+      const sectionId = LAYER_SECTION_MAP[layers[0]];
+      if (sectionId) {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [layersParam]);
+
   const [empireData, setEmpireData] = useState(EMPIRE_DATA);
   const [loading, setLoading] = useState(false);
 
@@ -851,6 +890,21 @@ export default function EmpireRankingPage() {
         <div className="er-hero-badge">{heroBadge}</div>
       </div>
 
+      {hasIncoming && (
+        <div className="er-layers-from-map-banner" role="status">
+          <div>
+            <p className="er-layers-from-map-title">Showing data for your selected power layers</p>
+            <div className="er-layers-from-map-tags">
+              {activeLayers.map((layer) => (
+                <span key={layer} className="er-layers-from-map-tag">
+                  {layer.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="er-grid">
         <PowerRankingsCard empireData={empireData} />
         <ScorecardGrid empireData={empireData} />
@@ -859,7 +913,45 @@ export default function EmpireRankingPage() {
         <DebtCycleCard />
         <MilitaryCard />
         <ReserveCurrencyCard />
+        <section id="section-trade-power" className="er-analytics-wide">
+          <EconomicLeadershipTimeline />
+        </section>
+        <section id="section-infrastructure" className="er-analytics-wide">
+          <AssetCrisisRegimes />
+        </section>
+        <section id="section-demographic-power" className="er-analytics-wide">
+          <InnovationLeadershipIndex />
+        </section>
       </div>
     </div>
+  );
+}
+
+export default function EmpireRankingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="dashboard-page-inset er-page">
+          <div className="er-hero">
+            <div className="er-hero-left">
+              <Link href="/market-analysis" className="er-back-link">
+                <i className="bi bi-arrow-left" /> Back to Global Market Analysis
+              </Link>
+              <div className="er-hero-title-row">
+                <div className="er-hero-icon">
+                  <i className="bi bi-globe-americas" />
+                </div>
+                <div>
+                  <h1>Empire Ranking &amp; Analysis</h1>
+                  <p className="er-hero-sub">Loading…</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <EmpireRankingPageContent />
+    </Suspense>
   );
 }

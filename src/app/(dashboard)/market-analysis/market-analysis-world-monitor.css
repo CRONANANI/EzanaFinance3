@@ -77,6 +77,23 @@
   background: rgba(212, 175, 55, 0.15);
 }
 
+.ma-view-btn.ma-view-btn--purple {
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.12);
+  border-left: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.ma-view-btn.ma-view-btn--purple:hover {
+  color: #ddd6fe;
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.ma-sidebar-power-wrap {
+  width: 100%;
+  min-width: 11rem;
+  margin-bottom: 0.35rem;
+}
+
 /* ═══ Map area ═══ */
 .ma-map-area {
   position: absolute;

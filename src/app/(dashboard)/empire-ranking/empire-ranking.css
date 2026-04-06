@@ -103,6 +103,45 @@
   gap: 1.25rem;
 }
 
+.er-analytics-wide {
+  grid-column: 1 / -1;
+  scroll-margin-top: 5rem;
+}
+
+.er-layers-from-map-banner {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.28);
+}
+
+.er-layers-from-map-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #c4b5fd;
+}
+
+.er-layers-from-map-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.er-layers-from-map-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
 @media (max-width: 1024px) {
   .er-grid {
     grid-template-columns: 1fr;

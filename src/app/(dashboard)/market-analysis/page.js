@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { WorldMap } from '@/components/ui/world-map';
+import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
+import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import {
   PANEL_ID_TO_CITY_KEY,
   PANEL_ID_TO_FINHUB_CITY_ID,
@@ -865,6 +868,10 @@ export default function MarketAnalysisPage() {
   const [selectedDot, setSelectedDot] = useState(null);
   const [tickerData, setTickerData] = useState([]);
   const mapRef = useRef(null);
+  const router = useRouter();
+  const selectedLayers = useGlobalPowerMap((s) => s.selectedLayers);
+  const countryScores = useGlobalPowerMap((s) => s.countryScores);
+  const isPowerMapActive = selectedLayers.length > 0;
 
   useEffect(() => {
     const fetchTicker = async () => {
@@ -949,6 +956,15 @@ export default function MarketAnalysisPage() {
             <i className="bi bi-globe-americas" style={{ marginRight: 4 }} />
             EMPIRE RANKING &amp; ANALYSIS
           </Link>
+          {view === 'map' && isPowerMapActive && (
+            <button
+              type="button"
+              className="ma-view-btn ma-view-btn--purple"
+              onClick={() => router.push(`/empire-ranking?layers=${selectedLayers.join(',')}`)}
+            >
+              SHOW ME THE DATA →
+            </button>
+          )}
         </div>
       </div>
 
@@ -963,10 +979,15 @@ export default function MarketAnalysisPage() {
               activeLayer={activeCategory}
               activeLayerTab={activeTab}
               hideControls
+              hideFinancialDots={isPowerMapActive}
+              powerCountryScores={countryScores}
             />
           </div>
 
           <div className="ma-sidebar">
+            <div className="ma-sidebar-power-wrap">
+              <GlobalPowerMapControl />
+            </div>
             {['markets', 'central-banks', 'indices', 'commodities', 'currencies'].map((cat) => (
               <button key={cat} type="button" className={`ma-sidebar-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => toggleCategory(cat)}>
                 <i className={`bi ${cat === 'markets' ? 'bi-graph-up' : cat === 'central-banks' ? 'bi-bank' : cat === 'indices' ? 'bi-bar-chart-line' : cat === 'commodities' ? 'bi-gem' : 'bi-currency-exchange'}`} />
