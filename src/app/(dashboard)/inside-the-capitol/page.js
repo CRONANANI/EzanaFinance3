@@ -336,7 +336,11 @@ const SECTOR_DATA = [
   { sector: 'Defense', buy: 42, sell: 58, vol: '$67M', trades: 198 },
   { sector: 'Finance', buy: 61, sell: 39, vol: '$78M', trades: 267 },
   { sector: 'Energy', buy: 48, sell: 52, vol: '$54M', trades: 156 },
-  { sector: 'Consumer', buy: 52, sell: 48, vol: '$38M', trades: 134 },
+  { sector: 'Consumer Disc.', buy: 52, sell: 48, vol: '$38M', trades: 134 },
+  { sector: 'Industrials', buy: 54, sell: 46, vol: '$31M', trades: 112 },
+  { sector: 'Comm. Services', buy: 49, sell: 51, vol: '$29M', trades: 98 },
+  { sector: 'Real Estate', buy: 44, sell: 56, vol: '$22M', trades: 76 },
+  { sector: 'Materials', buy: 51, sell: 49, vol: '$19M', trades: 64 },
 ];
 
 const UNUSUAL_VOLUME = [

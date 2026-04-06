@@ -99,13 +99,37 @@ const WORST_SECTORS = [
   { name: 'Utilities', change: '-0.017%' },
 ];
 
-const SCORE_GOALS = [
-  { label: 'Check watchlist everyday', current: 2, total: 5, done: false },
-  { label: 'Completed 2 different valuation models on 3 different companies', current: 3, total: 3, done: true },
-  { label: 'Engaged in 3 community posts', current: 3, total: 3, done: true },
-  { label: 'Reviewed 10 capitol trades', current: 3, total: 10, done: false },
-  { label: 'Complete 5 learning modules', current: 3, total: 5, done: false },
+/** Upcoming Events grid — `day` is day-of-month (calendar uses current month/year) */
+const UPCOMING_EVENTS_GRID = [
+  { id: 1, type: 'fed', icon: '🏛️', title: 'Fed Rate Decision', day: 7, time: '2:00 PM', color: '#3b82f6' },
+  { id: 2, type: 'earnings', icon: '📊', title: 'NVDA Earnings', day: 8, time: '4:30 PM', color: '#10b981' },
+  { id: 3, type: 'alert', icon: '🔔', title: 'Portfolio Alert', day: 9, time: 'All Day', color: '#f59e0b' },
+  { id: 4, type: 'economic', icon: '📈', title: 'CPI Release', day: 10, time: '8:30 AM', color: '#6366f1' },
+  { id: 5, type: 'earnings', icon: '📊', title: 'AAPL Earnings', day: 11, time: '4:30 PM', color: '#10b981' },
+  { id: 6, type: 'fed', icon: '🏛️', title: 'Fed Minutes', day: 14, time: '2:00 PM', color: '#3b82f6' },
+  { id: 7, type: 'economic', icon: '📉', title: 'Retail Sales', day: 15, time: '8:30 AM', color: '#6366f1' },
+  { id: 8, type: 'alert', icon: '⚠️', title: 'Margin Call Warning', day: 16, time: 'Alert', color: '#ef4444' },
+  { id: 9, type: 'earnings', icon: '📊', title: 'MSFT Earnings', day: 17, time: '4:30 PM', color: '#10b981' },
+  { id: 10, type: 'economic', icon: '🏠', title: 'Housing Starts', day: 17, time: '8:30 AM', color: '#6366f1' },
+  { id: 11, type: 'fed', icon: '🏛️', title: 'Fed Speaker: Powell', day: 18, time: '10:00 AM', color: '#3b82f6' },
+  { id: 12, type: 'alert', icon: '🔔', title: 'Watchlist Price Alert', day: 21, time: 'Alert', color: '#f59e0b' },
 ];
+
+const EVENT_COLOURS = {
+  fed: '#3b82f6',
+  earnings: '#10b981',
+  alert: '#f59e0b',
+  economic: '#6366f1',
+};
+
+const EVENT_LEGEND = [
+  { type: 'earnings', label: 'Earnings', colour: '#10b981' },
+  { type: 'fed', label: 'Fed / Macro', colour: '#3b82f6' },
+  { type: 'economic', label: 'Economic', colour: '#6366f1' },
+  { type: 'alert', label: 'Alert', colour: '#f59e0b' },
+];
+
+const DAY_LABELS_SUN_FIRST = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 const TICKER_COLORS = [
   '#4285F4',
@@ -177,7 +201,6 @@ export function HomeTerminalSummary({
 }) {
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
-  const [scoreDetailTab, setScoreDetailTab] = useState('platform');
   const { isOrgUser } = useOrg();
 
   useEffect(() => {
@@ -204,7 +227,6 @@ export function HomeTerminalSummary({
   const displayPct = sel.pct;
   const displayChangeDollar = sel.changeDollar;
   const gainTodayDisplay = sel.gainToday;
-  const tradesTodayCount = sel.trades;
 
   const currentValue = loading && hasUser ? 0 : portfolioTotal;
   const snapshotValueNum = loading && hasUser ? 0 : sel.displayValue;
@@ -224,12 +246,30 @@ export function HomeTerminalSummary({
 
   const greeting = getGreeting();
   const streakDays = mockData?.streak ?? 13;
-  const ringValue = 83;
-  const ringMax = 90;
-  const circumference = 2 * Math.PI * 52;
-  const ringDash = (ringValue / ringMax) * circumference;
 
   const ezanaScore = mockData?.activityScore != null ? Math.min(99, Math.round(mockData.activityScore / 4.5)) : 22;
+
+  const weekDots = useMemo(() => {
+    const n = Math.min(7, Math.max(0, streakDays));
+    return Array.from({ length: 7 }, (_, i) => i < n);
+  }, [streakDays]);
+
+  const upcomingCalendar = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const startDow = new Date(y, m, 1).getDay();
+    const cells = [];
+    for (let i = 0; i < startDow; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    const dayToType = {};
+    UPCOMING_EVENTS_GRID.forEach((ev) => {
+      const dom = Math.min(Math.max(1, ev.day), daysInMonth);
+      dayToType[dom] = ev.type;
+    });
+    return { y, m, daysInMonth, cells, dayToType, monthTitle: `${MONTH_SHORT[m]} ${y}` };
+  }, []);
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
@@ -364,7 +404,7 @@ export function HomeTerminalSummary({
                   {changePctStr} ({changeDollarStr}){' '}
                   <span style={{ color: 'var(--home-muted)', fontWeight: 400 }}>Committed Frees</span>
                 </p>
-                <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: '0.75rem' }}>
+                <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: 0 }}>
                   <HeroSparkline
                     portfolioValue={snapshotValueNum || currentValue}
                     changePct={displayPct}
@@ -372,45 +412,15 @@ export function HomeTerminalSummary({
                     axisLabels={monthSnapshots.map((m) => m.label)}
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: '0.625rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        color: 'var(--home-muted)',
-                        margin: 0,
-                      }}
-                    >
-                      Gain Today
-                    </p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
-                      $
-                      {gainTodayDisplay.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: '0.625rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        color: 'var(--home-muted)',
-                        margin: 0,
-                      }}
-                    >
-                      Today&apos;s Trades
-                    </p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
-                      {tradesTodayCount}
-                    </p>
-                  </div>
+                <div className="home-portfolio-gain-row">
+                  <span className="home-portfolio-gain-label">Gain Today</span>
+                  <span className="home-portfolio-gain-value">
+                    $
+                    {gainTodayDisplay.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
                 </div>
               </div>
             </div>
@@ -427,57 +437,88 @@ export function HomeTerminalSummary({
                     <h3 style={{ margin: 0 }}>Upcoming Events &amp; Alerts</h3>
                   </div>
                   <div className="hts-card-body home-events-compact-body">
-                    <div className="hts-events-chain">
-                      <div className="hts-chain-item">
-                        <div className="hts-chain-dot" />
-                        <div className="hts-chain-content">
-                          <div className="hts-chain-header">
-                            <span className="hts-chain-title">NVDA Alert</span>
-                            <span className="hts-chain-severity hts-chain-elevated">ALERT</span>
-                            <span className="hts-chain-ago">Today</span>
-                          </div>
-                          <div className="hts-chain-time">Approaching target ($960)</div>
-                          <p className="hts-chain-body">Current: $954.70 — 0.6% away</p>
+                    <div className="hts-events-grid-calendar">
+                      <div className="hts-events-grid-left">
+                        <div className="hts-events-3x4-grid">
+                          {UPCOMING_EVENTS_GRID.map((ev) => {
+                            const dom = Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth);
+                            return (
+                              <div
+                                key={ev.id}
+                                className="hts-events-grid-cell"
+                                style={{
+                                  background: `${ev.color}12`,
+                                  border: `1px solid ${ev.color}30`,
+                                }}
+                              >
+                                <div className="hts-events-grid-cell-head">
+                                  <span className="hts-events-grid-icon" aria-hidden>
+                                    {ev.icon}
+                                  </span>
+                                  <span className="hts-events-grid-date" style={{ color: ev.color }}>
+                                    {MONTH_SHORT[upcomingCalendar.m]} {dom}
+                                  </span>
+                                </div>
+                                <p className="hts-events-grid-title">{ev.title}</p>
+                                <p className="hts-events-grid-time">{ev.time}</p>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div className="hts-chain-item">
-                        <div className="hts-chain-dot" />
-                        <div className="hts-chain-content">
-                          <div className="hts-chain-header">
-                            <span className="hts-chain-title">AAPL Earnings</span>
-                            <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
-                            <span className="hts-chain-ago">Tomorrow</span>
-                          </div>
-                          <div className="hts-chain-time">After Hours</div>
-                          <p className="hts-chain-body">7 shares — guidance watch</p>
+                      <div className="hts-events-calendar-right">
+                        <div className="hts-events-cal-month">{upcomingCalendar.monthTitle}</div>
+                        <div className="hts-events-cal-dow">
+                          {DAY_LABELS_SUN_FIRST.map((d) => (
+                            <div key={d} className="hts-events-cal-dow-cell">
+                              {d}
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                      <div className="hts-chain-item">
-                        <div className="hts-chain-dot" />
-                        <div className="hts-chain-content">
-                          <div className="hts-chain-header">
-                            <span className="hts-chain-title">Senate Banking</span>
-                            <span className="hts-chain-severity hts-chain-congress">CONGRESS</span>
-                            <span className="hts-chain-ago">This Week</span>
-                          </div>
-                          <div className="hts-chain-time">Hearing</div>
-                          <p className="hts-chain-body">3 follows on committee</p>
+                        <div className="hts-events-cal-cells">
+                          {upcomingCalendar.cells.map((day, idx) => {
+                            if (day == null) {
+                              return <div key={`empty-${idx}`} className="hts-events-cal-day empty" />;
+                            }
+                            const eventType = upcomingCalendar.dayToType[day];
+                            const dotColour = eventType ? EVENT_COLOURS[eventType] : null;
+                            return (
+                              <div
+                                key={day}
+                                className={`hts-events-cal-day ${dotColour ? 'has-event' : ''}`}
+                                style={
+                                  dotColour
+                                    ? {
+                                        background: `${dotColour}18`,
+                                        border: `1px solid ${dotColour}30`,
+                                      }
+                                    : undefined
+                                }
+                              >
+                                <span
+                                  className="hts-events-cal-day-num"
+                                  style={{
+                                    color: dotColour || undefined,
+                                    fontWeight: dotColour ? 700 : 400,
+                                  }}
+                                >
+                                  {day}
+                                </span>
+                                {dotColour ? <span className="hts-events-cal-dot" style={{ background: dotColour }} /> : null}
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
-                      <div className="hts-chain-item">
-                        <div className="hts-chain-dot" />
-                        <div className="hts-chain-content">
-                          <div className="hts-chain-header">
-                            <span className="hts-chain-title">GOOGL Earnings</span>
-                            <span className="hts-chain-severity hts-chain-moderate">EARNINGS</span>
-                            <span className="hts-chain-ago">Apr 2</span>
-                          </div>
-                          <div className="hts-chain-time">Report</div>
-                          <p className="hts-chain-body">10 shares</p>
+                        <div className="hts-events-cal-legend">
+                          {EVENT_LEGEND.map((l) => (
+                            <div key={l.type} className="hts-events-cal-legend-row">
+                              <span className="hts-events-cal-legend-swatch" style={{ background: l.colour }} />
+                              <span className="hts-events-cal-legend-label">{l.label}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
-                    <p className="hts-events-footer">3 events · 2 alerts</p>
                   </div>
                 </div>
 
@@ -565,131 +606,109 @@ export function HomeTerminalSummary({
 
             <div className="home-terminal-right-col">
               <div className="home-streak-ezana-pair home-rail-streak-ezana">
-              <div className="db-card home-mini-streak" style={{ padding: '0.75rem 0.9rem', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: 1 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                      <span aria-hidden style={{ fontSize: '1rem' }}>
-                        🔥
-                      </span>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontSize: '0.875rem',
-                          fontWeight: 800,
-                          color: 'var(--home-heading)',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {streakDays} Day Streak
-                      </h3>
+                <div
+                  className="db-card home-streak-ezana-merged"
+                  style={{
+                    padding: '0.75rem 0.9rem',
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
+                        <span style={{ fontSize: '1.1rem' }} aria-hidden>
+                          🔥
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '1.5rem',
+                            fontWeight: 800,
+                            color: 'var(--home-heading)',
+                            lineHeight: 1,
+                          }}
+                        >
+                          {streakDays}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)', fontWeight: 500 }}>day streak</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '0.5rem' }}>
+                        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
+                          <div key={`${label}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                            <div
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '50%',
+                                background: weekDots[i] ? '#10b981' : 'rgba(255, 255, 255, 0.06)',
+                                border: weekDots[i] ? '2px solid #10b981' : '2px solid rgba(255, 255, 255, 0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {weekDots[i] ? (
+                                <span style={{ fontSize: '0.55rem', color: '#fff', fontWeight: 700 }}>✓</span>
+                              ) : null}
+                            </div>
+                            <span style={{ fontSize: '0.5rem', color: 'var(--home-muted-soft)', fontWeight: 500 }}>{label}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <p style={{ margin: 0, fontSize: '0.65rem', color: 'var(--home-muted-soft)', lineHeight: 1.35 }}>
-                      Active every day for {streakDays} days.
-                    </p>
-                  </div>
-                  <svg width={72} height={72} viewBox="0 0 120 120" style={{ flexShrink: 0 }}>
-                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(16, 185, 129, 0.1)" strokeWidth="8" />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="8"
-                      strokeDasharray={`${ringDash} ${circumference}`}
-                      strokeLinecap="round"
-                      transform="rotate(-90 60 60)"
-                    />
-                    <text x="60" y="58" textAnchor="middle" fill="var(--home-heading)" fontSize="22" fontWeight="800">
-                      {ringValue}
-                    </text>
-                    <text x="60" y="74" textAnchor="middle" fill="var(--home-muted)" fontSize="9" fontWeight="600">
-                      90DA
-                    </text>
-                  </svg>
-                </div>
-              </div>
-              <div className="db-card home-mini-ezana" style={{ padding: 0, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <div className="db-card-header" style={{ padding: '0.65rem 0.85rem 0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                    <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, whiteSpace: 'nowrap' }}>Ezana Score</h3>
-                    <span
-                      style={{
-                        minWidth: 24,
-                        height: 24,
-                        borderRadius: '50%',
-                        background: '#10b981',
-                        color: '#fff',
-                        fontSize: '0.65rem',
-                        fontWeight: 800,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {ezanaScore}
-                    </span>
-                  </div>
-                  <Link href="/home-dashboard" style={{ fontSize: '0.65rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
-                    See All
-                  </Link>
-                </div>
-                <div style={{ padding: '0 0.75rem 0.65rem', flex: 1, minHeight: 0, overflow: 'auto' }}>
-                  <p style={{ fontSize: '0.6rem', color: 'var(--home-muted)', margin: '0 0 0.5rem' }}>Weekly progress</p>
-                  <div className="db-tf-group-sm" style={{ marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      className={`db-tf-btn-sm ${scoreDetailTab === 'market' ? 'active' : ''}`}
-                      onClick={() => setScoreDetailTab('market')}
-                      style={{ fontSize: '0.58rem', padding: '0.2rem 0.35rem' }}
-                    >
-                      Market
-                    </button>
-                    <button
-                      type="button"
-                      className={`db-tf-btn-sm ${scoreDetailTab === 'platform' ? 'active' : ''}`}
-                      onClick={() => setScoreDetailTab('platform')}
-                      style={{ fontSize: '0.58rem', padding: '0.2rem 0.35rem' }}
-                    >
-                      Platform
-                    </button>
-                  </div>
-                  {SCORE_GOALS.slice(0, 3).map((g, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        padding: '0.35rem 0',
-                        borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
-                      }}
-                    >
+                    <div style={{ textAlign: 'right' }}>
                       <div
                         style={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: '50%',
-                          background: g.done ? '#10b981' : 'rgba(16, 185, 129, 0.08)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.55rem',
-                          color: g.done ? '#fff' : 'var(--home-muted)',
-                          flexShrink: 0,
+                          fontSize: '0.65rem',
+                          color: 'var(--home-muted-soft)',
+                          fontWeight: 600,
+                          letterSpacing: '0.05em',
+                          textTransform: 'uppercase',
+                          marginBottom: '0.2rem',
                         }}
                       >
-                        {g.done ? '✓' : ''}
+                        Ezana Score
                       </div>
-                      <p style={{ flex: 1, color: 'var(--home-row-text)', fontSize: '0.65rem', margin: 0, minWidth: 0, lineHeight: 1.3 }}>{g.label}</p>
-                      <span style={{ color: 'var(--home-muted)', fontSize: '0.58rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        {g.current}/{g.total}
-                      </span>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1 }}>
+                        {ezanaScore}
+                        <span style={{ fontSize: '0.75rem', color: 'var(--home-muted)', fontWeight: 400 }}>/100</span>
+                      </div>
+                      <div
+                        style={{
+                          width: '80px',
+                          height: '4px',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          borderRadius: '2px',
+                          marginTop: '0.4rem',
+                          marginLeft: 'auto',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${ezanaScore}%`,
+                            height: '100%',
+                            borderRadius: '2px',
+                            background: 'linear-gradient(90deg, #D4AF37, #f0c040)',
+                          }}
+                        />
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                  <div
+                    style={{
+                      paddingTop: '0.75rem',
+                      borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                      fontSize: '0.65rem',
+                      color: 'var(--home-muted-soft)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Active investor · Keep your streak going
+                  </div>
                 </div>
-              </div>
               </div>
 
               <div className="home-rail-congress">
