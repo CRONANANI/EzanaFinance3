@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import Link from "next/link";
 
 export const metadata = {
   title: "Privacy Policy | Ezana Finance",
@@ -29,16 +28,6 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="min-h-screen bg-white text-neutral-800">
-      <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto max-w-4xl">
-          <Link
-            href="/"
-            className="text-sm font-medium text-emerald-600 hover:underline"
-          >
-            ← Back to home
-          </Link>
-        </div>
-      </header>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <main
         className="privacy-policy-termly mx-auto max-w-4xl overflow-x-auto px-4 py-8 pb-16"

@@ -24,7 +24,8 @@ export function Navbar() {
   const isPricing = pathname === '/pricing';
   const isAuthPage = pathname?.startsWith('/auth');
   const isHelpCenter = pathname?.startsWith('/help-center');
-  const showLandingNav = isLanding || isHelpCenter || isPricing;
+  const isPrivacyPolicy = pathname === '/privacy-policy';
+  const showLandingNav = isLanding || isHelpCenter || isPricing || isPrivacyPolicy;
   const isResearchActive =
     pathname?.includes('/inside-the-capitol') ||
     pathname?.includes('/company-research') ||
