@@ -31,6 +31,12 @@ const RAY_DALIO_SUGGESTED_PROMPTS = [
   'How did the Dutch Empire fall?',
 ];
 
+const YOHANNES_WELCOME_MESSAGE = {
+  role: 'assistant',
+  content:
+    "Welcome back! I'm Yohannes, your AI investment advisor. I've been reviewing your portfolio and the latest market events. How can I help you today?",
+};
+
 function reportForWeekIndex(reports, weekIndex) {
   if (!reports?.length) return null;
   return reports[weekIndex] || null;
@@ -40,13 +46,10 @@ export default function CentaurIntelligencePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content:
-        "Welcome back! I'm Yohannes, your AI investment advisor. I've been reviewing your portfolio and the latest market events. How can I help you today?",
-    },
-  ]);
+  /** UI only — includes welcome/greeting; never sent to the API as-is */
+  const [displayMessages, setDisplayMessages] = useState([YOHANNES_WELCOME_MESSAGE]);
+  /** Conversation history for /api/centaur/chat — no welcome-only assistant lines */
+  const [apiMessages, setApiMessages] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [boardroomMode, setBoardroomMode] = useState(null);
   const [promptValue, setPromptValue] = useState('');
@@ -57,11 +60,6 @@ export default function CentaurIntelligencePage() {
   const [sentinelModalOpen, setSentinelModalOpen] = useState(false);
   const [modalReport, setModalReport] = useState(null);
   const messagesEndRef = useRef(null);
-  const messagesRef = useRef(messages);
-
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -98,7 +96,7 @@ export default function CentaurIntelligencePage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [displayMessages]);
 
   const fetchSentinelReport = async () => {
     try {
@@ -133,8 +131,9 @@ export default function CentaurIntelligencePage() {
     if (!text?.trim() || chatLoading) return;
 
     const userMsg = { role: 'user', content: text.trim() };
-    const history = [...messagesRef.current, userMsg];
-    setMessages((prev) => [...prev, userMsg]);
+    const newApiMessages = [...apiMessages, userMsg];
+
+    setDisplayMessages((prev) => [...prev, userMsg]);
     setChatLoading(true);
     setPromptValue('');
 
@@ -143,7 +142,7 @@ export default function CentaurIntelligencePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: history,
+          messages: newApiMessages,
           investor: boardroomMode ?? null,
           persona: boardroomMode || 'yohannes',
         }),
@@ -152,7 +151,7 @@ export default function CentaurIntelligencePage() {
 
       if (!res.ok) {
         console.error('Chat API error:', res.status, data);
-        setMessages((prev) => [
+        setDisplayMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
@@ -162,13 +161,15 @@ export default function CentaurIntelligencePage() {
         return;
       }
 
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: data.reply || 'No response received.' },
-      ]);
+      const assistantMsg = {
+        role: 'assistant',
+        content: data.reply || 'No response received.',
+      };
+      setDisplayMessages((prev) => [...prev, assistantMsg]);
+      setApiMessages([...newApiMessages, assistantMsg]);
     } catch (err) {
       console.error('Chat fetch error:', err);
-      setMessages((prev) => [
+      setDisplayMessages((prev) => [
         ...prev,
         { role: 'assistant', content: 'Connection error. Please check your internet and try again.' },
       ]);
@@ -180,11 +181,12 @@ export default function CentaurIntelligencePage() {
   const startBoardroom = (investor) => {
     setBoardroomMode(investor.name);
     setPromptValue('');
+    setApiMessages([]);
     const welcome =
       investor.id === 'ray-dalio'
         ? `Welcome to the boardroom. I want to think with you the way I do in my work on The Changing World Order — through long cycles, money and credit, internal and external conflict, and how empires rise and decline. I've reviewed your portfolio context. What would you like to explore?`
         : `Welcome to the boardroom. I'm channeling the investment philosophy of ${investor.name}. I've reviewed your portfolio. Let's discuss your positions from a ${investor.style} perspective. What would you like to focus on?`;
-    setMessages([
+    setDisplayMessages([
       {
         role: 'assistant',
         content: welcome,
@@ -195,7 +197,8 @@ export default function CentaurIntelligencePage() {
   const exitBoardroom = () => {
     setBoardroomMode(null);
     setPromptValue('');
-    setMessages([
+    setApiMessages([]);
+    setDisplayMessages([
       {
         role: 'assistant',
         content: "I'm back as Yohannes. What else can I help you with?",
@@ -204,7 +207,7 @@ export default function CentaurIntelligencePage() {
   };
 
   const showDalioBanner =
-    boardroomMode === 'Ray Dalio' && messages.filter((m) => m.role === 'user').length === 0;
+    boardroomMode === 'Ray Dalio' && displayMessages.filter((m) => m.role === 'user').length === 0;
 
   if (loading) {
     return (
@@ -348,7 +351,7 @@ export default function CentaurIntelligencePage() {
                   </div>
                 </div>
               )}
-              {messages.map((msg, idx) => (
+              {displayMessages.map((msg, idx) => (
                 <div key={idx} className={`chat-bubble chat-bubble-${msg.role}`}>
                   <div
                     style={{
@@ -374,6 +377,7 @@ export default function CentaurIntelligencePage() {
                 placeholder={chatLoading ? 'Waiting for reply…' : `Message ${boardroomMode || 'Yohannes'}…`}
                 value={promptValue}
                 onValueChange={setPromptValue}
+                promptShellClassName="ci-centaur-prompt-shell"
               />
               {boardroomMode && (
                 <button type="button" onClick={exitBoardroom} className="er-pill-toggle" style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}>

@@ -13,6 +13,39 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
+/**
+ * Claude 4.x: first message must be `user`, last must be `user` (no assistant prefill),
+ * no empty content; merge consecutive same-role turns.
+ */
+function sanitiseMessages(rawMessages) {
+  let msgs = rawMessages
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant'))
+    .map((m) => ({
+      role: m.role,
+      content: typeof m.content === 'string' ? m.content.trim() : String(m.content ?? '').trim(),
+    }))
+    .filter((m) => m.content.length > 0);
+
+  while (msgs.length > 0 && msgs[0].role === 'assistant') {
+    msgs = msgs.slice(1);
+  }
+
+  while (msgs.length > 0 && msgs[msgs.length - 1].role === 'assistant') {
+    msgs = msgs.slice(0, -1);
+  }
+
+  const collapsed = [];
+  for (const msg of msgs) {
+    if (collapsed.length > 0 && collapsed[collapsed.length - 1].role === msg.role) {
+      collapsed[collapsed.length - 1].content += `\n${msg.content}`;
+    } else {
+      collapsed.push({ ...msg });
+    }
+  }
+
+  return collapsed;
+}
+
 function getYohannesPrompt(portfolioContext, debriefContext) {
   return `You are Yohannes, an AI investment advisor for the Ezana Finance platform. You are knowledgeable, professional, and helpful. You speak with authority but always remind users that your advice is for educational purposes only.
 
@@ -205,9 +238,25 @@ export async function POST(request) {
       return NextResponse.json({ reply: fallbackReply });
     }
 
-    const sanitisedMessages = messages
-      .filter((m) => m && (m.role === 'user' || m.role === 'assistant'))
-      .map((m) => ({ role: m.role, content: String(m.content ?? '') }));
+    const sanitisedMessages = sanitiseMessages(messages);
+
+    if (sanitisedMessages.length === 0) {
+      return NextResponse.json({ reply: 'Please send a message to get started.' }, { status: 400 });
+    }
+
+    const firstRole = sanitisedMessages[0].role;
+    const lastRole = sanitisedMessages[sanitisedMessages.length - 1].role;
+    if (firstRole !== 'user' || lastRole !== 'user') {
+      console.error('[centaur/chat] Invalid message roles after sanitise:', {
+        firstRole,
+        lastRole,
+        sanitisedMessages,
+      });
+      return NextResponse.json(
+        { reply: 'Invalid conversation state. Please refresh and try again.' },
+        { status: 400 },
+      );
+    }
 
     const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -225,14 +274,20 @@ export async function POST(request) {
     });
 
     if (!anthropicResponse.ok) {
-      const errorBody = await anthropicResponse.text();
-      console.error('[centaur/chat] Anthropic API error:', anthropicResponse.status, errorBody);
-      return NextResponse.json(
-        {
-          reply: `I'm having trouble connecting right now. (Error ${anthropicResponse.status})`,
-        },
-        { status: 500 },
-      );
+      const errorText = await anthropicResponse.text();
+      let errorBody = {};
+      try {
+        errorBody = JSON.parse(errorText);
+      } catch {
+        errorBody = { raw: errorText };
+      }
+      console.error('[centaur/chat] Anthropic error detail:', JSON.stringify(errorBody, null, 2));
+      console.error('[centaur/chat] Messages sent:', JSON.stringify(sanitisedMessages, null, 2));
+      const msg =
+        errorBody?.error?.message ||
+        (typeof errorBody?.raw === 'string' ? errorBody.raw.slice(0, 200) : null) ||
+        String(anthropicResponse.status);
+      return NextResponse.json({ reply: `AI error: ${msg}` }, { status: 500 });
     }
 
     const data = await anthropicResponse.json();

@@ -130,6 +130,8 @@ export function CentaurPromptBox({
   disabled = false,
   placeholder = 'Message Yohannes…',
   className,
+  /** Optional classes for the rounded prompt container (e.g. match Centaur chat background). */
+  promptShellClassName,
   /** When set with onValueChange, the textarea is controlled (e.g. suggested prompts). */
   value: valueProp,
   onValueChange,
@@ -240,6 +242,7 @@ export function CentaurPromptBox({
       <div
         className={cn(
           'flex flex-col rounded-[28px] p-2 shadow-lg transition-colors bg-zinc-900/90 border border-zinc-700/80 cursor-text',
+          promptShellClassName,
         )}
       >
         <input
@@ -287,7 +290,7 @@ export function CentaurPromptBox({
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-zinc-100 placeholder:text-zinc-500 focus:ring-0 focus-visible:outline-none min-h-12"
+          className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-zinc-100 placeholder:text-zinc-500 focus:ring-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-600/40 min-h-12"
         />
 
         <div className="mt-0.5 p-1 pt-0">
