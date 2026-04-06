@@ -144,15 +144,33 @@ export default function CentaurIntelligencePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: history,
+          investor: boardroomMode ?? null,
           persona: boardroomMode || 'yohannes',
         }),
       });
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
-    } catch {
+
+      if (!res.ok) {
+        console.error('Chat API error:', res.status, data);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: data.reply || `Error ${res.status}: please try again.`,
+          },
+        ]);
+        return;
+      }
+
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'I encountered an error. Please try again.' },
+        { role: 'assistant', content: data.reply || 'No response received.' },
+      ]);
+    } catch (err) {
+      console.error('Chat fetch error:', err);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Connection error. Please check your internet and try again.' },
       ]);
     } finally {
       setChatLoading(false);
