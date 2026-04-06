@@ -5,8 +5,12 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 type FallingPatternProps = React.ComponentProps<'div'> & {
-  /** Primary color of the falling elements (default: Ezana emerald) */
+  /** Primary color of the falling elements (default: Ezana emerald) — used as fallback */
   color?: string;
+  /** Tall streak gradients (darker / higher-opacity than legacy single `color`) */
+  streakColor?: string;
+  /** Small twinkle dots — should be darker green with solid mid-stop so shimmer reads clearly */
+  sparkleColor?: string;
   /** Background color (default: Ezana dark) */
   backgroundColor?: string;
   /** Animation duration in seconds (default: 150) */
@@ -19,50 +23,55 @@ type FallingPatternProps = React.ComponentProps<'div'> & {
 
 export function FallingPattern({
   color = '#10b981',
+  streakColor,
+  sparkleColor,
   backgroundColor = '#050a08',
   duration = 150,
   blurIntensity = '1em',
   density = 1,
   className,
 }: FallingPatternProps) {
+  const streak = streakColor ?? color;
+  const sparkle =
+    sparkleColor ?? 'rgba(21, 128, 61, 0.5)';
   const generateBackgroundImage = () => {
     const patterns = [
-      `radial-gradient(4px 100px at 0px 235px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 235px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 117.5px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 252px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 252px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 126px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 150px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 150px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 75px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 253px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 253px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 126.5px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 204px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 204px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 102px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 134px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 134px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 67px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 179px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 179px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 89.5px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 299px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 299px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 149.5px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 215px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 215px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 107.5px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 281px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 281px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 140.5px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 158px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 158px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 79px, ${color} 100%, transparent 150%)`,
-      `radial-gradient(4px 100px at 0px 210px, ${color}, transparent)`,
-      `radial-gradient(4px 100px at 300px 210px, ${color}, transparent)`,
-      `radial-gradient(1.5px 1.5px at 150px 105px, ${color} 100%, transparent 150%)`,
+      `radial-gradient(4px 100px at 0px 235px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 235px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 117.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 252px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 252px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 126px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 150px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 150px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 75px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 253px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 253px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 126.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 204px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 204px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 102px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 134px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 134px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 67px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 179px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 179px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 89.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 299px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 299px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 149.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 215px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 215px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 107.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 281px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 281px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 140.5px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 158px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 158px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 79px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
+      `radial-gradient(4px 100px at 0px 210px, ${streak}, transparent)`,
+      `radial-gradient(4px 100px at 300px 210px, ${streak}, transparent)`,
+      `radial-gradient(1.5px 1.5px at 150px 105px, ${sparkle} 0%, ${sparkle} 48%, transparent 78%)`,
     ];
     return patterns.join(', ');
   };

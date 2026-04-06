@@ -140,12 +140,21 @@
         r = rotateY(x, y, z, rotY);
         x = r[0]; y = r[1]; z = r[2];
         if (z > 0) continue;
+        var cos = -z / radius;
+        if (cos <= 0.05) continue;
         var s = project(x, y, z, cx, cy, fov);
-        var depthAlpha = Math.max(0.1, 1 - (z + radius) / (2 * radius));
+        var limbScale = Math.max(0.22, cos);
+        var depthAlpha = Math.min(0.92, Math.max(0.1, 0.14 + cos * 0.62));
+        var dotR = (0.52 + depthAlpha * 0.48) * limbScale;
+        var foreshort = Math.max(0.2, cos);
+        ctx.save();
+        ctx.translate(s[0], s[1]);
+        ctx.scale(1, foreshort);
         ctx.beginPath();
-        ctx.arc(s[0], s[1], 1 + depthAlpha * 0.8, 0, Math.PI * 2);
+        ctx.arc(0, 0, dotR, 0, Math.PI * 2);
         ctx.fillStyle = dotColor.replace('ALPHA', depthAlpha.toFixed(2));
         ctx.fill();
+        ctx.restore();
       }
 
       for (var c = 0; c < connections.length; c++) {

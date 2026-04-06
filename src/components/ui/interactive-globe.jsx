@@ -236,17 +236,27 @@ export function InteractiveGlobe({
       [x, y, z] = rotateX(x, y, z, rx);
       [x, y, z] = rotateY(x, y, z, ry);
 
-      // Only draw dots on the visible side
+      // Visible hemisphere for this projection (camera-facing): z <= 0
       if (z > 0) continue;
 
-      const [sx, sy] = project(x, y, z, cx, cy, fov);
-      const depthAlpha = Math.max(0.08, 0.6 - ((z + radius) / (2 * radius)) * 0.5);
-      const dotSize = 0.8 + depthAlpha * 0.5;
+      // cos(angle) between surface outward normal and view — suppress limb "float" / back bleed
+      const cos = -z / radius;
+      if (cos <= 0.05) continue;
 
+      const [sx, sy] = project(x, y, z, cx, cy, fov);
+      const limbScale = Math.max(0.22, cos);
+      const depthAlpha = Math.min(0.92, Math.max(0.1, 0.14 + cos * 0.62));
+      const dotR = (0.52 + depthAlpha * 0.48) * limbScale;
+      const foreshort = Math.max(0.2, cos);
+
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.scale(1, foreshort);
       ctx.beginPath();
-      ctx.arc(sx, sy, dotSize, 0, Math.PI * 2);
+      ctx.arc(0, 0, dotR, 0, Math.PI * 2);
       ctx.fillStyle = dotColor.replace("ALPHA", depthAlpha.toFixed(2));
       ctx.fill();
+      ctx.restore();
     }
 
     animRef.current = requestAnimationFrame(draw);
