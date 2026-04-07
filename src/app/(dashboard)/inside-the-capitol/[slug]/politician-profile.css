@@ -19,6 +19,19 @@
 .pp-back-btn { display: inline-flex; align-items: center; gap: .5rem; padding: .625rem 1.25rem; background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); border-radius: 10px; color: #10b981; font-weight: 600; text-decoration: none; transition: all .2s; }
 .pp-back-btn:hover { background: rgba(16,185,129,.2); }
 
+.pp-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(16, 185, 129, 0.2);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: pp-spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+@keyframes pp-spin { to { transform: rotate(360deg); } }
+
+.pp-trade-empty { padding: 1rem; color: var(--muted-foreground, #8b949e); font-size: 0.875rem; text-align: center; grid-column: 1 / -1; }
+
 /* ── Sidebar + Main — flex + align-items: flex-start keeps both columns top-aligned ── */
 .pp-layout,
 .politician-profile-grid,
@@ -53,6 +66,7 @@
 .pp-avatar-xl { width: 96px; height: 96px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
 .pp-avatar-xl.democrat { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
 .pp-avatar-xl.republican { background: linear-gradient(135deg,#ef4444,#b91c1c); }
+.pp-avatar-xl.unknown { background: linear-gradient(135deg,#64748b,#475569); }
 
 .pp-name { font-size: 1.25rem; font-weight: 800; color: var(--foreground,#f0f6fc); margin-bottom: .5rem; }
 
@@ -63,6 +77,7 @@
 .pp-party-badge { padding: .25rem .75rem; border-radius: 6px; font-size: .6875rem; font-weight: 700; display: inline-block; transition: all 0.15s; }
 .pp-party-badge.democrat { background: rgba(59,130,246,.15); color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
 .pp-party-badge.republican { background: rgba(239,68,68,.15); color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+.pp-party-badge.unknown { background: rgba(148,163,184,.15); color: #94a3b8; border: 1px solid rgba(148,163,184,.35); }
 .pp-state-badge { padding: .25rem .75rem; border-radius: 6px; font-size: .6875rem; font-weight: 600; background: var(--muted,rgba(17,24,39,.4)); color: var(--foreground,#f0f6fc); border: 1px solid rgba(16,185,129,.08); display: inline-block; transition: all 0.15s; }
 
 .pp-role { font-size: .8125rem; color: var(--muted-foreground,#8b949e); }
@@ -312,6 +327,11 @@
 .po-trader-avatar.republican {
   background: rgba(239, 68, 68, 0.14);
   color: #ef4444;
+}
+
+.po-trader-avatar.unknown {
+  background: rgba(148, 163, 184, 0.14);
+  color: #94a3b8;
 }
 
 .po-trader-name {

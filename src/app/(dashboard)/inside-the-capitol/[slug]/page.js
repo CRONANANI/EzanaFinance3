@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -10,157 +10,16 @@ import '../../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './politician-profile.css';
 
-/* ── Demo politician database ── */
-const POLITICIANS = {
-  'nancy-pelosi': {
-    name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'California', district: 'District 11', initials: 'NP',
-    role: 'Representative', yearsInOffice: '1987 – Present', age: 85, committees: 'Appropriations Committee',
-    committeeUrl: 'https://clerk.house.gov/members/P000197',
-    totalValue: 3036028, monthlyChange: 2.9, avgReportingTime: 28,
-    topIndustry: { name: 'Technology', pct: 52 },
-    ytdReturns: 18.4, ytdDollar: 483200,
-    similarTraders: [
-      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 72 },
-      { slug: 'dan-crenshaw', name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', state: 'TX', initials: 'DC', overlap: 61 },
-      { slug: 'josh-gottheimer', name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', initials: 'JG', overlap: 54 },
-    ],
-    perfData: { '1M': { returnPct: 2.4 }, '3M': { returnPct: 8.1 }, '6M': { returnPct: 14.2 }, '1Y': { returnPct: 18.4 }, 'All': { returnPct: 54.3 } },
-    holdings: [
-      { ticker: 'NVDA', name: 'NVIDIA Corp', value: 1200000, pct: 39.5, change: 12.4 },
-      { ticker: 'AAPL', name: 'Apple Inc', value: 580000, pct: 19.1, change: 5.2 },
-      { ticker: 'RBLX', name: 'Roblox Corp', value: 450000, pct: 14.8, change: -3.1 },
-      { ticker: 'MSFT', name: 'Microsoft Corp', value: 320000, pct: 10.5, change: 8.7 },
-      { ticker: 'GOOGL', name: 'Alphabet Inc', value: 280000, pct: 9.2, change: 4.3 },
-      { ticker: 'CRM', name: 'Salesforce Inc', value: 206028, pct: 6.9, change: -1.2 },
-    ],
-    trades: [
-      { date: 'Mar 10, 2026', ticker: 'NVDA', type: 'BUY', amount: '1M–5M', price: '$875.20' },
-      { date: 'Mar 5, 2026', ticker: 'RBLX', type: 'BUY', amount: '250K–500K', price: '$52.10' },
-      { date: 'Feb 28, 2026', ticker: 'AAPL', type: 'SELL', amount: '100K–250K', price: '$198.40' },
-      { date: 'Feb 20, 2026', ticker: 'MSFT', type: 'BUY', amount: '100K–250K', price: '$428.75' },
-      { date: 'Feb 14, 2026', ticker: 'CRM', type: 'SELL', amount: '50K–100K', price: '$312.60' },
-      { date: 'Feb 8, 2026', ticker: 'GOOGL', type: 'BUY', amount: '100K–250K', price: '$172.30' },
-      { date: 'Jan 30, 2026', ticker: 'NVDA', type: 'BUY', amount: '500K–1M', price: '$812.45' },
-      { date: 'Jan 22, 2026', ticker: 'AAPL', type: 'BUY', amount: '250K–500K', price: '$185.20' },
-    ],
-    filingStats: { avgReportingTime: 28, totalFilings: 8, timeliness: 'Late' },
-  },
-  'tommy-tuberville': {
-    name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'Alabama', district: null, initials: 'TT',
-    role: 'Senator', yearsInOffice: '2021 – Present', age: 70, committees: 'Armed Services, Agriculture',
-    committeeUrl: 'https://www.senate.gov/senators/tuberville',
-    totalValue: 1280000, monthlyChange: -1.4, avgReportingTime: 41,
-    topIndustry: { name: 'Consumer Staples', pct: 42 },
-    ytdReturns: -12.8, ytdDollar: -163840,
-    similarTraders: [
-      { slug: 'dan-crenshaw', name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', state: 'TX', initials: 'DC', overlap: 78 },
-      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 65 },
-      { slug: 'josh-gottheimer', name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', initials: 'JG', overlap: 52 },
-    ],
-    perfData: { '1M': { returnPct: -1.4 }, '3M': { returnPct: -8.2 }, '6M': { returnPct: -22.5 }, '1Y': { returnPct: -38.7 }, 'All': { returnPct: -53.0 } },
-    holdings: [
-      { ticker: 'KMB', name: 'Kimberly-Clark', value: 380000, pct: 29.7, change: -2.1 },
-      { ticker: 'HPQ', name: 'HP Inc', value: 240000, pct: 18.8, change: -4.3 },
-      { ticker: 'CLX', name: 'Clorox Co', value: 210000, pct: 16.4, change: -1.8 },
-      { ticker: 'PG', name: 'Procter & Gamble', value: 190000, pct: 14.8, change: 1.2 },
-      { ticker: 'JNJ', name: 'Johnson & Johnson', value: 160000, pct: 12.5, change: 0.5 },
-      { ticker: 'MRK', name: 'Merck & Co', value: 100000, pct: 7.8, change: 3.9 },
-    ],
-    trades: [
-      { date: 'Mar 11, 2026', ticker: 'KMB', type: 'SELL', amount: '100K–250K', price: '$142.80' },
-      { date: 'Mar 11, 2026', ticker: 'HPQ', type: 'SELL', amount: '15K–50K', price: '$32.15' },
-      { date: 'Mar 10, 2026', ticker: 'CLX', type: 'SELL', amount: '1K–15K', price: '$148.90' },
-      { date: 'Mar 10, 2026', ticker: 'CLX', type: 'SELL', amount: '15K–50K', price: '$148.90' },
-      { date: 'Mar 9, 2026', ticker: 'CLX', type: 'SELL', amount: '15K–50K', price: '$147.25' },
-      { date: 'Mar 5, 2026', ticker: 'PG', type: 'BUY', amount: '50K–100K', price: '$168.40' },
-    ],
-    filingStats: { avgReportingTime: 41, totalFilings: 2, timeliness: 'Late' },
-  },
-  'dan-crenshaw': {
-    name: 'Dan Crenshaw', party: 'Republican', chamber: 'House', state: 'Texas', district: 'District 2', initials: 'DC',
-    role: 'Representative', yearsInOffice: '2019 – Present', age: 40, committees: 'Energy and Commerce',
-    committeeUrl: 'https://clerk.house.gov/members/C001120',
-    totalValue: 890000, monthlyChange: 3.8, avgReportingTime: 18,
-    topIndustry: { name: 'Technology', pct: 38 },
-    ytdReturns: 8.2, ytdDollar: 72980,
-    similarTraders: [
-      { slug: 'tommy-tuberville', name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', initials: 'TT', overlap: 65 },
-      { slug: 'nancy-pelosi', name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', overlap: 58 },
-      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 49 },
-    ],
-    perfData: { '1M': { returnPct: 3.2 }, '3M': { returnPct: 8.5 }, '6M': { returnPct: 14.1 }, '1Y': { returnPct: 22.8 }, 'All': { returnPct: 38.7 } },
-    holdings: [
-      { ticker: 'AAPL', name: 'Apple Inc', value: 280000, pct: 31.5, change: 5.2 },
-      { ticker: 'MSFT', name: 'Microsoft Corp', value: 220000, pct: 24.7, change: 8.7 },
-      { ticker: 'AMZN', name: 'Amazon.com', value: 180000, pct: 20.2, change: 11.3 },
-      { ticker: 'XOM', name: 'Exxon Mobil', value: 120000, pct: 13.5, change: -2.1 },
-      { ticker: 'CVX', name: 'Chevron Corp', value: 90000, pct: 10.1, change: -3.5 },
-    ],
-    trades: [
-      { date: 'Mar 8, 2026', ticker: 'AAPL', type: 'BUY', amount: '100K–250K', price: '$192.30' },
-      { date: 'Mar 2, 2026', ticker: 'AMZN', type: 'BUY', amount: '50K–100K', price: '$188.75' },
-      { date: 'Feb 25, 2026', ticker: 'XOM', type: 'SELL', amount: '15K–50K', price: '$108.40' },
-    ],
-    filingStats: { avgReportingTime: 18, totalFilings: 4, timeliness: 'On Time' },
-  },
-  'mark-warner': {
-    name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'Virginia', district: null, initials: 'MW',
-    role: 'Senator', yearsInOffice: '2009 – Present', age: 71, committees: 'Intelligence, Banking',
-    committeeUrl: 'https://www.senate.gov/senators/warner',
-    totalValue: 2140000, monthlyChange: 1.2, avgReportingTime: 22,
-    topIndustry: { name: 'Technology', pct: 48 },
-    ytdReturns: 5.4, ytdDollar: 115560,
-    similarTraders: [
-      { slug: 'nancy-pelosi', name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', overlap: 68 },
-      { slug: 'ro-khanna', name: 'Ro Khanna', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'RK', overlap: 55 },
-      { slug: 'josh-gottheimer', name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', initials: 'JG', overlap: 51 },
-    ],
-    perfData: { '1M': { returnPct: 1.2 }, '3M': { returnPct: 3.8 }, '6M': { returnPct: 6.9 }, '1Y': { returnPct: 9.4 }, 'All': { returnPct: 41.2 } },
-    holdings: [
-      { ticker: 'META', name: 'Meta Platforms', value: 520000, pct: 24.3, change: 6.8 },
-      { ticker: 'CRM', name: 'Salesforce Inc', value: 380000, pct: 17.8, change: 4.2 },
-      { ticker: 'SNOW', name: 'Snowflake Inc', value: 310000, pct: 14.5, change: -8.4 },
-      { ticker: 'MSFT', name: 'Microsoft Corp', value: 420000, pct: 19.6, change: 8.7 },
-      { ticker: 'GOOGL', name: 'Alphabet Inc', value: 510000, pct: 23.8, change: 4.3 },
-    ],
-    trades: [
-      { date: 'Mar 6, 2026', ticker: 'META', type: 'SELL', amount: '50K–100K', price: '$512.80' },
-      { date: 'Feb 28, 2026', ticker: 'CRM', type: 'BUY', amount: '100K–250K', price: '$318.40' },
-      { date: 'Feb 18, 2026', ticker: 'SNOW', type: 'SELL', amount: '50K–100K', price: '$172.15' },
-      { date: 'Feb 10, 2026', ticker: 'GOOGL', type: 'BUY', amount: '100K–250K', price: '$168.90' },
-    ],
-    filingStats: { avgReportingTime: 22, totalFilings: 6, timeliness: 'On Time' },
-  },
-  'josh-gottheimer': {
-    name: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'New Jersey', district: 'District 5', initials: 'JG',
-    role: 'Representative', yearsInOffice: '2017 – Present', age: 49, committees: 'Financial Services',
-    committeeUrl: 'https://clerk.house.gov/members/G000583',
-    totalValue: 640000, monthlyChange: 2.1, avgReportingTime: 15,
-    topIndustry: { name: 'Technology', pct: 62 },
-    ytdReturns: 11.2, ytdDollar: 71680,
-    similarTraders: [
-      { slug: 'nancy-pelosi', name: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', initials: 'NP', overlap: 54 },
-      { slug: 'mark-warner', name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', overlap: 51 },
-      { slug: 'tommy-tuberville', name: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', initials: 'TT', overlap: 52 },
-    ],
-    perfData: { '1M': { returnPct: 2.1 }, '3M': { returnPct: 5.4 }, '6M': { returnPct: 9.2 }, '1Y': { returnPct: 14.2 }, 'All': { returnPct: 46.1 } },
-    holdings: [
-      { ticker: 'MSFT', name: 'Microsoft Corp', value: 280000, pct: 43.8, change: 8.7 },
-      { ticker: 'GOOGL', name: 'Alphabet Inc', value: 210000, pct: 32.8, change: 4.3 },
-      { ticker: 'JPM', name: 'JPMorgan Chase', value: 150000, pct: 23.4, change: 7.5 },
-    ],
-    trades: [
-      { date: 'Mar 4, 2026', ticker: 'MSFT', type: 'BUY', amount: '15K–50K', price: '$425.10' },
-      { date: 'Feb 22, 2026', ticker: 'GOOGL', type: 'BUY', amount: '15K–50K', price: '$170.40' },
-    ],
-    filingStats: { avgReportingTime: 15, totalFilings: 3, timeliness: 'On Time' },
-  },
-};
-
 function formatUSD(n) {
   if (n >= 1e6) return `US$${(n / 1e6).toFixed(2)}M`;
   if (n >= 1e3) return `US$${(n / 1e3).toFixed(1)}K`;
   return `US$${n.toLocaleString()}`;
+}
+
+function partyClass(party) {
+  if (party === 'Democrat') return 'democrat';
+  if (party === 'Republican') return 'republican';
+  return 'unknown';
 }
 
 /* ── Performance chart paths per timeframe (downward = negative returns) ── */
@@ -222,12 +81,11 @@ function PerformanceChart({ perfData }) {
   );
 }
 
-/* ── Donut chart for holdings ── */
 function HoldingsDonut({ holdings }) {
   const colors = ['#10b981', '#3b82f6', '#a78bfa', '#fbbf24', '#f87171', '#22d3ee'];
   const total = holdings.reduce((s, h) => s + h.value, 0);
   let cumulative = 0;
-  const r = 40, cx = 50, cy = 50, circ = 2 * Math.PI * r;
+  const r = 40; const cx = 50; const cy = 50; const circ = 2 * Math.PI * r;
 
   return (
     <div className="pp-donut-wrap">
@@ -238,7 +96,7 @@ function HoldingsDonut({ holdings }) {
           const length = pct * circ;
           cumulative += h.value;
           return (
-            <circle key={h.ticker} cx={cx} cy={cy} r={r} fill="none" stroke={colors[i % colors.length]}
+            <circle key={`${h.ticker}-${i}`} cx={cx} cy={cy} r={r} fill="none" stroke={colors[i % colors.length]}
               strokeWidth="12" strokeDasharray={`${length} ${circ - length}`} strokeDashoffset={-offset}
               transform={`rotate(-90 ${cx} ${cy})`} className="pp-donut-seg" />
           );
@@ -246,9 +104,13 @@ function HoldingsDonut({ holdings }) {
       </svg>
       <div className="pp-donut-legend">
         {holdings.map((h, i) => (
-          <div key={h.ticker} className="pp-donut-item">
+          <div key={`${h.ticker}-leg-${i}`} className="pp-donut-item">
             <span className="pp-donut-color" style={{ background: colors[i % colors.length] }} />
-            <Link href={`/company-research?ticker=${h.ticker}`} className="pp-donut-tk">{h.ticker}</Link>
+            {h.ticker && h.ticker !== '—' ? (
+              <Link href={`/company-research?ticker=${h.ticker}`} className="pp-donut-tk">{h.ticker}</Link>
+            ) : (
+              <span className="pp-donut-tk">{h.ticker}</span>
+            )}
             <span className="pp-donut-pct">{h.pct}%</span>
           </div>
         ))}
@@ -260,10 +122,77 @@ function HoldingsDonut({ holdings }) {
 export default function PoliticianProfilePage() {
   const params = useParams();
   const slug = params?.slug;
-  const [activeTab, setActiveTab] = useState('overview');
-  const pol = slug ? POLITICIANS[slug] : null;
+  const [pol, setPol] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!pol) {
+  useEffect(() => {
+    if (!slug) {
+      setLoading(false);
+      setError('not_found');
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/fmp/politician-profile?slug=${encodeURIComponent(slug)}`);
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (!res.ok) {
+          setPol(null);
+          setError(res.status === 404 ? 'not_found' : 'api');
+          return;
+        }
+        if (data.profile) {
+          setPol(data.profile);
+        } else {
+          setPol(null);
+          setError('not_found');
+        }
+      } catch {
+        if (!cancelled) {
+          setPol(null);
+          setError('api');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="pp-page dashboard-page-inset">
+        <div className="pp-not-found">
+          <div className="pp-loading-spinner" aria-hidden />
+          <p>Loading profile…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error === 'api') {
+    return (
+      <div className="pp-page dashboard-page-inset">
+        <div className="pp-not-found">
+          <i className="bi bi-wifi-off" />
+          <h2>Couldn&apos;t load profile</h2>
+          <p>Please try again in a moment.</p>
+          <Link href="/inside-the-capitol" className="pp-back-btn">
+            <i className="bi bi-arrow-left" /> Back to Inside The Capitol
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (error === 'not_found' || !pol) {
     return (
       <div className="pp-page dashboard-page-inset">
         <div className="pp-not-found">
@@ -278,12 +207,15 @@ export default function PoliticianProfilePage() {
     );
   }
 
+  const pc = partyClass(pol.party);
   const isPositive = pol.monthlyChange >= 0;
   const totalPositions = pol.holdings?.length ?? 0;
   const sectorCount = Math.max(1, Math.ceil(totalPositions / 2));
   const topPct = Math.min(100, Math.max(0, pol.topIndustry?.pct ?? 0));
   const ytdPct = pol.ytdReturns ?? 0;
   const ytdDollar = pol.ytdDollar ?? 0;
+  const stateLabel = pol.stateFull || pol.state || '';
+  const stateHref = pol.stateUrlSlug ? `/inside-the-capitol?state=${pol.stateUrlSlug}` : '/inside-the-capitol';
 
   return (
     <div className="pp-page dashboard-page-inset">
@@ -297,15 +229,17 @@ export default function PoliticianProfilePage() {
         {/* LEFT SIDEBAR */}
         <div className="pp-sidebar">
           <div className="pp-avatar-section">
-            <div className={`pp-avatar-xl ${pol.party.toLowerCase()}`}>{pol.initials}</div>
+            <div className={`pp-avatar-xl ${pc}`}>{pol.initials}</div>
             <h1 className="pp-name">{pol.name}</h1>
             <div className="pp-badges">
               <Link href={`/inside-the-capitol?party=${pol.party.toLowerCase()}`} className="pp-badge-link">
-                <span className={`pp-party-badge ${pol.party.toLowerCase()}`}>{pol.party}</span>
+                <span className={`pp-party-badge ${pc}`}>{pol.party}</span>
               </Link>
-              <Link href={`/inside-the-capitol?state=${pol.state.toLowerCase().replace(/\s+/g, '-')}`} className="pp-badge-link">
-                <span className="pp-state-badge">{pol.state}</span>
-              </Link>
+              {stateLabel ? (
+                <Link href={stateHref} className="pp-badge-link">
+                  <span className="pp-state-badge">{stateLabel}</span>
+                </Link>
+              ) : null}
             </div>
             <p className="pp-role">{pol.role}{pol.district ? ` (${pol.district})` : ''}</p>
           </div>
@@ -314,7 +248,7 @@ export default function PoliticianProfilePage() {
             <h4>Politician Info</h4>
             <div className="pp-info-row"><span className="pp-info-lbl">Role</span><span className="pp-info-val">{pol.role}</span></div>
             <div className="pp-info-row"><span className="pp-info-lbl">Years in Office</span><span className="pp-info-val">{pol.yearsInOffice}</span></div>
-            <div className="pp-info-row"><span className="pp-info-lbl">Age</span><span className="pp-info-val">{pol.age} years</span></div>
+            <div className="pp-info-row"><span className="pp-info-lbl">Age</span><span className="pp-info-val">{pol.age != null ? `${pol.age} years` : '—'}</span></div>
             <div className="pp-info-row">
               <span className="pp-info-lbl">Committees</span>
               <a href={pol.committeeUrl} target="_blank" rel="noopener noreferrer" className="pp-info-link">{pol.committees}</a>
@@ -387,7 +321,7 @@ export default function PoliticianProfilePage() {
                 <div className="po-traders-row">
                   {pol.similarTraders.map((s) => (
                     <Link key={s.slug} href={`/inside-the-capitol/${s.slug}`} className="po-trader">
-                      <div className={`po-trader-avatar ${s.party.toLowerCase()}`}>{s.initials}</div>
+                      <div className={`po-trader-avatar ${partyClass(s.party)}`}>{s.initials}</div>
                       <span className="po-trader-name">{s.name}</span>
                       <span className="po-trader-pct">{s.overlap}%</span>
                     </Link>
@@ -407,8 +341,17 @@ export default function PoliticianProfilePage() {
                 {pol.holdings.map((h) => (
                   <div key={h.ticker} className="pp-holding-row">
                     <div className="pp-hold-info">
-                      <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-tk">{h.ticker}</Link>
-                      <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-name">{h.name}</Link>
+                      {h.ticker && h.ticker !== '—' ? (
+                        <>
+                          <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-tk">{h.ticker}</Link>
+                          <Link href={`/company-research?ticker=${h.ticker}`} className="pp-hold-name">{h.name}</Link>
+                        </>
+                      ) : (
+                        <>
+                          <span className="pp-hold-tk">{h.ticker}</span>
+                          <span className="pp-hold-name">{h.name}</span>
+                        </>
+                      )}
                     </div>
                     <div className="pp-hold-right">
                       <span className="pp-hold-val">{formatUSD(h.value)}</span>
@@ -425,16 +368,20 @@ export default function PoliticianProfilePage() {
                 <div className="pp-trades-hdr">
                   <span>Date</span><span>Ticker</span><span>Type</span><span>Amount</span>
                 </div>
-                {pol.trades.map((t, i) => (
-                  <div key={i} className="pp-trade-row">
-                    <span className="pp-trade-date">{t.date}</span>
-                    <span className="pp-trade-tk">
-                      <span className={`pp-trade-dot ${t.type.toLowerCase()}`} />{t.ticker}
-                    </span>
-                    <span className={`pp-trade-type ${t.type.toLowerCase()}`}>{t.type}</span>
-                    <span className="pp-trade-amt">{t.amount}</span>
-                  </div>
-                ))}
+                {pol.trades.length === 0 ? (
+                  <div className="pp-trade-row pp-trade-empty">No recent trades in our feed.</div>
+                ) : (
+                  pol.trades.map((t, i) => (
+                    <div key={i} className="pp-trade-row">
+                      <span className="pp-trade-date">{t.date}</span>
+                      <span className="pp-trade-tk">
+                        <span className={`pp-trade-dot ${t.type.toLowerCase()}`} />{t.ticker}
+                      </span>
+                      <span className={`pp-trade-type ${t.type.toLowerCase()}`}>{t.type}</span>
+                      <span className="pp-trade-amt">{t.amount}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
