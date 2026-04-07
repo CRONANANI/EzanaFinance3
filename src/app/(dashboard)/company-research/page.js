@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo, Suspense } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
@@ -281,6 +280,36 @@ function CompanyResearchPageInner() {
         </div>
       </div>
 
+      {/* Valuation / AI model shortcuts — only when a stock is selected (above chart, not below courses) */}
+      {selectedStock && viewMode === 'stock' && (
+        <section
+          className="models-carousel-section compact cr-models-above-chart"
+          aria-label="Stock analysis models"
+        >
+          <button
+            className="carousel-nav prev"
+            type="button"
+            onClick={() => scrollModelsCarousel(-1)}
+            aria-label="Previous models"
+          >
+            <i className="bi bi-chevron-left" />
+          </button>
+          <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
+            <div className="models-carousel-track" id="modelsCarouselTrackStock">
+              {renderModelCards('st')}
+            </div>
+          </div>
+          <button
+            className="carousel-nav next"
+            type="button"
+            onClick={() => scrollModelsCarousel(1)}
+            aria-label="Next models"
+          >
+            <i className="bi bi-chevron-right" />
+          </button>
+        </section>
+      )}
+
       <section className="cr-market-chart-root" id="marketChartSection">
         <div
           id="heatmapView"
@@ -357,8 +386,38 @@ function CompanyResearchPageInner() {
               </div>
             </PinnableCard>
           )}
+
+          {selectedStock && activeModel && (
+            <section className="model-detail-section cr-model-detail-below-chart" id="modelDetailSection">
+              <AIAnalysisPanel
+                modelId={activeModel}
+                symbol={selectedStock}
+                onClose={handleCloseAnalysis}
+              />
+            </section>
+          )}
         </div>
       </section>
+
+      {/* Heatmap: user opened a model before selecting a ticker */}
+      {activeModel && !selectedStock && (
+        <section className="model-detail-section cr-model-detail-no-ticker" id="modelDetailSectionHeatmap">
+          <div className="component-card model-detail-card">
+            <div className="card-header">
+              <h3>{CAROUSEL_MODELS.find((m) => m.id === activeModel)?.name || 'Analysis'}</h3>
+              <button className="card-action-btn" type="button" onClick={handleCloseAnalysis}>
+                <i className="bi bi-x-lg" /> Close
+              </button>
+            </div>
+            <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
+              <i className="bi bi-search" style={{ fontSize: '2rem', color: '#6b7280', display: 'block', marginBottom: '1rem' }} />
+              <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
+                Search for a company or select a stock from the heatmap above to run this analysis.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {selectedStock && (
         <section className="research-cards-section cr-research-cards mt-8">
@@ -380,50 +439,6 @@ function CompanyResearchPageInner() {
               <CompetitorsCard symbol={selectedStock} onSelectPeer={(peer) => handleSelectStock(peer, { fromPeer: true })} />
             </PinnableCard>
           </div>
-        </section>
-      )}
-
-      {viewMode === 'stock' && (
-        <section className="models-carousel-section compact cr-models-below-stock">
-          <button className="carousel-nav prev" id="modelsCarouselPrev" type="button" onClick={() => scrollModelsCarousel(-1)} aria-label="Previous models">
-            <i className="bi bi-chevron-left" />
-          </button>
-          <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
-            <div className="models-carousel-track" id="modelsCarouselTrackStock">
-              {renderModelCards('st')}
-            </div>
-          </div>
-          <button className="carousel-nav next" id="modelsCarouselNext" type="button" onClick={() => scrollModelsCarousel(1)} aria-label="Next models">
-            <i className="bi bi-chevron-right" />
-          </button>
-        </section>
-      )}
-
-      {/* ═══ AI Analysis Detail Panel ═══ */}
-      {activeModel && (
-        <section className="model-detail-section" id="modelDetailSection">
-          {selectedStock ? (
-            <AIAnalysisPanel
-              modelId={activeModel}
-              symbol={selectedStock}
-              onClose={handleCloseAnalysis}
-            />
-          ) : (
-            <div className="component-card model-detail-card">
-              <div className="card-header">
-                <h3>{CAROUSEL_MODELS.find(m => m.id === activeModel)?.name || 'Analysis'}</h3>
-                <button className="card-action-btn" type="button" onClick={handleCloseAnalysis}>
-                  <i className="bi bi-x-lg" /> Close
-                </button>
-              </div>
-              <div className="card-body" style={{ padding: '3rem 1rem', textAlign: 'center' }}>
-                <i className="bi bi-search" style={{ fontSize: '2rem', color: '#6b7280', display: 'block', marginBottom: '1rem' }} />
-                <p style={{ color: '#8b949e', fontSize: '0.9375rem' }}>
-                  Search for a company or select a stock from the heatmap above to run this analysis.
-                </p>
-              </div>
-            </div>
-          )}
         </section>
       )}
 

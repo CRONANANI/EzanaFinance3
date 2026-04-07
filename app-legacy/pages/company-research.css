@@ -1497,10 +1497,13 @@ body.light-mode .model-metric-card:hover {
   width: 100%;
 }
 
+/* Model carousel strip: above stock chart (primary) or legacy below-stock hook */
+.cr-models-above-chart,
 .cr-models-below-stock {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
+.cr-models-above-chart .models-carousel-container,
 .cr-models-below-stock .models-carousel-container {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1508,8 +1511,26 @@ body.light-mode .model-metric-card:hover {
   scrollbar-color: rgba(16, 185, 129, 0.42) rgba(16, 185, 129, 0.08);
 }
 
+.cr-models-above-chart .models-carousel-track,
 .cr-models-below-stock .models-carousel-track {
   transform: none !important;
+}
+
+.cr-models-above-chart .model-metric-card.active {
+  border-color: rgba(212, 175, 55, 0.75);
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.35),
+    0 4px 18px rgba(0, 0, 0, 0.22);
+  background: rgba(212, 175, 55, 0.07);
+}
+
+.cr-model-detail-below-chart {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.cr-model-detail-no-ticker {
+  margin-bottom: 1.5rem;
 }
 
 .cr-stock-merged-card.market-chart-section {
