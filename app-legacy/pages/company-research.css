@@ -1638,6 +1638,49 @@ body.light-mode .cr-page .research-card h3 {
   color: #111827 !important;
 }
 
+/* ── Light mode fixes: market stats cards + chart area ── */
+body.light-mode .market-stat-label {
+  color: #475569 !important;
+}
+
+body.light-mode .market-stat-value {
+  color: #111827 !important;
+}
+
+body.light-mode .cr-merged-stats-row--secondary .market-stat-value {
+  color: #111827 !important;
+}
+
+body.light-mode .cr-merged-stats.market-chart-footer {
+  border-top-color: rgba(5, 150, 105, 0.12);
+}
+
+body.light-mode .cr-merged-long-name {
+  color: #374151 !important;
+}
+
+body.light-mode .cr-merged-names .cr-merged-ticker {
+  color: #111827 !important;
+}
+
+body.light-mode .heatmap-subtitle {
+  color: #475569 !important;
+}
+
+body.light-mode .chart-title {
+  color: #111827 !important;
+}
+
+body.light-mode .back-to-heatmap-btn {
+  color: #374151 !important;
+  background: rgba(5, 150, 105, 0.06) !important;
+  border-color: rgba(5, 150, 105, 0.2) !important;
+}
+
+body.light-mode .back-to-heatmap-btn:hover {
+  background: rgba(5, 150, 105, 0.12) !important;
+}
+
 body.light-mode .cr-section-heading {
-  color: #111827;
+  color: #111827 !important;
 }

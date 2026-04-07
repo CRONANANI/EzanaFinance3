@@ -15,7 +15,7 @@ import {
 } from '@/components/research';
 import { AIAnalysisPanel } from '@/components/research/AIAnalysisPanel';
 import { PinnableCard } from '@/components/ui/PinnableCard';
-import { useCompanySearchFinnhub, useCompanyProfile, useStockMetric } from '@/hooks/useFinnhub';
+import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import { getCarouselModels } from '@/lib/ai/analysis-prompts';
 import { useChecklist } from '@/hooks/useChecklist';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
@@ -65,8 +65,6 @@ function CompanyResearchPageInner() {
     loading: searchLoading,
     clearSuggestions,
   } = useCompanySearchFinnhub();
-  const { data: profile } = useCompanyProfile(selectedStock);
-  const { data: metricData } = useStockMetric(selectedStock);
   const showSuggestions = suggestions.length > 0;
 
   useEffect(() => {
@@ -80,39 +78,36 @@ function CompanyResearchPageInner() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!profile && !metricData) return;
-    const mc = profile?.marketCapitalization ?? metricData?.metric?.marketCapitalization;
-    const mcNum = mc != null ? Number(mc) : null;
-    const pe = metricData?.metric?.peBasicExclExtraTTM ?? metricData?.metric?.peTTM;
-    const divYield = metricData?.metric?.dividendYieldIndicatedAnnual ?? metricData?.metric?.dividendYield;
-    const eps = metricData?.metric?.epsBasicExclExtraTTM ?? metricData?.metric?.epsTTM;
+    if (!selectedStock) return;
+    setStats({ mcap: '…', pe: '…', divYield: '…', eps: '…', capType: '…' });
 
-    setStats({
-      mcap: mcNum != null
-        ? (mcNum >= 1e12 ? `$${(mcNum / 1e12).toFixed(2)}T` : mcNum >= 1e9 ? `$${(mcNum / 1e9).toFixed(2)}B` : `$${(mcNum / 1e6).toFixed(0)}M`)
-        : '--',
-      pe: pe != null ? Number(pe).toFixed(2) : '--',
-      divYield: divYield != null ? (Number(divYield) * 100).toFixed(2) + '%' : '--',
-      eps: eps != null ? Number(eps).toFixed(2) : '--',
-      capType: mcNum != null
-        ? (mcNum >= 200e9 ? 'Mega Cap' : mcNum >= 10e9 ? 'Large Cap' : mcNum >= 2e9 ? 'Mid Cap' : 'Small Cap')
-        : '--',
-    });
-  }, [profile, metricData]);
+    fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(selectedStock)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data || data.error) return;
+        setStats({
+          mcap:    data.mcap    || '--',
+          pe:      data.pe      || '--',
+          divYield: data.divYield || '--',
+          eps:     data.eps     || '--',
+          capType: data.capType || '--',
+        });
+      })
+      .catch(() => {});
+  }, [selectedStock]);
 
   const companyMetaLine = useMemo(() => {
     const parts = [];
-    if (profile?.finnhubIndustry) parts.push(profile.finnhubIndustry);
-    if (profile?.exchange) parts.push(profile.exchange);
-    if (stats.mcap && stats.mcap !== '--') parts.push(`Market Cap: ${stats.mcap}`);
-    return parts.join(' · ') || '—';
-  }, [profile, stats.mcap]);
+    if (stats.capType && stats.capType !== '--') parts.push(stats.capType);
+    if (stats.mcap && stats.mcap !== '--' && stats.mcap !== '…') parts.push(`Market Cap: ${stats.mcap}`);
+    return parts.join(' · ') || selectedStock || '—';
+  }, [stats.mcap, stats.capType, selectedStock]);
 
   useEffect(() => {
-    if (selectedStock && (profile || metricData)) {
+    if (selectedStock && stats.mcap !== '--' && stats.mcap !== '…') {
       completeTask('research_2');
     }
-  }, [selectedStock, profile, metricData, completeTask]);
+  }, [selectedStock, stats.mcap, completeTask]);
 
   const handleSelectStock = useCallback((item, opts) => {
     const sym = (typeof item === 'string' ? item : item?.symbol)?.toUpperCase?.() ?? item?.symbol;
@@ -309,9 +304,6 @@ function CompanyResearchPageInner() {
                   <div className="cr-merged-title-row">
                     <div className="cr-merged-names">
                       <span className="cr-merged-ticker">{selectedStock}</span>
-                      {profile?.name ? (
-                        <span className="cr-merged-long-name"> — {profile.name}</span>
-                      ) : null}
                       <span id="stockChartTitle" className="sr-only">
                         {selectedStock}
                       </span>

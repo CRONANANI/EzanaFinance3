@@ -20,19 +20,20 @@ function CustomTooltip({ active, payload, label }) {
   return (
     <div
       style={{
-        background: '#0d1117',
+        background: 'var(--card, #0d1117)',
         border: '1px solid rgba(16,185,129,0.2)',
         borderRadius: '8px',
         padding: '8px 12px',
         fontSize: '0.75rem',
         lineHeight: 1.6,
         minWidth: '130px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       }}
     >
-      <p style={{ color: '#6b7280', margin: '0 0 4px', fontSize: '0.65rem' }}>
+      <p style={{ color: 'var(--muted-foreground, #6b7280)', margin: '0 0 4px', fontSize: '0.65rem' }}>
         {label}
       </p>
-      <p style={{ color: '#f0f6fc', margin: 0, fontWeight: 700 }}>
+      <p style={{ color: 'var(--foreground, #f0f6fc)', margin: 0, fontWeight: 700 }}>
         ${Number(d.price).toLocaleString('en-US', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -49,7 +50,7 @@ function CustomTooltip({ active, payload, label }) {
         </>
       )}
       {d.volume > 0 && (
-        <p style={{ color: '#6b7280', margin: '2px 0 0', fontSize: '0.6rem' }}>
+        <p style={{ color: 'var(--muted-foreground, #6b7280)', margin: '2px 0 0', fontSize: '0.6rem' }}>
           Vol: {Number(d.volume).toLocaleString()}
         </p>
       )}
@@ -157,7 +158,7 @@ export default function StockPriceChart({ symbol }) {
           flexWrap: 'wrap',
           gap: '0.5rem',
           padding: '0 0 0.75rem',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid rgba(128,128,128,0.12)',
           marginBottom: '0.75rem',
         }}
       >
@@ -166,7 +167,7 @@ export default function StockPriceChart({ symbol }) {
             style={{
               fontSize: '1.1rem',
               fontWeight: 800,
-              color: '#f0f6fc',
+              color: 'var(--foreground, #f0f6fc)',
               letterSpacing: '0.02em',
             }}
           >
@@ -177,7 +178,7 @@ export default function StockPriceChart({ symbol }) {
               style={{
                 fontSize: '1rem',
                 fontWeight: 700,
-                color: '#f0f6fc',
+                color: 'var(--foreground, #f0f6fc)',
                 marginLeft: '0.75rem',
               }}
             >
@@ -213,7 +214,7 @@ export default function StockPriceChart({ symbol }) {
           style={{
             display: 'flex',
             gap: '2px',
-            background: 'rgba(255,255,255,0.04)',
+            background: 'var(--muted, rgba(255,255,255,0.04))',
             borderRadius: '8px',
             padding: '2px',
           }}
@@ -235,7 +236,7 @@ export default function StockPriceChart({ symbol }) {
                 transition: 'all 0.12s ease',
                 background:
                   range === r ? lineColour : 'transparent',
-                color: range === r ? '#fff' : '#6b7280',
+                color: range === r ? '#fff' : 'var(--muted-foreground, #6b7280)',
               }}
             >
               {r}
@@ -257,7 +258,7 @@ export default function StockPriceChart({ symbol }) {
               justifyContent: 'center',
               flexDirection: 'column',
               gap: '8px',
-              color: '#6b7280',
+              color: 'var(--muted-foreground, #6b7280)',
               fontSize: '0.78rem',
             }}
           >
@@ -304,7 +305,7 @@ export default function StockPriceChart({ symbol }) {
           >
             Could not load chart data.
             <br />
-            <span style={{ color: '#6b7280', fontSize: '0.65rem' }}>
+            <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
               {error}
             </span>
           </div>
@@ -319,7 +320,7 @@ export default function StockPriceChart({ symbol }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#6b7280',
+              color: 'var(--muted-foreground, #6b7280)',
               fontSize: '0.75rem',
             }}
           >
@@ -357,14 +358,14 @@ export default function StockPriceChart({ symbol }) {
 
               <CartesianGrid
                 strokeDasharray="2 4"
-                stroke="rgba(255,255,255,0.05)"
+                stroke="rgba(128,128,128,0.12)"
                 vertical={false}
               />
 
               <XAxis
                 dataKey="label"
                 tick={{
-                  fill: '#4b5563',
+                  fill: 'var(--muted-foreground, #6b7280)',
                   fontSize: 9,
                   fontFamily: 'var(--font-mono, monospace)',
                 }}
@@ -377,7 +378,7 @@ export default function StockPriceChart({ symbol }) {
               <YAxis
                 domain={[minPrice, maxPrice]}
                 tick={{
-                  fill: '#4b5563',
+                  fill: 'var(--muted-foreground, #6b7280)',
                   fontSize: 9,
                   fontFamily: 'var(--font-mono, monospace)',
                 }}
@@ -394,7 +395,7 @@ export default function StockPriceChart({ symbol }) {
               <Tooltip
                 content={<CustomTooltip />}
                 cursor={{
-                  stroke: 'rgba(255,255,255,0.12)',
+                  stroke: 'rgba(128,128,128,0.2)',
                   strokeWidth: 1,
                 }}
               />
@@ -403,7 +404,7 @@ export default function StockPriceChart({ symbol }) {
               {firstPrice && (
                 <ReferenceLine
                   y={firstPrice}
-                  stroke="rgba(255,255,255,0.12)"
+                  stroke="rgba(128,128,128,0.2)"
                   strokeDasharray="3 4"
                 />
               )}
@@ -440,7 +441,7 @@ export default function StockPriceChart({ symbol }) {
                 flexWrap: 'wrap',
                 marginTop: '0.75rem',
                 paddingTop: '0.75rem',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
+                borderTop: '1px solid rgba(128,128,128,0.12)',
               }}
             >
               {[
@@ -481,7 +482,7 @@ export default function StockPriceChart({ symbol }) {
                   <span
                     style={{
                       fontSize: '0.6rem',
-                      color: '#4b5563',
+                      color: 'var(--muted-foreground, #6b7280)',
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
@@ -493,7 +494,7 @@ export default function StockPriceChart({ symbol }) {
                     style={{
                       fontSize: '0.78rem',
                       fontWeight: 700,
-                      color: colour ?? '#f0f6fc',
+                      color: colour ?? 'var(--foreground, #f0f6fc)',
                       fontVariantNumeric: 'tabular-nums',
                     }}
                   >
