@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { COUNTRY_BORDERS } from '@/lib/powerMapBorders';
@@ -982,10 +982,49 @@ export default function MarketAnalysisPage() {
   const [selectedPowerCountry, setSelectedPowerCountry] = useState(null);
   const [tickerData, setTickerData] = useState([]);
   const mapRef = useRef(null);
+  const gpmButtonRef = useRef(null);
+  const arrowDismissTimer = useRef(null);
+  const [showGpmArrow, setShowGpmArrow] = useState(false);
+  const [dismissingArrow, setDismissingArrow] = useState(false);
   const selectedLayers = useGlobalPowerMap((s) => s.selectedLayers);
   const countryScores = useGlobalPowerMap((s) => s.countryScores);
   const setClickedCountry = useGlobalPowerMap((s) => s.setClickedCountry);
   const isPowerMapActive = selectedLayers.length > 0;
+
+  const dismissArrow = useCallback(() => {
+    setDismissingArrow(true);
+    setTimeout(() => {
+      setShowGpmArrow(false);
+      setDismissingArrow(false);
+    }, 260);
+  }, []);
+
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      setShowGpmArrow(true);
+    }, 600);
+
+    arrowDismissTimer.current = setTimeout(() => {
+      dismissArrow();
+    }, 4600);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(arrowDismissTimer.current);
+    };
+  }, [dismissArrow]);
+
+  useEffect(() => {
+    if (!showGpmArrow) return;
+
+    function handlePageClick() {
+      clearTimeout(arrowDismissTimer.current);
+      dismissArrow();
+    }
+
+    document.addEventListener('click', handlePageClick, { once: true });
+    return () => document.removeEventListener('click', handlePageClick);
+  }, [showGpmArrow, dismissArrow]);
 
   useEffect(() => {
     const fetchTicker = async () => {
@@ -1301,7 +1340,23 @@ export default function MarketAnalysisPage() {
 
           <div className="ma-sidebar">
             <div className="ma-sidebar-power-wrap">
-              <GlobalPowerMapControl />
+              {showGpmArrow && (
+                <div
+                  className={`gpm-arrow-indicator ${dismissingArrow ? 'dismissing' : ''}`}
+                  style={{
+                    position: 'relative',
+                    justifyContent: 'center',
+                    paddingBottom: '2px',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <span className="gpm-arrow-label">try this</span>
+                  <span className="gpm-arrow-icon" aria-hidden>
+                    <span style={{ transform: 'rotate(90deg)', display: 'inline-block' }}>→</span>
+                  </span>
+                </div>
+              )}
+              <GlobalPowerMapControl ref={gpmButtonRef} />
             </div>
             {['markets', 'central-banks', 'indices', 'commodities', 'currencies'].map((cat) => (
               <button key={cat} type="button" className={`ma-sidebar-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => toggleCategory(cat)}>

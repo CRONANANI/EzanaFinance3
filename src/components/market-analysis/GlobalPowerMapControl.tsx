@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import { useGlobalPowerMap, type PowerLayer } from "@/hooks/useGlobalPowerMap";
 
 const POWER_LAYERS: {
@@ -19,7 +20,10 @@ const POWER_LAYERS: {
   { key: "infrastructure", icon: "🏗️", label: "Infrastructure & Industry", description: "Logistics, manufacturing capacity, energy grid" },
 ];
 
-export default function GlobalPowerMapControl() {
+const GlobalPowerMapControl = forwardRef<HTMLButtonElement>(function GlobalPowerMapControl(
+  _props,
+  ref
+) {
   const { isOpen, selectedLayers, toggleOpen, toggleLayer, clearLayers } =
     useGlobalPowerMap();
 
@@ -28,6 +32,7 @@ export default function GlobalPowerMapControl() {
   return (
     <div className="ma-power-map-root">
       <button
+        ref={ref}
         type="button"
         className={`ma-view-btn ma-view-btn--gold ma-power-map-trigger ${isOpen || hasSelection ? "ma-power-map-trigger--on" : ""}`}
         onClick={toggleOpen}
@@ -104,4 +109,6 @@ export default function GlobalPowerMapControl() {
       )}
     </div>
   );
-}
+});
+
+export default GlobalPowerMapControl;

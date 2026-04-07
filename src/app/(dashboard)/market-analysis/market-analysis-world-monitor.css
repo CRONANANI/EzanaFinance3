@@ -1478,3 +1478,59 @@ body.light-mode .ma-ticker-sep {
   50%  {                        stroke-opacity: 1;    }
   100% { stroke-dashoffset: 16; stroke-opacity: 0.85; }
 }
+
+/* ── Global Power Map — bouncing arrow indicator ── */
+
+@keyframes gpm-bounce {
+  0%,  100% { transform: translateY(0)    scale(1);    }
+  30%        { transform: translateY(-6px) scale(1.05); }
+  60%        { transform: translateY(-3px) scale(1.02); }
+}
+
+@keyframes gpm-arrow-fade-in {
+  from { opacity: 0; transform: translateX(-6px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);   }
+}
+
+@keyframes gpm-arrow-fade-out {
+  from { opacity: 1; transform: translateX(0)    scale(1);   }
+  to   { opacity: 0; transform: translateX(-6px) scale(0.8); }
+}
+
+.gpm-arrow-indicator {
+  position:        absolute;
+  /* Positioned to the left of the Global Power Map button.
+     Adjusted in JS using the button's getBoundingClientRect — see Step 2. */
+  pointer-events:  none;
+  display:         flex;
+  align-items:     center;
+  gap:             4px;
+  z-index:         9999;
+  animation:       gpm-arrow-fade-in 0.3s ease forwards;
+}
+
+.gpm-arrow-indicator.dismissing {
+  animation: gpm-arrow-fade-out 0.25s ease forwards;
+}
+
+.gpm-arrow-icon {
+  color:       #D4AF37;
+  font-size:   14px;
+  line-height: 1;
+  animation:   gpm-bounce 0.9s ease-in-out infinite;
+  filter:      drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
+  /* Unicode right-pointing arrow: → */
+}
+
+.gpm-arrow-label {
+  font-family:   var(--font-mono, monospace);
+  font-size:     0.5rem;
+  font-weight:   800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:         #D4AF37;
+  opacity:       0.75;
+  white-space:   nowrap;
+  animation:     gpm-bounce 0.9s ease-in-out infinite;
+  animation-delay: 0.05s;
+}
