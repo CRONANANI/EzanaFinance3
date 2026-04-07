@@ -38,6 +38,8 @@ export function Navbar() {
     pathname?.includes('/centaur-intelligence') ||
     pathname?.includes('/kairos-signal');
 
+  const isTradingActive = pathname?.includes('/trading');
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/');
@@ -63,7 +65,18 @@ export function Navbar() {
         { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator', variant: 'gold' },
       ],
     },
-    { id: 3, title: 'Trading', url: '/trading', icon: 'bi-graph-up-arrow', isActive: pathname?.includes('/trading') },
+    {
+      id: 3,
+      title: 'Trading',
+      url: '/trading',
+      icon: 'bi-graph-up-arrow',
+      dropdown: true,
+      isActive: isTradingActive,
+      items: [
+        { id: 31, title: 'Brokerage Account', description: 'Real-money trading account', url: '/trading', icon: 'bi-bank' },
+        { id: 32, title: 'Mock Portfolio', description: '$100K paper trading account', url: '/trading/mock', icon: 'bi-controller' },
+      ],
+    },
     { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
     isOrgUser
       ? { id: 5, title: 'Team Hub', url: '/org-team-hub', icon: 'bi-building', isActive: pathname?.includes('/org-team-hub'), variant: 'purple' }
@@ -342,10 +355,25 @@ export function Navbar() {
               </Link>
             </div>
           </div>
-          <Link href="/trading" className={`nav-link ${pathname?.includes('trading') ? 'active' : ''}`} data-page="trading" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-graph-up-arrow"></i>
-            <span>Trading</span>
-          </Link>
+          <div className={`nav-dropdown mobile-dropdown-flat ${isTradingActive ? 'active' : ''}`}>
+            <span className={`nav-link mobile-dropdown-label ${isTradingActive ? 'active' : ''}`}>
+              <i className="bi bi-graph-up-arrow"></i>
+              <span>Trading</span>
+            </span>
+            <div className="mobile-dropdown-items">
+              <Link href="/trading" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-bank"></i>
+                <div><div className="item-title">Brokerage Account</div></div>
+              </Link>
+              <Link href="/trading/mock" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
+                <i className="bi bi-controller"></i>
+                <div>
+                  <div className="item-title">Mock Portfolio</div>
+                  <div className="item-desc">$100K paper trading account</div>
+                </div>
+              </Link>
+            </div>
+          </div>
           <Link href="/watchlist" className={`nav-link ${pathname?.includes('watchlist') ? 'active' : ''}`} data-page="watchlist" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-bookmark"></i>
             <span>Watchlist</span>
