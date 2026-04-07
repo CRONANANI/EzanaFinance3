@@ -245,41 +245,6 @@ function CompanyResearchPageInner() {
         />
       </div>
 
-      <div className="stats-grid" id="companyStatsGrid">
-        <div className="stat-card" id="stat-mcap">
-          <div className="stat-icon market"><i className="bi bi-building" /></div>
-          <div className="stat-content">
-            <div className="stat-value" id="statMarketCap">{stats.mcap}</div>
-            <div className="stat-label">Market Cap</div>
-            <div className="stat-change" id="statCapType">{stats.capType}</div>
-          </div>
-        </div>
-        <div className="stat-card" id="stat-pe">
-          <div className="stat-icon performance"><i className="bi bi-trophy" /></div>
-          <div className="stat-content">
-            <div className="stat-value" id="statPE">{stats.pe}</div>
-            <div className="stat-label">P/E Ratio</div>
-            <div className="stat-change" id="statPELabel">--</div>
-          </div>
-        </div>
-        <div className="stat-card" id="stat-divyield">
-          <div className="stat-icon stocks"><i className="bi bi-cash-coin" /></div>
-          <div className="stat-content">
-            <div className="stat-value" id="statDivYield">{stats.divYield}</div>
-            <div className="stat-label">Dividend Yield</div>
-            <div className="stat-change" id="statDivYieldLabel">--</div>
-          </div>
-        </div>
-        <div className="stat-card" id="stat-eps">
-          <div className="stat-icon volume"><i className="bi bi-graph-up-arrow" /></div>
-          <div className="stat-content">
-            <div className="stat-value" id="statEPS">{stats.eps}</div>
-            <div className="stat-label">EPS</div>
-            <div className="stat-change" id="statEPSLabel">--</div>
-          </div>
-        </div>
-      </div>
-
       {/* Valuation / AI model shortcuts — only when a stock is selected (above chart, not below courses) */}
       {selectedStock && viewMode === 'stock' && (
         <section

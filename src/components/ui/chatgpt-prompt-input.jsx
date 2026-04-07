@@ -122,7 +122,7 @@ export const EZANA_RESEARCH_TOOLS = [
   { id: 'risk', name: 'Risk analysis', shortName: 'Risk', href: '/company-research#modelDetailSection' },
   { id: 'earnings', name: 'Earnings analysis', shortName: 'Earnings', href: '/company-research#earnings-card' },
   { id: 'technical', name: 'Technical analysis', shortName: 'Technical', href: '/company-research#marketChartSection' },
-  { id: 'dividend', name: 'Dividend strategy', shortName: 'Dividend', href: '/company-research#stat-divyield' },
+  { id: 'dividend', name: 'Dividend strategy', shortName: 'Dividend', href: '/company-research' },
 ];
 
 export function CentaurPromptBox({
