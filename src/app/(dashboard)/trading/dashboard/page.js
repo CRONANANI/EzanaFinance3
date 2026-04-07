@@ -36,6 +36,12 @@ export default function TradingDashboardPlaceholderPage() {
           Your brokerage account is active. The full trading workspace (order entry, advanced charts,
           and copy-trading controls) ships in a later release.
         </p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+          <Link href="/trading/mock" className="trd-mock-btn">
+            <i className="bi bi-controller" />
+            Try Mock Trading — $100,000 Paper Account
+          </Link>
+        </div>
       </div>
 
       {loading && <div className="trd-loading">Loading account…</div>}

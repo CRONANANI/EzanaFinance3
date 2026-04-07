@@ -119,6 +119,12 @@ export default function TradingPage() {
             <p className="trd-pending-hint">
               You can leave this page and return anytime from the Trading menu.
             </p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem' }}>
+              <Link href="/trading/mock" className="trd-mock-btn">
+                <i className="bi bi-controller" />
+                Try Mock Trading — $100,000 Paper Account
+              </Link>
+            </div>
           </div>
         </section>
       </div>

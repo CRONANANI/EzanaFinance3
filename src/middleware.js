@@ -69,6 +69,9 @@ export async function middleware(request) {
   const onPartnerProtectedRoute = matchesRoutePrefix(pathname, PARTNER_DASHBOARD_ROUTES);
   const onUserProtectedRoute = matchesRoutePrefix(pathname, USER_DASHBOARD_ROUTES);
 
+  /** Trading landing + paper trading — public (no sign-in required to view CTA / mock) */
+  const isTradingPublicPath = pathname === '/trading' || pathname === '/trading/mock';
+
   /** Marketing pricing + Stripe checkout — public */
   if (
     pathname === '/pricing' ||
@@ -86,7 +89,7 @@ export async function middleware(request) {
     return NextResponse.redirect(url);
   }
 
-  if (onUserProtectedRoute && !user) {
+  if (onUserProtectedRoute && !user && !isTradingPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/signin';
     url.searchParams.set('redirect', pathname);
@@ -94,7 +97,7 @@ export async function middleware(request) {
   }
 
   /** Only enforce email verification when accessing dashboard/partner areas — not on marketing pages like / */
-  if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
+  if (user && (onPartnerProtectedRoute || onUserProtectedRoute) && !isTradingPublicPath) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('email_verified')
@@ -110,7 +113,13 @@ export async function middleware(request) {
   }
 
   /** Require onboarding completion for authenticated users accessing user dashboard (except onboarding page itself) */
-  if (user && onUserProtectedRoute && !pathname.includes('/onboarding') && !pathname.includes('/payment')) {
+  if (
+    user &&
+    onUserProtectedRoute &&
+    !pathname.includes('/onboarding') &&
+    !pathname.includes('/payment') &&
+    !isTradingPublicPath
+  ) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_completed')
