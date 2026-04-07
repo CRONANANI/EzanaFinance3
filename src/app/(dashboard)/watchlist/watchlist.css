@@ -90,7 +90,32 @@
 .wl-strip-chg.up { color: #10b981; }
 .wl-strip-chg.dn { color: #ef4444; }
 
+.wl-strip-ytd-label {
+  color: var(--muted-foreground, #6b7280) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+}
+
 .wl-spark { flex-shrink: 0; }
+
+.wl-chart-y-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--muted-foreground, #6b7280);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.wl-portfolio-hint {
+  font-size: 0.75rem;
+  color: var(--muted-foreground, #6b7280);
+  max-width: 12rem;
+  text-align: right;
+}
 
 /* Top assets preview chips */
 .wl-strip-assets { display: flex; gap: 3px; margin-top: 1px; }
@@ -241,7 +266,10 @@
 
 /* Chart box */
 .wl-chart-box {
-  position: relative; height: 300px; border-radius: 8px; overflow: hidden;
+  position: relative;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
   background: var(--muted, rgba(17,24,39,.3));
   border: 1px solid rgba(16,185,129,.05);
 }

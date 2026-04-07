@@ -25,13 +25,52 @@ function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace
 function fmtPrice(n) { if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(2)}M`; return `$${n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
 function fmtSmall(n) { return n >= 1000 ? n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : n.toFixed(2); }
 function fmtChg(n) { return `${n>=0?'+':''}${n.toFixed(2)}`; }
-function fmtPct(n) { return `${n>=0?'+':''}${n.toFixed(2)}%`; }
+function fmtPct(n) {
+  const x = Number(n);
+  if (n == null || Number.isNaN(x)) return '—';
+  return `${x >= 0 ? '+' : ''}${x.toFixed(2)}%`;
+}
 
 function mergeFinnhubQuote(item, quoteMap) {
+  if (item.type === 'politician' || item.type === 'institution') return item;
   const sym = item.quoteSymbol || item.ticker;
   if (!sym || !quoteMap?.[sym]) return item;
   const q = quoteMap[sym];
   return { ...item, price: q.price, pct: q.changePercent, change: q.change };
+}
+
+/** Scale YTD portfolio return % to selected chart period (modeled cumulative return). */
+const RETURN_RANGE_MULT = {
+  '1D': 0.012,
+  '5D': 0.048,
+  '1M': 0.19,
+  'YTD': 1,
+  '6M': 0.64,
+  '1Y': 1.05,
+  '5Y': 2.75,
+  'MAX': 3.9,
+};
+
+function rangeEndReturnPct(returnYtd, timeRange) {
+  const y = Number(returnYtd);
+  if (Number.isNaN(y)) return 0;
+  const m = RETURN_RANGE_MULT[timeRange] ?? 1;
+  return y * m;
+}
+
+function genReturnPctPts(seed, n, endPct) {
+  const pts = [];
+  const safe = Math.abs(endPct) < 0.005 ? (endPct >= 0 ? 0.01 : -0.01) : endPct;
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const base = safe * t;
+    const wobble =
+      Math.sin(seed * 0.07 + i * 0.35) * Math.abs(safe) * 0.09 +
+      Math.sin(seed + i * 0.22) * Math.abs(safe) * 0.05;
+    pts.push(base + wobble);
+  }
+  pts[n - 1] = endPct;
+  return pts;
 }
 
 /* ═══════════════════════════════════════════
@@ -43,23 +82,23 @@ const TOP_STRIP = [
   { id: 'idx-dji',   type: 'index', name: 'Dow Jones',     ticker: 'DIA', quoteSymbol: 'DIA', price: 44524.40, change: 143.05, pct: 0.56, topAssets: ['UNH','GS','MSFT','HD'] },
   { id: 'idx-ftse',  type: 'index', name: 'FTSE 100',      ticker: 'EWU', quoteSymbol: 'EWU', price: 8296.68, change: 7.43, pct: 0.56, topAssets: ['SHEL','AZN','HSBA','ULVR'] },
 
-  { id: 'pol-pelosi',     type: 'politician', name: 'Nancy Pelosi',      ticker: 'NVDA', quoteSymbol: 'NVDA', price: 3036028,  change: 88045,  pct: 2.9,  slug: 'nancy-pelosi',      party: 'Democrat',   topAssets: ['NVDA','AAPL','RBLX','MSFT'] },
-  { id: 'pol-tuberville', type: 'politician', name: 'Tommy Tuberville',  ticker: 'KMB', quoteSymbol: 'KMB', price: 1280000,  change: -17920, pct: -1.4, slug: 'tommy-tuberville',  party: 'Republican', topAssets: ['KMB','HPQ','CLX','PG'] },
-  { id: 'pol-crenshaw',   type: 'politician', name: 'Dan Crenshaw',      ticker: 'AAPL', quoteSymbol: 'AAPL', price: 890000,   change: 33820,  pct: 3.8,  slug: 'dan-crenshaw',      party: 'Republican', topAssets: ['AAPL','MSFT','AMZN','XOM'] },
+  { id: 'pol-pelosi',     type: 'politician', name: 'Nancy Pelosi',      returnYtd: 18.4,  slug: 'nancy-pelosi',      party: 'Democrat',   topAssets: ['NVDA','AAPL','RBLX','MSFT'] },
+  { id: 'pol-tuberville', type: 'politician', name: 'Tommy Tuberville',  returnYtd: -4.2,  slug: 'tommy-tuberville',  party: 'Republican', topAssets: ['KMB','HPQ','CLX','PG'] },
+  { id: 'pol-crenshaw',   type: 'politician', name: 'Dan Crenshaw',      returnYtd: 11.2,  slug: 'dan-crenshaw',      party: 'Republican', topAssets: ['AAPL','MSFT','AMZN','XOM'] },
 
-  { id: 'inst-citadel',     type: 'institution', name: 'Citadel Securities',   ticker: 'NVDA', quoteSymbol: 'NVDA', price: 9700000000,  change: 291000000, pct: 3.09, topAssets: ['NVDA','SPY','AAPL','META'], revenue: '$9.7B Revenue' },
-  { id: 'inst-janestreet',  type: 'institution', name: 'Jane Street',          ticker: 'SPY', quoteSymbol: 'SPY', price: 20500000000, change: 615000000, pct: 3.10, topAssets: ['ETFs','Options','Crypto','FX'], revenue: '$20.5B Revenue' },
-  { id: 'inst-bridgewater', type: 'institution', name: 'Bridgewater',          ticker: 'SPY', quoteSymbol: 'SPY', price: 19700000000, change: -197000000, pct: -0.99, topAssets: ['SPY','GLD','TLT','EEM'], revenue: '$19.7B AUM' },
+  { id: 'inst-citadel',     type: 'institution', name: 'Citadel Securities',   returnYtd: 14.6, topAssets: ['NVDA','SPY','AAPL','META'], revenue: '$9.7B Revenue' },
+  { id: 'inst-janestreet',  type: 'institution', name: 'Jane Street',          returnYtd: 16.8, topAssets: ['ETFs','Options','Crypto','FX'], revenue: '$20.5B Revenue' },
+  { id: 'inst-bridgewater', type: 'institution', name: 'Bridgewater',          returnYtd: 3.1,  topAssets: ['SPY','GLD','TLT','EEM'], revenue: '$19.7B AUM' },
 
   { id: 'idx-nky',  type: 'index', name: 'NIKKEI 225',   ticker: 'EWJ', quoteSymbol: 'EWJ', price: 39053.78, change: 312.45, pct: 0.81, topAssets: ['7203.T','6758.T','9984.T','6861.T'] },
   { id: 'idx-dax',  type: 'index', name: 'DAX',           ticker: 'EWG', quoteSymbol: 'EWG', price: 19243.28, change: 48.12, pct: 0.25, topAssets: ['SAP','SIE','ALV','DTE'] },
 
-  { id: 'pol-warner',      type: 'politician', name: 'Mark Warner',       ticker: 'META', quoteSymbol: 'META', price: 2140000,  change: 25680, pct: 1.2,  slug: 'mark-warner', party: 'Democrat', topAssets: ['META','CRM','SNOW','MSFT'] },
-  { id: 'pol-gottheimer',  type: 'politician', name: 'Josh Gottheimer',   ticker: 'MSFT', quoteSymbol: 'MSFT', price: 640000,   change: 13440, pct: 2.1,  slug: 'josh-gottheimer', party: 'Democrat', topAssets: ['MSFT','GOOGL','JPM'] },
+  { id: 'pol-warner',      type: 'politician', name: 'Mark Warner',       returnYtd: 9.2,  slug: 'mark-warner', party: 'Democrat', topAssets: ['META','CRM','SNOW','MSFT'] },
+  { id: 'pol-gottheimer',  type: 'politician', name: 'Josh Gottheimer',   returnYtd: 12.5, slug: 'josh-gottheimer', party: 'Democrat', topAssets: ['MSFT','GOOGL','JPM'] },
 
-  { id: 'inst-renaissance', type: 'institution', name: 'Renaissance Tech',     ticker: 'NVO', quoteSymbol: 'NVO', price: 31200000000, change: 936000000, pct: 3.10, topAssets: ['NVO','VRTX','NOW','REGN'], revenue: '$31.2B AUM' },
-  { id: 'inst-berkshire',   type: 'institution', name: 'Berkshire Hathaway',   ticker: 'BRK-B', quoteSymbol: 'BRK-B', price: 348000000000, change: 3480000000, pct: 1.01, topAssets: ['AAPL','BAC','AXP','KO'], revenue: '$348B Portfolio' },
-  { id: 'inst-point72',     type: 'institution', name: 'Point72',              ticker: 'MSFT', quoteSymbol: 'MSFT', price: 34500000000, change: 690000000, pct: 2.04, topAssets: ['MSFT','GOOGL','AMZN','UNH'], revenue: '$34.5B AUM' },
+  { id: 'inst-renaissance', type: 'institution', name: 'Renaissance Tech',     returnYtd: 12.4, topAssets: ['NVO','VRTX','NOW','REGN'], revenue: '$31.2B AUM' },
+  { id: 'inst-berkshire',   type: 'institution', name: 'Berkshire Hathaway',   returnYtd: 8.1,  topAssets: ['AAPL','BAC','AXP','KO'], revenue: '$348B Portfolio' },
+  { id: 'inst-point72',     type: 'institution', name: 'Point72',              returnYtd: 10.5, topAssets: ['MSFT','GOOGL','AMZN','UNH'], revenue: '$34.5B AUM' },
 ];
 
 /* ── Commodities & futures strip ── */
@@ -127,30 +166,71 @@ function Spark({ seed, up, w = 64, h = 22 }) {
   return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark"><polyline points={d} fill="none" stroke={up?'#10b981':'#ef4444'} strokeWidth="1.5"/></svg>;
 }
 
+function SparkPortfolio({ seed, returnYtd, w = 64, h = 22 }) {
+  const pts = useMemo(() => genReturnPctPts(seed, 24, returnYtd ?? 0), [seed, returnYtd]);
+  const minV = Math.min(0, ...pts);
+  const maxV = Math.max(...pts, minV + 0.01);
+  const up = (returnYtd ?? 0) >= 0;
+  const d = pts.map((v, i) => `${(i / (pts.length - 1)) * w},${h - ((v - minV) / (maxV - minV)) * h}`).join(' ');
+  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark"><polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" /></svg>;
+}
+
 /* ── Main chart component ── */
 function Chart({ item, timeRange }) {
-  const seed = useMemo(() => item ? item.id.split('').reduce((a,c) => a+c.charCodeAt(0),0) : 42, [item]);
-  const up = item ? item.change >= 0 : true;
-  const pts = useMemo(() => genPts(seed, 140, up), [seed, up]);
-  const W = 900, H = 340;
-  const step = W/(pts.length-1);
-  const line = pts.map((y,i) => `${i===0?'M':'L'}${i*step},${H-(y/100)*H}`).join(' ');
-  const area = `${line} L${W},${H} L0,${H} Z`;
-  const col = up ? '#10b981' : '#ef4444';
+  const seed = useMemo(() => (item ? item.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42), [item]);
+  const isPortfolio = item?.type === 'politician' || item?.type === 'institution';
+
+  const chartGeom = useMemo(() => {
+    const W = 900;
+    const H = 340;
+    if (!item) {
+      return { area: '', line: '', col: '#10b981', dotY: H / 2, gradientId: 'cg-empty' };
+    }
+    if (isPortfolio) {
+      const ytd = item.returnYtd ?? 0;
+      const end = rangeEndReturnPct(ytd, timeRange);
+      const pts = genReturnPctPts(seed, 140, end);
+      const minV = Math.min(0, ...pts);
+      const maxV = Math.max(...pts, minV + 0.01);
+      const norm = (v) => H - ((v - minV) / (maxV - minV)) * H;
+      const step = W / (pts.length - 1);
+      const linePath = pts.map((v, i) => `${i === 0 ? 'M' : 'L'}${i * step},${norm(v)}`).join(' ');
+      const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
+      const col = end >= 0 ? '#10b981' : '#ef4444';
+      const dotY = norm(pts[pts.length - 1]);
+      return { area: areaPath, line: linePath, col, dotY, gradientId: `cg-${seed}-pf` };
+    }
+    const up = item.change >= 0;
+    const pts = genPts(seed, 140, up);
+    const step = W / (pts.length - 1);
+    const linePath = pts.map((y, i) => `${i === 0 ? 'M' : 'L'}${i * step},${H - (y / 100) * H}`).join(' ');
+    const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
+    const col = up ? '#10b981' : '#ef4444';
+    const dotY = H - (pts[pts.length - 1] / 100) * H;
+    return { area: areaPath, line: linePath, col, dotY, gradientId: `cg-${seed}` };
+  }, [item, seed, timeRange, isPortfolio]);
+
+  const W = 900;
+  const H = 340;
 
   return (
     <div className="wl-chart-box">
+      {isPortfolio && (
+        <div className="wl-chart-y-label" aria-hidden>Return %</div>
+      )}
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="wl-chart-svg">
         <defs>
-          <linearGradient id={`cg-${seed}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={col} stopOpacity="0.18"/>
-            <stop offset="100%" stopColor={col} stopOpacity="0"/>
+          <linearGradient id={chartGeom.gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={chartGeom.col} stopOpacity="0.18" />
+            <stop offset="100%" stopColor={chartGeom.col} stopOpacity="0" />
           </linearGradient>
         </defs>
-        {[.2,.4,.6,.8].map(f => <line key={f} x1="0" y1={H*f} x2={W} y2={H*f} stroke="rgba(16,185,129,.05)" strokeWidth="1"/>)}
-        <path d={area} fill={`url(#cg-${seed})`}/>
-        <path d={line} fill="none" stroke={col} strokeWidth="2.5" vectorEffect="non-scaling-stroke"/>
-        <circle cx={W} cy={H-(pts[pts.length-1]/100)*H} r="5" fill={col} stroke="#0d1117" strokeWidth="2"/>
+        {[0.2, 0.4, 0.6, 0.8].map((f) => (
+          <line key={f} x1="0" y1={H * f} x2={W} y2={H * f} stroke="rgba(16,185,129,.05)" strokeWidth="1" />
+        ))}
+        <path d={chartGeom.area} fill={`url(#${chartGeom.gradientId})`} />
+        <path d={chartGeom.line} fill="none" stroke={chartGeom.col} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+        <circle cx={W} cy={chartGeom.dotY} r="5" fill={chartGeom.col} stroke="#0d1117" strokeWidth="2" />
       </svg>
     </div>
   );
@@ -171,7 +251,7 @@ export default function WatchlistPage() {
   /** User-picked row; effective selection is derived so first paint always has a valid `selected`. */
   const [manualSelected, setManualSelected] = useState(null);
   const [quoteMap, setQuoteMap] = useState({});
-  const [timeRange, setTimeRange] = useState('1Y');
+  const [timeRange, setTimeRange] = useState('YTD');
   const [sideTab, setSideTab] = useState('All');
   const [search, setSearch] = useState('');
   const [mockWatchlists, setMockWatchlists] = useState(() => INITIAL_MOCK_WATCHLISTS);
@@ -322,6 +402,7 @@ export default function WatchlistPage() {
 
   const comparableRows = useMemo(() => {
     if (!selected) return [];
+    if (selected.type === 'politician' || selected.type === 'institution') return [];
     const sym = (selected.quoteSymbol || selected.ticker || '').toUpperCase().replace(/\./g, '-');
     return getComparableAssets(sym);
   }, [selected]);
@@ -339,7 +420,13 @@ export default function WatchlistPage() {
     [selected, quoteMap],
   );
 
-  const isUp = selectedMerged.change >= 0;
+  const portfolioReturn =
+    selected.type === 'politician' || selected.type === 'institution'
+      ? rangeEndReturnPct(selected.returnYtd, timeRange)
+      : null;
+
+  const isUp =
+    portfolioReturn != null ? portfolioReturn >= 0 : selectedMerged.change >= 0;
 
   const holderList = useMemo(() => {
     if (selected?.type !== 'stock' || !selected.ticker) return [];
@@ -366,7 +453,8 @@ export default function WatchlistPage() {
         {stripItems.map((raw) => {
           const item = mergeFinnhubQuote(raw, quoteMap);
           const active = selected?.id === item.id;
-          const up = item.change >= 0;
+          const isPF = item.type === 'politician' || item.type === 'institution';
+          const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
           return (
             <button key={item.id} type="button" className={`wl-strip-card ${item.type} ${active?'active':''}`} onClick={() => selectAny(raw)}>
               <div className="wl-strip-top">
@@ -374,18 +462,31 @@ export default function WatchlistPage() {
                 <div className="wl-strip-info">
                   <span className="wl-strip-name">{item.name}</span>
                   <span className="wl-strip-sub">
-                    {item.type === 'politician' && <><span className={`wl-dot ${item.party?.toLowerCase()}`}/>{item.party} · {item.ticker}</>}
-                    {item.type === 'institution' && <>{item.revenue || '13F'} · {item.ticker}</>}
+                    {item.type === 'politician' && <><span className={`wl-dot ${item.party?.toLowerCase()}`}/>{item.party} · Portfolio</>}
+                    {item.type === 'institution' && <>{item.revenue || '13F'} · Portfolio</>}
                     {item.type === 'index' && <>{item.ticker}</>}
                   </span>
           </div>
         </div>
               <div className="wl-strip-bottom">
                 <div>
-                  <span className="wl-strip-price">{fmtPrice(item.price)}</span>
-                  <span className={`wl-strip-chg ${up?'up':'dn'}`}>{fmtPct(item.pct)}</span>
+                  {isPF ? (
+                    <>
+                      <span className="wl-strip-price">{fmtPct(item.returnYtd)}</span>
+                      <span className="wl-strip-chg wl-strip-ytd-label">YTD</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="wl-strip-price">{fmtPrice(item.price)}</span>
+                      <span className={`wl-strip-chg ${up?'up':'dn'}`}>{fmtPct(item.pct)}</span>
+                    </>
+                  )}
           </div>
-                <Spark seed={item.id.charCodeAt(0)+item.id.charCodeAt(item.id.length-1)} up={up}/>
+                {isPF ? (
+                  <SparkPortfolio seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)} returnYtd={item.returnYtd} />
+                ) : (
+                  <Spark seed={item.id.charCodeAt(0)+item.id.charCodeAt(item.id.length-1)} up={up}/>
+                )}
         </div>
               <div className="wl-strip-assets">
                 {item.topAssets.slice(0,3).map(a => <span key={a} className="wl-strip-asset">{a}</span>)}
@@ -443,7 +544,13 @@ export default function WatchlistPage() {
                   <span className="wl-co-full-name">{selected.name}</span>
                 </div>
               )}
-              {selected.type !== 'stock' && (
+              {(selected.type === 'politician' || selected.type === 'institution') && (
+                <>
+                  <div className="wl-big-price">{fmtPct(portfolioReturn)}</div>
+                  <div className="wl-price-meta">{selected.name} · {timeRange} return (modeled)</div>
+                </>
+              )}
+              {selected.type !== 'stock' && selected.type !== 'politician' && selected.type !== 'institution' && (
                 <>
                   <div className="wl-big-price">{fmtPrice(selectedMerged.price)}</div>
                   <div className="wl-price-meta">{selected.name} · {selected.ticker}</div>
@@ -460,11 +567,14 @@ export default function WatchlistPage() {
                   </div>
                 </div>
               )}
-              {selected.type !== 'stock' && (
+              {selected.type !== 'stock' && selected.type !== 'politician' && selected.type !== 'institution' && (
                 <div className={`wl-big-chg ${isUp ? 'up' : 'dn'}`}>
                   <i className={`bi ${isUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right'}`} />
                   {fmtPct(selectedMerged.pct)}
                 </div>
+              )}
+              {(selected.type === 'politician' || selected.type === 'institution') && (
+                <div className="wl-portfolio-hint">Based on disclosed positions</div>
               )}
               {selected.type === 'stock' && holderList.length > 0 && (
                 <div className="wl-holder-bubbles" aria-label="Investors and friends holding this stock">
@@ -499,29 +609,31 @@ export default function WatchlistPage() {
 
           <Chart item={selectedMerged} timeRange={timeRange}/>
 
-          <div className="wl-top-assets wl-comp-section">
-            <h4>Comparable Assets</h4>
-            <div className="wl-comp-table">
-              <div className="wl-comp-head">
-                <span>Ticker</span>
-                <span>Name</span>
-                <span>Price</span>
-                <span>Chg</span>
-                <span>Mkt cap</span>
-                <span>Vol</span>
-              </div>
-              {comparableRows.map((row) => (
-                <div key={row.ticker} className="wl-comp-row">
-                  <span className="wl-comp-tk">{row.ticker}</span>
-                  <span>{row.name}</span>
-                  <span>{fmtSmall(row.price)}</span>
-                  <span className={`wl-comp-chg ${row.changePct >= 0 ? 'up' : 'dn'}`}>{fmtPct(row.changePct)}</span>
-                  <span>{row.marketCap}</span>
-                  <span>{row.volume}</span>
+          {comparableRows.length > 0 && (
+            <div className="wl-top-assets wl-comp-section">
+              <h4>Comparable Assets</h4>
+              <div className="wl-comp-table">
+                <div className="wl-comp-head">
+                  <span>Ticker</span>
+                  <span>Name</span>
+                  <span>Price</span>
+                  <span>Chg</span>
+                  <span>Mkt cap</span>
+                  <span>Vol</span>
                 </div>
-              ))}
+                {comparableRows.map((row) => (
+                  <div key={row.ticker} className="wl-comp-row">
+                    <span className="wl-comp-tk">{row.ticker}</span>
+                    <span>{row.name}</span>
+                    <span>{fmtSmall(row.price)}</span>
+                    <span className={`wl-comp-chg ${row.changePct >= 0 ? 'up' : 'dn'}`}>{fmtPct(row.changePct)}</span>
+                    <span>{row.marketCap}</span>
+                    <span>{row.volume}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="wl-cmp">
             <div className="wl-cmp-hdr">
@@ -529,16 +641,22 @@ export default function WatchlistPage() {
             </div>
             {TOP_STRIP.filter(i => i.id !== selected.id).slice(0,5).map(raw => {
               const item = mergeFinnhubQuote(raw, quoteMap);
+              const isPF = item.type === 'politician' || item.type === 'institution';
+              const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
               return (
               <button key={item.id} type="button" className="wl-cmp-row" onClick={() => selectAny(raw)}>
                 <TypeIcon item={item}/>
                 <span className="wl-cmp-name">{item.name}</span>
-                <span className="wl-cmp-val">{fmtPrice(item.price)}</span>
-                <span className={`wl-cmp-chg ${item.change>=0?'up':'dn'}`}>{fmtPct(item.pct)}</span>
+                <span className="wl-cmp-val">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
+                <span className={`wl-cmp-chg ${up ? 'up' : 'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
                 <span className={`wl-cmp-type ${item.type}`}>
-                  {item.type === 'index' ? 'Index' : item.type === 'politician' ? 'Congress' : '13F Fund'}
+                  {item.type === 'index' ? 'Index' : item.type === 'politician' ? 'Congress' : item.type === 'institution' ? '13F Fund' : '—'}
                 </span>
-                <Spark seed={item.id.charCodeAt(0)*3} up={item.change>=0} w={48} h={16}/>
+                {isPF ? (
+                  <SparkPortfolio seed={item.id.charCodeAt(0) * 3} returnYtd={item.returnYtd} w={48} h={16} />
+                ) : (
+                  <Spark seed={item.id.charCodeAt(0)*3} up={up} w={48} h={16}/>
+                )}
               </button>
               );
             })}
@@ -637,7 +755,8 @@ export default function WatchlistPage() {
             {sideItems.map(raw => {
               const item = mergeFinnhubQuote(raw, quoteMap);
               const act = selected.id === item.id;
-              const up = item.change >= 0;
+              const isPF = item.type === 'politician' || item.type === 'institution';
+              const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
               return (
                 <button key={item.id} type="button" className={`wl-si ${act?'act':''} ${item.type}`} onClick={() => selectAny(raw)}>
                   <div className="wl-si-left">
@@ -646,12 +765,16 @@ export default function WatchlistPage() {
                     {item.type === 'institution' && <span className="wl-si-inst"><i className="bi bi-building"/></span>}
                     <div className="wl-si-info">
                       <span className="wl-si-name">{item.name}</span>
-                      <span className="wl-si-sub">{item.type==='stock'?item.ticker:item.type==='politician'?`${item.party} · ${item.ticker}`:`13F · ${item.ticker}`}</span>
+                      <span className="wl-si-sub">
+                        {item.type === 'stock' && item.ticker}
+                        {item.type === 'politician' && `${item.party} · Portfolio`}
+                        {item.type === 'institution' && `${item.revenue || '13F'} · Portfolio`}
+                      </span>
                     </div>
                   </div>
                   <div className="wl-si-right">
-                    <span className="wl-si-price">{fmtPrice(item.price)}</span>
-                    <span className={`wl-si-chg ${up?'up':'dn'}`}>{fmtPct(item.pct)}</span>
+                    <span className="wl-si-price">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
+                    <span className={`wl-si-chg ${up?'up':'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
                   </div>
                 </button>
               );
