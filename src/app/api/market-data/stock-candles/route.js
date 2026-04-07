@@ -1,25 +1,23 @@
 import { NextResponse } from 'next/server';
+
 export const dynamic = 'force-dynamic';
 
 const FMP_KEY = process.env.FMP_API_KEY;
 const BASE    = 'https://financialmodelingprep.com/stable';
 
-/** How many calendar days back to fetch per range */
 const RANGE_DAYS = {
-  '1D':  1,
-  '1W':  7,
-  '1M':  31,
-  '3M':  92,
-  '6M':  183,
-  '1Y':  365,
+  '1D':  2,
+  '1W':  10,
+  '1M':  35,
+  '3M':  95,
+  '6M':  186,
+  '1Y':  370,
 };
 
-/** Format a Date → "YYYY-MM-DD" */
 function toDateStr(d) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Build label string for a candle based on the selected range */
 function makeLabel(dateStr, range) {
   const d = new Date(dateStr + 'T12:00:00Z');
   if (range === '1D' || range === '1W') {
@@ -31,6 +29,20 @@ function makeLabel(dateStr, range) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// Retry once on 429 with a short delay
+async function fetchWithRetry(url, cacheSeconds = 300) {
+  const opts = { next: { revalidate: cacheSeconds } };
+  let res = await fetch(url, opts);
+
+  if (res.status === 429) {
+    // Wait 1.5s then try once more
+    await new Promise((r) => setTimeout(r, 1500));
+    res = await fetch(url, { cache: 'no-store' });
+  }
+
+  return res;
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -40,61 +52,66 @@ export async function GET(request) {
     if (!symbol) {
       return NextResponse.json({ error: 'symbol is required', candles: [] }, { status: 400 });
     }
-
     if (!FMP_KEY) {
-      console.error('[stock-candles] FMP_API_KEY not set');
       return NextResponse.json({ error: 'API not configured', candles: [] }, { status: 503 });
     }
 
-    const days    = RANGE_DAYS[range] ?? 31;
-    const toDate  = new Date();
+    const days     = RANGE_DAYS[range] ?? 35;
+    const toDate   = new Date();
     const fromDate = new Date();
     fromDate.setDate(fromDate.getDate() - days);
 
     const url = `${BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${toDateStr(fromDate)}&to=${toDateStr(toDate)}&apikey=${FMP_KEY}`;
 
-    console.log(`[stock-candles] FMP fetch: ${symbol} | range=${range}`);
-
-    const res = await fetch(url, { next: { revalidate: 120 } });
+    // Cache aggressively: EOD data doesn't change during the day
+    // 1D → 15min cache, everything else → 1hr cache
+    const cacheSeconds = range === '1D' ? 900 : 3600;
+    const res = await fetchWithRetry(url, cacheSeconds);
 
     if (!res.ok) {
+      if (res.status === 429) {
+        return NextResponse.json(
+          { error: 'Rate limit reached. Please wait a moment and try again.', candles: [], rateLimited: true },
+          {
+            status: 200,
+            headers: { 'Retry-After': '10' },
+          }
+        );
+      }
       const body = await res.text();
-      console.error(`[stock-candles] FMP HTTP ${res.status} for ${symbol}:`, body);
+      console.error(`[stock-candles] FMP HTTP ${res.status}:`, body);
       return NextResponse.json({ error: `FMP ${res.status}`, candles: [] }, { status: 200 });
     }
 
     const raw = await res.json();
 
-    // FMP returns an array of daily bars, newest first — reverse so chart goes left→right
     if (!Array.isArray(raw) || raw.length === 0) {
-      console.warn(`[stock-candles] no data for ${symbol} | range=${range}`);
       return NextResponse.json({ candles: [], symbol, range }, { status: 200 });
     }
 
-    // For 1D range, FMP EOD only has yesterday's bar — still show it as single point
     const sorted = [...raw].reverse(); // oldest first
 
     const candles = sorted.map((bar) => ({
-      t:      new Date(bar.date).getTime() / 1000,
-      label:  makeLabel(bar.date, range),
-      open:   bar.open   ?? bar.close,
-      high:   bar.high   ?? bar.close,
-      low:    bar.low    ?? bar.close,
-      close:  bar.close,
-      price:  bar.close,          // StockPriceChart uses `price` as the chart dataKey
-      volume: bar.volume ?? 0,
-      change: bar.change ?? 0,
+      t:             new Date(bar.date).getTime() / 1000,
+      label:         makeLabel(bar.date, range),
+      open:          bar.open   ?? bar.close,
+      high:          bar.high   ?? bar.close,
+      low:           bar.low    ?? bar.close,
+      close:         bar.close,
+      price:         bar.close,
+      volume:        bar.volume ?? 0,
+      change:        bar.change ?? 0,
       changePercent: bar.changePercent ?? 0,
     }));
 
-    console.log(`[stock-candles] OK: ${candles.length} candles for ${symbol}`);
-
     return NextResponse.json({ candles, symbol, range }, {
-      headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60' },
+      headers: {
+        'Cache-Control': `public, s-maxage=${cacheSeconds}, stale-while-revalidate=120`,
+      },
     });
 
   } catch (err) {
-    console.error('[stock-candles] Unexpected error:', err);
+    console.error('[stock-candles] error:', err);
     return NextResponse.json({ error: err.message, candles: [] }, { status: 200 });
   }
 }

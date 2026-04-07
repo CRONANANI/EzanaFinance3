@@ -38,6 +38,7 @@ function CompanyResearchPageInner() {
   const { completeTask } = useChecklist();
   const [selectedStock, setSelectedStock] = useState(null);
   const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+  const [livePrice, setLivePrice] = useState(null);
   const [viewMode, setViewMode] = useState('heatmap');
   const [activeModel, setActiveModel] = useState(null);
   const searchRef = useRef(null);
@@ -80,11 +81,21 @@ function CompanyResearchPageInner() {
   useEffect(() => {
     if (!selectedStock) return;
     setStats({ mcap: '…', pe: '…', divYield: '…', eps: '…', capType: '…' });
+    setLivePrice(null);
 
     fetch(`/api/fmp/stock-stats?symbol=${encodeURIComponent(selectedStock)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        if (!data || data.error) return;
+        if (!data) {
+          setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+          setLivePrice(null);
+          return;
+        }
+        if (data.error) {
+          setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+          setLivePrice(null);
+          return;
+        }
         setStats({
           mcap:    data.mcap    || '--',
           pe:      data.pe      || '--',
@@ -92,8 +103,12 @@ function CompanyResearchPageInner() {
           eps:     data.eps     || '--',
           capType: data.capType || '--',
         });
+        if (data.price != null) setLivePrice(data.price);
       })
-      .catch(() => {});
+      .catch(() => {
+        setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+        setLivePrice(null);
+      });
   }, [selectedStock]);
 
   const companyMetaLine = useMemo(() => {
@@ -150,7 +165,10 @@ function CompanyResearchPageInner() {
     return () => document.removeEventListener('click', handler);
   }, [clearSuggestions]);
 
-  const resetStats = () => setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+  const resetStats = () => {
+    setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
+    setLivePrice(null);
+  };
 
   const scrollModelsCarousel = useCallback((dir) => {
     modelsCarouselScrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
@@ -334,7 +352,7 @@ function CompanyResearchPageInner() {
 
                 {/* New React-based chart component */}
                 <div style={{ padding: '1rem 0' }}>
-                  <StockPriceChart symbol={selectedStock} />
+                  <StockPriceChart symbol={selectedStock} livePrice={livePrice} />
                 </div>
 
                 <div

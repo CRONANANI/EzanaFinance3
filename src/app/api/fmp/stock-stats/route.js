@@ -21,6 +21,15 @@ function capType(n) {
   return 'Small Cap';
 }
 
+async function fetchWithRetry(url, cacheSeconds = 3600) {
+  let res = await fetch(url, { next: { revalidate: cacheSeconds } });
+  if (res.status === 429) {
+    await new Promise((r) => setTimeout(r, 1500));
+    res = await fetch(url, { cache: 'no-store' });
+  }
+  return res;
+}
+
 export async function GET(request) {
   if (!FMP_KEY) {
     return NextResponse.json({ error: 'FMP_API_KEY not configured' }, { status: 503 });
@@ -34,62 +43,58 @@ export async function GET(request) {
   }
 
   try {
-    // Fetch key-metrics and ratios in parallel — both give us what we need
-    const [metricsRes, ratiosRes, mcapRes] = await Promise.all([
-      fetch(`${BASE}/key-metrics?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`, { next: { revalidate: 3600 } }),
-      fetch(`${BASE}/ratios?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`,      { next: { revalidate: 3600 } }),
-      fetch(`${BASE}/historical-market-capitalization?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`, { next: { revalidate: 3600 } }),
-    ]);
+    // ONE call: FMP /quote returns price, marketCap, pe, eps, dividendsPerShare in one shot
+    const quoteUrl = `${BASE}/quote/${encodeURIComponent(symbol)}?apikey=${FMP_KEY}`;
+    const quoteRes = await fetchWithRetry(quoteUrl, 300); // 5min cache for price data
 
-    const metricsRaw = metricsRes.ok ? await metricsRes.json() : [];
-    const ratiosRaw  = ratiosRes.ok  ? await ratiosRes.json()  : [];
-    const mcapRaw    = mcapRes.ok    ? await mcapRes.json()    : [];
+    if (quoteRes.status === 429) {
+      return NextResponse.json(
+        { error: 'Rate limit reached. Please wait a moment.', rateLimited: true,
+          mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--', price: null },
+        { status: 200 }
+      );
+    }
 
-    // Use most recent entry (index 0)
-    const m = Array.isArray(metricsRaw) ? metricsRaw[0] : null;
-    const r = Array.isArray(ratiosRaw)  ? ratiosRaw[0]  : null;
-    const latestMcap = Array.isArray(mcapRaw) && mcapRaw.length > 0
-      ? mcapRaw.sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.marketCap
-      : null;
+    let q = null;
+    if (quoteRes.ok) {
+      const raw = await quoteRes.json();
+      q = Array.isArray(raw) ? raw[0] : raw;
+    }
 
-    // Market cap — prefer historical (most accurate), fall back to key-metrics
-    const mcapNum = latestMcap ?? m?.marketCap ?? null;
+    // FMP quote response fields:
+    // price, marketCap, pe, eps, earningsAnnouncement, sharesOutstanding
+    // dividendsPerShare is not in quote — we compute yield from price if available
 
-    // P/E ratio
-    const pe = r?.priceToEarningsRatio ?? m?.peRatio ?? null;
+    const mcapNum = q?.marketCap ?? null;
+    const pe      = q?.pe        ?? null;
+    const eps     = q?.eps       ?? null;
+    const price   = q?.price     ?? null;
 
-    // Dividend yield — ratios returns it as a decimal (0.004), convert to %
-    const divYieldRaw = r?.dividendYield ?? r?.dividendYieldPercentage ?? null;
-    const divYield = divYieldRaw != null
-      ? (divYieldRaw < 1 ? (divYieldRaw * 100).toFixed(2) + '%' : divYieldRaw.toFixed(2) + '%')
-      : '--';
-
-    // EPS — net income per share from ratios
-    const eps = r?.netIncomePerShare ?? m?.netIncomePerShare ?? null;
+    // Dividend yield: FMP quote has no dividendYield directly.
+    // Use earningsAnnouncement as proxy or fetch from profile if needed.
+    // For now show '--' — ratios call is too expensive to add here.
+    // The KeyMetrics component can show it separately.
+    const divYield = '--';
 
     return NextResponse.json({
-      mcap:    fmtMarketCap(mcapNum),
-      capType: capType(mcapNum),
-      pe:      pe    != null ? Number(pe).toFixed(2)  : '--',
+      mcap:     fmtMarketCap(mcapNum),
+      capType:  capType(mcapNum),
+      pe:       pe  != null ? Number(pe).toFixed(2)  : '--',
+      eps:      eps != null ? Number(eps).toFixed(2) : '--',
       divYield,
-      eps:     eps   != null ? Number(eps).toFixed(2) : '--',
-      // Extra metrics for tooltips
-      pbRatio:          r?.priceToBookRatio        != null ? Number(r.priceToBookRatio).toFixed(2)        : '--',
-      psRatio:          r?.priceToSalesRatio        != null ? Number(r.priceToSalesRatio).toFixed(2)       : '--',
-      roe:              m?.returnOnEquity           != null ? (Number(m.returnOnEquity) * 100).toFixed(1) + '%' : '--',
-      netMargin:        r?.netProfitMargin          != null ? (Number(r.netProfitMargin) * 100).toFixed(1) + '%' : '--',
-      grossMargin:      r?.grossProfitMargin        != null ? (Number(r.grossProfitMargin) * 100).toFixed(1) + '%' : '--',
-      debtToEquity:     r?.debtToEquityRatio        != null ? Number(r.debtToEquityRatio).toFixed(2)       : '--',
-      currentRatio:     r?.currentRatio             != null ? Number(r.currentRatio).toFixed(2)            : '--',
-      evToEbitda:       m?.evToEBITDA               != null ? Number(m.evToEBITDA).toFixed(2)              : '--',
-      freeCashFlowYield:m?.freeCashFlowYield        != null ? (Number(m.freeCashFlowYield) * 100).toFixed(2) + '%' : '--',
+      price:    price != null ? Number(price) : null,
+      // For the chart header price badge
+      priceFormatted: price != null
+        ? `$${Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : null,
       symbol,
-      period: m?.period ?? '--',
-      fiscalYear: m?.fiscalYear ?? '--',
     });
 
   } catch (err) {
     console.error('[fmp/stock-stats]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message, mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' },
+      { status: 200 }
+    );
   }
 }

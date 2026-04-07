@@ -58,13 +58,12 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-export default function StockPriceChart({ symbol }) {
+export default function StockPriceChart({ symbol, livePrice = null }) {
   const [range, setRange] = useState('1M');
   const [candles, setCandles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
-  const [quote, setQuote] = useState(null);
 
   // Fetch candles whenever symbol or range changes
   const fetchCandles = useCallback(async (sym, rng) => {
@@ -93,32 +92,10 @@ export default function StockPriceChart({ symbol }) {
     }
   }, []);
 
-  // Try to fetch live quote
-  const fetchQuote = useCallback(async (sym) => {
-    if (!sym) return;
-    try {
-      const qRes = await fetch(
-        `/api/fmp/quote?symbol=${encodeURIComponent(sym)}`
-      );
-      if (qRes.ok) {
-        const q = await qRes.json();
-        // Normalize FMP quote shape to match what the header uses: { c: currentPrice }
-        if (q && q.price != null) {
-          setQuote({ c: q.price });
-        } else if (Array.isArray(q) && q[0]?.price != null) {
-          setQuote({ c: q[0].price });
-        }
-      }
-    } catch (_) {
-      /* quote is optional — chart still works without it */
-    }
-  }, []);
-
   useEffect(() => {
     if (!symbol) return;
     fetchCandles(symbol, range);
-    fetchQuote(symbol);
-  }, [symbol, range, fetchCandles, fetchQuote]);
+  }, [symbol, range, fetchCandles]);
 
   // Derived values
   const firstPrice = candles[0]?.price;
@@ -173,7 +150,7 @@ export default function StockPriceChart({ symbol }) {
           >
             {symbol}
           </span>
-          {quote?.c && (
+          {(livePrice != null || lastPrice != null) && (
             <span
               style={{
                 fontSize: '1rem',
@@ -182,8 +159,7 @@ export default function StockPriceChart({ symbol }) {
                 marginLeft: '0.75rem',
               }}
             >
-              $
-              {Number(quote.c).toLocaleString('en-US', {
+              ${Number(livePrice ?? lastPrice).toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -297,17 +273,33 @@ export default function StockPriceChart({ symbol }) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#ef4444',
+              flexDirection: 'column',
+              gap: '6px',
+              color: error.includes('Rate limit') ? 'var(--muted-foreground, #6b7280)' : '#ef4444',
               fontSize: '0.75rem',
               textAlign: 'center',
               padding: '1rem',
             }}
           >
-            Could not load chart data.
-            <br />
-            <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
-              {error}
-            </span>
+            {error.includes('Rate limit') ? (
+              <>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" style={{ opacity: 0.5 }}>
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <span>Too many requests — please wait a moment</span>
+                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
+                  Chart data will load automatically on retry
+                </span>
+              </>
+            ) : (
+              <>
+                Could not load chart data.
+                <span style={{ color: 'var(--muted-foreground, #6b7280)', fontSize: '0.65rem' }}>
+                  {error}
+                </span>
+              </>
+            )}
           </div>
         )}
 
