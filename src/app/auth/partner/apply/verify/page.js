@@ -53,7 +53,7 @@ function VerifyAndUploadContent() {
     return (
       <div className="partner-form-page">
         <div className="partner-form-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
-          <p style={{ color: '#8b949e' }}>Verifying your email...</p>
+          <p style={{ color: '#64748b' }}>Verifying your email...</p>
         </div>
       </div>
     );
@@ -64,9 +64,9 @@ function VerifyAndUploadContent() {
       <div className="partner-form-page">
         <div className="partner-form-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
           <i className="bi bi-x-circle" style={{ fontSize: '2.5rem', color: '#ef4444' }} />
-          <h2 style={{ marginTop: '1rem' }}>Verification Failed</h2>
-          <p style={{ color: '#8b949e' }}>{error}</p>
-          <Link href="/auth/partner/apply" style={{ color: '#10b981', marginTop: '1.5rem', display: 'inline-block' }}>Start a new application</Link>
+          <h2 style={{ marginTop: '1rem', color: '#0f172a' }}>Verification Failed</h2>
+          <p style={{ color: '#64748b' }}>{error}</p>
+          <Link href="/auth/partner/apply" style={{ color: '#059669', marginTop: '1.5rem', display: 'inline-block' }}>Start a new application</Link>
         </div>
       </div>
     );
@@ -76,12 +76,12 @@ function VerifyAndUploadContent() {
     return (
       <div className="partner-form-page">
         <div className="partner-form-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
-          <i className="bi bi-check-circle-fill" style={{ fontSize: '3rem', color: '#10b981' }} />
-          <h1 style={{ marginTop: '1rem' }}>Application Complete</h1>
-          <p style={{ color: '#8b949e', maxWidth: '480px', margin: '1rem auto' }}>
+          <i className="bi bi-check-circle-fill" style={{ fontSize: '3rem', color: '#059669' }} />
+          <h1 style={{ marginTop: '1rem', color: '#0f172a' }}>Application Complete</h1>
+          <p style={{ color: '#64748b', maxWidth: '480px', margin: '1rem auto' }}>
             Your documents have been submitted. Our team will review your application within 5–7 business days. You&apos;ll receive an email once a decision has been made.
           </p>
-          <Link href="/" style={{ color: '#10b981', marginTop: '2rem', display: 'inline-block' }}>← Back to Home</Link>
+          <Link href="/" style={{ color: '#059669', marginTop: '2rem', display: 'inline-block' }}>← Back to Home</Link>
         </div>
       </div>
     );
@@ -90,9 +90,9 @@ function VerifyAndUploadContent() {
   return (
     <div className="partner-form-page">
       <div className="partner-form-container">
-        <i className="bi bi-shield-check" style={{ fontSize: '2rem', color: '#10b981', display: 'block', marginBottom: '1rem' }} />
-        <h1>Email Verified</h1>
-        <p style={{ color: '#8b949e', marginBottom: '2rem' }}>
+        <i className="bi bi-shield-check" style={{ fontSize: '2rem', color: '#059669', display: 'block', marginBottom: '1rem' }} />
+        <h1 style={{ color: '#0f172a' }}>Email Verified</h1>
+        <p style={{ color: '#64748b', marginBottom: '2rem' }}>
           Hi {applicant?.fullName}. Please upload the following documents to complete your application.
         </p>
 
@@ -100,18 +100,18 @@ function VerifyAndUploadContent() {
 
         <div className="partner-form-step">
           <label>Government-Issued ID *</label>
-          <p style={{ color: '#4b5563', fontSize: '0.6875rem', marginBottom: '0.5rem' }}>
+          <p style={{ color: '#64748b', fontSize: '0.6875rem', marginBottom: '0.5rem' }}>
             Passport, driver&apos;s license, or national ID card. Clear photo of the front side.
           </p>
           <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setIdFile(e.target.files?.[0])} />
-          {idFile && <span style={{ fontSize: '0.625rem', color: '#10b981' }}>{idFile.name}</span>}
+          {idFile && <span style={{ fontSize: '0.625rem', color: '#059669' }}>{idFile.name}</span>}
 
           <label style={{ marginTop: '1.5rem' }}>Proof of Financial Activity *</label>
-          <p style={{ color: '#4b5563', fontSize: '0.6875rem', marginBottom: '0.5rem' }}>
+          <p style={{ color: '#64748b', fontSize: '0.6875rem', marginBottom: '0.5rem' }}>
             Brokerage statement (last 3 months), CFA/CFP/FRM certificate, or professional registration document.
           </p>
           <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFinFile(e.target.files?.[0])} />
-          {finFile && <span style={{ fontSize: '0.625rem', color: '#10b981' }}>{finFile.name}</span>}
+          {finFile && <span style={{ fontSize: '0.625rem', color: '#059669' }}>{finFile.name}</span>}
 
           <button
             type="button"
@@ -133,7 +133,7 @@ export default function VerifyAndUpload() {
     <Suspense fallback={
       <div className="partner-form-page">
         <div className="partner-form-container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
-          <p style={{ color: '#8b949e' }}>Loading...</p>
+          <p style={{ color: '#64748b' }}>Loading...</p>
         </div>
       </div>
     }>
