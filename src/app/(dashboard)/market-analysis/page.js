@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
-import { COUNTRY_BORDERS } from '@/lib/powerMapBorders';
 import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';

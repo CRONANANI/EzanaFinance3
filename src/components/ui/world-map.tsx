@@ -15,7 +15,6 @@ import proj4 from "proj4";
 import type { CountryScore } from "@/hooks/useGlobalPowerMap";
 import { useGlobalPowerMap } from "@/hooks/useGlobalPowerMap";
 import { latLngToAlpha2Cached } from "@/lib/latLngToCountryAlpha2";
-import { COUNTRY_BORDERS } from "@/lib/powerMapBorders";
 
 const NE_COUNTRIES_GEOJSON =
   "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson";
@@ -751,27 +750,6 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               ))}
             </g>
           )}
-          {/* ── Country border outlines ── */}
-          {Object.entries(COUNTRY_BORDERS).map(([iso, pathD], idx) => {
-            const isScored = isPowerMapActive && scoreByIso[iso];
-            const colour   = isScored ? scoreByIso[iso] : "#10b981";
-            const delay    = ((idx * 0.18) % 4).toFixed(2);
-            const dur      = (2.8 + (idx % 5) * 0.3).toFixed(1);   // 2.8s–4.0s — vary per country
-
-            return (
-              <path
-                key={`border-${iso}`}
-                d={pathD}
-                className={`power-border ${isPowerMapActive ? "power-border--active" : "power-border--idle"}`}
-                stroke={colour}
-                style={{
-                  // @ts-ignore
-                  "--border-delay": `${delay}s`,
-                  "--border-dur":   `${dur}s`,
-                }}
-              />
-            );
-          })}
           {!hideFinancialDots &&
             FINANCIAL_CENTERS.map((center) => {
             const point = projectPoint(center.lat, center.lng);
