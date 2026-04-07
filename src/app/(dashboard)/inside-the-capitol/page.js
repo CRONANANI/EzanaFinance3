@@ -56,8 +56,9 @@ function normalizeTrade(t, chamber, idx = 0) {
   const last = t.lastName || '';
   const name = `${first} ${last}`.trim() || t.office || t.name || 'Unknown';
   const rawType = (t.type || t.transactionType || '').toString();
+  const lower = rawType.toLowerCase();
   const isSell =
-    rawType.toLowerCase().includes('sale') || rawType.toLowerCase().includes('sell');
+    lower.includes('sale') || lower.includes('sell') || lower.includes('disposal');
   const sym = (t.symbol || t.ticker || '').toUpperCase();
   const disclosure = t.disclosureDate || t.date || t.transactionDate;
   const rawDate = disclosure || t.transactionDate;
@@ -84,7 +85,7 @@ function normalizeTrade(t, chamber, idx = 0) {
     amount: fmtAmount(t.amount),
     date: relDate(disclosure || t.transactionDate),
     flagged: false,
-    link: t.link || '',
+    link: t.link || t.url || '',
     rawDate,
   };
 }
@@ -97,125 +98,13 @@ const STAT_CARDS_BASE = [
   { id: 'alerts', icon: 'bi-bell', label: 'New Alerts', color: '#fbbf24' },
 ];
 
-/* ── Politician Performance Data ── */
-const PERF_WINDOWS = ['1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y'];
-const PERF_LABELS = { '1W': '1 Week', '1M': '1 Month', '3M': '3 Months', '6M': '6 Months', '1Y': '1 Year', '3Y': '3 Years', '5Y': '5 Years', '10Y': '10 Years' };
-
-/** Dynamic X-axis labels from today's date (no hardcoded weekday strings) */
-function getPerfXAxisLabels(period) {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-
-  if (period === '1W') {
-    const out = [];
-    for (let i = 6; i >= 0; i--) {
-      const dt = new Date(now);
-      dt.setDate(dt.getDate() - i);
-      out.push(dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
-    }
-    return out;
-  }
-
-  if (period === '1M') {
-    const out = [];
-    const offsets = [28, 21, 14, 7, 0];
-    for (const off of offsets) {
-      const dt = new Date(now);
-      dt.setDate(dt.getDate() - off);
-      out.push(dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    }
-    return out;
-  }
-
-  if (period === '3M') {
-    const out = [];
-    for (let i = 2; i >= 0; i--) {
-      const dt = new Date(y, m - i, 1);
-      out.push(dt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
-    }
-    return out;
-  }
-
-  if (period === '6M') {
-    const out = [];
-    for (let i = 5; i >= 0; i--) {
-      const dt = new Date(y, m - i, 1);
-      out.push(dt.toLocaleDateString('en-US', { month: 'short' }));
-    }
-    return out;
-  }
-
-  if (period === '1Y') {
-    const out = [];
-    for (let i = 11; i >= 0; i--) {
-      const dt = new Date(y, m - i, 1);
-      out.push(dt.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
-    }
-    return out;
-  }
-
-  if (period === '3Y') {
-    return [y - 2, y - 1, y].map(String);
-  }
-
-  if (period === '5Y') {
-    return [y - 4, y - 3, y - 2, y - 1, y].map(String);
-  }
-
-  if (period === '10Y') {
-    const start = y - 9;
-    const yrs = [];
-    for (let yy = start; yy <= y; yy += 2) yrs.push(String(yy));
-    if (yrs[yrs.length - 1] !== String(y)) yrs.push(String(y));
-    return yrs;
-  }
-
-  return [];
-}
-
-const POLITICIAN_PERF = [
-  { name: 'Nancy Pelosi', initials: 'NP', party: 'Democrat', chamber: 'House', state: 'CA',
-    topHoldings: ['NVDA', 'AAPL', 'MSFT'],
-    returns: { '1W': 3.2, '1M': 8.1, '3M': 18.4, '6M': 32.7, '1Y': 54.3, '3Y': 142.5, '5Y': 221.8, '10Y': 487.2 } },
-  { name: 'Dan Crenshaw', initials: 'DC', party: 'Republican', chamber: 'House', state: 'TX',
-    topHoldings: ['AAPL', 'MSFT', 'XOM'],
-    returns: { '1W': 2.1, '1M': 5.9, '3M': 12.1, '6M': 19.8, '1Y': 38.7, '3Y': 89.4, '5Y': 156.3, '10Y': 298.1 } },
-  { name: 'Mark Warner', initials: 'MW', party: 'Democrat', chamber: 'Senate', state: 'VA',
-    topHoldings: ['META', 'CRM', 'SNOW'],
-    returns: { '1W': 1.8, '1M': 6.3, '3M': 14.2, '6M': 24.5, '1Y': 41.2, '3Y': 98.7, '5Y': 178.9, '10Y': 356.4 } },
-  { name: 'Tommy Tuberville', initials: 'TT', party: 'Republican', chamber: 'Senate', state: 'AL',
-    topHoldings: ['KMB', 'HPQ', 'CLX'],
-    returns: { '1W': -0.8, '1M': 1.2, '3M': 3.5, '6M': 7.8, '1Y': 12.4, '3Y': 28.6, '5Y': 45.2, '10Y': 89.3 } },
-  { name: 'Josh Gottheimer', initials: 'JG', party: 'Democrat', chamber: 'House', state: 'NJ',
-    topHoldings: ['MSFT', 'GOOGL', 'JPM'],
-    returns: { '1W': 2.7, '1M': 7.4, '3M': 16.8, '6M': 28.3, '1Y': 46.1, '3Y': 118.3, '5Y': 195.7, '10Y': 412.6 } },
-  { name: 'Michael McCaul', initials: 'MM', party: 'Republican', chamber: 'House', state: 'TX',
-    topHoldings: ['LMT', 'RTX', 'MSFT'],
-    returns: { '1W': 1.4, '1M': 4.2, '3M': 9.8, '6M': 16.2, '1Y': 29.5, '3Y': 67.8, '5Y': 112.4, '10Y': 234.7 } },
-  { name: 'Shelley Capito', initials: 'SC', party: 'Republican', chamber: 'Senate', state: 'WV',
-    topHoldings: ['JNJ', 'PFE', 'UNH'],
-    returns: { '1W': 0.9, '1M': 3.1, '3M': 7.6, '6M': 13.4, '1Y': 22.8, '3Y': 52.1, '5Y': 88.6, '10Y': 178.3 } },
-  { name: 'Ro Khanna', initials: 'RK', party: 'Democrat', chamber: 'House', state: 'CA',
-    topHoldings: ['TSLA', 'PLTR', 'COIN'],
-    returns: { '1W': 4.1, '1M': 9.8, '3M': 21.3, '6M': 35.9, '1Y': 62.7, '3Y': 158.4, '5Y': 248.1, '10Y': 523.9 } },
-  { name: 'Pat Fallon', initials: 'PF', party: 'Republican', chamber: 'House', state: 'TX',
-    topHoldings: ['AMZN', 'NVDA', 'AMD'],
-    returns: { '1W': 2.9, '1M': 7.8, '3M': 17.5, '6M': 30.1, '1Y': 51.8, '3Y': 134.2, '5Y': 210.5, '10Y': 445.8 } },
-  { name: 'John Curtis', initials: 'JC', party: 'Republican', chamber: 'House', state: 'UT',
-    topHoldings: ['AVGO', 'QCOM', 'TXN'],
-    returns: { '1W': 1.1, '1M': 3.6, '3M': 8.4, '6M': 14.9, '1Y': 26.3, '3Y': 61.4, '5Y': 102.8, '10Y': 210.5 } },
-];
-
-/* ── Politician Performance Chart ──
-   Visual baseline: Dashboard PortfolioChart.js (Chart.js) — #10b981 line, rgba fill, subtle gray grid, axis #9ca3af / 10px */
+/* ── Politician Performance Chart (year-based, FMP-backed) ── */
 const PC_W = 780;
-const PC_H = Math.round(392 * 0.7); /* was 392; −30% height */
+const PC_H = Math.round(392 * 0.7);
 const PC_PAD = { top: 50, right: 40, bottom: 62, left: 60 };
-/** Smaller dots + initials (proportionally reduced vs. chart height) */
-const PC_DOT_R = 10;
-const PC_DOT_FONT = 7;
-const PC_DOT_PCT_FS = 7.5;
+const PC_DOT_R = 6;
+const PC_DOT_FONT = 5.5;
+const PC_DOT_PCT_FS = 6.5;
 
 /** Cubic smooth path through points (similar to Chart.js tension) */
 function buildSmoothPath(points) {
@@ -240,38 +129,69 @@ function buildSmoothPath(points) {
   return d;
 }
 
-function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
+function PoliticianPerfChart({ onOpenPolitician }) {
   const router = useRouter();
   const [hoveredId, setHoveredId] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const sorted = useMemo(
-    () => [...POLITICIAN_PERF].sort((a, b) => b.returns[tw] - a.returns[tw]),
-    [tw]
-  );
+  useEffect(() => {
+    fetch('/api/fmp/performance')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) throw new Error(d.error);
+        setChartData(d.chartData || []);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const returns = sorted.map((p) => p.returns[tw]);
-  const yMax = Math.ceil((Math.max(...returns) + 10) / 10) * 10;
-  const yMin = Math.min(Math.floor((Math.min(...returns) - 5) / 10) * 10, 0);
-  const innerW = PC_W - PC_PAD.left - PC_PAD.right;
-  const innerH = PC_H - PC_PAD.top - PC_PAD.bottom;
-  const xAxisLabels = useMemo(() => getPerfXAxisLabels(tw), [tw]);
+  const activePoints = chartData.filter((d) => d.topPerformer != null);
 
-  const getX = (i) => PC_PAD.left + (i / (sorted.length - 1)) * innerW;
-  const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+  if (loading) {
+    return (
+      <div className="itc-perf-chart-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 180 }}>
+        <span style={{ color: '#8b949e', fontSize: '0.85rem' }}>Loading performance data...</span>
+      </div>
+    );
+  }
 
-  const yStep = yMax - yMin > 100 ? 50 : yMax - yMin > 40 ? 20 : 10;
+  if (error || activePoints.length === 0) {
+    return (
+      <div className="itc-perf-chart-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 180 }}>
+        <span style={{ color: '#8b949e', fontSize: '0.85rem' }}>
+          {error ? `Could not load: ${error}` : 'No performance data available.'}
+        </span>
+      </div>
+    );
+  }
+
+  const currentYear = new Date().getFullYear();
+  const xYears = [];
+  for (let y = 2016; y <= currentYear; y++) xYears.push(y);
+
+  const returns = activePoints.map((d) => d.returnPct);
+  const yMin = 0;
+  const yMax = Math.ceil((Math.max(...returns) + 20) / 20) * 20;
+  const yStep = 20;
   const yTicks = [];
   for (let t = yMin; t <= yMax; t += yStep) yTicks.push(t);
 
-  const linePoints = sorted.map((p, i) => [getX(i), getY(p.returns[tw])]);
+  const innerW = PC_W - PC_PAD.left - PC_PAD.right;
+  const innerH = PC_H - PC_PAD.top - PC_PAD.bottom;
+  const yearSpan = Math.max(1, currentYear - 2016);
+
+  const getX = (year) => PC_PAD.left + ((year - 2016) / yearSpan) * innerW;
+  const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+
+  const linePoints = activePoints.map((d) => [getX(d.year), getY(d.returnPct)]);
   const linePath = buildSmoothPath(linePoints);
   const yBase = PC_PAD.top + innerH;
   const areaPath =
     linePoints.length > 0
-      ? `${linePath} L ${getX(sorted.length - 1)} ${yBase} L ${getX(0)} ${yBase} Z`
+      ? `${linePath} L ${linePoints[linePoints.length - 1][0]} ${yBase} L ${linePoints[0][0]} ${yBase} Z`
       : '';
-
-  const hovered = hoveredId != null ? sorted[hoveredId] : null;
 
   return (
     <div className="itc-perf-chart-wrap">
@@ -286,7 +206,7 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
             <stop offset="100%" stopColor="#1a1a2e" />
           </linearGradient>
           <filter id="itcMetalDotShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.35" />
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
           </filter>
         </defs>
 
@@ -299,58 +219,62 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
           </g>
         ))}
 
-        {yMin <= 0 && yMax >= 0 && (
-          <line x1={PC_PAD.left} y1={getY(0)} x2={PC_W - PC_PAD.right} y2={getY(0)} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
-        )}
-
         <line x1={PC_PAD.left} y1={PC_PAD.top} x2={PC_PAD.left} y2={PC_PAD.top + innerH} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
         <line x1={PC_PAD.left} y1={PC_PAD.top + innerH} x2={PC_W - PC_PAD.right} y2={PC_PAD.top + innerH} stroke="rgba(156, 163, 175, 0.1)" strokeWidth="1" />
 
-        {xAxisLabels.map((lab, li) => {
-          const n = xAxisLabels.length;
-          const lx = n <= 1 ? PC_PAD.left + innerW / 2 : PC_PAD.left + (li / (n - 1)) * innerW;
-          const fs = tw === '1Y' ? 8 : 10;
-          return (
-            <text
-              key={`${tw}-x-${li}`}
-              x={lx}
-              y={PC_PAD.top + innerH + 18}
-              textAnchor="middle"
-              fill="#9ca3af"
-              fontSize={fs}
-              fontFamily="Plus Jakarta Sans, sans-serif"
-            >
-              {lab}
-            </text>
-          );
-        })}
+        {xYears.map((yr) => (
+          <text
+            key={yr}
+            x={getX(yr)}
+            y={PC_PAD.top + innerH + 18}
+            textAnchor="middle"
+            fill="#9ca3af"
+            fontSize="10"
+            fontFamily="Plus Jakarta Sans, sans-serif"
+          >
+            {yr}
+          </text>
+        ))}
 
         <path d={areaPath} fill="url(#itcPerfGrad)" />
-        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-        {sorted.map((p, i) => {
-          const cx = getX(i);
-          const cy = getY(p.returns[tw]);
+        {activePoints.map((d, i) => {
+          const cx = getX(d.year);
+          const cy = getY(d.returnPct);
           const isHov = hoveredId === i;
-          const rDot = isHov ? PC_DOT_R + 0.75 : PC_DOT_R;
+          const rDot = isHov ? PC_DOT_R + 1 : PC_DOT_R;
+          const p = d.topPerformer;
 
           return (
-            <g key={p.name} onMouseEnter={() => setHoveredId(i)} onMouseLeave={() => setHoveredId(null)} onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }} style={{ cursor: 'pointer' }}>
-              <circle cx={cx} cy={cy} r={rDot} fill="url(#itcMetalDot)" filter="url(#itcMetalDotShadow)" stroke="none" strokeWidth={0} />
-              <text x={cx} y={cy + 0.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={PC_DOT_FONT} fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">{p.initials}</text>
-              <text x={cx} y={cy + PC_DOT_R + 9} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize={PC_DOT_PCT_FS} fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
-                {p.returns[tw] >= 0 ? '+' : ''}{p.returns[tw]}%
+            <g
+              key={d.year}
+              onMouseEnter={() => setHoveredId(i)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }}
+              style={{ cursor: 'pointer' }}
+            >
+              <circle cx={cx} cy={cy} r={rDot} fill="url(#itcMetalDot)" filter="url(#itcMetalDotShadow)" stroke={isHov ? '#10b981' : 'none'} strokeWidth={isHov ? 1 : 0} />
+              <text x={cx} y={cy + 0.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={PC_DOT_FONT} fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">
+                {p.initials}
               </text>
-              <circle cx={cx} cy={cy} r={PC_DOT_R + 11} fill="transparent" style={{ pointerEvents: 'all' }} />
+              <text x={cx} y={cy + PC_DOT_R + 9} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize={PC_DOT_PCT_FS} fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
+                {d.returnPct >= 0 ? '+' : ''}{d.returnPct}%
+              </text>
+              <circle cx={cx} cy={cy} r={PC_DOT_R + 10} fill="transparent" style={{ pointerEvents: 'all' }} />
             </g>
           );
         })}
       </svg>
 
-      {hovered && (() => {
-        const idx = hoveredId;
-        const xPct = (getX(idx) / PC_W) * 100;
-        const yPct = (getY(hovered.returns[tw]) / PC_H) * 100;
+      {hoveredId != null && (() => {
+        const d = activePoints[hoveredId];
+        if (!d || !d.topPerformer) return null;
+        const p = d.topPerformer;
+        const cx = getX(d.year);
+        const cy = getY(d.returnPct);
+        const xPct = (cx / PC_W) * 100;
+        const yPct = (cy / PC_H) * 100;
         const alignRight = xPct > 65;
         return (
           <div className="itc-perf-tooltip" style={{
@@ -360,20 +284,25 @@ function PoliticianPerfChart({ window: tw, onOpenPolitician }) {
             transform: alignRight ? 'translateX(50%)' : 'translateX(-50%)',
           }}>
             <div className="itc-perf-tip-hdr">
-              <span className={`itc-avatar-sm ${hovered.party.toLowerCase()}`}>{hovered.initials}</span>
+              <span className={`itc-avatar-sm ${p.party.toLowerCase()}`}>{p.initials}</span>
               <div>
-                <div className="itc-perf-tip-name">{hovered.name}</div>
-                <div className="itc-perf-tip-meta"><span className={`itc-dot ${hovered.party.toLowerCase()}`} />{hovered.party} · {hovered.chamber} · {hovered.state}</div>
+                <div className="itc-perf-tip-name">{p.name}</div>
+                <div className="itc-perf-tip-meta">
+                  <span className={`itc-dot ${p.party.toLowerCase()}`} />
+                  {p.party} · {p.chamber} · {p.state}
+                </div>
               </div>
             </div>
-            <div className={`itc-perf-tip-return ${hovered.returns[tw] >= 0 ? 'pos' : 'neg'}`}>
-              {hovered.returns[tw] >= 0 ? '+' : ''}{hovered.returns[tw]}% return ({PERF_LABELS[tw]})
+            <div className={`itc-perf-tip-return ${d.returnPct >= 0 ? 'pos' : 'neg'}`}>
+              {d.returnPct >= 0 ? '+' : ''}{d.returnPct}% return in {d.year}
             </div>
-            <div className="itc-perf-tip-hold">
-              <span className="itc-perf-tip-hold-lbl">Top Holdings:</span>
-              {hovered.topHoldings.map((t) => <span key={t} className="itc-perf-tip-tk">${t}</span>)}
-            </div>
-            <div className="itc-perf-tip-rank">Rank #{idx + 1} of {sorted.length}</div>
+            {p.topSymbols?.length > 0 && (
+              <div className="itc-perf-tip-hold">
+                <span className="itc-perf-tip-hold-lbl">Top Buys:</span>
+                {p.topSymbols.map((s) => <span key={s} className="itc-perf-tip-tk">${s}</span>)}
+              </div>
+            )}
+            <div className="itc-perf-tip-rank">Top Performer · {d.year} · {p.tradeCount} trades on record</div>
           </div>
         );
       })()}
@@ -388,17 +317,34 @@ const FEATURED_POLITICIANS = [
   { id: 4, name: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', initials: 'MW', trades: 201, filings: 6, issuers: 52, volume: '8.4M', seed: 10 },
 ];
 
-const SECTOR_DATA = [
-  { sector: 'Technology', buy: 68, sell: 32, vol: '$142M', trades: 487 },
-  { sector: 'Healthcare', buy: 55, sell: 45, vol: '$89M', trades: 312 },
-  { sector: 'Defense', buy: 42, sell: 58, vol: '$67M', trades: 198 },
-  { sector: 'Finance', buy: 61, sell: 39, vol: '$78M', trades: 267 },
-  { sector: 'Energy', buy: 48, sell: 52, vol: '$54M', trades: 156 },
-  { sector: 'Consumer Disc.', buy: 52, sell: 48, vol: '$38M', trades: 134 },
-  { sector: 'Industrials', buy: 54, sell: 46, vol: '$31M', trades: 112 },
-  { sector: 'Comm. Services', buy: 49, sell: 51, vol: '$29M', trades: 98 },
-  { sector: 'Real Estate', buy: 44, sell: 56, vol: '$22M', trades: 76 },
-  { sector: 'Materials', buy: 51, sell: 49, vol: '$19M', trades: 64 },
+const TICKER_SECTOR = {
+  AAPL: 'Technology', MSFT: 'Technology', NVDA: 'Technology', GOOGL: 'Technology',
+  META: 'Technology', AMZN: 'Technology', TSLA: 'Technology', AMD: 'Technology',
+  AVGO: 'Technology', QCOM: 'Technology', TXN: 'Technology', INTC: 'Technology',
+  CRM: 'Technology', NOW: 'Technology', SNOW: 'Technology', PLTR: 'Technology',
+  ADBE: 'Technology', ORCL: 'Technology', IBM: 'Technology', CSCO: 'Technology',
+  JNJ: 'Healthcare', PFE: 'Healthcare', UNH: 'Healthcare', ABBV: 'Healthcare',
+  MRK: 'Healthcare', LLY: 'Healthcare', TMO: 'Healthcare', DHR: 'Healthcare',
+  JPM: 'Finance', BAC: 'Finance', GS: 'Finance', MS: 'Finance', WFC: 'Finance',
+  BLK: 'Finance', V: 'Finance', MA: 'Finance', AXP: 'Finance', C: 'Finance',
+  LMT: 'Defense', RTX: 'Defense', NOC: 'Defense', GD: 'Defense', BA: 'Defense',
+  XOM: 'Energy', CVX: 'Energy', COP: 'Energy', SLB: 'Energy', EOG: 'Energy',
+  WMT: 'Consumer Disc.', HD: 'Consumer Disc.', MCD: 'Consumer Disc.',
+  SBUX: 'Consumer Disc.', NKE: 'Consumer Disc.', TGT: 'Consumer Disc.',
+  GE: 'Industrials', CAT: 'Industrials', HON: 'Industrials', UPS: 'Industrials',
+  NFLX: 'Comm. Services', DIS: 'Comm. Services', CMCSA: 'Comm. Services',
+  T: 'Comm. Services', VZ: 'Comm. Services',
+};
+
+const SECTOR_DATA_FALLBACK = [
+  { sector: 'Technology', buy: 68, sell: 32, vol: '—', trades: 0 },
+  { sector: 'Healthcare', buy: 55, sell: 45, vol: '—', trades: 0 },
+  { sector: 'Defense', buy: 42, sell: 58, vol: '—', trades: 0 },
+  { sector: 'Finance', buy: 61, sell: 39, vol: '—', trades: 0 },
+  { sector: 'Energy', buy: 48, sell: 52, vol: '—', trades: 0 },
+  { sector: 'Consumer Disc.', buy: 52, sell: 48, vol: '—', trades: 0 },
+  { sector: 'Industrials', buy: 54, sell: 46, vol: '—', trades: 0 },
+  { sector: 'Comm. Services', buy: 49, sell: 51, vol: '—', trades: 0 },
 ];
 
 const UNUSUAL_VOLUME = [
@@ -460,7 +406,6 @@ function InsideTheCapitolContent() {
   const [activePartyFilter, setActivePartyFilter] = useState(null);
   const [activeStateFilter, setActiveStateFilter] = useState(null);
   const [activePolIdx, setActivePolIdx] = useState(0);
-  const [perfWindow, setPerfWindow] = useState('1Y');
 
   const [latestTrades, setLatestTrades] = useState([]);
   const [tradesLoading, setTradesLoading] = useState(true);
@@ -546,6 +491,39 @@ function InsideTheCapitolContent() {
     fetchTrades();
   }, []);
 
+  const sectorData = useMemo(() => {
+    if (tradesLoading) return [];
+    if (latestTrades.length === 0) return SECTOR_DATA_FALLBACK;
+
+    const sectorMap = {};
+    for (const trade of latestTrades) {
+      const sector = TICKER_SECTOR[trade.ticker] || 'Other';
+      if (sector === 'Other') continue;
+      if (!sectorMap[sector]) sectorMap[sector] = { buys: 0, sells: 0 };
+      if (trade.type === 'BUY') sectorMap[sector].buys += 1;
+      else sectorMap[sector].sells += 1;
+    }
+
+    const derived = Object.entries(sectorMap)
+      .map(([sector, counts]) => {
+        const total = counts.buys + counts.sells;
+        if (total === 0) return null;
+        const buyPct = Math.round((counts.buys / total) * 100);
+        return {
+          sector,
+          buy: buyPct,
+          sell: 100 - buyPct,
+          trades: total,
+          vol: '—',
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.trades - a.trades)
+      .slice(0, 10);
+
+    return derived.length > 0 ? derived : SECTOR_DATA_FALLBACK;
+  }, [latestTrades, tradesLoading]);
+
   const capitolCourses = useMemo(() => {
     const stocks = getCoursesByTrack('stocks');
     const relevant = stocks.filter(c =>
@@ -570,8 +548,9 @@ function InsideTheCapitolContent() {
   }, [stateFilter]);
 
   const trades = latestTrades.filter((t) => {
-    if (typeFilter === 'Buy') return t.type === 'BUY';
-    if (typeFilter === 'Sell') return t.type === 'SELL';
+    const ty = (t.type || '').toUpperCase();
+    if (typeFilter === 'Buy') return ty === 'BUY';
+    if (typeFilter === 'Sell') return ty === 'SELL';
     if (activePartyFilter) {
       if (t.party && t.party.toLowerCase() !== 'unknown' && t.party.toLowerCase() !== activePartyFilter) {
         return false;
@@ -616,13 +595,11 @@ function InsideTheCapitolContent() {
             </div>
             <Link href="/watchlist" className="itc-va">VIEW ALL</Link>
           </div>
-          <div className="itc-perf-windows">
-            {PERF_WINDOWS.map((w) => (
-              <button key={w} type="button" className={`itc-pw ${perfWindow === w ? 'on' : ''}`} onClick={() => setPerfWindow(w)}>{w}</button>
-            ))}
+          <div className="itc-perf-subtitle" style={{ padding: '0 1.25rem 0.5rem', color: '#8b949e', fontSize: '0.78rem' }}>
+            Top congressional trader by year · 2016 – {new Date().getFullYear()} · Based on disclosed trades via FMP
           </div>
           <div className="itc-body itc-perf-body" style={{ overflow: 'visible' }}>
-            <PoliticianPerfChart window={perfWindow} onOpenPolitician={() => completeTask('capitol_1')} />
+            <PoliticianPerfChart onOpenPolitician={() => completeTask('capitol_1')} />
           </div>
         </div>
       </PinnableCard>
@@ -678,7 +655,7 @@ function InsideTheCapitolContent() {
                 trades.slice(0, 20).map((t, ti) => (
                   <div key={t.id} className="itc-tr">
                     <div className="itc-tr-type-col">
-                      <span className={`itc-tr-type ${t.type.toLowerCase()}`}>{t.type}</span>
+                      <span className={`itc-tr-type ${(t.type || '').toLowerCase()}`}>{t.type}</span>
                       <span className="itc-tr-date">{t.date}</span>
                     </div>
                     <div className="itc-tr-co">
@@ -703,6 +680,19 @@ function InsideTheCapitolContent() {
                     </Link>
                     <div className="itc-tr-right">
                       <span className="itc-tr-amt">{t.amount}</span>
+                      {t.link && (
+                        <a
+                          href={t.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="itc-tr-link"
+                          title="View disclosure"
+                          style={{ color: '#10b981', fontSize: '0.7rem', marginLeft: 6 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <i className="bi bi-box-arrow-up-right" />
+                        </a>
+                      )}
                       {t.flagged && <span className="itc-tr-flag"><i className="bi bi-flag-fill" /></span>}
                     </div>
                   </div>
@@ -716,18 +706,22 @@ function InsideTheCapitolContent() {
           <div className="itc-card">
             <div className="itc-hdr"><h3>SECTOR ACTIVITY</h3></div>
             <div className="itc-body itc-body-pad">
-              {SECTOR_DATA.map((s) => (
-                <div key={s.sector} className="itc-sec">
-                  <div className="itc-sec-info">
-                    <span className="itc-sec-name">{s.sector}</span>
-                    <span className="itc-sec-meta">{s.trades} trades · {s.vol}</span>
+              {tradesLoading ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>Loading sectors...</div>
+              ) : (
+                sectorData.map((s) => (
+                  <div key={s.sector} className="itc-sec">
+                    <div className="itc-sec-info">
+                      <span className="itc-sec-name">{s.sector}</span>
+                      <span className="itc-sec-meta">{s.trades} trades · {s.vol}</span>
+                    </div>
+                    <div className="itc-sec-bar">
+                      <div className="itc-sec-buy" style={{ width: `${s.buy}%` }}>{s.buy}%</div>
+                      <div className="itc-sec-sell" style={{ width: `${s.sell}%` }}>{s.sell}%</div>
+                    </div>
                   </div>
-                  <div className="itc-sec-bar">
-                    <div className="itc-sec-buy" style={{ width: `${s.buy}%` }}>{s.buy}%</div>
-                    <div className="itc-sec-sell" style={{ width: `${s.sell}%` }}>{s.sell}%</div>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </PinnableCard>
