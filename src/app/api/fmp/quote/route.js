@@ -16,7 +16,7 @@ export async function GET(request) {
   }
 
   try {
-    const url = `${BASE}/quote/${encodeURIComponent(symbol)}?apikey=${FMP_KEY}`;
+    const url = `${BASE}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
     const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) throw new Error(`FMP quote HTTP ${res.status}`);
     const data = await res.json();
