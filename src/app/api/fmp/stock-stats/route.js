@@ -66,15 +66,23 @@ export async function GET(request) {
   try {
     const quoteUrl = `${BASE}/quote?symbol=${sym}&apikey=${key}`;
     const profileUrl = `${BASE}/profile?symbol=${sym}&apikey=${key}`;
-    const ratiosUrl = `${BASE}/ratios-ttm?symbol=${sym}&apikey=${key}`;
+    const ratiosTtmUrl = `${BASE}/ratios-ttm?symbol=${sym}&apikey=${key}`;
+    /** FY ratios — P/E for the stock chart uses `priceToEarningsRatio` from this response */
+    const ratiosFyUrl = `${BASE}/ratios?symbol=${sym}&apikey=${key}`;
 
-    const [quoteRes, profileRes, ratiosRes] = await Promise.all([
+    const [quoteRes, profileRes, ratiosTtmRes, ratiosFyRes] = await Promise.all([
       fetchWithRetry(quoteUrl, 300),
       fetchWithRetry(profileUrl, 3600),
-      fetchWithRetry(ratiosUrl, 3600),
+      fetchWithRetry(ratiosTtmUrl, 3600),
+      fetchWithRetry(ratiosFyUrl, 3600),
     ]);
 
-    if (quoteRes.status === 429 && profileRes.status === 429 && ratiosRes.status === 429) {
+    if (
+      quoteRes.status === 429 &&
+      profileRes.status === 429 &&
+      ratiosTtmRes.status === 429 &&
+      ratiosFyRes.status === 429
+    ) {
       return NextResponse.json(
         {
           error: 'Rate limit reached. Please wait a moment.',
@@ -97,10 +105,12 @@ export async function GET(request) {
       return raw && typeof raw === 'object' ? raw : null;
     };
 
-    const [q, prof, ratios] = await Promise.all([
+    /** `parse` uses first array element — matches latest FY row from `/ratios` */
+    const [q, prof, ratiosTtm, ratiosFy] = await Promise.all([
       parse(quoteRes),
       parse(profileRes),
-      parse(ratiosRes),
+      parse(ratiosTtmRes),
+      parse(ratiosFyRes),
     ]);
 
     const mcapNum =
@@ -113,24 +123,25 @@ export async function GET(request) {
     const price = q?.price ?? prof?.price ?? null;
 
     const pe =
+      ratiosFy?.priceToEarningsRatio ??
       q?.pe ??
       q?.peRatio ??
-      ratios?.peRatioTTM ??
-      ratios?.priceEarningsRatioTTM ??
-      ratios?.peRatio ??
+      ratiosTtm?.peRatioTTM ??
+      ratiosTtm?.priceEarningsRatioTTM ??
+      ratiosTtm?.peRatio ??
       null;
 
     const eps =
       q?.eps ??
-      ratios?.netIncomePerShareTTM ??
-      ratios?.epsTTM ??
-      ratios?.eps ??
+      ratiosTtm?.netIncomePerShareTTM ??
+      ratiosTtm?.epsTTM ??
+      ratiosTtm?.eps ??
       null;
 
     let divYieldStr = '--';
     const divRaw =
-      ratios?.dividendYieldTTM ??
-      ratios?.dividendYield ??
+      ratiosTtm?.dividendYieldTTM ??
+      ratiosTtm?.dividendYield ??
       prof?.dividendYield ??
       prof?.lastDivYield ??
       null;
