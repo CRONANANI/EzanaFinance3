@@ -1,82 +1,91 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
-const RESOLUTIONS = { '1D': '5', '1W': '15', '1M': 'D', '3M': 'D', '6M': 'D', '1Y': 'W' };
+const FMP_KEY = process.env.FMP_API_KEY;
+const BASE    = 'https://financialmodelingprep.com/stable';
 
-function fromTimestamp(range) {
-  const now = Math.floor(Date.now() / 1000);
-  const DAY = 86400;
-  switch (range) {
-    case '1D': return now - DAY;
-    case '1W': return now - 7   * DAY;
-    case '1M': return now - 30  * DAY;
-    case '3M': return now - 90  * DAY;
-    case '6M': return now - 180 * DAY;
-    case '1Y': return now - 365 * DAY;
-    default:   return now - 30  * DAY;
+/** How many calendar days back to fetch per range */
+const RANGE_DAYS = {
+  '1D':  1,
+  '1W':  7,
+  '1M':  31,
+  '3M':  92,
+  '6M':  183,
+  '1Y':  365,
+};
+
+/** Format a Date → "YYYY-MM-DD" */
+function toDateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+/** Build label string for a candle based on the selected range */
+function makeLabel(dateStr, range) {
+  const d = new Date(dateStr + 'T12:00:00Z');
+  if (range === '1D' || range === '1W') {
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
+  if (range === '1Y') {
+    return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const symbol = (searchParams.get('symbol') || '').toUpperCase().trim();
-    const range  = searchParams.get('range')  || '1M';
+    const range  = searchParams.get('range') || '1M';
 
     if (!symbol) {
       return NextResponse.json({ error: 'symbol is required', candles: [] }, { status: 400 });
     }
 
-    const apiKey = process.env.FINNHUB_API_KEY;
-    if (!apiKey) {
-      console.error('[stock-candles] FINNHUB_API_KEY not set in environment');
+    if (!FMP_KEY) {
+      console.error('[stock-candles] FMP_API_KEY not set');
       return NextResponse.json({ error: 'API not configured', candles: [] }, { status: 503 });
     }
 
-    const resolution = RESOLUTIONS[range] ?? 'D';
-    const from       = fromTimestamp(range);
-    const to         = Math.floor(Date.now() / 1000);
+    const days    = RANGE_DAYS[range] ?? 31;
+    const toDate  = new Date();
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - days);
 
-    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${encodeURIComponent(symbol)}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
+    const url = `${BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${toDateStr(fromDate)}&to=${toDateStr(toDate)}&apikey=${FMP_KEY}`;
 
-    console.log(`[stock-candles] ${symbol} | range=${range} | resolution=${resolution}`);
+    console.log(`[stock-candles] FMP fetch: ${symbol} | range=${range}`);
 
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url, { next: { revalidate: 120 } });
 
     if (!res.ok) {
       const body = await res.text();
-      console.error(`[stock-candles] Finnhub HTTP ${res.status} for ${symbol}:`, body);
-      return NextResponse.json({ error: `Finnhub ${res.status}`, candles: [] }, { status: 200 });
+      console.error(`[stock-candles] FMP HTTP ${res.status} for ${symbol}:`, body);
+      return NextResponse.json({ error: `FMP ${res.status}`, candles: [] }, { status: 200 });
     }
 
-    const data = await res.json();
+    const raw = await res.json();
 
-    if (!data || data.s === 'no_data' || !Array.isArray(data.c) || data.c.length === 0) {
-      console.warn(`[stock-candles] no_data for ${symbol} | range=${range}`);
+    // FMP returns an array of daily bars, newest first — reverse so chart goes left→right
+    if (!Array.isArray(raw) || raw.length === 0) {
+      console.warn(`[stock-candles] no data for ${symbol} | range=${range}`);
       return NextResponse.json({ candles: [], symbol, range }, { status: 200 });
     }
 
-    // Build a label formatter appropriate for the range
-    const candles = data.c.map((close, i) => {
-      const ts   = data.t[i] * 1000;
-      const d    = new Date(ts);
-      let   label;
-      if      (range === '1D') label = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      else if (range === '1W') label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      else if (range === '1Y') label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-      else                     label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    // For 1D range, FMP EOD only has yesterday's bar — still show it as single point
+    const sorted = [...raw].reverse(); // oldest first
 
-      return {
-        t:      data.t[i],
-        label,
-        open:   data.o?.[i]  ?? close,
-        high:   data.h?.[i]  ?? close,
-        low:    data.l?.[i]  ?? close,
-        close,
-        price:  close,
-        volume: data.v?.[i]  ?? 0,
-      };
-    });
+    const candles = sorted.map((bar) => ({
+      t:      new Date(bar.date).getTime() / 1000,
+      label:  makeLabel(bar.date, range),
+      open:   bar.open   ?? bar.close,
+      high:   bar.high   ?? bar.close,
+      low:    bar.low    ?? bar.close,
+      close:  bar.close,
+      price:  bar.close,          // StockPriceChart uses `price` as the chart dataKey
+      volume: bar.volume ?? 0,
+      change: bar.change ?? 0,
+      changePercent: bar.changePercent ?? 0,
+    }));
 
     console.log(`[stock-candles] OK: ${candles.length} candles for ${symbol}`);
 

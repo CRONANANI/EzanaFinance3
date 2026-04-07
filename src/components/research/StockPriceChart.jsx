@@ -97,14 +97,19 @@ export default function StockPriceChart({ symbol }) {
     if (!sym) return;
     try {
       const qRes = await fetch(
-        `/api/finnhub/quote?symbol=${encodeURIComponent(sym)}`
+        `/api/fmp/quote?symbol=${encodeURIComponent(sym)}`
       );
       if (qRes.ok) {
         const q = await qRes.json();
-        setQuote(q);
+        // Normalize FMP quote shape to match what the header uses: { c: currentPrice }
+        if (q && q.price != null) {
+          setQuote({ c: q.price });
+        } else if (Array.isArray(q) && q[0]?.price != null) {
+          setQuote({ c: q[0].price });
+        }
       }
     } catch (_) {
-      /* quote is optional */
+      /* quote is optional — chart still works without it */
     }
   }, []);
 
