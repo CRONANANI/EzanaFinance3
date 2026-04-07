@@ -133,6 +133,12 @@ export default function TradingPage() {
           Open a brokerage account and access powerful tools built for informed investors. Copy
           legendary traders, automate your strategy, and invest commission-free.
         </p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.25rem' }}>
+          <Link href="/trading/mock" className="trd-mock-btn">
+            <i className="bi bi-controller" />
+            Try Mock Trading — $100,000 Paper Account
+          </Link>
+        </div>
       </section>
 
       <section className="trd-feature-grid">

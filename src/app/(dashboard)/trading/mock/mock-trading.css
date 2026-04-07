@@ -1,0 +1,668 @@
+/* ══════════════════════════════════════════════════════════
+   MOCK TRADING PAGE — Ezana Finance Paper Trading
+   ══════════════════════════════════════════════════════════ */
+
+.mock-page {
+  padding: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Header bar ── */
+.mock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+}
+
+.mock-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: 0.04em;
+}
+
+.mock-title {
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--foreground, #f0f6fc);
+  margin: 0;
+}
+
+.mock-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.mock-reset-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ── Portfolio overview strip ── */
+.mock-portfolio-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.mock-stat-card {
+  background: rgba(16, 185, 129, 0.03);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 14px;
+  padding: 1rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mock-stat-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--muted-foreground, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mock-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--foreground, #f0f6fc);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.mock-stat-value.positive { color: #10b981; }
+.mock-stat-value.negative { color: #ef4444; }
+
+.mock-stat-sub {
+  font-size: 0.6875rem;
+  color: var(--muted-foreground, #6b7280);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* ── Main layout ── */
+.mock-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ── Trade panel (right column) ── */
+.mock-trade-panel {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  position: sticky;
+  top: 80px;
+}
+
+.mock-trade-panel-header {
+  padding: 1.125rem 1.25rem 0.875rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mock-trade-panel-header h3 {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--foreground, #f0f6fc);
+  margin: 0;
+}
+
+.mock-trade-body {
+  padding: 1.125rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+/* ── Search bar ── */
+.mock-search-wrap {
+  position: relative;
+}
+
+.mock-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 0.875rem 0 2.5rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 10px;
+  color: var(--foreground, #f0f6fc);
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.mock-search-input:focus {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.06);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.mock-search-input::placeholder { color: #4b5563; }
+
+.mock-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.mock-search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #0d1117;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 10px;
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mock-search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 0.875rem;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+}
+
+.mock-search-result-item:last-child { border-bottom: none; }
+.mock-search-result-item:hover { background: rgba(16, 185, 129, 0.06); }
+
+.mock-result-symbol {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.mock-result-name {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.mock-result-type {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.08);
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Selected asset card ── */
+.mock-asset-selected {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 10px;
+  padding: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mock-asset-left { display: flex; flex-direction: column; gap: 2px; }
+.mock-asset-ticker { font-size: 1rem; font-weight: 800; color: var(--foreground, #f0f6fc); }
+.mock-asset-name { font-size: 0.6875rem; color: #6b7280; }
+
+.mock-asset-right { text-align: right; }
+.mock-asset-price {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--foreground, #f0f6fc);
+  font-variant-numeric: tabular-nums;
+}
+.mock-asset-change {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+  display: inline-block;
+}
+.mock-asset-change.positive { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.mock-asset-change.negative { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+/* ── Buy / Sell tabs ── */
+.mock-side-tabs {
+  display: flex;
+  gap: 0.375rem;
+  background: rgba(0,0,0,0.2);
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.mock-side-tab {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  background: transparent;
+  color: #6b7280;
+}
+
+.mock-side-tab.buy.active {
+  background: #10b981;
+  color: #fff;
+}
+
+.mock-side-tab.sell.active {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ── Amount / quantity input ── */
+.mock-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.mock-field label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mock-amount-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mock-amount-prefix {
+  position: absolute;
+  left: 0.875rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 700;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.mock-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 10px;
+  color: var(--foreground, #f0f6fc);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.mock-input.with-prefix { padding-left: 1.75rem; }
+
+.mock-input:focus {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.06);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.mock-quick-btns {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.mock-quick-btn {
+  padding: 0.3rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #6b7280;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.mock-quick-btn:hover { color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
+
+/* Order summary row */
+.mock-order-summary {
+  background: rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 0.625rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mock-order-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.mock-order-row span:first-child { color: #6b7280; }
+.mock-order-row span:last-child { color: var(--foreground, #f0f6fc); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.mock-order-row.total span:last-child { color: #10b981; font-size: 0.875rem; font-weight: 800; }
+
+/* Submit button */
+.mock-submit-btn {
+  width: 100%;
+  padding: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.mock-submit-btn.buy { background: linear-gradient(135deg, #10b981, #059669); }
+.mock-submit-btn.sell { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.mock-submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+.mock-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Toast notification */
+.mock-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: #111827;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  animation: mockToastIn 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.mock-toast.success { border-color: rgba(16, 185, 129, 0.4); }
+.mock-toast.error   { border-color: rgba(239, 68, 68, 0.4); color: #ef4444; }
+
+@keyframes mockToastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Left column: chart + positions ── */
+.mock-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mock-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.mock-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.mock-card-header h3 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--foreground, #f0f6fc);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mock-card-body { padding: 1rem 1.25rem; }
+
+/* ── Positions table ── */
+.mock-positions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mock-positions-table th {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 0.5rem 0.625rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+.mock-positions-table th:last-child,
+.mock-positions-table td:last-child { text-align: right; }
+
+.mock-positions-table td {
+  padding: 0.625rem 0.5rem;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.03);
+  vertical-align: middle;
+}
+
+.mock-positions-table tr:last-child td { border-bottom: none; }
+.mock-positions-table tr:hover td { background: rgba(16, 185, 129, 0.02); }
+
+.mock-pos-ticker {
+  font-weight: 700;
+  color: #10b981;
+  cursor: pointer;
+}
+
+.mock-pos-ticker:hover { text-decoration: underline; }
+
+.mock-pos-name {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  display: block;
+  margin-top: 1px;
+}
+
+.mock-pos-type {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(16, 185, 129, 0.08);
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.mock-pnl.positive { color: #10b981; font-weight: 700; }
+.mock-pnl.negative { color: #ef4444; font-weight: 700; }
+
+.mock-close-pos-btn {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 5px;
+  background: rgba(239, 68, 68, 0.04);
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.mock-close-pos-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ── Activity feed ── */
+.mock-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mock-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.04);
+}
+
+.mock-activity-item:last-child { border-bottom: none; }
+
+.mock-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mock-activity-dot.buy  { background: #10b981; }
+.mock-activity-dot.sell { background: #ef4444; }
+
+.mock-activity-body { flex: 1; min-width: 0; }
+.mock-activity-label {
+  font-size: 0.8125rem;
+  color: var(--foreground, #f0f6fc);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mock-activity-meta { font-size: 0.65rem; color: #6b7280; margin-top: 1px; }
+
+.mock-activity-amount {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--foreground, #f0f6fc);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Empty state ── */
+.mock-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.mock-empty-state i { font-size: 1.75rem; color: #374151; }
+.mock-empty-state p { font-size: 0.8125rem; color: #4b5563; margin: 0; }
+
+/* ── Light mode ── */
+body.light-mode .mock-stat-card,
+body.light-mode .mock-trade-panel,
+body.light-mode .mock-card {
+  background: #fff;
+  border-color: rgba(16, 185, 129, 0.12);
+}
+
+body.light-mode .mock-title,
+body.light-mode .mock-asset-ticker,
+body.light-mode .mock-asset-price,
+body.light-mode .mock-stat-value,
+body.light-mode .mock-card-header h3,
+body.light-mode .mock-trade-panel-header h3,
+body.light-mode .mock-activity-label,
+body.light-mode .mock-activity-amount { color: #111827; }
+
+body.light-mode .mock-search-input,
+body.light-mode .mock-input {
+  background: #f9fafb;
+  border-color: rgba(16, 185, 129, 0.15);
+  color: #111827;
+}
+
+body.light-mode .mock-search-results { background: #fff; border-color: rgba(16, 185, 129, 0.2); }
+body.light-mode .mock-order-summary { background: #f3f4f6; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .mock-layout { grid-template-columns: 1fr; }
+  .mock-trade-panel { position: static; }
+}
+
+@media (max-width: 600px) {
+  .mock-portfolio-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 380px) {
+  .mock-portfolio-strip { grid-template-columns: 1fr; }
+}
