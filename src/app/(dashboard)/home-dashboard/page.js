@@ -9,6 +9,7 @@ import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { supabase } from '@/lib/supabase';
 import { IntIcon } from '@/components/ui/interactive-animated-arrow-icon';
+import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import './home-dashboard.css';
 
 const HOLDINGS_PAGE_SIZE = 6;
@@ -206,10 +207,29 @@ export default function HomeDashboardPage() {
   const heroData = HERO_DATA[timeframe];
   const chartPath = CHART_PATHS[timeframe];
 
+  const mock = useMockPortfolio();
+  const useMock = mock.hasMockPortfolio;
+
   const useLiveHoldings =
     !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
 
   const normalizedHoldings = useMemo(() => {
+    if (useMock && mock.enrichedPositions.length === 0) {
+      return [];
+    }
+    if (useMock && mock.enrichedPositions.length > 0) {
+      return mock.enrichedPositions.map((pos) => ({
+        ticker: pos.symbol,
+        name: pos.name,
+        qty: pos.qty,
+        price: pos.currentPrice,
+        positionValue: pos.posValue,
+        change: pos.dayChangePct,
+        changeDollar: pos.dayChange,
+        color: holdingColor(pos.symbol),
+        worst: pos.dayChangePct < 0,
+      }));
+    }
     if (useLiveHoldings) {
       return (plaidHoldingsPayload.aggregated || [])
         .map((h) => {
@@ -272,7 +292,7 @@ export default function HomeDashboardPage() {
         };
       })
       .sort((a, b) => b.positionValue - a.positionValue);
-  }, [useLiveHoldings, plaidHoldingsPayload, timeframe, liveQuotes]);
+  }, [useMock, mock.enrichedPositions, useLiveHoldings, plaidHoldingsPayload, timeframe, liveQuotes]);
 
   const holdingsPageCount = Math.max(1, Math.ceil(normalizedHoldings.length / HOLDINGS_PAGE_SIZE));
   const canHoldingsPrev = holdingsPage > 0;
@@ -290,19 +310,22 @@ export default function HomeDashboardPage() {
     setHoldingsPage(0);
   }, [timeframe, useLiveHoldings, plaidHoldingsPayload?.aggregated?.length]);
 
-  const currentValue =
-    !plaidSummaryLoading && plaidConnected
+  const currentValue = useMock
+    ? mock.totalValue
+    : !plaidSummaryLoading && plaidConnected
       ? (plaidSummary?.totalValue ?? 0)
       : heroData.value;
 
   useEffect(() => {
     const fromPlaid = (plaidHoldingsPayload?.aggregated || []).map((h) => h.ticker).filter(Boolean);
+    const fromMock = useMock ? Object.keys(mock.portfolio?.positions || {}) : [];
     const tickers = [
       ...new Set([
         ...Object.values(HOLDINGS_DATA)
           .flat()
           .map((h) => h.ticker),
         ...fromPlaid,
+        ...fromMock,
         ...WATCHLIST.map((w) => w.ticker),
         ...RECENT_TRANSACTIONS.map((t) => t.ticker).filter(Boolean),
       ]),
@@ -322,7 +345,7 @@ export default function HomeDashboardPage() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [plaidHoldingsPayload]);
+  }, [plaidHoldingsPayload, useMock, mock.portfolio?.positions]);
 
   const userName = user?.user_metadata?.first_name
     || user?.user_metadata?.full_name?.split(' ')[0]
@@ -337,10 +360,11 @@ export default function HomeDashboardPage() {
     (orgRole === 'analyst' || orgRole === 'portfolio_manager');
 
   const sectorRows = useMemo(() => {
+    if (useMock && mock.sectorData.length > 0) return mock.sectorData;
     if (isTmtTeamMember) return TMT_INDUSTRY_DATA;
     if (user?.email === 'axmabeto@gmail.com') return SECTOR_DATA_DEMO;
     return SECTOR_DATA_DEFAULT;
-  }, [user?.email, isTmtTeamMember]);
+  }, [useMock, mock.sectorData, user?.email, isTmtTeamMember]);
 
   useEffect(() => {
     if (!user) {
@@ -377,7 +401,19 @@ export default function HomeDashboardPage() {
             </span>
           </h1>
           <p className="db-greeting-sub">
-            {heroData.change >= 0 ? (
+            {useMock ? (
+              mock.totalPnl >= 0 ? (
+                <>
+                  Your mock portfolio is up{' '}
+                  <strong className="db-greeting-highlight">+{mock.totalPnlPct.toFixed(2)}%</strong> since you started — paper trading!
+                </>
+              ) : (
+                <>
+                  Your mock portfolio is down{' '}
+                  <strong className="db-greeting-highlight">{mock.totalPnlPct.toFixed(2)}%</strong> — adjust your strategy!
+                </>
+              )
+            ) : heroData.change >= 0 ? (
               <>Today you amassed a <strong className="db-greeting-highlight">+{heroData.change}% increase</strong> in your portfolio holdings</>
             ) : (
               <>Markets are down <strong className="db-greeting-highlight">{Math.abs(heroData.change)}%</strong> today — stay the course, long-term wins</>
@@ -396,9 +432,17 @@ export default function HomeDashboardPage() {
               <div className="db-hero-value">
                 ${currentValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
-              <span className={`db-hero-change ${heroData.change >= 0 ? 'positive' : 'negative'}`}>
-                {heroData.change >= 0 ? '+' : ''}{heroData.change}%
-                <span className="db-hero-change-amt">{heroData.changeDollar >= 0 ? '+' : ''}${heroData.changeDollar.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span
+                className={`db-hero-change ${(useMock ? mock.totalPnlPct : heroData.change) >= 0 ? 'positive' : 'negative'}`}
+              >
+                {useMock
+                  ? `${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`
+                  : `${heroData.change >= 0 ? '+' : ''}${heroData.change}%`}
+                <span className="db-hero-change-amt">
+                  {useMock
+                    ? `${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : `${heroData.changeDollar >= 0 ? '+' : ''}$${heroData.changeDollar.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                </span>
               </span>
             </div>
             <div className="db-hero-timeframes">
@@ -415,22 +459,44 @@ export default function HomeDashboardPage() {
           {/* Mini stats row */}
           <div className="db-hero-stats">
             <div className="db-hero-stat">
-              <span className="db-hero-stat-label">Total Companies <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">{heroData.companies}</span>
+              <span className="db-hero-stat-label">
+                {useMock ? 'Open Positions' : 'Total Companies'} <i className="bi bi-arrow-up-right" />
+              </span>
+              <span className="db-hero-stat-value">
+                {useMock ? mock.enrichedPositions.length : heroData.companies}
+              </span>
             </div>
             <div className="db-hero-stat">
               <span className="db-hero-stat-label">Cash Balance <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">${heroData.cash.toLocaleString()}</span>
+              <span className="db-hero-stat-value">
+                $
+                {useMock
+                  ? mock.cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                  : heroData.cash.toLocaleString()}
+              </span>
             </div>
             <div className="db-hero-stat">
-              <span className="db-hero-stat-label">Committed Cash <i className="bi bi-arrow-up-right" /></span>
-              <span className="db-hero-stat-value">${heroData.committed.toLocaleString()}</span>
+              <span className="db-hero-stat-label">
+                {useMock ? 'Total P&L' : 'Committed Cash'} <i className="bi bi-arrow-up-right" />
+              </span>
+              <span
+                className="db-hero-stat-value"
+                style={useMock ? { color: mock.totalPnl >= 0 ? '#10b981' : '#ef4444' } : {}}
+              >
+                {useMock
+                  ? `${mock.totalPnl >= 0 ? '+' : ''}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : `$${heroData.committed.toLocaleString()}`}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Chart area */}
-        <HeroSparkline portfolioValue={currentValue} changePct={heroData.change} chartPath={chartPath} />
+        <HeroSparkline
+          portfolioValue={currentValue}
+          changePct={useMock ? mock.totalPnlPct : heroData.change}
+          chartPath={chartPath}
+        />
       </div>
 
       {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
@@ -581,16 +647,35 @@ export default function HomeDashboardPage() {
           </div>
           <div className="db-profits-body">
             <div className="db-profits-chart-wrap">
-              <DonutChart
-                segments={PROFIT_BREAKDOWN}
-                size={150}
-                strokeWidth={20}
-                centerValue="$4,030"
-                centerLabel="-$150.20 from last month"
-              />
+              {useMock ? (
+                <DonutChart
+                  segments={
+                    mock.profitBreakdown.length > 0
+                      ? mock.profitBreakdown
+                      : [{ label: 'Cash', pct: 100, color: '#10b981' }]
+                  }
+                  size={150}
+                  strokeWidth={20}
+                  centerValue={`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+                  centerLabel={`${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}% total`}
+                />
+              ) : (
+                <DonutChart
+                  segments={PROFIT_BREAKDOWN}
+                  size={150}
+                  strokeWidth={20}
+                  centerValue="$4,030"
+                  centerLabel="-$150.20 from last month"
+                />
+              )}
             </div>
             <div className="db-profits-legend">
-              {PROFIT_BREAKDOWN.map((p) => (
+              {(useMock
+                ? mock.profitBreakdown.length > 0
+                  ? mock.profitBreakdown
+                  : [{ label: 'Portfolio', pct: 100, color: '#10b981' }]
+                : PROFIT_BREAKDOWN
+              ).map((p) => (
                 <div key={p.label} className="db-profits-legend-item">
                   <span className="db-legend-dot" style={{ background: p.color }} />
                   <span className="db-legend-label">{p.label}</span>
@@ -640,7 +725,7 @@ export default function HomeDashboardPage() {
             <span>Transaction ID</span>
           </div>
           <div className="db-tx-list">
-            {RECENT_TRANSACTIONS.map((tx) => {
+            {(useMock ? mock.recentTransactions : RECENT_TRANSACTIONS).map((tx) => {
               const q = tx.ticker ? liveQuotes[tx.ticker] : null;
               return (
               <div key={tx.txId} className="db-tx-item">

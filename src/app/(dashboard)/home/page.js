@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
+import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
 import './terminal.css';
@@ -38,6 +39,7 @@ export default function HomeTerminalPage() {
   const { user } = useAuth();
   const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
     usePlaidPortfolioSummary();
+  const mock = useMockPortfolio();
   const [time, setTime] = useState('');
   const [holdings, setHoldings] = useState([]);
   const [quotes, setQuotes] = useState({});
@@ -203,21 +205,22 @@ export default function HomeTerminalPage() {
     [enrichedHoldings],
   );
 
-  /** Same dollar amount as /home-dashboard "Current Value" (Plaid summary or demo hero) */
+  /** Same dollar amount as /home-dashboard "Current Value" (Plaid summary, mock, or demo hero) */
   const marqueePortfolioValue = useMemo(() => {
     if (!user) return 0;
+    if (mock.hasMockPortfolio) return mock.totalValue;
     if (plaidSummaryLoading) return null;
     if (plaidConnected) return plaidSummary?.totalValue ?? 0;
     return HERO_DATA['1D'].value;
-  }, [user, plaidSummaryLoading, plaidConnected, plaidSummary]);
+  }, [user, mock.hasMockPortfolio, mock.totalValue, plaidSummaryLoading, plaidConnected, plaidSummary]);
 
   /** Hero cards match dashboard Current Value; falls back to live-enriched sum while summary loads */
   const portfolioTotalAligned = marqueePortfolioValue ?? portfolioTotal;
 
-  const portfolioChange = useMemo(
-    () => enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0),
-    [enrichedHoldings],
-  );
+  const portfolioChange = useMemo(() => {
+    if (mock.hasMockPortfolio) return mock.totalPnl;
+    return enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0);
+  }, [mock.hasMockPortfolio, mock.totalPnl, enrichedHoldings]);
 
   const isMarketOpen = useMemo(() => {
     const now = new Date();
