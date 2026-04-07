@@ -20,23 +20,81 @@ function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-/* ── Static data ── */
-const STAT_CARDS = [
-  { id: 'trades', icon: 'bi-arrow-left-right', label: 'Total Trades', value: '2,847', change: '+124 this week', changeType: 'positive', color: '#10b981' },
-  { id: 'volume', icon: 'bi-cash-stack', label: 'Total Volume', value: '$487M', change: '+$32M this month', changeType: 'positive', color: '#3b82f6' },
-  { id: 'traders', icon: 'bi-people', label: 'Active Traders', value: '127', change: 'of 535 members', changeType: 'neutral', color: '#a78bfa' },
-  { id: 'alerts', icon: 'bi-bell', label: 'New Alerts', value: '18', change: 'Last 24 hours', changeType: 'positive', color: '#fbbf24' },
-];
+/** Parse FMP amount string to a short display string */
+function fmtAmount(raw) {
+  if (raw == null || raw === '') return '—';
+  const s = String(raw);
+  return s
+    .replace(/\$[\d,]+\s*-\s*\$[\d,]+/g, (m) => {
+      const parts = m.replace(/\$/g, '').split(/\s*-\s*/);
+      const fmt = (n) => {
+        const v = parseInt(String(n).replace(/,/g, ''), 10);
+        if (Number.isNaN(v)) return n;
+        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+        if (v >= 1_000) return `${Math.round(v / 1_000)}K`;
+        return String(v);
+      };
+      return `${fmt(parts[0])}–${fmt(parts[1])}`;
+    })
+    .trim();
+}
 
-const LATEST_TRADES = [
-  { id: 1, type: 'SELL', ticker: 'KMB', company: 'Kimberly-Clark Corp', exchange: 'KMB:US', member: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', amount: '100K–250K', date: 'Yesterday', flagged: true },
-  { id: 2, type: 'SELL', ticker: 'HPQ', company: 'HP Inc', exchange: 'HPQ:US', member: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', amount: '15K–50K', date: 'Yesterday', flagged: false },
-  { id: 3, type: 'BUY', ticker: 'NVDA', company: 'NVIDIA Corp', exchange: 'NVDA:US', member: 'Nancy Pelosi', party: 'Democrat', chamber: 'House', state: 'CA', amount: '1M–5M', date: '2 days ago', flagged: true },
-  { id: 4, type: 'SELL', ticker: 'CLX', company: 'The Clorox Co', exchange: 'CLX:US', member: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', amount: '1K–15K', date: 'Yesterday', flagged: false },
-  { id: 5, type: 'BUY', ticker: 'AAPL', company: 'Apple Inc', exchange: 'AAPL:US', member: 'Dan Crenshaw', party: 'Republican', chamber: 'House', state: 'TX', amount: '100K–250K', date: '3 days ago', flagged: false },
-  { id: 6, type: 'SELL', ticker: 'META', company: 'Meta Platforms', exchange: 'META:US', member: 'Mark Warner', party: 'Democrat', chamber: 'Senate', state: 'VA', amount: '50K–100K', date: '3 days ago', flagged: false },
-  { id: 7, type: 'BUY', ticker: 'MSFT', company: 'Microsoft Corp', exchange: 'MSFT:US', member: 'Josh Gottheimer', party: 'Democrat', chamber: 'House', state: 'NJ', amount: '15K–50K', date: '4 days ago', flagged: false },
-  { id: 8, type: 'SELL', ticker: 'CLX', company: 'The Clorox Co', exchange: 'CLX:US', member: 'Tommy Tuberville', party: 'Republican', chamber: 'Senate', state: 'AL', amount: '15K–50K', date: 'Yesterday', flagged: false },
+/** Relative date string from ISO date */
+function relDate(dateStr) {
+  if (!dateStr) return '';
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  if (diff < 7) return `${diff} days ago`;
+  if (diff < 30) return `${Math.floor(diff / 7)}w ago`;
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/** Normalize a raw FMP trade object to the shape the UI expects */
+function normalizeTrade(t, chamber, idx = 0) {
+  const first = t.firstName || '';
+  const last = t.lastName || '';
+  const name = `${first} ${last}`.trim() || t.office || t.name || 'Unknown';
+  const rawType = (t.type || t.transactionType || '').toString();
+  const isSell =
+    rawType.toLowerCase().includes('sale') || rawType.toLowerCase().includes('sell');
+  const sym = (t.symbol || t.ticker || '').toUpperCase();
+  const disclosure = t.disclosureDate || t.date || t.transactionDate;
+  const rawDate = disclosure || t.transactionDate;
+  let stateAbbr = '';
+  if (t.district) {
+    const d = String(t.district);
+    const m = d.match(/\b([A-Z]{2})\b/);
+    if (m) stateAbbr = m[1];
+    else stateAbbr = d.replace(/\d+/g, '').trim().slice(0, 2).toUpperCase();
+  } else if (t.state) {
+    stateAbbr = String(t.state).slice(0, 2).toUpperCase();
+  }
+
+  return {
+    id: `${chamber}-${sym}-${rawDate || idx}-${name}-${idx}`,
+    type: isSell ? 'SELL' : 'BUY',
+    ticker: sym,
+    company: t.assetDescription || t.asset || sym || '—',
+    exchange: sym ? `${sym}:US` : '—',
+    member: name,
+    party: 'Unknown',
+    chamber,
+    state: stateAbbr,
+    amount: fmtAmount(t.amount),
+    date: relDate(disclosure || t.transactionDate),
+    flagged: false,
+    link: t.link || '',
+    rawDate,
+  };
+}
+
+/* STAT_CARDS — values are filled dynamically from fetched data */
+const STAT_CARDS_BASE = [
+  { id: 'trades', icon: 'bi-arrow-left-right', label: 'Total Trades', color: '#10b981' },
+  { id: 'volume', icon: 'bi-cash-stack', label: 'Total Volume', color: '#3b82f6' },
+  { id: 'traders', icon: 'bi-people', label: 'Active Traders', color: '#a78bfa' },
+  { id: 'alerts', icon: 'bi-bell', label: 'New Alerts', color: '#fbbf24' },
 ];
 
 /* ── Politician Performance Data ── */
@@ -404,6 +462,90 @@ function InsideTheCapitolContent() {
   const [activePolIdx, setActivePolIdx] = useState(0);
   const [perfWindow, setPerfWindow] = useState('1Y');
 
+  const [latestTrades, setLatestTrades] = useState([]);
+  const [tradesLoading, setTradesLoading] = useState(true);
+  const [statsData, setStatsData] = useState({
+    trades: { value: '—', change: 'Loading...', changeType: 'neutral' },
+    volume: { value: '—', change: 'Loading...', changeType: 'neutral' },
+    traders: { value: '—', change: 'of 535 members', changeType: 'neutral' },
+    alerts: { value: '—', change: 'Last 24 hours', changeType: 'neutral' },
+  });
+
+  useEffect(() => {
+    async function fetchTrades() {
+      setTradesLoading(true);
+      try {
+        const [senateRes, houseRes] = await Promise.all([
+          fetch('/api/fmp/senate?type=latest&page=0&limit=100'),
+          fetch('/api/fmp/house?type=latest&page=0&limit=100'),
+        ]);
+
+        const senateRaw = senateRes.ok ? await senateRes.json() : [];
+        const houseRaw = houseRes.ok ? await houseRes.json() : [];
+
+        const senateArr = Array.isArray(senateRaw) ? senateRaw : [];
+        const houseArr = Array.isArray(houseRaw) ? houseRaw : [];
+
+        const senate = senateArr.map((t, i) => normalizeTrade(t, 'Senate', i));
+        const house = houseArr.map((t, i) => normalizeTrade(t, 'House', i));
+
+        const all = [...senate, ...house].sort(
+          (a, b) => new Date(b.rawDate || 0) - new Date(a.rawDate || 0)
+        );
+
+        setLatestTrades(all);
+
+        const total = all.length;
+        const thisWeek = all.filter((t) => {
+          const d = new Date(t.rawDate);
+          return !Number.isNaN(d.getTime()) && Date.now() - d.getTime() < 7 * 86400000;
+        }).length;
+
+        const uniqueMembers = new Set(all.map((t) => t.member)).size;
+
+        const last24h = all.filter((t) => {
+          const d = new Date(t.rawDate);
+          return !Number.isNaN(d.getTime()) && Date.now() - d.getTime() < 86400000;
+        }).length;
+
+        setStatsData({
+          trades: {
+            value: total.toLocaleString(),
+            change: `+${thisWeek} this week`,
+            changeType: 'positive',
+          },
+          volume: {
+            value: '$—',
+            change: 'See individual trades',
+            changeType: 'neutral',
+          },
+          traders: {
+            value: String(uniqueMembers),
+            change: 'of 535 members',
+            changeType: 'neutral',
+          },
+          alerts: {
+            value: String(last24h),
+            change: 'Last 24 hours',
+            changeType: last24h > 0 ? 'positive' : 'neutral',
+          },
+        });
+      } catch (err) {
+        console.error('Failed to fetch congressional trades:', err);
+        setStatsData({
+          trades: { value: '—', change: 'Could not load', changeType: 'neutral' },
+          volume: { value: '—', change: '—', changeType: 'neutral' },
+          traders: { value: '—', change: '—', changeType: 'neutral' },
+          alerts: { value: '—', change: '—', changeType: 'neutral' },
+        });
+      } finally {
+        setTradesLoading(false);
+      }
+    }
+
+    fetchTrades();
+  }, []);
+
   const capitolCourses = useMemo(() => {
     const stocks = getCoursesByTrack('stocks');
     const relevant = stocks.filter(c =>
@@ -427,15 +569,17 @@ function InsideTheCapitolContent() {
     setActiveStateFilter(stateFilter || null);
   }, [stateFilter]);
 
-  const trades = LATEST_TRADES.filter((t) => {
+  const trades = latestTrades.filter((t) => {
     if (typeFilter === 'Buy') return t.type === 'BUY';
     if (typeFilter === 'Sell') return t.type === 'SELL';
     if (activePartyFilter) {
-      if (t.party.toLowerCase() !== activePartyFilter) return false;
+      if (t.party && t.party.toLowerCase() !== 'unknown' && t.party.toLowerCase() !== activePartyFilter) {
+        return false;
+      }
     }
     if (activeStateFilter) {
       const abbr = STATE_SLUG_TO_ABBR[activeStateFilter] || activeStateFilter.toUpperCase().slice(0, 2);
-      if (t.state !== abbr) return false;
+      if (t.state && t.state !== abbr) return false;
     }
     return true;
   });
@@ -446,18 +590,21 @@ function InsideTheCapitolContent() {
     <div className="itc-page dashboard-page-inset">
       {/* ── Stats ── */}
       <div className="itc-stats">
-        {STAT_CARDS.map((s) => (
-          <div key={s.id} className="itc-stat">
-            <div className="itc-stat-icon">
-              <i className={`bi ${s.icon}`} />
+        {STAT_CARDS_BASE.map((s) => {
+          const live = statsData[s.id] || {};
+          return (
+            <div key={s.id} className="itc-stat">
+              <div className="itc-stat-icon">
+                <i className={`bi ${s.icon}`} />
+              </div>
+              <div>
+                <div className="itc-stat-val">{live.value ?? '—'}</div>
+                <div className="itc-stat-lbl">{s.label}</div>
+                <div className={`itc-stat-chg ${live.changeType ?? 'neutral'}`}>{live.change ?? ''}</div>
+              </div>
             </div>
-            <div>
-              <div className="itc-stat-val">{s.value}</div>
-              <div className="itc-stat-lbl">{s.label}</div>
-              <div className={`itc-stat-chg ${s.changeType}`}>{s.change}</div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Row 2: Top Performing Politicians — full width */}
@@ -519,38 +666,48 @@ function InsideTheCapitolContent() {
               )}
             </div>
             <div className="itc-body">
-              {trades.map((t, ti) => (
-                <div key={t.id} className="itc-tr">
-                  <div className="itc-tr-type-col">
-                    <span className={`itc-tr-type ${t.type.toLowerCase()}`}>{t.type}</span>
-                    <span className="itc-tr-date">{t.date}</span>
-                  </div>
-                  <div className="itc-tr-co">
-                    <span className="itc-tr-co-name">{t.company}</span>
-                    <Link
-                      href={`/company-research?q=${encodeURIComponent(t.ticker)}`}
-                      className="itc-tr-co-exch"
-                      onClick={() => completeTask('capitol_3')}
-                      data-task-target={ti === 0 ? 'capitol-stock-ticker' : undefined}
-                    >
-                      {t.exchange}
-                    </Link>
-                  </div>
-                  <Link
-                    href={`/inside-the-capitol/${slugify(t.member)}`}
-                    className="itc-tr-mem"
-                    onClick={() => completeTask('capitol_1')}
-                    data-task-target={ti === 0 ? 'capitol-politician-name' : undefined}
-                  >
-                    <span className="itc-tr-mem-name">{t.member}</span>
-                    <span className="itc-tr-mem-meta"><span className={`itc-dot ${t.party.toLowerCase()}`} />{t.party} | {t.chamber} | {t.state}</span>
-                  </Link>
-                  <div className="itc-tr-right">
-                    <span className="itc-tr-amt">{t.amount}</span>
-                    {t.flagged && <span className="itc-tr-flag"><i className="bi bi-flag-fill" /></span>}
-                  </div>
+              {tradesLoading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#8b949e', fontSize: '0.85rem' }}>
+                  Loading latest trades...
                 </div>
-              ))}
+              ) : trades.length === 0 ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#8b949e', fontSize: '0.85rem' }}>
+                  No trades found.
+                </div>
+              ) : (
+                trades.slice(0, 20).map((t, ti) => (
+                  <div key={t.id} className="itc-tr">
+                    <div className="itc-tr-type-col">
+                      <span className={`itc-tr-type ${t.type.toLowerCase()}`}>{t.type}</span>
+                      <span className="itc-tr-date">{t.date}</span>
+                    </div>
+                    <div className="itc-tr-co">
+                      <span className="itc-tr-co-name">{t.company}</span>
+                      <Link
+                        href={`/company-research?q=${encodeURIComponent(t.ticker)}`}
+                        className="itc-tr-co-exch"
+                        onClick={() => completeTask('capitol_3')}
+                        data-task-target={ti === 0 ? 'capitol-stock-ticker' : undefined}
+                      >
+                        {t.exchange}
+                      </Link>
+                    </div>
+                    <Link
+                      href={`/inside-the-capitol/${slugify(t.member)}`}
+                      className="itc-tr-mem"
+                      onClick={() => completeTask('capitol_1')}
+                      data-task-target={ti === 0 ? 'capitol-politician-name' : undefined}
+                    >
+                      <span className="itc-tr-mem-name">{t.member}</span>
+                      <span className="itc-tr-mem-meta"><span className={`itc-dot ${t.party.toLowerCase()}`} />{t.party} | {t.chamber} | {t.state || '—'}</span>
+                    </Link>
+                    <div className="itc-tr-right">
+                      <span className="itc-tr-amt">{t.amount}</span>
+                      {t.flagged && <span className="itc-tr-flag"><i className="bi bi-flag-fill" /></span>}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </PinnableCard>
