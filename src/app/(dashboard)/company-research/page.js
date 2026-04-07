@@ -352,31 +352,7 @@ function CompanyResearchPageInner() {
 
                 {/* New React-based chart component */}
                 <div style={{ padding: '1rem 0' }}>
-                  <StockPriceChart symbol={selectedStock} livePrice={livePrice} />
-                </div>
-
-                <div
-                  className="cr-merged-stats market-chart-footer"
-                  id="stockChartFooter"
-                >
-                  <div className="cr-merged-stats-row cr-merged-stats-row--secondary">
-                    <div className="market-stat">
-                      <span className="market-stat-label">P/E</span>
-                      <span className="market-stat-value">{stats.pe}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">EPS</span>
-                      <span className="market-stat-value">{stats.eps}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Div Yield</span>
-                      <span className="market-stat-value">{stats.divYield}</span>
-                    </div>
-                    <div className="market-stat">
-                      <span className="market-stat-label">Market Cap</span>
-                      <span className="market-stat-value">{stats.mcap}</span>
-                    </div>
-                  </div>
+                  <StockPriceChart symbol={selectedStock} livePrice={livePrice} stats={stats} />
                 </div>
               </div>
             </PinnableCard>

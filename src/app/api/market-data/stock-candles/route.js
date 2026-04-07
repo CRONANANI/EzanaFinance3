@@ -6,12 +6,15 @@ const FMP_KEY = process.env.FMP_API_KEY;
 const BASE    = 'https://financialmodelingprep.com/stable';
 
 const RANGE_DAYS = {
-  '1D':  2,
-  '1W':  10,
-  '1M':  35,
-  '3M':  95,
-  '6M':  186,
-  '1Y':  370,
+  '1D':   2,
+  '1W':   10,
+  '1M':   35,
+  '3M':   95,
+  '6M':   186,
+  '1Y':   370,
+  '3Y':   1100,
+  '5Y':   1830,
+  'ALL':  7300,  // ~20 years — FMP returns what it has
 };
 
 function toDateStr(d) {
@@ -22,6 +25,9 @@ function makeLabel(dateStr, range) {
   const d = new Date(dateStr + 'T12:00:00Z');
   if (range === '1D' || range === '1W') {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  if (range === '3Y' || range === '5Y' || range === 'ALL') {
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   }
   if (range === '1Y') {
     return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -63,9 +69,8 @@ export async function GET(request) {
 
     const url = `${BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${toDateStr(fromDate)}&to=${toDateStr(toDate)}&apikey=${FMP_KEY}`;
 
-    // Cache aggressively: EOD data doesn't change during the day
-    // 1D → 15min cache, everything else → 1hr cache
-    const cacheSeconds = range === '1D' ? 900 : 3600;
+    // Long historical ranges: cache for 24hrs (data doesn't change)
+    const cacheSeconds = range === '1D' ? 900 : (['3Y', '5Y', 'ALL'].includes(range) ? 86400 : 3600);
     const res = await fetchWithRetry(url, cacheSeconds);
 
     if (!res.ok) {

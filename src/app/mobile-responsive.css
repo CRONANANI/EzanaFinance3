@@ -1454,3 +1454,12 @@ body {
   .trd-confirm-modal { padding: 1rem; max-width: 100%; }
   .trd-form-card { padding: 0 1rem; }
 }
+
+/* ── Stock chart stat cards: 2×2 on tablet, 2×2 on phone ── */
+@media (max-width: 767px) {
+  .stock-stat-cards-grid,
+  [data-stat-cards] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+}
