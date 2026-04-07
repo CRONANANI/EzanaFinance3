@@ -102,9 +102,9 @@ const STAT_CARDS_BASE = [
 const PC_W = 780;
 const PC_H = Math.round(392 * 0.7);
 const PC_PAD = { top: 50, right: 40, bottom: 62, left: 60 };
-const PC_DOT_R = 6;
-const PC_DOT_FONT = 5.5;
-const PC_DOT_PCT_FS = 6.5;
+const PC_DOT_R = 11;
+const PC_DOT_FONT = 7;
+const PC_DOT_PCT_FS = 7.5;
 
 /** Cubic smooth path through points (similar to Chart.js tension) */
 function buildSmoothPath(points) {
@@ -257,8 +257,8 @@ function PoliticianPerfChart({ onOpenPolitician }) {
               style={{ cursor: p ? 'pointer' : 'default' }}
             >
               <circle cx={cx} cy={cy} r={rDot} fill="url(#itcMetalDot)" filter="url(#itcMetalDotShadow)" stroke={isHov ? '#10b981' : 'none'} strokeWidth={isHov ? 1 : 0} />
-              <text x={cx} y={cy + 0.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={PC_DOT_FONT} fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">
-                {p ? p.initials : '~'}
+              <text x={cx} y={cy + 0.5} textAnchor="middle" dominantBaseline="central" fill="#ffffff" fontSize={PC_DOT_FONT} fontWeight="800" fontFamily="Plus Jakarta Sans, sans-serif" style={{ userSelect: 'none' }}>
+                {p?.initials ?? ''}
               </text>
               <text x={cx} y={cy + PC_DOT_R + 9} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize={PC_DOT_PCT_FS} fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
                 {d.returnPct >= 0 ? '+' : ''}{d.returnPct}%
