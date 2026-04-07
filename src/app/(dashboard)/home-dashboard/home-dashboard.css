@@ -27,7 +27,7 @@ body.light-mode .db-page {
    GREETING
    ══════════════════════════════ */
 .db-greeting-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.65rem;
 }
 
 .db-greeting {
@@ -73,34 +73,7 @@ body.light-mode .db-page {
 .db-greeting-date {
   font-size: 0.75rem;
   color: var(--db-muted);
-  margin: 0.25rem 0 0.75rem;
-}
-
-.db-quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.db-quick-action-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--db-muted-soft);
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 0.15s;
-}
-
-.db-quick-action-pill:hover {
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.08);
+  margin: 0.25rem 0 0;
 }
 
 

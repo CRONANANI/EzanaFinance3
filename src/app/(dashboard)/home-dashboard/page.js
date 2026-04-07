@@ -384,12 +384,6 @@ export default function HomeDashboardPage() {
             )}
           </p>
           <p className="db-greeting-date">{formatLongDate()}</p>
-          <div className="db-quick-actions">
-            <a href="/trading" className="db-quick-action-pill"><i className="bi bi-lightning-charge" /> Trade</a>
-            <a href="/trading#fund" className="db-quick-action-pill"><i className="bi bi-bank" /> Deposit</a>
-            <a href="/ezana-echo" className="db-quick-action-pill"><i className="bi bi-search" /> Research</a>
-            <a href="/community" className="db-quick-action-pill"><i className="bi bi-people" /> Community</a>
-          </div>
         </div>
       </div>
 

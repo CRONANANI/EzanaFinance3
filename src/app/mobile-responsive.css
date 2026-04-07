@@ -1441,7 +1441,6 @@ body {
   .db-hero-card { flex-direction: column; }
   .db-hero-chart { width: 100%; }
   .db-greeting { font-size: 1.25rem; }
-  .db-quick-actions { flex-wrap: wrap; }
   .db-hero-stats { flex-direction: column; gap: 0.75rem; }
   .db-row-2 { grid-template-columns: 1fr; }
   .db-row-3 { grid-template-columns: 1fr; }
