@@ -5,24 +5,47 @@ export const dynamic = 'force-dynamic';
 const FMP_KEY = process.env.FMP_API_KEY;
 const BASE = 'https://financialmodelingprep.com/stable';
 
-const TOP_TICKERS = ['AAPL', 'NVDA', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA', 'JPM', 'XOM', 'LMT'];
+// Active House traders — first names only (FMP house-trades-by-name takes first name)
+// Pulled from the full Congress member list, focused on members with known trading history
+const HOUSE_FIRST_NAMES = [
+  'Nancy', 'Dan', 'Josh', 'Michael', 'Virginia', 'Debbie', 'Ro', 'Patrick',
+  'John', 'Vern', 'Brian', 'Roger', 'Mike', 'Tom', 'Rick', 'Suzan',
+  'Marie', 'Anna', 'Morgan', 'Chip', 'Steve', 'Kevin', 'Lois', 'Scott',
+  'Brad', 'French', 'Ashley', 'David', 'Mark', 'Bill', 'Greg', 'Teresa',
+  'Darrell', 'Ken', 'Julia', 'Eric', 'Donald', 'James', 'Tim', 'Warren',
+  'Mariannette', 'August', 'Pete', 'Lloyd', 'Steny', 'Adam', 'Brad',
+  'Jimmy', 'Jake', 'Victoria', 'Thomas', 'Dean', 'Claudia', 'Nicole',
+  'Darin', 'Raja', 'Suhas', 'Katie', 'Alexandria', 'Pramila', 'Hakeem',
+  'Ilhan', 'Rashida', 'Ayanna', 'Alexandria', 'Jasmine', 'Summer', 'Maxwell',
+  'Sara', 'Sydney', 'Yvette', 'Grace', 'Nydia', 'Adriano', 'Ritchie',
+  'Gregory', 'Jerrold', 'Joseph', 'Paul', 'Richard', 'William', 'Neal',
+  'Jim', 'Seth', 'Earl', 'Sanford', 'Henry', 'Bennie', 'Emanuel',
+];
 
-async function fetchHouseByTickers() {
-  const results = await Promise.all(
-    TOP_TICKERS.map((sym) =>
-      fetch(`${BASE}/house-trades?symbol=${encodeURIComponent(sym)}&apikey=${FMP_KEY}`, {
-        next: { revalidate: 300 },
-      })
-        .then((r) => (r.ok ? r.json() : []))
-        .catch(() => [])
-    )
-  );
-  const flat = results.flat();
-  return flat.sort(
-    (a, b) =>
-      new Date(b.disclosureDate || b.transactionDate || 0) -
-      new Date(a.disclosureDate || a.transactionDate || 0)
-  );
+const UNIQUE_HOUSE_NAMES = [...new Set(HOUSE_FIRST_NAMES)];
+
+async function fetchHouseByName(firstName) {
+  try {
+    const url = `${BASE}/house-trades-by-name?name=${encodeURIComponent(firstName)}&apikey=${FMP_KEY}`;
+    const res = await fetch(url, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+async function fetchHouseBySymbol(symbol) {
+  try {
+    const url = `${BASE}/house-trades?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`;
+    const res = await fetch(url, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function GET(request) {
@@ -31,45 +54,42 @@ export async function GET(request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type'); // 'by-symbol' | 'by-name' | 'latest'
+  const type = searchParams.get('type');
   const name = searchParams.get('name');
   const symbol = searchParams.get('symbol');
-  const page = searchParams.get('page') || '0';
-  const limit = searchParams.get('limit') || '100';
 
   try {
-    let url;
     if (type === 'by-name' && name) {
-      url = `${BASE}/house-trades-by-name?name=${encodeURIComponent(name)}&apikey=${FMP_KEY}`;
-    } else if (type === 'by-symbol' && symbol) {
-      url = `${BASE}/house-trades?symbol=${encodeURIComponent(symbol)}&apikey=${FMP_KEY}`;
-    } else {
-      url = `${BASE}/house-latest?page=${page}&limit=${limit}&apikey=${FMP_KEY}`;
-    }
-
-    const res = await fetch(url, { next: { revalidate: 300 } });
-    let data;
-
-    if (!res.ok) {
-      console.warn(`FMP house-latest HTTP ${res.status}, falling back to multi-ticker house-trades`);
-      data = await fetchHouseByTickers();
+      const data = await fetchHouseByName(name);
       return NextResponse.json(data);
     }
 
-    data = await res.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      data = await fetchHouseByTickers();
+    if (type === 'by-symbol' && symbol) {
+      const data = await fetchHouseBySymbol(symbol);
+      return NextResponse.json(data);
     }
 
-    return NextResponse.json(data);
+    // Default: fetch all tracked house members in parallel, merge, sort
+    const results = await Promise.all(UNIQUE_HOUSE_NAMES.map(fetchHouseByName));
+    const merged = results
+      .flat()
+      .sort((a, b) =>
+        new Date(b.disclosureDate || b.transactionDate || 0) -
+        new Date(a.disclosureDate || a.transactionDate || 0)
+      );
+
+    // Deduplicate
+    const seen = new Set();
+    const deduped = merged.filter((t) => {
+      const key = `${t.symbol}-${t.transactionDate}-${t.firstName}-${t.lastName}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return NextResponse.json(deduped);
   } catch (err) {
     console.error('FMP house route error:', err);
-    try {
-      const data = await fetchHouseByTickers();
-      return NextResponse.json(data);
-    } catch (e2) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
-    }
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

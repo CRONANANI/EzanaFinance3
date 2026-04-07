@@ -147,7 +147,8 @@ function PoliticianPerfChart({ onOpenPolitician }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const activePoints = chartData.filter((d) => d.topPerformer != null);
+  // Include all years — show all data points, performer or not
+  const activePoints = chartData;
 
   if (loading) {
     return (
@@ -157,7 +158,7 @@ function PoliticianPerfChart({ onOpenPolitician }) {
     );
   }
 
-  if (error || activePoints.length === 0) {
+  if (error || chartData.length === 0) {
     return (
       <div className="itc-perf-chart-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 180 }}>
         <span style={{ color: '#8b949e', fontSize: '0.85rem' }}>
@@ -172,8 +173,9 @@ function PoliticianPerfChart({ onOpenPolitician }) {
   for (let y = 2016; y <= currentYear; y++) xYears.push(y);
 
   const returns = activePoints.map((d) => d.returnPct);
-  const yMin = 0;
-  const yMax = Math.ceil((Math.max(...returns) + 20) / 20) * 20;
+  const yMin = returns.length > 0 ? Math.floor(Math.min(...returns) / 20) * 20 : 0;
+  const yMax = returns.length > 0 ? Math.ceil((Math.max(...returns) + 20) / 20) * 20 : 160;
+  const ySpan = yMax - yMin || 1;
   const yStep = 20;
   const yTicks = [];
   for (let t = yMin; t <= yMax; t += yStep) yTicks.push(t);
@@ -183,7 +185,7 @@ function PoliticianPerfChart({ onOpenPolitician }) {
   const yearSpan = Math.max(1, currentYear - 2016);
 
   const getX = (year) => PC_PAD.left + ((year - 2016) / yearSpan) * innerW;
-  const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+  const getY = (v) => PC_PAD.top + innerH - ((v - yMin) / ySpan) * innerH;
 
   const linePoints = activePoints.map((d) => [getX(d.year), getY(d.returnPct)]);
   const linePath = buildSmoothPath(linePoints);
@@ -251,12 +253,12 @@ function PoliticianPerfChart({ onOpenPolitician }) {
               key={d.year}
               onMouseEnter={() => setHoveredId(i)}
               onMouseLeave={() => setHoveredId(null)}
-              onClick={() => { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); }}
-              style={{ cursor: 'pointer' }}
+              onClick={() => { if (p) { onOpenPolitician?.(); router.push(`/inside-the-capitol/${slugify(p.name)}`); } }}
+              style={{ cursor: p ? 'pointer' : 'default' }}
             >
               <circle cx={cx} cy={cy} r={rDot} fill="url(#itcMetalDot)" filter="url(#itcMetalDotShadow)" stroke={isHov ? '#10b981' : 'none'} strokeWidth={isHov ? 1 : 0} />
               <text x={cx} y={cy + 0.5} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={PC_DOT_FONT} fontWeight="700" fontFamily="Plus Jakarta Sans, sans-serif">
-                {p.initials}
+                {p ? p.initials : '~'}
               </text>
               <text x={cx} y={cy + PC_DOT_R + 9} textAnchor="middle" fill={isHov ? '#f0f6fc' : '#8b949e'} fontSize={PC_DOT_PCT_FS} fontWeight="600" fontFamily="Plus Jakarta Sans, sans-serif">
                 {d.returnPct >= 0 ? '+' : ''}{d.returnPct}%
@@ -269,13 +271,28 @@ function PoliticianPerfChart({ onOpenPolitician }) {
 
       {hoveredId != null && (() => {
         const d = activePoints[hoveredId];
-        if (!d || !d.topPerformer) return null;
+        if (!d) return null;
         const p = d.topPerformer;
         const cx = getX(d.year);
         const cy = getY(d.returnPct);
         const xPct = (cx / PC_W) * 100;
         const yPct = (cy / PC_H) * 100;
         const alignRight = xPct > 65;
+        if (!p) {
+          return (
+            <div className="itc-perf-tooltip" style={{
+              left: alignRight ? undefined : `${Math.max(xPct, 8)}%`,
+              right: alignRight ? `${Math.max(100 - xPct, 8)}%` : undefined,
+              top: `${Math.max(yPct - 28, 2)}%`,
+              transform: alignRight ? 'translateX(50%)' : 'translateX(-50%)',
+            }}>
+              <div className={`itc-perf-tip-return ${d.returnPct >= 0 ? 'pos' : 'neg'}`}>
+                {d.returnPct >= 0 ? '+' : ''}{d.returnPct}% market context in {d.year}
+              </div>
+              <div className="itc-perf-tip-rank">No tracked trader data for this year</div>
+            </div>
+          );
+        }
         return (
           <div className="itc-perf-tooltip" style={{
             left: alignRight ? undefined : `${Math.max(xPct, 8)}%`,
