@@ -1,6 +1,7 @@
 /* Interactive Globe - Hero visual replacement for card-swap
    Preserve hero-visual dimensions so text layout stays the same as before */
 .hero-visual.globe-preview {
+  position: relative;
   flex-shrink: 0;
   width: min(560px, 48vw);
   min-width: 340px;
@@ -13,12 +14,40 @@
   margin-top: 0;
 }
 
+/* Aurora glow blob sitting behind the globe (static landing) */
+.hero-visual.globe-preview .globe-aurora-glow {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  width: 540px;
+  height: 540px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(16, 185, 129, 0.25) 0%,
+    rgba(5, 150, 105, 0.16) 30%,
+    rgba(4, 120, 87, 0.08) 55%,
+    transparent 72%
+  );
+  filter: blur(36px);
+  animation: globeAuroraBreath 5s ease-in-out infinite alternate;
+}
+
+@keyframes globeAuroraBreath {
+  0%   { opacity: 0.65; transform: translate(-50%, -50%) scale(1);    filter: blur(36px); }
+  100% { opacity: 1;    transform: translate(-50%, -50%) scale(1.18); filter: blur(44px); }
+}
+
 .globe-container {
   width: 100%;
   max-width: 500px;
   height: 440px;
   min-height: 400px;
   position: relative;
+  z-index: 1;
 }
 
 .globe-canvas {

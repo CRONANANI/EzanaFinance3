@@ -6,7 +6,6 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
-  const [legacyInfo, setLegacyInfo] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +18,6 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
 
     setStatus('loading');
     setMessage('');
-    setLegacyInfo(null);
 
     try {
       const response = await fetch('/api/waitlist', {
@@ -42,14 +40,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
       }
 
       setStatus('success');
-      setMessage(data.message || "You're on the waitlist!");
-
-      if (data.legacyUser) {
-        setLegacyInfo({
-          isLegacy: true,
-          number: data.legacyNumber,
-        });
-      }
+      setMessage("Thank you for subscribing to our events newsletter, we will email you when we are ready to onboard you.");
 
       setEmail('');
     } catch (error) {
@@ -109,7 +100,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email for early access..."
               disabled={status === 'loading' || status === 'success'}
-              className="bg-[#0a0f0a] border-none w-full max-w-[540px] min-w-[320px] h-[45px] rounded-lg text-white px-[50px] pr-[60px] text-sm focus:outline-none placeholder-gray-500 disabled:opacity-60"
+              className="bg-[#0a0f0a] border border-emerald-700/70 w-full max-w-[540px] min-w-[320px] h-[45px] rounded-lg text-white px-[50px] pr-[60px] text-sm focus:outline-none focus:border-emerald-500 placeholder-gray-500 disabled:opacity-60 transition-colors duration-300"
             />
 
             {/* Input fade mask - removed so full placeholder text is visible */}
@@ -162,17 +153,6 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
           </form>
         </div>
       </div>
-
-      {/* Legacy Badge */}
-      {status === 'success' && legacyInfo?.isLegacy && (
-        <div className="mt-6 animate-fadeInScale">
-          <div className="bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-500/40 rounded-2xl px-8 py-5 text-center">
-            <span className="block text-[10px] font-semibold uppercase tracking-widest text-emerald-500 mb-1">Legacy Member</span>
-            <span className="block text-4xl font-extrabold text-white">#{legacyInfo.number}</span>
-            <span className="block text-xs text-gray-400 mt-2">of the first 1,000</span>
-          </div>
-        </div>
-      )}
 
       {/* Status Message */}
       {message && (

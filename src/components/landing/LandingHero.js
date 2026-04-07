@@ -127,6 +127,7 @@ export function LandingHero() {
           </div>
         </div>
         <div className={`card-preview globe-preview ${showHeroVisual ? 'globe-preview--visible' : ''}`}>
+          <div className="globe-aurora-glow" aria-hidden="true" />
           <GlobeWithNotificationCards size={460} onGlobeReady={onGlobeReady} />
         </div>
       </div>
