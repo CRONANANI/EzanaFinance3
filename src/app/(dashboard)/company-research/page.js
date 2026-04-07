@@ -33,17 +33,9 @@ import '@/components/research/ai-analysis-panel.css';
 /* ── Carousel model configs from the prompts library ── */
 const CAROUSEL_MODELS = getCarouselModels();
 
-function fmtPriceShort(v) {
-  if (v == null || v === '') return '--';
-  const n = Number(v);
-  if (Number.isNaN(n)) return '--';
-  return n >= 1 ? `$${n.toFixed(2)}` : `$${n.toFixed(4)}`;
-}
-
 function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
   const { completeTask } = useChecklist();
-  const scriptLoadedRef = useRef(false);
   const [selectedStock, setSelectedStock] = useState(null);
   const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
   const [viewMode, setViewMode] = useState('heatmap');
@@ -108,15 +100,6 @@ function CompanyResearchPageInner() {
     });
   }, [profile, metricData]);
 
-  const w52Range = useMemo(() => {
-    const m = metricData?.metric;
-    if (!m) return '--';
-    const lo = m['52WeekLow'];
-    const hi = m['52WeekHigh'];
-    if (lo == null && hi == null) return '--';
-    return `${fmtPriceShort(lo)} – ${fmtPriceShort(hi)}`;
-  }, [metricData]);
-
   const companyMetaLine = useMemo(() => {
     const parts = [];
     if (profile?.finnhubIndustry) parts.push(profile.finnhubIndustry);
@@ -124,16 +107,6 @@ function CompanyResearchPageInner() {
     if (stats.mcap && stats.mcap !== '--') parts.push(`Market Cap: ${stats.mcap}`);
     return parts.join(' · ') || '—';
   }, [profile, stats.mcap]);
-
-  useEffect(() => {
-    if (viewMode !== 'stock' || !selectedStock) return;
-    const id = requestAnimationFrame(() => {
-      try {
-        window.marketChartWidget?.showStockChart?.(selectedStock);
-      } catch (_) {}
-    });
-    return () => cancelAnimationFrame(id);
-  }, [viewMode, selectedStock]);
 
   useEffect(() => {
     if (selectedStock && (profile || metricData)) {
@@ -181,12 +154,6 @@ function CompanyResearchPageInner() {
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   }, [clearSuggestions]);
-
-  useEffect(() => {
-    if (scriptLoadedRef.current) return;
-    scriptLoadedRef.current = true;
-    // Legacy scripts removed - using React components instead
-  }, []);
 
   const resetStats = () => setStats({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
 
@@ -400,16 +367,6 @@ function CompanyResearchPageInner() {
                       <span className="market-stat-value">{stats.mcap}</span>
                     </div>
                   </div>
-                </div>
-              </div>
-            </PinnableCard>
-          )}
-          {selectedStock && (
-            <PinnableCard cardId="stock-key-metrics" section="research">
-              <KeyMetrics symbol={selectedStock} />
-                    <div className="market-stat"><span className="market-stat-label">52W range</span><span className="market-stat-value">{w52Range}</span></div>
-                  </div>
-                  <span id="mstatPrevClose" className="sr-only" aria-hidden>--</span>
                 </div>
               </div>
             </PinnableCard>

@@ -441,7 +441,7 @@ export default function StockPriceChart({ symbol }) {
               {[
                 {
                   label: 'Open',
-                  value: `$${Number(candles[0]?.price ?? 0).toFixed(2)}`,
+                  value: `$${Number(candles[0]?.open ?? candles[0]?.price ?? 0).toFixed(2)}`,
                 },
                 {
                   label: 'High',
