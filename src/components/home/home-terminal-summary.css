@@ -619,9 +619,6 @@ body.light-mode .home-terminal-body {
   color: #f0f6fc;
   margin: 0;
   line-height: 1.3;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1;
-  letter-spacing: -0.02em;
 }
 
 .hts-week-metric-sub {
@@ -1278,13 +1275,18 @@ body.light-mode .hts-week-standing-row {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Match .db-tx-table-header label typography (dashboard recent transactions) */
-.home-movers-section-label {
-  font-size: 0.5625rem;
+.home-portfolio-gain-label {
+  font-size: 0.625rem;
   font-weight: 700;
-  color: var(--home-muted-ink);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: var(--home-muted);
+}
+
+.home-portfolio-gain-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--home-heading);
 }
 
 /* Upcoming events: 3×4 grid + calendar */

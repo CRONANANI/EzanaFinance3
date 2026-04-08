@@ -197,6 +197,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
             gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
             gap: compact ? '2px 4px' : '4px 6px',
             marginBottom: '0.35rem',
+            fontSize: compact ? '0.5625rem' : '0.625rem',
           }}
         >
           {[
@@ -210,7 +211,13 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               <div className="hts-week-metric-label" style={{ marginBottom: 2 }}>
                 {label}
               </div>
-              <div className="hts-week-metric-val" style={{ lineHeight: 1.2 }}>
+              <div
+                className="hts-week-metric-val"
+                style={{
+                  fontSize: compact ? '0.65rem' : '0.75rem',
+                  lineHeight: 1.2,
+                }}
+              >
                 {val}
               </div>
             </div>
@@ -455,7 +462,14 @@ function PlatformActivityTab() {
               />
             </div>
           </div>
-          <span className="db-tx-amount" style={{ color: row.color, whiteSpace: 'nowrap' }}>
+          <span
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              color: row.color,
+              whiteSpace: 'nowrap',
+            }}
+          >
             {row.score}
           </span>
         </div>
