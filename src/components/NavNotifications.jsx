@@ -3,22 +3,46 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
 
-/* ═══════════════════════════════════════════════════════════
-   SAMPLE DATA — replace with real subscription-based
-   notifications when backend is ready
-   ═══════════════════════════════════════════════════════════ */
-const SAMPLE_NOTIFICATIONS = [
-  { id: '1', type: 'congress', title: 'Nancy Pelosi Trade Alert', content: 'Rep. Nancy Pelosi disclosed new NVIDIA stock purchases worth $1.2M — filed 45 days after execution date.', time: Date.now() - 2 * 60 * 1000, read: false, icon: 'bi-building', badge: 'Congress', priority: 'high' },
-  { id: '2', type: 'market_news', title: 'AAPL Breaking News', content: 'Apple announces record Q4 earnings beating estimates by 12%, stock up 5% in after-hours trading.', time: Date.now() - 8 * 60 * 1000, read: false, icon: 'bi-graph-up', badge: 'Earnings', priority: 'high' },
-  { id: '3', type: 'portfolio_alerts', title: 'Portfolio Alert', content: 'Your portfolio gained $2,847.31 today (+2.26%). Top movers: NVDA +4.1%, MSFT +2.8%, AAPL +1.9%.', time: Date.now() - 60 * 60 * 1000, read: true, icon: 'bi-graph-up', badge: 'Portfolio', priority: 'medium' },
-  { id: '4', type: 'community', title: 'Community Discussion', content: 'Alex commented on your Tesla discussion thread: "Great analysis on the delivery numbers..."', time: Date.now() - 2 * 60 * 60 * 1000, read: false, icon: 'bi-people', badge: 'Community', priority: 'low' },
-  { id: '5', type: 'congress', title: 'Dan Crenshaw Trade Alert', content: 'Rep. Dan Crenshaw sold $500K–$1M in defense stocks 3 days before committee vote on procurement bill.', time: Date.now() - 4 * 60 * 60 * 1000, read: true, icon: 'bi-building', badge: 'Congress', priority: 'high' },
-  { id: '6', type: 'market_news', title: 'Market Analysis Update', content: 'New quantitative research report on your TSLA position shows strong buy signals across 4 of 6 models.', time: Date.now() - 6 * 60 * 60 * 1000, read: true, icon: 'bi-graph-up', badge: 'Research', priority: 'medium' },
-  { id: '7', type: 'portfolio_alerts', title: 'Dividend Payment', content: 'Received $127.50 quarterly dividend payment from MSFT (Microsoft Corp). DRIP reinvested at $428.30/share.', time: Date.now() - 24 * 60 * 60 * 1000, read: true, icon: 'bi-cash-coin', badge: 'Payment', priority: 'low' },
-  { id: '8', type: 'congress', title: 'Senate Trading Activity', content: 'Sen. Richard Burr sold $1.8M in airline stocks ahead of pandemic briefing. SEC investigation ongoing.', time: Date.now() - 2 * 24 * 60 * 60 * 1000, read: true, icon: 'bi-building', badge: 'Congress', priority: 'high' },
-  { id: '9', type: 'learning', title: 'Learning Center', content: 'New module available: DCF Modeling Basics — pick up where you left off.', time: Date.now() - 3 * 60 * 60 * 1000, read: false, icon: 'bi-mortarboard', badge: 'Learning', priority: 'low' },
-];
+function mapDbNotification(row) {
+  const t = row.type || 'general';
+  const badge =
+    t === 'community'
+      ? 'Community'
+      : t === 'portfolio_alerts'
+        ? 'Portfolio'
+        : t === 'market_news'
+          ? 'Market'
+          : t === 'congress'
+            ? 'Congress'
+            : t === 'learning'
+              ? 'Learning'
+              : 'Notification';
+  const icon =
+    t === 'community'
+      ? 'bi-people'
+      : t === 'portfolio_alerts'
+        ? 'bi-graph-up'
+        : t === 'market_news'
+          ? 'bi-graph-up'
+          : t === 'congress'
+            ? 'bi-building'
+            : t === 'learning'
+              ? 'bi-mortarboard'
+              : 'bi-bell';
+  return {
+    id: row.id,
+    type: t,
+    title: row.title,
+    content: row.content || '',
+    time: new Date(row.created_at).getTime(),
+    read: !!row.read,
+    icon,
+    badge,
+    priority: 'medium',
+  };
+}
 
 function getTimeAgo(ts) {
   const diff = Date.now() - ts;
@@ -47,7 +71,7 @@ function getTimeAgo(ts) {
  */
 export function NavNotifications() {
   const { user, isAuthenticated } = useAuth();
-  const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
@@ -67,21 +91,44 @@ export function NavNotifications() {
     setExpandedId(null);
   }, []);
 
-  const markAsRead = useCallback((id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  }, []);
+  const markAsRead = useCallback(
+    async (id) => {
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      if (String(id).startsWith('fr-')) return;
+      try {
+        await supabase.from('user_notifications').update({ read: true }).eq('id', id);
+      } catch {
+        /* table missing or RLS */
+      }
+    },
+    [],
+  );
 
-  const markAllRead = useCallback(() => {
+  const markAllRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }, []);
+    if (!user?.id) return;
+    try {
+      await supabase.from('user_notifications').update({ read: true }).eq('user_id', user.id);
+    } catch {
+      /* ignore */
+    }
+  }, [user?.id]);
 
-  const dismissNotification = useCallback((id, e) => {
-    e?.stopPropagation();
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    if (expandedId === id) setExpandedId(null);
-  }, [expandedId]);
+  const dismissNotification = useCallback(
+    async (id, e) => {
+      e?.stopPropagation();
+      if (!String(id).startsWith('fr-')) {
+        try {
+          await supabase.from('user_notifications').delete().eq('id', id);
+        } catch {
+          /* ignore */
+        }
+      }
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (expandedId === id) setExpandedId(null);
+    },
+    [expandedId],
+  );
 
   const toggleExpand = useCallback((id) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -107,15 +154,24 @@ export function NavNotifications() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user) {
+      setNotifications([]);
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/community/friend-request');
-        if (!res.ok) return;
-        const json = await res.json();
+        const [frRes, dbRes] = await Promise.all([
+          fetch('/api/community/friend-request').then((r) => (r.ok ? r.json() : { requests: [] })),
+          supabase
+            .from('user_notifications')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50),
+        ]);
         if (cancelled) return;
-        const requests = json.requests || [];
+        const requests = frRes.requests || [];
         const frNotifs = requests.map((r) => ({
           id: `fr-${r.id}`,
           type: 'community',
@@ -128,12 +184,12 @@ export function NavNotifications() {
           priority: 'medium',
           friendRequestId: r.id,
         }));
-        setNotifications((prev) => {
-          const withoutFr = prev.filter((n) => !String(n.id).startsWith('fr-'));
-          return [...frNotifs, ...withoutFr];
-        });
+        const rows = dbRes.data;
+        const err = dbRes.error;
+        const dbNotifs = !err && Array.isArray(rows) ? rows.map(mapDbNotification) : [];
+        setNotifications([...frNotifs, ...dbNotifs]);
       } catch {
-        /* table may not exist yet */
+        if (!cancelled) setNotifications([]);
       }
     })();
     return () => {

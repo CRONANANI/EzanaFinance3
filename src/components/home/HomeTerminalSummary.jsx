@@ -238,12 +238,9 @@ export function HomeTerminalSummary({
   const displayChangeDollar = sel.changeDollar;
   const gainTodayDisplay = sel.gainToday;
 
-  const currentValue = loading && hasUser ? 0 : portfolioTotal;
-  const snapshotValueNum = loading && hasUser ? 0 : sel.displayValue;
-  const displayValue =
-    loading && hasUser
-      ? '—'
-      : `$${snapshotValueNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const currentValue = portfolioTotal;
+  const snapshotValueNum = sel.displayValue;
+  const displayValue = `$${snapshotValueNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const changePctStr = `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%`;
   const changeDollarStr = `${displayChangeDollar >= 0 ? '+' : '-'}$${Math.abs(displayChangeDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

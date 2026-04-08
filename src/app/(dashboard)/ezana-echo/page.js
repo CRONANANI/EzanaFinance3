@@ -2,12 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  getAllArticles,
-  getFeaturedArticle,
-  ECHO_TRENDING,
-  formatPublishedShort,
-} from '@/lib/ezana-echo-mock';
+import { getAllArticles, getFeaturedArticle, formatPublishedShort } from '@/lib/ezana-echo-mock';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -170,69 +165,6 @@ export default function EzanaEchoPage() {
           ))}
       </div>
 
-      <div className="echo-bottom-row" id="latest">
-        <div className="echo-latest-col">
-          <div className="echo-section-head">
-            <h3 className="echo-section-heading">📰 Latest</h3>
-          </div>
-          <div className="echo-feed-list">
-            {sortedFiltered.map((a) => (
-              <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-feed-row">
-                <div className="echo-feed-row-body">
-                  <CategoryBadge category={a.category} />
-                  <p className="echo-feed-row-title">{a.title}</p>
-                  <p className="echo-feed-row-meta">
-                    {a.author} · {formatPublishedShort(a.publishedAt)} · {a.readTime} min
-                  </p>
-                  <p className="echo-feed-row-engage">
-                    ❤️ {a.likes} &nbsp; 💬 {a.comments}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="echo-trending-col">
-          <div className="echo-section-head">
-            <h3 className="echo-section-heading">🔥 Trending</h3>
-          </div>
-          <div className="echo-trend-group">
-            <p className="echo-trend-group-label">Most Read This Week</p>
-            {ECHO_TRENDING.mostRead.map((row, i) => (
-              <Link key={row.id} href={`/ezana-echo/${row.id}`} className="echo-trend-row">
-                <span className="echo-trend-num">{i + 1}</span>
-                <div>
-                  <p className="echo-trend-row-title">{row.title}</p>
-                  <p className="echo-trend-row-meta">{row.reads.toLocaleString()} reads</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="echo-trend-group">
-            <p className="echo-trend-group-label">Most Discussed</p>
-            {ECHO_TRENDING.mostDiscussed.map((row, i) => (
-              <Link key={row.id} href={`/ezana-echo/${row.id}`} className="echo-trend-row">
-                <span className="echo-trend-num">{i + 1}</span>
-                <div>
-                  <p className="echo-trend-row-title">{row.title}</p>
-                  <p className="echo-trend-row-meta">{row.comments} comments</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="echo-trend-group">
-            <p className="echo-trend-group-label">📌 Community Bookmarks</p>
-            {ECHO_TRENDING.bookmarks.map((row) => (
-              <Link key={row.id} href={`/ezana-echo/${row.id}`} className="echo-trend-row">
-                <div>
-                  <p className="echo-trend-row-title">{row.title}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -34,8 +34,12 @@ export async function GET() {
     const monthIdx = now.getMonth(); // 0-based
     const month = String(monthIdx + 1).padStart(2, '0');
     const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-    const firstDay = `${year}-${month}-01`;
-    const lastDay = `${year}-${month}-${String(daysInMonth).padStart(2, '0')}`;
+    const pad = (n) => String(n).padStart(2, '0');
+    /** From today through end of month only (not start of month) */
+    const firstDay = `${year}-${month}-${pad(now.getDate())}`;
+    const lastDay = `${year}-${month}-${pad(daysInMonth)}`;
+    const startOfToday = new Date(year, monthIdx, now.getDate());
+    startOfToday.setHours(0, 0, 0, 0);
     const key = encodeURIComponent(FMP_KEY);
 
     const [econRes, earningsRes] = await Promise.all([
@@ -52,8 +56,8 @@ export async function GET() {
         if (!e.date) return false;
         const d = parseLocalDate(e.date);
         if (!d) return false;
+        if (d < startOfToday) return false;
         const imp = String(e.impact ?? '').toLowerCase();
-        // Double-check it's still within the current month after local parse
         return (
           d.getFullYear() === year &&
           d.getMonth() === monthIdx &&
@@ -95,6 +99,7 @@ export async function GET() {
         if (!e.date || !e.symbol) return false;
         const d = parseLocalDate(e.date);
         if (!d) return false;
+        if (d < startOfToday) return false;
         return d.getFullYear() === year && d.getMonth() === monthIdx;
       })
       .sort((a, b) => {

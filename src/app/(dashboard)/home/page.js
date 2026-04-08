@@ -205,17 +205,30 @@ export default function HomeTerminalPage() {
     [enrichedHoldings],
   );
 
-  /** Same dollar amount as /home-dashboard "Current Value" (Plaid summary, mock, or demo hero) */
-  const marqueePortfolioValue = useMemo(() => {
-    if (!user) return 0;
+  /**
+   * Portfolio headline: real brokerage (Plaid) when connected; otherwise mock portfolio; else demo hero.
+   * Always a positive display number for logged-in users (never blank).
+   */
+  const portfolioTotalAligned = useMemo(() => {
+    if (!user) return HERO_DATA['1D'].value;
+    if (plaidConnected) {
+      if (plaidSummaryLoading) return HERO_DATA['1D'].value;
+      if (plaidSummary?.totalValue != null) return plaidSummary.totalValue;
+      return portfolioTotal > 0 ? portfolioTotal : HERO_DATA['1D'].value;
+    }
     if (mock.hasMockPortfolio) return mock.totalValue;
-    if (plaidSummaryLoading) return null;
-    if (plaidConnected) return plaidSummary?.totalValue ?? 0;
     return HERO_DATA['1D'].value;
-  }, [user, mock.hasMockPortfolio, mock.totalValue, plaidSummaryLoading, plaidConnected, plaidSummary]);
+  }, [
+    user,
+    plaidConnected,
+    plaidSummaryLoading,
+    plaidSummary?.totalValue,
+    mock.hasMockPortfolio,
+    mock.totalValue,
+    portfolioTotal,
+  ]);
 
-  /** Hero cards match dashboard Current Value; falls back to live-enriched sum while summary loads */
-  const portfolioTotalAligned = marqueePortfolioValue ?? portfolioTotal;
+  const marqueePortfolioValue = portfolioTotalAligned;
 
   const portfolioChange = useMemo(() => {
     if (mock.hasMockPortfolio) return mock.totalPnl;
@@ -242,11 +255,7 @@ export default function HomeTerminalPage() {
     blocks.push(
       <span key="pv" className="t-news-item">
         <strong>PORTFOLIO</strong>{' '}
-        {user && (loading || plaidSummaryLoading) ? (
-          <span className="t-dim">—</span>
-        ) : marqueePortfolioValue == null ? (
-          <span className="t-dim">—</span>
-        ) : (
+        {user ? (
           <>
             <strong>
               $
@@ -258,6 +267,24 @@ export default function HomeTerminalPage() {
             <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
               {portfolioChange >= 0 ? '+' : ''}
               {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+              today
+            </span>
+          </>
+        ) : (
+          <>
+            <strong>
+              $
+              {marqueePortfolioValue.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </strong>{' '}
+            <span className={HERO_DATA['1D'].changeDollar >= 0 ? 't-green' : 't-red'}>
+              {HERO_DATA['1D'].changeDollar >= 0 ? '+' : ''}
+              {HERO_DATA['1D'].changeDollar.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{' '}
               today
             </span>
           </>

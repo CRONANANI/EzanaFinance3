@@ -9,7 +9,6 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-  Legend,
   ReferenceLine,
 } from 'recharts';
 
@@ -140,6 +139,7 @@ function normalizeToPercentChange(series) {
 }
 
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
+  const [selectedIndexKey, setSelectedIndexKey] = useState('spx');
   const chartH = chartOnly ? (compact ? 268 : 300) : compact ? 168 : 220;
   const { data: chartData, sourceWasFlat } = useMemo(
     () => normalizeToPercentChange(indexPayload?.series || []),
@@ -157,25 +157,22 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   // Same quote gap-filled → flat before offsets; sourceWasFlat preserves the warning after visual offsets
   const dataIsFlat = !noData && chartData.length > 0 && sourceWasFlat;
 
-  // Compute Y domain with some padding so lines don't hug the edges
   const yDomain = useMemo(() => {
     if (!chartData.length) return [-2, 2];
     let min = 0;
     let max = 0;
+    const k = selectedIndexKey;
     for (const row of chartData) {
-      for (const k of CHART_KEYS) {
-        const v = row[k];
-        if (v != null) {
-          if (v < min) min = v;
-          if (v > max) max = v;
-        }
+      const v = row[k];
+      if (v != null) {
+        if (v < min) min = v;
+        if (v > max) max = v;
       }
     }
-    // If all values are 0 (flat), show a reasonable range
     if (min === 0 && max === 0) return [-2, 2];
     const pad = Math.max(Math.abs(max - min) * 0.2, 0.5);
     return [Math.floor((min - pad) * 10) / 10, Math.ceil((max + pad) * 10) / 10];
-  }, [chartData]);
+  }, [chartData, selectedIndexKey]);
 
   return (
     <div
@@ -320,35 +317,34 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               }}
               labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
             />
-            <Legend
-              iconType="plainline"
-              iconSize={8}
-              wrapperStyle={{
-                fontSize: compact ? '0.5rem' : '0.5625rem',
-                color: 'var(--home-muted-soft)',
-                paddingTop: 2,
-                lineHeight: 1.2,
-              }}
-              formatter={(value) => (
-                <span style={{ color: 'var(--home-row-text)' }}>{value}</span>
-              )}
+            <Line
+              type="monotone"
+              dataKey={selectedIndexKey}
+              stroke={SERIES_COLORS[selectedIndexKey]}
+              strokeWidth={2.2}
+              dot={{ r: 3, fill: SERIES_COLORS[selectedIndexKey], strokeWidth: 0 }}
+              activeDot={{ r: 5, strokeWidth: 1.5, stroke: '#161b22' }}
+              connectNulls
+              name={SERIES_NAMES[selectedIndexKey]}
+              isAnimationActive={false}
             />
-            {CHART_KEYS.map((k) => (
-              <Line
-                key={k}
-                type="monotone"
-                dataKey={k}
-                stroke={SERIES_COLORS[k]}
-                strokeWidth={1.8}
-                dot={{ r: 2.5, fill: SERIES_COLORS[k], strokeWidth: 0 }}
-                activeDot={{ r: 4, strokeWidth: 1.5, stroke: '#161b22' }}
-                connectNulls
-                name={SERIES_NAMES[k]}
-                isAnimationActive={false}
-              />
-            ))}
           </LineChart>
         </ResponsiveContainer>
+        <div className="hts-week-index-legend" role="tablist" aria-label="Select index">
+          {CHART_KEYS.map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={selectedIndexKey === k}
+              className={`hts-week-index-legend-btn ${selectedIndexKey === k ? 'is-active' : ''}`}
+              onClick={() => setSelectedIndexKey(k)}
+            >
+              <span className="hts-week-index-legend-dot" style={{ background: SERIES_COLORS[k] }} />
+              <span className="hts-week-index-legend-label">{SERIES_NAMES[k]}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -521,7 +517,7 @@ function PlatformActivityTab() {
             className="bi bi-bar-chart-line"
             style={{ marginRight: 6, color: '#10b981' }}
           />
-          Ranked <strong style={{ color: '#f0f6fc' }}>#8</strong> amongst
+          Ranked <strong style={{ color: '#22c55e' }}>#8</strong> amongst
           friends{' '}
           <span style={{ color: '#10b981' }}>
             (up 2 spots from last month)
