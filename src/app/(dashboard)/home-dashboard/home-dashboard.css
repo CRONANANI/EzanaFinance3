@@ -236,6 +236,22 @@ body.light-mode .db-page {
   color: #f0f6fc;
 }
 
+/* Tabular figures for dashboard + home terminal numerics */
+.db-hero-value,
+.db-hero-stat-value,
+.db-hero-change,
+.db-holding-value,
+.db-holding-change,
+.db-watchlist-price,
+.db-watchlist-change,
+.db-donut-value,
+.db-sector-value,
+.db-tx-amount,
+.db-legend-pct {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
 /* Chart */
 .db-hero-chart {
   width: 45%;

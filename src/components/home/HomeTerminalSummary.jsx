@@ -401,27 +401,17 @@ export function HomeTerminalSummary({
                     </button>
                   </div>
                 </div>
-                <p
-                  style={{
-                    fontSize: '2.25rem',
-                    fontWeight: 800,
-                    color: 'var(--home-heading)',
-                    margin: '0 0 0.25rem',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
+                <p className="db-hero-value" style={{ margin: '0 0 0.25rem' }}>
                   {displayValue}
                 </p>
                 <p
-                  style={{
-                    fontSize: '0.8125rem',
-                    color: displayChangeDollar >= 0 ? '#10b981' : '#ef4444',
-                    fontWeight: 600,
-                    margin: '0 0 1rem',
-                  }}
+                  className={`db-hero-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}
+                  style={{ margin: '0 0 1rem' }}
                 >
                   {changePctStr} ({changeDollarStr}){' '}
-                  <span style={{ color: 'var(--home-muted)', fontWeight: 400 }}>Committed Frees</span>
+                  <span className="db-hero-change-amt" style={{ color: 'var(--home-muted)' }}>
+                    Committed Frees
+                  </span>
                 </p>
                 <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: 0 }}>
                   <HeroSparkline
@@ -432,8 +422,8 @@ export function HomeTerminalSummary({
                   />
                 </div>
                 <div className="home-portfolio-gain-row">
-                  <span className="home-portfolio-gain-label">Gain Today</span>
-                  <span className="home-portfolio-gain-value">
+                  <span className="db-hero-stat-label">Gain Today</span>
+                  <span className="db-hero-stat-value">
                     $
                     {gainTodayDisplay.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
@@ -575,13 +565,12 @@ export function HomeTerminalSummary({
                   <div style={{ padding: '0 1.25rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
                       <p
+                        className="db-hero-stat-label"
                         style={{
-                          fontSize: '0.625rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
                           color: '#10b981',
                           margin: '0 0 0.5rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
                         }}
                       >
                         Top 3
@@ -593,24 +582,23 @@ export function HomeTerminalSummary({
                             display: 'flex',
                             justifyContent: 'space-between',
                             padding: '0.35rem 0',
-                            fontSize: '0.75rem',
-                            color: 'var(--home-row-text)',
+                            alignItems: 'center',
+                            gap: '0.5rem',
                           }}
                         >
-                          <span>{s.name}</span>
-                          <span style={{ color: '#10b981', fontWeight: 700 }}>{s.change}</span>
+                          <span className="db-sector-name">{s.name}</span>
+                          <span className="db-watchlist-change positive">{s.change}</span>
                         </div>
                       ))}
                     </div>
                     <div>
                       <p
+                        className="db-hero-stat-label"
                         style={{
-                          fontSize: '0.625rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
                           color: '#ef4444',
                           margin: '0 0 0.5rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
                         }}
                       >
                         Worst 5
@@ -622,12 +610,12 @@ export function HomeTerminalSummary({
                             display: 'flex',
                             justifyContent: 'space-between',
                             padding: '0.35rem 0',
-                            fontSize: '0.75rem',
-                            color: 'var(--home-row-text)',
+                            alignItems: 'center',
+                            gap: '0.5rem',
                           }}
                         >
-                          <span>{s.name}</span>
-                          <span style={{ color: '#ef4444', fontWeight: 700 }}>{s.change}</span>
+                          <span className="db-sector-name">{s.name}</span>
+                          <span className="db-watchlist-change negative">{s.change}</span>
                         </div>
                       ))}
                     </div>
@@ -655,14 +643,7 @@ export function HomeTerminalSummary({
                         <span style={{ fontSize: '1.1rem' }} aria-hidden>
                           🔥
                         </span>
-                        <span
-                          style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 800,
-                            color: 'var(--home-heading)',
-                            lineHeight: 1,
-                          }}
-                        >
+                        <span className="db-hero-stat-value" style={{ lineHeight: 1 }}>
                           {streakDays}
                         </span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)', fontWeight: 500 }}>day streak</span>
@@ -704,9 +685,14 @@ export function HomeTerminalSummary({
                       >
                         Ezana Score
                       </div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1 }}>
+                      <div className="db-hero-stat-value" style={{ color: '#D4AF37', lineHeight: 1 }}>
                         {ezanaScore}
-                        <span style={{ fontSize: '0.75rem', color: 'var(--home-muted)', fontWeight: 400 }}>/100</span>
+                        <span
+                          className="db-hero-change-amt"
+                          style={{ fontSize: '0.75rem', color: 'var(--home-muted)', fontWeight: 400 }}
+                        >
+                          /100
+                        </span>
                       </div>
                       <div
                         style={{
@@ -800,13 +786,7 @@ export function HomeTerminalSummary({
                           {row.ticker}
                         </span>
                         <MiniSparkline positive={row.positive} />
-                        <span
-                          style={{
-                            color: row.positive ? '#10b981' : '#ef4444',
-                            fontWeight: 700,
-                            fontSize: '0.8125rem',
-                          }}
-                        >
+                        <span className={`db-tx-amount ${row.positive ? 'positive' : 'negative'}`}>
                           {row.amount}
                         </span>
                       </div>
@@ -844,15 +824,7 @@ export function HomeTerminalSummary({
                   </div>
                 </div>
                 <div style={{ padding: '0 1.25rem 0.5rem' }}>
-                  <p
-                    style={{
-                      fontSize: '0.625rem',
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: 'var(--home-muted)',
-                      margin: '0 0 0.5rem',
-                    }}
-                  >
+                  <p className="home-movers-section-label" style={{ margin: '0 0 0.5rem' }}>
                     GAINERS
                   </p>
                   {MOCK_GAINERS.map((m) => (
@@ -875,40 +847,38 @@ export function HomeTerminalSummary({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '0.7rem',
+                          fontSize: '0.6875rem',
                           fontWeight: 800,
                           color: '#fff',
                         }}
                       >
                         {m.ticker[0]}
                       </div>
-                      <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
+                      <span className="db-watchlist-ticker" style={{ minWidth: 44 }}>
+                        {m.ticker}
+                      </span>
                       <span
+                        className={`db-watchlist-change ${m.positive ? 'positive' : 'negative'}`}
                         style={{
                           padding: '0.15rem 0.4rem',
                           borderRadius: 6,
-                          fontSize: '0.6875rem',
-                          fontWeight: 700,
                           background: 'rgba(16, 185, 129, 0.12)',
-                          color: '#10b981',
+                          display: 'inline-flex',
+                          alignItems: 'center',
                         }}
                       >
                         {m.change}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
+                      <span className="db-tx-amount" style={{ color: 'var(--home-muted-soft)' }}>
+                        {m.dollarChange}
+                      </span>
                       <MiniSparkline positive={m.positive} />
-                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                      <span className="db-legend-pct" style={{ marginLeft: 'auto', color: 'var(--home-muted)' }}>
+                        {m.volume}
+                      </span>
                     </div>
                   ))}
-                  <p
-                    style={{
-                      fontSize: '0.625rem',
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: 'var(--home-muted)',
-                      margin: '1rem 0 0.5rem',
-                    }}
-                  >
+                  <p className="home-movers-section-label" style={{ margin: '1rem 0 0.5rem' }}>
                     LOSERS
                   </p>
                   {MOCK_LOSERS.map((m) => (
@@ -931,40 +901,46 @@ export function HomeTerminalSummary({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '0.7rem',
+                          fontSize: '0.6875rem',
                           fontWeight: 800,
                           color: '#fff',
                         }}
                       >
                         {m.ticker[0]}
                       </div>
-                      <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
+                      <span className="db-watchlist-ticker" style={{ minWidth: 44 }}>
+                        {m.ticker}
+                      </span>
                       <span
+                        className={`db-watchlist-change ${m.positive ? 'positive' : 'negative'}`}
                         style={{
                           padding: '0.15rem 0.4rem',
                           borderRadius: 6,
-                          fontSize: '0.6875rem',
-                          fontWeight: 700,
                           background: 'rgba(239, 68, 68, 0.12)',
-                          color: '#ef4444',
+                          display: 'inline-flex',
+                          alignItems: 'center',
                         }}
                       >
                         {m.change}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
+                      <span className="db-tx-amount" style={{ color: 'var(--home-muted-soft)' }}>
+                        {m.dollarChange}
+                      </span>
                       <MiniSparkline positive={m.positive} />
-                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                      <span className="db-legend-pct" style={{ marginLeft: 'auto', color: 'var(--home-muted)' }}>
+                        {m.volume}
+                      </span>
                     </div>
                   ))}
                 </div>
                 <div
+                  className="db-legend-pct"
                   style={{
                     padding: '0.65rem 1.25rem 1rem',
                     borderTop: '1px solid rgba(16, 185, 129, 0.06)',
                     display: 'flex',
                     gap: '0.75rem',
                     flexWrap: 'wrap',
-                    fontSize: '0.6875rem',
                     color: 'var(--home-muted)',
                   }}
                 >

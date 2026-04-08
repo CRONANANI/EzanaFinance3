@@ -106,18 +106,25 @@
 }
 
 .t-pv-amount {
-  font-weight: 700;
-  font-size: var(--font-base, 1rem);
+  /* Match .db-holding-value / .db-hero-stat-value */
+  font-weight: 800;
+  font-size: 1.25rem;
   color: var(--foreground, #ffffff);
   font-feature-settings: 'tnum' 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .t-pv-change {
-  font-size: var(--font-xs, 0.75rem);
-  font-weight: 600;
+  /* Match .db-hero-change */
+  font-size: 0.75rem;
+  font-weight: 700;
   font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
 }
+
+.t-pv-change.positive { color: #10b981; }
+.t-pv-change.negative { color: #ef4444; }
 
 .t-indices-scroll {
   flex: 1;
@@ -150,10 +157,13 @@
 }
 
 .t-index-val {
-  color: var(--foreground, #ffffff);
-  font-weight: 600;
-  font-size: var(--font-xs, 0.75rem);
+  /* Match .db-watchlist-price */
+  color: #e2e8f0;
+  font-weight: 700;
+  font-size: 0.8125rem;
   font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .t-market-status {
@@ -744,6 +754,14 @@
 }
 
 /* ── LIGHT MODE ── */
+body.light-mode .t-index-val {
+  color: #111827;
+}
+
+body.light-mode .t-pv-amount {
+  color: #111827;
+}
+
 body.light-mode .t-holdings-table th {
   background: var(--card, #ffffff);
 }

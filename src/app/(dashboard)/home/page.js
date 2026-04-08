@@ -9,6 +9,7 @@ import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
+import '../home-dashboard/home-dashboard.css';
 import './terminal.css';
 
 const INDEX_SYMBOLS = [
@@ -248,14 +249,17 @@ export default function HomeTerminalPage() {
           <span className="t-dim">—</span>
         ) : (
           <>
-            <strong>
+            <span className="db-watchlist-price">
               $
               {marqueePortfolioValue.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
-            </strong>{' '}
-            <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
+            </span>{' '}
+            <span
+              className={`db-hero-change ${portfolioChange >= 0 ? 'positive' : 'negative'}`}
+              style={{ marginTop: 0 }}
+            >
               {portfolioChange >= 0 ? '+' : ''}
               {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
               today
@@ -271,8 +275,12 @@ export default function HomeTerminalPage() {
           <strong>{idx.name}</strong>{' '}
           {q ? (
             <>
-              {q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-              <span className={q.changePercent >= 0 ? 't-green' : 't-red'}>
+              <span className="db-watchlist-price">
+                {q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>{' '}
+              <span
+                className={`db-watchlist-change ${q.changePercent >= 0 ? 'positive' : 'negative'}`}
+              >
                 ({q.changePercent >= 0 ? '+' : ''}
                 {q.changePercent.toFixed(2)}%)
               </span>
@@ -345,9 +353,16 @@ export default function HomeTerminalPage() {
       enrichedHoldings.slice(0, 10).forEach((h, i) => {
         blocks.push(
           <span key={`h-${i}`} className="t-news-item">
-            <strong>{h.ticker}</strong> ${h.price.toFixed(2)} ({h.pctChange >= 0 ? '+' : ''}
-            {h.pctChange.toFixed(2)}%) — {h.shares} sh · $
-            {h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            <strong className="db-watchlist-ticker">{h.ticker}</strong>{' '}
+            <span className="db-watchlist-price">${h.price.toFixed(2)}</span> (
+            <span className={`db-watchlist-change ${h.pctChange >= 0 ? 'positive' : 'negative'}`}>
+              {h.pctChange >= 0 ? '+' : ''}
+              {h.pctChange.toFixed(2)}%
+            </span>
+            ) — {h.shares} sh ·{' '}
+            <span className="db-watchlist-price">
+              ${h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            </span>
           </span>,
         );
       });
