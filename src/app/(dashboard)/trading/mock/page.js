@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import StockPriceChart from '@/components/research/StockPriceChart';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
+import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 
@@ -52,21 +53,21 @@ function fmtChange(n) {
 ────────────────────────────────────────── */
 export default function MockTradingPage() {
   /* Portfolio state — backed by Supabase via useMockPortfolio */
-  const {
-    portfolio: portfolioFromHook,
-    setPortfolio,
-    syncing,
-    liveQuotes: hookQuotes,
-  } = useMockPortfolio();
+  const { portfolio: portfolioFromHook, setPortfolio, syncing } = useMockPortfolio();
 
   // Use hook portfolio; fall back to fresh if not loaded yet
   const portfolio = portfolioFromHook ?? freshPortfolio();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  /* Same symbol search as Company Research page (Finnhub via /api/finnhub/search) */
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    suggestions: searchResults,
+    loading: searchLoading,
+    clearSuggestions,
+  } = useCompanySearchFinnhub();
+
   const searchRef = useRef(null);
-  const debounceRef = useRef(null);
 
   const [selectedSymbol, setSelectedSymbol] = useState('AAPL');
   const [selectedName, setSelectedName] = useState('Apple Inc');
@@ -118,60 +119,43 @@ export default function MockTradingPage() {
     );
   }, [quoteData, selectedSymbol, setPortfolio]);
 
-  const doSearch = useCallback(async (q) => {
-    if (!q || q.trim().length < 1) {
-      setSearchResults([]);
-      return;
-    }
-    setSearchLoading(true);
-    try {
-      const r = await fetch(`/api/fmp/search?q=${encodeURIComponent(q.trim())}`);
-      if (r.ok) {
-        const d = await r.json();
-        setSearchResults(Array.isArray(d) ? d.slice(0, 10) : []);
-      } else {
-        const q2 = q.toLowerCase();
-        setSearchResults(
-          POPULAR_ASSETS.filter(
-            (a) => a.symbol.toLowerCase().includes(q2) || a.name.toLowerCase().includes(q2)
-          ).slice(0, 8)
-        );
-      }
-    } catch {
-      const q2 = q.toLowerCase();
-      setSearchResults(
-        POPULAR_ASSETS.filter(
-          (a) => a.symbol.toLowerCase().includes(q2) || a.name.toLowerCase().includes(q2)
-        ).slice(0, 8)
-      );
-    }
-    setSearchLoading(false);
-  }, []);
-
-  useEffect(() => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doSearch(searchQuery), 280);
-    return () => clearTimeout(debounceRef.current);
-  }, [searchQuery, doSearch]);
-
-  const selectAsset = (symbol, name, type) => {
-    setSelectedSymbol(symbol.toUpperCase());
-    setSelectedName(name);
-    setSelectedType(type ?? 'Stock');
-    setSearchQuery('');
-    setSearchResults([]);
-    setAmount('');
+  const normalizeAssetType = (t) => {
+    if (!t || typeof t !== 'string') return 'Stock';
+    if (t.includes('ETF')) return 'ETF';
+    if (t.includes('Crypto')) return 'Crypto';
+    if (t.includes('Commodity')) return 'Commodity';
+    return 'Stock';
   };
+
+  const selectAsset = useCallback(
+    (symbol, name, type) => {
+      setSelectedSymbol(String(symbol).toUpperCase());
+      setSelectedName(name || symbol);
+      setSelectedType(normalizeAssetType(type));
+      setSearchQuery('');
+      clearSuggestions();
+      setAmount('');
+    },
+    [clearSuggestions, setSearchQuery]
+  );
+
+  /** Enter a ticker directly (same behavior as Company Research search bar) */
+  const submitSearchAsTicker = useCallback(() => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    const sym = q.toUpperCase();
+    selectAsset(sym, sym, 'Stock');
+  }, [searchQuery, selectAsset]);
 
   useEffect(() => {
     const handler = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setSearchResults([]);
+        clearSuggestions();
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [clearSuggestions]);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -615,12 +599,20 @@ export default function MockTradingPage() {
                 <input
                   type="text"
                   className="mock-search-input"
-                  placeholder="AAPL, Bitcoin, Gold..."
+                  placeholder="Ticker or company (e.g. OXY, Apple) — Enter to go"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      e.preventDefault();
+                      submitSearchAsTicker();
+                    }
+                  }}
+                  autoComplete="off"
                   style={{ fontSize: '16px' }}
                 />
-                {(searchResults.length > 0 || (searchQuery.length >= 1 && searchLoading)) && (
+                {(searchResults.length > 0 ||
+                  (searchQuery.trim().length >= 2 && searchLoading)) && (
                   <div className="mock-search-results">
                     {searchLoading && (
                       <div
@@ -631,22 +623,18 @@ export default function MockTradingPage() {
                     )}
                     {searchResults.map((r) => (
                       <div
-                        key={r.symbol ?? r.ticker}
+                        key={r.symbol}
                         className="mock-search-result-item"
                         onMouseDown={() =>
-                          selectAsset(
-                            r.symbol ?? r.ticker,
-                            r.name ?? r.description ?? r.symbol,
-                            r.type ?? r.assetType ?? 'Stock'
-                          )
+                          selectAsset(r.symbol, r.name, r.type)
                         }
                         role="presentation"
                       >
                         <div>
-                          <div className="mock-result-symbol">{r.symbol ?? r.ticker}</div>
-                          <div className="mock-result-name">{r.name ?? r.description}</div>
+                          <div className="mock-result-symbol">{r.symbol}</div>
+                          <div className="mock-result-name">{r.name}</div>
                         </div>
-                        <span className="mock-result-type">{r.type ?? r.assetType ?? 'Stock'}</span>
+                        <span className="mock-result-type">{normalizeAssetType(r.type)}</span>
                       </div>
                     ))}
                   </div>
