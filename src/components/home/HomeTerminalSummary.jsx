@@ -401,27 +401,10 @@ export function HomeTerminalSummary({
                     </button>
                   </div>
                 </div>
-                <p
-                  style={{
-                    fontSize: '2.25rem',
-                    fontWeight: 800,
-                    color: 'var(--home-heading)',
-                    margin: '0 0 0.25rem',
-                    letterSpacing: '-0.02em',
-                  }}
-                >
-                  {displayValue}
-                </p>
-                <p
-                  style={{
-                    fontSize: '0.8125rem',
-                    color: displayChangeDollar >= 0 ? '#10b981' : '#ef4444',
-                    fontWeight: 600,
-                    margin: '0 0 1rem',
-                  }}
-                >
+                <p className="home-num-hero">{displayValue}</p>
+                <p className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}>
                   {changePctStr} ({changeDollarStr}){' '}
-                  <span style={{ color: 'var(--home-muted)', fontWeight: 400 }}>Committed Frees</span>
+                  <span className="home-num-change-muted">Committed Frees</span>
                 </p>
                 <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: 0 }}>
                   <HeroSparkline

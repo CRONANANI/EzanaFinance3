@@ -912,6 +912,10 @@ body.light-mode .home-terminal-body {
   .hts-row-4 {
     grid-template-columns: 1fr;
   }
+
+  .home-terminal-body .home-num-hero {
+    font-size: 2rem;
+  }
 }
 
 /* —— Light mode (match body.light-mode .db-card in home-dashboard.css) —— */
@@ -1272,21 +1276,59 @@ body.light-mode .hts-week-standing-row {
   justify-content: space-between;
   margin-top: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+/* Portfolio snapshot numerics — mirror /home-dashboard hero specs; scoped to home terminal only */
+.home-terminal-body .home-num-hero {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--home-heading);
+  margin: 0 0 0.25rem;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.home-terminal-body .home-num-change {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.home-terminal-body .home-num-change.positive {
+  color: #10b981;
+}
+
+.home-terminal-body .home-num-change.negative {
+  color: #ef4444;
+}
+
+.home-terminal-body .home-num-change-muted {
+  font-weight: 500;
+  opacity: 0.85;
+  color: var(--home-muted);
 }
 
 .home-portfolio-gain-label {
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: 0.5625rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--home-muted);
 }
 
 .home-portfolio-gain-value {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   color: var(--home-heading);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 /* Upcoming events: 3×4 grid + calendar */
