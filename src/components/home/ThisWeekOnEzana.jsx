@@ -46,306 +46,247 @@ function weekRangeLabel() {
   return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
 }
 
-const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix'];
+const INDEX_KEYS = ['spx', 'rut', 'dji', 'ixic', 'nya'];
 
-const SERIES_COLORS = {
-  spx: '#ef4444',
-  ixic: '#10b981',
-  rut: '#8b5cf6',
-  dji: '#f59e0b',
-  vix: '#ec4899',
-};
-
-const SERIES_NAMES = {
-  spx: 'S&P 500 (SPX)',
-  ixic: 'NASDAQ (IXIC)',
-  rut: 'Russell 2000 (RUT)',
-  dji: 'Dow (DJIA)',
-  vix: 'VIX',
+const INDEX_META = {
+  spx:  { label: 'S&P 500',   color: '#ef4444', short: 'SPX'  },
+  rut:  { label: 'Russell 2K', color: '#8b5cf6', short: 'RUT'  },
+  dji:  { label: 'Dow Jones',  color: '#f59e0b', short: 'DJIA' },
+  ixic: { label: 'NASDAQ',     color: '#10b981', short: 'IXIC' },
+  nya:  { label: 'NYSE Comp',  color: '#3b82f6', short: 'NYA'  },
 };
 
 /**
- * Convert raw close prices to % change from Monday's close.
- * When data is flat (all identical), spread lines across a small visual band
- * so all 5 indices are visible rather than stacking on top of each other at 0.
- * @returns {{ data: Array, sourceWasFlat: boolean }}
+ * Custom dot that renders the % change label above the dot.
+ * Only renders on data points where pct != null.
  */
-function normalizeToPercentChange(series) {
-  if (!Array.isArray(series) || series.length === 0) {
-    return { data: [], sourceWasFlat: false };
-  }
-
-  const num = (v) =>
-    typeof v === 'number' && Number.isFinite(v)
-      ? v
-      : typeof v === 'string'
-        ? parseFloat(v)
-        : NaN;
-
-  // Find the first valid value for each key (Monday's close = baseline)
-  const bases = {};
-  for (const k of CHART_KEYS) {
-    bases[k] = null;
-    for (const row of series) {
-      const parsed = num(row[k]);
-      if (!Number.isNaN(parsed) && parsed !== 0) {
-        bases[k] = parsed;
-        break;
-      }
-    }
-  }
-
-  const normalized = series.map((r) => {
-    const out = { day: r.day };
-    for (const k of CHART_KEYS) {
-      const b = bases[k];
-      const parsed = num(r[k]);
-      if (!Number.isNaN(parsed) && b != null && b !== 0) {
-        out[k] = ((parsed - b) / b) * 100;
-      } else {
-        out[k] = null;
-      }
-    }
-    return out;
-  });
-
-  // Check if all values are flat (same across all days for every series)
-  let isFlat = true;
-  for (const k of CHART_KEYS) {
-    const vals = normalized.map((r) => r[k]).filter((v) => v != null);
-    if (vals.length >= 2) {
-      const first = vals[0];
-      if (vals.some((v) => Math.abs(v - first) > 0.001)) {
-        isFlat = false;
-        break;
-      }
-    }
-  }
-
-  // If flat, offset each series by a small visual amount (±0.2%) so lines are distinct
-  if (isFlat && normalized.length > 0) {
-    const offsets = { spx: 0.4, ixic: 0.2, rut: 0, dji: -0.2, vix: -0.4 };
-    const data = normalized.map((r) => {
-      const out = { day: r.day };
-      for (const k of CHART_KEYS) {
-        out[k] = r[k] != null ? r[k] + offsets[k] : null;
-      }
-      return out;
-    });
-    return { data, sourceWasFlat: true };
-  }
-
-  return { data: normalized, sourceWasFlat: false };
+function PctLabelDot(props) {
+  const { cx, cy, payload, color } = props;
+  if (cx == null || cy == null || payload?.pct == null) return null;
+  const sign   = payload.pct >= 0 ? '+' : '';
+  const label  = `${sign}${payload.pct.toFixed(2)}%`;
+  const isPos  = payload.pct >= 0;
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={4} fill={color} stroke="#161b22" strokeWidth={1.5} />
+      <text
+        x={cx}
+        y={cy - 10}
+        textAnchor="middle"
+        fontSize={9}
+        fontWeight={600}
+        fill={isPos ? '#10b981' : '#ef4444'}
+      >
+        {label}
+      </text>
+    </g>
+  );
 }
 
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
-  const [selectedIndexKey, setSelectedIndexKey] = useState('spx');
-  const chartH = chartOnly ? (compact ? 268 : 300) : compact ? 168 : 220;
-  const { data: chartData, sourceWasFlat } = useMemo(
-    () => normalizeToPercentChange(indexPayload?.series || []),
-    [indexPayload],
-  );
-  const loading = indexPayload === null;
-  const cards = indexPayload?.cards;
+  const [activeKey, setActiveKey] = useState('spx');
 
-  const noData =
-    !loading &&
-    indexPayload &&
-    (!chartData.length ||
-      chartData.every((r) => CHART_KEYS.every((k) => r[k] == null)));
+  const loading  = indexPayload === null;
+  const failed   = !loading && (!indexPayload?.ok || !indexPayload?.indices);
+  const indexData = indexPayload?.indices?.[activeKey] ?? null;
 
-  // Same quote gap-filled → flat before offsets; sourceWasFlat preserves the warning after visual offsets
-  const dataIsFlat = !noData && chartData.length > 0 && sourceWasFlat;
+  const chartData = useMemo(() => {
+    if (!indexData?.series) return [];
+    return indexData.series.map((s) => ({
+      day:   s.day,
+      pct:   s.pct,
+      close: s.close,
+    }));
+  }, [indexData]);
 
   const yDomain = useMemo(() => {
-    if (!chartData.length) return [-2, 2];
-    let min = 0;
-    let max = 0;
-    const k = selectedIndexKey;
-    for (const row of chartData) {
-      const v = row[k];
-      if (v != null) {
-        if (v < min) min = v;
-        if (v > max) max = v;
-      }
-    }
-    if (min === 0 && max === 0) return [-2, 2];
-    const pad = Math.max(Math.abs(max - min) * 0.2, 0.5);
-    return [Math.floor((min - pad) * 10) / 10, Math.ceil((max + pad) * 10) / 10];
-  }, [chartData, selectedIndexKey]);
+    const vals = chartData.map((r) => r.pct).filter((v) => v != null);
+    if (!vals.length) return [-1, 1];
+    const mn  = Math.min(...vals);
+    const mx  = Math.max(...vals);
+    const pad = Math.max(Math.abs(mx - mn) * 0.35, 0.3);
+    return [
+      Math.floor((mn - pad) * 10) / 10,
+      Math.ceil((mx + pad) * 10) / 10,
+    ];
+  }, [chartData]);
+
+  const chartH = chartOnly ? (compact ? 240 : 260) : compact ? 180 : 220;
+
+  const meta     = INDEX_META[activeKey];
+  const color    = meta?.color ?? '#10b981';
+  const yearHigh = indexData?.yearHigh;
+  const yearLow  = indexData?.yearLow;
+  const fmtNum   = (n) =>
+    n != null && Number.isFinite(n)
+      ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : '—';
 
   return (
-    <div
-      className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}
-    >
+    <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
+
       {loading && (
-        <p
-          className="hts-week-loading"
-          style={{ margin: '0 0 0.35rem', textAlign: 'center' }}
-        >
+        <p className="hts-week-loading" style={{ textAlign: 'center', margin: '0.5rem 0' }}>
           Loading market data…
         </p>
       )}
-      {cards && !loading && (
+      {failed && !loading && (
+        <p className="hts-week-loading" style={{ textAlign: 'center', margin: '0.5rem 0', color: '#ef4444' }}>
+          {indexPayload?.error === 'no_key'
+            ? 'Could not load index data. Add FMP_API_KEY (or NEXT_PUBLIC_FMP_API_KEY) in environment.'
+            : 'Could not load index data. Check FMP_API_KEY and server logs.'}
+        </p>
+      )}
+
+      {!loading && !failed && (
         <div
-          className="hts-week-index-strip"
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-            gap: compact ? '2px 4px' : '4px 6px',
-            marginBottom: '0.35rem',
-            fontSize: compact ? '0.5625rem' : '0.625rem',
+            height:    chartH,
+            minHeight: chartH,
+            width:     '100%',
+            position:  'relative',
           }}
         >
-          {[
-            { label: 'SPX', val: cards.spx },
-            { label: 'IXIC', val: cards.ixic },
-            { label: 'RUT', val: cards.rut },
-            { label: 'DJIA', val: cards.dji },
-            { label: 'VIX', val: cards.vix },
-          ].map(({ label, val }) => (
-            <div key={label} style={{ minWidth: 0, textAlign: 'center' }}>
-              <div className="hts-week-metric-label" style={{ marginBottom: 2 }}>
-                {label}
-              </div>
-              <div
-                className="hts-week-metric-val"
-                style={{
-                  fontSize: compact ? '0.65rem' : '0.75rem',
-                  lineHeight: 1.2,
+          <ResponsiveContainer width="100%" height={chartH}>
+            <LineChart
+              data={
+                chartData.length
+                  ? chartData
+                  : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]
+              }
+              margin={{ top: 24, right: 16, left: compact ? -6 : 2, bottom: 4 }}
+            >
+              <XAxis
+                dataKey="day"
+                interval={0}
+                tick={{ fill: 'var(--home-muted)', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                padding={{ left: 20, right: 20 }}
+              />
+              <YAxis
+                domain={yDomain}
+                tickFormatter={(v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`}
+                tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
+                axisLine={false}
+                tickLine={false}
+                width={compact ? 40 : 46}
+                tickCount={5}
+              />
+              <ReferenceLine y={0} stroke="rgba(107,114,128,0.25)" strokeDasharray="3 3" />
+              <Tooltip
+                formatter={(value) => {
+                  if (typeof value !== 'number') return ['—'];
+                  const sign = value >= 0 ? '+' : '';
+                  return [`${sign}${value.toFixed(3)}%`];
                 }}
-              >
-                {val}
-              </div>
-            </div>
-          ))}
+                labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600 }}
+                contentStyle={{
+                  background:   '#161b22',
+                  border:       `1px solid ${color}30`,
+                  borderRadius: '8px',
+                  fontSize:     '0.7rem',
+                  color:        '#e2e8f0',
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="pct"
+                stroke={color}
+                strokeWidth={2}
+                dot={(dotProps) => <PctLabelDot {...dotProps} color={color} />}
+                activeDot={{ r: 5, strokeWidth: 1.5, stroke: '#161b22' }}
+                connectNulls
+                isAnimationActive={false}
+                name={meta?.label}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       )}
+
       <div
-        className="hts-week-chart-wrap hts-week-chart-wrap--full"
         style={{
-          height: chartH,
-          minHeight: chartH,
-          flex: chartOnly ? '1 1 auto' : undefined,
-          minWidth: 0,
-          width: '100%',
-          position: 'relative',
+          display:        'flex',
+          gap:            '6px',
+          flexWrap:       'wrap',
+          justifyContent: 'center',
+          marginTop:      '8px',
+          padding:        '0 4px',
         }}
       >
-        {noData && (
-          <p
-            className="hts-week-loading"
-            style={{ margin: '0.5rem 0', textAlign: 'center' }}
-          >
-            {indexPayload?.error === 'no_key'
-              ? 'Add FINNHUB_API_KEY for live index data.'
-              : indexPayload?.ok === false || indexPayload?.error === 'fetch_failed'
-                ? 'Could not load market data — check Vercel logs and FINNHUB_API_KEY.'
-                : indexPayload?._debug?.hasAnyData === false
-                  ? 'Finnhub returned empty data — this may be a rate limit issue or the market is closed. Check Vercel function logs.'
-                  : 'No OHLC data for this week yet.'}
-          </p>
-        )}
-        {dataIsFlat && !noData && (
-          <p
-            className="hts-week-loading"
-            style={{
-              margin: '0',
-              textAlign: 'center',
-              fontSize: '0.625rem',
-              color: 'var(--home-muted)',
-              position: 'absolute',
-              top: 4,
-              left: 0,
-              right: 0,
-              zIndex: 2,
-            }}
-          >
-            Showing latest available prices — intraweek candle data may be delayed.
-          </p>
-        )}
-        <ResponsiveContainer width="100%" height={chartH}>
-          <LineChart
-            data={
-              chartData.length
-                ? chartData
-                : [
-                    { day: 'Mon' },
-                    { day: 'Tue' },
-                    { day: 'Wed' },
-                    { day: 'Thu' },
-                    { day: 'Fri' },
-                  ]
-            }
-            margin={{
-              top: 8,
-              right: 12,
-              left: compact ? -4 : 4,
-              bottom: chartOnly ? 52 : 40,
-            }}
-          >
-            <XAxis
-              dataKey="day"
-              interval={0}
-              padding={{ left: 12, right: 8 }}
-              tick={{ fill: 'var(--home-muted)', fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              domain={yDomain}
-              tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`}
-              tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
-              axisLine={false}
-              tickLine={false}
-              width={compact ? 38 : 44}
-              tickCount={5}
-            />
-            <ReferenceLine y={0} stroke="rgba(107, 114, 128, 0.3)" strokeDasharray="3 3" />
-            <Tooltip
-              formatter={(value, name) => {
-                if (typeof value !== 'number') return ['—', name];
-                const sign = value >= 0 ? '+' : '';
-                return [`${sign}${value.toFixed(2)}%`, name];
-              }}
-              contentStyle={{
-                background: '#161b22',
-                border: '1px solid rgba(16, 185, 129, 0.15)',
-                borderRadius: '8px',
-                fontSize: '0.7rem',
-                color: '#e2e8f0',
-              }}
-              labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
-            />
-            <Line
-              type="monotone"
-              dataKey={selectedIndexKey}
-              stroke={SERIES_COLORS[selectedIndexKey]}
-              strokeWidth={2.2}
-              dot={{ r: 3, fill: SERIES_COLORS[selectedIndexKey], strokeWidth: 0 }}
-              activeDot={{ r: 5, strokeWidth: 1.5, stroke: '#161b22' }}
-              connectNulls
-              name={SERIES_NAMES[selectedIndexKey]}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className="hts-week-index-legend" role="tablist" aria-label="Select index">
-          {CHART_KEYS.map((k) => (
+        {INDEX_KEYS.map((k) => {
+          const m      = INDEX_META[k];
+          const isActive = k === activeKey;
+          return (
             <button
               key={k}
               type="button"
-              role="tab"
-              aria-selected={selectedIndexKey === k}
-              className={`hts-week-index-legend-btn ${selectedIndexKey === k ? 'is-active' : ''}`}
-              onClick={() => setSelectedIndexKey(k)}
+              onClick={() => setActiveKey(k)}
+              style={{
+                display:    'flex',
+                alignItems: 'center',
+                gap:        '5px',
+                background: isActive ? `${m.color}18` : 'transparent',
+                border:     `1px solid ${isActive ? m.color : 'transparent'}`,
+                borderRadius: '999px',
+                padding:    '3px 10px',
+                cursor:     'pointer',
+                fontSize:   compact ? '0.5rem' : '0.5625rem',
+                fontWeight: isActive ? 700 : 400,
+                color:      isActive ? m.color : 'var(--home-muted-soft)',
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap',
+              }}
             >
-              <span className="hts-week-index-legend-dot" style={{ background: SERIES_COLORS[k] }} />
-              <span className="hts-week-index-legend-label">{SERIES_NAMES[k]}</span>
+              <span
+                style={{
+                  width:        8,
+                  height:       8,
+                  borderRadius: '50%',
+                  background:   m.color,
+                  opacity:      isActive ? 1 : 0.45,
+                  flexShrink:   0,
+                  display:      'inline-block',
+                }}
+              />
+              {m.label}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
+
+      {!loading && !failed && (yearHigh != null || yearLow != null) && (
+        <div
+          style={{
+            display:       'flex',
+            justifyContent: 'center',
+            gap:           '24px',
+            marginTop:     '8px',
+            paddingTop:    '8px',
+            borderTop:     '1px solid rgba(255,255,255,0.05)',
+            fontSize:      compact ? '0.5625rem' : '0.625rem',
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: 'var(--home-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.5rem' }}>
+              52-Wk High
+            </div>
+            <div style={{ color: '#10b981', fontWeight: 700, fontSize: compact ? '0.625rem' : '0.6875rem' }}>
+              {fmtNum(yearHigh)}
+            </div>
+          </div>
+          <div style={{ width: 1, background: 'rgba(255,255,255,0.07)' }} />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: 'var(--home-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.5rem' }}>
+              52-Wk Low
+            </div>
+            <div style={{ color: '#ef4444', fontWeight: 700, fontSize: compact ? '0.625rem' : '0.6875rem' }}>
+              {fmtNum(yearLow)}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -548,7 +489,7 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
           return {
             ok: false,
             error: 'fetch_failed',
-            series: Array.isArray(data.series) ? data.series : [],
+            indices: {},
           };
         }
         return data;
@@ -558,7 +499,7 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
       })
       .catch(() => {
         if (!cancelled)
-          setIndexPayload({ ok: false, error: 'fetch_failed', series: [] });
+          setIndexPayload({ ok: false, error: 'fetch_failed', indices: {} });
       });
     return () => {
       cancelled = true;
