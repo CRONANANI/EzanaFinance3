@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   getAllArticles,
-  getArticleListForSection,
   getFeaturedArticle,
   ECHO_TRENDING,
   formatPublishedShort,
@@ -25,185 +24,212 @@ const FEED_TABS = [
   { id: 'crypto', label: 'Crypto' },
 ];
 
+const SORT_OPTIONS = ['Newest', 'Most Read', 'Most Discussed'];
+
+// Category badge colours matching the app's accent palette
+const CATEGORY_COLOURS = {
+  policy: { bg: 'rgba(99,102,241,0.12)', text: '#6366f1', border: 'rgba(99,102,241,0.25)' },
+  markets: { bg: 'rgba(16,185,129,0.12)', text: '#10b981', border: 'rgba(16,185,129,0.25)' },
+  companies: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
+  crypto: { bg: 'rgba(59,130,246,0.12)', text: '#3b82f6', border: 'rgba(59,130,246,0.25)' },
+};
+
+function CategoryBadge({ category }) {
+  const c = CATEGORY_COLOURS[category] ?? CATEGORY_COLOURS.markets;
+  const label = category.charAt(0).toUpperCase() + category.slice(1);
+  return (
+    <span
+      className="echo-category-badge"
+      style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}` }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function AuthorAvatar({ name }) {
+  const initials = name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <div className="echo-author-avatar" aria-hidden>
+      {initials}
+    </div>
+  );
+}
+
 export default function EzanaEchoPage() {
   const featured = useMemo(() => getFeaturedArticle(), []);
-  const marketSection = useMemo(() => getArticleListForSection('marketAnalysis'), []);
-  const companySection = useMemo(() => getArticleListForSection('companySpotlights'), []);
-  const policySection = useMemo(() => getArticleListForSection('politicalPolicy'), []);
   const allArticles = useMemo(() => getAllArticles(), []);
 
   const [tab, setTab] = useState('all');
+  const [sort, setSort] = useState('Newest');
 
-  const sortedLatest = useMemo(() => {
-    return [...allArticles].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
-  }, [allArticles]);
+  const sortedFiltered = useMemo(() => {
+    let list = tab === 'all' ? allArticles : allArticles.filter((a) => a.category === tab);
+    if (sort === 'Most Read') {
+      list = [...list].sort((a, b) => (b.reads ?? 0) - (a.reads ?? 0));
+    } else if (sort === 'Most Discussed') {
+      list = [...list].sort((a, b) => (b.comments ?? 0) - (a.comments ?? 0));
+    } else {
+      list = [...list].sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+    }
+    return list;
+  }, [allArticles, tab, sort]);
 
-  const filteredLatest = useMemo(() => {
-    if (tab === 'all') return sortedLatest;
-    return sortedLatest.filter((a) => a.category === tab);
-  }, [sortedLatest, tab]);
+  const gridArticles = useMemo(
+    () => allArticles.filter((a) => a.id !== featured.id),
+    [allArticles, featured],
+  );
 
   return (
-    <div className="dashboard-page-inset echo-page db-page">
-      <header style={{ marginBottom: '1.5rem' }}>
-        <h1 className="echo-header-title">Ezana Echo</h1>
-        <p className="echo-header-desc">Financial news, analysis, and insights curated for Ezana investors</p>
-      </header>
-
-      <Link href={`/ezana-echo/${featured.id}`} className="echo-hero db-card">
-        <div className="echo-hero-kicker">
-          <span>Featured</span>
-          <span className="echo-hero-date">{formatPublishedShort(featured.publishedAt)}</span>
+    <div className="echo-page-v2 dashboard-page-inset">
+      <Link href={`/ezana-echo/${featured.id}`} className="echo-hero-banner" aria-label={featured.title}>
+        <div className="echo-hero-banner-img-wrap">
+          <img
+            src="/congress-chamber.jpg"
+            alt="U.S. Congress chamber"
+            className="echo-hero-banner-img"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <div className="echo-hero-banner-overlay" />
         </div>
-        <h2 className="echo-hero-title">{featured.title}</h2>
-        <p className="echo-hero-excerpt">{featured.excerpt}</p>
-        <p className="echo-hero-meta">
-          By {featured.author} · {featured.readTime} min read
-        </p>
-        <div className="echo-ticker-row">
-          {featured.tickers.map((t) => (
-            <span key={t} className="echo-ticker">
-              📈 {t}
-            </span>
-          ))}
+        <div className="echo-hero-banner-content">
+          <CategoryBadge category={featured.category} />
+          <h1 className="echo-hero-banner-title">{featured.title}</h1>
+          <p className="echo-hero-banner-excerpt">{featured.excerpt}</p>
+          <div className="echo-hero-banner-meta">
+            <AuthorAvatar name={featured.author} />
+            <span>{featured.author}</span>
+            <span className="echo-hero-banner-sep">·</span>
+            <span>{formatPublishedShort(featured.publishedAt)}</span>
+            <span className="echo-hero-banner-sep">·</span>
+            <span>{featured.readTime} min read</span>
+          </div>
         </div>
-        <span className="echo-hero-cta">
-          Read Article <i className="bi bi-arrow-right" aria-hidden />
-        </span>
       </Link>
 
-      <div className="echo-row-3">
-        <div className="db-card echo-section-card">
-          <div className="db-card-header">
-            <h3 className="echo-section-title">📊 Market Analysis</h3>
-          </div>
-          <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            {marketSection.map((a) => (
-              <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-mini-article">
-                <div className="echo-mini-title">{a.title}</div>
-                <div className="echo-mini-meta">
-                  {a.readTime} min · {a.listMeta}
-                </div>
-              </Link>
-            ))}
-            <Link href="/ezana-echo#latest" className="echo-section-link" onClick={() => setTab('markets')}>
-              View All Market Analysis <i className="bi bi-arrow-right" aria-hidden />
-            </Link>
-          </div>
+      <div className="echo-blog-header">
+        <div>
+          <h2 className="echo-blog-title">Blog</h2>
+          <p className="echo-blog-desc">Financial news, analysis, and insights curated for Ezana investors.</p>
         </div>
-
-        <div className="db-card echo-section-card">
-          <div className="db-card-header">
-            <h3 className="echo-section-title">🏢 Company Spotlights</h3>
-          </div>
-          <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            {companySection.map((a) => (
-              <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-mini-article">
-                <div className="echo-mini-title">{a.title}</div>
-                <div className="echo-mini-meta">
-                  {a.readTime} min · {a.listMeta}
-                </div>
-              </Link>
+        <div className="echo-blog-header-right">
+          <div className="echo-filter-tabs">
+            {FEED_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`echo-filter-tab ${tab === t.id ? 'active' : ''}`}
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+              </button>
             ))}
-            <Link href="/ezana-echo#latest" className="echo-section-link" onClick={() => setTab('companies')}>
-              View All Spotlights <i className="bi bi-arrow-right" aria-hidden />
-            </Link>
           </div>
-        </div>
-
-        <div className="db-card echo-section-card">
-          <div className="db-card-header">
-            <h3 className="echo-section-title">🏛️ Political &amp; Policy</h3>
-          </div>
-          <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            {policySection.map((a) => (
-              <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-mini-article">
-                <div className="echo-mini-title">{a.title}</div>
-                <div className="echo-mini-meta">
-                  {a.readTime} min · {a.listMeta}
-                </div>
-              </Link>
-            ))}
-            <Link href="/ezana-echo#latest" className="echo-section-link" onClick={() => setTab('policy')}>
-              View All Policy News <i className="bi bi-arrow-right" aria-hidden />
-            </Link>
+          <div className="echo-sort-wrap">
+            <span className="echo-sort-label">Sort by:</span>
+            <select className="echo-sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+              {SORT_OPTIONS.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      <div className="echo-row-60-40" id="latest">
-        <div className="db-card">
-          <div className="db-card-header">
-            <h3 className="echo-section-title">📰 Latest</h3>
+      <div className="echo-article-grid">
+        {(tab === 'all' ? gridArticles : sortedFiltered)
+          .slice(0, 9)
+          .map((article) => (
+            <Link key={article.id} href={`/ezana-echo/${article.id}`} className="echo-article-card">
+              <div className="echo-article-card-img-wrap">
+                <div className="echo-article-card-img-placeholder">
+                  <CategoryBadge category={article.category} />
+                </div>
+              </div>
+              <div className="echo-article-card-body">
+                <p className="echo-article-card-date">
+                  {formatPublishedShort(article.publishedAt)} &nbsp;·&nbsp; {article.readTime} mins read
+                </p>
+                <h3 className="echo-article-card-title">{article.title}</h3>
+                <p className="echo-article-card-excerpt">{article.excerpt}</p>
+                <div className="echo-article-card-author">
+                  <AuthorAvatar name={article.author} />
+                  <span className="echo-article-card-author-name">{article.author}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+      </div>
+
+      <div className="echo-bottom-row" id="latest">
+        <div className="echo-latest-col">
+          <div className="echo-section-head">
+            <h3 className="echo-section-heading">📰 Latest</h3>
           </div>
-          <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            <div className="echo-tabs">
-              {FEED_TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`echo-tab ${tab === t.id ? 'active' : ''}`}
-                  onClick={() => setTab(t.id)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-            <div className="echo-feed-scroll">
-              {filteredLatest.map((a) => (
-                <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-feed-item">
-                  <div className="echo-feed-title">{a.title}</div>
-                  <div className="echo-feed-line">
-                    {a.tickers.slice(0, 4).map((t) => (
-                      <span key={t} style={{ marginRight: '0.35rem' }}>
-                        📈 {t}
-                      </span>
-                    ))}
-                    · {a.readTime} min · {a.listMeta}
-                  </div>
-                  <div className="echo-feed-engage">
+          <div className="echo-feed-list">
+            {sortedFiltered.map((a) => (
+              <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-feed-row">
+                <div className="echo-feed-row-body">
+                  <CategoryBadge category={a.category} />
+                  <p className="echo-feed-row-title">{a.title}</p>
+                  <p className="echo-feed-row-meta">
+                    {a.author} · {formatPublishedShort(a.publishedAt)} · {a.readTime} min
+                  </p>
+                  <p className="echo-feed-row-engage">
                     ❤️ {a.likes} &nbsp; 💬 {a.comments}
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
 
-        <div className="db-card">
-          <div className="db-card-header">
-            <h3 className="echo-section-title">🔥 Trending on Echo</h3>
+        <div className="echo-trending-col">
+          <div className="echo-section-head">
+            <h3 className="echo-section-heading">🔥 Trending</h3>
           </div>
-          <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            <div className="echo-trend-block">
-              <div className="echo-trend-label">Most Read This Week</div>
-              {ECHO_TRENDING.mostRead.map((row, i) => (
-                <div key={row.id} className="echo-trend-line">
-                  {i + 1}.{' '}
-                  <Link href={`/ezana-echo/${row.id}`}>&quot;{row.title}&quot;</Link> — {row.reads.toLocaleString()} reads
+          <div className="echo-trend-group">
+            <p className="echo-trend-group-label">Most Read This Week</p>
+            {ECHO_TRENDING.mostRead.map((row, i) => (
+              <Link key={row.id} href={`/ezana-echo/${row.id}`} className="echo-trend-row">
+                <span className="echo-trend-num">{i + 1}</span>
+                <div>
+                  <p className="echo-trend-row-title">{row.title}</p>
+                  <p className="echo-trend-row-meta">{row.reads.toLocaleString()} reads</p>
                 </div>
-              ))}
-            </div>
-            <div className="echo-trend-block">
-              <div className="echo-trend-label">Most Discussed</div>
-              {ECHO_TRENDING.mostDiscussed.map((row, i) => (
-                <div key={row.id} className="echo-trend-line">
-                  {i + 1}.{' '}
-                  <Link href={`/ezana-echo/${row.id}`}>&quot;{row.title}&quot;</Link> — {row.comments} comments
+              </Link>
+            ))}
+          </div>
+          <div className="echo-trend-group">
+            <p className="echo-trend-group-label">Most Discussed</p>
+            {ECHO_TRENDING.mostDiscussed.map((row, i) => (
+              <Link key={row.id} href={`/ezana-echo/${row.id}`} className="echo-trend-row">
+                <span className="echo-trend-num">{i + 1}</span>
+                <div>
+                  <p className="echo-trend-row-title">{row.title}</p>
+                  <p className="echo-trend-row-meta">{row.comments} comments</p>
                 </div>
-              ))}
-            </div>
-            <div className="echo-trend-block">
-              <div className="echo-trend-label">Community Bookmarks</div>
-              <p className="echo-mini-meta" style={{ marginBottom: '0.5rem' }}>
-                Most saved by members this week
-              </p>
-              {ECHO_TRENDING.bookmarks.map((row) => (
-                <div key={row.id} className="echo-trend-line">
-                  📌 <Link href={`/ezana-echo/${row.id}`}>{row.title}</Link>
+              </Link>
+            ))}
+          </div>
+          <div className="echo-trend-group">
+            <p className="echo-trend-group-label">📌 Community Bookmarks</p>
+            {ECHO_TRENDING.bookmarks.map((row) => (
+              <Link key={row.id} href={`/ezana-echo/${row.id}`} className="echo-trend-row">
+                <div>
+                  <p className="echo-trend-row-title">{row.title}</p>
                 </div>
-              ))}
-            </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
