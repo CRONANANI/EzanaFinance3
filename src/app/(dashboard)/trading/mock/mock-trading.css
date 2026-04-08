@@ -666,3 +666,9 @@ body.light-mode .mock-order-summary { background: #f3f4f6; }
 @media (max-width: 380px) {
   .mock-portfolio-strip { grid-template-columns: 1fr; }
 }
+
+@keyframes mock-portfolio-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

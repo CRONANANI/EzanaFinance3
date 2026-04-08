@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import StockPriceChart from '@/components/research/StockPriceChart';
+import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 
@@ -10,7 +11,12 @@ import './mock-trading.css';
    CONSTANTS
 ────────────────────────────────────────── */
 const STARTING_CASH = 100_000;
-const STORAGE_KEY = 'ezana_mock_portfolio';
+
+const freshPortfolio = () => ({
+  cash: STARTING_CASH,
+  positions: {},
+  history: [],
+});
 
 const POPULAR_ASSETS = [
   { symbol: 'AAPL', name: 'Apple Inc', type: 'Stock' },
@@ -32,32 +38,6 @@ const POPULAR_ASSETS = [
 /* ──────────────────────────────────────────
    HELPERS
 ────────────────────────────────────────── */
-function loadPortfolio() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function savePortfolio(p) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
-  } catch {
-    /* ignore quota */
-  }
-}
-
-function freshPortfolio() {
-  return {
-    cash: STARTING_CASH,
-    positions: {},
-    history: [],
-  };
-}
-
 function fmtUSD(n) {
   return `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -71,8 +51,16 @@ function fmtChange(n) {
    MAIN PAGE
 ────────────────────────────────────────── */
 export default function MockTradingPage() {
-  const [portfolio, setPortfolio] = useState(() => freshPortfolio());
-  const [portfolioReady, setPortfolioReady] = useState(false);
+  /* Portfolio state — backed by Supabase via useMockPortfolio */
+  const {
+    portfolio: portfolioFromHook,
+    setPortfolio,
+    syncing,
+    liveQuotes: hookQuotes,
+  } = useMockPortfolio();
+
+  // Use hook portfolio; fall back to fresh if not loaded yet
+  const portfolio = portfolioFromHook ?? freshPortfolio();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -91,17 +79,6 @@ export default function MockTradingPage() {
 
   const [toast, setToast] = useState(null);
   const toastRef = useRef(null);
-
-  useEffect(() => {
-    const loaded = loadPortfolio();
-    if (loaded) setPortfolio(loaded);
-    setPortfolioReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!portfolioReady) return;
-    savePortfolio(portfolio);
-  }, [portfolio, portfolioReady]);
 
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
@@ -123,20 +100,23 @@ export default function MockTradingPage() {
 
   useEffect(() => {
     if (!quoteData?.price || !selectedSymbol) return;
-    setPortfolio((prev) => {
-      if (!prev.positions[selectedSymbol]) return prev;
-      return {
-        ...prev,
-        positions: {
-          ...prev.positions,
-          [selectedSymbol]: {
-            ...prev.positions[selectedSymbol],
-            currentPrice: quoteData.price,
+    setPortfolio(
+      (prev) => {
+        if (!prev.positions[selectedSymbol]) return prev;
+        return {
+          ...prev,
+          positions: {
+            ...prev.positions,
+            [selectedSymbol]: {
+              ...prev.positions[selectedSymbol],
+              currentPrice: quoteData.price,
+            },
           },
-        },
-      };
-    });
-  }, [quoteData, selectedSymbol]);
+        };
+      },
+      { skipSync: true }
+    );
+  }, [quoteData, selectedSymbol, setPortfolio]);
 
   const doSearch = useCallback(async (q) => {
     if (!q || q.trim().length < 1) {
@@ -394,24 +374,53 @@ export default function MockTradingPage() {
             <i className="bi bi-controller" /> Paper Account
           </span>
         </div>
-        <button
-          className="mock-reset-btn"
-          type="button"
-          onClick={() => {
-            if (
-              window.confirm(
-                'Reset your mock portfolio back to $100,000? This cannot be undone.'
-              )
-            ) {
-              const next = freshPortfolio();
-              setPortfolio(next);
-              savePortfolio(next);
-              showToast('Portfolio reset to $100,000.');
-            }
-          }}
-        >
-          <i className="bi bi-arrow-counterclockwise" /> Reset Portfolio
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {syncing && (
+            <span
+              style={{
+                fontSize: '0.7rem',
+                color: '#6b7280',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+              }}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                style={{ animation: 'mock-portfolio-spin 0.9s linear infinite' }}
+              >
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                <path
+                  d="M12 2a10 10 0 0 1 10 10"
+                  stroke="#10b981"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Saving…
+            </span>
+          )}
+          <button
+            className="mock-reset-btn"
+            type="button"
+            onClick={() => {
+              if (
+                window.confirm(
+                  'Reset your mock portfolio back to $100,000? This cannot be undone.'
+                )
+              ) {
+                const fresh = { cash: 100_000, positions: {}, history: [] };
+                setPortfolio(fresh);
+                showToast('Portfolio reset to $100,000.');
+              }
+            }}
+          >
+            <i className="bi bi-arrow-counterclockwise" /> Reset Portfolio
+          </button>
+        </div>
       </div>
 
       <div className="mock-portfolio-strip">
