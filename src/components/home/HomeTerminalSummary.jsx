@@ -14,6 +14,19 @@ import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+/** Parse a fullDate string ("YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS") into a display label */
+function parseEventDate(fullDate) {
+  if (!fullDate) return { label: '—', dayOfMonth: 0, monthIdx: 0 };
+  const datePart = String(fullDate).split(' ')[0];
+  const [, mm, dd] = datePart.split('-').map(Number);
+  if (!mm || !dd) return { label: '—', dayOfMonth: 0, monthIdx: 0 };
+  return {
+    label: `${MONTH_SHORT[mm - 1]} ${dd}`,
+    dayOfMonth: dd,
+    monthIdx: mm - 1,
+  };
+}
+
 /** YTD sparkline path: one segment per month Jan → current month */
 function buildYtdChartPath(monthCount) {
   const w = 480;
@@ -216,7 +229,8 @@ export function HomeTerminalSummary({
   }, [user?.id]);
 
   useEffect(() => {
-    fetch('/api/market-data/upcoming-events')
+    const cacheBuster = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    fetch(`/api/market-data/upcoming-events?d=${cacheBuster}`)
       .then((r) => (r.ok ? r.json() : { events: [] }))
       .then((d) => setLiveEvents(d.events || []))
       .catch(() => setLiveEvents([]))
@@ -282,10 +296,36 @@ export function HomeTerminalSummary({
     for (let i = 0; i < startDow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     const dayToType = {};
-    const eventsSource = liveEvents.length > 0 ? liveEvents : UPCOMING_EVENTS_GRID;
+
+    const todayDayOfMonth = now.getDate();
+    const todayMonthIdx = now.getMonth();
+    const todayYear = now.getFullYear();
+
+    const filteredLiveEvents = liveEvents.filter((ev) => {
+      if (ev.fullDate) {
+        const datePart = String(ev.fullDate).split(' ')[0];
+        const [py, pm, pd] = datePart.split('-').map(Number);
+        if (!py || !pm || !pd) return true;
+        const evDate = new Date(py, pm - 1, pd);
+        const todayMidnight = new Date(todayYear, todayMonthIdx, todayDayOfMonth);
+        return evDate >= todayMidnight;
+      }
+      return ev.day >= todayDayOfMonth;
+    });
+
+    const eventsSource =
+      filteredLiveEvents.length > 0 ? filteredLiveEvents : UPCOMING_EVENTS_GRID;
+
     eventsSource.forEach((ev) => {
-      const dom = Math.min(Math.max(1, ev.day), daysInMonth);
-      dayToType[dom] = ev.type;
+      let dom;
+      if (ev.fullDate) {
+        const datePart = String(ev.fullDate).split(' ')[0];
+        const [, , dd] = datePart.split('-').map(Number);
+        dom = dd && dd >= 1 && dd <= daysInMonth ? dd : null;
+      } else {
+        dom = Math.min(Math.max(1, ev.day), daysInMonth);
+      }
+      if (dom) dayToType[dom] = ev.type;
     });
     return {
       y,
@@ -477,7 +517,11 @@ export function HomeTerminalSummary({
                             </div>
                           ) : (
                             (upcomingCalendar.eventsSource || UPCOMING_EVENTS_GRID).map((ev) => {
-                              const dom = Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth);
+                              const eventDate = ev.fullDate
+                                ? parseEventDate(ev.fullDate)
+                                : {
+                                    label: `${MONTH_SHORT[upcomingCalendar.m]} ${ev.day}`,
+                                  };
                               return (
                                 <div
                                   key={ev.id}
@@ -492,7 +536,7 @@ export function HomeTerminalSummary({
                                       {ev.icon}
                                     </span>
                                     <span className="hts-events-grid-date" style={{ color: ev.color }}>
-                                      {ev.dateLabel ?? `${MONTH_SHORT[ev.monthIdx ?? upcomingCalendar.m]} ${dom}`}
+                                      {eventDate.label}
                                     </span>
                                   </div>
                                   <p className="hts-events-grid-title">{ev.title}</p>

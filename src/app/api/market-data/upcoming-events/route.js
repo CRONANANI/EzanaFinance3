@@ -5,12 +5,14 @@ export const dynamic = 'force-dynamic';
 const FMP_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY || process.env.FMP_API_KEY;
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
-const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' };
+// Short cache: 15 minutes max, always revalidate — prevents stale date clusters
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
+};
 
 /** Parse a date string safely as LOCAL time to avoid UTC off-by-one */
 function parseLocalDate(dateStr) {
   if (!dateStr) return null;
-  // "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
   const [datePart, timePart] = String(dateStr).trim().split(' ');
   const [y, m, d] = datePart.split('-').map(Number);
   if (!y || !m || !d) return null;
@@ -33,22 +35,30 @@ export async function GET() {
     const year = now.getFullYear();
     const monthIdx = now.getMonth(); // 0-based
     const month = String(monthIdx + 1).padStart(2, '0');
+    const todayDay = now.getDate();
     const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-    const pad = (n) => String(n).padStart(2, '0');
-    /** From today through end of month only (not start of month) */
-    const firstDay = `${year}-${month}-${pad(now.getDate())}`;
-    const lastDay = `${year}-${month}-${pad(daysInMonth)}`;
-    const startOfToday = new Date(year, monthIdx, now.getDate());
-    startOfToday.setHours(0, 0, 0, 0);
+
+    // ── KEY FIX: fetch from TODAY, not from the 1st of the month ──
+    const fromDay = `${year}-${month}-${String(todayDay).padStart(2, '0')}`;
+    const lastDay = `${year}-${month}-${String(daysInMonth).padStart(2, '0')}`;
     const key = encodeURIComponent(FMP_KEY);
 
     const [econRes, earningsRes] = await Promise.all([
-      fetch(`${FMP_STABLE}/economic-calendar?from=${firstDay}&to=${lastDay}&apikey=${key}`),
-      fetch(`${FMP_STABLE}/earnings-calendar?from=${firstDay}&to=${lastDay}&apikey=${key}`),
+      fetch(
+        `${FMP_STABLE}/economic-calendar?from=${fromDay}&to=${lastDay}&apikey=${key}`,
+        { next: { revalidate: 0 } } // bypass Next.js fetch cache
+      ),
+      fetch(
+        `${FMP_STABLE}/earnings-calendar?from=${fromDay}&to=${lastDay}&apikey=${key}`,
+        { next: { revalidate: 0 } }
+      ),
     ]);
 
     const econRaw = econRes.ok ? await econRes.json() : [];
     const earningsRaw = earningsRes.ok ? await earningsRes.json() : [];
+
+    // Midnight of today — events strictly before this are in the past
+    const todayMidnight = new Date(year, monthIdx, todayDay, 0, 0, 0);
 
     // ── Economic events ────────────────────────────────────────────────────
     const econEvents = (Array.isArray(econRaw) ? econRaw : [])
@@ -56,9 +66,9 @@ export async function GET() {
         if (!e.date) return false;
         const d = parseLocalDate(e.date);
         if (!d) return false;
-        if (d < startOfToday) return false;
         const imp = String(e.impact ?? '').toLowerCase();
         return (
+          d >= todayMidnight && // ← only today or future
           d.getFullYear() === year &&
           d.getMonth() === monthIdx &&
           (imp === 'high' || imp === 'medium')
@@ -75,16 +85,21 @@ export async function GET() {
         const isHigh = String(e.impact ?? '').toLowerCase() === 'high';
         const timeStr =
           e.date && String(e.date).includes(' ')
-            ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
-            : '8:30 AM'; // economic releases with no time default to typical release time
+            ? d.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+              })
+            : '8:30 AM';
         return {
           id: `econ-${i}`,
           type: isHigh ? 'fed' : 'economic',
           icon: isHigh ? '🏛️' : '📈',
           title: e.event,
-          day: d.getDate(),
-          monthIdx: d.getMonth(),
-          dateLabel: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          day: d.getDate(), // day-of-month for the calendar
+          month: d.getMonth(), // ← include month so frontend can verify
+          year: d.getFullYear(),
+          fullDate: e.date, // ← raw date string for unambiguous display
           time: timeStr,
           color: isHigh ? '#3b82f6' : '#6366f1',
           country: e.country,
@@ -101,8 +116,11 @@ export async function GET() {
         if (!e.date || !e.symbol) return false;
         const d = parseLocalDate(e.date);
         if (!d) return false;
-        if (d < startOfToday) return false;
-        return d.getFullYear() === year && d.getMonth() === monthIdx;
+        return (
+          d >= todayMidnight && // ← only today or future
+          d.getFullYear() === year &&
+          d.getMonth() === monthIdx
+        );
       })
       .sort((a, b) => {
         const da = parseLocalDate(a.date);
@@ -118,9 +136,10 @@ export async function GET() {
           icon: '📊',
           title: `${e.symbol} Earnings`,
           day: d.getDate(),
-          monthIdx: d.getMonth(),
-          dateLabel: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          time: '4:30 PM',
+          month: d.getMonth(),
+          year: d.getFullYear(),
+          fullDate: e.date, // ← raw date string for unambiguous display
+          time: 'After Close',
           color: '#10b981',
           symbol: e.symbol,
           epsEstimated: e.epsEstimated ?? null,
@@ -128,14 +147,22 @@ export async function GET() {
         };
       });
 
-    // ── Merge, sort by day, cap at 12 ──────────────────────────────────────
+    // ── Merge, sort by date ascending, cap at 12 ──────────────────────────
     const combined = [...econEvents, ...earningsEvents]
-      .sort((a, b) => a.day - b.day)
+      .sort((a, b) => {
+        // Sort by full date for correctness across month boundaries
+        const da = parseLocalDate(a.fullDate);
+        const db = parseLocalDate(b.fullDate);
+        return (da?.getTime() ?? 0) - (db?.getTime() ?? 0);
+      })
       .slice(0, 12);
 
     return NextResponse.json({ events: combined }, { headers: CACHE_HEADERS });
   } catch (error) {
     console.error('[upcoming-events]', error);
-    return NextResponse.json({ error: error.message, events: [] }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message, events: [] },
+      { status: 500 }
+    );
   }
 }
