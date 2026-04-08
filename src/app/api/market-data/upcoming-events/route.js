@@ -2,30 +2,40 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+const FMP_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY || process.env.FMP_API_KEY;
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
-function impactLevel(impact) {
-  const s = String(impact ?? '').toLowerCase();
-  if (s === 'high') return 'high';
-  if (s === 'medium') return 'medium';
-  return s;
+const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' };
+
+/** Parse a date string safely as LOCAL time to avoid UTC off-by-one */
+function parseLocalDate(dateStr) {
+  if (!dateStr) return null;
+  // "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
+  const [datePart, timePart] = String(dateStr).trim().split(' ');
+  const [y, m, d] = datePart.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  if (timePart) {
+    const parts = timePart.split(':').map(Number);
+    const hh = parts[0] ?? 0;
+    const mm = parts[1] ?? 0;
+    return new Date(y, m - 1, d, hh, mm);
+  }
+  return new Date(y, m - 1, d);
 }
 
 export async function GET() {
   try {
     if (!FMP_KEY) {
-      return NextResponse.json(
-        { events: [] },
-        { headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' } }
-      );
+      return NextResponse.json({ events: [] }, { headers: CACHE_HEADERS });
     }
 
     const now = new Date();
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const monthIdx = now.getMonth(); // 0-based
+    const month = String(monthIdx + 1).padStart(2, '0');
+    const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
     const firstDay = `${year}-${month}-01`;
-    const lastDay = new Date(year, now.getMonth() + 1, 0).toISOString().split('T')[0];
+    const lastDay = `${year}-${month}-${String(daysInMonth).padStart(2, '0')}`;
     const key = encodeURIComponent(FMP_KEY);
 
     const [econRes, earningsRes] = await Promise.all([
@@ -33,30 +43,36 @@ export async function GET() {
       fetch(`${FMP_STABLE}/earnings-calendar?from=${firstDay}&to=${lastDay}&apikey=${key}`),
     ]);
 
-    const econData = econRes.ok ? await econRes.json() : [];
-    const earningsData = earningsRes.ok ? await earningsRes.json() : [];
+    const econRaw = econRes.ok ? await econRes.json() : [];
+    const earningsRaw = earningsRes.ok ? await earningsRes.json() : [];
 
-    const econEvents = (Array.isArray(econData) ? econData : [])
+    // ── Economic events ────────────────────────────────────────────────────
+    const econEvents = (Array.isArray(econRaw) ? econRaw : [])
       .filter((e) => {
         if (!e.date) return false;
-        const d = new Date(e.date);
-        const il = impactLevel(e.impact);
+        const d = parseLocalDate(e.date);
+        if (!d) return false;
+        const imp = String(e.impact ?? '').toLowerCase();
+        // Double-check it's still within the current month after local parse
         return (
           d.getFullYear() === year &&
-          d.getMonth() === now.getMonth() &&
-          (il === 'high' || il === 'medium')
+          d.getMonth() === monthIdx &&
+          (imp === 'high' || imp === 'medium')
         );
+      })
+      .sort((a, b) => {
+        const da = parseLocalDate(a.date);
+        const db = parseLocalDate(b.date);
+        return (da?.getTime() ?? 0) - (db?.getTime() ?? 0);
       })
       .slice(0, 8)
       .map((e, i) => {
-        const d = new Date(e.date);
-        const timeStr = d.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        });
-        const il = impactLevel(e.impact);
-        const isHigh = il === 'high';
+        const d = parseLocalDate(e.date);
+        const isHigh = String(e.impact ?? '').toLowerCase() === 'high';
+        const timeStr =
+          e.date && String(e.date).includes(' ')
+            ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+            : '8:30 AM'; // economic releases with no time default to typical release time
         return {
           id: `econ-${i}`,
           type: isHigh ? 'fed' : 'economic',
@@ -67,17 +83,28 @@ export async function GET() {
           color: isHigh ? '#3b82f6' : '#6366f1',
           country: e.country,
           impact: e.impact,
-          actual: e.actual,
-          estimate: e.estimate,
-          previous: e.previous,
+          actual: e.actual ?? null,
+          estimate: e.estimate ?? null,
+          previous: e.previous ?? null,
         };
       });
 
-    const earningsEvents = (Array.isArray(earningsData) ? earningsData : [])
-      .filter((e) => e.date && e.symbol)
+    // ── Earnings events ────────────────────────────────────────────────────
+    const earningsEvents = (Array.isArray(earningsRaw) ? earningsRaw : [])
+      .filter((e) => {
+        if (!e.date || !e.symbol) return false;
+        const d = parseLocalDate(e.date);
+        if (!d) return false;
+        return d.getFullYear() === year && d.getMonth() === monthIdx;
+      })
+      .sort((a, b) => {
+        const da = parseLocalDate(a.date);
+        const db = parseLocalDate(b.date);
+        return (da?.getTime() ?? 0) - (db?.getTime() ?? 0);
+      })
       .slice(0, 6)
       .map((e, i) => {
-        const d = new Date(e.date);
+        const d = parseLocalDate(e.date);
         return {
           id: `earn-${i}`,
           type: 'earnings',
@@ -87,23 +114,19 @@ export async function GET() {
           time: '4:30 PM',
           color: '#10b981',
           symbol: e.symbol,
-          epsEstimated: e.epsEstimated,
-          revenueEstimated: e.revenueEstimated,
+          epsEstimated: e.epsEstimated ?? null,
+          revenueEstimated: e.revenueEstimated ?? null,
         };
       });
 
+    // ── Merge, sort by day, cap at 12 ──────────────────────────────────────
     const combined = [...econEvents, ...earningsEvents]
       .sort((a, b) => a.day - b.day)
       .slice(0, 12);
 
-    return NextResponse.json(
-      { events: combined },
-      { headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' } }
-    );
+    return NextResponse.json({ events: combined }, { headers: CACHE_HEADERS });
   } catch (error) {
-    return NextResponse.json(
-      { error: error.message, events: [] },
-      { status: 500 }
-    );
+    console.error('[upcoming-events]', error);
+    return NextResponse.json({ error: error.message, events: [] }, { status: 500 });
   }
 }

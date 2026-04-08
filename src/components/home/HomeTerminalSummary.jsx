@@ -468,10 +468,10 @@ export function HomeTerminalSummary({
                                 gridColumn: '1 / -1',
                               }}
                             >
-                              Loading events...
+                              Loading events…
                             </div>
                           ) : (
-                            (upcomingCalendar.eventsSource || []).map((ev) => {
+                            (upcomingCalendar.eventsSource || UPCOMING_EVENTS_GRID).map((ev) => {
                               const dom = Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth);
                               return (
                                 <div
