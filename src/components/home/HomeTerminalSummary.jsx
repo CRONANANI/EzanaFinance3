@@ -201,6 +201,8 @@ export function HomeTerminalSummary({
 }) {
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
+  const [liveEvents, setLiveEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
   const { isOrgUser } = useOrg();
 
   useEffect(() => {
@@ -208,6 +210,14 @@ export function HomeTerminalSummary({
       setMockData(generateUserMockData(user.id));
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    fetch('/api/market-data/upcoming-events')
+      .then((r) => (r.ok ? r.json() : { events: [] }))
+      .then((d) => setLiveEvents(d.events || []))
+      .catch(() => setLiveEvents([]))
+      .finally(() => setEventsLoading(false));
+  }, []);
 
   const hasPortfolio = enrichedHoldings.length > 0;
   const hero1d = HERO_DATA['1D'];
@@ -264,12 +274,21 @@ export function HomeTerminalSummary({
     for (let i = 0; i < startDow; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     const dayToType = {};
-    UPCOMING_EVENTS_GRID.forEach((ev) => {
+    const eventsSource = liveEvents.length > 0 ? liveEvents : UPCOMING_EVENTS_GRID;
+    eventsSource.forEach((ev) => {
       const dom = Math.min(Math.max(1, ev.day), daysInMonth);
       dayToType[dom] = ev.type;
     });
-    return { y, m, daysInMonth, cells, dayToType, monthTitle: `${MONTH_SHORT[m]} ${y}` };
-  }, []);
+    return {
+      y,
+      m,
+      daysInMonth,
+      cells,
+      dayToType,
+      monthTitle: `${MONTH_SHORT[m]} ${y}`,
+      eventsSource,
+    };
+  }, [liveEvents]);
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
@@ -440,30 +459,43 @@ export function HomeTerminalSummary({
                     <div className="hts-events-grid-calendar">
                       <div className="hts-events-grid-left">
                         <div className="hts-events-3x4-grid">
-                          {UPCOMING_EVENTS_GRID.map((ev) => {
-                            const dom = Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth);
-                            return (
-                              <div
-                                key={ev.id}
-                                className="hts-events-grid-cell"
-                                style={{
-                                  background: `${ev.color}12`,
-                                  border: `1px solid ${ev.color}30`,
-                                }}
-                              >
-                                <div className="hts-events-grid-cell-head">
-                                  <span className="hts-events-grid-icon" aria-hidden>
-                                    {ev.icon}
-                                  </span>
-                                  <span className="hts-events-grid-date" style={{ color: ev.color }}>
-                                    {MONTH_SHORT[upcomingCalendar.m]} {dom}
-                                  </span>
+                          {eventsLoading ? (
+                            <div
+                              style={{
+                                padding: '1rem',
+                                color: 'var(--home-muted)',
+                                fontSize: '0.75rem',
+                                gridColumn: '1 / -1',
+                              }}
+                            >
+                              Loading events...
+                            </div>
+                          ) : (
+                            (upcomingCalendar.eventsSource || []).map((ev) => {
+                              const dom = Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth);
+                              return (
+                                <div
+                                  key={ev.id}
+                                  className="hts-events-grid-cell"
+                                  style={{
+                                    background: `${ev.color}12`,
+                                    border: `1px solid ${ev.color}30`,
+                                  }}
+                                >
+                                  <div className="hts-events-grid-cell-head">
+                                    <span className="hts-events-grid-icon" aria-hidden>
+                                      {ev.icon}
+                                    </span>
+                                    <span className="hts-events-grid-date" style={{ color: ev.color }}>
+                                      {MONTH_SHORT[upcomingCalendar.m]} {dom}
+                                    </span>
+                                  </div>
+                                  <p className="hts-events-grid-title">{ev.title}</p>
+                                  <p className="hts-events-grid-time">{ev.time}</p>
                                 </div>
-                                <p className="hts-events-grid-title">{ev.title}</p>
-                                <p className="hts-events-grid-time">{ev.time}</p>
-                              </div>
-                            );
-                          })}
+                              );
+                            })
+                          )}
                         </div>
                       </div>
                       <div className="hts-events-calendar-right">
