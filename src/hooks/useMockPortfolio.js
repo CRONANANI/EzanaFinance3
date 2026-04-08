@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 
 const STARTING_CASH = 100_000;
 const POST_DEBOUNCE_MS = 800;
+const LS_KEY = 'ezana_mock_portfolio_v1';
 
 const TICKER_SECTOR = {
   AAPL: 'Technology',
@@ -72,13 +74,46 @@ const SECTOR_COLORS = {
   Other: '#6b7280',
 };
 
+function loadLocal() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function saveLocal(portfolio) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(portfolio));
+  } catch {
+    /* quota */
+  }
+}
+
+function withMeta(portfolio) {
+  if (!portfolio || typeof portfolio !== 'object') return portfolio;
+  return {
+    ...portfolio,
+    _meta: {
+      ...(portfolio._meta || {}),
+      updatedAt: Date.now(),
+    },
+  };
+}
+
 /**
- * Mock portfolio — prices via FMP; state persisted only in Supabase (`mock_portfolios`).
- * No localStorage/sessionStorage — reload uses GET /api/mock-portfolio.
+ * Mock portfolio — FMP quotes; persisted in localStorage + Supabase (`mock_portfolios`) when logged in.
+ * Server fetch runs only when authenticated; POST skipped without user (local data retained).
  */
 export function useMockPortfolio() {
+  const { user } = useAuth();
   const [portfolio, setPortfolioState] = useState(null);
   const [serverLoaded, setServerLoaded] = useState(false);
+  const [storageReady, setStorageReady] = useState(false);
   const [liveQuotes, setLiveQuotes] = useState({});
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -86,7 +121,12 @@ export function useMockPortfolio() {
   const postTimerRef = useRef(null);
   const postPayloadRef = useRef(null);
 
+  useEffect(() => {
+    setStorageReady(true);
+  }, []);
+
   const flushPost = useCallback(async () => {
+    if (!user?.id) return;
     const payload = postPayloadRef.current;
     postPayloadRef.current = null;
     if (!payload) return;
@@ -98,11 +138,11 @@ export function useMockPortfolio() {
         body: JSON.stringify({ portfolio: payload }),
       });
     } catch {
-      /* network — state still in memory; retry on next change */
+      /* network — retry on next change */
     } finally {
       setSyncing(false);
     }
-  }, []);
+  }, [user?.id]);
 
   const schedulePost = useCallback(
     (next) => {
@@ -113,7 +153,7 @@ export function useMockPortfolio() {
         flushPost();
       }, POST_DEBOUNCE_MS);
     },
-    [flushPost]
+    [flushPost],
   );
 
   const setPortfolio = useCallback(
@@ -125,15 +165,17 @@ export function useMockPortfolio() {
           positions: {},
           history: [],
         };
-        const next = typeof update === 'function' ? update(base) : update;
-        if (next == null) return next;
+        const raw = typeof update === 'function' ? update(base) : update;
+        if (raw == null) return raw;
+        const next = withMeta(raw);
+        saveLocal(next);
         if (!skipSync) {
           schedulePost(next);
         }
         return next;
       });
     },
-    [schedulePost]
+    [schedulePost],
   );
 
   useEffect(() => {
@@ -142,19 +184,47 @@ export function useMockPortfolio() {
     };
   }, []);
 
+  /** Hydrate from localStorage immediately; merge with server when `user.id` is present */
   useEffect(() => {
+    if (!storageReady) return;
+    if (!user?.id) {
+      const localOnly = loadLocal();
+      if (localOnly && typeof localOnly === 'object') {
+        setPortfolioState(localOnly);
+      }
+      setServerLoaded(true);
+      return;
+    }
+    const bootLocal = loadLocal();
+    if (bootLocal && typeof bootLocal === 'object') {
+      setPortfolioState(bootLocal);
+    }
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch('/api/mock-portfolio');
         if (!res.ok || cancelled) {
-          setServerLoaded(true);
+          if (!cancelled) setServerLoaded(true);
           return;
         }
         const data = await res.json();
         if (cancelled) return;
-        if (data?.portfolio && typeof data.portfolio === 'object') {
-          setPortfolioState(data.portfolio);
+        const serverP = data?.portfolio;
+        const serverT = data?.updated_at ? new Date(data.updated_at).getTime() : 0;
+        const curLocal = loadLocal();
+        const localT = curLocal?._meta?.updatedAt ?? 0;
+
+        if (serverP && typeof serverP === 'object') {
+          if (!curLocal || serverT >= localT) {
+            setPortfolioState(serverP);
+            saveLocal(serverP);
+          } else {
+            setPortfolioState(curLocal);
+            schedulePost(curLocal);
+          }
+        } else if (curLocal) {
+          setPortfolioState(curLocal);
+          schedulePost(curLocal);
         }
       } catch {
         /* ignore */
@@ -165,7 +235,7 @@ export function useMockPortfolio() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [storageReady, user?.id, schedulePost]);
 
   const fetchPrices = useCallback(async (positions) => {
     const symbols = Object.keys(positions || {});
@@ -176,8 +246,8 @@ export function useMockPortfolio() {
         symbols.map((sym) =>
           fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`)
             .then((r) => (r.ok ? r.json() : null))
-            .catch(() => null)
-        )
+            .catch(() => null),
+        ),
       );
       const quotes = {};
       symbols.forEach((sym, i) => {

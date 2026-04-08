@@ -1497,3 +1497,8 @@ body.light-mode .comm-lc-badges-filter-tab--active {
     grid-template-columns: 1fr;
   }
 }
+
+.suggested-for-you-card .username,
+.suggested-for-you-card .user-name {
+  color: var(--text-primary) !important;
+}

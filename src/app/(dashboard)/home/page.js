@@ -325,7 +325,7 @@ export default function HomeTerminalPage() {
       </span>,
     );
     blocks.push(
-      <span key="cong" className="t-news-item">
+      <span key="cong" className="t-news-item t-news-item--segment">
         <strong>CONGRESS</strong>{' '}
         <span className="t-dim">
           14 STOCK Act filings (24h) · committees: Energy, Intel, Banking · watch semis &amp; defense
@@ -333,37 +333,37 @@ export default function HomeTerminalPage() {
       </span>,
     );
     blocks.push(
-      <span key="13f" className="t-news-item">
+      <span key="13f" className="t-news-item t-news-item--segment">
         <strong>13F</strong>{' '}
         <span className="t-dim">Quarterly window: elevated adds in AI infra · trims in legacy retail</span>
       </span>,
     );
     blocks.push(
-      <span key="fed" className="t-news-item">
+      <span key="fed" className="t-news-item t-news-item--segment">
         <strong>FED WATCH</strong>{' '}
         <span className="t-dim">Speakers on deck · front-end yields leading risk tone</span>
       </span>,
     );
     blocks.push(
-      <span key="vol" className="t-news-item">
+      <span key="vol" className="t-news-item t-news-item--segment">
         <strong>VOL</strong>{' '}
         <span className="t-dim">Index complex bid · single-name skew elevated into earnings cluster</span>
       </span>,
     );
     blocks.push(
-      <span key="fx" className="t-news-item">
+      <span key="fx" className="t-news-item t-news-item--segment">
         <strong>FX</strong>{' '}
         <span className="t-dim">DXY steady · carry quiet · EMFX mixed on commodity patch</span>
       </span>,
     );
     blocks.push(
-      <span key="echo" className="t-news-item">
+      <span key="echo" className="t-news-item t-news-item--segment">
         <strong>EZANA ECHO</strong>{' '}
         <span className="t-dim">New: disclosure lag vs. price — how to read filing dates vs. trade dates</span>
       </span>,
     );
     blocks.push(
-      <span key="alerts" className="t-news-item">
+      <span key="alerts" className="t-news-item t-news-item--segment">
         <strong>ALERTS</strong>{' '}
         <span className="t-dim">Price targets · congressional mentions · watchlist gaps · portfolio risk</span>
       </span>,
@@ -381,7 +381,8 @@ export default function HomeTerminalPage() {
     } else {
       blocks.push(
         <span key="empty" className="t-news-item">
-          <strong>EZANA</strong> Welcome to Ezana Terminal. Connect your brokerage to see live portfolio data.
+          <strong style={{ color: '#10b981' }}>Welcome.</strong>{' '}
+          <span style={{ color: '#10b981' }}>Connect your brokerage to see live portfolio data.</span>
         </span>,
       );
     }
@@ -431,6 +432,10 @@ export default function HomeTerminalPage() {
         hasUser={!!user}
         weekPlaidTransactions={weekPlaidTransactions}
         weekTradeHistory={weekTradeHistory}
+        plaidConnected={plaidConnected}
+        plaidSummary={plaidSummary}
+        mockTotalValue={mock.totalValue}
+        mockHasMockPortfolio={mock.hasMockPortfolio}
       />
     </div>
   );

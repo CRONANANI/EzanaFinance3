@@ -198,6 +198,10 @@ export function HomeTerminalSummary({
   hasUser = false,
   weekPlaidTransactions = [],
   weekTradeHistory = [],
+  plaidConnected = false,
+  plaidSummary = null,
+  mockTotalValue = 0,
+  mockHasMockPortfolio = false,
 }) {
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
@@ -219,18 +223,30 @@ export function HomeTerminalSummary({
       .finally(() => setEventsLoading(false));
   }, []);
 
-  const hasPortfolio = enrichedHoldings.length > 0;
+  const hasPortfolio =
+    enrichedHoldings.length > 0 ||
+    (plaidConnected && plaidSummary?.totalValue != null) ||
+    mockHasMockPortfolio;
+
+  const portfolioSnapshotNum = useMemo(() => {
+    if (plaidConnected && plaidSummary?.totalValue != null) return plaidSummary.totalValue;
+    if (mockHasMockPortfolio) return mockTotalValue;
+    return 0;
+  }, [plaidConnected, plaidSummary?.totalValue, mockHasMockPortfolio, mockTotalValue]);
+
+  const isPlaidSource = plaidConnected && plaidSummary?.totalValue != null;
+
   const hero1d = HERO_DATA['1D'];
 
   const { rows: monthSnapshots, chartPath: ytdChartPath } = useMemo(
     () =>
       buildYtdMonthlySnapshots({
-        portfolioTotal,
+        portfolioTotal: hasUser ? portfolioSnapshotNum : portfolioTotal,
         portfolioChange,
         hasPortfolio,
         hero1d,
       }),
-    [portfolioTotal, portfolioChange, hasPortfolio, hero1d],
+    [portfolioTotal, portfolioSnapshotNum, portfolioChange, hasPortfolio, hero1d, hasUser],
   );
 
   const sel = monthSnapshots[monthSnapshots.length - 1] ?? monthSnapshots[0];
@@ -238,9 +254,9 @@ export function HomeTerminalSummary({
   const displayChangeDollar = sel.changeDollar;
   const gainTodayDisplay = sel.gainToday;
 
-  const currentValue = portfolioTotal;
+  const currentValue = hasUser ? portfolioSnapshotNum : portfolioTotal;
   const snapshotValueNum = sel.displayValue;
-  const displayValue = `$${snapshotValueNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const displayValue = `$${portfolioSnapshotNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const changePctStr = `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%`;
   const changeDollarStr = `${displayChangeDollar >= 0 ? '+' : '-'}$${Math.abs(displayChangeDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -255,11 +271,6 @@ export function HomeTerminalSummary({
   const streakDays = mockData?.streak ?? 13;
 
   const ezanaScore = mockData?.activityScore != null ? Math.min(99, Math.round(mockData.activityScore / 4.5)) : 22;
-
-  const weekDots = useMemo(() => {
-    const n = Math.min(7, Math.max(0, streakDays));
-    return Array.from({ length: 7 }, (_, i) => i < n);
-  }, [streakDays]);
 
   const upcomingCalendar = useMemo(() => {
     const now = new Date();
@@ -369,16 +380,30 @@ export function HomeTerminalSummary({
                     marginBottom: '0.75rem',
                   }}
                 >
-                  <h3
-                    style={{
-                      fontSize: '0.9375rem',
-                      fontWeight: 800,
-                      color: 'var(--home-heading)',
-                      margin: 0,
-                    }}
-                  >
-                    Portfolio Snapshot
-                  </h3>
+                  <div>
+                    <h3
+                      style={{
+                        fontSize: '0.9375rem',
+                        fontWeight: 800,
+                        color: 'var(--home-heading)',
+                        margin: 0,
+                      }}
+                    >
+                      Portfolio Snapshot
+                    </h3>
+                    <span
+                      className="portfolio-source-label"
+                      style={{ fontSize: '11px', opacity: 0.6, color: 'var(--home-muted-soft)', display: 'block', marginTop: 2 }}
+                    >
+                      {hasUser
+                        ? isPlaidSource
+                          ? 'Brokerage Account'
+                          : mockHasMockPortfolio
+                            ? 'Mock Portfolio'
+                            : ''
+                        : '\u00a0'}
+                    </span>
+                  </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
                     <button
                       type="button"
@@ -398,14 +423,14 @@ export function HomeTerminalSummary({
                     </button>
                   </div>
                 </div>
-                <p className="home-num-hero">{displayValue}</p>
+                <p className="home-num-hero portfolio-value">{displayValue}</p>
                 <p className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}>
                   {changePctStr} ({changeDollarStr}){' '}
                   <span className="home-num-change-muted">Committed Frees</span>
                 </p>
                 <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: 0 }}>
                   <HeroSparkline
-                    portfolioValue={snapshotValueNum || currentValue}
+                    portfolioValue={hasUser ? portfolioSnapshotNum || snapshotValueNum : snapshotValueNum || currentValue}
                     changePct={displayPct}
                     chartPath={ytdChartPath}
                     axisLabels={monthSnapshots.map((m) => m.label)}
@@ -467,7 +492,7 @@ export function HomeTerminalSummary({
                                       {ev.icon}
                                     </span>
                                     <span className="hts-events-grid-date" style={{ color: ev.color }}>
-                                      {MONTH_SHORT[upcomingCalendar.m]} {dom}
+                                      {ev.dateLabel ?? `${MONTH_SHORT[ev.monthIdx ?? upcomingCalendar.m]} ${dom}`}
                                     </span>
                                   </div>
                                   <p className="hts-events-grid-title">{ev.title}</p>
@@ -619,55 +644,49 @@ export function HomeTerminalSummary({
             <div className="home-terminal-right-col">
               <div className="home-streak-ezana-pair home-rail-streak-ezana">
                 <div
-                  className="db-card home-streak-ezana-merged"
+                  className="db-card home-streak-ezana-merged streak-card component-card"
                   style={{
-                    padding: '0.75rem 0.9rem',
+                    padding: '16px 20px',
                     flex: 1,
                     minWidth: 0,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '1rem',
+                    background: 'var(--card-bg, #fff)',
+                    border: '1px solid var(--card-border, rgba(16, 185, 129, 0.12))',
+                    borderRadius: '12px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                        <span style={{ fontSize: '1.1rem' }} aria-hidden>
-                          🔥
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 800,
-                            color: 'var(--home-heading)',
-                            lineHeight: 1,
-                          }}
-                        >
-                          {streakDays}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)', fontWeight: 500 }}>day streak</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '1 1 auto', minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: '32px',
+                          lineHeight: 1,
+                          filter: 'drop-shadow(0 0 8px rgba(251, 146, 60, 0.6))',
+                        }}
+                        aria-hidden
+                      >
+                        🔥
                       </div>
-                      <div style={{ display: 'flex', gap: '4px', marginTop: '0.5rem' }}>
-                        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
-                          <div key={`${label}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                            <div
-                              style={{
-                                width: '20px',
-                                height: '20px',
-                                borderRadius: '50%',
-                                background: weekDots[i] ? '#10b981' : 'rgba(255, 255, 255, 0.06)',
-                                border: weekDots[i] ? '2px solid #10b981' : '2px solid rgba(255, 255, 255, 0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              {weekDots[i] ? (
-                                <span style={{ fontSize: '0.55rem', color: '#fff', fontWeight: 700 }}>✓</span>
-                              ) : null}
-                            </div>
-                            <span style={{ fontSize: '0.5rem', color: 'var(--home-muted-soft)', fontWeight: 500 }}>{label}</span>
-                          </div>
+                      <div>
+                        <div style={{ fontSize: '22px', fontWeight: 700, color: '#f97316', lineHeight: 1 }}>{streakDays}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary, var(--home-muted-soft))', marginTop: '2px' }}>
+                          Day Streak
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
+                        {Array.from({ length: 13 }).map((_, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              width: '6px',
+                              height: '24px',
+                              borderRadius: '3px',
+                              background: i < streakDays ? '#f97316' : 'var(--card-border, rgba(16, 185, 129, 0.15))',
+                              opacity: 0.4 + (i / 13) * 0.6,
+                            }}
+                          />
                         ))}
                       </div>
                     </div>
@@ -811,7 +830,10 @@ export function HomeTerminalSummary({
               </div>
 
               <div className="home-rail-movers">
-              <div className="db-card home-top-movers-card" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div
+                className="db-card home-top-movers-card"
+                style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, alignSelf: 'stretch' }}
+              >
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Top Movers Today</h3>
                   <div style={{ display: 'flex', gap: 4 }}>
@@ -823,7 +845,7 @@ export function HomeTerminalSummary({
                     </button>
                   </div>
                 </div>
-                <div style={{ padding: '0 1.25rem 0.5rem' }}>
+                <div style={{ padding: '0 1.25rem 0.5rem', flex: 1, minHeight: 0 }}>
                   <p
                     style={{
                       fontSize: '0.625rem',
@@ -936,27 +958,6 @@ export function HomeTerminalSummary({
                       <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
                     </div>
                   ))}
-                </div>
-                <div
-                  style={{
-                    padding: '0.65rem 1.25rem 1rem',
-                    borderTop: '1px solid rgba(16, 185, 129, 0.06)',
-                    display: 'flex',
-                    gap: '0.75rem',
-                    flexWrap: 'wrap',
-                    fontSize: '0.6875rem',
-                    color: 'var(--home-muted)',
-                  }}
-                >
-                  <span style={{ color: '#10b981', fontWeight: 700 }}>Latest now</span>
-                  <span>|</span>
-                  <Link href="/community" style={{ color: 'var(--home-muted-soft)', textDecoration: 'none' }}>
-                    Community
-                  </Link>
-                  <span>|</span>
-                  <Link href="/watchlist" style={{ color: 'var(--home-muted-soft)', textDecoration: 'none' }}>
-                    Watchlist
-                  </Link>
                 </div>
               </div>
               </div>

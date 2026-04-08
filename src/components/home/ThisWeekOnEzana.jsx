@@ -517,7 +517,8 @@ function PlatformActivityTab() {
             className="bi bi-bar-chart-line"
             style={{ marginRight: 6, color: '#10b981' }}
           />
-          Ranked <strong style={{ color: '#22c55e' }}>#8</strong> amongst
+          Ranked{' '}
+          <strong style={{ color: '#10b981', fontWeight: 600 }}>#8</strong> amongst
           friends{' '}
           <span style={{ color: '#10b981' }}>
             (up 2 spots from last month)

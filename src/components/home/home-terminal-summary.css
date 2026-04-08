@@ -1253,7 +1253,7 @@ body.light-mode .hts-week-standing-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
   margin-bottom: 1.25rem;
 }
 
@@ -1285,6 +1285,7 @@ body.light-mode .hts-week-standing-row {
   flex-direction: column;
   gap: 1.25rem;
   width: 100%;
+  height: 100%;
 }
 
 .home-rail-streak-ezana.home-streak-ezana-pair {
@@ -1302,6 +1303,15 @@ body.light-mode .hts-week-standing-row {
 .home-rail-movers {
   width: 100%;
   min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.home-top-movers-card {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .home-events-rail-wide .home-events-compact-body {

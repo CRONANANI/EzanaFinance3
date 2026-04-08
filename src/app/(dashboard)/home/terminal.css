@@ -657,6 +657,10 @@
   font-weight: 600;
 }
 
+.t-news-item--segment {
+  margin: 0 12px;
+}
+
 /* Pause ~5s at load (5/55 ≈ 9.09%), then scroll; -50% = one copy — seamless with duplicated track */
 @keyframes t-scroll-news-loop {
   0%,

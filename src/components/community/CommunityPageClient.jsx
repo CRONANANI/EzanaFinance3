@@ -41,7 +41,7 @@ const TRENDING_DISCUSSIONS = [
 ];
 
 const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
-const PAGE_TABS = ['Overview', 'Community', 'Messages'];
+const PAGE_TABS = ['Community', 'Messages'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
   if (feedTab === 'Badges') return 'trending';
@@ -378,8 +378,7 @@ export default function CommunityPageClient() {
   };
 
   const onPageTab = (t) => {
-    if (t === 'Overview') router.push('/home-dashboard');
-    else if (t === 'Messages') router.push('/community');
+    if (t === 'Messages') router.push('/community');
   };
 
   return (
@@ -402,92 +401,9 @@ export default function CommunityPageClient() {
           <p className="db-greeting-sub">Connect, share, and grow with the investing community</p>
           <p className="db-greeting-date">{formatDateLine()}</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: 'rgba(16, 185, 129, 0.04)',
-              border: '1px solid rgba(16, 185, 129, 0.08)',
-              borderRadius: '10px',
-              padding: '0.5rem 0.85rem',
-              minWidth: '220px',
-            }}
-          >
-            <i className="bi bi-search" style={{ color: '#6b7280', fontSize: '0.8rem' }} />
-            <input
-              type="text"
-              placeholder="Search users, posts, or topics..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: '#e2e8f0',
-                fontSize: '0.8125rem',
-                width: '100%',
-                fontFamily: 'var(--font-sans)',
-              }}
-            />
-            <span style={{ color: '#6b7280', fontSize: '0.65rem', whiteSpace: 'nowrap' }}>⌘K</span>
-            {searchQuery.trim().length >= 2 && (
-              <div
-                className="comm-search-dropdown"
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 'calc(100% + 6px)',
-                  zIndex: 40,
-                  maxHeight: 240,
-                  overflowY: 'auto',
-                }}
-              >
-                {searchBusy && <div className="comm-search-loading">Searching…</div>}
-                {!searchBusy &&
-                  searchResults.map((u) => (
-                    <Link key={u.id} href={`/profile/${u.username || u.id}`} className="comm-search-hit">
-                      <span className="comm-search-avatar">{getInitials(u.full_name)}</span>
-                      <span className="comm-search-meta">
-                        <span className="comm-search-name">{u.full_name}</span>
-                        <span className="comm-search-sub">@{u.username || u.id.slice(0, 8)}</span>
-                      </span>
-                    </Link>
-                  ))}
-                {!searchBusy && searchResults.length === 0 && (
-                  <div className="comm-search-empty">No users found</div>
-                )}
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => document.getElementById('comm-composer')?.focus()}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.5rem 1rem',
-              borderRadius: '10px',
-              border: 'none',
-              background: '#10b981',
-              color: '#fff',
-              fontSize: '0.8125rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              fontFamily: 'var(--font-sans)',
-            }}
-          >
-            + New Post
-          </button>
-        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         {PAGE_TABS.map((t) => (
           <button
             key={t}
@@ -508,12 +424,33 @@ export default function CommunityPageClient() {
               fontFamily: 'var(--font-sans)',
             }}
           >
-            {t === 'Overview' && <i className="bi bi-grid" />}
             {t === 'Community' && <i className="bi bi-people" />}
             {t === 'Messages' && <i className="bi bi-chat-dots" />}
             {t}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => document.getElementById('comm-composer')?.focus()}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            padding: '0.4rem 1rem',
+            borderRadius: '8px',
+            border: 'none',
+            background: '#10b981',
+            color: '#fff',
+            fontSize: '0.8125rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            fontFamily: 'var(--font-sans)',
+            marginLeft: '0.25rem',
+          }}
+        >
+          + New Post
+        </button>
       </div>
 
       <div className="comm-3col">
@@ -552,12 +489,33 @@ export default function CommunityPageClient() {
                   }}
                 />
               </div>
+              {searchQuery.trim().length >= 2 && (
+                <div
+                  className="comm-search-dropdown comm-search-dropdown--inline"
+                  style={{ marginTop: '0.5rem', maxHeight: 200, overflowY: 'auto' }}
+                >
+                  {searchBusy && <div className="comm-search-loading">Searching…</div>}
+                  {!searchBusy &&
+                    searchResults.map((u) => (
+                      <Link key={u.id} href={`/profile/${u.username || u.id}`} className="comm-search-hit">
+                        <span className="comm-search-avatar">{getInitials(u.full_name)}</span>
+                        <span className="comm-search-meta">
+                          <span className="comm-search-name">{u.full_name}</span>
+                          <span className="comm-search-sub">@{u.username || u.id.slice(0, 8)}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  {!searchBusy && searchResults.length === 0 && (
+                    <div className="comm-search-empty">No users found</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
 
-          <div className="db-card">
+          <div className="db-card suggested-for-you-card">
             <div className="db-card-header">
               <h3>Suggested for You</h3>
               <Link href="/leaderboard" style={{ color: '#10b981', fontSize: '0.6875rem', fontWeight: 600, textDecoration: 'none' }}>
@@ -605,7 +563,12 @@ export default function CommunityPageClient() {
                       >
                         {u.name}
                       </Link>
-                      <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: 0 }}>@{u.username || u.id.slice(0, 8)}</p>
+                      <p
+                        className="username"
+                        style={{ color: 'var(--text-primary)', fontSize: '0.6875rem', margin: 0 }}
+                      >
+                        @{u.username || u.id.slice(0, 8)}
+                      </p>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <span style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>{u.return}</span>
