@@ -1,11 +1,11 @@
 import { TRACKS } from '@/lib/learning-curriculum';
 
-/** Display colors per curriculum level (Beginner → Expert). */
+/** Display colors per curriculum level (Bronze → Platinum). */
 export const LEVEL_COLORS = {
-  basic: { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', label: 'Beginner' },
-  intermediate: { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', label: 'Intermediate' },
-  advanced: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', label: 'Advanced' },
-  expert: { color: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)', label: 'Expert' },
+  basic: { color: '#cd7f32', bg: 'rgba(205,127,50,0.10)', label: 'Bronze', tier: 1 },
+  intermediate: { color: '#c0c0c0', bg: 'rgba(192,192,192,0.10)', label: 'Silver', tier: 2 },
+  advanced: { color: '#d4a853', bg: 'rgba(212,168,83,0.10)', label: 'Gold', tier: 3 },
+  expert: { color: '#e5e4e2', bg: 'rgba(229,228,226,0.10)', label: 'Platinum', tier: 4 },
 };
 
 const SUFFIX_TO_LEVEL = {

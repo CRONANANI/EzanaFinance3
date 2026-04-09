@@ -12,6 +12,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
+import { TrophyCabinetCard } from '@/components/community/TrophyCabinetCard';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { supabase } from '@/lib/supabase';
 import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
@@ -44,15 +45,17 @@ const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
 const PAGE_TABS = ['Community', 'Messages'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
-  if (feedTab === 'Badges') return 'trending';
+  if (feedTab === 'Badges') return 'recent';
   if (feedTab === 'Following' || feedTab === 'Friends') return 'following';
-  if (feedTab === 'Discussions') return 'trending';
+  if (feedTab === 'Discussions') {
+    return feedSort === 'Popular' ? 'trending' : 'recent';
+  }
   if (feedTab === 'Feed') {
     if (feedSort === 'Popular') return 'trending';
     if (feedSort === 'Following' && hasUser) return 'following';
-    return 'trending';
+    return 'recent';
   }
-  return 'trending';
+  return 'recent';
 }
 
 function hashReturnPct(userId) {
@@ -89,9 +92,6 @@ export default function CommunityPageClient() {
   const [feedMessage, setFeedMessage] = useState('');
   const [feedLoading, setFeedLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchBusy, setSearchBusy] = useState(false);
   const [composerText, setComposerText] = useState('');
   const [posting, setPosting] = useState(false);
   const [quoteMap, setQuoteMap] = useState({});
@@ -272,27 +272,6 @@ export default function CommunityPageClient() {
     };
   }, []);
 
-  useEffect(() => {
-    const q = searchQuery.trim();
-    if (q.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    const t = setTimeout(async () => {
-      setSearchBusy(true);
-      try {
-        const res = await fetch(`/api/community/search?q=${encodeURIComponent(q)}`);
-        const data = await res.json();
-        setSearchResults(data.users || []);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearchBusy(false);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
-
   const toggleExpand = (id) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
@@ -429,90 +408,10 @@ export default function CommunityPageClient() {
             {t}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={() => document.getElementById('comm-composer')?.focus()}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            padding: '0.4rem 1rem',
-            borderRadius: '8px',
-            border: 'none',
-            background: '#10b981',
-            color: '#fff',
-            fontSize: '0.8125rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            fontFamily: 'var(--font-sans)',
-            marginLeft: '0.25rem',
-          }}
-        >
-          + New Post
-        </button>
       </div>
 
       <div className="comm-3col">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="db-card">
-            <div style={{ padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '0.9375rem', fontWeight: 800, color: '#f0f6fc', margin: '0 0 0.25rem' }}>Find People</h3>
-              <p style={{ color: '#6b7280', fontSize: '0.75rem', margin: '0 0 0.75rem' }}>
-                Search for investors, friends, or partners
-              </p>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  background: 'rgba(16, 185, 129, 0.04)',
-                  border: '1px solid rgba(16, 185, 129, 0.08)',
-                  borderRadius: '8px',
-                  padding: '0.45rem 0.7rem',
-                }}
-              >
-                <i className="bi bi-search" style={{ color: '#6b7280', fontSize: '0.75rem' }} />
-                <input
-                  type="text"
-                  placeholder="Search users by name or @username..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: '#e2e8f0',
-                    fontSize: '0.75rem',
-                    width: '100%',
-                    fontFamily: 'var(--font-sans)',
-                  }}
-                />
-              </div>
-              {searchQuery.trim().length >= 2 && (
-                <div
-                  className="comm-search-dropdown comm-search-dropdown--inline"
-                  style={{ marginTop: '0.5rem', maxHeight: 200, overflowY: 'auto' }}
-                >
-                  {searchBusy && <div className="comm-search-loading">Searching…</div>}
-                  {!searchBusy &&
-                    searchResults.map((u) => (
-                      <Link key={u.id} href={`/profile/${u.username || u.id}`} className="comm-search-hit">
-                        <span className="comm-search-avatar">{getInitials(u.full_name)}</span>
-                        <span className="comm-search-meta">
-                          <span className="comm-search-name">{u.full_name}</span>
-                          <span className="comm-search-sub">@{u.username || u.id.slice(0, 8)}</span>
-                        </span>
-                      </Link>
-                    ))}
-                  {!searchBusy && searchResults.length === 0 && (
-                    <div className="comm-search-empty">No users found</div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
           <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
 
           <div className="db-card suggested-for-you-card">
@@ -559,14 +458,17 @@ export default function CommunityPageClient() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <Link
                         href={`/profile/${u.username || u.id}`}
-                        style={{ color: '#f0f6fc', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none', display: 'block' }}
+                        style={{
+                          color: 'var(--home-heading, #111827)',
+                          fontSize: '0.8125rem',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          display: 'block',
+                        }}
                       >
                         {u.name}
                       </Link>
-                      <p
-                        className="username"
-                        style={{ color: 'var(--text-primary)', fontSize: '0.6875rem', margin: 0 }}
-                      >
+                      <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>
                         @{u.username || u.id.slice(0, 8)}
                       </p>
                     </div>
@@ -600,59 +502,11 @@ export default function CommunityPageClient() {
               )}
             </div>
           </div>
-
-          <div className="db-card">
-            <div className="db-card-header">
-              <div>
-                <h3 style={{ margin: 0 }}>Trending Topics</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>What&apos;s hot in the community</p>
-              </div>
-            </div>
-            <div style={{ padding: '0 1.25rem 0.75rem' }}>
-              {TRENDING_TOPICS.map((topic, i) => (
-                <div
-                  key={topic.tag}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '0.6rem 0',
-                    borderBottom: i < TRENDING_TOPICS.length - 1 ? '1px solid rgba(16, 185, 129, 0.04)' : 'none',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <span style={{ color: '#10b981', fontWeight: 800, fontSize: '0.8125rem' }}>#</span>
-                    <span style={{ color: '#e2e8f0', fontSize: '0.8125rem', fontWeight: 600 }}>{topic.tag}</span>
-                  </div>
-                  <span style={{ color: '#6b7280', fontSize: '0.6875rem', fontFamily: 'var(--font-sans)' }}>{topic.posts} posts</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ padding: '0 1.25rem 1rem' }}>
-              <button
-                type="button"
-                style={{
-                  width: '100%',
-                  padding: '0.55rem',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(16, 185, 129, 0.08)',
-                  background: 'rgba(16, 185, 129, 0.02)',
-                  color: '#10b981',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-sans)',
-                }}
-              >
-                View All Topics
-              </button>
-            </div>
-          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
               {FEED_TABS.map((t) => (
                 <button
                   key={t}
@@ -677,6 +531,27 @@ export default function CommunityPageClient() {
                   {t}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => document.getElementById('comm-composer')?.focus()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: '#10b981',
+                  color: '#fff',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                <i className="bi bi-pencil-square" /> New Post
+              </button>
             </div>
             {feedTab !== 'Badges' && (
               <select
@@ -842,6 +717,54 @@ export default function CommunityPageClient() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="db-card" style={{ padding: '1rem 1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+              <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, color: 'var(--home-heading, #111827)' }}>
+                Trending Topics
+              </h3>
+              <span style={{ fontSize: '0.625rem', color: 'var(--home-muted, #6b7280)', fontWeight: 500 }}>This week</span>
+            </div>
+            <div
+              className="comm-trending-strip"
+              style={{
+                display: 'flex',
+                gap: '8px',
+                overflowX: 'auto',
+                paddingBottom: '4px',
+                scrollbarWidth: 'none',
+              }}
+            >
+              {TRENDING_TOPICS.map((topic) => (
+                <button
+                  key={topic.tag}
+                  type="button"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    background: 'rgba(16, 185, 129, 0.05)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: 'var(--home-heading, #111827)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    flexShrink: 0,
+                  }}
+                >
+                  <span style={{ color: '#10b981' }}>#</span>
+                  {topic.tag}
+                  <span style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6rem', fontWeight: 400 }}>{topic.posts}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <TrophyCabinetCard />
+
           <div className="db-card">
             <div className="db-card-header">
               <div>
@@ -884,7 +807,7 @@ export default function CommunityPageClient() {
                     {getInitials(f.name)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: '#f0f6fc', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>{f.name}</p>
+                    <p style={{ color: 'var(--home-heading, #f0f6fc)', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>{f.name}</p>
                     <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: 0 }}>
                       <span style={{ color: '#8b949e' }}>@{f.username}</span>
                     </p>
@@ -944,7 +867,7 @@ export default function CommunityPageClient() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p
                       style={{
-                        color: '#e2e8f0',
+                        color: 'var(--home-heading, #e2e8f0)',
                         fontSize: '0.8125rem',
                         fontWeight: 600,
                         margin: 0,

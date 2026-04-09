@@ -113,12 +113,6 @@ export function CommunitySocialConnectCard({ variant = 'user' }) {
           );
         })}
       </div>
-      <div className="comm-social-connect__footer">
-        <p>
-          Official OAuth sign-in with each platform will roll out in a later release. Until then, use
-          Connect to preview how your profile will look.
-        </p>
-      </div>
     </div>
   );
 }

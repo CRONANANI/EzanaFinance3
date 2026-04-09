@@ -7,6 +7,12 @@ import { supabase } from '@/lib/supabase';
 import { formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { useAuth } from '@/components/AuthProvider';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function looksLikeUuid(s) {
+  return typeof s === 'string' && UUID_RE.test(s.trim());
+}
+
 function mapProfileToAuthor(prof) {
   if (!prof) return { id: null, username: '', name: 'Member', initials: '?' };
   const s = prof.user_settings || {};
@@ -35,6 +41,9 @@ export function CommunityFeedPost({
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentDraft, setCommentDraft] = useState('');
   const [postingComment, setPostingComment] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+
+  const profileSlug = post.username && !looksLikeUuid(post.username) ? post.username : post.userId;
 
   const loadComments = useCallback(async () => {
     setCommentsLoading(true);
@@ -129,12 +138,12 @@ export function CommunityFeedPost({
                       className="comm-name-link comm-post-name"
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push(`/profile/${post.username || post.userId}`);
+                        router.push(`/profile/${profileSlug}`);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.stopPropagation();
-                          router.push(`/profile/${post.username || post.userId}`);
+                          router.push(`/profile/${profileSlug}`);
                         }
                       }}
                     >
@@ -152,8 +161,11 @@ export function CommunityFeedPost({
                   </button>
                 </div>
                 <div className="comm-post-subrow">
-                  <span className="comm-post-handle">@{post.username || (post.userId ? post.userId.slice(0, 8) : 'member')}</span>
-                  <span className="comm-post-time"> · {post.time}</span>
+                  {post.username && <span className="comm-post-handle">@{post.username}</span>}
+                  <span className="comm-post-time">
+                    {post.username ? ' · ' : ''}
+                    {post.time}
+                  </span>
                 </div>
               </div>
             </div>
@@ -198,9 +210,94 @@ export function CommunityFeedPost({
           <button type="button" className="comm-engage-btn" aria-label="Comments" onClick={toggleComments}>
             <i className="bi bi-chat-dots" aria-hidden /> {post.comments}
           </button>
-          <button type="button" className="comm-engage-btn" aria-label="Share">
-            <i className="bi bi-share" aria-hidden /> Share
-          </button>
+          <div className="comm-share-wrap" style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="comm-engage-btn"
+              aria-label="Share"
+              aria-expanded={shareOpen}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShareOpen((o) => !o);
+              }}
+            >
+              <i className="bi bi-share" aria-hidden /> Share
+            </button>
+            {shareOpen && (
+              <div
+                role="dialog"
+                aria-label="Share to social"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  bottom: 'calc(100% + 6px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'var(--card-bg, #fff)',
+                  border: '1px solid rgba(16,185,129,0.15)',
+                  borderRadius: '12px',
+                  padding: '12px 14px',
+                  zIndex: 50,
+                  minWidth: '200px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                }}
+              >
+                <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--home-heading, #111)', margin: '0 0 10px' }}>
+                  Share to
+                </p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  {[
+                    { id: 'x', icon: 'bi-twitter-x', label: 'X', color: '#000' },
+                    { id: 'instagram', icon: 'bi-instagram', label: 'Instagram', color: '#E1306C' },
+                    { id: 'facebook', icon: 'bi-facebook', label: 'Facebook', color: '#1877F2' },
+                    { id: 'tiktok', icon: 'bi-tiktok', label: 'TikTok', color: '#010101' },
+                  ].map((platform) => (
+                    <button
+                      key={platform.id}
+                      type="button"
+                      title={platform.label}
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: '50%',
+                        border: `1px solid ${platform.color}30`,
+                        background: `${platform.color}10`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        color: platform.color,
+                      }}
+                      onClick={() => {
+                        // Future: open OAuth-linked share from settings
+                        alert(`Share to ${platform.label} — connect your account in Settings to share.`);
+                        setShareOpen(false);
+                      }}
+                    >
+                      <i className={`bi ${platform.icon}`} />
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(false)}
+                  style={{
+                    marginTop: '10px',
+                    width: '100%',
+                    padding: '4px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.625rem',
+                    color: 'var(--home-muted, #6b7280)',
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             className="comm-engage-btn"

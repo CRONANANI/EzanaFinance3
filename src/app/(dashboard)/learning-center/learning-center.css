@@ -716,7 +716,8 @@ body.light-mode .lc2-header-title {
 }
 
 .lc3-track-card-btn {
-  padding: 1rem;
+  padding: 0.6rem 1rem !important;
+  min-height: unset !important;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s, transform 0.15s;
@@ -738,7 +739,20 @@ body.light-mode .lc2-header-title {
   display: grid;
   grid-template-columns: 340px 1fr;
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch;
+}
+
+.lc3-friends-card {
+  height: 100%;
+  min-height: var(--lc3-track-card-height, auto);
+}
+
+.lc3-friend-name {
+  color: #f0f6fc;
+}
+
+body.light-mode .lc3-friend-name {
+  color: #111827;
 }
 
 .lc3-course-panel-header {

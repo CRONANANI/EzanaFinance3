@@ -29,10 +29,53 @@ function mapAuthor(prof, viewerId) {
   };
 }
 
+function engagementScore(p) {
+  return (p.likes_count || 0) + (p.comments_count || 0) + (p.reposts_count || 0);
+}
+
+async function buildEnrichedResponse(supabase, user, list) {
+  const userIds = [...new Set(list.map((p) => p.user_id))];
+
+  let profileMap = {};
+  if (userIds.length > 0) {
+    const { data: profs } = await supabaseAdmin.from('profiles').select('id, username, user_settings').in('id', userIds);
+    profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
+  }
+
+  const postIds = list.map((p) => p.id);
+
+  let likedSet = new Set();
+  let savedSet = new Set();
+  if (user && postIds.length > 0) {
+    const { data: likes } = await supabase
+      .from('post_likes')
+      .select('post_id')
+      .eq('user_id', user.id)
+      .in('post_id', postIds);
+    const { data: saves } = await supabase
+      .from('post_saves')
+      .select('post_id')
+      .eq('user_id', user.id)
+      .in('post_id', postIds);
+    likedSet = new Set((likes || []).map((l) => l.post_id));
+    savedSet = new Set((saves || []).map((s) => s.post_id));
+  }
+
+  const enrichedPosts = list.map((post) => ({
+    ...post,
+    author: mapAuthor(profileMap[post.user_id], user?.id),
+    liked_by_me: likedSet.has(post.id),
+    saved_by_me: savedSet.has(post.id),
+  }));
+
+  return NextResponse.json({ posts: enrichedPosts });
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const tab = searchParams.get('tab') || 'trending';
+    const rawTab = searchParams.get('tab') || 'recent';
+    const tab = rawTab === 'latest' ? 'recent' : rawTab;
     const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10));
 
     const supabase = createServerSupabase();
@@ -40,12 +83,31 @@ export async function GET(request) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    let query = supabase
-      .from('community_posts')
-      .select(
-        'id, user_id, content, mentioned_ticker, likes_count, comments_count, reposts_count, created_at'
-      )
-      .is('parent_post_id', null);
+    const from = page * LIMIT;
+    const to = from + LIMIT - 1;
+
+    const selectCols =
+      'id, user_id, content, mentioned_ticker, likes_count, comments_count, reposts_count, created_at';
+
+    /** Popular / trending: sort by likes + comments + reposts (batched then sliced) */
+    if (tab === 'trending' || tab === 'popular') {
+      const { data: batch, error } = await supabase
+        .from('community_posts')
+        .select(selectCols)
+        .is('parent_post_id', null)
+        .limit(500);
+
+      if (error) {
+        console.error('Fetch posts error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      const sorted = [...(batch || [])].sort((a, b) => engagementScore(b) - engagementScore(a));
+      const list = sorted.slice(from, from + LIMIT);
+      return await buildEnrichedResponse(supabase, user, list);
+    }
+
+    let query = supabase.from('community_posts').select(selectCols).is('parent_post_id', null);
 
     if (tab === 'following' && user) {
       const { data: followingRows } = await supabase
@@ -68,15 +130,7 @@ export async function GET(request) {
       return NextResponse.json({ posts: [], message: 'Sign in to see posts from people you follow' });
     }
 
-    if (tab === 'trending') {
-      query = query.order('likes_count', { ascending: false }).order('created_at', { ascending: false });
-    } else {
-      query = query.order('created_at', { ascending: false });
-    }
-
-    const from = page * LIMIT;
-    const to = from + LIMIT - 1;
-    query = query.range(from, to);
+    query = query.order('created_at', { ascending: false }).range(from, to);
 
     const { data: posts, error } = await query;
 
@@ -86,41 +140,7 @@ export async function GET(request) {
     }
 
     const list = posts || [];
-    const userIds = [...new Set(list.map((p) => p.user_id))];
-
-    let profileMap = {};
-    if (userIds.length > 0) {
-      const { data: profs } = await supabaseAdmin.from('profiles').select('id, username, user_settings').in('id', userIds);
-      profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
-    }
-
-    const postIds = list.map((p) => p.id);
-
-    let likedSet = new Set();
-    let savedSet = new Set();
-    if (user && postIds.length > 0) {
-      const { data: likes } = await supabase
-        .from('post_likes')
-        .select('post_id')
-        .eq('user_id', user.id)
-        .in('post_id', postIds);
-      const { data: saves } = await supabase
-        .from('post_saves')
-        .select('post_id')
-        .eq('user_id', user.id)
-        .in('post_id', postIds);
-      likedSet = new Set((likes || []).map((l) => l.post_id));
-      savedSet = new Set((saves || []).map((s) => s.post_id));
-    }
-
-    const enrichedPosts = list.map((post) => ({
-      ...post,
-      author: mapAuthor(profileMap[post.user_id], user?.id),
-      liked_by_me: likedSet.has(post.id),
-      saved_by_me: savedSet.has(post.id),
-    }));
-
-    return NextResponse.json({ posts: enrichedPosts });
+    return await buildEnrichedResponse(supabase, user, list);
   } catch (error) {
     console.error('GET posts:', error);
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });

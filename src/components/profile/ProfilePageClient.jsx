@@ -1,5 +1,6 @@
 'use client';
 
+import '@/app/(dashboard)/community/community.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
@@ -295,7 +296,7 @@ export function ProfilePageClient({ username }) {
   const pills = badgePills(statsQuick, profile.is_partner);
 
   return (
-    <div className="dashboard-page-inset db-page">
+    <div className="dashboard-page-inset db-page comm-profile-page font-sans">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_390px]">
         <section className="min-w-0">
           <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-5">
@@ -450,18 +451,18 @@ export function ProfilePageClient({ username }) {
                   <Link
                     key={item.id}
                     href={`/profile/${item.username || item.id}`}
-                    className="block rounded-xl border border-[#1a1a24] bg-[#111118] p-4 transition-colors hover:border-[#2a2a34]"
+                    className="block rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-emerald-200 dark:border-[#1a1a24] dark:bg-[#111118] dark:hover:border-[#2a2a34]"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <div
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#1a1a24] bg-[#16161f] text-sm font-semibold text-[#9ca3af]"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-sm font-semibold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
                           style={{ backgroundImage: item.avatar_url ? `url(${item.avatar_url})` : undefined, backgroundSize: 'cover' }}
                         >
                           {!item.avatar_url && (item.name?.[0] || '?').toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[#f5f5f5]">{item.name}</p>
+                          <p className="truncate text-sm font-semibold text-gray-900 dark:text-[#f5f5f5]">{item.name}</p>
                           <p className="truncate text-xs text-[#6b7280]">
                             @{item.username || item.id}
                             {item.is_partner ? ` · ${item.partner_type || 'Legendary Investor'}` : ''}

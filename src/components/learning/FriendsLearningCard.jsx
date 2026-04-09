@@ -81,7 +81,9 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem' }}>
-                  <span style={{ color: '#f0f6fc', fontSize: '.8125rem', fontWeight: 700 }}>{f.displayName}</span>
+                  <span className="lc3-friend-name" style={{ fontSize: '.8125rem', fontWeight: 700 }}>
+                    {f.displayName}
+                  </span>
                   <span style={{ color: '#10b981', fontSize: '.625rem', fontWeight: 700 }}>{f.progressPct}%</span>
                 </div>
                 <p style={{ color: '#6b7280', fontSize: '.625rem', margin: '.2rem 0 0' }}>
