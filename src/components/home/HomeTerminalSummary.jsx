@@ -133,15 +133,6 @@ const TICKER_COLORS = [
   '#ec4899',
 ];
 
-function initials(name) {
-  return name
-    .split(/\s+/)
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 function tickerColor(ticker) {
   let h = 0;
   for (let i = 0; i < (ticker || '').length; i++) h += ticker.charCodeAt(i);
@@ -219,11 +210,79 @@ export function HomeTerminalSummary({
   }, []);
 
   useEffect(() => {
-    fetch('/api/fmp/congress-latest')
-      .then((r) => (r.ok ? r.json() : { trades: [] }))
-      .then((d) => setCongressTrades(d.trades || []))
-      .catch(() => setCongressTrades([]))
-      .finally(() => setCongressLoading(false));
+    let cancelled = false;
+
+    async function fetchCongress() {
+      setCongressLoading(true);
+      try {
+        const [houseRes, senateRes] = await Promise.all([
+          fetch('/api/fmp/house?type=latest&page=0&limit=20'),
+          fetch('/api/fmp/senate?type=latest&page=0&limit=20'),
+        ]);
+        const houseRaw = houseRes.ok ? await houseRes.json() : [];
+        const senateRaw = senateRes.ok ? await senateRes.json() : [];
+
+        const normalize = (t, chamber) => {
+          const first = t.firstName || '';
+          const last = t.lastName || '';
+          const name = `${first} ${last}`.trim() || t.office || t.name || 'Unknown';
+          const rawType = (t.type || t.transactionType || '').toString().toLowerCase();
+          const isSell = rawType.includes('sale') || rawType.includes('sell') || rawType.includes('disposal');
+          const sym = (t.symbol || t.ticker || '').toUpperCase();
+
+          const rawAmt = t.amount || '';
+          let amount = rawAmt;
+          const match = rawAmt.match(/\$([\d,]+)\s*[-–]\s*\$([\d,]+)/);
+          if (match) {
+            const lo = parseInt(match[1].replace(/,/g, ''), 10);
+            const hi = parseInt(match[2].replace(/,/g, ''), 10);
+            const fmt = (n) =>
+              n >= 1_000_000
+                ? `$${(n / 1_000_000).toFixed(1)}M`
+                : n >= 1_000
+                  ? `$${Math.round(n / 1_000)}K`
+                  : `$${n}`;
+            amount = `${fmt(lo)}–${fmt(hi)}`;
+          }
+
+          const disclosure = t.disclosureDate || t.date || t.transactionDate || '';
+          const rawDate = new Date(disclosure);
+          const ts = rawDate.getTime();
+          const relDate = !disclosure
+            ? '—'
+            : Number.isNaN(ts)
+              ? disclosure
+              : (() => {
+                  const diff = Math.floor((Date.now() - ts) / 86_400_000);
+                  if (diff === 0) return 'Today';
+                  if (diff === 1) return '1d ago';
+                  return `${diff}d ago`;
+                })();
+
+          return { name, sym, chamber, isSell, amount, relDate, ts: ts || 0 };
+        };
+
+        const house = Array.isArray(houseRaw) ? houseRaw.map((t) => normalize(t, 'House')) : [];
+        const senate = Array.isArray(senateRaw) ? senateRaw.map((t) => normalize(t, 'Senate')) : [];
+
+        const combined = [...house, ...senate].sort((a, b) => b.ts - a.ts).slice(0, 5);
+
+        if (!cancelled) {
+          setCongressTrades(combined);
+          setCongressLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setCongressTrades([]);
+          setCongressLoading(false);
+        }
+      }
+    }
+
+    fetchCongress();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const hasPortfolio =
@@ -455,8 +514,6 @@ export function HomeTerminalSummary({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     {enrichedHoldings.slice(0, 6).map((h) => {
                       const symbol = h.symbol ?? h.ticker ?? '?';
-                      const qty = h.qty ?? h.shares ?? 0;
-                      const price = h.currentPrice ?? h.price ?? 0;
                       let pnlPct = h.pnlPct ?? h.pctChange;
                       if (pnlPct == null && h.costBasis > 0 && (h.value ?? h.posValue) != null) {
                         const val = h.posValue ?? h.value ?? 0;
@@ -482,11 +539,7 @@ export function HomeTerminalSummary({
                           <span style={{ width: 7, height: 7, borderRadius: '2px', background: dotColor, flexShrink: 0 }} />
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--home-heading)' }}>{symbol}</span>
-                            <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', marginLeft: 4 }}>×{qty}</span>
                           </div>
-                          <span style={{ fontSize: '0.625rem', color: 'var(--home-muted-soft)', flexShrink: 0 }}>
-                            ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
                           <span
                             style={{
                               fontSize: '0.6875rem',
@@ -823,83 +876,111 @@ export function HomeTerminalSummary({
                   </div>
                   <div style={{ padding: '0 1.25rem 1rem' }}>
                     {congressLoading && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.75rem 0' }}>Loading trades…</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.5rem 0', margin: 0 }}>
+                        Loading trades…
+                      </p>
                     )}
+
                     {!congressLoading && congressTrades.length === 0 && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.75rem 0' }}>No recent trades found.</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.5rem 0', margin: 0 }}>
+                        No recent trades available.
+                      </p>
                     )}
+
                     {!congressLoading &&
-                      congressTrades.map((row, idx) => (
-                        <div
-                          key={`${row.name}-${row.symbol}-${idx}`}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.65rem',
-                            padding: '0.6rem 0',
-                            borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
-                          }}
-                        >
+                      congressTrades.map((row, i) => {
+                        const initialsStr = row.name
+                          .split(' ')
+                          .filter(Boolean)
+                          .map((w) => w[0])
+                          .slice(0, 2)
+                          .join('')
+                          .toUpperCase();
+
+                        return (
                           <div
+                            key={`${row.name}-${row.sym}-${i}`}
                             style={{
-                              width: 36,
-                              height: 36,
-                              borderRadius: '50%',
-                              background: row.positive ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.10)',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '0.65rem',
-                              fontWeight: 800,
-                              color: row.positive ? '#10b981' : '#ef4444',
-                              flexShrink: 0,
+                              gap: '0.5rem',
+                              padding: '0.5rem 0',
+                              borderBottom:
+                                i < congressTrades.length - 1 ? '1px solid rgba(16, 185, 129, 0.04)' : 'none',
                             }}
                           >
-                            {initials(row.name)}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p
+                            <div
                               style={{
-                                color: 'var(--home-heading)',
-                                fontSize: '0.8125rem',
-                                fontWeight: 700,
-                                margin: 0,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
+                                width: 30,
+                                height: 30,
+                                borderRadius: '50%',
+                                background: 'rgba(16, 185, 129, 0.08)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.6rem',
+                                fontWeight: 800,
+                                color: '#10b981',
+                                flexShrink: 0,
                               }}
                             >
-                              {row.name}
-                              <span style={{ color: 'var(--home-muted)', fontSize: '0.6rem', fontWeight: 400, marginLeft: 4 }}>
-                                {row.chamber}
+                              {initialsStr}
+                            </div>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p
+                                style={{
+                                  color: 'var(--home-heading)',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  margin: 0,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {row.name}
+                              </p>
+                              <p style={{ color: 'var(--home-muted)', fontSize: '0.625rem', margin: 0 }}>
+                                {row.chamber} · {row.relDate}
+                              </p>
+                            </div>
+
+                            {row.sym && (
+                              <span
+                                style={{
+                                  padding: '0.15rem 0.4rem',
+                                  borderRadius: '4px',
+                                  fontSize: '0.625rem',
+                                  fontWeight: 700,
+                                  background: row.isSell ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                                  color: row.isSell ? '#ef4444' : '#10b981',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {row.sym}
                               </span>
-                            </p>
-                            <p style={{ color: 'var(--home-muted-soft)', fontSize: '0.6875rem', margin: '0.1rem 0 0' }}>
-                              {row.action}{' '}
-                              <span style={{ color: row.positive ? '#10b981' : '#ef4444', fontWeight: 700 }}>{row.symbol}</span>
-                              {row.disclosureDate && (
-                                <span style={{ color: 'var(--home-muted)', marginLeft: 6, fontSize: '0.6rem' }}>
-                                  {new Date(row.disclosureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
-                              )}
-                            </p>
+                            )}
+
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <p
+                                style={{
+                                  margin: 0,
+                                  fontSize: '0.6875rem',
+                                  fontWeight: 700,
+                                  color: row.isSell ? '#ef4444' : '#10b981',
+                                }}
+                              >
+                                {row.isSell ? 'SELL' : 'BUY'}
+                              </p>
+                              <p style={{ margin: 0, fontSize: '0.5625rem', color: 'var(--home-muted)' }}>
+                                {row.amount}
+                              </p>
+                            </div>
                           </div>
-                          <div style={{ flexShrink: 0 }}>
-                            <span
-                              style={{
-                                padding: '0.2rem 0.5rem',
-                                borderRadius: '4px',
-                                fontSize: '0.6875rem',
-                                fontWeight: 700,
-                                background: row.positive ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
-                                color: row.positive ? '#10b981' : '#ef4444',
-                              }}
-                            >
-                              {row.amount}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
+
                     <Link
                       href="/inside-the-capitol"
                       style={{
@@ -912,7 +993,7 @@ export function HomeTerminalSummary({
                         textDecoration: 'none',
                       }}
                     >
-                      View All <i className="bi bi-chevron-down" />
+                      View All <i className="bi bi-chevron-right" />
                     </Link>
                   </div>
                 </div>
@@ -921,7 +1002,14 @@ export function HomeTerminalSummary({
               <div className="home-rail-movers">
               <div
                 className="db-card home-top-movers-card"
-                style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, alignSelf: 'stretch' }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  flex: 1,
+                  minHeight: 0,
+                  alignSelf: 'stretch',
+                }}
               >
                 <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3>Top Movers Today</h3>
@@ -934,14 +1022,14 @@ export function HomeTerminalSummary({
                     </button>
                   </div>
                 </div>
-                <div style={{ padding: '0 1.25rem 0.5rem', flex: 1, minHeight: 0 }}>
+                <div style={{ padding: '0 1.25rem 0.5rem' }}>
                   <p
                     style={{
                       fontSize: '0.625rem',
                       fontWeight: 700,
                       letterSpacing: '0.08em',
                       color: 'var(--home-muted)',
-                      margin: '0 0 0.5rem',
+                      margin: '0.25rem 0 0.35rem',
                     }}
                   >
                     GAINERS
@@ -953,7 +1041,7 @@ export function HomeTerminalSummary({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        padding: '0.45rem 0',
+                        padding: '0.35rem 0',
                         borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
                       }}
                     >
@@ -997,7 +1085,7 @@ export function HomeTerminalSummary({
                       fontWeight: 700,
                       letterSpacing: '0.08em',
                       color: 'var(--home-muted)',
-                      margin: '1rem 0 0.5rem',
+                      margin: '0.5rem 0 0.35rem',
                     }}
                   >
                     LOSERS
@@ -1009,7 +1097,7 @@ export function HomeTerminalSummary({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        padding: '0.45rem 0',
+                        padding: '0.35rem 0',
                         borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
                       }}
                     >
