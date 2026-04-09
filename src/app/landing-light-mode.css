@@ -57,6 +57,11 @@ body.light-mode:has(.landing-page) .navbar.navbar-sticky.scrolled {
   box-shadow: var(--shadow-sm) !important;
 }
 
+/* Mobile slide-out menu — same surface as landing sections */
+body.light-mode:has(.landing-page) .mobile-nav-menu {
+  background: var(--bg-primary) !important;
+}
+
 /* ── Hero (globals.css) ── */
 body.light-mode .landing-page .main-content.hero-section,
 body.light-mode .landing-page .hero-cybercore-root {

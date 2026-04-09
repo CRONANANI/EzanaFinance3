@@ -65,7 +65,8 @@
     max-width: 360px;
     height: 100vh;
     height: 100dvh;
-    background: linear-gradient(180deg, #0d1117 0%, #0a0f14 100%);
+    /* Match main landing page background (see globals + app-legacy/pages/landing.css) */
+    background: #050a08;
     border-left: 1px solid rgba(16, 185, 129, 0.15);
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
     overflow-y: auto;

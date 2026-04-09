@@ -683,17 +683,18 @@ html:has(.landing-page) body:not(.light-mode) {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(5, 10, 8, 0.95) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  /* Match landing page / html:has(.landing-page) body background (#050a08) */
+  background: #050a08 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: none !important;
   transition: all 0.3s ease;
 }
 
 /* Add shadow when scrolled */
 .navbar-sticky.scrolled {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  background: rgba(5, 10, 8, 0.98) !important;
+  background: #050a08 !important;
 }
 
 /* ═══════════════════════════════════════════
