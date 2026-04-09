@@ -91,21 +91,43 @@ const WORST_SECTORS = [
   { name: 'Utilities', change: '-0.017%' },
 ];
 
-/** Upcoming Events grid — `day` is day-of-month (calendar uses current month/year) */
-const UPCOMING_EVENTS_GRID = [
-  { id: 1, type: 'fed', icon: '🏛️', title: 'Fed Rate Decision', day: 7, time: '2:00 PM', color: '#3b82f6' },
-  { id: 2, type: 'earnings', icon: '📊', title: 'NVDA Earnings', day: 8, time: '4:30 PM', color: '#10b981' },
-  { id: 3, type: 'alert', icon: '🔔', title: 'Portfolio Alert', day: 9, time: 'All Day', color: '#f59e0b' },
-  { id: 4, type: 'economic', icon: '📈', title: 'CPI Release', day: 10, time: '8:30 AM', color: '#6366f1' },
-  { id: 5, type: 'earnings', icon: '📊', title: 'AAPL Earnings', day: 11, time: '4:30 PM', color: '#10b981' },
-  { id: 6, type: 'fed', icon: '🏛️', title: 'Fed Minutes', day: 14, time: '2:00 PM', color: '#3b82f6' },
-  { id: 7, type: 'economic', icon: '📉', title: 'Retail Sales', day: 15, time: '8:30 AM', color: '#6366f1' },
-  { id: 8, type: 'alert', icon: '⚠️', title: 'Margin Call Warning', day: 16, time: 'Alert', color: '#ef4444' },
-  { id: 9, type: 'earnings', icon: '📊', title: 'MSFT Earnings', day: 17, time: '4:30 PM', color: '#10b981' },
-  { id: 10, type: 'economic', icon: '🏠', title: 'Housing Starts', day: 17, time: '8:30 AM', color: '#6366f1' },
-  { id: 11, type: 'fed', icon: '🏛️', title: 'Fed Speaker: Powell', day: 18, time: '10:00 AM', color: '#3b82f6' },
-  { id: 12, type: 'alert', icon: '🔔', title: 'Watchlist Price Alert', day: 21, time: 'Alert', color: '#f59e0b' },
-];
+/** Generate fallback placeholder events starting from tomorrow, spread across the rest of the month. */
+function buildFallbackEvents() {
+  const now = new Date();
+  const todayDay = now.getDate();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysLeft = daysInMonth - todayDay; // days remaining after today
+
+  // If fewer than 2 days left in the month, return empty — nothing to show
+  if (daysLeft < 2) return [];
+
+  // Templates — will be assigned to future days spread across the rest of the month
+  const templates = [
+    { type: 'fed', icon: '🏛️', title: 'Fed Rate Decision', time: '2:00 PM', color: '#3b82f6' },
+    { type: 'earnings', icon: '📊', title: 'NVDA Earnings', time: '4:30 PM', color: '#10b981' },
+    { type: 'economic', icon: '📈', title: 'CPI Release', time: '8:30 AM', color: '#6366f1' },
+    { type: 'earnings', icon: '📊', title: 'AAPL Earnings', time: '4:30 PM', color: '#10b981' },
+    { type: 'fed', icon: '🏛️', title: 'Fed Minutes', time: '2:00 PM', color: '#3b82f6' },
+    { type: 'economic', icon: '📉', title: 'Retail Sales', time: '8:30 AM', color: '#6366f1' },
+    { type: 'earnings', icon: '📊', title: 'MSFT Earnings', time: '4:30 PM', color: '#10b981' },
+    { type: 'economic', icon: '🏠', title: 'Housing Starts', time: '8:30 AM', color: '#6366f1' },
+    { type: 'fed', icon: '🏛️', title: 'Fed Speaker: Powell', time: '10:00 AM', color: '#3b82f6' },
+    { type: 'economic', icon: '💵', title: 'PPI Data Release', time: '8:30 AM', color: '#6366f1' },
+    { type: 'earnings', icon: '📊', title: 'SPY Rebalance', time: 'After Close', color: '#10b981' },
+    { type: 'economic', icon: '📊', title: 'Consumer Confidence', time: '10:00 AM', color: '#6366f1' },
+  ];
+
+  const count = Math.min(templates.length, daysLeft);
+  // Space events evenly across remaining days (skip weekends where possible)
+  const step = Math.max(1, Math.floor(daysLeft / count));
+
+  return templates.slice(0, count).map((t, i) => {
+    const day = Math.min(todayDay + 1 + i * step, daysInMonth);
+    return { ...t, id: i + 1, day };
+  });
+}
 
 const EVENT_COLOURS = {
   fed: '#3b82f6',
@@ -346,18 +368,24 @@ export function HomeTerminalSummary({
 
     const today = new Date();
     const todayDayOfMonth = today.getDate();
+    // tomorrow midnight — only show events strictly after today
+    const tomorrowMidnight = new Date(y, m, todayDayOfMonth + 1, 0, 0, 0);
 
     const filteredLive = liveEvents.filter((ev) => {
       if (ev.fullDate) {
         const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
         const [ey, em, ed] = datePart.split('-').map(Number);
-        if (!ey || !em || !ed) return true;
-        return new Date(ey, em - 1, ed) >= new Date(y, m, todayDayOfMonth);
+        if (!ey || !em || !ed) return false;
+        // Strictly after today — nothing dated today, only future dates
+        return new Date(ey, em - 1, ed) >= tomorrowMidnight;
       }
-      return ev.day >= todayDayOfMonth;
+      // For fallback events without fullDate, require strictly greater than today
+      return ev.day > todayDayOfMonth;
     });
 
-    const eventsSource = filteredLive.length > 0 ? filteredLive : UPCOMING_EVENTS_GRID;
+    // Rebuild fallback each render so it always uses today's date, not module-load time
+    const fallback = buildFallbackEvents();
+    const eventsSource = filteredLive.length > 0 ? filteredLive : fallback;
 
     eventsSource.forEach((ev) => {
       let dom;
@@ -594,7 +622,7 @@ export function HomeTerminalSummary({
                               Loading events…
                             </div>
                           ) : (
-                            (upcomingCalendar.eventsSource || UPCOMING_EVENTS_GRID).map((ev) => {
+                            upcomingCalendar.eventsSource.map((ev) => {
                               const dateLabel = (() => {
                                 if (ev.fullDate) {
                                   const parts = String(ev.fullDate).split('T')[0].split('-');

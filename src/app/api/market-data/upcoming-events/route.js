@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic';
 const FMP_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY || process.env.FMP_API_KEY;
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
-// Short cache — prevents stale same-day responses being served from CDN
+// Short cache (5 min) — limits stale same-day responses from CDN/edge
 const CACHE_HEADERS = {
-  'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
+  'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
 };
 
 /** Parse "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" as local time */
