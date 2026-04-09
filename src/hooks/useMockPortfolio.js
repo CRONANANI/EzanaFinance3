@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
 
 const STARTING_CASH = 100_000;
 const POST_DEBOUNCE_MS = 800;
@@ -132,9 +133,18 @@ export function useMockPortfolio() {
     if (!payload) return;
     setSyncing(true);
     try {
+      // Include the access token so the server can auth even if the cookie
+      // isn't available (e.g. cross-origin or during page unload)
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
+      }
       await fetch('/api/mock-portfolio', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ portfolio: payload }),
       });
     } catch {
@@ -170,18 +180,27 @@ export function useMockPortfolio() {
         const next = withMeta(raw);
         saveLocal(next);
         if (!skipSync) {
-          // Immediate fire-and-forget POST — ensures at least one write reaches
-          // Supabase before any page-close/navigation, regardless of debounce timing.
+          // Immediate fire-and-forget POST — guarantees at least one write reaches
+          // Supabase before any navigation or tab close, regardless of debounce timing.
           if (user?.id) {
-            fetch('/api/mock-portfolio', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ portfolio: next }),
-            }).catch(() => {
-              /* network — debounce retry will catch it */
-            });
+            supabase.auth
+              .getSession()
+              .then(({ data: { session } }) => {
+                const headers = { 'Content-Type': 'application/json' };
+                if (session?.access_token) {
+                  headers.Authorization = `Bearer ${session.access_token}`;
+                }
+                return fetch('/api/mock-portfolio', {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify({ portfolio: next }),
+                });
+              })
+              .catch(() => {
+                /* network — debounce retry will catch it */
+              });
           }
-          // Debounce still coalesces rapid-fire trades into a single final write.
+          // Debounce still coalesces rapid trades into one final write
           schedulePost(next);
         }
         return next;
@@ -196,44 +215,53 @@ export function useMockPortfolio() {
     };
   }, []);
 
-  // Flush pending Supabase POST immediately on tab close or hide.
-  // Without this, any trade made within the 800ms debounce window before
-  // closing the tab is lost from the server (localStorage only).
+  // Flush any pending debounced POST immediately when the tab is closed or hidden.
+  // Without this, a trade made within the 800ms debounce window before closing
+  // the tab is only in localStorage — clear cookies and it's gone forever.
   useEffect(() => {
     if (!user?.id) return undefined;
 
-    const flush = () => {
-      if (!postPayloadRef.current) return;
+    const flushOnUnload = () => {
       const payload = postPayloadRef.current;
+      if (!payload) return;
       postPayloadRef.current = null;
       if (postTimerRef.current) {
         clearTimeout(postTimerRef.current);
         postTimerRef.current = null;
       }
-      // Use sendBeacon for unload events — it survives page close.
-      // Fall back to a regular fetch for visibilitychange.
       const body = JSON.stringify({ portfolio: payload });
-      if (navigator.sendBeacon) {
-        const blob = new Blob([body], { type: 'application/json' });
-        navigator.sendBeacon('/api/mock-portfolio-beacon', blob);
-      } else {
-        fetch('/api/mock-portfolio', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body,
-          keepalive: true,
-        }).catch(() => {});
+      // sendBeacon survives page close; keepalive fetch is the fallback
+      try {
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+          const blob = new Blob([body], { type: 'application/json' });
+          navigator.sendBeacon('/api/mock-portfolio', blob);
+        } else {
+          void supabase.auth.getSession().then(({ data: { session } }) => {
+            const headers = { 'Content-Type': 'application/json' };
+            if (session?.access_token) {
+              headers.Authorization = `Bearer ${session.access_token}`;
+            }
+            fetch('/api/mock-portfolio', {
+              method: 'POST',
+              headers,
+              body,
+              keepalive: true,
+            }).catch(() => {});
+          });
+        }
+      } catch {
+        // Ignore — best-effort on unload
       }
     };
 
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') flush();
+      if (document.visibilityState === 'hidden') flushOnUnload();
     };
 
-    window.addEventListener('beforeunload', flush);
+    window.addEventListener('beforeunload', flushOnUnload);
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
-      window.removeEventListener('beforeunload', flush);
+      window.removeEventListener('beforeunload', flushOnUnload);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [user?.id]);
