@@ -83,13 +83,13 @@ export function LandingHero() {
         >
           <FallingPattern
             color="#059669"
-            streakColor="rgba(5, 150, 105, 0.7)"
-            sparkleColor="#059669"
+            streakColor="rgba(5, 150, 105, 0.49)"
+            sparkleColor="rgba(5, 150, 105, 0.7)"
             backgroundColor="#f8fafb"
             duration={120}
             blurIntensity="0em"
             density={1.25}
-            className="h-full w-full [mask-image:radial-gradient(ellipse_80%_80%_at_60%_50%,black_30%,transparent_100%)]"
+            className="h-full w-full"
           />
         </div>
       )}

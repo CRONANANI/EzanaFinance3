@@ -66,9 +66,47 @@
   opacity: 0;
   transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity;
-  /* Pattern visible across the full hero, fades only at the very top edge */
-  mask-image: linear-gradient(to top, black 0%, black 85%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to top, black 0%, black 85%, transparent 100%);
+  /*
+   * V-shape mask: pattern is hidden behind the centered text block
+   * (top-center of the hero) and visible on the sides + below the globe.
+   *
+   * How it works — two gradient layers composited with multiply:
+   *   Layer 1 (horizontal): fades from black on both edges to transparent
+   *   in the center-top, creating the left and right visible arms of the V.
+   *   Layer 2 (vertical): fades from transparent at top to black at bottom,
+   *   so the pattern only fully appears in the lower portion of the hero.
+   *
+   * Together they produce a V / chevron shape — clear on left+right edges
+   * and at the globe area below, invisible behind the centered text.
+   */
+  mask-image:
+    radial-gradient(
+      ellipse 70% 60% at 50% 20%,
+      transparent 0%,
+      transparent 35%,
+      black 75%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 15%,
+      black 55%
+    );
+  -webkit-mask-image:
+    radial-gradient(
+      ellipse 70% 60% at 50% 20%,
+      transparent 0%,
+      transparent 35%,
+      black 75%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 15%,
+      black 55%
+    );
+  mask-composite: intersect;
+  -webkit-mask-composite: destination-in;
 }
 
 .landing-page .hero-aurora-bg.hero-aurora-bg--visible {
