@@ -1635,3 +1635,25 @@ body.light-mode .comm-profile-page .db-card p,
 body.light-mode .comm-profile-page .db-card span {
   color: inherit;
 }
+
+/* ── Community top row (Trending Topics + Trophy Cabinet) ── */
+.comm-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .comm-top-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.comm-trophy-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.comm-top-row .trending-strip::-webkit-scrollbar {
+  display: none;
+}

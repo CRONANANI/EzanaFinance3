@@ -12,7 +12,6 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
-import { TrophyCabinetCard } from '@/components/community/TrophyCabinetCard';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { supabase } from '@/lib/supabase';
 import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
@@ -372,10 +371,24 @@ export default function CommunityPageClient() {
           marginBottom: '1rem',
         }}
       >
-        <div>
-          <h1 className="db-greeting" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            {getGreeting()}, {firstName}
-            <span className="db-greeting-waving">👋</span>
+        <div style={{ minWidth: 0, flex: '1 1 0', maxWidth: '60%' }}>
+          <h1
+            className="db-greeting"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              flexWrap: 'nowrap',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {getGreeting()}, {firstName}
+            </span>
+            <span className="db-greeting-waving" style={{ flexShrink: 0 }}>👋</span>
           </h1>
           <p className="db-greeting-sub">Connect, share, and grow with the investing community</p>
           <p className="db-greeting-date">{formatDateLine()}</p>
@@ -408,6 +421,128 @@ export default function CommunityPageClient() {
             {t}
           </button>
         ))}
+      </div>
+
+      {/* ── Top row: Trending Topics + Trophy Cabinet side by side ── */}
+      <div className="comm-top-row">
+        <div className="db-card" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, color: 'var(--home-heading, #f0f6fc)' }}>
+                Trending Topics
+              </h3>
+              <p style={{ margin: '2px 0 0', fontSize: '0.625rem', color: '#6b7280' }}>What&apos;s hot in the community</p>
+            </div>
+            <button
+              type="button"
+              style={{
+                padding: '3px 10px',
+                borderRadius: '6px',
+                border: '1px solid rgba(16,185,129,0.15)',
+                background: 'rgba(16,185,129,0.05)',
+                color: '#10b981',
+                fontSize: '0.6875rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              View All
+            </button>
+          </div>
+          <div
+            className="trending-strip"
+            style={{
+              display: 'flex',
+              gap: '8px',
+              overflowX: 'auto',
+              paddingBottom: '2px',
+              scrollbarWidth: 'none',
+            }}
+          >
+            {TRENDING_TOPICS.map((topic) => (
+              <button
+                key={topic.tag}
+                type="button"
+                style={{
+                  whiteSpace: 'nowrap',
+                  padding: '5px 12px',
+                  borderRadius: '999px',
+                  border: '1px solid rgba(16,185,129,0.2)',
+                  background: 'rgba(16,185,129,0.05)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--home-heading, #f0f6fc)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ color: '#10b981' }}>#</span>
+                {topic.tag}
+                <span style={{ color: '#6b7280', fontSize: '0.6rem', fontWeight: 400 }}>
+                  {topic.posts}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="db-card comm-trophy-strip" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, color: 'var(--home-heading, #f0f6fc)' }}>
+                🏆 Trophy Cabinet
+              </h3>
+              <p style={{ margin: '2px 0 0', fontSize: '0.625rem', color: '#6b7280' }}>Your achievements</p>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '6px' }}>
+            {[
+              { icon: '🥇', name: 'First Return', earned: true, color: '#d4a853' },
+              { icon: '📈', name: '10% Month', earned: true, color: '#10b981' },
+              { icon: '🏆', name: '25% Year', earned: false, color: '#6b7280' },
+              { icon: '✍️', name: 'First Post', earned: true, color: '#3b82f6' },
+              { icon: '🦋', name: 'Social Butterfly', earned: false, color: '#6b7280' },
+              { icon: '⚡', name: 'Top Trader', earned: false, color: '#6b7280' },
+              { icon: '🌐', name: 'Diversified', earned: true, color: '#8b5cf6' },
+              { icon: '👑', name: 'Community Legend', earned: false, color: '#6b7280' },
+              { icon: '💎', name: 'Consistent Earner', earned: false, color: '#6b7280' },
+            ].map((trophy) => (
+              <div
+                key={trophy.name}
+                title={trophy.name}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '6px 2px',
+                  borderRadius: '7px',
+                  border: `1px solid ${trophy.earned ? trophy.color + '35' : 'rgba(107,114,128,0.1)'}`,
+                  background: trophy.earned ? `${trophy.color}10` : 'rgba(107,114,128,0.03)',
+                  opacity: trophy.earned ? 1 : 0.4,
+                  cursor: trophy.earned ? 'pointer' : 'default',
+                  gap: '2px',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '1rem',
+                    lineHeight: 1,
+                    filter: trophy.earned ? 'none' : 'grayscale(1)',
+                  }}
+                >
+                  {trophy.icon}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="comm-3col">
@@ -717,54 +852,6 @@ export default function CommunityPageClient() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="db-card" style={{ padding: '1rem 1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
-              <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, color: 'var(--home-heading, #111827)' }}>
-                Trending Topics
-              </h3>
-              <span style={{ fontSize: '0.625rem', color: 'var(--home-muted, #6b7280)', fontWeight: 500 }}>This week</span>
-            </div>
-            <div
-              className="comm-trending-strip"
-              style={{
-                display: 'flex',
-                gap: '8px',
-                overflowX: 'auto',
-                paddingBottom: '4px',
-                scrollbarWidth: 'none',
-              }}
-            >
-              {TRENDING_TOPICS.map((topic) => (
-                <button
-                  key={topic.tag}
-                  type="button"
-                  style={{
-                    whiteSpace: 'nowrap',
-                    padding: '5px 12px',
-                    borderRadius: '999px',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    background: 'rgba(16, 185, 129, 0.05)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: 'var(--home-heading, #111827)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <span style={{ color: '#10b981' }}>#</span>
-                  {topic.tag}
-                  <span style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6rem', fontWeight: 400 }}>{topic.posts}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <TrophyCabinetCard />
-
           <div className="db-card">
             <div className="db-card-header">
               <div>
