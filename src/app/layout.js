@@ -24,6 +24,33 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Blocking theme script — must be first, prevents dark flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+        (function() {
+          try {
+            var theme = localStorage.getItem('ezana-theme') || 'light';
+            var root = document.documentElement;
+            var body = document.body;
+            if (theme === 'light') {
+              root.classList.add('light-mode');
+              if (body) body.classList.add('light-mode');
+              root.style.backgroundColor = '#f8f9fb';
+              root.style.colorScheme = 'light';
+            } else {
+              root.classList.remove('light-mode');
+              root.style.backgroundColor = '#0f1419';
+              root.style.colorScheme = 'dark';
+            }
+          } catch(e) {
+            document.documentElement.classList.add('light-mode');
+            document.documentElement.style.backgroundColor = '#f8f9fb';
+          }
+        })();
+      `,
+          }}
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -36,7 +63,7 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
         />
       </head>
-      <body className="app-body" style={{ color: '#ffffff' }}>
+      <body className="app-body">
         <a href="#main-content" className="skip-to-content">Skip to content</a>
         <ThemeProvider>
           <AuthProvider>

@@ -362,23 +362,26 @@ body.light-mode .nav-logo-img {
   .nav-left-zone { gap: 0.25rem; }
 }
 
-/* Ensure dark theme base - prevents white flash / unstyled pages */
+/* Base theme defaults — dark is default, light-mode class overrides */
 @layer base {
   html {
-    background-color: #0f1419 !important;
+    background-color: #0f1419;
+  }
+  html.light-mode {
+    background-color: #f8f9fb;
+    color-scheme: light;
   }
   body {
-    background-color: #0f1419 !important;
-    color: #ffffff !important;
+    background-color: inherit;
+    color: var(--text-primary, #f0f6fc);
     font-family: var(--font-sans) !important;
   }
-  /* Override for light mode */
   body.light-mode {
-    background-color: #f8f9fb !important;
-    color: #111827 !important;
+    background-color: #f8f9fb;
+    color: #111827;
   }
   html:has(body.light-mode) {
-    background-color: #f8f9fb !important;
+    background-color: #f8f9fb;
   }
 }
 

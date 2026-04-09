@@ -4,30 +4,45 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
+/** Read theme synchronously — safe in browser, falls back to 'light' in SSR */
+function readStoredTheme() {
+  if (typeof window === 'undefined') return 'light';
+  try {
+    return localStorage.getItem('ezana-theme') || 'light';
+  } catch {
+    return 'light';
+  }
+}
+
+/** Apply theme classes to <html> and <body> immediately */
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'light') {
+    root.classList.add('light-mode');
+    document.body.classList.add('light-mode');
+    root.classList.remove('dark');
+    root.style.backgroundColor = '#f8f9fb';
+    root.style.colorScheme = 'light';
+  } else {
+    root.classList.remove('light-mode');
+    document.body.classList.remove('light-mode');
+    root.classList.add('dark');
+    root.style.backgroundColor = '#0f1419';
+    root.style.colorScheme = 'dark';
+  }
+}
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('light');
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState(() => readStoredTheme());
 
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem('ezana-theme') || 'light';
-    setTheme(saved);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.classList.add('light-mode');
-      document.body.classList.add('light-mode');
-      root.classList.remove('dark');
-    } else {
-      root.classList.remove('light-mode');
-      document.body.classList.remove('light-mode');
-      root.classList.add('dark');
+    applyTheme(theme);
+    try {
+      localStorage.setItem('ezana-theme', theme);
+    } catch {
+      // ignore quota/private-mode errors
     }
-    localStorage.setItem('ezana-theme', theme);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
