@@ -26,7 +26,10 @@
   background: var(--card, rgba(22,27,34,.6));
   border: 1px solid var(--card-border, rgba(16,185,129,.08));
   border-radius: 10px;
-  cursor: default;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
   transition: all .25s;
   text-align: left;
   display: flex;
@@ -140,6 +143,10 @@
   border-radius: 7px; display: flex; flex-direction: column; gap: 1px;
   transition: all 0.3s ease;
   cursor: pointer;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
 .wl-comm.active {
   border-color: #10b981 !important;
@@ -404,28 +411,13 @@
 
 .wl-si-right {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-shrink: 0;
-}
-.wl-si-price-block { text-align: right; }
-.wl-si-quick-add {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  border: 1px solid rgba(16,185,129,.28);
-  background: rgba(16,185,129,.08);
-  color: #10b981;
-  display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
   justify-content: center;
-  cursor: pointer;
+  gap: 0.1rem;
   flex-shrink: 0;
-  padding: 0;
-  transition: background 0.15s, border-color 0.15s;
+  text-align: right;
 }
-.wl-si-quick-add:hover { background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.45); }
-.wl-si-quick-add i { font-size: 0.75rem; line-height: 1; }
 .wl-si-price { font-size: .6875rem; font-weight: 700; color: var(--foreground,#f0f6fc); font-feature-settings: 'tnum' 1; display: block; }
 .wl-si-chg { font-size: .5625rem; font-weight: 700; font-feature-settings: 'tnum' 1; }
 .wl-si-chg.up { color: #10b981; }
@@ -682,153 +674,3 @@ body.light-mode .wl-side-search input { background: #f3f4f6; color: #111827; bor
 body.light-mode .wl-si.act { background: rgba(16,185,129,.05); }
 body.light-mode .wl-ta-chip { background: rgba(16,185,129,.04); border-color: rgba(16,185,129,.1); color: #111827; }
 body.light-mode .wl-strip-asset { background: rgba(16,185,129,.04); color: #6b7280; }
-
-/* ── Add-to-watchlist anchor (+ button + dropdown) ───────────────── */
-.wl-add-anchor {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.wl-add-anchor .wl-plus-btn {
-  position: relative;
-  top: auto;
-  right: auto;
-}
-
-.wl-add-anchor--comm {
-  position: relative;
-  top: auto;
-  right: auto;
-  align-self: stretch;
-  margin-top: 2px;
-  align-items: flex-start;
-}
-
-/* ── Add-to-watchlist + button ──────────────────────────────── */
-.wl-plus-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.15s, background 0.15s, transform 0.1s;
-  padding: 0;
-}
-
-.wl-strip-card:hover .wl-plus-btn,
-.wl-strip-card:focus-within .wl-plus-btn {
-  opacity: 1;
-}
-
-.wl-plus-btn:focus,
-.wl-plus-btn[aria-expanded="true"] {
-  opacity: 1;
-  background: rgba(16, 185, 129, 0.18);
-}
-
-.wl-plus-btn:hover {
-  background: rgba(16, 185, 129, 0.2);
-  transform: scale(1.1);
-}
-
-.wl-plus-btn--comm {
-  width: 16px;
-  height: 16px;
-  font-size: 11px;
-  border-radius: 50%;
-}
-
-.wl-comm-strip > div:hover .wl-plus-btn--comm,
-.wl-comm-strip > div:focus-within .wl-plus-btn--comm {
-  opacity: 1;
-}
-
-.wl-comm-strip > div {
-  position: relative;
-}
-
-/* ── Add-to-watchlist dropdown ──────────────────────────────── */
-.wl-add-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 100;
-  background: var(--card, #1a1f2e);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 10px;
-  padding: 8px;
-  min-width: 180px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-}
-
-body.light-mode .wl-add-dropdown {
-  background: #ffffff;
-  border-color: rgba(16, 185, 129, 0.2);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-}
-
-.wl-add-dropdown--comm {
-  bottom: calc(100% + 4px);
-  top: auto;
-  right: auto;
-  left: 0;
-}
-
-.wl-add-dropdown-label {
-  font-size: 0.625rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted-foreground, #6b7280);
-  margin: 0 0 6px;
-  padding: 0 4px;
-}
-
-.wl-add-dropdown-opt {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 7px 10px;
-  border-radius: 7px;
-  border: none;
-  background: transparent;
-  color: var(--foreground, #f0f6fc);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.1s;
-  font-family: var(--font-sans, inherit);
-}
-
-body.light-mode .wl-add-dropdown-opt {
-  color: #111827;
-}
-
-.wl-add-dropdown-opt:hover {
-  background: rgba(16, 185, 129, 0.08);
-  color: #10b981;
-}
-
-.wl-add-dropdown-check {
-  color: #10b981;
-  font-size: 0.75rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}

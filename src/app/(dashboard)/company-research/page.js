@@ -19,6 +19,8 @@ import { getCarouselModels } from '@/lib/ai/analysis-prompts';
 import { useChecklist } from '@/hooks/useChecklist';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
 import { getCoursesByTrack } from '@/lib/learning-curriculum';
+import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
+import { getTickerMeta } from '@/lib/tickerSearchData';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -40,6 +42,9 @@ function CompanyResearchPageInner() {
   const [livePrice, setLivePrice] = useState(null);
   const [viewMode, setViewMode] = useState('heatmap');
   const [activeModel, setActiveModel] = useState(null);
+  const [wlModalOpen, setWlModalOpen] = useState(false);
+  const [wlAddedMap, setWlAddedMap] = useState({});
+  const [userWatchlists, setUserWatchlists] = useState(() => MOCK_WATCHLISTS);
   const searchRef = useRef(null);
   const modelsCarouselScrollRef = useRef(null);
 
@@ -172,6 +177,37 @@ function CompanyResearchPageInner() {
   const scrollModelsCarousel = useCallback((dir) => {
     modelsCarouselScrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
   }, []);
+
+  const handleAddToWatchlist = useCallback(
+    (watchlistId) => {
+      if (!selectedStock) return;
+      setUserWatchlists((prev) =>
+        prev.map((wl) => {
+          if (wl.id !== watchlistId) return wl;
+          if (wl.stocks.some((s) => s.ticker === selectedStock)) return wl;
+          const meta = getTickerMeta(selectedStock);
+          return {
+            ...wl,
+            stocks: [
+              ...wl.stocks,
+              {
+                ticker: selectedStock,
+                name: meta?.name || selectedStock,
+                price: 0,
+                change: 0,
+                changePct: 0,
+                marketCap: stats?.mcap || '—',
+                volume: '—',
+                sector: meta?.sector || '—',
+              },
+            ],
+          };
+        }),
+      );
+      setWlAddedMap((prev) => ({ ...prev, [watchlistId]: true }));
+    },
+    [selectedStock, stats?.mcap],
+  );
 
   const renderModelCards = (keyPrefix) =>
     CAROUSEL_MODELS.map((model) => (
@@ -320,6 +356,32 @@ function CompanyResearchPageInner() {
                         {selectedStock}
                       </span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWlAddedMap({});
+                        setWlModalOpen(true);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.35rem 0.85rem',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        background: 'rgba(16, 185, 129, 0.08)',
+                        color: '#10b981',
+                        fontSize: '0.8125rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        fontFamily: 'var(--font-sans)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <i className="bi bi-plus-lg" style={{ fontSize: '0.875rem' }} />
+                      Add to Watchlist
+                    </button>
                   </div>
                   <p className="cr-merged-meta-line">{companyMetaLine}</p>
                 </div>
@@ -413,6 +475,156 @@ function CompanyResearchPageInner() {
         courses={researchCourses}
         viewAllHref="/learning-center?track=stocks"
       />
+
+      {wlModalOpen && selectedStock && (
+        <>
+          <div
+            onClick={() => setWlModalOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.55)',
+              zIndex: 1000,
+              backdropFilter: 'blur(2px)',
+            }}
+          />
+
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1001,
+              background: 'var(--card-bg, #ffffff)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              borderRadius: '16px',
+              padding: '1.5rem',
+              width: 'min(420px, 92vw)',
+              boxShadow: '0 24px 64px rgba(0, 0, 0, 0.25)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--home-heading, #111827)' }}>
+                  Add to Watchlist
+                </h3>
+                <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: 'var(--home-muted, #6b7280)' }}>
+                  Adding <strong style={{ color: '#10b981' }}>{selectedStock}</strong> — select a watchlist
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWlModalOpen(false)}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  border: '1px solid rgba(0,0,0,0.1)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--home-muted, #6b7280)',
+                  fontSize: '0.875rem',
+                  flexShrink: 0,
+                }}
+                aria-label="Close"
+              >
+                <i className="bi bi-x" />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {userWatchlists.map((wl) => {
+                const alreadyIn = wl.stocks.some((s) => s.ticker === selectedStock);
+                const justAdded = wlAddedMap[wl.id];
+                const done = alreadyIn || justAdded;
+                return (
+                  <button
+                    key={wl.id}
+                    type="button"
+                    onClick={() => !done && handleAddToWatchlist(wl.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      borderRadius: '10px',
+                      border: done
+                        ? '1px solid rgba(16, 185, 129, 0.35)'
+                        : '1px solid rgba(0, 0, 0, 0.08)',
+                      background: done
+                        ? 'rgba(16, 185, 129, 0.06)'
+                        : 'rgba(0, 0, 0, 0.02)',
+                      cursor: done ? 'default' : 'pointer',
+                      textAlign: 'left',
+                      fontFamily: 'var(--font-sans)',
+                      transition: 'border-color 0.15s, background 0.15s',
+                    }}
+                  >
+                    <div>
+                      <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: 'var(--home-heading, #111827)' }}>
+                        {wl.label}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.6875rem', color: 'var(--home-muted, #6b7280)' }}>
+                        {wl.stocks.length} stocks
+                      </p>
+                    </div>
+
+                    {done ? (
+                      <span
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: '#10b981',
+                        }}
+                      >
+                        <i className="bi bi-check-circle-fill" /> Added
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          background: 'rgba(16, 185, 129, 0.1)',
+                          color: '#10b981',
+                          fontSize: '1rem',
+                          fontWeight: 700,
+                          flexShrink: 0,
+                        }}
+                      >
+                        +
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p
+              style={{
+                margin: '1rem 0 0',
+                fontSize: '0.6875rem',
+                color: 'var(--home-muted, #9ca3af)',
+                textAlign: 'center',
+                lineHeight: 1.4,
+              }}
+            >
+              Your watchlists are saved locally. Visit the Watchlist page to manage them.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
