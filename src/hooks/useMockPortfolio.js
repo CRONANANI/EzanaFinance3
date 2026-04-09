@@ -170,12 +170,24 @@ export function useMockPortfolio() {
         const next = withMeta(raw);
         saveLocal(next);
         if (!skipSync) {
+          // Immediate fire-and-forget POST — ensures at least one write reaches
+          // Supabase before any page-close/navigation, regardless of debounce timing.
+          if (user?.id) {
+            fetch('/api/mock-portfolio', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ portfolio: next }),
+            }).catch(() => {
+              /* network — debounce retry will catch it */
+            });
+          }
+          // Debounce still coalesces rapid-fire trades into a single final write.
           schedulePost(next);
         }
         return next;
       });
     },
-    [schedulePost],
+    [schedulePost, user?.id],
   );
 
   useEffect(() => {
@@ -183,6 +195,48 @@ export function useMockPortfolio() {
       if (postTimerRef.current) clearTimeout(postTimerRef.current);
     };
   }, []);
+
+  // Flush pending Supabase POST immediately on tab close or hide.
+  // Without this, any trade made within the 800ms debounce window before
+  // closing the tab is lost from the server (localStorage only).
+  useEffect(() => {
+    if (!user?.id) return undefined;
+
+    const flush = () => {
+      if (!postPayloadRef.current) return;
+      const payload = postPayloadRef.current;
+      postPayloadRef.current = null;
+      if (postTimerRef.current) {
+        clearTimeout(postTimerRef.current);
+        postTimerRef.current = null;
+      }
+      // Use sendBeacon for unload events — it survives page close.
+      // Fall back to a regular fetch for visibilitychange.
+      const body = JSON.stringify({ portfolio: payload });
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: 'application/json' });
+        navigator.sendBeacon('/api/mock-portfolio-beacon', blob);
+      } else {
+        fetch('/api/mock-portfolio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+
+    window.addEventListener('beforeunload', flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [user?.id]);
 
   /** Hydrate from localStorage immediately; merge with server when `user.id` is present */
   useEffect(() => {
