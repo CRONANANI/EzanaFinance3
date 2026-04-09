@@ -82,9 +82,9 @@ export function LandingHero() {
           aria-hidden
         >
           <FallingPattern
-            color="#047857"
-            streakColor="rgba(4, 120, 87, 0.3)"
-            sparkleColor="rgba(4, 120, 87, 0.52)"
+            color="#059669"
+            streakColor="rgba(5, 150, 105, 0.45)"
+            sparkleColor="rgba(5, 150, 105, 0.85)"
             backgroundColor="#f8fafb"
             duration={120}
             blurIntensity="0.5em"
