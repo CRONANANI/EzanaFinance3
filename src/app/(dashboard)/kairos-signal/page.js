@@ -623,6 +623,455 @@ function CriticalWindowsCard() {
   );
 }
 
+/* ── Weather → Market Impact Forecast ─────────────────────── */
+function WeatherMarketImpactCard({ weatherData, region }) {
+  const impacts = useMemo(() => {
+    if (!weatherData?.daily) return [];
+    const d = weatherData.daily;
+    const recentPrecip = (d.precipitation_sum || []).slice(-7);
+    const recentTemps = (d.temperature_2m_max || []).slice(-7);
+    const recentWind = (d.windspeed_10m_max || []).slice(-7);
+
+    const totalPrecip = recentPrecip.reduce((s, v) => s + (v ?? 0), 0);
+    const avgTemp = recentTemps.reduce((s, v) => s + (v ?? 0), 0) / Math.max(recentTemps.length, 1);
+    const peakWind = Math.max(...recentWind.map((v) => v ?? 0), 0);
+
+    const rows = [];
+    const commodity = region.commodity;
+
+    if (totalPrecip > 80) {
+      rows.push({
+        event: 'Heavy rainfall',
+        commodity,
+        direction: 'bearish',
+        magnitude: 'High',
+        reason: `${totalPrecip.toFixed(0)}mm in 7 days — flooding risk for ${commodity} supply chain`,
+        icon: '🌧️',
+      });
+    } else if (totalPrecip < 5) {
+      rows.push({
+        event: 'Drought conditions',
+        commodity,
+        direction: 'bullish',
+        magnitude: 'High',
+        reason: `Only ${totalPrecip.toFixed(1)}mm in 7 days — yield reduction risk`,
+        icon: '☀️',
+      });
+    }
+
+    if (avgTemp > 34) {
+      rows.push({
+        event: 'Extreme heat stress',
+        commodity,
+        direction: 'bullish',
+        magnitude: avgTemp > 38 ? 'Critical' : 'Medium',
+        reason: `Average ${avgTemp.toFixed(1)}°C over 7 days — crop stress likely`,
+        icon: '🌡️',
+      });
+    } else if (avgTemp < 2) {
+      rows.push({
+        event: 'Frost / freeze risk',
+        commodity,
+        direction: 'bullish',
+        magnitude: 'High',
+        reason: `Temperatures near or below freezing — potential crop loss`,
+        icon: '❄️',
+      });
+    }
+
+    if (peakWind > 70) {
+      rows.push({
+        event: 'Storm-level wind',
+        commodity: 'Energy / Logistics',
+        direction: 'bullish',
+        magnitude: 'High',
+        reason: `${peakWind.toFixed(0)} km/h peak — offshore disruption possible`,
+        icon: '🌪️',
+      });
+    }
+
+    if (rows.length === 0) {
+      rows.push({
+        event: 'Conditions normal',
+        commodity,
+        direction: 'neutral',
+        magnitude: 'Low',
+        reason: 'No extreme weather detected. Supply chain disruption risk is minimal.',
+        icon: '✅',
+      });
+    }
+
+    return rows;
+  }, [weatherData, region]);
+
+  const directionColor = { bullish: '#10b981', bearish: '#ef4444', neutral: '#6b7280' };
+  const magnitudeColor = { Critical: '#ef4444', High: '#f97316', Medium: '#f59e0b', Low: '#10b981' };
+
+  return (
+    <KairosCard icon="bi-graph-up-arrow" title="Weather → market impact forecast" wide>
+      <p className="kairos-card-hint" style={{ marginBottom: '0.75rem' }}>
+        Projected price direction based on current weather conditions for {region.commodity} in {region.label}.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        {impacts.map((item, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem',
+              padding: '0.75rem 1rem',
+              borderRadius: '10px',
+              background:
+                item.direction === 'bullish'
+                  ? 'rgba(16,185,129,0.05)'
+                  : item.direction === 'bearish'
+                    ? 'rgba(239,68,68,0.05)'
+                    : 'rgba(107,114,128,0.05)',
+              border: `1px solid ${
+                item.direction === 'bullish'
+                  ? 'rgba(16,185,129,0.15)'
+                  : item.direction === 'bearish'
+                    ? 'rgba(239,68,68,0.15)'
+                    : 'rgba(107,114,128,0.1)'
+              }`,
+            }}
+          >
+            <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1 }}>{item.icon}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  flexWrap: 'wrap',
+                  marginBottom: '0.2rem',
+                }}
+              >
+                <span style={{ fontWeight: 700, color: 'var(--home-heading, #111827)', fontSize: '0.875rem' }}>
+                  {item.event}
+                </span>
+                <span
+                  style={{
+                    padding: '1px 8px',
+                    borderRadius: '999px',
+                    fontSize: '0.625rem',
+                    fontWeight: 700,
+                    background: directionColor[item.direction] + '20',
+                    color: directionColor[item.direction],
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {item.direction}
+                </span>
+                <span
+                  style={{
+                    padding: '1px 8px',
+                    borderRadius: '999px',
+                    fontSize: '0.625rem',
+                    fontWeight: 700,
+                    background: (magnitudeColor[item.magnitude] || '#6b7280') + '20',
+                    color: magnitudeColor[item.magnitude] || '#6b7280',
+                  }}
+                >
+                  {item.magnitude} impact
+                </span>
+              </div>
+              <p style={{ color: 'var(--home-muted, #9ca3af)', fontSize: '0.75rem', margin: 0 }}>{item.reason}</p>
+              <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: '0.2rem 0 0', fontWeight: 600 }}>
+                Affected: {item.commodity}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </KairosCard>
+  );
+}
+
+function BehaviouralSignalsCard() {
+  const month = new Date().getMonth();
+
+  const SEASONAL_PATTERNS = [
+    {
+      months: [0, 1],
+      commodity: 'Nat Gas',
+      signal: 'Peak winter heating demand',
+      direction: 'bullish',
+      note: 'Jan–Feb historically see highest nat gas price volatility',
+      reliability: 78,
+    },
+    {
+      months: [2, 3, 4],
+      commodity: 'Agricultural',
+      signal: 'Spring planting season — input buying',
+      direction: 'bullish',
+      note: 'Fertiliser, corn seed, soy futures see volume spikes',
+      reliability: 72,
+    },
+    {
+      months: [5, 6],
+      commodity: 'Crude Oil',
+      signal: 'Summer driving season demand',
+      direction: 'bullish',
+      note: 'Gasoline demand peaks Jun–Jul; refinery margins widen',
+      reliability: 68,
+    },
+    {
+      months: [7, 8],
+      commodity: 'Corn / Soybeans',
+      signal: 'Harvest pressure incoming',
+      direction: 'bearish',
+      note: 'Aug–Sep supply increases typically suppress grain prices',
+      reliability: 74,
+    },
+    {
+      months: [9, 10],
+      commodity: 'Nat Gas',
+      signal: 'Pre-winter storage builds',
+      direction: 'bullish',
+      note: 'Storage injections peak in Oct before heating season',
+      reliability: 71,
+    },
+    {
+      months: [11],
+      commodity: 'Precious Metals',
+      signal: 'Year-end safe-haven demand',
+      direction: 'bullish',
+      note: 'Gold and silver see demand ahead of macro uncertainty',
+      reliability: 65,
+    },
+  ];
+
+  const FEAR_GREED_SIGNALS = [
+    {
+      label: 'Commodity Fear Index',
+      value: 42,
+      level: 'Fear',
+      color: '#f97316',
+      note: 'Elevated hedging activity in grain futures',
+    },
+    {
+      label: 'Weather Trader Sentiment',
+      value: 67,
+      level: 'Greed',
+      color: '#10b981',
+      note: 'Speculators net-long agricultural commodities',
+    },
+    {
+      label: 'Energy Risk Premium',
+      value: 55,
+      level: 'Neutral',
+      color: '#f59e0b',
+      note: 'Balanced positioning ahead of inventory data',
+    },
+  ];
+
+  const activePatterns = SEASONAL_PATTERNS.filter((p) => p.months.includes(month));
+  const directionColor = { bullish: '#10b981', bearish: '#ef4444', neutral: '#6b7280' };
+
+  return (
+    <KairosCard icon="bi-people" title="Behavioural signals & seasonal patterns">
+      <p className="kairos-card-hint" style={{ marginBottom: '0.65rem' }}>
+        Active seasonal patterns this month:
+      </p>
+      {activePatterns.length === 0 ? (
+        <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem', marginBottom: '0.75rem' }}>
+          No dominant seasonal patterns active this month.
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+          {activePatterns.map((p, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.6rem',
+                padding: '0.6rem 0.75rem',
+                borderRadius: '8px',
+                background: 'rgba(212,175,55,0.04)',
+                border: '1px solid rgba(212,175,55,0.1)',
+              }}
+            >
+              <div
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '2px',
+                  flexShrink: 0,
+                  marginTop: 4,
+                  background: directionColor[p.direction],
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--home-heading, #111827)' }}>
+                    {p.signal}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '0.5625rem',
+                      padding: '1px 6px',
+                      borderRadius: '999px',
+                      background: directionColor[p.direction] + '20',
+                      color: directionColor[p.direction],
+                      fontWeight: 700,
+                    }}
+                  >
+                    {p.direction}
+                  </span>
+                </div>
+                <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>{p.note}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.3rem' }}>
+                  <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)' }}>
+                    <div style={{ width: `${p.reliability}%`, height: '100%', borderRadius: 2, background: '#d4af37' }} />
+                  </div>
+                  <span style={{ fontSize: '0.5625rem', color: '#d4af37', fontWeight: 700 }}>
+                    {p.reliability}% historical reliability
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="kairos-card-hint" style={{ marginBottom: '0.5rem' }}>
+        Market sentiment indicators:
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        {FEAR_GREED_SIGNALS.map((s) => (
+          <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--home-heading, #111827)' }}>
+                  {s.label}
+                </span>
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: s.color }}>{s.level}</span>
+              </div>
+              <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)' }}>
+                <div style={{ width: `${s.value}%`, height: '100%', borderRadius: 3, background: s.color }} />
+              </div>
+              <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6rem', margin: '2px 0 0' }}>{s.note}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </KairosCard>
+  );
+}
+
+function ForecastOutlookCard({ weatherData, region }) {
+  const forecastRows = useMemo(() => {
+    if (!weatherData?.daily) return [];
+    const d = weatherData.daily;
+    const today = new Date().toISOString().slice(0, 10);
+    const todayIdx = d.time?.findIndex((t) => t >= today) ?? 0;
+
+    const futureDays = d.time.slice(todayIdx, todayIdx + 14).map((date, i) => ({
+      date: formatDate(date),
+      tempMax: d.temperature_2m_max[todayIdx + i],
+      precip: d.precipitation_sum[todayIdx + i] ?? 0,
+      wind: d.windspeed_10m_max?.[todayIdx + i] ?? 0,
+    }));
+
+    const periods = [
+      { label: 'Days 1–5', days: futureDays.slice(0, 5) },
+      { label: 'Days 6–10', days: futureDays.slice(5, 10) },
+      { label: 'Days 11–14', days: futureDays.slice(10) },
+    ].filter((p) => p.days.length > 0);
+
+    return periods.map((p) => {
+      const avgTemp = p.days.reduce((s, d0) => s + (d0.tempMax ?? 0), 0) / p.days.length;
+      const totPrecp = p.days.reduce((s, d0) => s + (d0.precip ?? 0), 0);
+      const peakWind = Math.max(...p.days.map((d0) => d0.wind ?? 0));
+
+      let outlook = 'Neutral';
+      let color = '#6b7280';
+      let icon = '〰️';
+      let note = 'Conditions within normal range.';
+
+      if (totPrecp > 40) {
+        outlook = 'Bearish for supply';
+        color = '#ef4444';
+        icon = '🌧️';
+        note = `Heavy rain (${totPrecp.toFixed(0)}mm) — logistics and harvest disruption risk.`;
+      } else if (totPrecp < 2 && avgTemp > 30) {
+        outlook = 'Bullish for prices';
+        color = '#10b981';
+        icon = '☀️';
+        note = `Dry + hot — drought stress risk for ${region.commodity}.`;
+      } else if (peakWind > 65) {
+        outlook = 'Supply disruption risk';
+        color = '#f97316';
+        icon = '💨';
+        note = `High winds (${peakWind.toFixed(0)} km/h) — transport and offshore impact.`;
+      } else if (avgTemp < 1) {
+        outlook = 'Frost risk';
+        color = '#3b82f6';
+        icon = '❄️';
+        note = `Near-freezing temps — potential damage to ${region.commodity}.`;
+      }
+
+      return { label: p.label, outlook, color, icon, note, avgTemp, totPrecp, peakWind };
+    });
+  }, [weatherData, region]);
+
+  return (
+    <KairosCard icon="bi-calendar3" title="14-day forecast → commodity outlook">
+      <p className="kairos-card-hint" style={{ marginBottom: '0.75rem' }}>
+        How the upcoming forecast may affect {region.commodity} prices in {region.label}.
+      </p>
+      {forecastRows.length === 0 ? (
+        <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Insufficient forecast data.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {forecastRows.map((row) => (
+            <div
+              key={row.label}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '80px 1fr',
+                gap: '0.75rem',
+                padding: '0.65rem 0.75rem',
+                borderRadius: '8px',
+                background: `${row.color}08`,
+                border: `1px solid ${row.color}20`,
+              }}
+            >
+              <div>
+                <p style={{ fontSize: '0.6875rem', fontWeight: 700, color: 'var(--home-muted, #6b7280)', margin: 0 }}>
+                  {row.label}
+                </p>
+                <span style={{ fontSize: '1.25rem' }}>{row.icon}</span>
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.15rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: row.color }}>{row.outlook}</span>
+                </div>
+                <p style={{ color: 'var(--home-muted, #9ca3af)', fontSize: '0.6875rem', margin: 0 }}>{row.note}</p>
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.3rem' }}>
+                  <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
+                    🌡 {row.avgTemp.toFixed(1)}°C avg
+                  </span>
+                  <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
+                    💧 {row.totPrecp.toFixed(0)}mm rain
+                  </span>
+                  <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)' }}>
+                    💨 {row.peakWind.toFixed(0)} km/h
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </KairosCard>
+  );
+}
+
 /* ── 7. Signal Strength Dashboard Card ─────────────────────── */
 function SignalDashboardCard({ weatherData, region }) {
   const signals = useMemo(() => {
@@ -766,6 +1215,9 @@ export default function KairosSignalPage() {
           <WindSolarCard weatherData={trimmedData} />
           <CommoditySensitivityCard />
           <CriticalWindowsCard />
+          <WeatherMarketImpactCard weatherData={trimmedData} region={region} />
+          <BehaviouralSignalsCard />
+          <ForecastOutlookCard weatherData={trimmedData} region={region} />
         </div>
       )}
 

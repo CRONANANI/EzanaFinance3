@@ -470,3 +470,77 @@
   color: #fbbf24;
   margin-top: 0.5rem;
 }
+
+/* ── Light mode contrast fixes ─────────────────────────────── */
+body.light-mode .bm-stat-label,
+body.light-mode .bm-game-title span,
+body.light-mode .bm-league-hdr,
+body.light-mode .bm-lm-title,
+body.light-mode .bm-ev-title,
+body.light-mode .bm-lb-name,
+body.light-mode .bm-modal-sub {
+  color: #111827 !important;
+}
+
+body.light-mode .bm-stat-value {
+  color: #111827 !important;
+}
+
+body.light-mode .bm-stat-sub {
+  color: #6b7280 !important;
+}
+
+body.light-mode .bm-game-lines,
+body.light-mode .bm-game-ml,
+body.light-mode .bm-ev-meta,
+body.light-mode .bm-lm-stats,
+body.light-mode .bm-lb-meta {
+  color: #374151 !important;
+}
+
+body.light-mode .bm-stat-card {
+  background: #ffffff;
+  border-color: rgba(212, 175, 55, 0.15);
+}
+
+body.light-mode .bm-game {
+  background: #f9fafb;
+  border-color: rgba(212, 175, 55, 0.12);
+}
+
+body.light-mode .bm-modal {
+  background: #ffffff;
+  color: #111827;
+}
+
+body.light-mode .bm-modal h2,
+body.light-mode .bm-modal h3 {
+  color: #111827;
+}
+
+body.light-mode .bm-modal p,
+body.light-mode .bm-modal-section p,
+body.light-mode .bm-modal-conf {
+  color: #374151;
+}
+
+body.light-mode .bm-modal-grid dt {
+  color: #6b7280;
+}
+
+body.light-mode .bm-modal-grid dd {
+  color: #111827;
+}
+
+body.light-mode .bm-lb-row {
+  color: #374151;
+}
+
+body.light-mode .bm-lb-pnl {
+  color: #10b981;
+}
+
+body.light-mode .bm-ev-item {
+  background: #f9fafb;
+  border-color: rgba(212, 175, 55, 0.15);
+}

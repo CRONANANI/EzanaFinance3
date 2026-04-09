@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 // NOTE: These components don't exist and cause Vercel build failures
 // import { PinnableCard } from '@/components/ui/PinnableCard';
@@ -331,7 +331,461 @@ function MiniLineChart({ seed, up = true }) {
   );
 }
 
+function parseYesProb(m) {
+  let raw = m.outcomePrices;
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      raw = null;
+    }
+  }
+  if (Array.isArray(raw) && raw.length > 0) {
+    const v = parseFloat(raw[0]);
+    return Number.isFinite(v) ? v * 100 : null;
+  }
+  if (typeof m.yes === 'number') return m.yes * 100;
+  if (typeof m.probability === 'number') return m.probability * 100;
+  return null;
+}
+
+function PolymarketSection() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [markets, setMarkets] = useState([]);
+  const [marketsLoading, setMarketsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/polymarket/markets?limit=6')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setMarkets(Array.isArray(d) ? d : d.markets || []))
+      .catch(() => setMarkets([]))
+      .finally(() => setMarketsLoading(false));
+  }, []);
+
+  const handleSearch = useCallback(async (q) => {
+    setSearchQuery(q);
+    if (q.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const res = await fetch(`/api/polymarket/user-search?q=${encodeURIComponent(q.trim())}`);
+      const data = res.ok ? await res.json() : {};
+      setSearchResults(data.profiles || []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="db-card">
+        <div className="db-card-header">
+          <h3 style={{ color: 'var(--home-heading, #111827)' }}>
+            <span style={{ color: '#6366f1', marginRight: 6 }}>◆</span> Polymarket — Top Markets
+          </h3>
+          <a
+            href="https://polymarket.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: '0.6875rem', color: '#6366f1', fontWeight: 600, textDecoration: 'none' }}
+          >
+            View All ↗
+          </a>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {marketsLoading && (
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Loading markets…</p>
+          )}
+          {!marketsLoading && markets.length === 0 && (
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+              No markets available. Check Polymarket API connectivity.
+            </p>
+          )}
+          {markets.map((m, i) => {
+            const yesProb = parseYesProb(m);
+            const vol = m.volume
+              ? `$${Number(m.volume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+              : null;
+            return (
+              <div
+                key={m.id || m.conditionId || i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.65rem 0',
+                  borderBottom: '1px solid rgba(99,102,241,0.06)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    background:
+                      yesProb != null ? (yesProb > 60 ? '#10b981' : yesProb > 40 ? '#f59e0b' : '#ef4444') : '#6b7280',
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      color: 'var(--home-heading, #111827)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      margin: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {m.question || m.title || 'Market'}
+                  </p>
+                  {vol && (
+                    <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>Vol: {vol}</p>
+                  )}
+                </div>
+                {yesProb != null && (
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <span
+                      style={{
+                        fontSize: '0.875rem',
+                        fontWeight: 800,
+                        color: yesProb > 60 ? '#10b981' : yesProb > 40 ? '#f59e0b' : '#ef4444',
+                      }}
+                    >
+                      {yesProb.toFixed(0)}%
+                    </span>
+                    <p style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)', margin: 0 }}>YES</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="db-card">
+        <div className="db-card-header">
+          <h3 style={{ color: 'var(--home-heading, #111827)' }}>Search Polymarket Traders</h3>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.5rem',
+              alignItems: 'center',
+              background: 'rgba(99,102,241,0.04)',
+              border: '1px solid rgba(99,102,241,0.12)',
+              borderRadius: '8px',
+              padding: '0.45rem 0.75rem',
+              marginBottom: '0.75rem',
+            }}
+          >
+            <i className="bi bi-search" style={{ color: '#6b7280', fontSize: '0.8rem' }} />
+            <input
+              type="text"
+              placeholder="Search by wallet address or username…"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--home-heading, #111827)',
+                fontSize: '0.8125rem',
+                width: '100%',
+                fontFamily: 'var(--font-sans)',
+              }}
+            />
+          </div>
+          {searching && <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>Searching…</p>}
+          {!searching && searchResults.length === 0 && searchQuery.trim().length >= 2 && (
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>No traders found.</p>
+          )}
+          {searchResults.map((u, i) => (
+            <div
+              key={u.proxyWallet || u.address || i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                padding: '0.6rem 0',
+                borderBottom: '1px solid rgba(99,102,241,0.06)',
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  background: 'rgba(99,102,241,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  color: '#6366f1',
+                  flexShrink: 0,
+                }}
+              >
+                {(u.name || u.username || 'U').slice(0, 2).toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ color: 'var(--home-heading, #111827)', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>
+                  {u.name || u.username || 'Trader'}
+                </p>
+                <p
+                  style={{
+                    color: 'var(--home-muted, #6b7280)',
+                    fontSize: '0.6875rem',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {(u.proxyWallet || u.address || '').slice(0, 14)}…
+                </p>
+              </div>
+              {u.profitLoss != null && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    color: Number(u.profitLoss) >= 0 ? '#10b981' : '#ef4444',
+                  }}
+                >
+                  {Number(u.profitLoss) >= 0 ? '+' : ''}$
+                  {Math.abs(Number(u.profitLoss)).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                </span>
+              )}
+              <button
+                type="button"
+                style={{
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(99,102,241,0.25)',
+                  background: 'rgba(99,102,241,0.06)',
+                  color: '#6366f1',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  fontFamily: 'var(--font-sans)',
+                }}
+                onClick={() =>
+                  window.open(`https://polymarket.com/profile/${u.proxyWallet || u.address}`, '_blank')
+                }
+              >
+                View
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function KalshiSection() {
+  const [markets, setMarkets] = useState([]);
+  const [marketsLoading, setMarketsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/polygon/markets?source=kalshi&limit=6')
+      .then((r) => (r.ok ? r.json() : { markets: [] }))
+      .then((d) => setMarkets(d.markets || []))
+      .catch(() => setMarkets([]))
+      .finally(() => setMarketsLoading(false));
+  }, []);
+
+  const handleSearch = useCallback(async (q) => {
+    setSearchQuery(q);
+    if (q.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const res = await fetch(`/api/polygon/markets?source=kalshi&search=${encodeURIComponent(q.trim())}&limit=20`);
+      const data = res.ok ? await res.json() : {};
+      setSearchResults(data.markets || []);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="db-card">
+        <div className="db-card-header">
+          <h3 style={{ color: 'var(--home-heading, #111827)' }}>
+            <span style={{ color: '#10b981', marginRight: 6 }}>◆</span> Kalshi — Top Markets
+          </h3>
+          <a
+            href="https://kalshi.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ fontSize: '0.6875rem', color: '#10b981', fontWeight: 600, textDecoration: 'none' }}
+          >
+            View All ↗
+          </a>
+        </div>
+        <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {marketsLoading && (
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Loading markets…</p>
+          )}
+          {!marketsLoading && markets.length === 0 && (
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+              No markets available. Configure Kalshi API connectivity or try again later.
+            </p>
+          )}
+          {markets.map((m, i) => {
+            const prob =
+              typeof m.yes_bid === 'number' ? m.yes_bid * 100 : typeof m.probability === 'number' ? m.probability * 100 : null;
+            const vol = m.volume
+              ? `$${Number(m.volume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+              : null;
+            return (
+              <div
+                key={m.ticker || m.id || i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.65rem 0',
+                  borderBottom: '1px solid rgba(16,185,129,0.06)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '2px',
+                    flexShrink: 0,
+                    background:
+                      prob != null ? (prob > 60 ? '#10b981' : prob > 40 ? '#f59e0b' : '#ef4444') : '#6b7280',
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      color: 'var(--home-heading, #111827)',
+                      fontSize: '0.8125rem',
+                      fontWeight: 600,
+                      margin: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {m.title || m.question || m.ticker || 'Market'}
+                  </p>
+                  {vol && (
+                    <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>Vol: {vol}</p>
+                  )}
+                </div>
+                {prob != null && (
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <span
+                      style={{
+                        fontSize: '0.875rem',
+                        fontWeight: 800,
+                        color: prob > 60 ? '#10b981' : prob > 40 ? '#f59e0b' : '#ef4444',
+                      }}
+                    >
+                      {prob.toFixed(0)}%
+                    </span>
+                    <p style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)', margin: 0 }}>YES</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(16,185,129,0.06)' }}>
+            <p
+              style={{
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                color: 'var(--home-muted, #6b7280)',
+                margin: '0 0 0.5rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Search Kalshi Markets
+            </p>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.5rem',
+                alignItems: 'center',
+                background: 'rgba(16,185,129,0.04)',
+                border: '1px solid rgba(16,185,129,0.12)',
+                borderRadius: '8px',
+                padding: '0.45rem 0.75rem',
+              }}
+            >
+              <i className="bi bi-search" style={{ color: '#6b7280', fontSize: '0.8rem' }} />
+              <input
+                type="text"
+                placeholder="Search by keyword, ticker, or category…"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: 'var(--home-heading, #111827)',
+                  fontSize: '0.8125rem',
+                  width: '100%',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              />
+            </div>
+            {searching && (
+              <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem', marginTop: '0.5rem' }}>Searching…</p>
+            )}
+            {!searching &&
+              searchResults.length > 0 &&
+              searchResults.map((mk, idx) => (
+                <div
+                  key={mk.ticker || idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.5rem 0',
+                    borderBottom: '1px solid rgba(16,185,129,0.04)',
+                  }}
+                >
+                  <p style={{ flex: 1, color: 'var(--home-heading, #111827)', fontSize: '0.8125rem', margin: 0 }}>
+                    {mk.title || mk.ticker}
+                  </p>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function BettingMarketsPage() {
+  const [platform, setPlatform] = useState('polymarket');
   const [sport, setSport] = useState('NBA');
   const [lbTab, setLbTab] = useState('All');
   const [evOpen, setEvOpen] = useState(null);
@@ -354,6 +808,62 @@ export default function BettingMarketsPage() {
 
   return (
     <div className="bm-page dashboard-page-inset db-page">
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          marginBottom: '0.5rem',
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--home-heading, #111827)', margin: 0 }}>
+            Betting Markets
+          </h1>
+          <p style={{ fontSize: '0.75rem', color: 'var(--home-muted, #6b7280)', margin: '0.15rem 0 0' }}>
+            Prediction markets, sports odds &amp; EV analysis
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: '3px',
+            background: 'rgba(212,175,55,0.06)',
+            border: '1px solid rgba(212,175,55,0.15)',
+            borderRadius: '10px',
+            padding: '3px',
+          }}
+        >
+          {[
+            { id: 'polymarket', label: 'Polymarket' },
+            { id: 'kalshi', label: 'Kalshi' },
+          ].map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setPlatform(p.id)}
+              style={{
+                padding: '5px 16px',
+                borderRadius: '7px',
+                border: 'none',
+                background: platform === p.id ? '#d4af37' : 'transparent',
+                color: platform === p.id ? '#111' : 'var(--home-muted, #6b7280)',
+                fontSize: '0.8125rem',
+                fontWeight: platform === p.id ? 700 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="bm-stat-row">
         {STAT_CARDS.map((s) => (
           <div key={s.id} className="bm-stat-card">
@@ -377,7 +887,17 @@ export default function BettingMarketsPage() {
         </div>
         <div style={{ padding: '0 1.25rem 1rem' }}>
           <div className="bm-odds-head">
-            <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 800, color: '#f0f6fc', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '0.9375rem',
+                fontWeight: 800,
+                color: 'var(--home-heading, #111827)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
               <span aria-hidden>🏈</span> Live Trending Sports Odds
             </h3>
             <div className="bm-sport-tabs" role="tablist" aria-label="Sport filter">
@@ -427,7 +947,16 @@ export default function BettingMarketsPage() {
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span
+                style={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 800,
+                  color: 'var(--home-heading, #111827)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
                 <span aria-hidden>🏆</span> Rankings
               </span>
               <div className="bm-lb-tabs">
@@ -519,6 +1048,9 @@ export default function BettingMarketsPage() {
           <div className="bm-lm-footer">🚨 Reverse line movements flagged: {reverseCount} today</div>
         </div>
       </div>
+
+      {platform === 'polymarket' && <PolymarketSection />}
+      {platform === 'kalshi' && <KalshiSection />}
 
       {/* NOTE: Commented out - CoursePreviewSection and bettingCourses not available
       <CoursePreviewSection
