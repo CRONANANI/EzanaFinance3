@@ -514,7 +514,7 @@ export default function HomeDashboardPage() {
               >
                 <IntIcon
                   animationData={LOTTIE_ARROW_LEFT}
-                  color="white"
+                  color="#10b981"
                   playOnClick
                   size={44}
                 />
@@ -529,7 +529,7 @@ export default function HomeDashboardPage() {
               >
                 <IntIcon
                   animationData={LOTTIE_ARROW_RIGHT}
-                  color="white"
+                  color="#10b981"
                   playOnClick
                   size={44}
                 />

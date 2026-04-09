@@ -51,7 +51,14 @@ export function IntIcon({
     if (!animationInstance.current) return;
     const svgElement = containerRef.current?.querySelector('svg');
     if (!svgElement) return;
-    const colorValue = c === 'black' ? '#000000' : '#FFFFFF';
+    const colorValue =
+      c === 'black'
+        ? '#000000'
+        : c === 'white'
+          ? '#FFFFFF'
+          : c?.startsWith('#')
+            ? c
+            : '#FFFFFF';
     const elements = svgElement.querySelectorAll('path, circle, rect, ellipse, polygon, line, polyline');
     elements.forEach((el) => {
       if (el.getAttribute('fill') && el.getAttribute('fill') !== 'none') {
@@ -78,7 +85,7 @@ export function IntIcon({
     const onComplete = () => setIsPlaying(false);
     anim.addEventListener('complete', onComplete);
 
-    if (color && ['black', 'white'].includes(color)) {
+    if (color) {
       anim.addEventListener('DOMLoaded', () => applyColor(color));
     }
 

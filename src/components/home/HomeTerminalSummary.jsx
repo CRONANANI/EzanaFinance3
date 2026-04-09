@@ -14,19 +14,6 @@ import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** Parse a fullDate string ("YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS") into a display label */
-function parseEventDate(fullDate) {
-  if (!fullDate) return { label: '—', dayOfMonth: 0, monthIdx: 0 };
-  const datePart = String(fullDate).split(' ')[0];
-  const [, mm, dd] = datePart.split('-').map(Number);
-  if (!mm || !dd) return { label: '—', dayOfMonth: 0, monthIdx: 0 };
-  return {
-    label: `${MONTH_SHORT[mm - 1]} ${dd}`,
-    dayOfMonth: dd,
-    monthIdx: mm - 1,
-  };
-}
-
 /** YTD sparkline path: one segment per month Jan → current month */
 function buildYtdChartPath(monthCount) {
   const w = 480;
@@ -79,14 +66,6 @@ function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfoli
   const path = buildYtdChartPath(n);
   return { rows, chartPath: path };
 }
-
-const MOCK_CONGRESS_TRADES = [
-  { name: 'Nancy Pelosi', party: 'D', ticker: 'NVDA', type: 'Bought', amount: '+$37.06', positive: true },
-  { name: 'Dan Crenshaw', party: 'R', ticker: 'SCAT', type: 'Sold', amount: '-$1.72', positive: false },
-  { name: 'Patrick McHenry', party: 'R', ticker: 'COIN', type: 'Bought', amount: '+$31.86', positive: true },
-  { name: 'Jamie Raskin', party: 'D', ticker: 'RVFB', type: 'Bought', amount: '+$9.31', positive: true },
-  { name: 'Tommy Tuberville', party: 'R', ticker: 'SCAI', type: 'Bought', amount: '-$98.60', positive: false },
-];
 
 const MOCK_GAINERS = [
   { ticker: 'NVDA', change: '+6.47%', dollarChange: '+22.92', volume: '6005', positive: true },
@@ -220,6 +199,8 @@ export function HomeTerminalSummary({
   const [mockData, setMockData] = useState(null);
   const [liveEvents, setLiveEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [congressTrades, setCongressTrades] = useState([]);
+  const [congressLoading, setCongressLoading] = useState(true);
   const { isOrgUser } = useOrg();
 
   useEffect(() => {
@@ -229,12 +210,20 @@ export function HomeTerminalSummary({
   }, [user?.id]);
 
   useEffect(() => {
-    const cacheBuster = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-    fetch(`/api/market-data/upcoming-events?d=${cacheBuster}`)
+    const _bust = new Date().toISOString().slice(0, 10);
+    fetch(`/api/market-data/upcoming-events?d=${_bust}`)
       .then((r) => (r.ok ? r.json() : { events: [] }))
       .then((d) => setLiveEvents(d.events || []))
       .catch(() => setLiveEvents([]))
       .finally(() => setEventsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/fmp/congress-latest')
+      .then((r) => (r.ok ? r.json() : { trades: [] }))
+      .then((d) => setCongressTrades(d.trades || []))
+      .catch(() => setCongressTrades([]))
+      .finally(() => setCongressLoading(false));
   }, []);
 
   const hasPortfolio =
@@ -266,7 +255,6 @@ export function HomeTerminalSummary({
   const sel = monthSnapshots[monthSnapshots.length - 1] ?? monthSnapshots[0];
   const displayPct = sel.pct;
   const displayChangeDollar = sel.changeDollar;
-  const gainTodayDisplay = sel.gainToday;
 
   const currentValue = hasUser ? portfolioSnapshotNum : portfolioTotal;
   const snapshotValueNum = sel.displayValue;
@@ -297,31 +285,28 @@ export function HomeTerminalSummary({
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     const dayToType = {};
 
-    const todayDayOfMonth = now.getDate();
-    const todayMonthIdx = now.getMonth();
-    const todayYear = now.getFullYear();
+    const today = new Date();
+    const todayDayOfMonth = today.getDate();
 
-    const filteredLiveEvents = liveEvents.filter((ev) => {
+    const filteredLive = liveEvents.filter((ev) => {
       if (ev.fullDate) {
-        const datePart = String(ev.fullDate).split(' ')[0];
-        const [py, pm, pd] = datePart.split('-').map(Number);
-        if (!py || !pm || !pd) return true;
-        const evDate = new Date(py, pm - 1, pd);
-        const todayMidnight = new Date(todayYear, todayMonthIdx, todayDayOfMonth);
-        return evDate >= todayMidnight;
+        const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
+        const [ey, em, ed] = datePart.split('-').map(Number);
+        if (!ey || !em || !ed) return true;
+        return new Date(ey, em - 1, ed) >= new Date(y, m, todayDayOfMonth);
       }
       return ev.day >= todayDayOfMonth;
     });
 
-    const eventsSource =
-      filteredLiveEvents.length > 0 ? filteredLiveEvents : UPCOMING_EVENTS_GRID;
+    const eventsSource = filteredLive.length > 0 ? filteredLive : UPCOMING_EVENTS_GRID;
 
     eventsSource.forEach((ev) => {
       let dom;
       if (ev.fullDate) {
-        const datePart = String(ev.fullDate).split(' ')[0];
-        const [, , dd] = datePart.split('-').map(Number);
-        dom = dd && dd >= 1 && dd <= daysInMonth ? dd : null;
+        const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
+        const parts = datePart.split('-');
+        const dd = parseInt(parts[2], 10);
+        dom = dd >= 1 && dd <= daysInMonth ? dd : null;
       } else {
         dom = Math.min(Math.max(1, ev.day), daysInMonth);
       }
@@ -411,24 +396,10 @@ export function HomeTerminalSummary({
             <div className="home-terminal-left-col">
               <div className="home-terminal-top-row">
             <div className="home-snapshot-col">
-              <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column' }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '0.75rem',
-                  }}
-                >
+              <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <div>
-                    <h3
-                      style={{
-                        fontSize: '0.9375rem',
-                        fontWeight: 800,
-                        color: 'var(--home-heading)',
-                        margin: 0,
-                      }}
-                    >
+                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
                       Portfolio Snapshot
                     </h3>
                     <span
@@ -445,47 +416,99 @@ export function HomeTerminalSummary({
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button
-                      type="button"
-                      className="db-tf-btn-sm active"
-                      style={{ padding: '0.25rem 0.45rem', minWidth: 32 }}
-                      aria-label="Line chart"
-                    >
+                    <button type="button" className="db-tf-btn-sm active" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Line chart">
                       <i className="bi bi-graph-up" />
                     </button>
-                    <button
-                      type="button"
-                      className="db-tf-btn-sm"
-                      style={{ padding: '0.25rem 0.45rem', minWidth: 32 }}
-                      aria-label="Bar chart"
-                    >
+                    <button type="button" className="db-tf-btn-sm" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Bar chart">
                       <i className="bi bi-bar-chart-line" />
                     </button>
                   </div>
                 </div>
-                <p className="home-num-hero portfolio-value">{displayValue}</p>
-                <p className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}>
-                  {changePctStr} ({changeDollarStr}){' '}
-                  <span className="home-num-change-muted">Committed Frees</span>
+
+                <p className="home-num-hero portfolio-value" style={{ margin: '0 0 0.15rem' }}>
+                  {displayValue}
                 </p>
-                <div className="home-portfolio-chart-bleed" style={{ height: 120, marginBottom: 0 }}>
+                <p className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`} style={{ margin: '0 0 0.5rem' }}>
+                  {changePctStr} ({changeDollarStr})
+                </p>
+
+                <div style={{ height: 80, minHeight: 80, maxHeight: 80, marginBottom: '0.75rem', overflow: 'hidden' }}>
                   <HeroSparkline
-                    portfolioValue={hasUser ? portfolioSnapshotNum || snapshotValueNum : snapshotValueNum || currentValue}
+                    portfolioValue={snapshotValueNum || currentValue}
                     changePct={displayPct}
                     chartPath={ytdChartPath}
-                    axisLabels={monthSnapshots.map((m) => m.label)}
+                    axisLabels={monthSnapshots.map((mm) => mm.label)}
                   />
                 </div>
-                <div className="home-portfolio-gain-row">
-                  <span className="home-portfolio-gain-label">Gain Today</span>
-                  <span className="home-portfolio-gain-value">
-                    $
-                    {gainTodayDisplay.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
+
+                <div style={{ height: 1, background: 'rgba(16,185,129,0.08)', margin: '0 -1.25rem 0.65rem' }} />
+
+                <p style={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--home-muted)', margin: '0 0 0.5rem' }}>
+                  Top Holdings
+                </p>
+
+                {enrichedHoldings.length === 0 ? (
+                  <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>
+                    No positions yet — start mock trading to see holdings here.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    {enrichedHoldings.slice(0, 6).map((h) => {
+                      const pnlPct =
+                        h.costBasis > 0
+                          ? ((h.value - h.costBasis) / h.costBasis) * 100
+                          : typeof h.pctChange === 'number'
+                            ? h.pctChange
+                            : 0;
+                      const isPos = pnlPct >= 0;
+                      const dotColor = tickerColor(h.ticker);
+                      const price = h.price ?? 0;
+                      const val = h.value ?? 0;
+                      return (
+                        <div
+                          key={h.ticker}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.3rem 0.5rem',
+                            borderRadius: '6px',
+                            background: isPos ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.04)',
+                            borderLeft: `3px solid ${isPos ? '#10b981' : '#ef4444'}`,
+                          }}
+                        >
+                          <span style={{ width: 7, height: 7, borderRadius: '2px', background: dotColor, flexShrink: 0 }} />
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--home-heading)' }}>{h.ticker}</span>
+                            <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', marginLeft: 4 }}>×{h.shares}</span>
+                          </div>
+                          <span style={{ fontSize: '0.625rem', color: 'var(--home-muted-soft)', flexShrink: 0 }}>
+                            ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              color: isPos ? '#10b981' : '#ef4444',
+                              flexShrink: 0,
+                              minWidth: 48,
+                              textAlign: 'right',
+                            }}
+                          >
+                            {isPos ? '+' : ''}
+                            {pnlPct.toFixed(2)}%
+                          </span>
+                          <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', flexShrink: 0, minWidth: 44, textAlign: 'right' }}>
+                            $
+                            {val >= 1000
+                              ? `${(val / 1000).toFixed(1)}K`
+                              : val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                        </div>
+                      );
                     })}
-                  </span>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="home-week-col">
@@ -517,11 +540,15 @@ export function HomeTerminalSummary({
                             </div>
                           ) : (
                             (upcomingCalendar.eventsSource || UPCOMING_EVENTS_GRID).map((ev) => {
-                              const eventDate = ev.fullDate
-                                ? parseEventDate(ev.fullDate)
-                                : {
-                                    label: `${MONTH_SHORT[upcomingCalendar.m]} ${ev.day}`,
-                                  };
+                              const dateLabel = ev.fullDate
+                                ? (() => {
+                                    const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
+                                    const parts = datePart.split('-');
+                                    const em = parseInt(parts[1], 10) - 1;
+                                    const ed = parseInt(parts[2], 10);
+                                    return `${MONTH_SHORT[em]} ${ed}`;
+                                  })()
+                                : `${MONTH_SHORT[upcomingCalendar.m]} ${Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth)}`;
                               return (
                                 <div
                                   key={ev.id}
@@ -536,7 +563,7 @@ export function HomeTerminalSummary({
                                       {ev.icon}
                                     </span>
                                     <span className="hts-events-grid-date" style={{ color: ev.color }}>
-                                      {eventDate.label}
+                                      {dateLabel}
                                     </span>
                                   </div>
                                   <p className="hts-events-grid-title">{ev.title}</p>
@@ -787,90 +814,106 @@ export function HomeTerminalSummary({
               </div>
 
               <div className="home-rail-congress">
-              <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3>Congressional Tracker</h3>
-                </div>
-                <div style={{ padding: '0 1.25rem 1rem' }}>
-                  {MOCK_CONGRESS_TRADES.map((row) => (
-                    <div
-                      key={row.name + row.ticker}
+                <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3>Congressional Tracker</h3>
+                    <span style={{ fontSize: '0.625rem', color: 'var(--home-muted)', fontWeight: 500 }}>Latest disclosures</span>
+                  </div>
+                  <div style={{ padding: '0 1.25rem 1rem' }}>
+                    {congressLoading && (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.75rem 0' }}>Loading trades…</p>
+                    )}
+                    {!congressLoading && congressTrades.length === 0 && (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', padding: '0.75rem 0' }}>No recent trades found.</p>
+                    )}
+                    {!congressLoading &&
+                      congressTrades.map((row, idx) => (
+                        <div
+                          key={`${row.name}-${row.symbol}-${idx}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.65rem',
+                            padding: '0.6rem 0',
+                            borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '50%',
+                              background: row.positive ? 'rgba(16,185,129,0.10)' : 'rgba(239,68,68,0.10)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.65rem',
+                              fontWeight: 800,
+                              color: row.positive ? '#10b981' : '#ef4444',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {initials(row.name)}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p
+                              style={{
+                                color: 'var(--home-heading)',
+                                fontSize: '0.8125rem',
+                                fontWeight: 700,
+                                margin: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {row.name}
+                              <span style={{ color: 'var(--home-muted)', fontSize: '0.6rem', fontWeight: 400, marginLeft: 4 }}>
+                                {row.chamber}
+                              </span>
+                            </p>
+                            <p style={{ color: 'var(--home-muted-soft)', fontSize: '0.6875rem', margin: '0.1rem 0 0' }}>
+                              {row.action}{' '}
+                              <span style={{ color: row.positive ? '#10b981' : '#ef4444', fontWeight: 700 }}>{row.symbol}</span>
+                              {row.disclosureDate && (
+                                <span style={{ color: 'var(--home-muted)', marginLeft: 6, fontSize: '0.6rem' }}>
+                                  {new Date(row.disclosureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          <div style={{ flexShrink: 0 }}>
+                            <span
+                              style={{
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '4px',
+                                fontSize: '0.6875rem',
+                                fontWeight: 700,
+                                background: row.positive ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+                                color: row.positive ? '#10b981' : '#ef4444',
+                              }}
+                            >
+                              {row.amount}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    <Link
+                      href="/inside-the-capitol"
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.65rem',
-                        padding: '0.6rem 0',
-                        borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                        display: 'block',
+                        textAlign: 'center',
+                        marginTop: '0.75rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: '#10b981',
+                        textDecoration: 'none',
                       }}
                     >
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          background: 'rgba(16, 185, 129, 0.08)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.65rem',
-                          fontWeight: 800,
-                          color: '#10b981',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {initials(row.name)}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: 'var(--home-heading)', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>
-                          {row.name}{' '}
-                          <span style={{ color: 'var(--home-muted)', fontSize: '0.6875rem' }}>({row.party})</span>
-                        </p>
-                        <p style={{ color: 'var(--home-muted-soft)', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>
-                          {row.type} {row.ticker}
-                        </p>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                        <span
-                          style={{
-                            padding: '0.2rem 0.45rem',
-                            borderRadius: '4px',
-                            fontSize: '0.6875rem',
-                            fontWeight: 700,
-                            background: 'rgba(16, 185, 129, 0.08)',
-                            color: '#10b981',
-                          }}
-                        >
-                          {row.ticker}
-                        </span>
-                        <MiniSparkline positive={row.positive} />
-                        <span
-                          style={{
-                            color: row.positive ? '#10b981' : '#ef4444',
-                            fontWeight: 700,
-                            fontSize: '0.8125rem',
-                          }}
-                        >
-                          {row.amount}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  <Link
-                    href="/inside-the-capitol"
-                    style={{
-                      display: 'block',
-                      textAlign: 'center',
-                      marginTop: '0.75rem',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      color: '#10b981',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    View All <i className="bi bi-chevron-down" />
-                  </Link>
+                      View All <i className="bi bi-chevron-down" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
               </div>
 
               <div className="home-rail-movers">
