@@ -258,6 +258,8 @@ export default function WatchlistPage() {
   const [selectedWatchlistId, setSelectedWatchlistId] = useState('all-stocks');
   const [wlDropdownOpen, setWlDropdownOpen] = useState(false);
   const wlDropdownRef = useRef(null);
+  const [addMenuOpenId, setAddMenuOpenId] = useState(null);
+  const addMenuRef = useRef(null);
 
   const orgTeamId = useMemo(() => {
     if (!isOrgUser) return null;
@@ -310,6 +312,16 @@ export default function WatchlistPage() {
     }
     document.addEventListener('mousedown', closeWlDrop);
     return () => document.removeEventListener('mousedown', closeWlDrop);
+  }, []);
+
+  useEffect(() => {
+    function closeAddMenu(e) {
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target)) {
+        setAddMenuOpenId(null);
+      }
+    }
+    document.addEventListener('mousedown', closeAddMenu);
+    return () => document.removeEventListener('mousedown', closeAddMenu);
   }, []);
 
   const watchlistTickerSymbols = useMemo(
@@ -370,6 +382,44 @@ export default function WatchlistPage() {
         };
       }),
     );
+  }, []);
+
+  const onAddToWatchlist = useCallback((item, watchlistId) => {
+    setMockWatchlists((prev) =>
+      prev.map((list) => {
+        if (list.id !== watchlistId) return list;
+        const ticker = item.ticker || item.id;
+        if (list.stocks.some((s) => s.ticker === ticker)) return list;
+        return {
+          ...list,
+          stocks: [
+            ...list.stocks,
+            {
+              ticker,
+              name: item.name,
+              price: item.price ?? 0,
+              change: item.change ?? 0,
+              changePct: item.pct ?? item.changePct ?? 0,
+              marketCap: item.revenue || '—',
+              volume: '—',
+              sector:
+                item.type === 'politician'
+                  ? 'Congress'
+                  : item.type === 'institution'
+                    ? 'Institution'
+                    : item.type === 'index'
+                      ? 'Index'
+                      : item.type === 'commodity'
+                        ? 'Commodity'
+                        : item.type === 'crypto'
+                          ? 'Crypto'
+                          : 'Other',
+            },
+          ],
+        };
+      }),
+    );
+    setAddMenuOpenId(null);
   }, []);
 
   const sideItems = useMemo(() => {
@@ -456,62 +506,159 @@ export default function WatchlistPage() {
           const isPF = item.type === 'politician' || item.type === 'institution';
           const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
           return (
-            <button key={item.id} type="button" className={`wl-strip-card ${item.type} ${active?'active':''}`} onClick={() => selectAny(raw)}>
-              <div className="wl-strip-top">
-                <TypeIcon item={item}/>
-                <div className="wl-strip-info">
-                  <span className="wl-strip-name">{item.name}</span>
-                  <span className="wl-strip-sub">
-                    {item.type === 'politician' && <><span className={`wl-dot ${item.party?.toLowerCase()}`}/>{item.party} · Portfolio</>}
-                    {item.type === 'institution' && <>{item.revenue || '13F'} · Portfolio</>}
-                    {item.type === 'index' && <>{item.ticker}</>}
-                  </span>
-          </div>
-        </div>
-              <div className="wl-strip-bottom">
-                <div>
+            <div key={item.id} className={`wl-strip-card ${item.type} ${active ? 'active' : ''}`} style={{ position: 'relative' }}>
+              <div
+                role="button"
+                tabIndex={0}
+                style={{ cursor: 'pointer' }}
+                onClick={() => selectAny(raw)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') selectAny(raw);
+                }}
+              >
+                <div className="wl-strip-top">
+                  <TypeIcon item={item} />
+                  <div className="wl-strip-info">
+                    <span className="wl-strip-name">{item.name}</span>
+                    <span className="wl-strip-sub">
+                      {item.type === 'politician' && (
+                        <>
+                          <span className={`wl-dot ${item.party?.toLowerCase()}`} />
+                          {item.party} · Portfolio
+                        </>
+                      )}
+                      {item.type === 'institution' && <>{item.revenue || '13F'} · Portfolio</>}
+                      {item.type === 'index' && <>{item.ticker}</>}
+                    </span>
+                  </div>
+                </div>
+                <div className="wl-strip-bottom">
+                  <div>
+                    {isPF ? (
+                      <>
+                        <span className="wl-strip-price">{fmtPct(item.returnYtd)}</span>
+                        <span className="wl-strip-chg wl-strip-ytd-label">YTD</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="wl-strip-price">{fmtPrice(item.price)}</span>
+                        <span className={`wl-strip-chg ${up ? 'up' : 'dn'}`}>{fmtPct(item.pct)}</span>
+                      </>
+                    )}
+                  </div>
                   {isPF ? (
-                    <>
-                      <span className="wl-strip-price">{fmtPct(item.returnYtd)}</span>
-                      <span className="wl-strip-chg wl-strip-ytd-label">YTD</span>
-                    </>
+                    <SparkPortfolio seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)} returnYtd={item.returnYtd} />
                   ) : (
-                    <>
-                      <span className="wl-strip-price">{fmtPrice(item.price)}</span>
-                      <span className={`wl-strip-chg ${up?'up':'dn'}`}>{fmtPct(item.pct)}</span>
-                    </>
+                    <Spark seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)} up={up} />
                   )}
-          </div>
-                {isPF ? (
-                  <SparkPortfolio seed={item.id.charCodeAt(0) + item.id.charCodeAt(item.id.length - 1)} returnYtd={item.returnYtd} />
-                ) : (
-                  <Spark seed={item.id.charCodeAt(0)+item.id.charCodeAt(item.id.length-1)} up={up}/>
-                )}
-        </div>
-              <div className="wl-strip-assets">
-                {item.topAssets.slice(0,3).map(a => <span key={a} className="wl-strip-asset">{a}</span>)}
-          </div>
-            </button>
+                </div>
+                <div className="wl-strip-assets">
+                  {item.topAssets.slice(0, 3).map((a) => (
+                    <span key={a} className="wl-strip-asset">
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {!isOrgUser && (
+                <div ref={addMenuOpenId === item.id ? addMenuRef : null} className="wl-add-anchor">
+                  <button
+                    type="button"
+                    className="wl-plus-btn"
+                    aria-label={`Add ${item.name} to watchlist`}
+                    aria-expanded={addMenuOpenId === item.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAddMenuOpenId((prev) => (prev === item.id ? null : item.id));
+                    }}
+                  >
+                    +
+                  </button>
+                  {addMenuOpenId === item.id && (
+                    <div className="wl-add-dropdown" onClick={(e) => e.stopPropagation()}>
+                      <p className="wl-add-dropdown-label">Add to watchlist</p>
+                      {mockWatchlists.map((wl) => (
+                        <button
+                          key={wl.id}
+                          type="button"
+                          className="wl-add-dropdown-opt"
+                          onClick={() => onAddToWatchlist(raw, wl.id)}
+                        >
+                          <span>{wl.label}</span>
+                          {wl.stocks.some((s) => s.ticker === (raw.ticker || raw.id)) && (
+                            <span className="wl-add-dropdown-check">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
-        </div>
+      </div>
 
       {/* ═══ COMMODITIES ROW ═══ */}
       <div className="wl-comm-strip">
         {COMMODITIES.map((raw) => {
           const c = mergeFinnhubQuote({ ...raw, quoteSymbol: raw.ticker }, quoteMap);
           return (
-          <button
-            key={c.id}
-            type="button"
-            className={`wl-comm ${selected?.id === c.id ? 'active' : ''}`}
-            onClick={() => selectAny(raw)}
-            style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
-          >
-            <span className="wl-comm-name">{c.name} · {c.ticker}</span>
-            <span className="wl-comm-price">${fmtSmall(c.price)}</span>
-            <span className={`wl-comm-chg ${c.change>=0?'up':'dn'}`}>{fmtChg(c.change)} {fmtPct(c.pct)}</span>
-          </button>
+            <div
+              key={c.id}
+              style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start' }}
+            >
+              <button
+                type="button"
+                className={`wl-comm ${selected?.id === c.id ? 'active' : ''}`}
+                onClick={() => selectAny(raw)}
+                style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+              >
+                <span className="wl-comm-name">
+                  {c.name} · {c.ticker}
+                </span>
+                <span className="wl-comm-price">${fmtSmall(c.price)}</span>
+                <span className={`wl-comm-chg ${c.change >= 0 ? 'up' : 'dn'}`}>
+                  {fmtChg(c.change)} {fmtPct(c.pct)}
+                </span>
+              </button>
+
+              {!isOrgUser && (
+                <div ref={addMenuOpenId === c.id ? addMenuRef : null} className="wl-add-anchor wl-add-anchor--comm">
+                  <button
+                    type="button"
+                    className="wl-plus-btn wl-plus-btn--comm"
+                    aria-label={`Add ${c.name} to watchlist`}
+                    aria-expanded={addMenuOpenId === c.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAddMenuOpenId((prev) => (prev === c.id ? null : c.id));
+                    }}
+                  >
+                    +
+                  </button>
+                  {addMenuOpenId === c.id && (
+                    <div className="wl-add-dropdown wl-add-dropdown--comm" onClick={(e) => e.stopPropagation()}>
+                      <p className="wl-add-dropdown-label">Add to watchlist</p>
+                      {mockWatchlists.map((wl) => (
+                        <button
+                          key={wl.id}
+                          type="button"
+                          className="wl-add-dropdown-opt"
+                          onClick={() => onAddToWatchlist(raw, wl.id)}
+                        >
+                          <span>{wl.label}</span>
+                          {wl.stocks.some((s) => s.ticker === (raw.ticker || raw.id)) && (
+                            <span className="wl-add-dropdown-check">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
@@ -666,13 +813,27 @@ export default function WatchlistPage() {
         {/* ── RIGHT: Sidebar ── */}
         <aside className="wl-side">
           <div className="wl-side-hdr">
-            <h3>
-              {isOrgUser
-                ? orgRole === 'executive'
-                  ? 'Council Watchlist'
-                  : `${orgTeamPerf?.team_name || 'Team'} Watchlist`
-                : 'My Watchlist'}
-            </h3>
+            <div>
+              <h3>
+                {isOrgUser
+                  ? orgRole === 'executive'
+                    ? 'Council Watchlist'
+                    : `${orgTeamPerf?.team_name || 'Team'} Watchlist`
+                  : 'My Watchlist'}
+              </h3>
+              {!isOrgUser && (
+                <p
+                  style={{
+                    fontSize: '0.6rem',
+                    color: 'var(--muted-foreground, #6b7280)',
+                    margin: '1px 0 0',
+                    fontWeight: 500,
+                  }}
+                >
+                  Defaults: All Stocks · Politicians
+                </p>
+              )}
+            </div>
             <span className="wl-side-cnt">{sideItems.length}</span>
           </div>
 
@@ -773,8 +934,24 @@ export default function WatchlistPage() {
                     </div>
                   </div>
                   <div className="wl-si-right">
-                    <span className="wl-si-price">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
-                    <span className={`wl-si-chg ${up?'up':'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
+                    {!isOrgUser && item.type === 'stock' && (
+                      <button
+                        type="button"
+                        className="wl-si-quick-add"
+                        title={`Add ${item.ticker} to current list`}
+                        aria-label={`Add ${item.ticker} to watchlist`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAddStock(item.ticker, selectedWatchlistId);
+                        }}
+                      >
+                        <i className="bi bi-plus-lg" aria-hidden />
+                      </button>
+                    )}
+                    <div className="wl-si-price-block">
+                      <span className="wl-si-price">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
+                      <span className={`wl-si-chg ${up?'up':'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
+                    </div>
                   </div>
                 </button>
               );
