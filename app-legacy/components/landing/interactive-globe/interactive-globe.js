@@ -143,13 +143,10 @@
         var cos = -z / radius;
         if (cos <= 0.05) continue;
         var s = project(x, y, z, cx, cy, fov);
-        var limbScale = Math.max(0.22, cos);
-        var depthAlpha = Math.min(0.92, Math.max(0.1, 0.14 + cos * 0.62));
-        var dotR = (0.52 + depthAlpha * 0.48) * limbScale;
-        var foreshort = Math.max(0.2, cos);
+        var depthAlpha = Math.min(1.0, Math.max(0.35, 0.4 + cos * 0.6));
+        var dotR = Math.max(0.55, 0.7 * Math.max(0.5, cos));
         ctx.save();
         ctx.translate(s[0], s[1]);
-        ctx.scale(1, foreshort);
         ctx.beginPath();
         ctx.arc(0, 0, dotR, 0, Math.PI * 2);
         ctx.fillStyle = dotColor.replace('ALPHA', depthAlpha.toFixed(2));

@@ -244,14 +244,13 @@ export function InteractiveGlobe({
       if (cos <= 0.05) continue;
 
       const [sx, sy] = project(x, y, z, cx, cy, fov);
-      const limbScale = Math.max(0.22, cos);
-      const depthAlpha = Math.min(0.92, Math.max(0.1, 0.14 + cos * 0.62));
-      const dotR = (0.52 + depthAlpha * 0.48) * limbScale;
-      const foreshort = Math.max(0.2, cos);
+      // Imprinted look: circular dots (no foreshortening), tight alpha range,
+      // smaller radius so they read as surface texture not floating particles
+      const depthAlpha = Math.min(1.0, Math.max(0.35, 0.4 + cos * 0.6));
+      const dotR = Math.max(0.55, 0.7 * Math.max(0.5, cos));
 
       ctx.save();
       ctx.translate(sx, sy);
-      ctx.scale(1, foreshort);
       ctx.beginPath();
       ctx.arc(0, 0, dotR, 0, Math.PI * 2);
       ctx.fillStyle = dotColor.replace("ALPHA", depthAlpha.toFixed(2));

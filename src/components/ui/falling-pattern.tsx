@@ -27,7 +27,7 @@ export function FallingPattern({
   sparkleColor,
   backgroundColor = '#050a08',
   duration = 150,
-  blurIntensity = '1em',
+  blurIntensity: _blurIntensity = '1em',
   density = 1,
   className,
 }: FallingPatternProps) {
@@ -154,9 +154,7 @@ export function FallingPattern({
         className="absolute inset-0"
         style={{
           zIndex: 1,
-          backdropFilter: `blur(${blurIntensity})`,
-          WebkitBackdropFilter: `blur(${blurIntensity})`,
-          backgroundImage: `radial-gradient(circle at 50% 50%, transparent 0, transparent 2px, ${backgroundColor} 2px)`,
+          backgroundImage: `radial-gradient(circle at 50% 50%, transparent 0, transparent 2.5px, ${backgroundColor} 2.5px)`,
           backgroundSize: `${8 * density}px ${8 * density}px`,
         }}
       />

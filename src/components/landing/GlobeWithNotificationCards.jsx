@@ -95,7 +95,7 @@ export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
           showConnections={false}
           showMarkers={false}
           onReady={onGlobeReady}
-          oceanFill={isLight ? "#dce3ea" : "#020403"}
+          oceanFill={isLight ? "#c8d4db" : "#020403"}
           dotColor={isLight ? "rgba(5, 150, 105, ALPHA)" : "rgba(52, 211, 153, ALPHA)"}
         />
       </div>
