@@ -360,11 +360,20 @@ export default function HomeDashboardPage() {
     (orgRole === 'analyst' || orgRole === 'portfolio_manager');
 
   const sectorRows = useMemo(() => {
+    // Mock portfolio with positions → use real sector breakdown
     if (useMock && mock.sectorData.length > 0) return mock.sectorData;
+    // Mock portfolio loaded but no positions → empty (don't show fake data)
+    if (useMock && mock.sectorData.length === 0) return [];
+    // Real brokerage connected with holdings → use live Plaid data
+    if (useLiveHoldings && mock.sectorData.length > 0) return mock.sectorData;
+    // Org TMT team member → show industry breakdown
     if (isTmtTeamMember) return TMT_INDUSTRY_DATA;
+    // Demo account
     if (user?.email === 'axmabeto@gmail.com') return SECTOR_DATA_DEMO;
+    // No holdings at all (not mock, not Plaid connected) → empty
+    if (!useMock && !useLiveHoldings) return [];
     return SECTOR_DATA_DEFAULT;
-  }, [useMock, mock.sectorData, user?.email, isTmtTeamMember]);
+  }, [useMock, useLiveHoldings, mock.sectorData, user?.email, isTmtTeamMember]);
 
   useEffect(() => {
     if (!user) {
@@ -690,27 +699,41 @@ export default function HomeDashboardPage() {
         <div className="db-card db-sector-card">
           <div className="db-card-header">
             <h3>{isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}</h3>
-            <div className="db-sector-bar-mini">
+            {sectorRows.length > 0 && (
+              <div className="db-sector-bar-mini">
+                {sectorRows.map((s) => (
+                  <div key={s.name} className="db-sector-bar-seg" style={{ width: `${s.pct}%`, background: s.color }} />
+                ))}
+              </div>
+            )}
+          </div>
+          {sectorRows.length === 0 ? (
+            <div className="db-sector-empty">
+              <i className="bi bi-pie-chart" style={{ fontSize: '1.75rem', color: 'rgba(16,185,129,0.25)', marginBottom: '0.5rem' }} />
+              <p style={{ color: '#6b7280', fontSize: '0.8125rem', textAlign: 'center', lineHeight: 1.5, margin: 0 }}>
+                No holdings yet.<br />
+                {useMock
+                  ? 'Place a trade in Mock Trading to see your sector breakdown.'
+                  : 'Connect a brokerage account to see your sector breakdown.'}
+              </p>
+            </div>
+          ) : (
+            <div className="db-sector-list db-sector-list--compact">
               {sectorRows.map((s) => (
-                <div key={s.name} className="db-sector-bar-seg" style={{ width: `${s.pct}%`, background: s.color }} />
+                <div key={s.name} className="db-sector-item">
+                  <div className="db-sector-item-left">
+                    <span className="db-sector-dot" style={{ background: s.color }} />
+                    <div>
+                      <span className="db-sector-name">{s.name}</span>
+                      {s.detail && <span className="db-sector-detail">{s.detail}</span>}
+                      <span className="db-sector-pct">{s.pct}%</span>
+                    </div>
+                  </div>
+                  <span className="db-sector-value">${s.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </div>
               ))}
             </div>
-          </div>
-          <div className="db-sector-list db-sector-list--compact">
-            {sectorRows.map((s) => (
-              <div key={s.name} className="db-sector-item">
-                <div className="db-sector-item-left">
-                  <span className="db-sector-dot" style={{ background: s.color }} />
-                  <div>
-                    <span className="db-sector-name">{s.name}</span>
-                    {s.detail && <span className="db-sector-detail">{s.detail}</span>}
-                    <span className="db-sector-pct">{s.pct}%</span>
-                  </div>
-                </div>
-                <span className="db-sector-value">${s.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
 
         {/* Recent Transactions */}

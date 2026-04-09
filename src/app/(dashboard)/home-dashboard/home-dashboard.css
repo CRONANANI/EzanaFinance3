@@ -621,6 +621,16 @@ body.light-mode .db-page {
   min-height: 0;
 }
 
+.db-sector-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  gap: 0.25rem;
+  min-height: 120px;
+}
+
 .db-sector-bar-mini {
   display: flex;
   width: 80px;
