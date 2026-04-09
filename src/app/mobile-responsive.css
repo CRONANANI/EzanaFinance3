@@ -191,6 +191,9 @@ body {
 
   .main-nav .nav-actions {
     gap: 0.5rem;
+    flex-shrink: 0;
+    flex-grow: 0;
+    margin-left: auto;
   }
 
   .main-nav .nav-actions .settings-toggle,

@@ -16,16 +16,19 @@
 }
 
 .nav-container {
+  width: 100%;
   max-width: 100%;
   height: 100%;
   padding: 0 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .main-nav .nav-left-zone {
-  margin-right: 1.5rem;
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .nav-brand {
@@ -212,7 +215,8 @@ body:not(.light-mode) .dropdown-menu {
   align-items: center;
   height: 100%;
   flex-shrink: 0;
-  margin-left: 1.5rem;
+  flex-grow: 0;
+  margin-left: auto;
 }
 
 /* Bell + beginner checklist — beside logo (checklist to the right of bell) */
@@ -223,34 +227,60 @@ body:not(.light-mode) .dropdown-menu {
   flex-shrink: 0;
 }
 
-/* Settings gear — emerald accent */
+/* Settings gear — deep emerald + light outline on icon */
 .main-nav .nav-action-btn.nav-settings-gear,
 .partner-nav .nav-action-btn.nav-settings-gear {
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.4);
-  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border-color: rgba(4, 120, 87, 0.45);
+  background: rgba(4, 120, 87, 0.12);
+}
+
+.main-nav .nav-action-btn.nav-settings-gear i,
+.partner-nav .nav-action-btn.nav-settings-gear i {
+  color: #047857;
+  -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.88);
+  paint-order: stroke fill;
 }
 
 .main-nav .nav-action-btn.nav-settings-gear:hover,
 .partner-nav .nav-action-btn.nav-settings-gear:hover {
-  background: #10b981;
+  background: #047857;
   color: #ffffff;
-  border-color: #10b981;
+  border-color: #047857;
 }
 
-/* Logout button — same size as gear, red accent */
+.main-nav .nav-action-btn.nav-settings-gear:hover i,
+.partner-nav .nav-action-btn.nav-settings-gear:hover i {
+  color: #ffffff;
+  -webkit-text-stroke: 0;
+}
+
+/* Logout — red accent + light outline on icon */
 .main-nav .nav-action-btn.nav-logout-btn,
 .partner-nav .nav-action-btn.nav-logout-btn {
-  color: #f87171;
-  border-color: rgba(248, 113, 113, 0.4);
-  background: rgba(248, 113, 113, 0.12);
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.45);
+  background: rgba(185, 28, 28, 0.12);
+}
+
+.main-nav .nav-action-btn.nav-logout-btn i,
+.partner-nav .nav-action-btn.nav-logout-btn i {
+  color: #b91c1c;
+  -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.92);
+  paint-order: stroke fill;
 }
 
 .main-nav .nav-action-btn.nav-logout-btn:hover,
 .partner-nav .nav-action-btn.nav-logout-btn:hover {
-  background: #ef4444;
+  background: #b91c1c;
   color: #ffffff;
-  border-color: #ef4444;
+  border-color: #b91c1c;
+}
+
+.main-nav .nav-action-btn.nav-logout-btn:hover i,
+.partner-nav .nav-action-btn.nav-logout-btn:hover i {
+  color: #ffffff;
+  -webkit-text-stroke: 0;
 }
 
 .nav-action-btn {

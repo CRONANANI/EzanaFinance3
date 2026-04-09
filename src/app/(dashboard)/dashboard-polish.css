@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dashboard-wide UI tokens â€” cards, typography rhythm, loading/empty helpers.
  */
 .dashboard-page {
@@ -89,4 +89,9 @@ body.light-mode.dashboard-page { --dash-page-title-color: #0f172a; }
 .dashboard-page .dash-empty i { font-size: 2rem; color: #4b5563; }
 .dashboard-page .dash-empty p { font-size: 0.75rem; margin: 0; color: #6b7280; }
 .dashboard-page .dash-section { margin-bottom: 2rem; }
-.main-nav .nav-actions { gap: 0.5rem; }
+.main-nav .nav-actions {
+  gap: 0.5rem;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+  margin-left: auto !important;
+}
