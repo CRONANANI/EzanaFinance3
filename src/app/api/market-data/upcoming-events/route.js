@@ -5,14 +5,16 @@ export const dynamic = 'force-dynamic';
 const FMP_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY || process.env.FMP_API_KEY;
 const FMP_STABLE = 'https://financialmodelingprep.com/stable';
 
+// Short cache — prevents stale same-day responses being served from CDN
 const CACHE_HEADERS = {
   'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
 };
 
-/** Parse "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" safely as LOCAL time */
+/** Parse "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" as local time */
 function parseLocalDate(dateStr) {
   if (!dateStr) return null;
-  const [datePart, timePart] = String(dateStr).trim().split(' ');
+  const s = String(dateStr).trim().replace('T', ' ');
+  const [datePart, timePart] = s.split(' ');
   const [y, m, d] = datePart.split('-').map(Number);
   if (!y || !m || !d) return null;
   if (timePart) {
@@ -33,24 +35,26 @@ export async function GET() {
     const monthIdx = now.getMonth();
     const month = String(monthIdx + 1).padStart(2, '0');
     const todayDay = now.getDate();
-
-    const fromDay = `${year}-${month}-${String(todayDay).padStart(2, '0')}`;
     const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+
+    // ── THE FIX: query FROM TODAY, not from the 1st of the month ──────────
+    const fromDay = `${year}-${month}-${String(todayDay).padStart(2, '0')}`;
     const lastDay = `${year}-${month}-${String(daysInMonth).padStart(2, '0')}`;
     const key = encodeURIComponent(FMP_KEY);
 
-    const fetchOpts = { cache: 'no-store' };
-
+    // cache: 'no-store' bypasses Next.js internal fetch cache entirely
     const [econRes, earningsRes] = await Promise.all([
-      fetch(`${FMP_STABLE}/economic-calendar?from=${fromDay}&to=${lastDay}&apikey=${key}`, fetchOpts),
-      fetch(`${FMP_STABLE}/earnings-calendar?from=${fromDay}&to=${lastDay}&apikey=${key}`, fetchOpts),
+      fetch(`${FMP_STABLE}/economic-calendar?from=${fromDay}&to=${lastDay}&apikey=${key}`, { cache: 'no-store' }),
+      fetch(`${FMP_STABLE}/earnings-calendar?from=${fromDay}&to=${lastDay}&apikey=${key}`, { cache: 'no-store' }),
     ]);
 
     const econRaw = econRes.ok ? await econRes.json() : [];
     const earningsRaw = earningsRes.ok ? await earningsRes.json() : [];
 
+    // Only today or future events
     const todayMidnight = new Date(year, monthIdx, todayDay, 0, 0, 0);
 
+    // ── Economic events ───────────────────────────────────────────────────
     const econEvents = (Array.isArray(econRaw) ? econRaw : [])
       .filter((e) => {
         if (!e.date) return false;
@@ -69,7 +73,7 @@ export async function GET() {
       .map((e, i) => {
         const d = parseLocalDate(e.date);
         const isHigh = String(e.impact ?? '').toLowerCase() === 'high';
-        const timeStr = e.date?.includes(' ')
+        const timeStr = String(e.date).includes(' ')
           ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
           : '8:30 AM';
         return {
@@ -77,7 +81,7 @@ export async function GET() {
           type: isHigh ? 'fed' : 'economic',
           icon: isHigh ? '🏛️' : '📈',
           title: e.event,
-          fullDate: e.date,
+          fullDate: String(e.date).split(' ')[0].split('T')[0], // "YYYY-MM-DD" — used by frontend for display
           day: d.getDate(),
           month: d.getMonth(),
           year: d.getFullYear(),
@@ -91,6 +95,7 @@ export async function GET() {
         };
       });
 
+    // ── Earnings events ───────────────────────────────────────────────────
     const earningsEvents = (Array.isArray(earningsRaw) ? earningsRaw : [])
       .filter((e) => {
         if (!e.date || !e.symbol) return false;
@@ -111,7 +116,7 @@ export async function GET() {
           type: 'earnings',
           icon: '📊',
           title: `${e.symbol} Earnings`,
-          fullDate: e.date,
+          fullDate: String(e.date).split(' ')[0].split('T')[0],
           day: d.getDate(),
           month: d.getMonth(),
           year: d.getFullYear(),
@@ -123,6 +128,7 @@ export async function GET() {
         };
       });
 
+    // ── Merge, sort by full date, cap at 12 ───────────────────────────────
     const combined = [...econEvents, ...earningsEvents]
       .sort((a, b) => {
         const da = parseLocalDate(a.fullDate);

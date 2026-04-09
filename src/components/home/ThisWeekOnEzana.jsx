@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
   ReferenceLine,
+  Legend,
 } from 'recharts';
 
 const TABS = [
@@ -46,64 +47,52 @@ function weekRangeLabel() {
   return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
 }
 
-const INDEX_KEYS = ['spx', 'rut', 'dji', 'ixic', 'nya'];
+const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji'];
 
-const INDEX_META = {
-  spx:  { label: 'S&P 500',   color: '#ef4444', short: 'SPX'  },
-  rut:  { label: 'Russell 2K', color: '#8b5cf6', short: 'RUT'  },
-  dji:  { label: 'Dow Jones',  color: '#f59e0b', short: 'DJIA' },
-  ixic: { label: 'NASDAQ',     color: '#10b981', short: 'IXIC' },
-  nya:  { label: 'NYSE Comp',  color: '#3b82f6', short: 'NYA'  },
+const SERIES_COLORS = {
+  spx:  '#ef4444',
+  ixic: '#10b981',
+  rut:  '#8b5cf6',
+  dji:  '#f59e0b',
 };
 
-/**
- * Custom dot that renders the % change label above the dot.
- * Only renders on data points where pct != null.
- */
-function PctLabelDot(props) {
-  const { cx, cy, payload, color } = props;
-  if (cx == null || cy == null || payload?.pct == null) return null;
-  const sign   = payload.pct >= 0 ? '+' : '';
-  const label  = `${sign}${payload.pct.toFixed(2)}%`;
-  const isPos  = payload.pct >= 0;
-  return (
-    <g>
-      <circle cx={cx} cy={cy} r={4} fill={color} stroke="#161b22" strokeWidth={1.5} />
-      <text
-        x={cx}
-        y={cy - 10}
-        textAnchor="middle"
-        fontSize={9}
-        fontWeight={600}
-        fill={isPos ? '#10b981' : '#ef4444'}
-      >
-        {label}
-      </text>
-    </g>
-  );
-}
+const SERIES_NAMES = {
+  spx:  'S&P 500',
+  ixic: 'NASDAQ',
+  rut:  'Russell 2K',
+  dji:  'Dow Jones',
+};
 
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
-  const [activeKey, setActiveKey] = useState('spx');
-
-  const loading  = indexPayload === null;
-  const failed   = !loading && (!indexPayload?.ok || !indexPayload?.indices);
-  const indexData = indexPayload?.indices?.[activeKey] ?? null;
+  const loading = indexPayload === null;
+  const failed = !loading && (!indexPayload?.ok || !indexPayload?.indices);
 
   const chartData = useMemo(() => {
-    if (!indexData?.series) return [];
-    return indexData.series.map((s) => ({
-      day:   s.day,
-      pct:   s.pct,
-      close: s.close,
-    }));
-  }, [indexData]);
+    const idx = indexPayload?.indices;
+    if (!idx) return [];
+    const first = CHART_KEYS.map((k) => idx[k]?.series).find((s) => Array.isArray(s) && s.length > 0);
+    if (!first) return [];
+    return first.map((row, i) => {
+      const out = { day: row.day };
+      CHART_KEYS.forEach((k) => {
+        const pt = idx[k]?.series?.[i];
+        out[k] = pt?.pct ?? null;
+      });
+      return out;
+    });
+  }, [indexPayload]);
 
   const yDomain = useMemo(() => {
-    const vals = chartData.map((r) => r.pct).filter((v) => v != null);
+    const vals = [];
+    chartData.forEach((r) => {
+      CHART_KEYS.forEach((k) => {
+        const v = r[k];
+        if (typeof v === 'number' && Number.isFinite(v)) vals.push(v);
+      });
+    });
     if (!vals.length) return [-1, 1];
-    const mn  = Math.min(...vals);
-    const mx  = Math.max(...vals);
+    const mn = Math.min(...vals);
+    const mx = Math.max(...vals);
     const pad = Math.max(Math.abs(mx - mn) * 0.35, 0.3);
     return [
       Math.floor((mn - pad) * 10) / 10,
@@ -112,15 +101,6 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   }, [chartData]);
 
   const chartH = chartOnly ? (compact ? 240 : 260) : compact ? 180 : 220;
-
-  const meta     = INDEX_META[activeKey];
-  const color    = meta?.color ?? '#10b981';
-  const yearHigh = indexData?.yearHigh;
-  const yearLow  = indexData?.yearLow;
-  const fmtNum   = (n) =>
-    n != null && Number.isFinite(n)
-      ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : '—';
 
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
@@ -141,10 +121,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
       {!loading && !failed && (
         <div
           style={{
-            height:    chartH,
+            height: chartH,
             minHeight: chartH,
-            width:     '100%',
-            position:  'relative',
+            width: '100%',
+            position: 'relative',
           }}
         >
           <ResponsiveContainer width="100%" height={chartH}>
@@ -154,137 +134,70 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                   ? chartData
                   : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]
               }
-              margin={{ top: 24, right: 16, left: compact ? -6 : 2, bottom: 4 }}
+              margin={{ top: 8, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 52 : 40 }}
             >
               <XAxis
                 dataKey="day"
                 interval={0}
+                padding={{ left: 12, right: 8 }}
                 tick={{ fill: 'var(--home-muted)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                padding={{ left: 20, right: 20 }}
               />
               <YAxis
                 domain={yDomain}
-                tickFormatter={(v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`}
+                tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`}
                 tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
-                width={compact ? 40 : 46}
+                width={compact ? 38 : 44}
                 tickCount={5}
               />
-              <ReferenceLine y={0} stroke="rgba(107,114,128,0.25)" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="rgba(107,114,128,0.3)" strokeDasharray="3 3" />
               <Tooltip
-                formatter={(value) => {
-                  if (typeof value !== 'number') return ['—'];
+                formatter={(value, name) => {
+                  if (typeof value !== 'number') return ['—', name];
                   const sign = value >= 0 ? '+' : '';
-                  return [`${sign}${value.toFixed(3)}%`];
+                  return [`${sign}${value.toFixed(2)}%`, name];
                 }}
-                labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600 }}
                 contentStyle={{
-                  background:   '#161b22',
-                  border:       `1px solid ${color}30`,
+                  background: '#161b22',
+                  border: '1px solid rgba(16,185,129,0.15)',
                   borderRadius: '8px',
-                  fontSize:     '0.7rem',
-                  color:        '#e2e8f0',
+                  fontSize: '0.7rem',
+                  color: '#e2e8f0',
                 }}
+                labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
               />
-              <Line
-                type="monotone"
-                dataKey="pct"
-                stroke={color}
-                strokeWidth={2}
-                dot={(dotProps) => <PctLabelDot {...dotProps} color={color} />}
-                activeDot={{ r: 5, strokeWidth: 1.5, stroke: '#161b22' }}
-                connectNulls
-                isAnimationActive={false}
-                name={meta?.label}
+              <Legend
+                iconType="plainline"
+                iconSize={8}
+                wrapperStyle={{
+                  fontSize: compact ? '0.5rem' : '0.5625rem',
+                  color: 'var(--home-muted-soft)',
+                  paddingTop: 2,
+                  lineHeight: 1.2,
+                }}
+                formatter={(value) => (
+                  <span style={{ color: 'var(--home-row-text)' }}>{value}</span>
+                )}
               />
+              {CHART_KEYS.map((k) => (
+                <Line
+                  key={k}
+                  type="monotone"
+                  dataKey={k}
+                  stroke={SERIES_COLORS[k]}
+                  strokeWidth={1.8}
+                  dot={{ r: 2.5, fill: SERIES_COLORS[k], strokeWidth: 0 }}
+                  activeDot={{ r: 4, strokeWidth: 1.5, stroke: '#161b22' }}
+                  connectNulls
+                  name={SERIES_NAMES[k]}
+                  isAnimationActive={false}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
-        </div>
-      )}
-
-      <div
-        style={{
-          display:        'flex',
-          gap:            '6px',
-          flexWrap:       'wrap',
-          justifyContent: 'center',
-          marginTop:      '8px',
-          padding:        '0 4px',
-        }}
-      >
-        {INDEX_KEYS.map((k) => {
-          const m      = INDEX_META[k];
-          const isActive = k === activeKey;
-          return (
-            <button
-              key={k}
-              type="button"
-              onClick={() => setActiveKey(k)}
-              style={{
-                display:    'flex',
-                alignItems: 'center',
-                gap:        '5px',
-                background: isActive ? `${m.color}18` : 'transparent',
-                border:     `1px solid ${isActive ? m.color : 'transparent'}`,
-                borderRadius: '999px',
-                padding:    '3px 10px',
-                cursor:     'pointer',
-                fontSize:   compact ? '0.5rem' : '0.5625rem',
-                fontWeight: isActive ? 700 : 400,
-                color:      isActive ? m.color : 'var(--home-muted-soft)',
-                transition: 'all 0.15s',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span
-                style={{
-                  width:        8,
-                  height:       8,
-                  borderRadius: '50%',
-                  background:   m.color,
-                  opacity:      isActive ? 1 : 0.45,
-                  flexShrink:   0,
-                  display:      'inline-block',
-                }}
-              />
-              {m.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {!loading && !failed && (yearHigh != null || yearLow != null) && (
-        <div
-          style={{
-            display:       'flex',
-            justifyContent: 'center',
-            gap:           '24px',
-            marginTop:     '8px',
-            paddingTop:    '8px',
-            borderTop:     '1px solid rgba(255,255,255,0.05)',
-            fontSize:      compact ? '0.5625rem' : '0.625rem',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ color: 'var(--home-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.5rem' }}>
-              52-Wk High
-            </div>
-            <div style={{ color: '#10b981', fontWeight: 700, fontSize: compact ? '0.625rem' : '0.6875rem' }}>
-              {fmtNum(yearHigh)}
-            </div>
-          </div>
-          <div style={{ width: 1, background: 'rgba(255,255,255,0.07)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ color: 'var(--home-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.5rem' }}>
-              52-Wk Low
-            </div>
-            <div style={{ color: '#ef4444', fontWeight: 700, fontSize: compact ? '0.625rem' : '0.6875rem' }}>
-              {fmtNum(yearLow)}
-            </div>
-          </div>
         </div>
       )}
     </div>

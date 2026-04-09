@@ -427,7 +427,11 @@ export default function HomeTerminalPage() {
       <HomeTerminalSummary
         portfolioTotal={portfolioTotalAligned}
         portfolioChange={portfolioChange}
-        enrichedHoldings={enrichedHoldings}
+        enrichedHoldings={
+          mock.hasMockPortfolio && mock.enrichedPositions?.length > 0
+            ? mock.enrichedPositions
+            : enrichedHoldings
+        }
         loading={loading}
         hasUser={!!user}
         weekPlaidTransactions={weekPlaidTransactions}

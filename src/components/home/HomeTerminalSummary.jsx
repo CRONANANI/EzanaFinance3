@@ -454,19 +454,21 @@ export function HomeTerminalSummary({
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     {enrichedHoldings.slice(0, 6).map((h) => {
-                      const pnlPct =
-                        h.costBasis > 0
-                          ? ((h.value - h.costBasis) / h.costBasis) * 100
-                          : typeof h.pctChange === 'number'
-                            ? h.pctChange
-                            : 0;
+                      const symbol = h.symbol ?? h.ticker ?? '?';
+                      const qty = h.qty ?? h.shares ?? 0;
+                      const price = h.currentPrice ?? h.price ?? 0;
+                      let pnlPct = h.pnlPct ?? h.pctChange;
+                      if (pnlPct == null && h.costBasis > 0 && (h.value ?? h.posValue) != null) {
+                        const val = h.posValue ?? h.value ?? 0;
+                        pnlPct = ((val - h.costBasis) / h.costBasis) * 100;
+                      }
+                      if (typeof pnlPct !== 'number' || Number.isNaN(pnlPct)) pnlPct = 0;
+                      const posValue = h.posValue ?? h.value ?? 0;
                       const isPos = pnlPct >= 0;
-                      const dotColor = tickerColor(h.ticker);
-                      const price = h.price ?? 0;
-                      const val = h.value ?? 0;
+                      const dotColor = h.color || tickerColor(symbol);
                       return (
                         <div
-                          key={h.ticker}
+                          key={symbol}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -479,8 +481,8 @@ export function HomeTerminalSummary({
                         >
                           <span style={{ width: 7, height: 7, borderRadius: '2px', background: dotColor, flexShrink: 0 }} />
                           <div style={{ minWidth: 0, flex: 1 }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--home-heading)' }}>{h.ticker}</span>
-                            <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', marginLeft: 4 }}>×{h.shares}</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--home-heading)' }}>{symbol}</span>
+                            <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', marginLeft: 4 }}>×{qty}</span>
                           </div>
                           <span style={{ fontSize: '0.625rem', color: 'var(--home-muted-soft)', flexShrink: 0 }}>
                             ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -500,9 +502,9 @@ export function HomeTerminalSummary({
                           </span>
                           <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', flexShrink: 0, minWidth: 44, textAlign: 'right' }}>
                             $
-                            {val >= 1000
-                              ? `${(val / 1000).toFixed(1)}K`
-                              : val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            {posValue >= 1000
+                              ? `${(posValue / 1000).toFixed(1)}K`
+                              : posValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
                         </div>
                       );
@@ -540,15 +542,15 @@ export function HomeTerminalSummary({
                             </div>
                           ) : (
                             (upcomingCalendar.eventsSource || UPCOMING_EVENTS_GRID).map((ev) => {
-                              const dateLabel = ev.fullDate
-                                ? (() => {
-                                    const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
-                                    const parts = datePart.split('-');
-                                    const em = parseInt(parts[1], 10) - 1;
-                                    const ed = parseInt(parts[2], 10);
-                                    return `${MONTH_SHORT[em]} ${ed}`;
-                                  })()
-                                : `${MONTH_SHORT[upcomingCalendar.m]} ${Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth)}`;
+                              const dateLabel = (() => {
+                                if (ev.fullDate) {
+                                  const parts = String(ev.fullDate).split('T')[0].split('-');
+                                  const em = parseInt(parts[1], 10) - 1;
+                                  const ed = parseInt(parts[2], 10);
+                                  return `${MONTH_SHORT[em]} ${ed}`;
+                                }
+                                return `${MONTH_SHORT[upcomingCalendar.m]} ${Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth)}`;
+                              })();
                               return (
                                 <div
                                   key={ev.id}

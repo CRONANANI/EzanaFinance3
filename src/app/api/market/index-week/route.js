@@ -7,16 +7,15 @@ const FMP_KEY =
   process.env.NEXT_PUBLIC_FMP_API_KEY;
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
-// The 5 indices we display — FMP uses caret-prefixed symbols for indices
+// Four equity indices — FMP uses caret-prefixed symbols for indices
 const INDICES = {
   spx:  { symbol: '^GSPC', name: 'S&P 500' },
+  ixic: { symbol: '^IXIC', name: 'NASDAQ' },
   rut:  { symbol: '^RUT',  name: 'Russell 2000' },
   dji:  { symbol: '^DJI',  name: 'Dow Jones' },
-  ixic: { symbol: '^IXIC', name: 'NASDAQ' },
-  nya:  { symbol: '^NYA',  name: 'NYSE Composite' },
 };
 
-const INDEX_KEYS = ['spx', 'rut', 'dji', 'ixic', 'nya'];
+const INDEX_KEYS = ['spx', 'ixic', 'rut', 'dji'];
 
 /** Get current NY date as YYYY-MM-DD */
 function todayNy() {
@@ -76,20 +75,19 @@ async function fetchQuote(symbol) {
 
 /**
  * Fetch FMP /stable/historical-price-eod/full for a symbol.
- * Returns a Map<ymd, closePrice> for the current week's dates.
- * FMP may return a JSON array or { historical: [...] }.
+ * Returns close and open maps for the week window.
  */
-async function fetchWeeklyCloses(symbol, slots) {
+async function fetchWeeklyBars(symbol, slots) {
   const fromYmd = slots[0].ymd;
-  // Fetch a 14-day window to ensure we capture the week even if there are gaps
-  const toYmd   = addDays(fromYmd, 13);
+  const toYmd = addDays(fromYmd, 13);
   const url = `${FMP_BASE}/historical-price-eod/full?symbol=${encodeURIComponent(symbol)}&from=${fromYmd}&to=${toYmd}&apikey=${encodeURIComponent(FMP_KEY)}`;
-  const map = new Map();
+  const closeMap = new Map();
+  const openMap = new Map();
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[index-week] historical ${symbol} HTTP ${res.status}`);
-      return map;
+      return { closeMap, openMap };
     }
     const data = await res.json();
     const hist = Array.isArray(data)
@@ -98,14 +96,14 @@ async function fetchWeeklyCloses(symbol, slots) {
         ? data.historical
         : [];
     for (const bar of hist) {
-      if (bar.date && typeof bar.close === 'number') {
-        map.set(bar.date, bar.close);
-      }
+      if (!bar.date) continue;
+      if (typeof bar.close === 'number') closeMap.set(bar.date, bar.close);
+      if (typeof bar.open === 'number') openMap.set(bar.date, bar.open);
     }
   } catch (err) {
     console.error(`[index-week] historical ${symbol}:`, err.message);
   }
-  return map;
+  return { closeMap, openMap };
 }
 
 export async function GET() {
@@ -119,58 +117,67 @@ export async function GET() {
     });
   }
 
-  const slots  = weekSlots();
+  const slots = weekSlots();
   const todayK = todayNy();
+  const mondayYmd = slots[0].ymd;
 
-  // Fetch all quotes and historical closes in parallel
-  const [quotes, histMaps] = await Promise.all([
+  const [quotes, barResults] = await Promise.all([
     Promise.all(INDEX_KEYS.map((k) => fetchQuote(INDICES[k].symbol))),
-    Promise.all(INDEX_KEYS.map((k) => fetchWeeklyCloses(INDICES[k].symbol, slots))),
+    Promise.all(INDEX_KEYS.map((k) => fetchWeeklyBars(INDICES[k].symbol, slots))),
   ]);
 
   const indices = {};
+  const mondayOpens = {};
 
   for (let i = 0; i < INDEX_KEYS.length; i++) {
-    const key   = INDEX_KEYS[i];
-    const meta  = INDICES[key];
+    const key = INDEX_KEYS[i];
+    const meta = INDICES[key];
     const quote = quotes[i];
-    const hist  = histMaps[i];
+    const { closeMap, openMap } = barResults[i];
 
-    // Build Mon–Fri series
-    // Each slot gets the close price for that day (from historical)
-    // If today's bar isn't in historical yet, use the live quote price
+    const mondayOpen = openMap.get(mondayYmd) ?? null;
+    const mondayClose = closeMap.get(mondayYmd) ?? null;
+    mondayOpens[key] = mondayOpen != null && Number.isFinite(mondayOpen) ? mondayOpen : null;
+
+    const baseline =
+      mondayOpen != null && mondayOpen > 0
+        ? mondayOpen
+        : mondayClose != null && mondayClose > 0
+          ? mondayClose
+          : null;
+
     const series = slots.map(({ label, ymd }) => {
-      let close = hist.get(ymd) ?? null;
-      // Gap-fill: if this is today and historical hasn't settled, use quote price
+      let close = closeMap.get(ymd) ?? null;
       if (close == null && ymd === todayK && quote?.price) {
         close = quote.price;
       }
       return { day: label, ymd, close };
     });
 
-    // Compute % change from Monday's close for each day
-    const mondayClose = series.find((s) => s.close != null)?.close ?? null;
-
     const seriesWithPct = series.map((s) => {
-      if (s.close == null || mondayClose == null || mondayClose === 0) {
+      if (s.close == null || baseline == null || baseline <= 0) {
         return { day: s.day, close: s.close, pct: null };
       }
-      const pct = ((s.close - mondayClose) / mondayClose) * 100;
+      if (s.ymd === mondayYmd) {
+        const dayOpen = openMap.get(mondayYmd);
+        if (dayOpen != null && dayOpen > 0) {
+          const pct = ((s.close - dayOpen) / dayOpen) * 100;
+          return { day: s.day, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+        }
+        const pct = ((s.close - baseline) / baseline) * 100;
+        return { day: s.day, close: s.close, pct: parseFloat(pct.toFixed(3)) };
+      }
+      const pct = ((s.close - baseline) / baseline) * 100;
       return { day: s.day, close: s.close, pct: parseFloat(pct.toFixed(3)) };
     });
 
-    // Stats from quote
-    const yearHigh   = quote?.yearHigh  ?? null;
-    const yearLow    = quote?.yearLow   ?? null;
     const currentPrice = quote?.price ?? null;
 
     indices[key] = {
       key,
       symbol: meta.symbol,
-      name:   meta.name,
-      series: seriesWithPct,    // [{day, close, pct}, ...]
-      yearHigh,
-      yearLow,
+      name: meta.name,
+      series: seriesWithPct,
       currentPrice,
     };
   }
@@ -180,5 +187,7 @@ export async function GET() {
     indices,
     slots: slots.map((s) => s.label),
     todayKey: todayK,
+    mondayYmd,
+    mondayOpens,
   });
 }
