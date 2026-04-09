@@ -283,15 +283,48 @@ export function CentaurPromptBox({
           </div>
         )}
 
-        <textarea
-          ref={internalTextareaRef}
-          rows={1}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-zinc-100 placeholder:text-zinc-500 focus:ring-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-600/40 min-h-12"
-        />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end' }}>
+          <textarea
+            ref={internalTextareaRef}
+            rows={1}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={placeholder}
+            disabled={disabled}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submit(e);
+              }
+            }}
+            style={{ paddingRight: '2.75rem', color: '#111827' }}
+            className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 placeholder:text-gray-400 focus:ring-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-600/40 min-h-12"
+          />
+          <button
+            type="submit"
+            disabled={disabled || !hasValue}
+            aria-label="Send"
+            style={{
+              position: 'absolute',
+              right: '8px',
+              bottom: '8px',
+              width: '28px',
+              height: '28px',
+              borderRadius: '8px',
+              border: 'none',
+              background: hasValue && !disabled ? '#D4AF37' : 'rgba(212,175,55,0.25)',
+              color: hasValue && !disabled ? '#111' : '#888',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: hasValue && !disabled ? 'pointer' : 'not-allowed',
+              transition: 'background 0.15s, color 0.15s',
+              flexShrink: 0,
+            }}
+          >
+            <SendIcon style={{ width: '14px', height: '14px' }} />
+          </button>
+        </div>
 
         <div className="mt-0.5 p-1 pt-0">
           <TooltipProvider delayDuration={100}>
@@ -301,7 +334,8 @@ export function CentaurPromptBox({
                   <button
                     type="button"
                     onClick={handlePlusClick}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-800"
+                    className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-amber-50"
+                    style={{ color: '#D4AF37' }}
                   >
                     <PlusIcon className="h-6 w-6" />
                     <span className="sr-only">Attach files</span>
@@ -318,10 +352,13 @@ export function CentaurPromptBox({
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="flex h-9 items-center gap-2 rounded-full px-2 text-sm text-zinc-200 hover:bg-zinc-800"
+                        className="flex h-9 items-center gap-2 rounded-full px-2 text-sm hover:bg-amber-50"
+                        style={{ color: '#D4AF37' }}
                       >
                         <Settings2Icon className="h-4 w-4" />
-                        {!selectedTool && 'Tools'}
+                        {!selectedTool && (
+                          <span style={{ color: '#D4AF37', fontWeight: 600, fontSize: '0.75rem' }}>Tools</span>
+                        )}
                       </button>
                     </PopoverTrigger>
                   </TooltipTrigger>
@@ -370,9 +407,10 @@ export function CentaurPromptBox({
                       type="button"
                       onClick={toggleMic}
                       className={cn(
-                        'flex h-9 w-9 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-800',
-                        listening && 'text-amber-400 ring-1 ring-amber-500/50',
+                        'flex h-9 w-9 items-center justify-center rounded-full hover:bg-amber-50',
+                        listening && 'ring-1 ring-amber-500/50',
                       )}
+                      style={{ color: listening ? '#f59e0b' : '#D4AF37' }}
                     >
                       <MicIcon className="h-5 w-5" />
                       <span className="sr-only">Voice input</span>
@@ -380,22 +418,6 @@ export function CentaurPromptBox({
                   </TooltipTrigger>
                   <TooltipContent side="top" showArrow>
                     <p>{listening ? 'Listening…' : 'Speak to add to your prompt'}</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="submit"
-                      disabled={disabled || !hasValue}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-black hover:bg-amber-400 disabled:opacity-40 disabled:pointer-events-none"
-                    >
-                      <SendIcon className="h-5 w-5" />
-                      <span className="sr-only">Send</span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" showArrow>
-                    <p>Send</p>
                   </TooltipContent>
                 </Tooltip>
               </div>

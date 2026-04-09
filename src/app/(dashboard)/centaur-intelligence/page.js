@@ -232,7 +232,7 @@ export default function CentaurIntelligencePage() {
               </div>
               <div className="ci-hero-title-block">
                 <h1>Centaur Intelligence</h1>
-                <p className="er-hero-sub">Your AI-powered investment command center — advisor chat, boardroom personas, and briefings.</p>
+                <p className="er-hero-sub">Your AI-powered investment command center</p>
               </div>
             </div>
           </div>
@@ -357,7 +357,7 @@ export default function CentaurIntelligencePage() {
                   >
                     {msg.role === 'assistant' ? boardroomMode || 'Yohannes' : 'You'}
                   </div>
-                  <p style={{ margin: 0, color: '#ccc', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                  <p style={{ margin: 0, color: '#1f2937', fontSize: '0.85rem', lineHeight: '1.5' }}>
                     {msg.content}
                   </p>
                 </div>
