@@ -66,9 +66,9 @@
   opacity: 0;
   transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity;
-  /* Beams and grid fade out before reaching the very top of the hero */
-  mask-image: linear-gradient(to top, black 0%, black 50%, transparent 80%);
-  -webkit-mask-image: linear-gradient(to top, black 0%, black 50%, transparent 80%);
+  /* Pattern visible across the full hero, fades only at the very top edge */
+  mask-image: linear-gradient(to top, black 0%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 85%, transparent 100%);
 }
 
 .landing-page .hero-aurora-bg.hero-aurora-bg--visible {

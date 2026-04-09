@@ -43,18 +43,19 @@ body.light-mode .landing-page .testimonials-carousel::after {
   background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%) !important;
 }
 
-/* ── Landing navbar (landing.css uses !important on dark) ── */
+/* ── Landing navbar — solid #f8fafb to match page (landing route forces light mode) ── */
 body.light-mode:has(.landing-page) .navbar,
 body.light-mode:has(.landing-page) .navbar.navbar-sticky {
-  background: var(--nav-bg) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid var(--nav-border) !important;
+  background: #f8fafb !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(4, 120, 87, 0.1) !important;
+  box-shadow: none !important;
 }
 
 body.light-mode:has(.landing-page) .navbar.navbar-sticky.scrolled {
-  background: var(--nav-bg) !important;
-  box-shadow: var(--shadow-sm) !important;
+  background: #f8fafb !important;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06) !important;
 }
 
 /* Mobile slide-out menu — same surface as landing sections */

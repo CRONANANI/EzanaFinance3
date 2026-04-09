@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { LandingHero } from '@/components/landing/LandingHero';
+import { useTheme } from '@/components/ThemeProvider';
 
 const TrustedLogos = dynamic(
   () => import('@/components/TrustedLogos').then((m) => ({ default: m.TrustedLogos })),
@@ -31,6 +32,24 @@ const ContactSupportDialog = dynamic(
 
 export default function HomePage() {
   const [supportOpen, setSupportOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const prevThemeRef = useRef(null);
+
+  // Force light mode on the landing page — always, regardless of user preference.
+  // Restore previous theme when navigating away.
+  useEffect(() => {
+    prevThemeRef.current = theme;
+    if (theme !== 'light') {
+      setTheme('light');
+    }
+    return () => {
+      // Restore the user's preferred theme when they leave the landing page
+      if (prevThemeRef.current && prevThemeRef.current !== 'light') {
+        setTheme(prevThemeRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="landing-page">
