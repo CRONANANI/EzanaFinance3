@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -16,10 +16,38 @@ import { SentinelReportModal } from '@/components/centaur/SentinelReportModal';
 const TooltipProvider = TooltipPrimitive.Provider;
 
 const LEGENDARY_INVESTORS = [
-  { id: 'warren-buffett', name: 'Warren Buffett', style: 'value investing' },
-  { id: 'ray-dalio', name: 'Ray Dalio', style: 'macro analysis' },
-  { id: 'cathie-wood', name: 'Cathie Wood', style: 'growth outlook' },
-  { id: 'paul-tudor-jones', name: 'Paul Tudor Jones', style: 'macro trading' },
+  {
+    id: 'warren-buffett',
+    name: 'Warren Buffett',
+    botName: 'BuffettBot',
+    style: 'value investing',
+    disclaimer:
+      'This tool is inspired by the publicly available writings, interviews, and shareholder letters of Warren Buffett. It is not affiliated with, endorsed by, or representative of Warren Buffett or Berkshire Hathaway, Inc.',
+  },
+  {
+    id: 'ray-dalio',
+    name: 'Ray Dalio',
+    botName: 'DalioMind',
+    style: 'macro analysis',
+    disclaimer:
+      'This tool is inspired by the publicly available writings and interviews of Ray Dalio, including Principles and The Changing World Order. It is not affiliated with, endorsed by, or representative of Ray Dalio or Bridgewater Associates.',
+  },
+  {
+    id: 'cathie-wood',
+    name: 'Cathie Wood',
+    botName: 'ArkOracle',
+    style: 'growth outlook',
+    disclaimer:
+      'This tool is inspired by the publicly available research, interviews, and investment commentary of Cathie Wood. It is not affiliated with, endorsed by, or representative of Cathie Wood or ARK Investment Management LLC.',
+  },
+  {
+    id: 'paul-tudor-jones',
+    name: 'Paul Tudor Jones',
+    botName: 'TudorSignal',
+    style: 'macro trading',
+    disclaimer:
+      'This tool is inspired by the publicly available interviews and market commentary of Paul Tudor Jones. It is not affiliated with, endorsed by, or representative of Paul Tudor Jones or Tudor Investment Corp.',
+  },
 ];
 
 const RAY_DALIO_SUGGESTED_PROMPTS = [
@@ -52,6 +80,7 @@ export default function CentaurIntelligencePage() {
   const [apiMessages, setApiMessages] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [boardroomMode, setBoardroomMode] = useState(null);
+  const [activeDisclaimer, setActiveDisclaimer] = useState(null);
   const [promptValue, setPromptValue] = useState('');
   const [sentinelReport, setSentinelReport] = useState(null);
   const [sentinelReports, setSentinelReports] = useState([]);
@@ -60,6 +89,11 @@ export default function CentaurIntelligencePage() {
   const [sentinelModalOpen, setSentinelModalOpen] = useState(false);
   const [modalReport, setModalReport] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const activeInvestor = useMemo(
+    () => LEGENDARY_INVESTORS.find((inv) => inv.botName === boardroomMode) ?? null,
+    [boardroomMode],
+  );
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -143,8 +177,8 @@ export default function CentaurIntelligencePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newApiMessages,
-          investor: boardroomMode ?? null,
-          persona: boardroomMode || 'yohannes',
+          investor: activeInvestor?.name ?? null,
+          persona: activeInvestor?.name || 'yohannes',
         }),
       });
       const data = await res.json();
@@ -179,13 +213,18 @@ export default function CentaurIntelligencePage() {
   };
 
   const startBoardroom = (investor) => {
-    setBoardroomMode(investor.name);
+    setBoardroomMode(investor.botName);
+    setActiveDisclaimer(investor.disclaimer);
     setPromptValue('');
     setApiMessages([]);
     const welcome =
       investor.id === 'ray-dalio'
-        ? `Welcome to the boardroom. I want to think with you the way I do in my work on The Changing World Order — through long cycles, money and credit, internal and external conflict, and how empires rise and decline. I've reviewed your portfolio context. What would you like to explore?`
-        : `Welcome to the boardroom. I'm channeling the investment philosophy of ${investor.name}. I've reviewed your portfolio. Let's discuss your positions from a ${investor.style} perspective. What would you like to focus on?`;
+        ? `Welcome to the boardroom. I'm DalioMind — drawing on the principles and macro frameworks from Ray Dalio's work. I want to think through long cycles, money and credit dynamics, and how empires rise and decline. I've reviewed your portfolio context. What would you like to explore?`
+        : investor.id === 'warren-buffett'
+          ? `Welcome to the boardroom. I'm BuffettBot — channeling the value investing philosophy found throughout Warren Buffett's shareholder letters and interviews. I've reviewed your portfolio. What would you like to analyse together?`
+          : investor.id === 'cathie-wood'
+            ? `Welcome to the boardroom. I'm ArkOracle — built on the disruptive innovation framework Cathie Wood is known for. I've reviewed your portfolio. Which emerging themes or positions would you like to discuss?`
+            : `Welcome to the boardroom. I'm TudorSignal — inspired by Paul Tudor Jones's macro trading discipline. I've reviewed your portfolio. What market dynamics or positions would you like to work through?`;
     setDisplayMessages([
       {
         role: 'assistant',
@@ -196,6 +235,7 @@ export default function CentaurIntelligencePage() {
 
   const exitBoardroom = () => {
     setBoardroomMode(null);
+    setActiveDisclaimer(null);
     setPromptValue('');
     setApiMessages([]);
     setDisplayMessages([
@@ -207,7 +247,7 @@ export default function CentaurIntelligencePage() {
   };
 
   const showDalioBanner =
-    boardroomMode === 'Ray Dalio' && displayMessages.filter((m) => m.role === 'user').length === 0;
+    boardroomMode === 'DalioMind' && displayMessages.filter((m) => m.role === 'user').length === 0;
 
   if (loading) {
     return (
@@ -311,9 +351,9 @@ export default function CentaurIntelligencePage() {
                     key={inv.id}
                     type="button"
                     onClick={() => startBoardroom(inv)}
-                    className={`er-pill-toggle${boardroomMode === inv.name ? ' er-pill-toggle--active' : ''}`}
+                    className={`er-pill-toggle${boardroomMode === inv.botName ? ' er-pill-toggle--active' : ''}`}
                   >
-                    {inv.name.split(' ')[0]}
+                    {inv.botName}
                   </button>
                 ))}
               </div>
@@ -325,7 +365,7 @@ export default function CentaurIntelligencePage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                       <div className="ci-dalio-avatar">RD</div>
                       <div>
-                        <h3 className="ci-dalio-name">Ray Dalio</h3>
+                        <h3 className="ci-dalio-name">DalioMind</h3>
                         <p className="er-card-subtitle" style={{ margin: '2px 0 0' }}>
                           Founder, Bridgewater Associates · Author, <em>The Changing World Order</em>
                         </p>
@@ -405,7 +445,7 @@ export default function CentaurIntelligencePage() {
                       gap: '10px',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                       <div
                         style={{
                           width: '36px',
@@ -419,17 +459,57 @@ export default function CentaurIntelligencePage() {
                           flexShrink: 0,
                         }}
                       >
-                        <i className="bi bi-person-fill" style={{ color: '#D4AF37', fontSize: '1rem' }} />
+                        <i className="bi bi-cpu" style={{ color: '#D4AF37', fontSize: '1rem' }} />
                       </div>
-                      <span style={{ fontSize: '0.85rem' }}>{investor.name}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: '#D4AF37' }}>
+                          {investor.botName}
+                        </p>
+                        <p style={{ margin: 0, fontSize: '0.6875rem', color: '#6b7280' }}>
+                          Inspired by {investor.name}
+                        </p>
+                      </div>
                     </div>
-                    <button type="button" onClick={() => startBoardroom(investor)} className="er-pill-toggle er-pill-toggle--active">
-                      Start
+                    <button
+                      type="button"
+                      onClick={() => startBoardroom(investor)}
+                      className={`er-pill-toggle${boardroomMode === investor.botName ? ' er-pill-toggle--active' : ''}`}
+                    >
+                      {boardroomMode === investor.botName ? 'Active' : 'Start'}
                     </button>
                   </div>
                 ))}
               </div>
             </div>
+
+            {activeDisclaimer && (
+              <div
+                style={{
+                  padding: '0.75rem 1rem',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(212, 175, 55, 0.15)',
+                  background: 'rgba(212, 175, 55, 0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                  <i
+                    className="bi bi-info-circle"
+                    style={{ color: '#D4AF37', fontSize: '0.8rem', flexShrink: 0, marginTop: '1px' }}
+                  />
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '0.6875rem',
+                      lineHeight: 1.5,
+                      color: '#9ca3af',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    {activeDisclaimer}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="er-card">
               <div className="er-card-header">

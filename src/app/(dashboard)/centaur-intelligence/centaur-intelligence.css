@@ -98,6 +98,63 @@ body.light-mode .ci-page .er-card-body {
   }
 }
 
+/* Darker, richer gold hero for Centaur Intelligence */
+.ci-page .er-hero.ci-hero-centered {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.28) 0%,
+    rgba(184, 134, 11, 0.18) 45%,
+    rgba(10, 14, 19, 0.97) 100%
+  ) !important;
+  border: 1px solid rgba(212, 175, 55, 0.45) !important;
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.08), inset 0 1px 0 rgba(212, 175, 55, 0.2);
+}
+
+.ci-page .er-hero.ci-hero-centered h1 {
+  color: #f0c040;
+  text-shadow: 0 0 24px rgba(212, 175, 55, 0.3);
+}
+
+.ci-page .er-hero.ci-hero-centered .er-hero-sub {
+  color: rgba(240, 192, 64, 0.75);
+}
+
+.ci-page .er-hero.ci-hero-centered .er-hero-icon {
+  background: rgba(212, 175, 55, 0.22);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+.ci-page .er-hero.ci-hero-centered .er-hero-icon i {
+  color: #f0c040;
+}
+
+.ci-page .er-hero.ci-hero-centered .er-hero-badge {
+  background: rgba(212, 175, 55, 0.22);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #f0c040;
+  font-weight: 800;
+}
+
+body.light-mode .ci-page .er-hero.ci-hero-centered {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.18) 0%,
+    rgba(184, 134, 11, 0.1) 45%,
+    rgba(255, 255, 255, 0.95) 100%
+  ) !important;
+  border: 1px solid rgba(184, 134, 11, 0.35) !important;
+  box-shadow: 0 2px 16px rgba(212, 175, 55, 0.1);
+}
+
+body.light-mode .ci-page .er-hero.ci-hero-centered h1 {
+  color: #92600a;
+  text-shadow: none;
+}
+
+body.light-mode .ci-page .er-hero.ci-hero-centered .er-hero-sub {
+  color: #a06b12;
+}
+
 /* Sentinel date chips — month label above day number */
 .ci-sentinel-date-btn {
   width: 72px;
