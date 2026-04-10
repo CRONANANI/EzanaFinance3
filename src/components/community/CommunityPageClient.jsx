@@ -12,7 +12,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
-import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
+import { extractTickerFromContent, formatRelativeTime, getInitials, normalizeTickerEmbed } from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 import { supabase } from '@/lib/supabase';
 import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
@@ -101,10 +101,10 @@ export default function CommunityPageClient() {
   const [pollOptions, setPollOptions] = useState(['', '']);
   const [showTickerSearch, setShowTickerSearch] = useState(false);
   const [tickerQuery, setTickerQuery] = useState('');
-  const [tickerEmbed, setTickerEmbed] = useState(null);
+  /** Up to 3 tickers for the chart embed */
+  const [tickerEmbedSymbols, setTickerEmbedSymbols] = useState([]);
   const [tickerStep, setTickerStep] = useState('search');
   const [tickerPeriod, setTickerPeriod] = useState('1M');
-  const [tickerHighlight, setTickerHighlight] = useState('');
   const [quoteMap, setQuoteMap] = useState({});
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [followBusy, setFollowBusy] = useState({});
@@ -179,7 +179,11 @@ export default function CommunityPageClient() {
         initials: getInitials(p.author?.display_name || 'Member'),
         time: formatRelativeTime(p.created_at),
         badge: null,
-        tickerSym: p.mentioned_ticker || extractTickerFromContent(p.content),
+        tickerSym: (() => {
+          const te = normalizeTickerEmbed(p.ticker_embed);
+          if (te?.symbols?.length) return te.symbols[0].symbol;
+          return p.mentioned_ticker || extractTickerFromContent(p.content);
+        })(),
         likes: p.likes_count ?? 0,
         comments: p.comments_count ?? 0,
         reposts: p.reposts_count ?? 0,
@@ -345,8 +349,8 @@ export default function CommunityPageClient() {
 
   const handlePost = async () => {
     const hasText = composerText.trim().length > 0;
-    const hasPoll = showPollBuilder && pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2;
-    const hasTicker = tickerEmbed !== null;
+    const hasPoll = pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2;
+    const hasTicker = tickerEmbedSymbols.length > 0;
     const hasImage = composerImage !== null;
 
     if (!hasText && !hasPoll && !hasTicker && !hasImage) return;
@@ -373,12 +377,16 @@ export default function CommunityPageClient() {
       }
 
       const tickerMatch = composerText.match(/\$([A-Za-z]{1,5})\b/);
+      const autoBits = [];
+      if (!composerText.trim()) {
+        if (hasPoll) autoBits.push(`📊 ${pollQuestion.trim()}`);
+        if (hasTicker) autoBits.push(`📈 ${tickerEmbedSymbols.map((x) => x.symbol).join(', ')}`);
+      }
       const body = {
-        content:
-          composerText.trim() ||
-          (hasPoll ? `📊 ${pollQuestion}` : hasTicker ? `📈 ${tickerEmbed.symbol}` : ''),
+        content: composerText.trim() || autoBits.join(' '),
         mentioned_ticker:
-          tickerEmbed?.symbol || (tickerMatch ? tickerMatch[1] : extractTickerFromContent(composerText)),
+          tickerEmbedSymbols[0]?.symbol ||
+          (tickerMatch ? tickerMatch[1] : extractTickerFromContent(composerText)),
         image_url,
         poll_data: hasPoll
           ? {
@@ -386,7 +394,15 @@ export default function CommunityPageClient() {
               options: pollOptions.filter((o) => o.trim()).map((o) => ({ label: o.trim() })),
             }
           : null,
-        ticker_embed: hasTicker ? tickerEmbed : null,
+        ticker_embed: hasTicker
+          ? {
+              period: tickerPeriod,
+              symbols: tickerEmbedSymbols.map((s) => ({
+                symbol: s.symbol,
+                highlight_price: s.highlight_price,
+              })),
+            }
+          : null,
       };
 
       const res = await fetch('/api/community/posts', {
@@ -402,12 +418,11 @@ export default function CommunityPageClient() {
         setShowPollBuilder(false);
         setPollQuestion('');
         setPollOptions(['', '']);
-        setTickerEmbed(null);
+        setTickerEmbedSymbols([]);
         setShowTickerSearch(false);
         setTickerQuery('');
         setTickerStep('search');
         setTickerPeriod('1M');
-        setTickerHighlight('');
         await fetchFeed();
       }
     } finally {
@@ -1001,7 +1016,6 @@ export default function CommunityPageClient() {
                       onClick={() => {
                         setShowPollBuilder((v) => !v);
                         setShowImageMenu(false);
-                        setShowTickerSearch(false);
                       }}
                       style={{
                         display: 'flex',
@@ -1025,7 +1039,6 @@ export default function CommunityPageClient() {
                       onClick={() => {
                         setShowTickerSearch((v) => !v);
                         setShowImageMenu(false);
-                        setShowPollBuilder(false);
                         if (!showTickerSearch) {
                           setTickerStep('search');
                           setTickerQuery('');
@@ -1038,14 +1051,19 @@ export default function CommunityPageClient() {
                         padding: '0.3rem 0.6rem',
                         borderRadius: '6px',
                         border: 'none',
-                        background: tickerEmbed ? 'rgba(16,185,129,0.1)' : 'transparent',
-                        color: tickerEmbed ? '#10b981' : '#6b7280',
+                        background: tickerEmbedSymbols.length ? 'rgba(16,185,129,0.1)' : 'transparent',
+                        color: tickerEmbedSymbols.length ? '#10b981' : '#6b7280',
                         fontSize: '0.75rem',
                         cursor: 'pointer',
                         fontFamily: 'var(--font-sans)',
                       }}
                     >
-                      <i className="bi bi-graph-up" /> {tickerEmbed ? `$${tickerEmbed.symbol}` : 'Ticker'}
+                      <i className="bi bi-graph-up" />{' '}
+                      {tickerEmbedSymbols.length === 0
+                        ? 'Ticker'
+                        : tickerEmbedSymbols.length === 1
+                          ? `$${tickerEmbedSymbols[0].symbol}`
+                          : `${tickerEmbedSymbols.length} tickers`}
                     </button>
                   </div>
                   <button
@@ -1057,10 +1075,8 @@ export default function CommunityPageClient() {
                       !(
                         composerText.trim() ||
                         composerImage ||
-                        (showPollBuilder &&
-                          pollQuestion.trim() &&
-                          pollOptions.filter((o) => o.trim()).length >= 2) ||
-                        tickerEmbed
+                        (pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2) ||
+                        tickerEmbedSymbols.length > 0
                       )
                     }
                     style={{
@@ -1071,10 +1087,8 @@ export default function CommunityPageClient() {
                         user &&
                         (composerText.trim() ||
                           composerImage ||
-                          (showPollBuilder &&
-                            pollQuestion.trim() &&
-                            pollOptions.filter((o) => o.trim()).length >= 2) ||
-                          tickerEmbed)
+                          (pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2) ||
+                          tickerEmbedSymbols.length > 0)
                           ? '#10b981'
                           : 'rgba(16, 185, 129, 0.15)',
                       color: '#fff',
@@ -1084,10 +1098,8 @@ export default function CommunityPageClient() {
                         user &&
                         (composerText.trim() ||
                           composerImage ||
-                          (showPollBuilder &&
-                            pollQuestion.trim() &&
-                            pollOptions.filter((o) => o.trim()).length >= 2) ||
-                          tickerEmbed)
+                          (pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2) ||
+                          tickerEmbedSymbols.length > 0)
                           ? 'pointer'
                           : 'not-allowed',
                       fontFamily: 'var(--font-sans)',
@@ -1268,10 +1280,11 @@ export default function CommunityPageClient() {
                               key={t.ticker}
                               type="button"
                               onClick={() => {
-                                setTickerEmbed({ symbol: t.ticker, period: '1M', highlight_price: null });
-                                setTickerStep('configure');
-                                setTickerPeriod('1M');
-                                setTickerHighlight('');
+                                setTickerEmbedSymbols((prev) => {
+                                  if (prev.some((x) => x.symbol === t.ticker)) return prev;
+                                  if (prev.length >= 3) return prev;
+                                  return [...prev, { symbol: t.ticker, highlight_price: null }];
+                                });
                               }}
                               style={{
                                 display: 'flex',
@@ -1337,10 +1350,82 @@ export default function CommunityPageClient() {
                             </button>
                           ))}
                         </div>
+                        {tickerEmbedSymbols.length > 0 && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              gap: '0.35rem',
+                              alignItems: 'center',
+                            }}
+                          >
+                            {tickerEmbedSymbols.map((s) => (
+                              <span
+                                key={s.symbol}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: '6px',
+                                  background: 'rgba(16,185,129,0.1)',
+                                  border: '1px solid rgba(16,185,129,0.2)',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  color: '#10b981',
+                                  fontFamily: 'var(--font-sans)',
+                                }}
+                              >
+                                ${s.symbol}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setTickerEmbedSymbols((prev) => prev.filter((x) => x.symbol !== s.symbol))
+                                  }
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#ef4444',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    fontSize: '0.85rem',
+                                    lineHeight: 1,
+                                  }}
+                                  aria-label={`Remove ${s.symbol}`}
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                            <span style={{ fontSize: '0.625rem', color: '#6b7280' }}>
+                              {tickerEmbedSymbols.length}/3
+                            </span>
+                          </div>
+                        )}
+                        {tickerEmbedSymbols.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setTickerStep('configure')}
+                            style={{
+                              alignSelf: 'flex-start',
+                              padding: '0.5rem 0.85rem',
+                              borderRadius: '8px',
+                              border: 'none',
+                              background: '#10b981',
+                              color: '#fff',
+                              fontSize: '0.8125rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-sans)',
+                            }}
+                          >
+                            Time period & highlights →
+                          </button>
+                        )}
                       </>
                     )}
 
-                    {tickerStep === 'configure' && tickerEmbed && (
+                    {tickerStep === 'configure' && tickerEmbedSymbols.length > 0 && (
                       <div
                         style={{
                           background: 'rgba(16,185,129,0.04)',
@@ -1353,13 +1438,20 @@ export default function CommunityPageClient() {
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#10b981' }}>
-                            ${tickerEmbed.symbol}
+                          <span
+                            style={{
+                              fontSize: '0.8125rem',
+                              fontWeight: 700,
+                              color: '#10b981',
+                              fontFamily: 'var(--font-sans)',
+                            }}
+                          >
+                            {tickerEmbedSymbols.map((s) => `$${s.symbol}`).join(' · ')}
                           </span>
                           <button
                             type="button"
                             onClick={() => {
-                              setTickerEmbed(null);
+                              setTickerEmbedSymbols([]);
                               setTickerStep('search');
                               setTickerQuery('');
                             }}
@@ -1371,7 +1463,7 @@ export default function CommunityPageClient() {
                               fontSize: '0.75rem',
                             }}
                           >
-                            ← Change
+                            ← Change tickers
                           </button>
                         </div>
 
@@ -1385,17 +1477,14 @@ export default function CommunityPageClient() {
                               letterSpacing: '0.05em',
                             }}
                           >
-                            Time period
+                            Time period (all charts)
                           </p>
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                             {['1D', '1W', '1M', '3M', '1Y'].map((p) => (
                               <button
                                 key={p}
                                 type="button"
-                                onClick={() => {
-                                  setTickerPeriod(p);
-                                  setTickerEmbed((prev) => (prev ? { ...prev, period: p } : prev));
-                                }}
+                                onClick={() => setTickerPeriod(p)}
                                 style={{
                                   padding: '0.25rem 0.6rem',
                                   borderRadius: '6px',
@@ -1414,49 +1503,54 @@ export default function CommunityPageClient() {
                           </div>
                         </div>
 
-                        <div>
-                          <p
-                            style={{
-                              margin: '0 0 0.3rem',
-                              fontSize: '0.65rem',
-                              color: '#6b7280',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            Highlight price (optional)
-                          </p>
-                          <input
-                            type="number"
-                            placeholder="e.g. 180.00"
-                            value={tickerHighlight}
-                            onChange={(e) => {
-                              setTickerHighlight(e.target.value);
-                              const num = parseFloat(e.target.value);
-                              setTickerEmbed((prev) =>
-                                prev ? { ...prev, highlight_price: Number.isFinite(num) ? num : null } : prev
-                              );
-                            }}
-                            style={{
-                              width: '100%',
-                              background: 'rgba(16,185,129,0.03)',
-                              border: '1px solid rgba(16,185,129,0.08)',
-                              borderRadius: '8px',
-                              padding: '0.4rem 0.65rem',
-                              color: '#e2e8f0',
-                              fontSize: '0.8125rem',
-                              outline: 'none',
-                              fontFamily: 'var(--font-sans)',
-                            }}
-                          />
-                          <p style={{ margin: '0.2rem 0 0', fontSize: '0.625rem', color: '#6b7280' }}>
-                            A dot will appear on the chart at this price with the value labelled above it.
-                          </p>
-                        </div>
+                        {tickerEmbedSymbols.map((s, i) => (
+                          <div key={s.symbol}>
+                            <p
+                              style={{
+                                margin: '0 0 0.3rem',
+                                fontSize: '0.65rem',
+                                color: '#6b7280',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                              }}
+                            >
+                              Highlight ${s.symbol} (optional)
+                            </p>
+                            <input
+                              type="number"
+                              placeholder="e.g. 180.00"
+                              value={Number.isFinite(s.highlight_price) ? s.highlight_price : ''}
+                              onChange={(e) => {
+                                const num = parseFloat(e.target.value);
+                                setTickerEmbedSymbols((prev) =>
+                                  prev.map((row, j) =>
+                                    j === i
+                                      ? {
+                                          ...row,
+                                          highlight_price: Number.isFinite(num) ? num : null,
+                                        }
+                                      : row
+                                  )
+                                );
+                              }}
+                              style={{
+                                width: '100%',
+                                background: 'rgba(16,185,129,0.03)',
+                                border: '1px solid rgba(16,185,129,0.08)',
+                                borderRadius: '8px',
+                                padding: '0.4rem 0.65rem',
+                                color: '#e2e8f0',
+                                fontSize: '0.8125rem',
+                                outline: 'none',
+                                fontFamily: 'var(--font-sans)',
+                              }}
+                            />
+                          </div>
+                        ))}
 
                         <p style={{ margin: 0, fontSize: '0.65rem', color: '#10b981' }}>
-                          ✓ Chart for {tickerEmbed.symbol} · {tickerPeriod}
-                          {tickerEmbed.highlight_price ? ` · highlight $${tickerEmbed.highlight_price}` : ''}
+                          ✓ {tickerEmbedSymbols.length} chart{tickerEmbedSymbols.length !== 1 ? 's' : ''} ·{' '}
+                          {tickerPeriod}
                         </p>
                       </div>
                     )}

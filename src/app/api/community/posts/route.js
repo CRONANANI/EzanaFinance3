@@ -187,16 +187,33 @@ export async function POST(request) {
 
     let ticker_embed = null;
     if (body.ticker_embed && typeof body.ticker_embed === 'object') {
-      const sym = String(body.ticker_embed.symbol || '').toUpperCase().trim();
       const period = ['1D', '1W', '1M', '3M', '1Y'].includes(body.ticker_embed.period)
         ? body.ticker_embed.period
         : '1M';
-      const hp =
-        typeof body.ticker_embed.highlight_price === 'number' && Number.isFinite(body.ticker_embed.highlight_price)
-          ? body.ticker_embed.highlight_price
-          : null;
-      if (sym) {
-        ticker_embed = { symbol: sym, period, highlight_price: hp };
+      const symbols = [];
+      if (Array.isArray(body.ticker_embed.symbols)) {
+        for (const s of body.ticker_embed.symbols.slice(0, 3)) {
+          const sym = String(s?.symbol || '')
+            .toUpperCase()
+            .trim();
+          if (!sym) continue;
+          const hp =
+            typeof s.highlight_price === 'number' && Number.isFinite(s.highlight_price) ? s.highlight_price : null;
+          symbols.push({ symbol: sym, highlight_price: hp });
+        }
+      } else if (body.ticker_embed.symbol) {
+        const sym = String(body.ticker_embed.symbol)
+          .toUpperCase()
+          .trim();
+        const hp =
+          typeof body.ticker_embed.highlight_price === 'number' &&
+          Number.isFinite(body.ticker_embed.highlight_price)
+            ? body.ticker_embed.highlight_price
+            : null;
+        if (sym) symbols.push({ symbol: sym, highlight_price: hp });
+      }
+      if (symbols.length) {
+        ticker_embed = { period, symbols };
       }
     }
 

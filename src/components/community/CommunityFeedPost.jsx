@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -14,8 +14,10 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
-import { formatRelativeTime, getInitials } from '@/lib/community-utils';
+import { formatRelativeTime, getInitials, normalizeTickerEmbed } from '@/lib/community-utils';
 import { useAuth } from '@/components/AuthProvider';
+
+const EMBED_CHART_COLORS = ['#10b981', '#6366f1', '#f59e0b'];
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -57,8 +59,10 @@ export function CommunityFeedPost({
   const [myVote, setMyVote] = useState(post.my_vote || null);
   const [voteBusy, setVoteBusy] = useState(false);
 
-  const [chartData, setChartData] = useState(null);
-  const [chartLoading, setChartLoading] = useState(false);
+  /** Per-symbol chart rows after fetch */
+  const [chartSeries, setChartSeries] = useState([]);
+
+  const tickerNorm = useMemo(() => normalizeTickerEmbed(post.ticker_embed), [post.ticker_embed]);
 
   useEffect(() => {
     setPollData(post.poll_data || null);
@@ -85,38 +89,50 @@ export function CommunityFeedPost({
   };
 
   useEffect(() => {
-    const embed = post.ticker_embed;
-    if (!embed?.symbol) {
-      setChartData(null);
-      setChartLoading(false);
+    if (!tickerNorm?.symbols?.length) {
+      setChartSeries([]);
       return;
     }
+    const period = tickerNorm.period;
+    let cancelled = false;
 
-    setChartLoading(true);
-    const range = embed.period || '1M';
-    const sym = encodeURIComponent(embed.symbol);
+    setChartSeries(
+      tickerNorm.symbols.map((s) => ({
+        symbol: s.symbol,
+        highlight_price: s.highlight_price,
+        data: null,
+        loading: true,
+      }))
+    );
 
-    fetch(`/api/market-data/stock-candles?symbol=${sym}&range=${encodeURIComponent(range)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const candles = d?.candles;
-        if (!Array.isArray(candles) || candles.length === 0) {
-          setChartData([]);
-          setChartLoading(false);
-          return;
+    Promise.all(
+      tickerNorm.symbols.map(async (s) => {
+        try {
+          const r = await fetch(
+            `/api/market-data/stock-candles?symbol=${encodeURIComponent(s.symbol)}&range=${encodeURIComponent(period)}`
+          );
+          const d = r.ok ? await r.json() : null;
+          const candles = d?.candles;
+          if (!Array.isArray(candles) || candles.length === 0) {
+            return { symbol: s.symbol, highlight_price: s.highlight_price, data: [], loading: false };
+          }
+          const data = candles.map((c) => ({
+            t: c.label,
+            price: c.price ?? c.close,
+          }));
+          return { symbol: s.symbol, highlight_price: s.highlight_price, data, loading: false };
+        } catch {
+          return { symbol: s.symbol, highlight_price: s.highlight_price, data: [], loading: false };
         }
-        const points = candles.map((c) => ({
-          t: c.label,
-          price: c.price ?? c.close,
-        }));
-        setChartData(points);
-        setChartLoading(false);
       })
-      .catch(() => {
-        setChartData([]);
-        setChartLoading(false);
-      });
-  }, [post.ticker_embed?.symbol, post.ticker_embed?.period]);
+    ).then((rows) => {
+      if (!cancelled) setChartSeries(rows);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tickerNorm]);
 
   const profileSlug = post.username && !looksLikeUuid(post.username) ? post.username : post.userId;
 
@@ -365,7 +381,7 @@ export function CommunityFeedPost({
             </div>
           )}
 
-          {post.ticker_embed?.symbol && (
+          {tickerNorm && (
             <div
               style={{
                 marginTop: '0.75rem',
@@ -381,73 +397,95 @@ export function CommunityFeedPost({
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.35rem',
                   padding: '0 0.25rem',
                   marginBottom: '0.35rem',
                 }}
               >
                 <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#10b981' }}>
-                  ${post.ticker_embed.symbol}
+                  {tickerNorm.symbols.map((s) => `$${s.symbol}`).join(' · ')}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>
-                  {post.ticker_embed.period}
-                  {post.ticker_embed.highlight_price && ` · ★ $${post.ticker_embed.highlight_price}`}
-                </span>
+                <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>{tickerNorm.period}</span>
               </div>
 
-              {chartLoading && (
-                <p
-                  style={{
-                    textAlign: 'center',
-                    fontSize: '0.75rem',
-                    color: '#6b7280',
-                    padding: '1rem 0',
-                    margin: 0,
-                  }}
-                >
-                  Loading chart…
-                </p>
-              )}
+              {chartSeries.map((row, idx) => {
+                const stroke = EMBED_CHART_COLORS[idx % EMBED_CHART_COLORS.length];
+                const chartData = row.data;
 
-              {!chartLoading && (!chartData || chartData.length === 0) && (
-                <p
-                  style={{
-                    textAlign: 'center',
-                    fontSize: '0.75rem',
-                    color: '#6b7280',
-                    padding: '0.5rem 0',
-                    margin: 0,
-                  }}
-                >
-                  Chart data unavailable
-                </p>
-              )}
-
-              {!chartLoading &&
-                chartData &&
-                chartData.length > 0 &&
-                (() => {
-                  const prices = chartData.map((d) => d.price).filter((v) => v != null && Number.isFinite(v));
-                  if (prices.length === 0) return null;
-                  const minP = Math.min(...prices);
-                  const maxP = Math.max(...prices);
-                  const pad = (maxP - minP) * 0.1 || 1;
-                  const hp = post.ticker_embed.highlight_price;
-                  let hlIdx = null;
-                  if (hp != null) {
-                    let best = Infinity;
-                    chartData.forEach((d, i) => {
-                      if (d.price == null || !Number.isFinite(d.price)) return;
-                      const diff = Math.abs(d.price - hp);
-                      if (diff < best) {
-                        best = diff;
-                        hlIdx = i;
-                      }
-                    });
-                  }
-
+                if (row.loading) {
                   return (
-                    <ResponsiveContainer width="100%" height={160}>
-                      <LineChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                    <p
+                      key={row.symbol}
+                      style={{
+                        textAlign: 'center',
+                        fontSize: '0.75rem',
+                        color: '#6b7280',
+                        padding: '0.75rem 0',
+                        margin: 0,
+                      }}
+                    >
+                      Loading {row.symbol}…
+                    </p>
+                  );
+                }
+
+                if (!chartData || chartData.length === 0) {
+                  return (
+                    <p
+                      key={row.symbol}
+                      style={{
+                        textAlign: 'center',
+                        fontSize: '0.75rem',
+                        color: '#6b7280',
+                        padding: '0.5rem 0',
+                        margin: 0,
+                      }}
+                    >
+                      Chart data unavailable for {row.symbol}
+                    </p>
+                  );
+                }
+
+                const prices = chartData.map((d) => d.price).filter((v) => v != null && Number.isFinite(v));
+                if (prices.length === 0) return null;
+                const minP = Math.min(...prices);
+                const maxP = Math.max(...prices);
+                const pad = (maxP - minP) * 0.1 || 1;
+                const hp = row.highlight_price;
+                let hlIdx = null;
+                if (hp != null) {
+                  let best = Infinity;
+                  chartData.forEach((d, i) => {
+                    if (d.price == null || !Number.isFinite(d.price)) return;
+                    const diff = Math.abs(d.price - hp);
+                    if (diff < best) {
+                      best = diff;
+                      hlIdx = i;
+                    }
+                  });
+                }
+
+                return (
+                  <div key={row.symbol} style={{ marginTop: idx > 0 ? '0.5rem' : 0 }}>
+                    <div
+                      style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        color: stroke,
+                        padding: '0 0.25rem 0.25rem',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      ${row.symbol}
+                      {hp != null && (
+                        <span style={{ color: '#6b7280', fontWeight: 500, marginLeft: '0.35rem' }}>
+                          ★ ${hp}
+                        </span>
+                      )}
+                    </div>
+                    <ResponsiveContainer width="100%" height={140}>
+                      <LineChart data={chartData} margin={{ top: 6, right: 8, left: -20, bottom: 0 }}>
                         <XAxis
                           dataKey="t"
                           tick={{ fill: '#6b7280', fontSize: 9 }}
@@ -465,7 +503,7 @@ export function CommunityFeedPost({
                           }
                         />
                         <Tooltip
-                          formatter={(v) => [`$${Number(v).toFixed(2)}`, post.ticker_embed.symbol]}
+                          formatter={(v) => [`$${Number(v).toFixed(2)}`, row.symbol]}
                           contentStyle={{
                             background: '#161b22',
                             border: '1px solid rgba(16,185,129,0.15)',
@@ -476,7 +514,7 @@ export function CommunityFeedPost({
                         <Line
                           type="monotone"
                           dataKey="price"
-                          stroke="#10b981"
+                          stroke={stroke}
                           strokeWidth={1.8}
                           dot={false}
                           isAnimationActive={false}
@@ -513,12 +551,13 @@ export function CommunityFeedPost({
                         )}
                       </LineChart>
                     </ResponsiveContainer>
-                  );
-                })()}
+                  </div>
+                );
+              })}
             </div>
           )}
 
-          {post.tickerSym && !post.ticker_embed && (
+          {post.tickerSym && !tickerNorm && (
             <div className="comm-ticker-embed comm-ticker-embed--card">
               <span className="comm-ticker-sym">${post.tickerSym}</span>
               {quote ? (
