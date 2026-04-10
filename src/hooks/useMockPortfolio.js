@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
 const STARTING_CASH = 100_000;
-const POST_DEBOUNCE_MS = 800;
+const DEBOUNCE_MS = 800;
 const LS_KEY = 'ezana_mock_portfolio_v1';
 
 const TICKER_SECTOR = {
@@ -35,27 +35,52 @@ function loadLocal() {
   if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
 
-function saveLocal(portfolio) {
+function saveLocal(p) {
   if (typeof window === 'undefined') return;
-  try { localStorage.setItem(LS_KEY, JSON.stringify(portfolio)); } catch { /* quota */ }
+  try { localStorage.setItem(LS_KEY, JSON.stringify(p)); } catch { /* quota */ }
 }
 
-function withMeta(portfolio) {
-  if (!portfolio || typeof portfolio !== 'object') return portfolio;
-  return { ...portfolio, _meta: { ...(portfolio._meta || {}), updatedAt: Date.now() } };
+function withMeta(p) {
+  if (!p || typeof p !== 'object') return p;
+  return { ...p, _meta: { ...(p._meta || {}), updatedAt: Date.now() } };
 }
 
-async function postToServer(portfolio, token) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  return fetch('/api/mock-portfolio', {
-    method: 'POST', headers, body: JSON.stringify({ portfolio }),
-  });
+/**
+ * Write portfolio directly to Supabase from the browser client.
+ * Uses the browser's own session — no server cookie needed.
+ * RLS policy (auth.uid() = user_id) handles security.
+ */
+async function saveToSupabase(userId, portfolio) {
+  const { error } = await supabase
+    .from('mock_portfolios')
+    .upsert(
+      { user_id: userId, portfolio, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    );
+  if (error) {
+    console.error('[useMockPortfolio] Supabase write error:', error.message);
+  }
+  return !error;
+}
+
+/**
+ * Read portfolio directly from Supabase via the browser client.
+ */
+async function loadFromSupabase(userId) {
+  const { data, error } = await supabase
+    .from('mock_portfolios')
+    .select('portfolio, updated_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    console.error('[useMockPortfolio] Supabase read error:', error.message);
+    return null;
+  }
+  return data ?? null;
 }
 
 export function useMockPortfolio() {
@@ -67,43 +92,30 @@ export function useMockPortfolio() {
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const intervalRef = useRef(null);
-  const postTimerRef = useRef(null);
-  const postPayloadRef = useRef(null);
-  const tokenRef = useRef(null);
+  const debounceRef = useRef(null);
+  const pendingRef = useRef(null);
 
   useEffect(() => { setStorageReady(true); }, []);
 
-  // Keep a live access token ref for use in fire-and-forget POSTs and unload flushes
-  useEffect(() => {
-    if (!user?.id) { tokenRef.current = null; return; }
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      tokenRef.current = session?.access_token ?? null;
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      tokenRef.current = session?.access_token ?? null;
-    });
-    return () => subscription.unsubscribe();
-  }, [user?.id]);
-
-  const flushPost = useCallback(async () => {
-    if (!user?.id) return;
-    const payload = postPayloadRef.current;
-    postPayloadRef.current = null;
-    if (!payload) return;
+  /** Flush pending write to Supabase immediately */
+  const flushToSupabase = useCallback(async () => {
+    if (!user?.id || !pendingRef.current) return;
+    const payload = pendingRef.current;
+    pendingRef.current = null;
     setSyncing(true);
-    try { await postToServer(payload, tokenRef.current); }
-    catch { /* network */ }
-    finally { setSyncing(false); }
+    await saveToSupabase(user.id, payload);
+    setSyncing(false);
   }, [user?.id]);
 
-  const schedulePost = useCallback((next) => {
-    postPayloadRef.current = next;
-    if (postTimerRef.current) clearTimeout(postTimerRef.current);
-    postTimerRef.current = setTimeout(() => {
-      postTimerRef.current = null;
-      flushPost();
-    }, POST_DEBOUNCE_MS);
-  }, [flushPost]);
+  /** Debounced Supabase write — coalesces rapid trades */
+  const scheduleWrite = useCallback((portfolio) => {
+    pendingRef.current = portfolio;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      flushToSupabase();
+    }, DEBOUNCE_MS);
+  }, [flushToSupabase]);
 
   const setPortfolio = useCallback((update, options = {}) => {
     const { skipSync = false } = options;
@@ -114,106 +126,76 @@ export function useMockPortfolio() {
       const next = withMeta(raw);
       saveLocal(next);
       if (!skipSync && user?.id) {
-        // Immediate POST — data reaches Supabase right now, not after 800ms
-        postToServer(next, tokenRef.current).catch(() => {});
-        // Debounce as belt-and-suspenders for rapid sequential updates
-        schedulePost(next);
+        // Write immediately AND debounce — belt and suspenders
+        saveToSupabase(user.id, next);   // immediate, fire-and-forget
+        scheduleWrite(next);              // debounced backup
       }
       return next;
     });
-  }, [schedulePost, user?.id]);
+  }, [scheduleWrite, user?.id]);
 
-  useEffect(() => {
-    return () => { if (postTimerRef.current) clearTimeout(postTimerRef.current); };
-  }, []);
-
-  // Flush on tab close or hide — covers the case where user closes browser
-  // within the 800ms debounce window after a trade
+  // Flush on tab close / hide
   useEffect(() => {
     if (!user?.id) return;
     const flush = () => {
-      const payload = postPayloadRef.current;
-      if (!payload) return;
-      postPayloadRef.current = null;
-      if (postTimerRef.current) { clearTimeout(postTimerRef.current); postTimerRef.current = null; }
-      const body = JSON.stringify({ portfolio: payload });
-      const token = tokenRef.current;
-      try {
-        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-          const url = token ? `/api/mock-portfolio?token=${encodeURIComponent(token)}` : '/api/mock-portfolio';
-          navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }));
-        } else {
-          fetch('/api/mock-portfolio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            body, keepalive: true,
-          }).catch(() => {});
-        }
-      } catch { /* unload — best effort */ }
+      if (!pendingRef.current) return;
+      const p = pendingRef.current;
+      pendingRef.current = null;
+      if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
+      // Best-effort synchronous-ish write on unload
+      saveToSupabase(user.id, p).catch(() => {});
     };
-    const onVisChange = () => { if (document.visibilityState === 'hidden') flush(); };
+    const onVis = () => { if (document.visibilityState === 'hidden') flush(); };
     window.addEventListener('beforeunload', flush);
-    document.addEventListener('visibilitychange', onVisChange);
+    document.addEventListener('visibilitychange', onVis);
     return () => {
       window.removeEventListener('beforeunload', flush);
-      document.removeEventListener('visibilitychange', onVisChange);
+      document.removeEventListener('visibilitychange', onVis);
     };
   }, [user?.id]);
 
-  // Hydrate: boot from localStorage for instant UI, then fetch from server
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
+
+  // Hydrate: load from Supabase on login, localStorage for instant boot
   useEffect(() => {
     if (!storageReady) return;
+
     if (!user?.id) {
       const local = loadLocal();
       if (local) setPortfolioState(local);
       setServerLoaded(true);
       return;
     }
-    // Show local immediately while server loads
+
+    // Show local immediately while Supabase loads
     const bootLocal = loadLocal();
     if (bootLocal) setPortfolioState(bootLocal);
 
     let cancelled = false;
     (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-        tokenRef.current = token ?? null;
-
-        const headers = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const res = await fetch('/api/mock-portfolio', { headers });
+        const row = await loadFromSupabase(user.id);
         if (cancelled) return;
 
-        if (!res.ok) {
-          console.warn('[useMockPortfolio] GET failed:', res.status);
-          setServerLoaded(true);
-          return;
-        }
+        if (row?.portfolio && typeof row.portfolio === 'object') {
+          const serverT = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+          const localT = bootLocal?._meta?.updatedAt ?? 0;
 
-        const data = await res.json();
-        if (cancelled) return;
-
-        const serverP = data?.portfolio;
-        const serverT = data?.updated_at ? new Date(data.updated_at).getTime() : 0;
-        const curLocal = loadLocal();
-        const localT = curLocal?._meta?.updatedAt ?? 0;
-
-        if (serverP && typeof serverP === 'object' && Object.keys(serverP).length > 0) {
-          if (!curLocal || serverT >= localT) {
-            // Server is authoritative
-            setPortfolioState(serverP);
-            saveLocal(serverP);
+          if (!bootLocal || serverT >= localT) {
+            // Server is newer — use it
+            setPortfolioState(row.portfolio);
+            saveLocal(row.portfolio);
           } else {
-            // Local is newer — use it and push to server
-            setPortfolioState(curLocal);
-            postToServer(curLocal, token).catch(() => {});
+            // Local is newer — push it up
+            setPortfolioState(bootLocal);
+            await saveToSupabase(user.id, bootLocal);
           }
-        } else if (curLocal) {
-          // Nothing on server yet — push local up
-          setPortfolioState(curLocal);
-          postToServer(curLocal, token).catch(() => {});
+        } else if (bootLocal) {
+          // Nothing in Supabase yet — push local up
+          setPortfolioState(bootLocal);
+          await saveToSupabase(user.id, bootLocal);
         }
       } catch (err) {
         console.error('[useMockPortfolio] hydration error:', err);
@@ -291,7 +273,10 @@ export function useMockPortfolio() {
     .sort((a, b) => b.value - a.value);
 
   const typeMap = {};
-  for (const pos of enrichedPositions) { const t = pos.type ?? 'Stock'; typeMap[t] = (typeMap[t] ?? 0) + Math.max(0, pos.pnl); }
+  for (const pos of enrichedPositions) {
+    const t = pos.type ?? 'Stock';
+    typeMap[t] = (typeMap[t] ?? 0) + Math.max(0, pos.pnl);
+  }
   const typeTotal = Object.values(typeMap).reduce((a, b) => a + b, 0) || 1;
   const TYPE_COLORS = { Stock: '#10b981', Crypto: '#fbbf24', Commodity: '#f97316', ETF: '#3b82f6', Other: '#a78bfa' };
   const profitBreakdown = Object.entries(typeMap).map(([label, value]) => ({
