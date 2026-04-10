@@ -396,7 +396,7 @@ export function Navbar() {
         </div>
         <div className="nav-actions">
           <Link href="/settings" className="nav-action-btn nav-settings-gear" title="Settings" aria-label="Settings">
-            <i className="bi bi-gear"></i>
+            <i className="bi bi-gear-fill"></i>
           </Link>
           <button
             onClick={handleLogout}

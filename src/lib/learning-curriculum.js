@@ -239,10 +239,10 @@ export function getCoursesByTrack(trackId) {
 
 export function getLevelLabel(level) {
   const map = {
-    basic: 'Basic',
-    intermediate: 'Intermediate',
-    advanced: 'Advanced',
-    expert: 'Expert',
+    basic: 'Bronze',
+    intermediate: 'Silver',
+    advanced: 'Gold',
+    expert: 'Platinum',
   };
   return map[level] || level;
 }

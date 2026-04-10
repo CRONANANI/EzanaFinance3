@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import StockPriceChart from '@/components/research/StockPriceChart';
+import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
 import '../../home-dashboard/home-dashboard.css';
@@ -52,8 +53,49 @@ function fmtChange(n) {
    MAIN PAGE
 ────────────────────────────────────────── */
 export default function MockTradingPage() {
+  const { user } = useAuth();
   /* Portfolio state — backed by Supabase via useMockPortfolio */
   const { portfolio: portfolioFromHook, setPortfolio, syncing } = useMockPortfolio();
+  const [dbTrades, setDbTrades] = useState([]);
+
+  const persistMockTrade = useCallback(
+    async (payload) => {
+      if (!user?.id) return;
+      try {
+        const res = await fetch('/api/mock-trades', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) return;
+        const listRes = await fetch('/api/mock-trades');
+        const data = listRes.ok ? await listRes.json() : { trades: [] };
+        setDbTrades(data.trades || []);
+      } catch {
+        /* ignore */
+      }
+    },
+    [user?.id],
+  );
+
+  useEffect(() => {
+    if (!user?.id) {
+      setDbTrades([]);
+      return;
+    }
+    let cancelled = false;
+    fetch('/api/mock-trades')
+      .then((r) => (r.ok ? r.json() : { trades: [] }))
+      .then((d) => {
+        if (!cancelled) setDbTrades(d.trades || []);
+      })
+      .catch(() => {
+        if (!cancelled) setDbTrades([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   // Use hook portfolio; fall back to fresh if not loaded yet
   const portfolio = portfolioFromHook ?? freshPortfolio();
@@ -224,6 +266,13 @@ export default function MockTradingPage() {
         ].slice(0, 100);
         return p;
       });
+      void persistMockTrade({
+        ticker: selectedSymbol,
+        quantity: qty,
+        price,
+        trade_type: 'buy',
+        total_amount: dollarAmount,
+      });
       showToast(`✓ Bought ${fmtUSD(dollarAmount)} of ${selectedSymbol} @ ${fmtUSD(price)}`);
       setAmount('');
       return;
@@ -266,6 +315,13 @@ export default function MockTradingPage() {
         ...p.history,
       ].slice(0, 100);
       return p;
+    });
+    void persistMockTrade({
+      ticker: selectedSymbol,
+      quantity: sellQty,
+      price,
+      trade_type: 'sell',
+      total_amount: sellTotal,
     });
     showToast(`✓ Sold ${fmtUSD(sellTotal)} of ${selectedSymbol} @ ${fmtUSD(price)}`);
     setAmount('');
@@ -312,8 +368,30 @@ export default function MockTradingPage() {
         ].slice(0, 100),
       };
     });
+    void persistMockTrade({
+      ticker: sym,
+      quantity: pos.qty,
+      price,
+      trade_type: 'sell',
+      total_amount: total,
+    });
     showToast(`✓ Closed ${sym} position for ${fmtUSD(total)}`);
   };
+
+  const mergedActivity = useMemo(() => {
+    if (dbTrades.length > 0) {
+      return dbTrades.map((r) => ({
+        id: r.id,
+        side: r.trade_type,
+        symbol: r.ticker,
+        qty: Number(r.quantity),
+        price: Number(r.price),
+        total: Number(r.total_amount ?? Number(r.quantity) * Number(r.price)),
+        ts: r.created_at,
+      }));
+    }
+    return portfolio.history || [];
+  }, [dbTrades, portfolio.history]);
 
   const positionsList = Object.values(portfolio.positions);
   const totalPositionValue = positionsList.reduce(
@@ -547,20 +625,20 @@ export default function MockTradingPage() {
             </div>
           </div>
 
-          {portfolio.history.length > 0 && (
+          {mergedActivity.length > 0 && (
             <div className="mock-card">
               <div className="mock-card-header">
                 <h3>
                   <i className="bi bi-clock-history" /> Recent Activity
                 </h3>
                 <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  {portfolio.history.length} trade{portfolio.history.length !== 1 ? 's' : ''}
+                  {mergedActivity.length} trade{mergedActivity.length !== 1 ? 's' : ''}
                 </span>
               </div>
               <div className="mock-card-body" style={{ padding: '0 1.25rem 1rem' }}>
                 <div className="mock-activity-list">
-                  {portfolio.history.slice(0, 12).map((h) => (
-                    <div className="mock-activity-item" key={h.id}>
+                  {mergedActivity.slice(0, 12).map((h) => (
+                    <div className="mock-activity-item" key={h.id || `${h.ts}-${h.symbol}`}>
                       <div className={`mock-activity-dot ${h.side}`} />
                       <div className="mock-activity-body">
                         <div className="mock-activity-label">
