@@ -49,38 +49,57 @@ function withMeta(p) {
   return { ...p, _meta: { ...(p._meta || {}), updatedAt: Date.now() } };
 }
 
-/**
- * Write portfolio directly to Supabase from the browser client.
- * Uses the browser's own session — no server cookie needed.
- * RLS policy (auth.uid() = user_id) handles security.
- */
-async function saveToSupabase(userId, portfolio) {
-  const { error } = await supabase
-    .from('mock_portfolios')
-    .upsert(
-      { user_id: userId, portfolio, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
-    );
-  if (error) {
-    console.error('[useMockPortfolio] Supabase write error:', error.message);
-  }
-  return !error;
-}
-
-/**
- * Read portfolio directly from Supabase via the browser client.
- */
-async function loadFromSupabase(userId) {
-  const { data, error } = await supabase
-    .from('mock_portfolios')
-    .select('portfolio, updated_at')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (error) {
-    console.error('[useMockPortfolio] Supabase read error:', error.message);
+/** Get the current access token from the Supabase browser client */
+async function getAccessToken() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  } catch {
     return null;
   }
-  return data ?? null;
+}
+
+/** Save portfolio to server — sends access token in Authorization header */
+async function apiSave(portfolio) {
+  const token = await getAccessToken();
+  if (!token) {
+    console.error('[useMockPortfolio] no access token — cannot save');
+    return false;
+  }
+  try {
+    const res = await fetch('/api/mock-portfolio', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ portfolio }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      console.error('[useMockPortfolio] save failed', res.status, text);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[useMockPortfolio] save error:', e?.message);
+    return false;
+  }
+}
+
+/** Load portfolio from server — sends access token in Authorization header */
+async function apiLoad() {
+  const token = await getAccessToken();
+  if (!token) return null;
+  try {
+    const res = await fetch('/api/mock-portfolio', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
 export function useMockPortfolio() {
@@ -97,25 +116,23 @@ export function useMockPortfolio() {
 
   useEffect(() => { setStorageReady(true); }, []);
 
-  /** Flush pending write to Supabase immediately */
-  const flushToSupabase = useCallback(async () => {
+  const flushSave = useCallback(async () => {
     if (!user?.id || !pendingRef.current) return;
     const payload = pendingRef.current;
     pendingRef.current = null;
     setSyncing(true);
-    await saveToSupabase(user.id, payload);
+    await apiSave(payload);
     setSyncing(false);
   }, [user?.id]);
 
-  /** Debounced Supabase write — coalesces rapid trades */
-  const scheduleWrite = useCallback((portfolio) => {
-    pendingRef.current = portfolio;
+  const scheduleSave = useCallback((p) => {
+    pendingRef.current = p;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
-      flushToSupabase();
+      flushSave();
     }, DEBOUNCE_MS);
-  }, [flushToSupabase]);
+  }, [flushSave]);
 
   const setPortfolio = useCallback((update, options = {}) => {
     const { skipSync = false } = options;
@@ -126,13 +143,12 @@ export function useMockPortfolio() {
       const next = withMeta(raw);
       saveLocal(next);
       if (!skipSync && user?.id) {
-        // Write immediately AND debounce — belt and suspenders
-        saveToSupabase(user.id, next);   // immediate, fire-and-forget
-        scheduleWrite(next);              // debounced backup
+        apiSave(next);       // immediate — fire and forget
+        scheduleSave(next);  // debounce backup
       }
       return next;
     });
-  }, [scheduleWrite, user?.id]);
+  }, [scheduleSave, user?.id]);
 
   // Flush on tab close / hide
   useEffect(() => {
@@ -142,8 +158,7 @@ export function useMockPortfolio() {
       const p = pendingRef.current;
       pendingRef.current = null;
       if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
-      // Best-effort synchronous-ish write on unload
-      saveToSupabase(user.id, p).catch(() => {});
+      apiSave(p).catch(() => {});
     };
     const onVis = () => { if (document.visibilityState === 'hidden') flush(); };
     window.addEventListener('beforeunload', flush);
@@ -158,7 +173,7 @@ export function useMockPortfolio() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
 
-  // Hydrate: load from Supabase on login, localStorage for instant boot
+  // Hydrate on login: show local immediately, then load from server
   useEffect(() => {
     if (!storageReady) return;
 
@@ -169,33 +184,33 @@ export function useMockPortfolio() {
       return;
     }
 
-    // Show local immediately while Supabase loads
+    // Show local cache immediately (no flash)
     const bootLocal = loadLocal();
     if (bootLocal) setPortfolioState(bootLocal);
 
     let cancelled = false;
     (async () => {
       try {
-        const row = await loadFromSupabase(user.id);
+        const data = await apiLoad();
         if (cancelled) return;
 
-        if (row?.portfolio && typeof row.portfolio === 'object') {
-          const serverT = row.updated_at ? new Date(row.updated_at).getTime() : 0;
-          const localT = bootLocal?._meta?.updatedAt ?? 0;
+        const serverP = data?.portfolio;
+        const serverT = data?.updated_at ? new Date(data.updated_at).getTime() : 0;
+        const localT = bootLocal?._meta?.updatedAt ?? 0;
 
+        if (serverP && typeof serverP === 'object' && Object.keys(serverP).length > 0) {
           if (!bootLocal || serverT >= localT) {
-            // Server is newer — use it
-            setPortfolioState(row.portfolio);
-            saveLocal(row.portfolio);
+            setPortfolioState(serverP);
+            saveLocal(serverP);
           } else {
             // Local is newer — push it up
             setPortfolioState(bootLocal);
-            await saveToSupabase(user.id, bootLocal);
+            apiSave(bootLocal);
           }
         } else if (bootLocal) {
-          // Nothing in Supabase yet — push local up
+          // Nothing on server — push local up
           setPortfolioState(bootLocal);
-          await saveToSupabase(user.id, bootLocal);
+          apiSave(bootLocal);
         }
       } catch (err) {
         console.error('[useMockPortfolio] hydration error:', err);
@@ -203,6 +218,7 @@ export function useMockPortfolio() {
         if (!cancelled) setServerLoaded(true);
       }
     })();
+
     return () => { cancelled = true; };
   }, [storageReady, user?.id]);
 
