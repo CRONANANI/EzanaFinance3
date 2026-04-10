@@ -46,6 +46,7 @@ async function buildEnrichedResponse(supabase, user, list) {
 
   let likedSet = new Set();
   let savedSet = new Set();
+  let votedMap = {};
   if (user && postIds.length > 0) {
     const { data: likes } = await supabase
       .from('post_likes')
@@ -59,6 +60,13 @@ async function buildEnrichedResponse(supabase, user, list) {
       .in('post_id', postIds);
     likedSet = new Set((likes || []).map((l) => l.post_id));
     savedSet = new Set((saves || []).map((s) => s.post_id));
+
+    const { data: votes } = await supabase
+      .from('poll_votes')
+      .select('post_id, option_id')
+      .eq('user_id', user.id)
+      .in('post_id', postIds);
+    votedMap = Object.fromEntries((votes || []).map((v) => [v.post_id, v.option_id]));
   }
 
   const enrichedPosts = list.map((post) => ({
@@ -66,6 +74,7 @@ async function buildEnrichedResponse(supabase, user, list) {
     author: mapAuthor(profileMap[post.user_id], user?.id),
     liked_by_me: likedSet.has(post.id),
     saved_by_me: savedSet.has(post.id),
+    my_vote: votedMap[post.id] ?? null,
   }));
 
   return NextResponse.json({ posts: enrichedPosts });
@@ -87,7 +96,7 @@ export async function GET(request) {
     const to = from + LIMIT - 1;
 
     const selectCols =
-      'id, user_id, content, mentioned_ticker, likes_count, comments_count, reposts_count, created_at';
+      'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at';
 
     /** Popular / trending: sort by likes + comments + reposts (batched then sliced) */
     if (tab === 'trending' || tab === 'popular') {
@@ -155,11 +164,51 @@ export async function POST(request) {
     const parent_post_id =
       typeof body.parent_post_id === 'string' && body.parent_post_id.length > 0 ? body.parent_post_id : null;
 
-    if (!content.trim()) {
-      return NextResponse.json({ error: 'Post content is required' }, { status: 400 });
+    const image_url =
+      typeof body.image_url === 'string' && body.image_url.startsWith('http') ? body.image_url : null;
+
+    let poll_data = null;
+    if (body.poll_data && typeof body.poll_data === 'object') {
+      const q = String(body.poll_data.question || '').trim();
+      const opts = Array.isArray(body.poll_data.options) ? body.poll_data.options : [];
+      if (q && opts.length >= 2 && opts.length <= 6) {
+        poll_data = {
+          question: q.slice(0, 200),
+          options: opts.slice(0, 6).map((o, i) => ({
+            id: `opt_${i}`,
+            label: String(o.label || o).slice(0, 100),
+            votes: 0,
+          })),
+          total_votes: 0,
+          ends_at: null,
+        };
+      }
+    }
+
+    let ticker_embed = null;
+    if (body.ticker_embed && typeof body.ticker_embed === 'object') {
+      const sym = String(body.ticker_embed.symbol || '').toUpperCase().trim();
+      const period = ['1D', '1W', '1M', '3M', '1Y'].includes(body.ticker_embed.period)
+        ? body.ticker_embed.period
+        : '1M';
+      const hp =
+        typeof body.ticker_embed.highlight_price === 'number' && Number.isFinite(body.ticker_embed.highlight_price)
+          ? body.ticker_embed.highlight_price
+          : null;
+      if (sym) {
+        ticker_embed = { symbol: sym, period, highlight_price: hp };
+      }
     }
 
     const isComment = !!parent_post_id;
+    const hasAttachment = !!(image_url || poll_data || ticker_embed);
+    if (isComment && !content.trim()) {
+      return NextResponse.json({ error: 'Post content is required' }, { status: 400 });
+    }
+    if (!isComment && !content.trim() && !hasAttachment) {
+      return NextResponse.json({ error: 'Post content is required' }, { status: 400 });
+    }
+
     const maxLen = isComment ? 500 : 1000;
     if (content.length > maxLen) {
       return NextResponse.json(
@@ -192,8 +241,13 @@ export async function POST(request) {
         content: content.trim(),
         mentioned_ticker: isComment ? null : mentioned_ticker || null,
         parent_post_id: parent_post_id || null,
+        image_url: isComment ? null : image_url,
+        poll_data: isComment ? null : poll_data,
+        ticker_embed: isComment ? null : ticker_embed,
       })
-      .select('id, user_id, content, mentioned_ticker, likes_count, comments_count, reposts_count, created_at, parent_post_id')
+      .select(
+        'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at, parent_post_id'
+      )
       .single();
 
     if (error) {
@@ -219,10 +273,81 @@ export async function POST(request) {
         author: mapAuthor(prof, user.id),
         liked_by_me: false,
         saved_by_me: false,
+        my_vote: null,
       },
     });
   } catch (error) {
     console.error('POST posts:', error);
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request) {
+  try {
+    const body = await request.json();
+    const post_id = typeof body.post_id === 'string' ? body.post_id : null;
+    const option_id = typeof body.option_id === 'string' ? body.option_id : null;
+
+    if (!post_id || !option_id) {
+      return NextResponse.json({ error: 'post_id and option_id required' }, { status: 400 });
+    }
+
+    const supabase = createServerSupabase();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { data: row } = await supabaseAdmin
+      .from('community_posts')
+      .select('poll_data')
+      .eq('id', post_id)
+      .maybeSingle();
+
+    if (!row?.poll_data) {
+      return NextResponse.json({ error: 'Post has no poll' }, { status: 400 });
+    }
+
+    const { data: existingVote } = await supabaseAdmin
+      .from('poll_votes')
+      .select('option_id')
+      .eq('post_id', post_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const pd = {
+      ...row.poll_data,
+      options: (row.poll_data.options || []).map((o) => ({ ...o })),
+    };
+
+    if (existingVote) {
+      const oldOpt = pd.options.find((o) => o.id === existingVote.option_id);
+      if (oldOpt) oldOpt.votes = Math.max(0, (oldOpt.votes || 0) - 1);
+      pd.total_votes = Math.max(0, (pd.total_votes || 0) - 1);
+      await supabaseAdmin.from('poll_votes').delete().eq('post_id', post_id).eq('user_id', user.id);
+    }
+
+    const newOpt = pd.options.find((o) => o.id === option_id);
+    if (!newOpt) return NextResponse.json({ error: 'Invalid option' }, { status: 400 });
+    newOpt.votes = (newOpt.votes || 0) + 1;
+    pd.total_votes = (pd.total_votes || 0) + 1;
+
+    const { error: insErr } = await supabaseAdmin
+      .from('poll_votes')
+      .insert({ post_id, user_id: user.id, option_id });
+    if (insErr) {
+      console.error('poll_votes insert:', insErr);
+      return NextResponse.json({ error: insErr.message }, { status: 500 });
+    }
+
+    const { error: updErr } = await supabaseAdmin.from('community_posts').update({ poll_data: pd }).eq('id', post_id);
+    if (updErr) {
+      console.error('community_posts poll update:', updErr);
+      return NextResponse.json({ error: updErr.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ poll_data: pd, my_vote: option_id });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

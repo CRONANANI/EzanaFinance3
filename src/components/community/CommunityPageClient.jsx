@@ -13,6 +13,7 @@ import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import { extractTickerFromContent, formatRelativeTime, getInitials } from '@/lib/community-utils';
+import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 import { supabase } from '@/lib/supabase';
 import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
 
@@ -93,9 +94,28 @@ export default function CommunityPageClient() {
   const [expandedId, setExpandedId] = useState(null);
   const [composerText, setComposerText] = useState('');
   const [posting, setPosting] = useState(false);
+  const [composerImage, setComposerImage] = useState(null);
+  const [showImageMenu, setShowImageMenu] = useState(false);
+  const [showPollBuilder, setShowPollBuilder] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  const [showTickerSearch, setShowTickerSearch] = useState(false);
+  const [tickerQuery, setTickerQuery] = useState('');
+  const [tickerEmbed, setTickerEmbed] = useState(null);
+  const [tickerStep, setTickerStep] = useState('search');
+  const [tickerPeriod, setTickerPeriod] = useState('1M');
+  const [tickerHighlight, setTickerHighlight] = useState('');
   const [quoteMap, setQuoteMap] = useState({});
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [followBusy, setFollowBusy] = useState({});
+
+  const filteredTickers = useMemo(() => {
+    const q = tickerQuery.toUpperCase().trim();
+    if (!q) return TICKER_SEARCH_DATA.slice(0, 8);
+    return TICKER_SEARCH_DATA.filter(
+      (t) => t.ticker.startsWith(q) || t.name.toUpperCase().includes(q)
+    ).slice(0, 8);
+  }, [tickerQuery]);
 
   const firstName = useMemo(() => {
     const raw = userProfile?.full_name || userProfile?.display_name || user?.user_metadata?.full_name || '';
@@ -165,6 +185,10 @@ export default function CommunityPageClient() {
         reposts: p.reposts_count ?? 0,
         liked_by_me: !!p.liked_by_me,
         saved_by_me: !!p.saved_by_me,
+        image_url: p.image_url ?? null,
+        poll_data: p.poll_data ?? null,
+        ticker_embed: p.ticker_embed ?? null,
+        my_vote: p.my_vote ?? null,
         returnBadge: hashReturnPct(p.author?.id || p.id),
         isPartner: false,
       }));
@@ -320,20 +344,70 @@ export default function CommunityPageClient() {
   };
 
   const handlePost = async () => {
-    if (!composerText.trim() || !user?.id) return;
+    const hasText = composerText.trim().length > 0;
+    const hasPoll = showPollBuilder && pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2;
+    const hasTicker = tickerEmbed !== null;
+    const hasImage = composerImage !== null;
+
+    if (!hasText && !hasPoll && !hasTicker && !hasImage) return;
+    if (!user?.id) return;
+
     setPosting(true);
     try {
+      let image_url = null;
+
+      if (composerImage?.source === 'device' && composerImage?.file) {
+        const ext = composerImage.file.name.split('.').pop() || 'jpg';
+        const path = `community/${user.id}/${Date.now()}.${ext}`;
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from('community-images')
+          .upload(path, composerImage.file, { upsert: false, contentType: composerImage.file.type });
+        if (!uploadErr && uploadData?.path) {
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from('community-images').getPublicUrl(uploadData.path);
+          image_url = publicUrl;
+        }
+      } else if (composerImage?.source === 'storage') {
+        image_url = composerImage.url;
+      }
+
       const tickerMatch = composerText.match(/\$([A-Za-z]{1,5})\b/);
+      const body = {
+        content:
+          composerText.trim() ||
+          (hasPoll ? `📊 ${pollQuestion}` : hasTicker ? `📈 ${tickerEmbed.symbol}` : ''),
+        mentioned_ticker:
+          tickerEmbed?.symbol || (tickerMatch ? tickerMatch[1] : extractTickerFromContent(composerText)),
+        image_url,
+        poll_data: hasPoll
+          ? {
+              question: pollQuestion.trim(),
+              options: pollOptions.filter((o) => o.trim()).map((o) => ({ label: o.trim() })),
+            }
+          : null,
+        ticker_embed: hasTicker ? tickerEmbed : null,
+      };
+
       const res = await fetch('/api/community/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: composerText.trim(),
-          mentioned_ticker: tickerMatch ? tickerMatch[1] : extractTickerFromContent(composerText),
-        }),
+        body: JSON.stringify(body),
       });
+
       if (res.ok) {
         setComposerText('');
+        setComposerImage(null);
+        setShowImageMenu(false);
+        setShowPollBuilder(false);
+        setPollQuestion('');
+        setPollOptions(['', '']);
+        setTickerEmbed(null);
+        setShowTickerSearch(false);
+        setTickerQuery('');
+        setTickerStep('search');
+        setTickerPeriod('1M');
+        setTickerHighlight('');
         await fetchFeed();
       }
     } finally {
@@ -767,15 +841,15 @@ export default function CommunityPageClient() {
                     gap: '0.5rem',
                   }}
                 >
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    {[
-                      { icon: 'bi-image', label: 'Image' },
-                      { icon: 'bi-bar-chart', label: 'Poll' },
-                      { icon: 'bi-graph-up', label: 'Ticker' },
-                    ].map((a) => (
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative' }}>
                       <button
-                        key={a.label}
                         type="button"
+                        onClick={() => {
+                          setShowImageMenu((v) => !v);
+                          setShowPollBuilder(false);
+                          setShowTickerSearch(false);
+                        }}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -783,36 +857,611 @@ export default function CommunityPageClient() {
                           padding: '0.3rem 0.6rem',
                           borderRadius: '6px',
                           border: 'none',
-                          background: 'transparent',
-                          color: '#6b7280',
+                          background: composerImage ? 'rgba(16,185,129,0.1)' : 'transparent',
+                          color: composerImage ? '#10b981' : '#6b7280',
                           fontSize: '0.75rem',
                           cursor: 'pointer',
                           fontFamily: 'var(--font-sans)',
                         }}
                       >
-                        <i className={`bi ${a.icon}`} /> {a.label}
+                        <i className="bi bi-image" /> Image {composerImage && '✓'}
                       </button>
-                    ))}
+
+                      {showImageMenu && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: 'calc(100% + 6px)',
+                            left: 0,
+                            background: 'var(--card-bg, #1a1f2e)',
+                            border: '1px solid rgba(16,185,129,0.15)',
+                            borderRadius: '10px',
+                            padding: '0.5rem',
+                            zIndex: 50,
+                            minWidth: '200px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontSize: '0.65rem',
+                              color: '#6b7280',
+                              margin: '0 0 0.4rem 0.25rem',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            Add image
+                          </p>
+
+                          <label
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              padding: '0.5rem 0.6rem',
+                              borderRadius: '7px',
+                              cursor: 'pointer',
+                              fontSize: '0.8125rem',
+                              color: '#e2e8f0',
+                              background: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(16,185,129,0.06)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                            }}
+                          >
+                            <i className="bi bi-upload" style={{ color: '#10b981' }} />
+                            Upload from device
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const url = URL.createObjectURL(file);
+                                setComposerImage({ url, source: 'device', file });
+                                setShowImageMenu(false);
+                              }}
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const url = window.prompt('Paste an image URL from your platform storage:');
+                              if (url && url.startsWith('http')) {
+                                setComposerImage({ url, source: 'storage' });
+                              }
+                              setShowImageMenu(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              padding: '0.5rem 0.6rem',
+                              borderRadius: '7px',
+                              cursor: 'pointer',
+                              fontSize: '0.8125rem',
+                              color: '#e2e8f0',
+                              background: 'transparent',
+                              border: 'none',
+                              width: '100%',
+                              textAlign: 'left',
+                              fontFamily: 'var(--font-sans)',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(16,185,129,0.06)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                            }}
+                          >
+                            <i className="bi bi-cloud" style={{ color: '#6366f1' }} />
+                            Platform storage
+                          </button>
+
+                          {composerImage && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setComposerImage(null);
+                                setShowImageMenu(false);
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.5rem 0.6rem',
+                                borderRadius: '7px',
+                                cursor: 'pointer',
+                                fontSize: '0.8125rem',
+                                color: '#ef4444',
+                                background: 'transparent',
+                                border: 'none',
+                                width: '100%',
+                                textAlign: 'left',
+                                fontFamily: 'var(--font-sans)',
+                                borderTop: '1px solid rgba(255,255,255,0.06)',
+                                marginTop: '0.25rem',
+                              }}
+                            >
+                              <i className="bi bi-trash" /> Remove image
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPollBuilder((v) => !v);
+                        setShowImageMenu(false);
+                        setShowTickerSearch(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        padding: '0.3rem 0.6rem',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: showPollBuilder ? 'rgba(16,185,129,0.1)' : 'transparent',
+                        color: showPollBuilder ? '#10b981' : '#6b7280',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      <i className="bi bi-bar-chart" /> Poll
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowTickerSearch((v) => !v);
+                        setShowImageMenu(false);
+                        setShowPollBuilder(false);
+                        if (!showTickerSearch) {
+                          setTickerStep('search');
+                          setTickerQuery('');
+                        }
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        padding: '0.3rem 0.6rem',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: tickerEmbed ? 'rgba(16,185,129,0.1)' : 'transparent',
+                        color: tickerEmbed ? '#10b981' : '#6b7280',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      <i className="bi bi-graph-up" /> {tickerEmbed ? `$${tickerEmbed.symbol}` : 'Ticker'}
+                    </button>
                   </div>
                   <button
                     type="button"
                     onClick={handlePost}
-                    disabled={!composerText.trim() || posting || !user}
+                    disabled={
+                      posting ||
+                      !user ||
+                      !(
+                        composerText.trim() ||
+                        composerImage ||
+                        (showPollBuilder &&
+                          pollQuestion.trim() &&
+                          pollOptions.filter((o) => o.trim()).length >= 2) ||
+                        tickerEmbed
+                      )
+                    }
                     style={{
                       padding: '0.4rem 1rem',
                       borderRadius: '8px',
                       border: 'none',
-                      background: composerText.trim() && user ? '#10b981' : 'rgba(16, 185, 129, 0.15)',
+                      background:
+                        user &&
+                        (composerText.trim() ||
+                          composerImage ||
+                          (showPollBuilder &&
+                            pollQuestion.trim() &&
+                            pollOptions.filter((o) => o.trim()).length >= 2) ||
+                          tickerEmbed)
+                          ? '#10b981'
+                          : 'rgba(16, 185, 129, 0.15)',
                       color: '#fff',
                       fontSize: '0.8125rem',
                       fontWeight: 700,
-                      cursor: composerText.trim() && user ? 'pointer' : 'not-allowed',
+                      cursor:
+                        user &&
+                        (composerText.trim() ||
+                          composerImage ||
+                          (showPollBuilder &&
+                            pollQuestion.trim() &&
+                            pollOptions.filter((o) => o.trim()).length >= 2) ||
+                          tickerEmbed)
+                          ? 'pointer'
+                          : 'not-allowed',
                       fontFamily: 'var(--font-sans)',
                     }}
                   >
                     Post
                   </button>
                 </div>
+                {composerImage && (
+                  <div style={{ marginTop: '0.75rem', paddingLeft: '52px', position: 'relative' }}>
+                    <img
+                      src={composerImage.url}
+                      alt="Post image"
+                      style={{ maxWidth: '100%', maxHeight: 220, borderRadius: '8px', objectFit: 'cover' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setComposerImage(null)}
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 6,
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        background: 'rgba(0,0,0,0.6)',
+                        border: 'none',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '0.7rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
+                {showPollBuilder && (
+                  <div
+                    style={{
+                      marginTop: '0.75rem',
+                      paddingLeft: '52px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Ask a question..."
+                      value={pollQuestion}
+                      onChange={(e) => setPollQuestion(e.target.value)}
+                      maxLength={200}
+                      style={{
+                        background: 'rgba(16,185,129,0.03)',
+                        border: '1px solid rgba(16,185,129,0.1)',
+                        borderRadius: '8px',
+                        padding: '0.5rem 0.75rem',
+                        color: '#e2e8f0',
+                        fontSize: '0.8125rem',
+                        outline: 'none',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    />
+                    {pollOptions.map((opt, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          placeholder={`Option ${i + 1}`}
+                          value={opt}
+                          onChange={(e) => {
+                            const next = [...pollOptions];
+                            next[i] = e.target.value;
+                            setPollOptions(next);
+                          }}
+                          maxLength={100}
+                          style={{
+                            flex: 1,
+                            background: 'rgba(16,185,129,0.03)',
+                            border: '1px solid rgba(16,185,129,0.08)',
+                            borderRadius: '8px',
+                            padding: '0.4rem 0.65rem',
+                            color: '#e2e8f0',
+                            fontSize: '0.8125rem',
+                            outline: 'none',
+                            fontFamily: 'var(--font-sans)',
+                          }}
+                        />
+                        {pollOptions.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => setPollOptions(pollOptions.filter((_, j) => j !== i))}
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: '50%',
+                              background: 'rgba(239,68,68,0.1)',
+                              border: 'none',
+                              color: '#ef4444',
+                              cursor: 'pointer',
+                              fontSize: '0.8rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {pollOptions.length < 6 && (
+                      <button
+                        type="button"
+                        onClick={() => setPollOptions([...pollOptions, ''])}
+                        style={{
+                          alignSelf: 'flex-start',
+                          padding: '0.3rem 0.7rem',
+                          borderRadius: '6px',
+                          border: '1px dashed rgba(16,185,129,0.3)',
+                          background: 'transparent',
+                          color: '#10b981',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        + Add option
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {showTickerSearch && (
+                  <div
+                    style={{
+                      marginTop: '0.75rem',
+                      paddingLeft: '52px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    {tickerStep === 'search' && (
+                      <>
+                        <input
+                          type="text"
+                          placeholder="Search ticker (e.g. AAPL, NVDA...)"
+                          value={tickerQuery}
+                          onChange={(e) => setTickerQuery(e.target.value)}
+                          autoFocus
+                          style={{
+                            background: 'rgba(16,185,129,0.03)',
+                            border: '1px solid rgba(16,185,129,0.1)',
+                            borderRadius: '8px',
+                            padding: '0.5rem 0.75rem',
+                            color: '#e2e8f0',
+                            fontSize: '0.8125rem',
+                            outline: 'none',
+                            fontFamily: 'var(--font-sans)',
+                          }}
+                        />
+                        <div
+                          style={{
+                            background: 'rgba(22,27,34,0.98)',
+                            border: '1px solid rgba(16,185,129,0.1)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            maxHeight: 220,
+                            overflowY: 'auto',
+                          }}
+                        >
+                          {filteredTickers.map((t) => (
+                            <button
+                              key={t.ticker}
+                              type="button"
+                              onClick={() => {
+                                setTickerEmbed({ symbol: t.ticker, period: '1M', highlight_price: null });
+                                setTickerStep('configure');
+                                setTickerPeriod('1M');
+                                setTickerHighlight('');
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.75rem',
+                                width: '100%',
+                                padding: '0.55rem 0.75rem',
+                                background: 'none',
+                                border: 'none',
+                                borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                fontFamily: 'var(--font-sans)',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(16,185,129,0.06)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'none';
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: '8px',
+                                  background: 'rgba(16,185,129,0.1)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.65rem',
+                                  fontWeight: 800,
+                                  color: '#10b981',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {t.ticker.slice(0, 2)}
+                              </span>
+                              <div style={{ minWidth: 0 }}>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: '0.8125rem',
+                                    fontWeight: 700,
+                                    color: '#e2e8f0',
+                                  }}
+                                >
+                                  {t.ticker}
+                                </p>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: '0.6875rem',
+                                    color: '#6b7280',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {t.name}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {tickerStep === 'configure' && tickerEmbed && (
+                      <div
+                        style={{
+                          background: 'rgba(16,185,129,0.04)',
+                          border: '1px solid rgba(16,185,129,0.12)',
+                          borderRadius: '10px',
+                          padding: '0.75rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.6rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#10b981' }}>
+                            ${tickerEmbed.symbol}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTickerEmbed(null);
+                              setTickerStep('search');
+                              setTickerQuery('');
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#6b7280',
+                              cursor: 'pointer',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            ← Change
+                          </button>
+                        </div>
+
+                        <div>
+                          <p
+                            style={{
+                              margin: '0 0 0.3rem',
+                              fontSize: '0.65rem',
+                              color: '#6b7280',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            Time period
+                          </p>
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            {['1D', '1W', '1M', '3M', '1Y'].map((p) => (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() => {
+                                  setTickerPeriod(p);
+                                  setTickerEmbed((prev) => (prev ? { ...prev, period: p } : prev));
+                                }}
+                                style={{
+                                  padding: '0.25rem 0.6rem',
+                                  borderRadius: '6px',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600,
+                                  background: tickerPeriod === p ? '#10b981' : 'rgba(16,185,129,0.06)',
+                                  color: tickerPeriod === p ? '#fff' : '#8b949e',
+                                  fontFamily: 'var(--font-sans)',
+                                }}
+                              >
+                                {p}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <p
+                            style={{
+                              margin: '0 0 0.3rem',
+                              fontSize: '0.65rem',
+                              color: '#6b7280',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            Highlight price (optional)
+                          </p>
+                          <input
+                            type="number"
+                            placeholder="e.g. 180.00"
+                            value={tickerHighlight}
+                            onChange={(e) => {
+                              setTickerHighlight(e.target.value);
+                              const num = parseFloat(e.target.value);
+                              setTickerEmbed((prev) =>
+                                prev ? { ...prev, highlight_price: Number.isFinite(num) ? num : null } : prev
+                              );
+                            }}
+                            style={{
+                              width: '100%',
+                              background: 'rgba(16,185,129,0.03)',
+                              border: '1px solid rgba(16,185,129,0.08)',
+                              borderRadius: '8px',
+                              padding: '0.4rem 0.65rem',
+                              color: '#e2e8f0',
+                              fontSize: '0.8125rem',
+                              outline: 'none',
+                              fontFamily: 'var(--font-sans)',
+                            }}
+                          />
+                          <p style={{ margin: '0.2rem 0 0', fontSize: '0.625rem', color: '#6b7280' }}>
+                            A dot will appear on the chart at this price with the value labelled above it.
+                          </p>
+                        </div>
+
+                        <p style={{ margin: 0, fontSize: '0.65rem', color: '#10b981' }}>
+                          ✓ Chart for {tickerEmbed.symbol} · {tickerPeriod}
+                          {tickerEmbed.highlight_price ? ` · highlight $${tickerEmbed.highlight_price}` : ''}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {!user && (
                   <p style={{ color: '#6b7280', fontSize: '0.75rem', margin: '0.5rem 0 0 52px' }}>Sign in to post.</p>
                 )}

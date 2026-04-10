@@ -3,6 +3,16 @@
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+  ReferenceDot,
+  ReferenceLine,
+} from 'recharts';
 import { supabase } from '@/lib/supabase';
 import { formatRelativeTime, getInitials } from '@/lib/community-utils';
 import { useAuth } from '@/components/AuthProvider';
@@ -42,6 +52,71 @@ export function CommunityFeedPost({
   const [commentDraft, setCommentDraft] = useState('');
   const [postingComment, setPostingComment] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  const [pollData, setPollData] = useState(post.poll_data || null);
+  const [myVote, setMyVote] = useState(post.my_vote || null);
+  const [voteBusy, setVoteBusy] = useState(false);
+
+  const [chartData, setChartData] = useState(null);
+  const [chartLoading, setChartLoading] = useState(false);
+
+  useEffect(() => {
+    setPollData(post.poll_data || null);
+    setMyVote(post.my_vote ?? null);
+  }, [post.poll_data, post.my_vote]);
+
+  const handleVote = async (optionId) => {
+    if (!user || voteBusy) return;
+    setVoteBusy(true);
+    try {
+      const res = await fetch('/api/community/posts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: post.id, option_id: optionId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPollData(data.poll_data);
+        setMyVote(data.my_vote);
+      }
+    } finally {
+      setVoteBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    const embed = post.ticker_embed;
+    if (!embed?.symbol) {
+      setChartData(null);
+      setChartLoading(false);
+      return;
+    }
+
+    setChartLoading(true);
+    const range = embed.period || '1M';
+    const sym = encodeURIComponent(embed.symbol);
+
+    fetch(`/api/market-data/stock-candles?symbol=${sym}&range=${encodeURIComponent(range)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const candles = d?.candles;
+        if (!Array.isArray(candles) || candles.length === 0) {
+          setChartData([]);
+          setChartLoading(false);
+          return;
+        }
+        const points = candles.map((c) => ({
+          t: c.label,
+          price: c.price ?? c.close,
+        }));
+        setChartData(points);
+        setChartLoading(false);
+      })
+      .catch(() => {
+        setChartData([]);
+        setChartLoading(false);
+      });
+  }, [post.ticker_embed?.symbol, post.ticker_embed?.period]);
 
   const profileSlug = post.username && !looksLikeUuid(post.username) ? post.username : post.userId;
 
@@ -175,7 +250,275 @@ export function CommunityFeedPost({
             {shown}
             {long && !expanded && <span className="comm-post-expand"> read more</span>}
           </p>
-          {post.tickerSym && (
+
+          {post.image_url && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <img
+                src={post.image_url}
+                alt="Post image"
+                style={{
+                  width: '100%',
+                  maxHeight: 320,
+                  borderRadius: '8px',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            </div>
+          )}
+
+          {pollData && (
+            <div
+              style={{
+                marginTop: '0.75rem',
+                background: 'rgba(16,185,129,0.04)',
+                border: '1px solid rgba(16,185,129,0.1)',
+                borderRadius: '10px',
+                padding: '0.75rem',
+              }}
+            >
+              <p
+                style={{
+                  margin: '0 0 0.6rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  color: 'var(--home-heading, #f0f6fc)',
+                }}
+              >
+                📊 {pollData.question}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {(pollData.options || []).map((opt) => {
+                  const pct =
+                    pollData.total_votes > 0 ? Math.round((opt.votes / pollData.total_votes) * 100) : 0;
+                  const isMyVote = myVote === opt.id;
+                  const hasVoted = myVote !== null;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      disabled={voteBusy || !user}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVote(opt.id);
+                      }}
+                      style={{
+                        position: 'relative',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.45rem 0.75rem',
+                        borderRadius: '7px',
+                        border: isMyVote ? '1.5px solid #10b981' : '1px solid rgba(16,185,129,0.12)',
+                        background: 'rgba(16,185,129,0.03)',
+                        cursor: user ? 'pointer' : 'default',
+                        textAlign: 'left',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      {hasVoted && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: `${pct}%`,
+                            background: isMyVote ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.06)',
+                            borderRadius: '7px',
+                            transition: 'width 0.4s ease',
+                          }}
+                        />
+                      )}
+                      <span
+                        style={{
+                          position: 'relative',
+                          fontSize: '0.8125rem',
+                          color: '#e2e8f0',
+                          fontWeight: isMyVote ? 700 : 400,
+                        }}
+                      >
+                        {isMyVote && '✓ '}
+                        {opt.label}
+                      </span>
+                      {hasVoted && (
+                        <span
+                          style={{
+                            position: 'relative',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            color: isMyVote ? '#10b981' : '#6b7280',
+                          }}
+                        >
+                          {pct}%
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p style={{ margin: '0.5rem 0 0', fontSize: '0.625rem', color: '#6b7280' }}>
+                {pollData.total_votes ?? 0} vote{(pollData.total_votes ?? 0) !== 1 ? 's' : ''}
+                {!user && ' · Sign in to vote'}
+              </p>
+            </div>
+          )}
+
+          {post.ticker_embed?.symbol && (
+            <div
+              style={{
+                marginTop: '0.75rem',
+                background: 'rgba(16,185,129,0.03)',
+                border: '1px solid rgba(16,185,129,0.08)',
+                borderRadius: '10px',
+                padding: '0.75rem 0.5rem 0.5rem',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '0 0.25rem',
+                  marginBottom: '0.35rem',
+                }}
+              >
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#10b981' }}>
+                  ${post.ticker_embed.symbol}
+                </span>
+                <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>
+                  {post.ticker_embed.period}
+                  {post.ticker_embed.highlight_price && ` · ★ $${post.ticker_embed.highlight_price}`}
+                </span>
+              </div>
+
+              {chartLoading && (
+                <p
+                  style={{
+                    textAlign: 'center',
+                    fontSize: '0.75rem',
+                    color: '#6b7280',
+                    padding: '1rem 0',
+                    margin: 0,
+                  }}
+                >
+                  Loading chart…
+                </p>
+              )}
+
+              {!chartLoading && (!chartData || chartData.length === 0) && (
+                <p
+                  style={{
+                    textAlign: 'center',
+                    fontSize: '0.75rem',
+                    color: '#6b7280',
+                    padding: '0.5rem 0',
+                    margin: 0,
+                  }}
+                >
+                  Chart data unavailable
+                </p>
+              )}
+
+              {!chartLoading &&
+                chartData &&
+                chartData.length > 0 &&
+                (() => {
+                  const prices = chartData.map((d) => d.price).filter((v) => v != null && Number.isFinite(v));
+                  if (prices.length === 0) return null;
+                  const minP = Math.min(...prices);
+                  const maxP = Math.max(...prices);
+                  const pad = (maxP - minP) * 0.1 || 1;
+                  const hp = post.ticker_embed.highlight_price;
+                  let hlIdx = null;
+                  if (hp != null) {
+                    let best = Infinity;
+                    chartData.forEach((d, i) => {
+                      if (d.price == null || !Number.isFinite(d.price)) return;
+                      const diff = Math.abs(d.price - hp);
+                      if (diff < best) {
+                        best = diff;
+                        hlIdx = i;
+                      }
+                    });
+                  }
+
+                  return (
+                    <ResponsiveContainer width="100%" height={160}>
+                      <LineChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                        <XAxis
+                          dataKey="t"
+                          tick={{ fill: '#6b7280', fontSize: 9 }}
+                          tickLine={false}
+                          axisLine={false}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis
+                          domain={[minP - pad, maxP + pad]}
+                          tick={{ fill: '#6b7280', fontSize: 9 }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v) =>
+                            `$${v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0)}`
+                          }
+                        />
+                        <Tooltip
+                          formatter={(v) => [`$${Number(v).toFixed(2)}`, post.ticker_embed.symbol]}
+                          contentStyle={{
+                            background: '#161b22',
+                            border: '1px solid rgba(16,185,129,0.15)',
+                            borderRadius: '6px',
+                            fontSize: '0.7rem',
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="price"
+                          stroke="#10b981"
+                          strokeWidth={1.8}
+                          dot={false}
+                          isAnimationActive={false}
+                        />
+                        {hp != null && (
+                          <ReferenceLine
+                            y={hp}
+                            stroke="#f59e0b"
+                            strokeDasharray="4 3"
+                            strokeWidth={1}
+                            label={{
+                              value: `$${hp}`,
+                              position: 'insideTopRight',
+                              fill: '#f59e0b',
+                              fontSize: 10,
+                            }}
+                          />
+                        )}
+                        {hlIdx !== null && chartData[hlIdx]?.price != null && (
+                          <ReferenceDot
+                            x={chartData[hlIdx].t}
+                            y={chartData[hlIdx].price}
+                            r={5}
+                            fill="#f59e0b"
+                            stroke="#fff"
+                            strokeWidth={1.5}
+                            label={{
+                              value: `$${chartData[hlIdx].price.toFixed(2)}`,
+                              position: 'top',
+                              fill: '#f59e0b',
+                              fontSize: 10,
+                            }}
+                          />
+                        )}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  );
+                })()}
+            </div>
+          )}
+
+          {post.tickerSym && !post.ticker_embed && (
             <div className="comm-ticker-embed comm-ticker-embed--card">
               <span className="comm-ticker-sym">${post.tickerSym}</span>
               {quote ? (
