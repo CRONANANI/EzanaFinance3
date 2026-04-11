@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { PLANS } from '@/config/pricing';
@@ -204,8 +204,25 @@ export default function OnboardingPage() {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' });
 
-    if (saveErr) console.error('[Onboarding] Save error:', saveErr);
+    if (saveErr) {
+      console.error('[Onboarding] Save error:', saveErr);
+      throw saveErr;
+    }
   };
+
+  const autoSaveRef = useRef(false);
+  useEffect(() => {
+    if (!initialLoaded) return;
+    if (!autoSaveRef.current) {
+      autoSaveRef.current = true;
+      return;
+    }
+    const t = setTimeout(() => {
+      saveProgress(step).catch(() => {});
+    }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, step, initialLoaded]);
 
   const handleContinue = async () => {
     if (!validateStep(step)) return;
