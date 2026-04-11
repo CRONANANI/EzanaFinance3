@@ -94,3 +94,23 @@
     padding-bottom: 0;
   }
 }
+
+/* ───────── Dashboard background matches top navbar (#050a08) ───────── */
+/* Applies to every logged-in page EXCEPT global market analysis. */
+body:not(.route-market-analysis) .dashboard-main,
+body:not(.route-market-analysis) .dashboard-main-content {
+  background-color: #050a08;
+  min-height: 100vh;
+}
+
+/* Belt-and-suspenders: paint the body too so any gap behind the
+   wrapper (e.g. during route transitions) shows the right color. */
+body:not(.route-market-analysis):has(.dashboard-main) {
+  background-color: #050a08;
+}
+
+/* Explicit reset for the excluded route — let the page own its bg. */
+body.route-market-analysis .dashboard-main,
+body.route-market-analysis .dashboard-main-content {
+  background-color: transparent;
+}
