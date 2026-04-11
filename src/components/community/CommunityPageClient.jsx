@@ -692,9 +692,6 @@ export default function CommunityPageClient() {
                       >
                         {u.name}
                       </Link>
-                      <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>
-                        @{u.username || u.id.slice(0, 8)}
-                      </p>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <span style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>{u.return}</span>
