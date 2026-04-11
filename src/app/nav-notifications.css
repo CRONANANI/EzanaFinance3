@@ -37,6 +37,13 @@
   outline: none;
 }
 
+/* Desktop: nudge down to vertically center against the logo (layout box unchanged). */
+@media (min-width: 768px) {
+  .nn-bell-btn {
+    transform: translateY(4px);
+  }
+}
+
 .nn-bell-btn:hover,
 .nn-bell-btn.nn-bell-active {
   background: rgba(16, 185, 129, 0.08);
