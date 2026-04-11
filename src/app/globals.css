@@ -22,6 +22,23 @@
 @import './dashboard-app-icons.css';
 @import './responsive-system.css';
 
+/* Prevents dark/light flash during route transitions and first paint.
+   Matches the dashboard navbar color (#050a08) so the underlying
+   surface never contrasts with what's painted above it. */
+html,
+body {
+  background-color: #050a08;
+}
+
+/* Unlayered so this wins over the rule above (and @layer base) when .light-mode is set */
+html.light-mode,
+body.light-mode {
+  background-color: #f8f9fb;
+}
+
+/* Marketing / public pages that need a different background continue
+   to set it in their own scoped CSS — this is just the fallback. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -400,10 +417,10 @@ body.light-mode .nav-logo-img {
   .nav-left-zone { gap: 0.25rem; }
 }
 
-/* Base theme defaults — dark is default, light-mode class overrides */
+/* Base theme defaults — light-mode class overrides surface color */
 @layer base {
   html {
-    background-color: #0f1419;
+    background-color: #050a08;
   }
   html.light-mode {
     background-color: #f8f9fb;

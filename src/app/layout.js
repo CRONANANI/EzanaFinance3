@@ -33,19 +33,20 @@ export default function RootLayout({ children }) {
             var theme = localStorage.getItem('ezana-theme') || 'light';
             var root = document.documentElement;
             var body = document.body;
+            root.style.backgroundColor = '#050a08';
+            root.style.colorScheme = 'light';
+            if (body) body.style.backgroundColor = '#050a08';
             if (theme === 'light') {
               root.classList.add('light-mode');
               if (body) body.classList.add('light-mode');
-              root.style.backgroundColor = '#f8f9fb';
-              root.style.colorScheme = 'light';
             } else {
               root.classList.remove('light-mode');
-              root.style.backgroundColor = '#0f1419';
-              root.style.colorScheme = 'dark';
+              if (body) body.classList.remove('light-mode');
             }
-          } catch(e) {
+          } catch (e) {
             document.documentElement.classList.add('light-mode');
-            document.documentElement.style.backgroundColor = '#f8f9fb';
+            document.documentElement.style.backgroundColor = '#050a08';
+            document.documentElement.style.colorScheme = 'light';
           }
         })();
       `,

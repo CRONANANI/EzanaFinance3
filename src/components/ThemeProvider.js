@@ -17,18 +17,20 @@ function readStoredTheme() {
 /** Apply theme classes to <html> and <body> immediately */
 function applyTheme(theme) {
   const root = document.documentElement;
+  const body = document.body;
+  root.style.colorScheme = 'light';
   if (theme === 'light') {
     root.classList.add('light-mode');
-    document.body.classList.add('light-mode');
+    body.classList.add('light-mode');
     root.classList.remove('dark');
-    root.style.backgroundColor = '#f8f9fb';
-    root.style.colorScheme = 'light';
+    root.style.backgroundColor = '';
+    body.style.backgroundColor = '';
   } else {
     root.classList.remove('light-mode');
-    document.body.classList.remove('light-mode');
+    body.classList.remove('light-mode');
     root.classList.add('dark');
-    root.style.backgroundColor = '#0f1419';
-    root.style.colorScheme = 'dark';
+    root.style.backgroundColor = '#050a08';
+    body.style.backgroundColor = '#050a08';
   }
 }
 
