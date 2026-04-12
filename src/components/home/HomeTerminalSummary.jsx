@@ -91,19 +91,20 @@ const WORST_SECTORS = [
   { name: 'Utilities', change: '-0.017%' },
 ];
 
-/** Generate fallback placeholder events starting from tomorrow, spread across the rest of the month. */
+/** Generate fallback placeholder events starting from today, spread through the rest of the month. */
 function buildFallbackEvents() {
   const now = new Date();
   const todayDay = now.getDate();
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const daysLeft = daysInMonth - todayDay; // days remaining after today
+  // Days remaining including today
+  const daysLeft = daysInMonth - todayDay + 1;
 
-  // If fewer than 2 days left in the month, return empty — nothing to show
-  if (daysLeft < 2) return [];
+  // Need at least one day to show anything
+  if (daysLeft < 1) return [];
 
-  // Templates — will be assigned to future days spread across the rest of the month
+  // Templates — assigned to days from today through end of month
   const templates = [
     { type: 'fed', icon: '🏛️', title: 'Fed Rate Decision', time: '2:00 PM', color: '#3b82f6' },
     { type: 'earnings', icon: '📊', title: 'NVDA Earnings', time: '4:30 PM', color: '#10b981' },
@@ -124,7 +125,8 @@ function buildFallbackEvents() {
   const step = Math.max(1, Math.floor(daysLeft / count));
 
   return templates.slice(0, count).map((t, i) => {
-    const day = Math.min(todayDay + 1 + i * step, daysInMonth);
+    // Start at today (i=0 → today, i=1 → today+step, etc.)
+    const day = Math.min(todayDay + i * step, daysInMonth);
     return { ...t, id: i + 1, day };
   });
 }
@@ -368,24 +370,39 @@ export function HomeTerminalSummary({
 
     const today = new Date();
     const todayDayOfMonth = today.getDate();
-    // tomorrow midnight — only show events strictly after today
-    const tomorrowMidnight = new Date(y, m, todayDayOfMonth + 1, 0, 0, 0);
+    // Today midnight — include events happening today through end of month
+    const todayMidnight = new Date(y, m, todayDayOfMonth, 0, 0, 0);
 
     const filteredLive = liveEvents.filter((ev) => {
       if (ev.fullDate) {
         const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
         const [ey, em, ed] = datePart.split('-').map(Number);
         if (!ey || !em || !ed) return false;
-        // Strictly after today — nothing dated today, only future dates
-        return new Date(ey, em - 1, ed) >= tomorrowMidnight;
+        // Today or later in the current month
+        const evDate = new Date(ey, em - 1, ed);
+        return evDate >= todayMidnight && ey === y && em - 1 === m;
       }
-      // For fallback events without fullDate, require strictly greater than today
-      return ev.day > todayDayOfMonth;
+      // For fallback events without fullDate, today or later within this month
+      return ev.day >= todayDayOfMonth && ev.day <= daysInMonth;
     });
 
     // Rebuild fallback each render so it always uses today's date, not module-load time
     const fallback = buildFallbackEvents();
     const eventsSource = filteredLive.length > 0 ? filteredLive : fallback;
+
+    // Dev-only: warn if every event somehow ends up on the same date
+    if (process.env.NODE_ENV !== 'production' && eventsSource.length > 1) {
+      const firstKey = eventsSource[0].fullDate || `day-${eventsSource[0].day}`;
+      const allSame = eventsSource.every(
+        (e) => (e.fullDate || `day-${e.day}`) === firstKey,
+      );
+      if (allSame) {
+        console.warn(
+          '[UpcomingEvents] All events share the same date — check API response or filter logic.',
+          eventsSource,
+        );
+      }
+    }
 
     eventsSource.forEach((ev) => {
       let dom;
