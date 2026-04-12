@@ -5,9 +5,13 @@
  *
  * Bronze stocks (stocks-basic-1..8) draw on themes from Graham & Zweig,
  * The Intelligent Investor, and Mayo, Basic Finance (11th ed.) — paraphrased for education.
+ *
+ * Bronze crypto (crypto-basic-1..8): Edelman, The Truth About Crypto (2022);
+ * Leinweber, Willig & Schoenfeld, Mastering Crypto Assets (2023) — see course-content-crypto-bronze.js.
  */
 
 import BRONZE_REST from './course-content-bronze-rest';
+import CRYPTO_BRONZE from './course-content-crypto-bronze';
 
 const STOCKS_BRONZE = {
   'stocks-basic-1': {
@@ -590,6 +594,6 @@ const STOCKS_BRONZE = {
   },
 };
 
-const COURSE_CONTENT = { ...STOCKS_BRONZE, ...BRONZE_REST };
+const COURSE_CONTENT = { ...STOCKS_BRONZE, ...BRONZE_REST, ...CRYPTO_BRONZE };
 
 export default COURSE_CONTENT;
