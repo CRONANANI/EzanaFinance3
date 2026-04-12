@@ -16,6 +16,91 @@ async function safeJson(res) {
   }
 }
 
+// Map known FMP `site` domains to their proper publisher names.
+// FMP usually returns a clean `publisher` field, but when it doesn't
+// (or returns the domain itself), this fallback converts the domain
+// to a friendly name.
+const PUBLISHER_FALLBACKS = {
+  'fool.com': 'The Motley Fool',
+  'seekingalpha.com': 'Seeking Alpha',
+  'cnbc.com': 'CNBC',
+  'reuters.com': 'Reuters',
+  'bloomberg.com': 'Bloomberg',
+  'wsj.com': 'The Wall Street Journal',
+  'marketwatch.com': 'MarketWatch',
+  'barrons.com': "Barron's",
+  'forbes.com': 'Forbes',
+  'businessinsider.com': 'Business Insider',
+  'investors.com': "Investor's Business Daily",
+  'zacks.com': 'Zacks Investment Research',
+  'benzinga.com': 'Benzinga',
+  'thestreet.com': 'TheStreet',
+  'yahoo.com': 'Yahoo Finance',
+  'finance.yahoo.com': 'Yahoo Finance',
+  'investing.com': 'Investing.com',
+  'fxstreet.com': 'FX Street',
+  'coingape.com': 'CoinGape',
+  'coindesk.com': 'CoinDesk',
+  'cointelegraph.com': 'Cointelegraph',
+  'decrypt.co': 'Decrypt',
+  'theblock.co': 'The Block',
+  'crypto.news': 'Crypto News',
+  'bitcoinist.com': 'Bitcoinist',
+  'newsbtc.com': 'NewsBTC',
+  'cryptoslate.com': 'CryptoSlate',
+  'ambcrypto.com': 'AMBCrypto',
+  'u.today': 'U.Today',
+  'kitco.com': 'Kitco News',
+  'dailyfx.com': 'DailyFX',
+  'forexlive.com': 'ForexLive',
+};
+
+function friendlyPublisher(article) {
+  const pub = (article?.publisher || '').trim();
+  const site = (article?.site || '').trim().toLowerCase();
+  // If the `publisher` field is present and isn't itself a domain
+  // (e.g. some FMP entries put "fool.com" in publisher), use it.
+  const looksLikeDomain = /\./.test(pub) && !/\s/.test(pub);
+  if (pub && !looksLikeDomain) return pub;
+  // Otherwise check our friendly-name map.
+  if (site && PUBLISHER_FALLBACKS[site]) return PUBLISHER_FALLBACKS[site];
+  // Last resort: title-case the bare domain (fool.com → Fool).
+  if (site) {
+    const bare = site.replace(/^www\./, '').split('.')[0];
+    return bare.charAt(0).toUpperCase() + bare.slice(1);
+  }
+  return 'FMP';
+}
+
+// Trim FMP's full article text to a single sentence, 15-25 words.
+// Mirrors the visual length of Finnhub's `summary` field so cards
+// from both providers look uniform in the chain view.
+function summarizeText(text) {
+  if (!text) return '';
+  const cleaned = String(text).replace(/\s+/g, ' ').trim();
+
+  // Take everything up to the first sentence-ending punctuation.
+  const firstSentenceMatch = cleaned.match(/^[^.!?]+[.!?]/);
+  let firstSentence = firstSentenceMatch ? firstSentenceMatch[0].trim() : cleaned;
+
+  // If the first sentence is too short (<15 words), append the next one.
+  const words = firstSentence.split(' ').filter(Boolean);
+  if (words.length < 15) {
+    const rest = cleaned.slice(firstSentence.length).trim();
+    const nextMatch = rest.match(/^[^.!?]+[.!?]/);
+    if (nextMatch) {
+      firstSentence = (firstSentence + ' ' + nextMatch[0]).trim();
+    }
+  }
+
+  // Cap at 25 words with an ellipsis.
+  const finalWords = firstSentence.split(' ').filter(Boolean);
+  if (finalWords.length > 25) {
+    return finalWords.slice(0, 25).join(' ').replace(/[,;:]$/, '') + '…';
+  }
+  return firstSentence;
+}
+
 function mapFmpArticle(article, category, idx) {
   // FMP publishedDate is "YYYY-MM-DD HH:MM:SS" in UTC
   const iso = article?.publishedDate
@@ -29,8 +114,10 @@ function mapFmpArticle(article, category, idx) {
     country: 'Global',
     time: iso,
     impact: 'MODERATE',
-    body: article?.text || article?.title || '',
-    source: article?.site || article?.publisher || 'FMP',
+    // Single-sentence summary, 15-25 words — matches Finnhub item length
+    body: summarizeText(article?.text) || article?.title || '',
+    // Friendly publisher name (e.g. "The Motley Fool"), not the bare domain
+    source: friendlyPublisher(article),
     url: article?.url || null,
     image: article?.image || null,
     symbol: article?.symbol || null,
