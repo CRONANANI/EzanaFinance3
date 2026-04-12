@@ -4,6 +4,7 @@ import '@/app/(dashboard)/community/community.css';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { supabase } from '@/lib/supabase';
 import { generateMockActivityForUser, generateMockTradesForUser } from '@/lib/profileMockData';
 import { TradeCard } from './TradeCard';
@@ -34,8 +35,42 @@ export function ProfilePageClient({ username }) {
   const [benchmark, setBenchmark] = useState(null);
   const [activityItems, setActivityItems] = useState([]);
   const [followingItems, setFollowingItems] = useState([]);
+  const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
+
+  const mock = useMockPortfolio();
+  const useLiveHoldings =
+    !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
 
   const isOwn = Boolean(user?.id && profile?.id === user.id);
+
+  /** Own profile only: Plaid holdings → mock positions → empty. Others: null → use `trades` from user_trades. */
+  const portfolioTradesForPerf = useMemo(() => {
+    if (!isOwn) return null;
+    if (useLiveHoldings && plaidHoldingsPayload?.aggregated?.length) {
+      return plaidHoldingsPayload.aggregated.map((p, idx) => ({
+        id: `plaid-${p.ticker || 'x'}-${idx}`,
+        ticker: p.ticker,
+        status: 'closed',
+        pnl_percent:
+          p.gainLossPercent != null
+            ? Number(p.gainLossPercent)
+            : p.totalCostBasis > 0
+              ? ((p.totalValue - p.totalCostBasis) / p.totalCostBasis) * 100
+              : 0,
+        created_at: new Date().toISOString(),
+      }));
+    }
+    if (mock?.enrichedPositions?.length) {
+      return mock.enrichedPositions.map((p) => ({
+        id: `mock-${p.symbol}`,
+        ticker: p.symbol,
+        status: 'closed',
+        pnl_percent: Number(p.pnlPct) || 0,
+        created_at: new Date().toISOString(),
+      }));
+    }
+    return [];
+  }, [isOwn, useLiveHoldings, plaidHoldingsPayload, mock?.enrichedPositions]);
 
   const statsQuick = useMemo(() => {
     const closed = trades.filter((t) => t.status === 'closed' || t.status === 'partial_exit');
@@ -255,6 +290,29 @@ export function ProfilePageClient({ username }) {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (!user?.id || !profile?.id || user.id !== profile.id) {
+      setPlaidHoldingsPayload(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+      const res = await fetch('/api/plaid/holdings', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!cancelled) setPlaidHoldingsPayload(data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, profile?.id]);
+
   async function toggleFollow() {
     if (!user?.id || !profile || isOwn) return;
     if (following) {
@@ -272,8 +330,8 @@ export function ProfilePageClient({ username }) {
     return (
       <div className="dashboard-page-inset db-page">
         <div className="min-h-[60vh] animate-pulse space-y-4">
-          <div className="h-28 rounded-xl bg-[#1a1a24]" />
-          <div className="h-56 rounded-xl bg-[#1a1a24]" />
+          <div className="h-28 rounded-xl bg-gray-200 dark:bg-[#1a1a24]" />
+          <div className="h-56 rounded-xl bg-gray-200 dark:bg-[#1a1a24]" />
         </div>
       </div>
     );
@@ -282,8 +340,8 @@ export function ProfilePageClient({ username }) {
   if (notFound || !profile) {
     return (
       <div className="dashboard-page-inset db-page">
-        <div className="rounded-xl border border-[#1a1a24] bg-[#111118] p-8 text-center">
-          <p className="text-lg text-[#9ca3af]">Profile not found</p>
+        <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-8 text-center">
+          <p className="text-lg text-gray-600 dark:text-[#9ca3af]">Profile not found</p>
           <Link href="/community" className="mt-4 inline-block text-emerald-400 hover:underline">
             Back to Community
           </Link>
@@ -302,7 +360,7 @@ export function ProfilePageClient({ username }) {
           <div className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-white dark:bg-[#111118] p-5">
             <div className="flex flex-wrap items-start gap-4">
             <div
-              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[#1a1a24] bg-[#16161f] text-2xl font-bold text-[#9ca3af]"
+              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-2xl font-bold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
               style={{
                 backgroundImage: profile.avatar_url ? `url(${profile.avatar_url})` : undefined,
                 backgroundSize: 'cover',
@@ -315,12 +373,12 @@ export function ProfilePageClient({ username }) {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{profile.username || display}</h1>
                 {profile.is_partner && <span title="Partner">⚡</span>}
               </div>
-              <p className="mt-1 text-sm text-[#6b7280]">{followerCount} subscribers</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-[#6b7280]">{followerCount} subscribers</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {pills.map((p) => (
                   <span
                     key={p.key}
-                    className="rounded border border-[#2a2a34] bg-[#1a1a24] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af]"
+                    className="rounded border border-gray-300 bg-gray-200 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-600 dark:border-[#2a2a34] dark:bg-[#1a1a24] dark:text-[#9ca3af]"
                   >
                     {p.label}
                   </span>
@@ -346,7 +404,7 @@ export function ProfilePageClient({ username }) {
                   type="button"
                   onClick={() => setTab(t)}
                   className={`border-b-2 pb-3 text-sm font-semibold transition ${
-                    tab === t ? 'border-emerald-500 text-gray-900 dark:text-white' : 'border-transparent text-[#6b7280]'
+                    tab === t ? 'border-emerald-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-[#6b7280]'
                   }`}
                 >
                   {t === 'trades'
@@ -371,7 +429,7 @@ export function ProfilePageClient({ username }) {
                       type="button"
                       onClick={() => setSubTab(s)}
                       className={`rounded px-3 py-1.5 text-xs font-medium capitalize ${
-                        subTab === s ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280] hover:text-[#9ca3af]'
+                        subTab === s ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-600 dark:text-[#6b7280] dark:hover:text-[#9ca3af]'
                       }`}
                     >
                       {s === 'recent' ? 'Recents' : s}
@@ -381,14 +439,14 @@ export function ProfilePageClient({ username }) {
                 <div className="flex gap-1 rounded border border-gray-200 dark:border-[#1a1a24] p-1">
                   <button
                     type="button"
-                    className={`rounded px-2 py-1 text-xs ${viewMode === 'card' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280]'}`}
+                    className={`rounded px-2 py-1 text-xs ${viewMode === 'card' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-gray-500 dark:text-[#6b7280]'}`}
                     onClick={() => setViewMode('card')}
                   >
                     ▦
                   </button>
                   <button
                     type="button"
-                    className={`rounded px-2 py-1 text-xs ${viewMode === 'list' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-[#6b7280]'}`}
+                    className={`rounded px-2 py-1 text-xs ${viewMode === 'list' ? 'bg-gray-200 dark:bg-[#1a1a24] text-gray-900 dark:text-white' : 'text-gray-500 dark:text-[#6b7280]'}`}
                     onClick={() => setViewMode('list')}
                   >
                     ☰
@@ -397,13 +455,13 @@ export function ProfilePageClient({ username }) {
               </div>
 
               {privacyBlocked ? (
-                <p className="mt-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm text-[#9ca3af]">
+                <p className="mt-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm text-gray-600 dark:text-[#9ca3af]">
                   This user has hidden their trades.
                 </p>
               ) : (
                 <div className={`mt-6 ${viewMode === 'list' ? 'space-y-2' : 'space-y-4'}`}>
                   {sortedTrades.length === 0 ? (
-                    <p className="text-sm text-[#6b7280]">No trades yet.</p>
+                    <p className="text-sm text-gray-500 dark:text-[#6b7280]">No trades yet.</p>
                   ) : (
                     sortedTrades.map((tr) => <TradeCard key={tr.id} trade={tr} isOwner={isOwn} />)
                   )}
@@ -415,7 +473,7 @@ export function ProfilePageClient({ username }) {
           {tab === 'bookmarked' && (
             <div className="mt-6 space-y-4">
               {bookmarked.length === 0 ? (
-                <p className="text-sm text-[#6b7280]">No bookmarked trades.</p>
+                <p className="text-sm text-gray-500 dark:text-[#6b7280]">No bookmarked trades.</p>
               ) : (
                 bookmarked.map((tr) => <TradeCard key={tr.id} trade={tr} isOwner={false} />)
               )}
@@ -425,17 +483,17 @@ export function ProfilePageClient({ username }) {
           {tab === 'activity' && (
             <div className="mt-6 space-y-3">
               {activityItems.length === 0 ? (
-                <p className="text-sm text-[#6b7280]">No activity yet.</p>
+                <p className="text-sm text-gray-500 dark:text-[#6b7280]">No activity yet.</p>
               ) : (
                 activityItems.map((item) => (
                   <div key={item.id} className="rounded-xl border border-gray-200 dark:border-[#1a1a24] bg-gray-50 dark:bg-[#111118] p-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm text-gray-800 dark:text-[#e5e7eb]">{item.text}</p>
-                      <span className="rounded bg-[#1a1a24] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#9ca3af]">
+                      <span className="rounded bg-gray-200 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gray-600 dark:bg-[#1a1a24] dark:text-[#9ca3af]">
                         {item.type}
                       </span>
                     </div>
-                    <p className="mt-2 text-xs text-[#6b7280]">{new Date(item.created_at).toLocaleString()}</p>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-[#6b7280]">{new Date(item.created_at).toLocaleString()}</p>
                   </div>
                 ))
               )}
@@ -445,7 +503,7 @@ export function ProfilePageClient({ username }) {
           {tab === 'following' && (
             <div className="mt-6 space-y-3">
               {followingItems.length === 0 ? (
-                <p className="text-sm text-[#6b7280]">This user is not following anyone yet.</p>
+                <p className="text-sm text-gray-500 dark:text-[#6b7280]">This user is not following anyone yet.</p>
               ) : (
                 followingItems.map((item) => (
                   <Link
@@ -463,7 +521,7 @@ export function ProfilePageClient({ username }) {
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-gray-900 dark:text-[#f5f5f5]">{item.name}</p>
-                          <p className="truncate text-xs text-[#6b7280]">
+                          <p className="truncate text-xs text-gray-500 dark:text-[#6b7280]">
                             @{item.username || item.id}
                             {item.is_partner ? ` · ${item.partner_type || 'Legendary Investor'}` : ''}
                           </p>
@@ -484,7 +542,11 @@ export function ProfilePageClient({ username }) {
         </section>
 
         <aside className="xl:sticky xl:top-4 xl:self-start">
-          <ProfilePerformancePanel trades={trades} benchmarkAverages={benchmark} />
+          <ProfilePerformancePanel
+            trades={portfolioTradesForPerf ?? trades}
+            benchmarkAverages={benchmark}
+            emptyCopyIsPortfolio={isOwn}
+          />
         </aside>
       </div>
     </div>
