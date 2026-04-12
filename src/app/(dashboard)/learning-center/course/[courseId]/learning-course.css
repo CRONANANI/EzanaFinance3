@@ -256,3 +256,110 @@
 body.light-mode .lc3-title {
   color: #111827;
 }
+
+/* ───────────────────────── LIGHT MODE — high-contrast text ─────────────────────────
+   Every text-bearing class on the course detail + quiz pages gets a dark
+   color override scoped to body.light-mode. Background, borders, and
+   accent colors are left alone — only text contrast is fixed here.
+   Dark-mode rules above this block remain unchanged. */
+
+/* Breadcrumb + metadata */
+body.light-mode .lc3-breadcrumb {
+  color: #4b5563;
+}
+body.light-mode .lc3-meta {
+  color: #4b5563;
+}
+body.light-mode .lc3-pct {
+  color: #047857;
+}
+
+/* Section headings + body prose (this is the main reading bug) */
+body.light-mode .lc3-h2 {
+  color: #111827;
+}
+body.light-mode .lc3-body {
+  color: #1f2937;
+}
+
+/* Callout boxes — keep the green tinted background, make the text dark */
+body.light-mode .lc3-callout {
+  color: #1f2937;
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+/* Key-terms list */
+body.light-mode .lc3-terms {
+  color: #4b5563;
+}
+body.light-mode .lc3-terms strong {
+  color: #111827;
+}
+
+/* "Confirm & unlock quiz" row */
+body.light-mode .lc3-check {
+  color: #1f2937;
+}
+
+/* Buttons — preserve the brand-green primary, darken the secondary text */
+body.light-mode .lc3-btn {
+  color: #111827;
+  border-color: #d1d5db;
+  background: #ffffff;
+}
+body.light-mode .lc3-btn:hover {
+  background: #f9fafb;
+}
+body.light-mode .lc3-btn:disabled {
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+/* The primary brand-green CTA already has its own background gradient
+   and white text — no override needed. */
+
+/* "Course completed" pass banner */
+body.light-mode .lc3-passed {
+  color: #047857;
+}
+
+/* ──────────── QUIZ ──────────── */
+body.light-mode .lc3-quiz {
+  color: #1f2937;
+}
+body.light-mode .lc3-qtext {
+  color: #111827;
+}
+body.light-mode .lc3-opt {
+  color: #1f2937;
+  border-color: #d1d5db;
+  background: #ffffff;
+}
+body.light-mode .lc3-opt:hover {
+  background: #f9fafb;
+  border-color: #10b981;
+}
+body.light-mode .lc3-opt.sel {
+  color: #065f46;
+  background: rgba(16, 185, 129, 0.10);
+  border-color: rgba(16, 185, 129, 0.55);
+}
+
+/* Quiz action row + helper link */
+body.light-mode .lc3-quiz-actions {
+  color: #4b5563;
+}
+body.light-mode .lc3-link {
+  color: #047857;
+}
+
+/* Results — pass / fail messages and explanations */
+body.light-mode .lc3-results {
+  color: #1f2937;
+}
+body.light-mode .lc3-pass {
+  color: #047857;
+}
+body.light-mode .lc3-fail {
+  color: #b91c1c;
+}
