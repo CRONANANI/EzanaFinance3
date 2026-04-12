@@ -111,10 +111,10 @@ export default function CommunityPageClient() {
 
   const filteredTickers = useMemo(() => {
     const q = tickerQuery.toUpperCase().trim();
-    if (!q) return TICKER_SEARCH_DATA.slice(0, 8);
+    if (!q) return [];
     return TICKER_SEARCH_DATA.filter(
       (t) => t.ticker.startsWith(q) || t.name.toUpperCase().includes(q)
-    ).slice(0, 8);
+    );
   }, [tickerQuery]);
 
   const firstName = useMemo(() => {
@@ -1283,91 +1283,93 @@ export default function CommunityPageClient() {
                             fontFamily: 'var(--font-sans)',
                           }}
                         />
-                        <div
-                          style={{
-                            background: 'rgba(22,27,34,0.98)',
-                            border: '1px solid rgba(16,185,129,0.1)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            maxHeight: 220,
-                            overflowY: 'auto',
-                          }}
-                        >
-                          {filteredTickers.map((t) => (
-                            <button
-                              key={t.ticker}
-                              type="button"
-                              onClick={() => {
-                                setTickerEmbedSymbols((prev) => {
-                                  if (prev.some((x) => x.symbol === t.ticker)) return prev;
-                                  if (prev.length >= 3) return prev;
-                                  return [...prev, { symbol: t.ticker, highlight_price: null }];
-                                });
-                              }}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                width: '100%',
-                                padding: '0.55rem 0.75rem',
-                                background: 'none',
-                                border: 'none',
-                                borderBottom: '1px solid rgba(255,255,255,0.04)',
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                fontFamily: 'var(--font-sans)',
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(16,185,129,0.06)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'none';
-                              }}
-                            >
-                              <span
+                        {filteredTickers.length > 0 && (
+                          <div
+                            style={{
+                              background: 'rgba(22,27,34,0.98)',
+                              border: '1px solid rgba(16,185,129,0.1)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              maxHeight: 220,
+                              overflowY: 'auto',
+                            }}
+                          >
+                            {filteredTickers.map((t) => (
+                              <button
+                                key={t.ticker}
+                                type="button"
+                                onClick={() => {
+                                  setTickerEmbedSymbols((prev) => {
+                                    if (prev.some((x) => x.symbol === t.ticker)) return prev;
+                                    if (prev.length >= 3) return prev;
+                                    return [...prev, { symbol: t.ticker, highlight_price: null }];
+                                  });
+                                }}
                                 style={{
-                                  width: 32,
-                                  height: 32,
-                                  borderRadius: '8px',
-                                  background: 'rgba(16,185,129,0.1)',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '0.65rem',
-                                  fontWeight: 800,
-                                  color: '#10b981',
-                                  flexShrink: 0,
+                                  gap: '0.75rem',
+                                  width: '100%',
+                                  padding: '0.55rem 0.75rem',
+                                  background: 'none',
+                                  border: 'none',
+                                  borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                  cursor: 'pointer',
+                                  textAlign: 'left',
+                                  fontFamily: 'var(--font-sans)',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = 'rgba(16,185,129,0.06)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'none';
                                 }}
                               >
-                                {t.ticker.slice(0, 2)}
-                              </span>
-                              <div style={{ minWidth: 0 }}>
-                                <p
+                                <span
                                   style={{
-                                    margin: 0,
-                                    fontSize: '0.8125rem',
-                                    fontWeight: 700,
-                                    color: '#e2e8f0',
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '8px',
+                                    background: 'rgba(16,185,129,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 800,
+                                    color: '#10b981',
+                                    flexShrink: 0,
                                   }}
                                 >
-                                  {t.ticker}
-                                </p>
-                                <p
-                                  style={{
-                                    margin: 0,
-                                    fontSize: '0.6875rem',
-                                    color: '#6b7280',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  {t.name}
-                                </p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
+                                  {t.ticker.slice(0, 2)}
+                                </span>
+                                <div style={{ minWidth: 0 }}>
+                                  <p
+                                    style={{
+                                      margin: 0,
+                                      fontSize: '0.8125rem',
+                                      fontWeight: 700,
+                                      color: '#e2e8f0',
+                                    }}
+                                  >
+                                    {t.ticker}
+                                  </p>
+                                  <p
+                                    style={{
+                                      margin: 0,
+                                      fontSize: '0.6875rem',
+                                      color: '#6b7280',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {t.name}
+                                  </p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         {tickerEmbedSymbols.length > 0 && (
                           <div
                             style={{
