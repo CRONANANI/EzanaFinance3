@@ -20,23 +20,6 @@ const freshPortfolio = () => ({
   history: [],
 });
 
-const POPULAR_ASSETS = [
-  { symbol: 'AAPL', name: 'Apple Inc', type: 'Stock' },
-  { symbol: 'NVDA', name: 'NVIDIA Corp', type: 'Stock' },
-  { symbol: 'MSFT', name: 'Microsoft Corp', type: 'Stock' },
-  { symbol: 'TSLA', name: 'Tesla Inc', type: 'Stock' },
-  { symbol: 'GOOGL', name: 'Alphabet Inc', type: 'Stock' },
-  { symbol: 'AMZN', name: 'Amazon.com', type: 'Stock' },
-  { symbol: 'META', name: 'Meta Platforms', type: 'Stock' },
-  { symbol: 'BTCUSD', name: 'Bitcoin / USD', type: 'Crypto' },
-  { symbol: 'ETHUSD', name: 'Ethereum / USD', type: 'Crypto' },
-  { symbol: 'GCUSD', name: 'Gold Spot', type: 'Commodity' },
-  { symbol: 'SIUSD', name: 'Silver Spot', type: 'Commodity' },
-  { symbol: 'CLUSD', name: 'Crude Oil WTI', type: 'Commodity' },
-  { symbol: 'SPY', name: 'S&P 500 ETF', type: 'ETF' },
-  { symbol: 'QQQ', name: 'Nasdaq 100 ETF', type: 'ETF' },
-];
-
 /* ──────────────────────────────────────────
    HELPERS
 ────────────────────────────────────────── */
@@ -671,13 +654,11 @@ export default function MockTradingPage() {
           </div>
           <div className="mock-trade-body">
             <div className="mock-field">
-              <label>Search Asset</label>
               <div className="mock-search-wrap" ref={searchRef}>
-                <i className="bi bi-search mock-search-icon" />
                 <input
                   type="text"
                   className="mock-search-input"
-                  placeholder="Ticker or company (e.g. OXY, Apple) — Enter to go"
+                  placeholder="Search company or ticker"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -714,39 +695,6 @@ export default function MockTradingPage() {
                         </div>
                         <span className="mock-result-type">{normalizeAssetType(r.type)}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-                {searchQuery.length === 0 && searchResults.length === 0 && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '0.375rem',
-                      marginTop: '0.5rem',
-                    }}
-                  >
-                    {POPULAR_ASSETS.slice(0, 8).map((a) => (
-                      <button
-                        key={a.symbol}
-                        type="button"
-                        onClick={() => selectAsset(a.symbol, a.name, a.type)}
-                        style={{
-                          padding: '0.25rem 0.625rem',
-                          fontSize: '0.6875rem',
-                          fontWeight: 700,
-                          color: selectedSymbol === a.symbol ? '#fff' : '#6b7280',
-                          background:
-                            selectedSymbol === a.symbol ? '#10b981' : 'rgba(16,185,129,0.05)',
-                          border: `1px solid ${selectedSymbol === a.symbol ? '#10b981' : 'rgba(16,185,129,0.1)'}`,
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontFamily: 'inherit',
-                          transition: 'all 0.12s',
-                        }}
-                      >
-                        {a.symbol}
-                      </button>
                     ))}
                   </div>
                 )}
