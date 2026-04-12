@@ -43,37 +43,62 @@ export function ProfilePageClient({ username }) {
 
   const isOwn = Boolean(user?.id && profile?.id === user.id);
 
-  /** Own profile only: Plaid holdings → mock positions → empty. Others: null → use `trades` from user_trades. */
-  const portfolioTradesForPerf = useMemo(() => {
+  /** Own profile only: Plaid → mock positions → []. Others: null → use Supabase `trades`. */
+  const portfolioTrades = useMemo(() => {
     if (!isOwn) return null;
     if (useLiveHoldings && plaidHoldingsPayload?.aggregated?.length) {
-      return plaidHoldingsPayload.aggregated.map((p, idx) => ({
-        id: `plaid-${p.ticker || 'x'}-${idx}`,
-        ticker: p.ticker,
-        status: 'closed',
-        pnl_percent:
+      return plaidHoldingsPayload.aggregated.map((p, i) => {
+        const qty = Number(p.totalQuantity) || 0;
+        const tb = Number(p.totalCostBasis) || 0;
+        const tv = Number(p.totalValue) || 0;
+        const last = Number(p.lastPrice) || (qty > 0 ? tv / qty : 0);
+        const entry = qty > 0 ? tb / qty : last;
+        const pl =
           p.gainLossPercent != null
             ? Number(p.gainLossPercent)
-            : p.totalCostBasis > 0
-              ? ((p.totalValue - p.totalCostBasis) / p.totalCostBasis) * 100
-              : 0,
-        created_at: new Date().toISOString(),
-      }));
+            : tb > 0
+              ? ((tv - tb) / tb) * 100
+              : 0;
+        const iso = new Date().toISOString();
+        return {
+          id: `plaid-${p.ticker || 'x'}-${i}`,
+          ticker: p.ticker || '?',
+          entry_price: entry,
+          exit_price: last,
+          status: 'closed',
+          pnl_percent: pl,
+          created_at: iso,
+          updated_at: iso,
+          source: 'brokerage',
+        };
+      });
     }
     if (mock?.enrichedPositions?.length) {
-      return mock.enrichedPositions.map((p) => ({
-        id: `mock-${p.symbol}`,
-        ticker: p.symbol,
-        status: 'closed',
-        pnl_percent: Number(p.pnlPct) || 0,
-        created_at: new Date().toISOString(),
-      }));
+      return mock.enrichedPositions.map((p, i) => {
+        const cost = Number(p.avgCost) || 0;
+        const cur = Number(p.currentPrice) || 0;
+        const pl = cost > 0 ? ((cur - cost) / cost) * 100 : 0;
+        const iso = new Date().toISOString();
+        return {
+          id: `mock-${p.symbol}-${i}`,
+          ticker: p.symbol,
+          entry_price: cost,
+          exit_price: cur,
+          status: 'closed',
+          pnl_percent: pl,
+          created_at: iso,
+          updated_at: iso,
+          source: 'mock',
+        };
+      });
     }
     return [];
   }, [isOwn, useLiveHoldings, plaidHoldingsPayload, mock?.enrichedPositions]);
 
+  const effectiveTrades = portfolioTrades ?? trades;
+
   const statsQuick = useMemo(() => {
-    const closed = trades.filter((t) => t.status === 'closed' || t.status === 'partial_exit');
+    const closed = effectiveTrades.filter((t) => t.status === 'closed' || t.status === 'partial_exit');
     const withPnl = closed.filter((t) => t.pnl_percent != null);
     const wins = withPnl.filter((t) => Number(t.pnl_percent) > 0);
     const winRate = withPnl.length ? (wins.length / withPnl.length) * 100 : 0;
@@ -81,11 +106,11 @@ export function ProfilePageClient({ username }) {
       withPnl.length > 0
         ? withPnl.reduce((s, t) => s + Number(t.pnl_percent), 0) / withPnl.length
         : 0;
-    return { totalTrades: trades.length, winRate, avgReturn };
-  }, [trades]);
+    return { totalTrades: effectiveTrades.length, winRate, avgReturn };
+  }, [effectiveTrades]);
 
   const sortedTrades = useMemo(() => {
-    let t = [...trades];
+    let t = [...effectiveTrades];
     if (subTab === 'profitable') {
       t = t.filter((x) => x.pnl_percent != null && Number(x.pnl_percent) > 0);
       t.sort((a, b) => Number(b.pnl_percent) - Number(a.pnl_percent));
@@ -95,7 +120,7 @@ export function ProfilePageClient({ username }) {
       t.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
     return t;
-  }, [trades, subTab]);
+  }, [effectiveTrades, subTab]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -543,7 +568,7 @@ export function ProfilePageClient({ username }) {
 
         <aside className="xl:sticky xl:top-4 xl:self-start">
           <ProfilePerformancePanel
-            trades={portfolioTradesForPerf ?? trades}
+            trades={effectiveTrades}
             benchmarkAverages={benchmark}
             emptyCopyIsPortfolio={isOwn}
           />
