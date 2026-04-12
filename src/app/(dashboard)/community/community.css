@@ -1636,16 +1636,26 @@ body.light-mode .comm-profile-page .db-card span {
   color: inherit;
 }
 
-/* ── Community top row (Trending Topics + Trophy Cabinet) ── */
+/* Legacy .comm-top-row — superseded by .comm-hero-row (kept in case of stale references) */
 .comm-top-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
+  display: block;
+}
+
+/* Hero row: greeting + Trending Topics + Trophy Cabinet — defaults inline; responsive overrides below */
+
+@media (max-width: 1024px) {
+  .comm-hero-row .comm-hero-greeting {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+  .comm-hero-row .comm-hero-cards {
+    flex: 1 1 100% !important;
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .comm-top-row {
+  .comm-hero-row .comm-hero-cards {
     grid-template-columns: 1fr !important;
   }
 }
@@ -1654,6 +1664,6 @@ body.light-mode .comm-profile-page .db-card span {
   display: none;
 }
 
-.comm-top-row .trending-strip::-webkit-scrollbar {
+.comm-hero-row .comm-hero-cards .trending-strip::-webkit-scrollbar {
   display: none;
 }
