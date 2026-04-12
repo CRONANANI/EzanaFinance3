@@ -16,7 +16,6 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const { isPartner, isLoading } = usePartner();
   const isMarketAnalysisFullscreen = pathname === '/market-analysis';
-  const isMarketAnalysisRoute = pathname?.startsWith('/market-analysis');
   const isPartnerRoute = pathname?.startsWith('/partner-');
   const isSharedPartner =
     !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
@@ -30,11 +29,26 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   useEffect(() => {
-    const cls = 'route-market-analysis';
-    if (isMarketAnalysisRoute) document.body.classList.add(cls);
-    else document.body.classList.remove(cls);
-    return () => document.body.classList.remove(cls);
-  }, [isMarketAnalysisRoute]);
+    const body = document.body;
+    const isRegularDashboard = !isPartnerExperience;
+
+    if (isRegularDashboard) {
+      body.classList.add('route-regular-dashboard');
+    } else {
+      body.classList.remove('route-regular-dashboard');
+    }
+
+    if (isMarketAnalysisFullscreen) {
+      body.classList.add('route-market-analysis');
+    } else {
+      body.classList.remove('route-market-analysis');
+    }
+
+    return () => {
+      body.classList.remove('route-regular-dashboard');
+      body.classList.remove('route-market-analysis');
+    };
+  }, [isPartnerExperience, isMarketAnalysisFullscreen]);
 
   return (
     <ErrorBoundary>

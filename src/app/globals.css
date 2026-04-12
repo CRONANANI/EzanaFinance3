@@ -1007,3 +1007,27 @@ html:has(.landing-page) body:not(.light-mode) {
 .powermap-dot-pulse {
   animation: powermap-dot-blink 1.2s ease-in-out infinite;
 }
+
+/* ───────── Regular dashboard pages match the navbar color ─────────
+   Scoped via the route-regular-dashboard body class added by
+   src/app/(dashboard)/layout.js. Excludes market analysis, partner
+   routes, and any non-dashboard route. Does NOT modify the
+   @layer base html rule, so partner / marketing / auth pages keep
+   their current #0f1419 background. */
+
+body.route-regular-dashboard {
+  background-color: #050a08 !important;
+}
+
+body.route-regular-dashboard.route-market-analysis {
+  background-color: transparent !important;
+}
+
+/* Match the html background too so route-transition slivers
+   don't briefly show the old #0f1419 color. */
+html:has(body.route-regular-dashboard) {
+  background-color: #050a08;
+}
+html:has(body.route-regular-dashboard.route-market-analysis) {
+  background-color: #0f1419;
+}
