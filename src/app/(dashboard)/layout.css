@@ -18,6 +18,7 @@
   max-width: 100%;
   box-sizing: border-box;
   min-height: 100vh;
+  background-color: #050a08;
 }
 
 /* Full-screen routes (e.g. market analysis) — no horizontal inset; top clears fixed nav only */
@@ -26,6 +27,7 @@
   padding-top: var(--navbar-height, 64px);
   min-height: 100vh;
   box-sizing: border-box;
+  background-color: transparent;
 }
 
 /* Edge-to-edge map: responsive-system caps .dashboard-container on large screens — exempt fullscreen */
