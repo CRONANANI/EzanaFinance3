@@ -42,7 +42,7 @@ const TRENDING_DISCUSSIONS = [
 ];
 
 const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
-const PAGE_TABS = ['Community', 'Messages'];
+const PAGE_TABS = ['Community', 'My Profile', 'Messages'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
   if (feedTab === 'Badges') return 'recent';
@@ -446,6 +446,14 @@ export default function CommunityPageClient() {
 
   const onPageTab = (t) => {
     if (t === 'Messages') router.push('/community');
+    if (t === 'My Profile') {
+      if (!user?.id) return;
+      const handle =
+        userProfile?.username ||
+        user?.user_metadata?.username ||
+        user.id;
+      router.push(`/profile/${handle}`);
+    }
   };
 
   return (
@@ -640,6 +648,7 @@ export default function CommunityPageClient() {
             }}
           >
             {t === 'Community' && <i className="bi bi-people" />}
+            {t === 'My Profile' && <i className="bi bi-person-circle" />}
             {t === 'Messages' && <i className="bi bi-chat-dots" />}
             {t}
           </button>
