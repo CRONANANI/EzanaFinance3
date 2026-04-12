@@ -2,6 +2,8 @@
  * Placeholder course body + quiz — merge with DB row when content is empty.
  */
 
+import COURSE_CONTENT from './course-content';
+
 function hashSeed(str) {
   let h = 0;
   for (let i = 0; i < str.length; i += 1) h = (h << 5) - h + str.charCodeAt(i);
@@ -112,4 +114,17 @@ function buildQuiz(course, seed) {
   ];
 
   return base;
+}
+
+/**
+ * Returns authored content for a course when present in {@link COURSE_CONTENT},
+ * otherwise falls back to the procedural placeholder.
+ * @param {{ id: string, title: string, description: string }} course
+ */
+export function getCourseContent(course) {
+  const real = COURSE_CONTENT[course.id];
+  if (real && Array.isArray(real.sections) && Array.isArray(real.quiz)) {
+    return real;
+  }
+  return buildPlaceholderContent(course);
 }

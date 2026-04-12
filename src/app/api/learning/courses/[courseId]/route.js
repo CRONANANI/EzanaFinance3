@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { getCourseById } from '@/lib/learning-curriculum';
-import { buildPlaceholderContent } from '@/lib/learning-content';
+import { getCourseContent } from '@/lib/learning-content';
 import { buildProgressMap, canAccessCourse } from '@/lib/learning-progress-logic';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,7 @@ export async function GET(_request, { params }) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const content = buildPlaceholderContent(course);
+    const content = getCourseContent(course);
 
     if (!user) {
       return NextResponse.json({

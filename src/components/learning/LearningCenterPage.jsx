@@ -11,11 +11,6 @@ import {
   isLevelUnlocked,
 } from '@/lib/learning-progress-logic';
 import { parseLearningBadgeKey, sortBadgeKeysForDisplay } from '@/lib/learning-badge-ui';
-import {
-  PartnerCreatorContentCard,
-  PARTNER_CREATOR_FALLBACK_ITEMS,
-  PARTNER_CREATOR_GRID_MAX,
-} from '@/components/learning/PartnerCreatorContentCard';
 import { FriendsLearningCard } from '@/components/learning/FriendsLearningCard';
 import { useOrg } from '@/contexts/OrgContext';
 import { ORG_SHORT } from '@/lib/orgMockData';
@@ -62,7 +57,6 @@ export function LearningCenterPage() {
   const [err, setErr] = useState(null);
   const [selectedTrack, setSelectedTrack] = useState('stocks');
   const [selectedLevel, setSelectedLevel] = useState('basic');
-  const [partnerItems, setPartnerItems] = useState(undefined);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,22 +73,9 @@ export function LearningCenterPage() {
     }
   }, []);
 
-  const loadPartners = useCallback(async () => {
-    try {
-      const res = await fetch('/api/learning/partner-content', { cache: 'no-store' });
-      const json = await res.json();
-      setPartnerItems(
-        json.items?.length ? json.items.slice(0, PARTNER_CREATOR_GRID_MAX) : PARTNER_CREATOR_FALLBACK_ITEMS,
-      );
-    } catch {
-      setPartnerItems(PARTNER_CREATOR_FALLBACK_ITEMS);
-    }
-  }, []);
-
   useEffect(() => {
     load();
-    loadPartners();
-  }, [load, loadPartners]);
+  }, [load]);
 
   const progressById = useMemo(() => buildProgressMap(data?.progress || []), [data?.progress]);
 
@@ -370,14 +351,6 @@ export function LearningCenterPage() {
             ))}
           </div>
         </div>
-      )}
-
-      {partnerItems === undefined ? (
-        <div className="db-card" style={{ padding: '1.25rem', marginBottom: '1.25rem', color: '#6b7280', fontSize: '.8125rem' }}>
-          Loading partner content…
-        </div>
-      ) : (
-        <PartnerCreatorContentCard items={partnerItems} />
       )}
 
       {/* Track progress */}
