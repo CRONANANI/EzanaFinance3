@@ -20,23 +20,22 @@ function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-/** Parse FMP amount string to a short display string */
-function fmtAmount(raw) {
-  if (raw == null || raw === '') return '—';
-  const s = String(raw);
-  return s
-    .replace(/\$[\d,]+\s*-\s*\$[\d,]+/g, (m) => {
-      const parts = m.replace(/\$/g, '').split(/\s*-\s*/);
-      const fmt = (n) => {
-        const v = parseInt(String(n).replace(/,/g, ''), 10);
-        if (Number.isNaN(v)) return n;
-        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-        if (v >= 1_000) return `${Math.round(v / 1_000)}K`;
-        return String(v);
-      };
-      return `${fmt(parts[0])}–${fmt(parts[1])}`;
-    })
-    .trim();
+/**
+ * Parse Quiver's Trade_Size_USD range string into a midpoint number.
+ */
+function parseTradeSizeMidpoint(raw) {
+  if (!raw || typeof raw !== 'string') return 0;
+  const cleaned = raw.replace(/\$/g, '').replace(/,/g, '').trim();
+  const plusMatch = cleaned.match(/^(\d+)\s*\+$/);
+  if (plusMatch) return Number(plusMatch[1]);
+  const rangeMatch = cleaned.match(/^(\d+)\s*-\s*(\d+)$/);
+  if (rangeMatch) {
+    const lo = Number(rangeMatch[1]);
+    const hi = Number(rangeMatch[2]);
+    return Math.round((lo + hi) / 2);
+  }
+  const single = Number(cleaned);
+  return Number.isFinite(single) ? single : 0;
 }
 
 /** Relative date string from ISO date */
@@ -50,43 +49,67 @@ function relDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-/** Normalize a raw FMP trade object to the shape the UI expects */
-function normalizeTrade(t, chamber, idx = 0) {
-  const first = t.firstName || '';
-  const last = t.lastName || '';
-  const name = `${first} ${last}`.trim() || t.office || t.name || 'Unknown';
-  const rawType = (t.type || t.transactionType || '').toString();
+/**
+ * Normalize a Quiver congress trade into the shape the Inside the Capitol page expects.
+ * Downstream (Latest Trades, sector stats) rely on these field names.
+ */
+function normalizeTrade(t, _chamberFallback, idx = 0) {
+  const name = t.Name || 'Unknown';
+  const rawType = (t.Transaction || '').toString();
   const lower = rawType.toLowerCase();
   const isSell =
-    lower.includes('sale') || lower.includes('sell') || lower.includes('disposal');
-  const sym = (t.symbol || t.ticker || '').toUpperCase();
-  const disclosure = t.disclosureDate || t.date || t.transactionDate;
-  const rawDate = disclosure || t.transactionDate;
-  let stateAbbr = '';
-  if (t.district) {
-    const d = String(t.district);
-    const m = d.match(/\b([A-Z]{2})\b/);
-    if (m) stateAbbr = m[1];
-    else stateAbbr = d.replace(/\d+/g, '').trim().slice(0, 2).toUpperCase();
-  } else if (t.state) {
-    stateAbbr = String(t.state).slice(0, 2).toUpperCase();
+    lower.includes('sale') || lower.includes('sold') || lower.includes('disposal');
+  const isBuy =
+    lower.includes('purchase') || lower.includes('buy') || lower.includes('bought');
+
+  const sym = (t.Ticker || '').toString().toUpperCase();
+  const rawDate = t.Traded || t.Filed || null;
+
+  const partyRaw = (t.Party || '').toString().trim();
+  let party = 'Unknown';
+  if (/^r(ep)?/i.test(partyRaw) || partyRaw === 'R') party = 'Republican';
+  else if (/^d(em)?/i.test(partyRaw) || partyRaw === 'D') party = 'Democrat';
+  else if (/^i(nd)?/i.test(partyRaw) || partyRaw === 'I') party = 'Independent';
+
+  const chamber = t.Chamber === 'Senate' ? 'Senate' : 'House';
+
+  let state = (t.State || '').toString().toUpperCase().slice(0, 2);
+  if (!state && t.District) {
+    const m = String(t.District).match(/\b([A-Z]{2})\b/);
+    if (m) state = m[1];
   }
+
+  const amountNum = parseTradeSizeMidpoint(t.Trade_Size_USD);
+  const amountDisplay = t.Trade_Size_USD || '—';
+
+  const excessReturn =
+    t.excess_return != null && t.excess_return !== ''
+      ? (() => {
+          const n = parseFloat(String(t.excess_return));
+          return Number.isFinite(n) ? n : null;
+        })()
+      : null;
+
+  const type = isSell ? 'SELL' : isBuy ? 'BUY' : 'BUY';
 
   return {
     id: `${chamber}-${sym}-${rawDate || idx}-${name}-${idx}`,
-    type: isSell ? 'SELL' : 'BUY',
+    type,
     ticker: sym,
-    company: t.assetDescription || t.asset || sym || '—',
+    company: t.Company || sym || '—',
     exchange: sym ? `${sym}:US` : '—',
     member: name,
-    party: 'Unknown',
+    party,
     chamber,
-    state: stateAbbr,
-    amount: fmtAmount(t.amount),
-    date: relDate(disclosure || t.transactionDate),
+    state,
+    amount: amountDisplay,
+    date: relDate(rawDate),
     flagged: false,
-    link: t.link || t.url || '',
+    link: '',
     rawDate,
+    bioGuideId: t.BioGuideID || null,
+    amountNum,
+    excessReturn,
   };
 }
 
@@ -438,21 +461,24 @@ function InsideTheCapitolContent() {
     async function fetchTrades() {
       setTradesLoading(true);
       try {
-        const [senateRes, houseRes] = await Promise.all([
-          fetch('/api/fmp/senate?type=latest&page=0&limit=100'),
-          fetch('/api/fmp/house?type=latest&page=0&limit=100'),
-        ]);
+        const res = await fetch('/api/quiver/congress-trades');
+        if (!res.ok) {
+          console.error('[inside-the-capitol] congress-trades HTTP', res.status);
+          setLatestTrades([]);
+          setStatsData({
+            trades: { value: '—', change: 'Could not load', changeType: 'neutral' },
+            volume: { value: '—', change: '—', changeType: 'neutral' },
+            traders: { value: '—', change: '—', changeType: 'neutral' },
+            alerts: { value: '—', change: '—', changeType: 'neutral' },
+          });
+          return;
+        }
 
-        const senateRaw = senateRes.ok ? await senateRes.json() : [];
-        const houseRaw = houseRes.ok ? await houseRes.json() : [];
+        const parsed = await res.json();
+        const arr = Array.isArray(parsed) ? parsed : [];
 
-        const senateArr = Array.isArray(senateRaw) ? senateRaw : [];
-        const houseArr = Array.isArray(houseRaw) ? houseRaw : [];
-
-        const senate = senateArr.map((t, i) => normalizeTrade(t, 'Senate', i));
-        const house = houseArr.map((t, i) => normalizeTrade(t, 'House', i));
-
-        const all = [...senate, ...house].sort(
+        const normalized = arr.map((t, i) => normalizeTrade(t, null, i));
+        const all = normalized.sort(
           (a, b) => new Date(b.rawDate || 0) - new Date(a.rawDate || 0)
         );
 
@@ -464,12 +490,22 @@ function InsideTheCapitolContent() {
           return !Number.isNaN(d.getTime()) && Date.now() - d.getTime() < 7 * 86400000;
         }).length;
 
-        const uniqueMembers = new Set(all.map((t) => t.member)).size;
-
         const last24h = all.filter((t) => {
           const d = new Date(t.rawDate);
           return !Number.isNaN(d.getTime()) && Date.now() - d.getTime() < 86400000;
         }).length;
+
+        const uniqueMembers = new Set(all.map((t) => t.member)).size;
+
+        const totalVolume = all.reduce((sum, t) => sum + (t.amountNum || 0), 0);
+        const volumeDisplay =
+          totalVolume >= 1_000_000_000
+            ? `$${(totalVolume / 1_000_000_000).toFixed(1)}B`
+            : totalVolume >= 1_000_000
+              ? `$${(totalVolume / 1_000_000).toFixed(1)}M`
+              : totalVolume >= 1_000
+                ? `$${(totalVolume / 1_000).toFixed(0)}K`
+                : `$${totalVolume.toFixed(0)}`;
 
         setStatsData({
           trades: {
@@ -478,23 +514,24 @@ function InsideTheCapitolContent() {
             changeType: 'positive',
           },
           volume: {
-            value: '$—',
-            change: 'See individual trades',
+            value: volumeDisplay,
+            change: 'Est. from disclosed ranges',
             changeType: 'neutral',
           },
           traders: {
-            value: String(uniqueMembers),
+            value: uniqueMembers.toLocaleString(),
             change: 'of 535 members',
             changeType: 'neutral',
           },
           alerts: {
-            value: String(last24h),
+            value: last24h.toLocaleString(),
             change: 'Last 24 hours',
             changeType: last24h > 0 ? 'positive' : 'neutral',
           },
         });
       } catch (err) {
-        console.error('Failed to fetch congressional trades:', err);
+        console.error('[inside-the-capitol] fetchTrades failed:', err);
+        setLatestTrades([]);
         setStatsData({
           trades: { value: '—', change: 'Could not load', changeType: 'neutral' },
           volume: { value: '—', change: '—', changeType: 'neutral' },
