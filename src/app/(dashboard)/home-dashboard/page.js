@@ -662,7 +662,7 @@ export default function HomeDashboardPage() {
                   segments={
                     mock.profitBreakdown.length > 0
                       ? mock.profitBreakdown
-                      : [{ label: 'Cash', pct: 100, color: '#10b981' }]
+                      : [{ label: 'No profits yet', pct: 100, color: '#2a2f3a' }]
                   }
                   size={150}
                   strokeWidth={20}
@@ -683,12 +683,17 @@ export default function HomeDashboardPage() {
               {(useMock
                 ? mock.profitBreakdown.length > 0
                   ? mock.profitBreakdown
-                  : [{ label: 'Portfolio', pct: 100, color: '#10b981' }]
+                  : [{ label: 'No profits yet', pct: 0, color: '#6b7280', value: 0 }]
                 : PROFIT_BREAKDOWN
               ).map((p) => (
                 <div key={p.label} className="db-profits-legend-item">
                   <span className="db-legend-dot" style={{ background: p.color }} />
                   <span className="db-legend-label">{p.label}</span>
+                  <span className="db-legend-amt">
+                    {typeof p.value === 'number' && p.value > 0
+                      ? `+$${p.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                      : ''}
+                  </span>
                   <span className="db-legend-pct">{p.pct}%</span>
                 </div>
               ))}

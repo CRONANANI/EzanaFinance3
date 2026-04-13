@@ -288,15 +288,28 @@ export function useMockPortfolio() {
     .map(([name, value]) => ({ name, value, pct: Math.round((value / sectorTotal) * 100), color: SECTOR_COLORS[name] ?? '#6b7280' }))
     .sort((a, b) => b.value - a.value);
 
-  const typeMap = {};
-  for (const pos of enrichedPositions) {
-    const t = pos.type ?? 'Stock';
-    typeMap[t] = (typeMap[t] ?? 0) + Math.max(0, pos.pnl);
-  }
-  const typeTotal = Object.values(typeMap).reduce((a, b) => a + b, 0) || 1;
-  const TYPE_COLORS = { Stock: '#10b981', Crypto: '#fbbf24', Commodity: '#f97316', ETF: '#3b82f6', Other: '#a78bfa' };
-  const profitBreakdown = Object.entries(typeMap).map(([label, value]) => ({
-    label, value, pct: Math.round((value / typeTotal) * 100), color: TYPE_COLORS[label] ?? '#6b7280',
+  const PROFIT_COLORS = [
+    '#10b981',
+    '#3b82f6',
+    '#a78bfa',
+    '#fbbf24',
+    '#f97316',
+    '#ec4899',
+    '#06b6d4',
+    '#84cc16',
+  ];
+
+  const profitablePositions = enrichedPositions
+    .filter((p) => (p.pnl ?? 0) > 0)
+    .sort((a, b) => b.pnl - a.pnl);
+
+  const profitTotal = profitablePositions.reduce((s, p) => s + p.pnl, 0) || 1;
+
+  const profitBreakdown = profitablePositions.map((p, i) => ({
+    label: p.symbol,
+    value: p.pnl,
+    pct: Math.round((p.pnl / profitTotal) * 100),
+    color: PROFIT_COLORS[i % PROFIT_COLORS.length],
   }));
 
   const recentTransactions = history.slice(0, 8).map((h) => ({
