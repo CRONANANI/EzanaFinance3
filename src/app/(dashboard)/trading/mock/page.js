@@ -32,6 +32,29 @@ function fmtChange(n) {
   return `${sign}${fmtUSD(n)}`;
 }
 
+function resolveOpenedAt(pos, history) {
+  if (pos.openedAt) return pos.openedAt;
+  // Fallback for legacy positions saved before openedAt was stamped:
+  // find the earliest 'buy' entry in history for this symbol.
+  const buys = (history || [])
+    .filter((h) => h.side === 'buy' && h.symbol === pos.symbol)
+    .map((h) => h.ts)
+    .filter(Boolean)
+    .sort();
+  return buys[0] || null;
+}
+
+function formatOpenedDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 /* ──────────────────────────────────────────
    MAIN PAGE
 ────────────────────────────────────────── */
@@ -232,6 +255,7 @@ export default function MockTradingPage() {
               qty,
               avgCost: price,
               currentPrice: price,
+              openedAt: new Date().toISOString(),
             },
           };
         }
@@ -524,10 +548,12 @@ export default function MockTradingPage() {
                   <thead>
                     <tr>
                       <th>Asset</th>
+                      <th>Opened</th>
                       <th>Qty</th>
                       <th>Avg Cost</th>
                       <th>Current</th>
                       <th>P&amp;L</th>
+                      <th>Current Value</th>
                       <th />
                     </tr>
                   </thead>
@@ -554,6 +580,15 @@ export default function MockTradingPage() {
                               {pos.symbol}
                             </button>
                             <span className="mock-pos-name">{pos.name}</span>
+                          </td>
+                          <td
+                            style={{
+                              color: 'var(--foreground, #f0f6fc)',
+                              fontVariantNumeric: 'tabular-nums',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatOpenedDate(resolveOpenedAt(pos, portfolio.history))}
                           </td>
                           <td
                             style={{
@@ -589,6 +624,15 @@ export default function MockTradingPage() {
                                 {pnlPct.toFixed(2)}%
                               </span>
                             </span>
+                          </td>
+                          <td
+                            style={{
+                              color: 'var(--foreground, #f0f6fc)',
+                              fontVariantNumeric: 'tabular-nums',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {fmtUSD(pos.qty * curPrice)}
                           </td>
                           <td>
                             <button

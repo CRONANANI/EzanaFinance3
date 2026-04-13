@@ -498,6 +498,13 @@
 .mock-positions-table th:last-child,
 .mock-positions-table td:last-child { text-align: right; }
 
+/* Opened column — keep readable with 8-column layout */
+.mock-positions-table th:nth-child(2),
+.mock-positions-table td:nth-child(2) {
+  min-width: 5.5rem;
+  white-space: nowrap;
+}
+
 .mock-positions-table td {
   padding: 0.625rem 0.5rem;
   font-size: 0.8125rem;
