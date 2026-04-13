@@ -8,7 +8,7 @@
   left: 0;
   right: 0;
   height: 64px;
-  background: var(--nav-bg);
+  background: var(--nav-bg-solid);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--nav-border);
   z-index: 100;

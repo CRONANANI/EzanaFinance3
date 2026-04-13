@@ -15,10 +15,10 @@ body {
 }
 
 /* ============================================
-   UNIFIED BACKGROUND — matches hero / cybercore base (#050a08)
+   UNIFIED BACKGROUND — matches hero / cybercore base (var(--nav-bg-solid))
    ============================================ */
 .landing-page {
-    background: #050a08;
+    background: var(--nav-bg-solid);
     position: relative;
     min-height: 100vh;
 }
@@ -36,7 +36,7 @@ body {
 }
 
 /* ============================================
-   UNIFIED BLACK — Every section on landing = #050a08
+   UNIFIED BLACK — Every section on landing = var(--nav-bg-solid)
    This is the same black as the footer.
    ============================================ */
 .landing-page .tl-section,
@@ -48,19 +48,19 @@ body {
 .landing-page .testimonials-section,
 .landing-page .testimonials-below-hero,
 .landing-page .data-partners-section {
-    background: #050a08 !important;
-    background-color: #050a08 !important;
+    background: var(--nav-bg-solid) !important;
+    background-color: var(--nav-bg-solid) !important;
 }
 
 .landing-page footer,
 .landing-page footer.bg-background,
 .landing-page .bg-background,
 .landing-page .resources-section .bg-background {
-    background: #050a08 !important;
-    background-color: #050a08 !important;
+    background: var(--nav-bg-solid) !important;
+    background-color: var(--nav-bg-solid) !important;
 }
 
-/* Why Ezana: no overlay — pure #050a08 background */
+/* Why Ezana: no overlay — pure var(--nav-bg-solid) background */
 .landing-page .features-section::before {
     background: none;
 }
@@ -95,16 +95,16 @@ body {
 
 /* Testimonials carousel fade edges - match page background */
 .landing-page .testimonials-carousel::before {
-    background: linear-gradient(to right, #050a08 0%, transparent 100%) !important;
+    background: linear-gradient(to right, var(--nav-bg-solid) 0%, transparent 100%) !important;
 }
 
 .landing-page .testimonials-carousel::after {
-    background: linear-gradient(to left, #050a08 0%, transparent 100%) !important;
+    background: linear-gradient(to left, var(--nav-bg-solid) 0%, transparent 100%) !important;
 }
 
 /* Body matches landing when on homepage - no breaks at edges */
 body:has(.landing-page) {
-    background: #050a08 !important;
+    background: var(--nav-bg-solid) !important;
 }
 
 
@@ -159,7 +159,7 @@ body:has(.landing-page) {
 .navbar {
     position: relative;
     z-index: 100;
-    background: #050a08 !important;
+    background: var(--nav-bg-solid) !important;
     backdrop-filter: none;
     padding: 1rem 0;
 }
@@ -340,7 +340,7 @@ body:has(.landing-page) {
     align-items: center;
     justify-content: center;
     padding: 60px 2rem 0 2rem;
-    background-color: #050a08;
+    background-color: var(--nav-bg-solid);
     overflow: visible;
 }
 
@@ -1066,8 +1066,8 @@ body:has(.landing-page) {
     transform: translate(-50%, -50%);
     background: radial-gradient(
         circle,
-        #050a08 0%,
-        #050a08 85%,
+        var(--nav-bg-solid) 0%,
+        var(--nav-bg-solid) 85%,
         rgba(5, 10, 8, 0.6) 93%,
         transparent 100%
     );
@@ -2608,7 +2608,7 @@ body:has(.landing-page) {
 .resources-section {
     width: 100%;
     padding: 60px 0;
-    background: #050a08;
+    background: var(--nav-bg-solid);
     position: relative;
     overflow: hidden;
 }

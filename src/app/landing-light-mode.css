@@ -12,7 +12,7 @@ body.light-mode .landing-page {
   color: var(--text-secondary);
 }
 
-/* ── Sections forced to #050a08 in landing.css ── */
+/* ── Sections forced to dark landing bg in landing.css ── */
 body.light-mode .landing-page .tl-section,
 body.light-mode .landing-page #features-section-container,
 body.light-mode .landing-page .features-section,
@@ -64,7 +64,7 @@ body.light-mode:has(.landing-page) .mobile-nav-menu {
   background: var(--bg-primary) !important;
 }
 
-/* ── Hero (globals.css + FallingPattern) — same as --bg-primary (#f8fafb); !important beats legacy landing.css #050a08 ── */
+/* ── Hero (globals.css + FallingPattern) — same as --bg-primary (#f8fafb); !important beats legacy landing.css dark bg ── */
 body.light-mode .landing-page .main-content.hero-section,
 body.light-mode .landing-page .hero-cybercore-root {
   background-color: var(--bg-primary) !important;

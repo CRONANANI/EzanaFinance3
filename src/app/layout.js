@@ -34,19 +34,21 @@ export default function RootLayout({ children }) {
             var theme = localStorage.getItem('ezana-theme') || 'light';
             var root = document.documentElement;
             var body = document.body;
-            root.style.backgroundColor = '#050a08';
             root.style.colorScheme = 'light';
-            if (body) body.style.backgroundColor = '#050a08';
             if (theme === 'light') {
+              root.style.backgroundColor = '#ffffff';
+              if (body) body.style.backgroundColor = '#ffffff';
               root.classList.add('light-mode');
               if (body) body.classList.add('light-mode');
             } else {
+              root.style.backgroundColor = '#0a0e13';
+              if (body) body.style.backgroundColor = '#0a0e13';
               root.classList.remove('light-mode');
               if (body) body.classList.remove('light-mode');
             }
           } catch (e) {
             document.documentElement.classList.add('light-mode');
-            document.documentElement.style.backgroundColor = '#050a08';
+            document.documentElement.style.backgroundColor = '#ffffff';
             document.documentElement.style.colorScheme = 'light';
           }
         })();

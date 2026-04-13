@@ -67,6 +67,7 @@
     --sidebar-hover: rgba(16, 185, 129, 0.1);
 
     --nav-bg: rgba(15, 20, 25, 0.95);
+    --nav-bg-solid: #0a0e13;
     --nav-border: rgba(16, 185, 129, 0.1);
 
     /* Legacy aliases */
@@ -159,6 +160,7 @@ body.light-mode {
   --sidebar-hover: rgba(5, 150, 105, 0.04);
 
   --nav-bg: rgba(255, 255, 255, 0.97);
+  --nav-bg-solid: #ffffff;
   --nav-border: #e2e8f0;
 
   --color-primary: #059669;

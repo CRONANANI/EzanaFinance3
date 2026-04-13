@@ -29,8 +29,8 @@ function applyTheme(theme) {
     root.classList.remove('light-mode');
     body.classList.remove('light-mode');
     root.classList.add('dark');
-    root.style.backgroundColor = '#050a08';
-    body.style.backgroundColor = '#050a08';
+    root.style.backgroundColor = '#0a0e13';
+    body.style.backgroundColor = '#0a0e13';
   }
 }
 

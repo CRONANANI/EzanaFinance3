@@ -86,6 +86,7 @@
 
   /* ── Navbar ── */
   --nav-bg: rgba(10, 14, 19, 0.95);
+  --nav-bg-solid: #0a0e13;
   --nav-border: rgba(16, 185, 129, 0.08);
 
   /* ── Scrollbar ── */
@@ -178,6 +179,7 @@ body.light-mode {
 
   /* ── Navbar ── */
   --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-bg-solid: #ffffff;
   --nav-border: rgba(0, 0, 0, 0.06);
 
   /* ── Scrollbar ── */

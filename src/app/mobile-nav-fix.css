@@ -66,7 +66,7 @@
     height: 100vh;
     height: 100dvh;
     /* Match main landing page background (see globals + app-legacy/pages/landing.css) */
-    background: #050a08;
+    background: var(--nav-bg-solid);
     border-left: 1px solid rgba(16, 185, 129, 0.15);
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
     overflow-y: auto;

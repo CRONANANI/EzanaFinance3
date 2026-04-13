@@ -1,7 +1,7 @@
 /* Pricing Section */
 .pricing-section {
   padding: 5rem 2rem;
-  background: #050a08;
+  background: var(--nav-bg-solid);
 }
 
 .pricing-container {

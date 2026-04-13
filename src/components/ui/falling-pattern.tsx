@@ -25,7 +25,7 @@ export function FallingPattern({
   color = '#10b981',
   streakColor,
   sparkleColor,
-  backgroundColor = '#050a08',
+  backgroundColor = '#0a0e13',
   duration = 150,
   blurIntensity: _blurIntensity = '1em',
   density = 1,

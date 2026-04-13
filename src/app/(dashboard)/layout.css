@@ -18,7 +18,7 @@
   max-width: 100%;
   box-sizing: border-box;
   min-height: 100vh;
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
 }
 
 /* Full-screen routes (e.g. market analysis) — no horizontal inset; top clears fixed nav only */
@@ -97,18 +97,18 @@
   }
 }
 
-/* ───────── Dashboard background matches top navbar (#050a08) ───────── */
+/* ───────── Dashboard background matches top navbar (var(--nav-bg-solid)) ───────── */
 /* Applies to every logged-in page EXCEPT global market analysis. */
 body:not(.route-market-analysis) .dashboard-main,
 body:not(.route-market-analysis) .dashboard-main-content {
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
   min-height: 100vh;
 }
 
 /* Belt-and-suspenders: paint the body too so any gap behind the
    wrapper (e.g. during route transitions) shows the right color. */
 body:not(.route-market-analysis):has(.dashboard-main) {
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
 }
 
 /* Explicit reset for the excluded route — let the page own its bg. */

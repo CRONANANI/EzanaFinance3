@@ -6,7 +6,7 @@
 
 /* ── CSS Variables ── */
 .aurora-scene {
-  --aurora-bg: #050a08;
+  --aurora-bg: var(--nav-bg-solid);
   --aurora-primary: #10b981;
   --aurora-primary-light: #34d399;
   --aurora-mid: #059669;

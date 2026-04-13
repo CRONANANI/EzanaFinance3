@@ -105,7 +105,7 @@ export function InteractiveGlobe({
   size = 600,
   /** Land dots — slightly brighter emerald so hero particles can sit a shade deeper without beating the globe. */
   dotColor = "rgba(52, 211, 153, ALPHA)",
-  /** Ocean fill inside the sphere (darker than typical landing bg #050a08). */
+  /** Ocean fill inside the sphere (darker than typical landing bg). */
   oceanFill = "#020403",
   autoRotateSpeed = 0.5,
   showConnections = true,

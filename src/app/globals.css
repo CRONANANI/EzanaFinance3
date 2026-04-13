@@ -23,17 +23,17 @@
 @import './responsive-system.css';
 
 /* Prevents dark/light flash during route transitions and first paint.
-   Matches the dashboard navbar color (#050a08) so the underlying
+   Matches the dashboard navbar color (var(--nav-bg-solid)) so the underlying
    surface never contrasts with what's painted above it. */
 html,
 body {
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
 }
 
 /* Unlayered so this wins over the rule above (and @layer base) when .light-mode is set */
 html.light-mode,
 body.light-mode {
-  background-color: #f8f9fb;
+  background-color: var(--nav-bg-solid);
 }
 
 /* Marketing / public pages that need a different background continue
@@ -55,7 +55,7 @@ body.light-mode {
   align-items: center;
   justify-content: center;
   padding: 60px 2rem 0;
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
   overflow: visible;
   text-align: center;
 }
@@ -69,7 +69,7 @@ body.light-mode {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
   overflow: hidden;
 }
 
@@ -420,10 +420,10 @@ body.light-mode .nav-logo-img {
 /* Base theme defaults — light-mode class overrides surface color */
 @layer base {
   html {
-    background-color: #050a08;
+    background-color: var(--nav-bg-solid);
   }
   html.light-mode {
-    background-color: #f8f9fb;
+    background-color: var(--nav-bg-solid);
     color-scheme: light;
   }
   body {
@@ -432,20 +432,20 @@ body.light-mode .nav-logo-img {
     font-family: var(--font-sans) !important;
   }
   body.light-mode {
-    background-color: #f8f9fb;
+    background-color: var(--nav-bg-solid);
     color: #111827;
   }
   html:has(body.light-mode) {
-    background-color: #f8f9fb;
+    background-color: var(--nav-bg-solid);
   }
 }
 
-/* Landing (dark only): force #050a08 on html/body to prevent #0f1419 bleed-through */
+/* Landing (dark only): force solid nav bg on html/body to prevent bleed-through */
 html:has(.landing-page):not(:has(body.light-mode)) {
-  background-color: #050a08 !important;
+  background-color: var(--nav-bg-solid) !important;
 }
 html:has(.landing-page) body:not(.light-mode) {
-  background-color: #050a08 !important;
+  background-color: var(--nav-bg-solid) !important;
 }
 
 /* Below-fold sections: skip rendering work until near viewport (keeps hero fast) */
@@ -556,7 +556,7 @@ html:has(.landing-page) body:not(.light-mode) {
 
 /* Landing / help marketing nav — same solid black as hero cybercore base */
 .navbar {
-  background: #050a08 !important;
+  background: var(--nav-bg-solid) !important;
   backdrop-filter: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
@@ -738,8 +738,8 @@ html:has(.landing-page) body:not(.light-mode) {
   position: sticky;
   top: 0;
   z-index: 1000;
-  /* Match landing page / html:has(.landing-page) body background (#050a08) */
-  background: #050a08 !important;
+  /* Match landing page / html:has(.landing-page) body background (var(--nav-bg-solid)) */
+  background: var(--nav-bg-solid) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-bottom: none !important;
@@ -749,7 +749,7 @@ html:has(.landing-page) body:not(.light-mode) {
 /* Add shadow when scrolled */
 .navbar-sticky.scrolled {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  background: #050a08 !important;
+  background: var(--nav-bg-solid) !important;
 }
 
 /* ═══════════════════════════════════════════
@@ -1011,12 +1011,10 @@ html:has(.landing-page) body:not(.light-mode) {
 /* ───────── Regular dashboard pages match the navbar color ─────────
    Scoped via the route-regular-dashboard body class added by
    src/app/(dashboard)/layout.js. Excludes market analysis, partner
-   routes, and any non-dashboard route. Does NOT modify the
-   @layer base html rule, so partner / marketing / auth pages keep
-   their current #0f1419 background. */
+   routes, and any non-dashboard route. */
 
 body.route-regular-dashboard {
-  background-color: #050a08 !important;
+  background-color: var(--nav-bg-solid) !important;
 }
 
 body.route-regular-dashboard.route-market-analysis {
@@ -1024,10 +1022,10 @@ body.route-regular-dashboard.route-market-analysis {
 }
 
 /* Match the html background too so route-transition slivers
-   don't briefly show the old #0f1419 color. */
+   don't briefly show the wrong color. */
 html:has(body.route-regular-dashboard) {
-  background-color: #050a08;
+  background-color: var(--nav-bg-solid);
 }
 html:has(body.route-regular-dashboard.route-market-analysis) {
-  background-color: #0f1419;
+  background-color: var(--nav-bg-solid);
 }

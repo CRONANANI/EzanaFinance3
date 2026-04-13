@@ -24,7 +24,7 @@ export default function DashboardLoading() {
         paddingLeft: '1.5rem',
         paddingRight: '1.5rem',
         paddingBottom: '2rem',
-        backgroundColor: '#050a08',
+        backgroundColor: 'var(--nav-bg-solid)',
         // Light-mode override is handled by the body.light-mode rules
         // already loaded by the global stylesheet — see the inline
         // <style> tag below for the skeleton-specific overrides.
@@ -92,10 +92,7 @@ export default function DashboardLoading() {
           100% { background-position: -200% 0; }
         }
 
-        /* Light-mode skeleton — softer grays against the light background.
-           The earlier root-color fix made the page bg #050a08 in BOTH modes,
-           so we keep the dark surface here too — but if you ever flip the
-           dashboard to a true light surface, change the body bg below. */
+        /* Light-mode skeleton — softer grays on white (--nav-bg-solid in light). */
         body.light-mode .dl-skel {
           background: linear-gradient(
             90deg,

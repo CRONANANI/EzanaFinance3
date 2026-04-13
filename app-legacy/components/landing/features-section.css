@@ -5,7 +5,7 @@
 .features-section {
   width: 100%;
   padding: 80px 0 60px 0;
-  background: #050a08;
+  background: var(--nav-bg-solid);
   position: relative;
   overflow: hidden;
 }
