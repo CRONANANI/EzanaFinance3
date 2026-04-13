@@ -660,3 +660,36 @@ body.light-mode .itc-earn-line { color: #4b5563; }
 body.light-mode .itc-unusual-row,
 body.light-mode .itc-bipart-row,
 body.light-mode .itc-earn-row { border-bottom-color: rgba(0, 0, 0, 0.06); }
+
+/* Year picker — Sector Activity on the Year */
+.itc-year-select {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  color: #10b981;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  outline: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 0.12s, border-color 0.12s;
+}
+.itc-year-select:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.itc-year-select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+}
+.itc-year-select option {
+  background: #0d1117;
+  color: #f0f6fc;
+}
+body.light-mode .itc-year-select option {
+  background: #ffffff;
+  color: #111827;
+}

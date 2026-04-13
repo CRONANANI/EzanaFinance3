@@ -425,6 +425,7 @@ function InsideTheCapitolContent() {
   const [activePolIdx, setActivePolIdx] = useState(0);
 
   const [latestTrades, setLatestTrades] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(null);
   const [tradesLoading, setTradesLoading] = useState(true);
   const [statsData, setStatsData] = useState({
     trades: { value: '—', change: 'Loading...', changeType: 'neutral' },
@@ -508,12 +509,29 @@ function InsideTheCapitolContent() {
     fetchTrades();
   }, []);
 
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    for (const trade of latestTrades) {
+      const d = trade.rawDate ? new Date(trade.rawDate) : null;
+      const y = d && !Number.isNaN(d.getTime()) ? d.getFullYear() : null;
+      if (y && y >= 2000 && y <= 2100) years.add(y);
+    }
+    return Array.from(years).sort((a, b) => b - a);
+  }, [latestTrades]);
+
   const sectorData = useMemo(() => {
     if (tradesLoading) return [];
     if (latestTrades.length === 0) return SECTOR_DATA_FALLBACK;
 
+    const effectiveYear = selectedYear ?? availableYears[0] ?? null;
+    if (effectiveYear == null) return [];
+
     const sectorMap = {};
     for (const trade of latestTrades) {
+      const d = trade.rawDate ? new Date(trade.rawDate) : null;
+      const y = d && !Number.isNaN(d.getTime()) ? d.getFullYear() : null;
+      if (y !== effectiveYear) continue;
+
       const sector = TICKER_SECTOR[trade.ticker] || 'Other';
       if (sector === 'Other') continue;
       if (!sectorMap[sector]) sectorMap[sector] = { buys: 0, sells: 0 };
@@ -538,8 +556,14 @@ function InsideTheCapitolContent() {
       .sort((a, b) => b.trades - a.trades)
       .slice(0, 10);
 
-    return derived.length > 0 ? derived : SECTOR_DATA_FALLBACK;
-  }, [latestTrades, tradesLoading]);
+    return derived;
+  }, [latestTrades, tradesLoading, selectedYear, availableYears]);
+
+  useEffect(() => {
+    if (selectedYear === null && availableYears.length > 0) {
+      setSelectedYear(availableYears[0]);
+    }
+  }, [availableYears, selectedYear]);
 
   const capitolCourses = useMemo(() => {
     const stocks = getCoursesByTrack('stocks');
@@ -719,12 +743,30 @@ function InsideTheCapitolContent() {
           </div>
         </PinnableCard>
 
-        <PinnableCard cardId="itc-sectors" title="Sector Activity" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2} className="itc-pinnable-fill">
+        <PinnableCard cardId="itc-sectors" title="Sector Activity on the Year" sourcePage="/inside-the-capitol" sourceLabel="Inside The Capitol" defaultW={2} defaultH={2} className="itc-pinnable-fill">
           <div className="itc-card">
-            <div className="itc-hdr"><h3>SECTOR ACTIVITY</h3></div>
+            <div className="itc-hdr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+              <h3>SECTOR ACTIVITY ON THE YEAR</h3>
+              {availableYears.length > 0 && (
+                <select
+                  value={selectedYear ?? availableYears[0] ?? ''}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="itc-year-select"
+                  aria-label="Select year"
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              )}
+            </div>
             <div className="itc-body itc-body-pad">
               {tradesLoading ? (
                 <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>Loading sectors...</div>
+              ) : sectorData.length === 0 ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>
+                  No sector activity for {selectedYear ?? availableYears[0] ?? 'this year'}.
+                </div>
               ) : (
                 sectorData.map((s) => (
                   <div key={s.sector} className="itc-sec">
