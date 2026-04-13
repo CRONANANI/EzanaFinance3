@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react';
 import Link from 'next/link';
 import StockPriceChart from '@/components/research/StockPriceChart';
 import { useAuth } from '@/components/AuthProvider';
@@ -432,15 +432,25 @@ export default function MockTradingPage() {
     const fetchQuotes = async () => {
       try {
         const qs = encodeURIComponent(symbols.join(','));
-        const res = await fetch(`/api/fmp/quote?symbols=${qs}`, { cache: 'no-store' });
-        if (!res.ok) return;
+        const fetchUrl = `/api/fmp/quote?symbols=${qs}`;
+        console.log('[DIAG-MOCK] fetching:', fetchUrl, '→ symbols:', symbols);
+        const res = await fetch(fetchUrl, { cache: 'no-store' });
+        console.log('[DIAG-MOCK] response status:', res.status);
+        if (!res.ok) {
+          console.warn('[DIAG-MOCK] fetch not ok, bailing');
+          return;
+        }
         const data = await res.json();
+        console.log('[DIAG-MOCK] response body:', JSON.stringify(data));
+        console.log('[DIAG-MOCK] priceMap keys:', Object.keys(data?.priceMap || {}));
         if (cancelled) return;
         if (data?.priceMap && typeof data.priceMap === 'object') {
           setLivePrices(data.priceMap);
+        } else {
+          console.warn('[DIAG-MOCK] priceMap missing or wrong type, NOT setting livePrices');
         }
       } catch (err) {
-        console.error('[mock] live quote fetch failed', err);
+        console.error('[DIAG-MOCK] fetchQuotes threw:', err);
       }
     };
 
@@ -608,95 +618,125 @@ export default function MockTradingPage() {
                   <tbody>
                     {positionsList.map((pos) => {
                       const sym = String(pos.symbol || '').toUpperCase();
-                      const livePx = livePrices[sym]?.price;
+                      const livePxEntry = livePrices[sym];
+                      const livePx = livePxEntry?.price;
                       const curPrice =
                         (typeof livePx === 'number' && livePx > 0 ? livePx : null) ??
                         pos.currentPrice ??
                         pos.avgCost;
                       const pnl = (curPrice - pos.avgCost) * pos.qty;
                       const pnlPct = (curPrice / pos.avgCost - 1) * 100;
+
+                      let source;
+                      if (typeof livePx === 'number' && livePx > 0) {
+                        source = 'LIVE';
+                      } else if (pos.currentPrice != null) {
+                        source = 'pos.currentPrice';
+                      } else {
+                        source = 'pos.avgCost';
+                      }
+                      const livePricesKeysStr = Object.keys(livePrices).join(',') || '(empty)';
+
                       return (
-                        <tr key={pos.symbol}>
-                          <td>
-                            <button
-                              className="mock-pos-ticker"
-                              type="button"
-                              onClick={() => selectAsset(pos.symbol, pos.name, pos.type)}
+                        <Fragment key={pos.symbol}>
+                          <tr>
+                            <td>
+                              <button
+                                className="mock-pos-ticker"
+                                type="button"
+                                onClick={() => selectAsset(pos.symbol, pos.name, pos.type)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  padding: 0,
+                                  font: 'inherit',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {pos.symbol}
+                              </button>
+                              <span className="mock-pos-name">{pos.name}</span>
+                            </td>
+                            <td
                               style={{
-                                background: 'none',
-                                border: 'none',
-                                padding: 0,
-                                font: 'inherit',
-                                cursor: 'pointer',
+                                color: 'var(--foreground, #f0f6fc)',
+                                fontVariantNumeric: 'tabular-nums',
+                                whiteSpace: 'nowrap',
                               }}
                             >
-                              {pos.symbol}
-                            </button>
-                            <span className="mock-pos-name">{pos.name}</span>
-                          </td>
-                          <td
-                            style={{
-                              color: 'var(--foreground, #f0f6fc)',
-                              fontVariantNumeric: 'tabular-nums',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {formatOpenedDate(resolveOpenedAt(pos, portfolio.history))}
-                          </td>
-                          <td
-                            style={{
-                              color: 'var(--foreground, #f0f6fc)',
-                              fontVariantNumeric: 'tabular-nums',
-                            }}
-                          >
-                            {pos.qty < 1 ? pos.qty.toFixed(4) : pos.qty.toFixed(2)}
-                          </td>
-                          <td
-                            style={{
-                              color: 'var(--foreground, #f0f6fc)',
-                              fontVariantNumeric: 'tabular-nums',
-                            }}
-                          >
-                            {fmtUSD(pos.avgCost)}
-                          </td>
-                          <td
-                            style={{
-                              color: 'var(--foreground, #f0f6fc)',
-                              fontVariantNumeric: 'tabular-nums',
-                            }}
-                          >
-                            {fmtUSD(curPrice)}
-                          </td>
-                          <td>
-                            <span className={`mock-pnl ${pnl >= 0 ? 'positive' : 'negative'}`}>
-                              {pnl >= 0 ? '+' : ''}
-                              {fmtUSD(pnl)}
-                              <br />
-                              <span style={{ fontSize: '0.65rem', fontWeight: 500 }}>
-                                {pnlPct >= 0 ? '+' : ''}
-                                {pnlPct.toFixed(2)}%
-                              </span>
-                            </span>
-                          </td>
-                          <td
-                            style={{
-                              color: 'var(--foreground, #f0f6fc)',
-                              fontVariantNumeric: 'tabular-nums',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {fmtUSD(pos.qty * curPrice)}
-                          </td>
-                          <td>
-                            <button
-                              className="mock-close-pos-btn"
-                              type="button"
-                              onClick={() => closePosition(pos.symbol)}
+                              {formatOpenedDate(resolveOpenedAt(pos, portfolio.history))}
+                            </td>
+                            <td
+                              style={{
+                                color: 'var(--foreground, #f0f6fc)',
+                                fontVariantNumeric: 'tabular-nums',
+                              }}
                             >
-                              Close
-                            </button>
-                          </td>
-                        </tr>
+                              {pos.qty < 1 ? pos.qty.toFixed(4) : pos.qty.toFixed(2)}
+                            </td>
+                            <td
+                              style={{
+                                color: 'var(--foreground, #f0f6fc)',
+                                fontVariantNumeric: 'tabular-nums',
+                              }}
+                            >
+                              {fmtUSD(pos.avgCost)}
+                            </td>
+                            <td
+                              style={{
+                                color: 'var(--foreground, #f0f6fc)',
+                                fontVariantNumeric: 'tabular-nums',
+                              }}
+                            >
+                              {fmtUSD(curPrice)}
+                            </td>
+                            <td>
+                              <span className={`mock-pnl ${pnl >= 0 ? 'positive' : 'negative'}`}>
+                                {pnl >= 0 ? '+' : ''}
+                                {fmtUSD(pnl)}
+                                <br />
+                                <span style={{ fontSize: '0.65rem', fontWeight: 500 }}>
+                                  {pnlPct >= 0 ? '+' : ''}
+                                  {pnlPct.toFixed(2)}%
+                                </span>
+                              </span>
+                            </td>
+                            <td
+                              style={{
+                                color: 'var(--foreground, #f0f6fc)',
+                                fontVariantNumeric: 'tabular-nums',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {fmtUSD(pos.qty * curPrice)}
+                            </td>
+                            <td>
+                              <button
+                                className="mock-close-pos-btn"
+                                type="button"
+                                onClick={() => closePosition(pos.symbol)}
+                              >
+                                Close
+                              </button>
+                            </td>
+                          </tr>
+                          <tr style={{ background: 'rgba(255,200,0,0.06)' }}>
+                            <td
+                              colSpan={8}
+                              style={{
+                                fontFamily: 'monospace',
+                                fontSize: '0.68rem',
+                                color: '#9ca3af',
+                                padding: '4px 10px',
+                                borderTop: '1px dashed rgba(255,200,0,0.2)',
+                              }}
+                            >
+                              🔍 <strong>{sym}</strong> · livePrices[{sym}] ={' '}
+                              {JSON.stringify(livePxEntry) ?? 'undefined'} · curPrice = {String(curPrice)} · source ={' '}
+                              <strong>{source}</strong> · livePricesKeys = [{livePricesKeysStr}]
+                            </td>
+                          </tr>
+                        </Fragment>
                       );
                     })}
                   </tbody>
