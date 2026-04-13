@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { motion, MotionConfig, AnimatePresence } from 'framer-motion';
 
-export function AnimatedNav({ items, accentColor = '#10b981' }) {
+export function AnimatedNav({ items, accentColor = '#10b981', onProGateClick }) {
   const [hovered, setHovered] = useState(null);
 
   return (
@@ -61,21 +61,48 @@ export function AnimatedNav({ items, accentColor = '#10b981' }) {
                       className="animated-nav-dropdown"
                       style={{ '--accent': accentColor }}
                     >
-                      {item.items?.map((sub) => (
-                        <Link
-                          key={sub.id}
-                          href={sub.url}
-                          className={`animated-nav-dropdown-item${sub.variant === 'gold' ? ' animated-nav-dropdown-item--gold' : ''}`}
-                        >
-                          {sub.icon && <i className={`bi ${sub.icon}`} />}
-                          <div className="animated-nav-dropdown-text">
-                            <span className="animated-nav-dropdown-title">{sub.title}</span>
-                            {sub.description && (
-                              <span className="animated-nav-dropdown-desc">{sub.description}</span>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
+                      {item.items?.map((sub) => {
+                        const itemClass = `animated-nav-dropdown-item${sub.variant === 'gold' ? ' animated-nav-dropdown-item--gold' : ''}`;
+                        const body = (
+                          <>
+                            {sub.icon && <i className={`bi ${sub.icon}`} />}
+                            <div className="animated-nav-dropdown-text">
+                              <span className="animated-nav-dropdown-title">{sub.title}</span>
+                              {sub.description && (
+                                <span className="animated-nav-dropdown-desc">{sub.description}</span>
+                              )}
+                            </div>
+                          </>
+                        );
+                        if (sub.proGated && typeof onProGateClick === 'function') {
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                onProGateClick();
+                              }}
+                              className={itemClass}
+                              style={{
+                                font: 'inherit',
+                                border: 'none',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                width: '100%',
+                                textAlign: 'left',
+                              }}
+                            >
+                              {body}
+                            </button>
+                          );
+                        }
+                        return (
+                          <Link key={sub.id} href={sub.url} className={itemClass}>
+                            {body}
+                          </Link>
+                        );
+                      })}
                     </motion.div>
                   </div>
                 )}

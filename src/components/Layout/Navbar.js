@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
+import { useProGate } from '@/components/upgrade/ProGateContext';
 import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
@@ -17,6 +18,7 @@ export function Navbar() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { isOrgUser } = useOrg();
+  const { openProGate } = useProGate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const landingNavRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');
@@ -60,9 +62,9 @@ export function Navbar() {
         { id: 23, title: 'Global Market Analysis', description: 'Worldwide sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
         { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
         { id: 27, title: 'Alternative Markets', description: 'Crypto & commodities', url: '/alternative-markets', icon: 'bi-globe2' },
-        { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold' },
-        { id: 25, title: 'Betting Markets', description: 'Odds, predictions & EV models', url: '/betting-markets', icon: 'bi-bullseye', variant: 'gold' },
-        { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator', variant: 'gold' },
+        { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold', proGated: true },
+        { id: 25, title: 'Betting Markets', description: 'Odds, predictions & EV models', url: '/betting-markets', icon: 'bi-bullseye', variant: 'gold', proGated: true },
+        { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator', variant: 'gold', proGated: true },
       ],
     },
     {
@@ -300,7 +302,7 @@ export function Navbar() {
         >
           <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
         </button>
-        <AnimatedNav items={userNavItems} accentColor="#10b981" />
+        <AnimatedNav items={userNavItems} accentColor="#10b981" onProGateClick={openProGate} />
         <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
           <Link href="/home-dashboard" className={`nav-link ${pathname?.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard" onClick={() => setMobileMenuOpen(false)}>
             <i className="bi bi-speedometer2"></i>
@@ -332,27 +334,54 @@ export function Navbar() {
                 <i className="bi bi-globe2"></i>
                 <div><div className="item-title">Alternative Markets</div></div>
               </Link>
-              <Link href="/kairos-signal" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
+              <button
+                type="button"
+                className="dropdown-item dropdown-item--gold"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  openProGate();
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+              >
                 <i className="bi bi-cloud-sun-fill"></i>
                 <div>
                   <div className="item-title">Kairos Signal</div>
                   <div className="item-desc">Weather &amp; alternative macro data</div>
                 </div>
-              </Link>
-              <Link href="/betting-markets" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
+              </button>
+              <button
+                type="button"
+                className="dropdown-item dropdown-item--gold"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  openProGate();
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+              >
                 <i className="bi bi-bullseye"></i>
                 <div>
                   <div className="item-title">Betting Markets</div>
                   <div className="item-desc">Odds, predictions &amp; EV models</div>
                 </div>
-              </Link>
-              <Link href="/for-the-quants" className="dropdown-item dropdown-item--gold" onClick={() => setMobileMenuOpen(false)}>
+              </button>
+              <button
+                type="button"
+                className="dropdown-item dropdown-item--gold"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  openProGate();
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit' }}
+              >
                 <i className="bi bi-calculator"></i>
                 <div>
                   <div className="item-title">For The Quants</div>
                   <div className="item-desc">Quant tools &amp; backtesting</div>
                 </div>
-              </Link>
+              </button>
             </div>
           </div>
           <div className={`nav-dropdown mobile-dropdown-flat ${isTradingActive ? 'active' : ''}`}>

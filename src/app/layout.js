@@ -5,6 +5,7 @@ import { validateEnv } from '@/lib/env';
 validateEnv();
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
+import { ProGateProvider } from '@/components/upgrade/ProGateContext';
 import { PartnerProvider } from '@/contexts/PartnerContext';
 import { OrgProvider } from '@/contexts/OrgContext';
 import { CongressProvider } from '@/contexts/CongressContext';
@@ -68,6 +69,7 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="skip-to-content">Skip to content</a>
         <ThemeProvider>
           <AuthProvider>
+            <ProGateProvider>
             <SettingsProvider>
               <ActiveTaskProvider>
                 <PartnerProvider>
@@ -87,6 +89,7 @@ export default function RootLayout({ children }) {
                 </PartnerProvider>
               </ActiveTaskProvider>
             </SettingsProvider>
+            </ProGateProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

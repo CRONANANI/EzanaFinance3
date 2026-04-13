@@ -8,6 +8,7 @@ import './home-terminal-summary.css';
 import { ThisWeekOnEzana } from './ThisWeekOnEzana';
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { useOrg } from '@/contexts/OrgContext';
+import { useProGate } from '@/components/upgrade/ProGateContext';
 import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
@@ -217,6 +218,7 @@ export function HomeTerminalSummary({
   const [congressTrades, setCongressTrades] = useState([]);
   const [congressLoading, setCongressLoading] = useState(true);
   const { isOrgUser } = useOrg();
+  const { openProGate } = useProGate();
 
   useEffect(() => {
     if (user?.id) {
@@ -429,7 +431,18 @@ export function HomeTerminalSummary({
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
-      <Link href="/centaur-intelligence" style={{ textDecoration: 'none', display: 'block' }}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={openProGate}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openProGate();
+          }
+        }}
+        style={{ cursor: 'pointer', textDecoration: 'none', display: 'block' }}
+      >
         <div
           style={{
             width: '100%',
@@ -477,7 +490,7 @@ export function HomeTerminalSummary({
             <i className="bi bi-chevron-right" style={{ color: '#D4AF37', fontSize: '0.7rem' }} />
           </div>
         </div>
-      </Link>
+      </div>
 
       <OrgHomeCards />
 

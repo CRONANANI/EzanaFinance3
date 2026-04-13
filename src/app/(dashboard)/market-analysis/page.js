@@ -7,6 +7,7 @@ import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapCo
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
+import { useProGate } from '@/components/upgrade/ProGateContext';
 import {
   PANEL_ID_TO_CITY_KEY,
   PANEL_ID_TO_FINHUB_CITY_ID,
@@ -718,6 +719,7 @@ function EventAnalysisProse({ text }) {
 }
 
 function ChainView() {
+  const { openProGate } = useProGate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [analyzeEvent, setAnalyzeEvent] = useState(null);
@@ -842,7 +844,8 @@ function ChainView() {
                   </a>
                 )}
                 <button
-                  onClick={() => handleAnalyze(event)}
+                  type="button"
+                  onClick={openProGate}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
