@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
+import { createClient } from '@/lib/supabase';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -25,6 +26,35 @@ export default function UserProfileSettingsPage() {
     trading: true,
   });
   const [saved, setSaved] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState(null);
+
+  const handleResetPassword = async () => {
+    setResetLoading(true);
+    setResetMessage(null);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (!authUser?.email) throw new Error('No user email available');
+      const { error } = await supabase.auth.resetPasswordForEmail(authUser.email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (error) throw error;
+      setResetMessage({
+        type: 'success',
+        text: `Password reset link sent to ${authUser.email}. Check your inbox.`,
+      });
+    } catch (err) {
+      setResetMessage({
+        type: 'error',
+        text: err.message || 'Failed to send reset link. Please try again.',
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaved(true);
@@ -137,12 +167,26 @@ export default function UserProfileSettingsPage() {
                 </div>
               </div>
               <div className="space-y-4">
-                <Link
-                  href="/forgot-password"
-                  className="inline-flex items-center px-6 py-3 bg-accent text-accent-foreground rounded-xl font-medium hover:bg-accent/90 transition-all duration-300">
+                <p className="text-sm text-muted-foreground">
+                  Send a password reset link to your email. You&apos;ll set a new password on the secure page we open from the link.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
+                  disabled={resetLoading}
+                  className="inline-flex items-center px-6 py-3 bg-accent text-accent-foreground rounded-xl font-medium hover:bg-accent/90 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
                   <i className="bi bi-key mr-2" />
-                  Change Password
-                </Link>
+                  {resetLoading ? 'Sending…' : 'Reset Password'}
+                </button>
+                {resetMessage && (
+                  <p
+                    className={`text-sm ${resetMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}
+                    role="status"
+                  >
+                    {resetMessage.text}
+                  </p>
+                )}
               </div>
             </div>
 

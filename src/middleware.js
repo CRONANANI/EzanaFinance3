@@ -112,28 +112,6 @@ export async function middleware(request) {
     }
   }
 
-  /** Require onboarding completion for authenticated users accessing user dashboard (except onboarding page itself) */
-  if (
-    user &&
-    onUserProtectedRoute &&
-    !pathname.includes('/onboarding') &&
-    !pathname.includes('/payment') &&
-    !isTradingPublicPath
-  ) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profile?.onboarding_completed !== true) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/onboarding';
-      url.search = '';
-      return NextResponse.redirect(url);
-    }
-  }
-
   return response;
 }
 
