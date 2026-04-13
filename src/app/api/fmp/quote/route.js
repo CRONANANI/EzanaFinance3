@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const FMP_KEY = process.env.FMP_API_KEY;
-// Use v3 instead of stable — v3 supports batching via URL path, stable doesn't
 const BASE = 'https://financialmodelingprep.com/api/v3';
 
 export async function GET(request) {
@@ -20,35 +19,61 @@ export async function GET(request) {
   }
 
   try {
-    // v3 batch quote: tickers go in the URL path, comma-separated
-    // https://financialmodelingprep.com/api/v3/quote/AAPL,NVDA,MSFT?apikey=...
-    const url = `${BASE}/quote/${encodeURIComponent(list)}?apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const ts = Date.now();
+    const url = `${BASE}/quote/${encodeURIComponent(list)}?apikey=${encodeURIComponent(FMP_KEY)}&_ts=${ts}`;
+
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`FMP quote HTTP ${res.status}`);
     const data = await res.json();
     const quotes = Array.isArray(data) ? data : [data].filter(Boolean);
 
-    // Legacy single-symbol mode — preserve original flat-object response shape
-    // so any existing caller using ?symbol=AAPL doesn't break.
     if (single && !many) {
       return NextResponse.json(quotes[0] ?? {});
     }
 
-    // Multi-symbol mode — return both the array and a symbol→price map
-    // so the client can O(1) look up prices by ticker.
     const priceMap = {};
     for (const q of quotes) {
-      if (q?.symbol && typeof q.price === 'number') {
-        priceMap[q.symbol.toUpperCase()] = {
-          price: q.price,
-          change: q.change ?? 0,
-          changesPercentage: q.changesPercentage ?? 0,
-        };
+      if (!q?.symbol) continue;
+      const sym = String(q.symbol).toUpperCase();
+
+      let chosen = null;
+      let source = 'price';
+      const p = typeof q.price === 'number' ? q.price : Number(q.price);
+      if (Number.isFinite(p) && p > 0) {
+        chosen = p;
+        source = 'price';
+      } else {
+        const pc = typeof q.previousClose === 'number' ? q.previousClose : Number(q.previousClose);
+        if (Number.isFinite(pc) && pc > 0) {
+          chosen = pc;
+          source = 'previousClose';
+        } else {
+          const o = typeof q.open === 'number' ? q.open : Number(q.open);
+          if (Number.isFinite(o) && o > 0) {
+            chosen = o;
+            source = 'open';
+          }
+        }
       }
+
+      if (chosen === null) {
+        console.warn(`[fmp/quote] ${sym}: no usable price field in response row:`, q);
+        continue;
+      }
+
+      const ch = typeof q.change === 'number' ? q.change : Number(q.change);
+      const cp = typeof q.changesPercentage === 'number' ? q.changesPercentage : Number(q.changesPercentage);
+      priceMap[sym] = {
+        price: chosen,
+        change: Number.isFinite(ch) ? ch : 0,
+        changesPercentage: Number.isFinite(cp) ? cp : 0,
+        _source: source,
+      };
     }
+
     return NextResponse.json({ quotes, priceMap });
   } catch (err) {
-    console.error('[fmp/quote]', err.message);
+    console.error('[fmp/quote] error:', err.message);
     return NextResponse.json(
       { error: err.message, quotes: [], priceMap: {} },
       { status: 200 }

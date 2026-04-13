@@ -409,7 +409,11 @@ export default function MockTradingPage() {
     .join(',');
   const totalPositionValue = positionsList.reduce((s, p) => {
     const sym = String(p.symbol || '').toUpperCase();
-    const px = livePrices[sym]?.price ?? p.currentPrice ?? p.avgCost;
+    const livePx = livePrices[sym]?.price;
+    const px =
+      (typeof livePx === 'number' && livePx > 0 ? livePx : null) ??
+      p.currentPrice ??
+      p.avgCost;
     return s + px * p.qty;
   }, 0);
   const totalPortfolioValue = portfolio.cash + totalPositionValue;
@@ -604,8 +608,11 @@ export default function MockTradingPage() {
                   <tbody>
                     {positionsList.map((pos) => {
                       const sym = String(pos.symbol || '').toUpperCase();
+                      const livePx = livePrices[sym]?.price;
                       const curPrice =
-                        livePrices[sym]?.price ?? pos.currentPrice ?? pos.avgCost;
+                        (typeof livePx === 'number' && livePx > 0 ? livePx : null) ??
+                        pos.currentPrice ??
+                        pos.avgCost;
                       const pnl = (curPrice - pos.avgCost) * pos.qty;
                       const pnlPct = (curPrice / pos.avgCost - 1) * 100;
                       return (
