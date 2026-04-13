@@ -113,6 +113,36 @@ function normalizeTrade(t, _chamberFallback, idx = 0) {
   };
 }
 
+function parseLobbyingAmount(raw) {
+  if (raw == null || raw === '') return 0;
+  if (typeof raw === 'number') return raw;
+  const s = String(raw).trim();
+  const suffixMatch = s.match(/^\$?([\d.]+)\s*([KMB])$/i);
+  if (suffixMatch) {
+    const n = Number(suffixMatch[1]);
+    const mult = { K: 1e3, M: 1e6, B: 1e9 }[suffixMatch[2].toUpperCase()];
+    return Number.isFinite(n) ? n * mult : 0;
+  }
+  const cleaned = s.replace(/[$,]/g, '');
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function formatCompactUSD(n) {
+  if (!Number.isFinite(n) || n === 0) return '—';
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
+  return `$${n.toFixed(0)}`;
+}
+
+function formatShortDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 /* STAT_CARDS — values are filled dynamically from fetched data */
 const STAT_CARDS_BASE = [
   { id: 'trades', icon: 'bi-arrow-left-right', label: 'Total Trades', color: '#10b981' },
@@ -450,6 +480,10 @@ function InsideTheCapitolContent() {
   const [latestTrades, setLatestTrades] = useState([]);
   const [selectedYear, setSelectedYear] = useState(null);
   const [tradesLoading, setTradesLoading] = useState(true);
+  const [lobbyingData, setLobbyingData] = useState([]);
+  const [lobbyingLoading, setLobbyingLoading] = useState(true);
+  const [sec13fData, setSec13fData] = useState([]);
+  const [sec13fLoading, setSec13fLoading] = useState(true);
   const [statsData, setStatsData] = useState({
     trades: { value: '—', change: 'Loading...', changeType: 'neutral' },
     volume: { value: '—', change: 'Loading...', changeType: 'neutral' },
@@ -544,6 +578,54 @@ function InsideTheCapitolContent() {
     }
 
     fetchTrades();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/quiver/lobbying');
+        const data = res.ok ? await res.json() : [];
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : [];
+        arr.sort((a, b) => new Date(b.Date || 0) - new Date(a.Date || 0));
+        setLobbyingData(arr.slice(0, 25));
+      } catch (err) {
+        console.error('[lobbying] fetch failed:', err);
+        if (!cancelled) setLobbyingData([]);
+      } finally {
+        if (!cancelled) setLobbyingLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/quiver/sec13f');
+        const data = res.ok ? await res.json() : [];
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : [];
+        arr.sort((a, b) => {
+          const dateDiff = new Date(b.Date || 0) - new Date(a.Date || 0);
+          if (dateDiff !== 0) return dateDiff;
+          return (Number(b.Value) || 0) - (Number(a.Value) || 0);
+        });
+        setSec13fData(arr.slice(0, 25));
+      } catch (err) {
+        console.error('[sec13f] fetch failed:', err);
+        if (!cancelled) setSec13fData([]);
+      } finally {
+        if (!cancelled) setSec13fLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const availableYears = useMemo(() => {
@@ -868,6 +950,101 @@ function InsideTheCapitolContent() {
           </div>
         </div>
       </PinnableCard>
+
+      {/* Row 4.5: Lobbying Activity + Recent 13F Filings */}
+      <div className="itc-row-trades-sector">
+        <PinnableCard
+          cardId="itc-lobbying"
+          title="Lobbying Activity"
+          sourcePage="/inside-the-capitol"
+          sourceLabel="Inside The Capitol"
+          defaultW={2}
+          defaultH={2}
+          className="itc-pinnable-fill"
+        >
+          <div className="itc-card">
+            <div className="itc-hdr">
+              <h3>LOBBYING ACTIVITY</h3>
+            </div>
+            <div className="itc-body itc-body-pad">
+              {lobbyingLoading ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>
+                  Loading lobbying data…
+                </div>
+              ) : lobbyingData.length === 0 ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>
+                  No recent lobbying disclosures available.
+                </div>
+              ) : (
+                lobbyingData.map((l, i) => {
+                  const amt = parseLobbyingAmount(l.Amount);
+                  return (
+                    <div key={`${l.Client}-${l.Registrant}-${l.Date}-${i}`} className="itc-lob-row">
+                      <div className="itc-lob-left">
+                        <span className="itc-lob-client">{l.Client || '—'}</span>
+                        <span className="itc-lob-meta">
+                          via {l.Registrant || 'Unknown'} · {l.Issue || l.Specific_Issue || 'General'}
+                        </span>
+                      </div>
+                      <div className="itc-lob-right">
+                        <span className="itc-lob-amount">{formatCompactUSD(amt)}</span>
+                        <span className="itc-lob-date">{formatShortDate(l.Date)}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </PinnableCard>
+
+        <PinnableCard
+          cardId="itc-sec13f"
+          title="Recent 13F Filings"
+          sourcePage="/inside-the-capitol"
+          sourceLabel="Inside The Capitol"
+          defaultW={2}
+          defaultH={2}
+          className="itc-pinnable-fill"
+        >
+          <div className="itc-card">
+            <div className="itc-hdr">
+              <h3>RECENT 13F FILINGS</h3>
+            </div>
+            <div className="itc-body itc-body-pad">
+              {sec13fLoading ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>
+                  Loading 13F filings…
+                </div>
+              ) : sec13fData.length === 0 ? (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: '#8b949e', fontSize: '0.82rem' }}>
+                  No recent 13F filings available.
+                </div>
+              ) : (
+                sec13fData.map((f, i) => {
+                  const value = Number(f.Value) || 0;
+                  const fundName = f.Name || f.Fund || 'Unknown Fund';
+                  return (
+                    <div key={`${fundName}-${f.Ticker}-${f.Date}-${i}`} className="itc-13f-row">
+                      <div className="itc-13f-left">
+                        <span className="itc-13f-fund">{fundName}</span>
+                        <span className="itc-13f-meta">
+                          <span className="itc-13f-ticker">{f.Ticker || '—'}</span>
+                          {f.ReportPeriod && ` · ${formatShortDate(f.ReportPeriod)}`}
+                        </span>
+                      </div>
+                      <div className="itc-13f-right">
+                        <span className="itc-13f-value">{formatCompactUSD(value)}</span>
+                        <span className="itc-13f-filed">Filed {formatShortDate(f.Date)}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </PinnableCard>
+      </div>
 
       {/* Row 5: Unusual volume · Bipartisan trades · Earnings watch */}
       <div className="itc-grid-3">

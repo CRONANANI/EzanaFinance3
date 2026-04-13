@@ -693,3 +693,91 @@ body.light-mode .itc-year-select option {
   background: #ffffff;
   color: #111827;
 }
+
+/* ── Lobbying Activity + Recent 13F Filings (Phase 2a) ── */
+.itc-lob-row,
+.itc-13f-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.itc-lob-row:last-child,
+.itc-13f-row:last-child {
+  border-bottom: none;
+}
+
+.itc-lob-left,
+.itc-13f-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+.itc-lob-right,
+.itc-13f-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.itc-lob-client,
+.itc-13f-fund {
+  color: #f0f6fc;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itc-lob-meta,
+.itc-13f-meta {
+  color: #6b7280;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itc-13f-ticker {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.itc-lob-amount,
+.itc-13f-value {
+  color: #f0f6fc;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.itc-lob-date,
+.itc-13f-filed {
+  color: #6b7280;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+body.light-mode .itc-lob-row,
+body.light-mode .itc-13f-row {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .itc-lob-client,
+body.light-mode .itc-13f-fund,
+body.light-mode .itc-lob-amount,
+body.light-mode .itc-13f-value {
+  color: #111827;
+}
+body.light-mode .itc-lob-meta,
+body.light-mode .itc-13f-meta,
+body.light-mode .itc-lob-date,
+body.light-mode .itc-13f-filed {
+  color: #4b5563;
+}
