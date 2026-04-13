@@ -128,6 +128,7 @@ export default function MockTradingPage() {
 
   const [toast, setToast] = useState(null);
   const toastRef = useRef(null);
+  const [livePrices, setLivePrices] = useState({});
 
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
@@ -401,13 +402,56 @@ export default function MockTradingPage() {
   }, [dbTrades, portfolio.history]);
 
   const positionsList = Object.values(portfolio.positions);
-  const totalPositionValue = positionsList.reduce(
-    (s, p) => s + (p.currentPrice ?? p.avgCost) * p.qty,
-    0
-  );
+  const openPositionSymbolsKey = positionsList
+    .map((p) => p.symbol)
+    .filter(Boolean)
+    .sort()
+    .join(',');
+  const totalPositionValue = positionsList.reduce((s, p) => {
+    const sym = String(p.symbol || '').toUpperCase();
+    const px = livePrices[sym]?.price ?? p.currentPrice ?? p.avgCost;
+    return s + px * p.qty;
+  }, 0);
   const totalPortfolioValue = portfolio.cash + totalPositionValue;
   const totalPnl = totalPortfolioValue - STARTING_CASH;
   const totalPnlPct = (totalPortfolioValue / STARTING_CASH - 1) * 100;
+
+  useEffect(() => {
+    const symbols = positionsList.map((p) => p.symbol).filter(Boolean);
+    if (symbols.length === 0) {
+      setLivePrices({});
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const fetchQuotes = async () => {
+      try {
+        const qs = encodeURIComponent(symbols.join(','));
+        const res = await fetch(`/api/fmp/quote?symbols=${qs}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data?.priceMap && typeof data.priceMap === 'object') {
+          setLivePrices(data.priceMap);
+        }
+      } catch (err) {
+        console.error('[mock] live quote fetch failed', err);
+      }
+    };
+
+    fetchQuotes();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') fetchQuotes();
+    }, 30_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when ticker set changes
+  }, [openPositionSymbolsKey]);
 
   const currentPrice = quoteData?.price ?? 0;
   const dollarAmount = parseFloat(amount) || 0;
@@ -559,7 +603,9 @@ export default function MockTradingPage() {
                   </thead>
                   <tbody>
                     {positionsList.map((pos) => {
-                      const curPrice = pos.currentPrice ?? pos.avgCost;
+                      const sym = String(pos.symbol || '').toUpperCase();
+                      const curPrice =
+                        livePrices[sym]?.price ?? pos.currentPrice ?? pos.avgCost;
                       const pnl = (curPrice - pos.avgCost) * pos.qty;
                       const pnlPct = (curPrice / pos.avgCost - 1) * 100;
                       return (
