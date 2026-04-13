@@ -840,3 +840,99 @@ body.light-mode .db-tf-btn:hover,
 body.light-mode .db-tf-btn-sm:hover {
   color: #111827;
 }
+
+/* ── Sector Distribution drawer (click-to-expand) ── */
+.db-sector-item--clickable {
+  transition: background 0.12s ease;
+}
+.db-sector-item--clickable:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.db-sector-item--clickable.is-expanded {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.db-sector-drawer {
+  margin: 0 0.25rem 0.5rem 1.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(16, 185, 129, 0.03);
+  border-left: 2px solid #10b981;
+  border-radius: 0 6px 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  animation: dbSectorDrawerIn 0.15s ease-out;
+}
+
+@keyframes dbSectorDrawerIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.db-sector-drawer-empty {
+  margin: 0;
+  padding: 0.25rem 0;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.db-sector-drawer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.db-sector-drawer-item:last-child {
+  border-bottom: none;
+}
+
+.db-sector-drawer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.db-sector-drawer-ticker {
+  color: #f0f6fc;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.db-sector-drawer-shares {
+  color: #6b7280;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.db-sector-drawer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+.db-sector-drawer-value {
+  color: #f0f6fc;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.db-sector-drawer-pnl {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.db-sector-drawer-pnl.positive { color: #10b981; }
+.db-sector-drawer-pnl.negative { color: #ef4444; }
+
+body.light-mode .db-sector-drawer {
+  background: rgba(16, 185, 129, 0.06);
+}
+body.light-mode .db-sector-drawer-ticker,
+body.light-mode .db-sector-drawer-value {
+  color: #111827;
+}
+body.light-mode .db-sector-drawer-item {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}

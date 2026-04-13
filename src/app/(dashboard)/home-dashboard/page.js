@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -209,6 +209,7 @@ export default function HomeDashboardPage() {
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
+  const [expandedSector, setExpandedSector] = useState(null);
 
   const useLiveHoldings =
     !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
@@ -719,19 +720,85 @@ export default function HomeDashboardPage() {
             </div>
           ) : (
             <div className="db-sector-list db-sector-list--compact">
-              {sectorRows.map((s) => (
-                <div key={s.name} className="db-sector-item">
-                  <div className="db-sector-item-left">
-                    <span className="db-sector-dot" style={{ background: s.color }} />
-                    <div>
-                      <span className="db-sector-name">{s.name}</span>
-                      {s.detail && <span className="db-sector-detail">{s.detail}</span>}
-                      <span className="db-sector-pct">{s.pct}%</span>
+              {sectorRows.map((s) => {
+                const isExpanded = expandedSector === s.name;
+                const sectorPositions = (mock.enrichedPositions || []).filter(
+                  (p) => p.sector === s.name,
+                );
+                return (
+                  <Fragment key={s.name}>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={`db-sector-item db-sector-item--clickable ${isExpanded ? 'is-expanded' : ''}`}
+                      onClick={() =>
+                        setExpandedSector((prev) => (prev === s.name ? null : s.name))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setExpandedSector((prev) => (prev === s.name ? null : s.name));
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="db-sector-item-left">
+                        <span className="db-sector-dot" style={{ background: s.color }} />
+                        <div>
+                          <span className="db-sector-name">{s.name}</span>
+                          {s.detail && <span className="db-sector-detail">{s.detail}</span>}
+                          <span className="db-sector-pct">{s.pct}%</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span className="db-sector-value">
+                          ${s.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                        <i
+                          className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`}
+                          style={{ fontSize: '0.75rem', color: '#6b7280' }}
+                          aria-hidden
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <span className="db-sector-value">${s.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                </div>
-              ))}
+
+                    {isExpanded && (
+                      <div className="db-sector-drawer" style={{ borderLeftColor: s.color }}>
+                        {sectorPositions.length === 0 ? (
+                          <p className="db-sector-drawer-empty">
+                            No individual positions available for this sector.
+                          </p>
+                        ) : (
+                          sectorPositions.map((p) => (
+                            <div key={p.symbol} className="db-sector-drawer-item">
+                              <div className="db-sector-drawer-left">
+                                <span className="db-sector-drawer-ticker">{p.symbol}</span>
+                                <span className="db-sector-drawer-shares">
+                                  {p.qty < 1 ? p.qty.toFixed(4) : p.qty.toFixed(2)} shares
+                                </span>
+                              </div>
+                              <div className="db-sector-drawer-right">
+                                <span className="db-sector-drawer-value">
+                                  $
+                                  {p.posValue.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                  })}
+                                </span>
+                                <span
+                                  className={`db-sector-drawer-pnl ${p.pnl >= 0 ? 'positive' : 'negative'}`}
+                                >
+                                  {p.pnl >= 0 ? '+' : ''}
+                                  {(p.pnlPct ?? 0).toFixed(2)}%
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </Fragment>
+                );
+              })}
             </div>
           )}
         </div>
