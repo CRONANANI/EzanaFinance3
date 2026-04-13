@@ -5,6 +5,26 @@ export const dynamic = 'force-dynamic';
 const FMP_KEY = process.env.FMP_API_KEY;
 const BASE = 'https://financialmodelingprep.com/api/v3';
 
+/** FMP often returns numeric fields as strings; coerce so priceMap is consistent for every ticker. */
+function parseFmpNumber(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function pickTradePrice(q) {
+  const price = parseFmpNumber(q?.price);
+  if (price !== null && price > 0) return { value: price, source: 'price' };
+  const prevClose = parseFmpNumber(q?.previousClose);
+  if (prevClose !== null && prevClose > 0) return { value: prevClose, source: 'previousClose' };
+  const open = parseFmpNumber(q?.open);
+  if (open !== null && open > 0) return { value: open, source: 'open' };
+  return null;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const single = (searchParams.get('symbol') || '').toUpperCase().trim();
@@ -57,7 +77,23 @@ export async function GET(request) {
     console.log(`[fmp/quote] received ${quotes.length} quotes for: ${list}`);
 
     if (single && !many) {
-      return NextResponse.json(quotes[0] ?? {});
+      const q = quotes[0];
+      if (!q) return NextResponse.json({});
+      const picked = pickTradePrice(q);
+      const symUp = String(q.symbol || single).toUpperCase();
+      if (!picked) {
+        return NextResponse.json({ symbol: symUp, error: 'no usable price' });
+      }
+      return NextResponse.json({
+        symbol: symUp,
+        name: q.name,
+        price: picked.value,
+        change: parseFmpNumber(q.change) ?? 0,
+        changesPercentage: parseFmpNumber(q.changesPercentage) ?? 0,
+        previousClose: parseFmpNumber(q.previousClose),
+        open: parseFmpNumber(q.open),
+        _source: picked.source,
+      });
     }
 
     const priceMap = {};
@@ -68,32 +104,21 @@ export async function GET(request) {
         continue;
       }
       const sym = q.symbol.toUpperCase();
-      let chosen = null;
-      let source = null;
+      const picked = pickTradePrice(q);
 
-      if (typeof q.price === 'number' && q.price > 0) {
-        chosen = q.price;
-        source = 'price';
-      } else if (typeof q.previousClose === 'number' && q.previousClose > 0) {
-        chosen = q.previousClose;
-        source = 'previousClose';
-        warnings.push(`${sym}: using previousClose (price=${q.price})`);
-      } else if (typeof q.open === 'number' && q.open > 0) {
-        chosen = q.open;
-        source = 'open';
-        warnings.push(`${sym}: using open (price=${q.price}, previousClose=${q.previousClose})`);
-      }
-
-      if (chosen === null) {
+      if (!picked) {
         warnings.push(`${sym}: no usable price field`);
         continue;
       }
+      if (picked.source !== 'price') {
+        warnings.push(`${sym}: using ${picked.source} (price=${q.price})`);
+      }
 
       priceMap[sym] = {
-        price: chosen,
-        change: typeof q.change === 'number' ? q.change : 0,
-        changesPercentage: typeof q.changesPercentage === 'number' ? q.changesPercentage : 0,
-        _source: source,
+        price: picked.value,
+        change: parseFmpNumber(q.change) ?? 0,
+        changesPercentage: parseFmpNumber(q.changesPercentage) ?? 0,
+        _source: picked.source,
       };
     }
 

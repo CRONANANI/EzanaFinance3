@@ -55,6 +55,26 @@ function formatOpenedDate(iso) {
   });
 }
 
+/** Normalize live quote entries (numbers or numeric strings from API). */
+function resolveLivePrice(entry) {
+  if (!entry || entry.price == null) return null;
+  const p = entry.price;
+  if (typeof p === 'number' && Number.isFinite(p) && p > 0) return p;
+  if (typeof p === 'string' && p.trim() !== '') {
+    const n = Number(p);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
+function chunkSymbols(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+const MOCK_QUOTE_CHUNK = 45;
+
 /* ──────────────────────────────────────────
    MAIN PAGE
 ────────────────────────────────────────── */
@@ -135,9 +155,11 @@ export default function MockTradingPage() {
     if (!sym) return;
     setQuoteLoading(true);
     try {
-      const r = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`);
+      const r = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`, {
+        cache: 'no-store',
+      });
       const d = await r.json();
-      setQuoteData(d?.price != null ? d : null);
+      setQuoteData(d?.price != null && !d.error ? d : null);
     } catch {
       setQuoteData(null);
     } finally {
@@ -343,7 +365,9 @@ export default function MockTradingPage() {
     let price = pos.currentPrice;
     if (!price || price <= 0) {
       try {
-        const r = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`);
+        const r = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`, {
+          cache: 'no-store',
+        });
         const d = await r.json();
         price = d?.price ?? 0;
       } catch {
@@ -402,19 +426,19 @@ export default function MockTradingPage() {
     return portfolio.history || [];
   }, [dbTrades, portfolio.history]);
 
-  const positionsList = Object.values(portfolio.positions);
-  const openPositionSymbolsKey = positionsList
-    .map((p) => p.symbol)
-    .filter(Boolean)
-    .sort()
-    .join(',');
+  const positionsList = Object.values(portfolio.positions || {});
+  const openPositionSymbolsKey = useMemo(() => {
+    const set = new Set();
+    for (const p of Object.values(portfolio.positions || {})) {
+      const s = String(p.symbol || '').trim().toUpperCase();
+      if (s) set.add(s);
+    }
+    return [...set].sort().join(',');
+  }, [portfolio.positions]);
   const totalPositionValue = positionsList.reduce((s, p) => {
-    const sym = String(p.symbol || '').toUpperCase();
-    const livePx = livePrices[sym]?.price;
-    const px =
-      (typeof livePx === 'number' && livePx > 0 ? livePx : null) ??
-      p.currentPrice ??
-      p.avgCost;
+    const sym = String(p.symbol || '').trim().toUpperCase();
+    const livePx = resolveLivePrice(livePrices[sym]);
+    const px = livePx ?? p.currentPrice ?? p.avgCost;
     return s + px * p.qty;
   }, 0);
   const totalPortfolioValue = portfolio.cash + totalPositionValue;
@@ -422,12 +446,13 @@ export default function MockTradingPage() {
   const totalPnlPct = (totalPortfolioValue / STARTING_CASH - 1) * 100;
 
   useEffect(() => {
-    const symbols = positionsList.map((p) => p.symbol).filter(Boolean);
-
-    console.log('[mock-prices] effect firing, symbols:', symbols);
+    const symbols = [...new Set(
+      Object.values(portfolio.positions || {})
+        .map((p) => String(p.symbol || '').trim().toUpperCase())
+        .filter(Boolean),
+    )].sort();
 
     if (symbols.length === 0) {
-      console.log('[mock-prices] no symbols, clearing livePrices');
       setLivePrices({});
       setPriceFetchError(null);
       return undefined;
@@ -435,72 +460,86 @@ export default function MockTradingPage() {
 
     let cancelled = false;
     let retryTimeout = null;
+    const symbolsSet = new Set(symbols);
 
-    const fetchQuotes = async (attemptNum = 1) => {
+    const fetchQuotes = async () => {
       try {
-        const qs = encodeURIComponent(symbols.join(','));
-        const fetchUrl = `/api/fmp/quote?symbols=${qs}`;
-        console.log(`[mock-prices] attempt ${attemptNum} fetching:`, fetchUrl);
+        const combined = {};
+        const chunks = chunkSymbols(symbols, MOCK_QUOTE_CHUNK);
 
-        const res = await fetch(fetchUrl, { cache: 'no-store' });
-        console.log(`[mock-prices] attempt ${attemptNum} status:`, res.status);
+        for (const group of chunks) {
+          if (cancelled) return;
+          const qs = encodeURIComponent(group.join(','));
+          const res = await fetch(`/api/fmp/quote?symbols=${qs}`, { cache: 'no-store' });
+          const data = await res.json().catch(() => null);
+          if (cancelled) return;
 
-        const data = await res.json().catch(() => null);
-        console.log(`[mock-prices] attempt ${attemptNum} body:`, data);
+          if (!data) {
+            setPriceFetchError(`HTTP ${res.status} — response not JSON`);
+            continue;
+          }
 
-        if (cancelled) {
-          console.warn('[mock-prices] effect cancelled, discarding response');
-          return;
+          if (data.priceMap && typeof data.priceMap === 'object') {
+            Object.assign(combined, data.priceMap);
+          }
         }
 
-        if (!data) {
-          const msg = `HTTP ${res.status} — response not JSON`;
-          console.error('[mock-prices]', msg);
-          setPriceFetchError(msg);
-          return;
+        if (cancelled) return;
+
+        const missingAfterBatch = symbols.filter((sym) => resolveLivePrice(combined[sym]) == null);
+        for (const sym of missingAfterBatch) {
+          if (cancelled) return;
+          try {
+            const res = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`, {
+              cache: 'no-store',
+            });
+            const d = await res.json().catch(() => null);
+            if (!d || d.error) continue;
+            const px = resolveLivePrice({ price: d.price });
+            if (px != null) {
+              combined[sym] = {
+                price: px,
+                change: typeof d.change === 'number' ? d.change : Number(d.change) || 0,
+                changesPercentage:
+                  typeof d.changesPercentage === 'number'
+                    ? d.changesPercentage
+                    : Number(d.changesPercentage ?? d.changePercentage) || 0,
+              };
+            }
+          } catch {
+            /* ignore per-symbol */
+          }
         }
 
-        if (data.error) {
-          const msg = `${data.error}${data.detail ? `: ${data.detail}` : ''}`;
-          console.error('[mock-prices] route returned error:', msg);
-          setPriceFetchError(msg);
-          return;
-        }
+        setLivePrices((prev) => {
+          const next = { ...prev, ...combined };
+          for (const k of Object.keys(next)) {
+            if (!symbolsSet.has(k)) delete next[k];
+          }
+          return next;
+        });
 
-        if (
-          data.priceMap &&
-          typeof data.priceMap === 'object' &&
-          Object.keys(data.priceMap).length > 0
-        ) {
-          console.log(
-            '[mock-prices] ✓ setting livePrices with',
-            Object.keys(data.priceMap).length,
-            'entries:',
-            Object.keys(data.priceMap)
+        const stillMissing = symbols.filter((sym) => resolveLivePrice(combined[sym]) == null);
+        if (stillMissing.length > 0) {
+          setPriceFetchError(
+            `No live price for: ${stillMissing.join(', ')} (showing cost basis as fallback)`,
           );
-          setLivePrices(data.priceMap);
-          setPriceFetchError(null);
         } else {
-          const msg = 'priceMap empty or missing';
-          console.warn('[mock-prices]', msg, data);
-          setPriceFetchError(msg);
+          setPriceFetchError(null);
         }
       } catch (err) {
-        console.error(`[mock-prices] attempt ${attemptNum} threw:`, err);
         if (!cancelled) setPriceFetchError(err?.message || 'fetch threw');
       }
     };
 
-    fetchQuotes(1);
+    fetchQuotes();
 
     retryTimeout = setTimeout(() => {
-      if (cancelled) return;
-      console.log('[mock-prices] defensive retry firing');
-      fetchQuotes(2);
+      if (!cancelled) fetchQuotes();
     }, 2500);
 
     const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') fetchQuotes(1);
+      if (document.visibilityState === 'visible') fetchQuotes();
     }, 30_000);
 
     return () => {
@@ -677,25 +716,11 @@ export default function MockTradingPage() {
                   </thead>
                   <tbody>
                     {positionsList.map((pos) => {
-                      const sym = String(pos.symbol || '').toUpperCase();
-                      const livePxEntry = livePrices[sym];
-                      const livePx = livePxEntry?.price;
-                      const curPrice =
-                        (typeof livePx === 'number' && livePx > 0 ? livePx : null) ??
-                        pos.currentPrice ??
-                        pos.avgCost;
+                      const sym = String(pos.symbol || '').trim().toUpperCase();
+                      const livePx = resolveLivePrice(livePrices[sym]);
+                      const curPrice = livePx ?? pos.currentPrice ?? pos.avgCost;
                       const pnl = (curPrice - pos.avgCost) * pos.qty;
                       const pnlPct = (curPrice / pos.avgCost - 1) * 100;
-
-                      let source;
-                      if (typeof livePx === 'number' && livePx > 0) {
-                        source = 'LIVE';
-                      } else if (pos.currentPrice != null) {
-                        source = 'pos.currentPrice';
-                      } else {
-                        source = 'pos.avgCost';
-                      }
-                      const livePricesKeysStr = Object.keys(livePrices).join(',') || '(empty)';
 
                       return (
                         <Fragment key={pos.symbol}>
@@ -778,22 +803,6 @@ export default function MockTradingPage() {
                               >
                                 Close
                               </button>
-                            </td>
-                          </tr>
-                          <tr style={{ background: 'rgba(255,200,0,0.06)' }}>
-                            <td
-                              colSpan={8}
-                              style={{
-                                fontFamily: 'monospace',
-                                fontSize: '0.68rem',
-                                color: '#9ca3af',
-                                padding: '4px 10px',
-                                borderTop: '1px dashed rgba(255,200,0,0.2)',
-                              }}
-                            >
-                              🔍 <strong>{sym}</strong> · livePrices[{sym}] ={' '}
-                              {JSON.stringify(livePxEntry) ?? 'undefined'} · curPrice = {String(curPrice)} · source ={' '}
-                              <strong>{source}</strong> · livePricesKeys = [{livePricesKeysStr}]
                             </td>
                           </tr>
                         </Fragment>
