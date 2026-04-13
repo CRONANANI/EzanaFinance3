@@ -191,6 +191,48 @@ export default function MockTradingPage() {
     );
   }, [quoteData, selectedSymbol, setPortfolio]);
 
+  // Broadcast live prices from the batch FMP fetch into
+  // every position's currentPrice field. Without this,
+  // pos.currentPrice only gets updated for the ticker
+  // currently selected in Place Order (via the effect
+  // above), leaving every other position stuck at its
+  // cost basis. This effect runs whenever livePrices
+  // changes and patches every matching position at once.
+  useEffect(() => {
+    const liveKeys = Object.keys(livePrices);
+    if (liveKeys.length === 0) return;
+
+    setPortfolio(
+      (prev) => {
+        if (!prev.positions || Object.keys(prev.positions).length === 0) {
+          return prev;
+        }
+
+        let anyChanged = false;
+        const nextPositions = {};
+        for (const [sym, pos] of Object.entries(prev.positions)) {
+          const symUpper = String(sym).toUpperCase();
+          const livePx = resolveLivePrice(livePrices[symUpper]);
+          if (
+            typeof livePx === 'number' &&
+            livePx > 0 &&
+            livePx !== pos.currentPrice
+          ) {
+            nextPositions[sym] = { ...pos, currentPrice: livePx };
+            anyChanged = true;
+          } else {
+            nextPositions[sym] = pos;
+          }
+        }
+
+        if (!anyChanged) return prev;
+
+        return { ...prev, positions: nextPositions };
+      },
+      { skipSync: true }
+    );
+  }, [livePrices, setPortfolio]);
+
   const normalizeAssetType = (t) => {
     if (!t || typeof t !== 'string') return 'Stock';
     if (t.includes('ETF')) return 'ETF';
