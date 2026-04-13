@@ -15,67 +15,105 @@ export async function GET(request) {
     return NextResponse.json({ error: 'symbol(s) required' }, { status: 400 });
   }
   if (!FMP_KEY) {
-    return NextResponse.json({ error: 'FMP_API_KEY not configured' }, { status: 503 });
+    console.error('[fmp/quote] FMP_API_KEY missing — check env vars on Vercel');
+    return NextResponse.json(
+      { error: 'FMP_API_KEY not configured', quotes: [], priceMap: {} },
+      { status: 503 }
+    );
   }
 
-  try {
-    const ts = Date.now();
-    const url = `${BASE}/quote/${encodeURIComponent(list)}?apikey=${encodeURIComponent(FMP_KEY)}&_ts=${ts}`;
+  const url = `${BASE}/quote/${encodeURIComponent(list)}?apikey=${encodeURIComponent(FMP_KEY)}`;
+  const urlForLog = `${BASE}/quote/${encodeURIComponent(list)}?apikey=***`;
 
+  try {
+    console.log('[fmp/quote] upstream:', urlForLog);
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`FMP quote HTTP ${res.status}`);
+
+    if (!res.ok) {
+      let bodyText = '';
+      try {
+        bodyText = await res.text();
+      } catch {
+        bodyText = '(unreadable)';
+      }
+      console.error(
+        `[fmp/quote] upstream FMP returned HTTP ${res.status}:`,
+        bodyText.slice(0, 500)
+      );
+      return NextResponse.json(
+        {
+          error: `FMP HTTP ${res.status}`,
+          detail: bodyText.slice(0, 200),
+          quotes: [],
+          priceMap: {},
+        },
+        { status: 200 }
+      );
+    }
+
     const data = await res.json();
     const quotes = Array.isArray(data) ? data : [data].filter(Boolean);
+
+    console.log(`[fmp/quote] received ${quotes.length} quotes for: ${list}`);
 
     if (single && !many) {
       return NextResponse.json(quotes[0] ?? {});
     }
 
     const priceMap = {};
+    const warnings = [];
     for (const q of quotes) {
-      if (!q?.symbol) continue;
-      const sym = String(q.symbol).toUpperCase();
-
+      if (!q?.symbol) {
+        warnings.push(`row missing symbol: ${JSON.stringify(q).slice(0, 100)}`);
+        continue;
+      }
+      const sym = q.symbol.toUpperCase();
       let chosen = null;
-      let source = 'price';
-      const p = typeof q.price === 'number' ? q.price : Number(q.price);
-      if (Number.isFinite(p) && p > 0) {
-        chosen = p;
+      let source = null;
+
+      if (typeof q.price === 'number' && q.price > 0) {
+        chosen = q.price;
         source = 'price';
-      } else {
-        const pc = typeof q.previousClose === 'number' ? q.previousClose : Number(q.previousClose);
-        if (Number.isFinite(pc) && pc > 0) {
-          chosen = pc;
-          source = 'previousClose';
-        } else {
-          const o = typeof q.open === 'number' ? q.open : Number(q.open);
-          if (Number.isFinite(o) && o > 0) {
-            chosen = o;
-            source = 'open';
-          }
-        }
+      } else if (typeof q.previousClose === 'number' && q.previousClose > 0) {
+        chosen = q.previousClose;
+        source = 'previousClose';
+        warnings.push(`${sym}: using previousClose (price=${q.price})`);
+      } else if (typeof q.open === 'number' && q.open > 0) {
+        chosen = q.open;
+        source = 'open';
+        warnings.push(`${sym}: using open (price=${q.price}, previousClose=${q.previousClose})`);
       }
 
       if (chosen === null) {
-        console.warn(`[fmp/quote] ${sym}: no usable price field in response row:`, q);
+        warnings.push(`${sym}: no usable price field`);
         continue;
       }
 
-      const ch = typeof q.change === 'number' ? q.change : Number(q.change);
-      const cp = typeof q.changesPercentage === 'number' ? q.changesPercentage : Number(q.changesPercentage);
       priceMap[sym] = {
         price: chosen,
-        change: Number.isFinite(ch) ? ch : 0,
-        changesPercentage: Number.isFinite(cp) ? cp : 0,
+        change: typeof q.change === 'number' ? q.change : 0,
+        changesPercentage: typeof q.changesPercentage === 'number' ? q.changesPercentage : 0,
         _source: source,
       };
     }
 
-    return NextResponse.json({ quotes, priceMap });
+    if (warnings.length > 0) {
+      console.warn('[fmp/quote] warnings:', warnings);
+    }
+
+    console.log(
+      `[fmp/quote] priceMap has ${Object.keys(priceMap).length}/${quotes.length} entries`
+    );
+
+    return NextResponse.json({ quotes, priceMap, warnings });
   } catch (err) {
-    console.error('[fmp/quote] error:', err.message);
+    console.error('[fmp/quote] caught exception:', err?.message, err);
     return NextResponse.json(
-      { error: err.message, quotes: [], priceMap: {} },
+      {
+        error: err?.message || 'unknown error',
+        quotes: [],
+        priceMap: {},
+      },
       { status: 200 }
     );
   }

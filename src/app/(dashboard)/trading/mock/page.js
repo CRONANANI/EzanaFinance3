@@ -129,6 +129,7 @@ export default function MockTradingPage() {
   const [toast, setToast] = useState(null);
   const toastRef = useRef(null);
   const [livePrices, setLivePrices] = useState({});
+  const [priceFetchError, setPriceFetchError] = useState(null);
 
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
@@ -422,46 +423,89 @@ export default function MockTradingPage() {
 
   useEffect(() => {
     const symbols = positionsList.map((p) => p.symbol).filter(Boolean);
+
+    console.log('[mock-prices] effect firing, symbols:', symbols);
+
     if (symbols.length === 0) {
+      console.log('[mock-prices] no symbols, clearing livePrices');
       setLivePrices({});
+      setPriceFetchError(null);
       return undefined;
     }
 
     let cancelled = false;
+    let retryTimeout = null;
 
-    const fetchQuotes = async () => {
+    const fetchQuotes = async (attemptNum = 1) => {
       try {
         const qs = encodeURIComponent(symbols.join(','));
         const fetchUrl = `/api/fmp/quote?symbols=${qs}`;
-        console.log('[DIAG-MOCK] fetching:', fetchUrl, '→ symbols:', symbols);
+        console.log(`[mock-prices] attempt ${attemptNum} fetching:`, fetchUrl);
+
         const res = await fetch(fetchUrl, { cache: 'no-store' });
-        console.log('[DIAG-MOCK] response status:', res.status);
-        if (!res.ok) {
-          console.warn('[DIAG-MOCK] fetch not ok, bailing');
+        console.log(`[mock-prices] attempt ${attemptNum} status:`, res.status);
+
+        const data = await res.json().catch(() => null);
+        console.log(`[mock-prices] attempt ${attemptNum} body:`, data);
+
+        if (cancelled) {
+          console.warn('[mock-prices] effect cancelled, discarding response');
           return;
         }
-        const data = await res.json();
-        console.log('[DIAG-MOCK] response body:', JSON.stringify(data));
-        console.log('[DIAG-MOCK] priceMap keys:', Object.keys(data?.priceMap || {}));
-        if (cancelled) return;
-        if (data?.priceMap && typeof data.priceMap === 'object') {
+
+        if (!data) {
+          const msg = `HTTP ${res.status} — response not JSON`;
+          console.error('[mock-prices]', msg);
+          setPriceFetchError(msg);
+          return;
+        }
+
+        if (data.error) {
+          const msg = `${data.error}${data.detail ? `: ${data.detail}` : ''}`;
+          console.error('[mock-prices] route returned error:', msg);
+          setPriceFetchError(msg);
+          return;
+        }
+
+        if (
+          data.priceMap &&
+          typeof data.priceMap === 'object' &&
+          Object.keys(data.priceMap).length > 0
+        ) {
+          console.log(
+            '[mock-prices] ✓ setting livePrices with',
+            Object.keys(data.priceMap).length,
+            'entries:',
+            Object.keys(data.priceMap)
+          );
           setLivePrices(data.priceMap);
+          setPriceFetchError(null);
         } else {
-          console.warn('[DIAG-MOCK] priceMap missing or wrong type, NOT setting livePrices');
+          const msg = 'priceMap empty or missing';
+          console.warn('[mock-prices]', msg, data);
+          setPriceFetchError(msg);
         }
       } catch (err) {
-        console.error('[DIAG-MOCK] fetchQuotes threw:', err);
+        console.error(`[mock-prices] attempt ${attemptNum} threw:`, err);
+        if (!cancelled) setPriceFetchError(err?.message || 'fetch threw');
       }
     };
 
-    fetchQuotes();
+    fetchQuotes(1);
+
+    retryTimeout = setTimeout(() => {
+      if (cancelled) return;
+      console.log('[mock-prices] defensive retry firing');
+      fetchQuotes(2);
+    }, 2500);
 
     const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') fetchQuotes();
+      if (document.visibilityState === 'visible') fetchQuotes(1);
     }, 30_000);
 
     return () => {
       cancelled = true;
+      if (retryTimeout) clearTimeout(retryTimeout);
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-fetch when ticker set changes
@@ -591,6 +635,22 @@ export default function MockTradingPage() {
               <h3>
                 <i className="bi bi-briefcase" /> Open Positions
               </h3>
+              {priceFetchError && (
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    color: '#ef4444',
+                    background: 'rgba(239, 68, 68, 0.08)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    marginLeft: '8px',
+                  }}
+                  title="Live prices failed to load. Showing cost basis as fallback."
+                >
+                  ⚠ {priceFetchError}
+                </span>
+              )}
               <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                 {positionsList.length} position{positionsList.length !== 1 ? 's' : ''}
               </span>
