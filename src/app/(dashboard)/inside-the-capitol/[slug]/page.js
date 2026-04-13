@@ -274,7 +274,12 @@ export default function PoliticianProfilePage() {
             <div className="po-primary">
               <div className="po-primary-left">
                 <span className="po-primary-label">TOTAL VALUE</span>
-                <span className="po-primary-value">US${pol.totalValue.toLocaleString()}</span>
+                <span
+                  className="po-primary-value"
+                  style={pol.totalValue < 0 ? { color: '#ef4444' } : undefined}
+                >
+                  {pol.totalValue < 0 ? '-' : ''}US${Math.abs(pol.totalValue).toLocaleString()}
+                </span>
               </div>
               <div className={`po-primary-change ${isPositive ? 'positive' : 'negative'}`}>
                 <i className={`bi ${isPositive ? 'bi-arrow-up-short' : 'bi-arrow-down-short'}`} />

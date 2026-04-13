@@ -8,6 +8,107 @@ import {
 
 export const dynamic = 'force-dynamic';
 
+/** In-process cache for resolved BioGuideIDs (keyed by name+chamber). Expires on restart. */
+const bioGuideCache = new Map();
+
+function parseTradeSizeMidpoint(raw) {
+  if (!raw || typeof raw !== 'string') return 0;
+  const cleaned = raw.replace(/\$/g, '').replace(/,/g, '').trim();
+  const plusMatch = cleaned.match(/^(\d+)\s*\+$/);
+  if (plusMatch) return Number(plusMatch[1]);
+  const rangeMatch = cleaned.match(/^(\d+)\s*-\s*(\d+)$/);
+  if (rangeMatch) {
+    const lo = Number(rangeMatch[1]);
+    const hi = Number(rangeMatch[2]);
+    return Math.round((lo + hi) / 2);
+  }
+  const single = Number(cleaned);
+  return Number.isFinite(single) ? single : 0;
+}
+
+async function resolveBioGuideId(pol) {
+  const key = `${pol.name || ''}-${pol.chamber || ''}`;
+  if (bioGuideCache.has(key)) return bioGuideCache.get(key);
+  if (!process.env.QUIVER_API_KEY || !pol.name) return null;
+
+  try {
+    const url = new URL('https://api.quiverquant.com/beta/bulk/congresstrading');
+    url.searchParams.set('representative', pol.name);
+    url.searchParams.set('normalized', 'true');
+    url.searchParams.set('page', '0');
+    url.searchParams.set('page_size', '5');
+
+    const res = await fetch(url.toString(), {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${process.env.QUIVER_API_KEY}`,
+      },
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+
+    const id = rows[0]?.BioGuideID || null;
+    if (id) bioGuideCache.set(key, id);
+    return id;
+  } catch (err) {
+    console.error('[politician-profile] BioGuideID resolve failed:', err.message);
+    return null;
+  }
+}
+
+async function fetchQuiverTradesForPolitician(pol) {
+  if (!process.env.QUIVER_API_KEY) return [];
+  const bioguideId = await resolveBioGuideId(pol);
+  if (!bioguideId) return [];
+
+  try {
+    const base = new URL('https://api.quiverquant.com/beta/bulk/congresstrading');
+    base.searchParams.set('bioguide_id', bioguideId);
+    base.searchParams.set('normalized', 'true');
+    base.searchParams.set('page_size', '500');
+
+    const all = [];
+    for (let page = 0; page < 5; page += 1) {
+      base.searchParams.set('page', String(page));
+      const res = await fetch(base.toString(), {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${process.env.QUIVER_API_KEY}`,
+        },
+        next: { revalidate: 300 },
+      });
+      if (!res.ok) break;
+      const rows = await res.json();
+      if (!Array.isArray(rows) || rows.length === 0) break;
+
+      for (const r of rows) {
+        const tx = (r.Transaction || '').toLowerCase();
+        const isSell = tx.includes('sale') || tx.includes('sold') || tx.includes('disposal');
+        const type = isSell ? 'Sale' : 'Purchase';
+        all.push({
+          symbol: (r.Ticker || '').toString().toUpperCase(),
+          ticker: (r.Ticker || '').toString().toUpperCase(),
+          transactionDate: r.Traded || null,
+          disclosureDate: r.Filed || r.Traded || null,
+          amount: r.Trade_Size_USD || '',
+          transactionType: type,
+          type,
+          _tradeSizeUSD: r.Trade_Size_USD || '',
+          _isSell: isSell,
+          _excessReturn: r.excess_return ?? null,
+        });
+      }
+      if (rows.length < 500) break;
+    }
+    return all;
+  } catch (err) {
+    console.error('[politician-profile] Quiver fetch failed:', err.message);
+    return [];
+  }
+}
+
 const FMP_KEY = process.env.FMP_API_KEY;
 const BASE = 'https://financialmodelingprep.com/stable';
 
@@ -123,16 +224,16 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Politician not found', code: 'NOT_FOUND' }, { status: 404 });
   }
 
-  let rawTrades;
-  let resolvedChamber = pol.chamber;
+  let rawTrades = await fetchQuiverTradesForPolitician(pol);
 
-  if (pol.chamber === 'Senate' || pol.chamber === 'House') {
-    rawTrades = await fetchTradesForMember(pol);
-  } else {
-    const r = await fetchTradesResolved(pol);
-    rawTrades = r.trades;
-    resolvedChamber = r.chamber;
-    pol = { ...pol, chamber: resolvedChamber || 'House' };
+  if (rawTrades.length === 0) {
+    if (pol.chamber === 'Senate' || pol.chamber === 'House') {
+      rawTrades = await fetchTradesForMember(pol);
+    } else {
+      const r = await fetchTradesResolved(pol);
+      rawTrades = r.trades;
+      if (r.chamber) pol = { ...pol, chamber: r.chamber };
+    }
   }
 
   rawTrades.sort(
@@ -171,7 +272,15 @@ export async function GET(request) {
   const monthlyChange =
     totalTrades === 0 ? 0 : Math.round(((buys - sells) / totalTrades) * 20 * 10) / 10;
 
-  const totalValue = Math.max(1, totalTrades * 85000 + uniqueSyms * 120000);
+  const totalValue = rawTrades.reduce((sum, t) => {
+    if (t._tradeSizeUSD) {
+      const mid = parseTradeSizeMidpoint(t._tradeSizeUSD);
+      return sum + (t._isSell ? -mid : mid);
+    }
+    const raw = typeof t.amount === 'string' ? t.amount.replace(/[$,]/g, '') : t.amount;
+    const n = Number(raw) || 0;
+    return sum + (isSellType(t) ? -n : n);
+  }, 0);
   const ytdPct = Math.min(40, Math.max(-40, monthlyChange * 1.5));
   const ytdDollar = Math.round((totalValue * ytdPct) / 100);
 
@@ -209,7 +318,10 @@ export async function GET(request) {
       totalFilings: Math.min(totalTrades, 99),
       timeliness: avgReporting <= 30 ? 'On Time' : 'Late',
     },
-    _meta: { fmpTradeCount: totalTrades, source: 'FMP' },
+    _meta: {
+      fmpTradeCount: totalTrades,
+      source: rawTrades.some((t) => Object.prototype.hasOwnProperty.call(t, '_isSell')) ? 'Quiver' : 'FMP',
+    },
   };
 
   return NextResponse.json({ profile });
