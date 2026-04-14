@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { getCourseById, getLevelLabel, TRACKS } from '@/lib/learning-curriculum';
 import { getOrderedCoursesForTrack } from '@/lib/learning-progress-logic';
+import CourseVisual from './visuals/CourseVisual';
 
 export function LearningCoursePage() {
   const params = useParams();
@@ -18,7 +19,8 @@ export function LearningCoursePage() {
   const [readAck, setReadAck] = useState(false);
   const [quizMode, setQuizMode] = useState(false);
   const [qIdx, setQIdx] = useState(0);
-  const [answers, setAnswers] = useState([null, null, null, null, null]);
+  const [answers, setAnswers] = useState([]);
+  const [confirmed, setConfirmed] = useState(false);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,43 +51,47 @@ export function LearningCoursePage() {
       return;
     }
     startedRef.current = true;
-    (async () => {
-      await fetch('/api/learning/progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId, action: 'start' }),
-      });
-      await load();
-    })();
+    fetch('/api/learning/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ courseId, action: 'start' }),
+    }).then(() => load());
   }, [payload, courseId, load]);
 
-  const course = payload?.course || getCourseById(courseId);
+  const course = getCourseById(courseId);
   const content = payload?.content;
   const progress = payload?.progress;
 
-  const trackLabel = TRACKS.find((t) => t.id === course?.track)?.label || course?.track;
-  const ordered = course ? getOrderedCoursesForTrack(course.track) : [];
+  useEffect(() => {
+    const quizLen = content?.quiz?.length || 0;
+    if (quizLen > 0 && answers.length !== quizLen) {
+      setAnswers(new Array(quizLen).fill(null));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content?.quiz?.length]);
+
+  const trackLabel = TRACKS.find((t) => t.id === course?.track)?.label || 'Track';
+  const ordered = course ? getOrderedCoursesForTrack(course.track, course.level) : [];
   const pos = course ? ordered.findIndex((c) => c.id === course.id) + 1 : 0;
 
   const goNextCourse = () => {
-    if (!course) return;
-    const idx = ordered.findIndex((c) => c.id === course.id);
-    const next = ordered[idx + 1];
+    const nextIdx = pos;
+    const next = ordered[nextIdx];
     if (next) router.push(`/learning-center/course/${next.id}`);
     else router.push('/learning-center');
   };
 
   const onReadingDone = async () => {
+    if (!readAck || progress?.reading_complete) return;
     setSubmitting(true);
     try {
       const res = await fetch('/api/learning/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId, action: 'reading_complete' }),
+        body: JSON.stringify({ courseId, action: 'reading_done' }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
-      setReadAck(true);
       await load();
     } catch (e) {
       setErr(e.message);
@@ -150,7 +156,35 @@ export function LearningCoursePage() {
 
   const pct = progress?.progress_pct ?? 0;
   const quiz = content?.quiz || [];
+  const quizLen = quiz.length;
   const quizPassed = progress?.quiz_passed === true;
+
+  const currentQuestion = quiz[qIdx];
+  const currentAnswer = answers[qIdx];
+  const isLastQuestion = qIdx === quizLen - 1;
+  const isCorrect = confirmed && currentAnswer === currentQuestion?.correctIndex;
+  const quizProgressPct = quizLen > 0 ? Math.round(((qIdx + (confirmed ? 1 : 0)) / quizLen) * 100) : 0;
+
+  const handleOptionPick = (optionIndex) => {
+    if (confirmed) return;
+    const next = [...answers];
+    next[qIdx] = optionIndex;
+    setAnswers(next);
+    setConfirmed(true);
+  };
+
+  const handleNextQuestion = () => {
+    setConfirmed(false);
+    setQIdx((i) => i + 1);
+  };
+
+  const handleRetakeQuiz = () => {
+    setResult(null);
+    setAnswers(new Array(quizLen).fill(null));
+    setQIdx(0);
+    setConfirmed(false);
+    setQuizMode(true);
+  };
 
   return (
     <div className="lc3-page dashboard-page-inset db-page">
@@ -186,6 +220,13 @@ export function LearningCoursePage() {
             <section key={i} className="lc3-section">
               <h2 className="lc3-h2">{sec.title}</h2>
               <div className="lc3-body">{sec.content}</div>
+              {sec.visual && (
+                <CourseVisual
+                  type={sec.visual.type}
+                  data={sec.visual.data}
+                  caption={sec.visual.caption}
+                />
+              )}
               {sec.callout && <div className="lc3-callout">{sec.callout}</div>}
               {sec.keyTerms?.length > 0 && (
                 <div className="lc3-terms">
@@ -222,7 +263,12 @@ export function LearningCoursePage() {
                   type="button"
                   className="lc3-btn lc3-btn-primary"
                   style={{ marginTop: '0.75rem' }}
-                  onClick={() => setQuizMode(true)}
+                  onClick={() => {
+                    setQuizMode(true);
+                    setQIdx(0);
+                    setConfirmed(false);
+                    setAnswers(new Array(quizLen).fill(null));
+                  }}
                   data-task-target="learning-quiz-button"
                 >
                   Take Quiz →
@@ -233,36 +279,76 @@ export function LearningCoursePage() {
         </article>
       )}
 
-      {quizMode && (
+      {quizMode && currentQuestion && (
         <div className="lc3-quiz db-card">
           <h2 className="lc3-h2">
-            Quiz: {course.title} ({qIdx + 1} of 5)
+            Quiz: {course.title} ({qIdx + 1} of {quizLen})
           </h2>
-          <p className="lc3-qtext">{quiz[qIdx]?.question}</p>
-          <div className="lc3-options">
-            {quiz[qIdx]?.options?.map((opt, oi) => (
-              <label key={oi} className={`lc3-opt ${answers[qIdx] === oi ? 'sel' : ''}`}>
-                <input
-                  type="radio"
-                  name={`q-${qIdx}`}
-                  checked={answers[qIdx] === oi}
-                  onChange={() => {
-                    const next = [...answers];
-                    next[qIdx] = oi;
-                    setAnswers(next);
-                  }}
-                />
-                {opt}
-              </label>
-            ))}
+
+          <div className="lc3-quiz-progress-wrap">
+            <div className="lc3-quiz-progress-label">
+              <span>
+                Question {qIdx + 1} / {quizLen}
+              </span>
+              <span>{quizProgressPct}% complete</span>
+            </div>
+            <div className="lc3-quiz-progress-track">
+              <div className="lc3-quiz-progress-fill" style={{ width: `${quizProgressPct}%` }} />
+            </div>
           </div>
+
+          <p className="lc3-qtext">{currentQuestion.question}</p>
+          <div className="lc3-options">
+            {currentQuestion.options?.map((opt, oi) => {
+              let cls = 'lc3-opt';
+              if (currentAnswer === oi && !confirmed) cls += ' sel';
+              if (confirmed) {
+                cls += ' locked';
+                if (oi === currentQuestion.correctIndex) cls += ' correct';
+                else if (oi === currentAnswer) cls += ' incorrect';
+              }
+              return (
+                <label key={oi} className={cls}>
+                  <input
+                    type="radio"
+                    name={`q-${qIdx}`}
+                    checked={currentAnswer === oi}
+                    disabled={confirmed}
+                    onChange={() => handleOptionPick(oi)}
+                  />
+                  <span style={{ flex: 1 }}>{opt}</span>
+                  {confirmed && oi === currentQuestion.correctIndex && (
+                    <span className="lc3-opt-mark" style={{ color: '#10b981' }}>
+                      ✓
+                    </span>
+                  )}
+                  {confirmed && oi === currentAnswer && oi !== currentQuestion.correctIndex && (
+                    <span className="lc3-opt-mark" style={{ color: '#ef4444' }}>
+                      ✗
+                    </span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+
+          {confirmed && (
+            <div className={`lc3-feedback ${isCorrect ? 'right' : 'wrong'}`}>
+              <span className="lc3-feedback-icon">{isCorrect ? '✓' : '✗'}</span>
+              <div className="lc3-feedback-text">
+                <strong>{isCorrect ? 'Correct!' : 'Not quite.'}</strong>
+                {currentQuestion.explanation}
+              </div>
+            </div>
+          )}
+
           <div className="lc3-quiz-actions">
-            {qIdx < 4 ? (
+            {!isLastQuestion ? (
               <button
                 type="button"
                 className="lc3-btn lc3-btn-primary"
-                disabled={answers[qIdx] == null}
-                onClick={() => setQIdx((i) => i + 1)}
+                disabled={!confirmed}
+                onClick={handleNextQuestion}
               >
                 Next question →
               </button>
@@ -271,14 +357,22 @@ export function LearningCoursePage() {
                 type="button"
                 className="lc3-btn lc3-btn-primary"
                 data-task-target="learning-quiz-button"
-                disabled={answers[qIdx] == null || submitting}
+                disabled={!confirmed || submitting}
                 onClick={submitQuiz}
               >
-                Submit quiz
+                {submitting ? 'Submitting…' : 'Submit quiz'}
               </button>
             )}
           </div>
-          <button type="button" className="lc3-link" onClick={() => setQuizMode(false)}>
+          <button
+            type="button"
+            className="lc3-link"
+            onClick={() => {
+              setQuizMode(false);
+              setConfirmed(false);
+              setQIdx(0);
+            }}
+          >
             Cancel
           </button>
         </div>
@@ -291,6 +385,32 @@ export function LearningCoursePage() {
             Score: {result.correct}/{result.total} ({result.scorePct}%) {result.passed ? '✅ Passed' : '❌ Not passed'}
           </p>
           <p className="lc3-muted">Passing score: {result.passThreshold}%</p>
+
+          <div className="lc3-results-chart">
+            <div className="lc3-results-chart-title">Performance Summary</div>
+            <div className="lc3-results-ring">
+              <ResultsRing correct={result.correct} total={result.total} />
+              <div className="lc3-results-stats">
+                <div className="lc3-results-stat-row">
+                  <span className="lc3-results-stat-dot right" />
+                  <span className="lc3-results-stat-label">Correct answers</span>
+                  <span className="lc3-results-stat-value">{result.correct}</span>
+                </div>
+                <div className="lc3-results-stat-row">
+                  <span className="lc3-results-stat-dot wrong" />
+                  <span className="lc3-results-stat-label">Incorrect answers</span>
+                  <span className="lc3-results-stat-value">{result.total - result.correct}</span>
+                </div>
+                <div className="lc3-results-stat-row">
+                  <span className="lc3-results-stat-label" style={{ marginLeft: '18px' }}>
+                    Final score
+                  </span>
+                  <span className="lc3-results-stat-value">{result.scorePct}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <ul className="lc3-review">
             {result.quiz?.map((q, i) => {
               const ok = Number(answers[i]) === q.correctIndex;
@@ -311,16 +431,7 @@ export function LearningCoursePage() {
                 <Link href="/learning-center" className="lc3-btn">
                   Review Learning Center
                 </Link>
-                <button
-                  type="button"
-                  className="lc3-btn lc3-btn-primary"
-                  onClick={() => {
-                    setResult(null);
-                    setAnswers([null, null, null, null, null]);
-                    setQIdx(0);
-                    setQuizMode(true);
-                  }}
-                >
+                <button type="button" className="lc3-btn lc3-btn-primary" onClick={handleRetakeQuiz}>
                   Retake quiz
                 </button>
               </>
@@ -333,5 +444,58 @@ export function LearningCoursePage() {
         <p style={{ color: '#f87171', marginTop: '1rem' }}>{err}</p>
       )}
     </div>
+  );
+}
+
+function ResultsRing({ correct, total }) {
+  const size = 120;
+  const cx = 60;
+  const cy = 60;
+  const outerR = 50;
+  const innerR = 34;
+  const pct = total > 0 ? correct / total : 0;
+
+  const correctAngle = pct * 2 * Math.PI;
+  const startAngle = -Math.PI / 2;
+  const correctEnd = startAngle + correctAngle;
+
+  const arcPath = (start, end, color) => {
+    const x1 = cx + outerR * Math.cos(start);
+    const y1 = cy + outerR * Math.sin(start);
+    const x2 = cx + outerR * Math.cos(end);
+    const y2 = cy + outerR * Math.sin(end);
+    const x3 = cx + innerR * Math.cos(end);
+    const y3 = cy + innerR * Math.sin(end);
+    const x4 = cx + innerR * Math.cos(start);
+    const y4 = cy + innerR * Math.sin(start);
+    const largeArc = end - start > Math.PI ? 1 : 0;
+    return (
+      <path
+        d={`M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x4} ${y4} Z`}
+        fill={color}
+      />
+    );
+  };
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+      <circle cx={cx} cy={cy} r={outerR} fill="#ef4444" />
+      {correct > 0 && arcPath(startAngle, correctEnd, '#10b981')}
+      <circle cx={cx} cy={cy} r={innerR} fill="var(--db-card-bg, #ffffff)" />
+      <text
+        x={cx}
+        y={cy + 2}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize="22"
+        fontWeight="700"
+        fill="currentColor"
+      >
+        {Math.round(pct * 100)}%
+      </text>
+      <text x={cx} y={cy + 22} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">
+        score
+      </text>
+    </svg>
   );
 }

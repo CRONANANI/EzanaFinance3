@@ -1,0 +1,348 @@
+/* ══════════════════════════════════════════════════
+   Course Visuals — SVG charts, diagrams, tables
+   ══════════════════════════════════════════════════ */
+
+.course-visual {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 10px;
+  color: #1f2937;
+}
+
+body.dark-mode .course-visual,
+.dark .course-visual {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.22);
+  color: #e5e7eb;
+}
+
+.course-visual-svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.course-visual-caption {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.4;
+}
+
+body.dark-mode .course-visual-caption,
+.dark .course-visual-caption {
+  color: #9ca3af;
+}
+
+/* Dual-layout: donut chart next to legend */
+.course-visual-dual {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.course-visual-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.course-visual-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8125rem;
+}
+
+.course-visual-legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.course-visual-legend-label {
+  flex: 1;
+  color: #374151;
+  font-weight: 500;
+}
+
+body.dark-mode .course-visual-legend-label,
+.dark .course-visual-legend-label {
+  color: #e5e7eb;
+}
+
+.course-visual-legend-pct {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #10b981;
+}
+
+/* Comparison table */
+.course-visual-table-wrap {
+  overflow-x: auto;
+  margin: 0.25rem 0;
+}
+
+.course-visual-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.course-visual-table th,
+.course-visual-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(107, 114, 128, 0.15);
+}
+
+.course-visual-table th {
+  font-weight: 700;
+  color: #111827;
+  border-bottom-width: 2px;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+body.dark-mode .course-visual-table th,
+.dark .course-visual-table th {
+  color: #f3f4f6;
+}
+
+.course-visual-table-attr {
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+body.dark-mode .course-visual-table-attr,
+.dark .course-visual-table-attr {
+  color: #d1d5db;
+}
+
+.course-visual-table td {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+body.dark-mode .course-visual-table td,
+.dark .course-visual-table td {
+  color: #cbd5e1;
+}
+
+/* ══════════════════════════════════════════════════
+   Interactive Quiz — per-question feedback
+   ══════════════════════════════════════════════════ */
+
+.lc3-quiz-progress-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.lc3-quiz-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+body.dark-mode .lc3-quiz-progress-label,
+.dark .lc3-quiz-progress-label {
+  color: #9ca3af;
+}
+
+.lc3-quiz-progress-track {
+  height: 8px;
+  background: rgba(107, 114, 128, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.lc3-quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* Option states — unanswered, selected, correct, incorrect */
+.lc3-opt {
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.lc3-opt.correct {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: #10b981 !important;
+  color: #059669;
+}
+
+.lc3-opt.incorrect {
+  background: rgba(239, 68, 68, 0.10) !important;
+  border-color: #ef4444 !important;
+  color: #dc2626;
+}
+
+.lc3-opt.locked {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.lc3-opt.locked.correct,
+.lc3-opt.locked.incorrect {
+  opacity: 1;
+}
+
+.lc3-opt-mark {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Feedback bubble that appears after answer */
+.lc3-feedback {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  animation: lc3-feedback-in 0.25s ease;
+}
+
+@keyframes lc3-feedback-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lc3-feedback.right {
+  background: rgba(16, 185, 129, 0.10);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #065f46;
+}
+
+body.dark-mode .lc3-feedback.right,
+.dark .lc3-feedback.right {
+  color: #86efac;
+}
+
+.lc3-feedback.wrong {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #991b1b;
+}
+
+body.dark-mode .lc3-feedback.wrong,
+.dark .lc3-feedback.wrong {
+  color: #fca5a5;
+}
+
+.lc3-feedback-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.lc3-feedback-text strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+/* Results summary chart */
+.lc3-results-chart {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 10px;
+}
+
+.lc3-results-chart-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #374151;
+  margin-bottom: 0.75rem;
+}
+
+body.dark-mode .lc3-results-chart-title,
+.dark .lc3-results-chart-title {
+  color: #d1d5db;
+}
+
+.lc3-results-ring {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.lc3-results-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.lc3-results-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.lc3-results-stat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.lc3-results-stat-dot.right {
+  background: #10b981;
+}
+
+.lc3-results-stat-dot.wrong {
+  background: #ef4444;
+}
+
+.lc3-results-stat-label {
+  color: #6b7280;
+}
+
+body.dark-mode .lc3-results-stat-label,
+.dark .lc3-results-stat-label {
+  color: #9ca3af;
+}
+
+.lc3-results-stat-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  color: #111827;
+}
+
+body.dark-mode .lc3-results-stat-value,
+.dark .lc3-results-stat-value {
+  color: #f3f4f6;
+}
