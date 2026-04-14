@@ -10,59 +10,61 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
   const [assumptions, setAssumptions] = useState(DEFAULT_ASSUMPTIONS);
   const [expandedId, setExpandedId] = useState(null);
   const [infoAssumption, setInfoAssumption] = useState(null);
-  const [headline, setHeadline] = useState(null);
-  const [livePrice, setLivePrice] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const baselineHydratedRef = useRef(false);
 
-  const fetchLivePrice = useCallback(async () => {
-    if (!symbol) return;
-    try {
-      const res = await fetch(`/api/fmp/quote?symbol=${encodeURIComponent(symbol)}`, {
-        cache: 'no-store',
-      });
-      const data = await res.json();
-      const px = data?.price != null ? Number(data.price) : NaN;
-      if (Number.isFinite(px) && px > 0) {
-        setLivePrice(px);
+  const [stocks, setStocks] = useState([]);
+  const [loadingSelected, setLoadingSelected] = useState(false);
+  const [errorSelected, setErrorSelected] = useState(null);
+  const [applyToPeers, setApplyToPeers] = useState(false);
+  const [peerLoadComplete, setPeerLoadComplete] = useState(false);
+
+  const baselineLoadedRef = useRef(false);
+
+  const fetchSingleStock = useCallback(async (sym, isPrimary, assumptionsToUse) => {
+    const entry = {
+      symbol: sym,
+      livePrice: null,
+      fairValue: null,
+      error: null,
+      isPrimary,
+    };
+
+    const params = new URLSearchParams({ symbol: sym });
+    if (assumptionsToUse) {
+      for (const [k, v] of Object.entries(assumptionsToUse)) {
+        if (k === 'forecastYears') continue;
+        if (v != null && Number.isFinite(v)) params.set(k, String(v));
       }
-    } catch (err) {
-      console.warn('[dcf-interactive] live price fetch failed:', err?.message);
     }
-  }, [symbol]);
 
-  const fetchDCF = useCallback(
-    async (currentAssumptions) => {
-      if (!symbol) return;
-      setLoading(true);
-      setError(null);
+    const [priceRes, dcfRes] = await Promise.allSettled([
+      fetch(`/api/fmp/quote?symbol=${encodeURIComponent(sym)}`, { cache: 'no-store' }),
+      fetch(`/api/fmp/dcf-advanced?${params.toString()}`, { cache: 'no-store' }),
+    ]);
 
+    if (priceRes.status === 'fulfilled' && priceRes.value.ok) {
       try {
-        const params = new URLSearchParams({ symbol });
-        for (const [k, v] of Object.entries(currentAssumptions)) {
-          if (k === 'forecastYears') continue;
-          if (v != null && Number.isFinite(v)) {
-            params.set(k, String(v));
-          }
+        const pd = await priceRes.value.json();
+        const px = pd?.price != null ? Number(pd.price) : NaN;
+        if (Number.isFinite(px) && px > 0) {
+          entry.livePrice = px;
         }
+      } catch {
+        /* ignore */
+      }
+    }
 
-        const res = await fetch(`/api/fmp/dcf-advanced?${params.toString()}`, {
-          cache: 'no-store',
-        });
-        const data = await res.json();
+    if (dcfRes.status === 'fulfilled' && dcfRes.value.ok) {
+      try {
+        const dd = await dcfRes.value.json();
+        if (dd?.error) {
+          entry.error = dd.error;
+        } else if (dd?.headline?.equityValuePerShare != null) {
+          const ev = Number(dd.headline.equityValuePerShare);
+          entry.fairValue = Number.isFinite(ev) ? ev : null;
 
-        if (data.error) {
-          setError(data.error + (data.detail ? `: ${data.detail}` : ''));
-          return;
-        }
-
-        if (data.headline) {
-          setHeadline(data.headline);
-
-          if (data.headline.baselineAssumptions && !baselineHydratedRef.current) {
-            baselineHydratedRef.current = true;
-            const baseline = data.headline.baselineAssumptions;
+          if (isPrimary && !baselineLoadedRef.current && dd.headline.baselineAssumptions) {
+            const baseline = dd.headline.baselineAssumptions;
+            baselineLoadedRef.current = true;
             setAssumptions((prev) => {
               const next = { ...prev };
               if (baseline.beta != null) next.beta = Number(baseline.beta);
@@ -79,30 +81,102 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
               return next;
             });
           }
+        } else {
+          entry.error = 'no fair value returned';
         }
       } catch (err) {
-        setError(err?.message || 'fetch failed');
-      } finally {
-        setLoading(false);
+        entry.error = err?.message || 'parse failed';
       }
-    },
-    [symbol]
-  );
+    } else {
+      entry.error = 'DCF fetch failed';
+    }
+
+    return entry;
+  }, []);
+
+  const loadInitial = useCallback(async () => {
+    if (!symbol) return;
+
+    setLoadingSelected(true);
+    setErrorSelected(null);
+    setPeerLoadComplete(false);
+    baselineLoadedRef.current = false;
+    setStocks([]);
+
+    const primary = await fetchSingleStock(symbol, true, null);
+    setStocks([primary]);
+    setLoadingSelected(false);
+
+    if (primary.error) {
+      setErrorSelected(primary.error);
+      setPeerLoadComplete(true);
+      return;
+    }
+
+    try {
+      const peerRes = await fetch(`/api/fmp/peers?symbol=${encodeURIComponent(symbol)}&limit=3`);
+      const peerData = await peerRes.json();
+      const peerSymbols = Array.isArray(peerData?.peers) ? peerData.peers : [];
+
+      if (peerSymbols.length === 0) {
+        setPeerLoadComplete(true);
+        return;
+      }
+
+      const peerPromises = peerSymbols.map((peerSym) =>
+        fetchSingleStock(peerSym, false, null).then((peerEntry) => {
+          if (peerEntry.fairValue != null && peerEntry.livePrice != null) {
+            setStocks((prev) => [...prev, peerEntry]);
+          } else {
+            console.log(
+              `[dcf-interactive] skipping peer ${peerSym}:`,
+              peerEntry.error || 'missing data',
+            );
+          }
+        }),
+      );
+
+      await Promise.all(peerPromises);
+    } catch (err) {
+      console.warn('[dcf-interactive] peer fetch failed:', err?.message);
+    } finally {
+      setPeerLoadComplete(true);
+    }
+  }, [symbol, fetchSingleStock]);
+
+  const handleRecalculate = useCallback(async () => {
+    if (!symbol) return;
+    setLoadingSelected(true);
+    setErrorSelected(null);
+
+    const newPrimary = await fetchSingleStock(symbol, true, assumptions);
+
+    if (applyToPeers) {
+      const existingPeerSyms = stocks.filter((s) => !s.isPrimary).map((s) => s.symbol);
+      const newPeerEntries = await Promise.all(
+        existingPeerSyms.map((symPeer) => fetchSingleStock(symPeer, false, assumptions)),
+      );
+      const validPeers = newPeerEntries.filter(
+        (e) => e.fairValue != null && e.livePrice != null,
+      );
+      setStocks([newPrimary, ...validPeers]);
+    } else {
+      setStocks((prev) => {
+        const peers = prev.filter((s) => !s.isPrimary);
+        return [newPrimary, ...peers];
+      });
+    }
+
+    setLoadingSelected(false);
+    if (newPrimary.error) setErrorSelected(newPrimary.error);
+  }, [symbol, stocks, assumptions, applyToPeers, fetchSingleStock]);
 
   useEffect(() => {
-    baselineHydratedRef.current = false;
-    setHeadline(null);
-    setAssumptions(DEFAULT_ASSUMPTIONS);
-    fetchLivePrice();
-    fetchDCF(DEFAULT_ASSUMPTIONS);
-  }, [symbol, fetchLivePrice, fetchDCF]);
+    loadInitial();
+  }, [symbol, loadInitial]);
 
   const updateAssumption = (id, value) => {
     setAssumptions((prev) => ({ ...prev, [id]: value }));
-  };
-
-  const handleRecalculate = () => {
-    fetchDCF(assumptions);
   };
 
   const grouped = DCF_ASSUMPTIONS.reduce((acc, a) => {
@@ -110,10 +184,6 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
     acc[a.section].push(a);
     return acc;
   }, {});
-
-  const rawFair = headline?.equityValuePerShare;
-  const fairValue =
-    rawFair != null && Number.isFinite(Number(rawFair)) ? Number(rawFair) : null;
 
   return (
     <div className="dcf-interactive-root">
@@ -180,18 +250,32 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
             </div>
           ))}
 
-          <button type="button" className="dcf-recalc-btn" onClick={handleRecalculate} disabled={loading}>
-            {loading ? 'Calculating…' : 'Recalculate'}
-          </button>
+          <div className="dcf-recalc-area">
+            <label className="dcf-peer-toggle">
+              <input
+                type="checkbox"
+                checked={applyToPeers}
+                onChange={(e) => setApplyToPeers(e.target.checked)}
+              />
+              <span>Apply to peers</span>
+            </label>
+            <button
+              type="button"
+              className="dcf-recalc-btn"
+              onClick={handleRecalculate}
+              disabled={loadingSelected}
+            >
+              {loadingSelected ? 'Calculating…' : 'Recalculate'}
+            </button>
+          </div>
         </div>
 
         <div className="dcf-chart-col">
           <PriceComparisonChart
-            symbol={symbol}
-            livePrice={livePrice}
-            fairValue={fairValue}
-            loading={loading}
-            error={error}
+            stocks={stocks}
+            loadingSelected={loadingSelected}
+            errorSelected={errorSelected}
+            peerLoadComplete={peerLoadComplete}
           />
         </div>
       </div>

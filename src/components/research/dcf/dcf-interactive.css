@@ -47,11 +47,17 @@
 .dcf-assumptions-col {
   padding: 1rem 0.75rem;
   border-right: 1px solid var(--card-border, #e5e7eb);
-  background: var(--code-bg, #fafafa);
+  background: var(--code-bg, #f8fafc);
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.7rem;
   overflow-y: auto;
-  max-height: 600px;
+  max-height: 640px;
+  color: #1f2937;
+}
+body.dark-mode .dcf-assumptions-col,
+.dark .dcf-assumptions-col {
+  background: #0f1419;
+  color: #e5e7eb;
 }
 
 .dcf-assumption-section {
@@ -62,9 +68,13 @@
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-tertiary, #9ca3af);
+  color: #475569;
   margin: 0 0 0.5rem 0;
-  font-weight: 600;
+  font-weight: 700;
+}
+body.dark-mode .dcf-section-title,
+.dark .dcf-section-title {
+  color: #94a3b8;
 }
 
 .dcf-assumption-row {
@@ -74,10 +84,18 @@
   margin-bottom: 0.15rem;
 }
 .dcf-assumption-row:hover {
-  background: var(--hover-bg, #f3f4f6);
+  background: rgba(16, 185, 129, 0.06);
+}
+body.dark-mode .dcf-assumption-row:hover,
+.dark .dcf-assumption-row:hover {
+  background: rgba(16, 185, 129, 0.12);
 }
 .dcf-assumption-row.expanded {
-  background: var(--accent-soft, rgba(16, 185, 129, 0.08));
+  background: rgba(16, 185, 129, 0.1);
+}
+body.dark-mode .dcf-assumption-row.expanded,
+.dark .dcf-assumption-row.expanded {
+  background: rgba(16, 185, 129, 0.18);
 }
 
 .dcf-assumption-row-top {
@@ -89,14 +107,18 @@
 .dcf-info-icon {
   background: transparent;
   border: none;
-  color: var(--text-tertiary, #9ca3af);
+  color: #64748b;
   cursor: pointer;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   padding: 0.1rem;
   line-height: 1;
 }
+body.dark-mode .dcf-info-icon,
+.dark .dcf-info-icon {
+  color: #94a3b8;
+}
 .dcf-info-icon:hover {
-  color: var(--accent, #10b981);
+  color: #10b981;
 }
 
 .dcf-assumption-label-btn {
@@ -111,7 +133,11 @@
   text-align: left;
   font-family: inherit;
   font-size: inherit;
-  color: var(--text-primary, #111827);
+  color: #1f2937;
+}
+body.dark-mode .dcf-assumption-label-btn,
+.dark .dcf-assumption-label-btn {
+  color: #f1f5f9;
 }
 
 .dcf-assumption-label {
@@ -121,8 +147,8 @@
 }
 
 .dcf-assumption-value {
-  color: var(--accent, #10b981);
-  font-weight: 600;
+  color: #10b981;
+  font-weight: 700;
 }
 
 .dcf-slider-wrap {
@@ -139,29 +165,64 @@
 .dcf-slider-bounds {
   display: flex;
   justify-content: space-between;
-  font-size: 0.6rem;
-  color: var(--text-tertiary, #9ca3af);
-  margin-top: 0.2rem;
+  font-size: 0.62rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+body.dark-mode .dcf-slider-bounds,
+.dark .dcf-slider-bounds {
+  color: #94a3b8;
+}
+
+.dcf-recalc-area {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(100, 116, 139, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dcf-peer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+}
+body.dark-mode .dcf-peer-toggle,
+.dark .dcf-peer-toggle {
+  color: #cbd5e1;
+}
+.dcf-peer-toggle input[type='checkbox'] {
+  accent-color: #10b981;
+  cursor: pointer;
 }
 
 .dcf-recalc-btn {
   width: 100%;
-  margin-top: 1rem;
-  padding: 0.6rem;
-  background: var(--accent, #10b981);
+  padding: 0.65rem;
+  background: #10b981;
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-weight: 700;
+  font-size: 0.78rem;
   cursor: pointer;
   font-family: inherit;
+  letter-spacing: 0.02em;
+  transition: background 0.15s;
 }
 .dcf-recalc-btn:hover:not(:disabled) {
-  background: #0ea571;
+  background: #059669;
 }
 .dcf-recalc-btn:disabled {
-  opacity: 0.6;
+  background: #6b7280;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
@@ -414,4 +475,134 @@
   width: 100%;
   box-sizing: border-box;
   white-space: pre-wrap;
+}
+
+/* ═══ Centered Delta Chart (multi-stock) ═══ */
+.dcf-delta-axis {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 130px 0 80px;
+  margin-bottom: 0.5rem;
+}
+
+.dcf-delta-axis-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+body.dark-mode .dcf-delta-axis-label,
+.dark .dcf-delta-axis-label {
+  color: #94a3b8;
+}
+.dcf-delta-axis-label.dcf-delta-axis-zero {
+  font-size: 0.65rem;
+  font-style: italic;
+}
+
+.dcf-delta-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dcf-delta-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 80px;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dcf-delta-row-label {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #1f2937;
+  text-align: right;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+body.dark-mode .dcf-delta-row-label,
+.dark .dcf-delta-row-label {
+  color: #f1f5f9;
+}
+
+.dcf-delta-row.primary .dcf-delta-row-label {
+  font-size: 1rem;
+}
+
+.dcf-delta-row-track {
+  position: relative;
+  height: 24px;
+  background: rgba(100, 116, 139, 0.08);
+  border-radius: 4px;
+}
+body.dark-mode .dcf-delta-row-track,
+.dark .dcf-delta-row-track {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.dcf-delta-row.primary .dcf-delta-row-track {
+  height: 32px;
+}
+
+.dcf-delta-row-center {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(100, 116, 139, 0.5);
+  transform: translateX(-0.5px);
+  z-index: 1;
+}
+
+.dcf-delta-row-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 3px;
+  transition: width 0.4s ease, left 0.4s ease;
+  z-index: 0;
+}
+
+.dcf-delta-row-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.dcf-delta-row.primary .dcf-delta-row-value {
+  font-size: 1rem;
+}
+
+.dcf-delta-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-top: 0.25rem;
+}
+.dcf-delta-divider span {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.dcf-delta-divider::before,
+.dcf-delta-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(100, 116, 139, 0.2);
+}
+
+.dcf-delta-no-peers {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background: rgba(100, 116, 139, 0.06);
+  border-radius: 6px;
+  margin-top: 0.5rem;
 }
