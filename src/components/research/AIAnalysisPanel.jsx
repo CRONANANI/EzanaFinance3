@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
+import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 
 /**
  * AIAnalysisPanel — Full-width expandable panel for AI stock analysis
@@ -9,6 +10,10 @@ import { getModelConfig } from '@/lib/ai/analysis-prompts';
  * Calls /api/ai-stock-analysis with the selected model and ticker.
  */
 export function AIAnalysisPanel({ modelId, symbol, onClose }) {
+  if (modelId === 'dcf') {
+    return <DCFInteractiveModel symbol={symbol} onClose={onClose} />;
+  }
+
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
