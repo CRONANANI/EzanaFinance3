@@ -198,28 +198,18 @@ export default function AlternativeMarketsPage() {
         </div>
 
         <div className="db-card am-movers-card">
-          <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="am-movers-card-header">
             <h3 className="am-section-h3 db-h3-with-bi">
               <i className="bi bi-graph-up-arrow" aria-hidden />
               Movers
             </h3>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div className="am-movers-tf-row">
               {['1D', '3D', '7D', '1M', '3M', '6M', '1Y', '3Y', '5Y', '10Y'].map((tf) => (
                 <button
                   key={tf}
                   type="button"
+                  className={`am-movers-tf-btn ${moversTimeframe === tf ? 'active' : ''}`}
                   onClick={() => setMoversTimeframe(tf)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    border: moversTimeframe === tf ? '1px solid #10b981' : '1px solid #333',
-                    background: moversTimeframe === tf ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                    color: moversTimeframe === tf ? '#10b981' : '#888',
-                    fontSize: '0.7rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
                 >
                   {tf}
                 </button>
@@ -232,30 +222,48 @@ export default function AlternativeMarketsPage() {
                 <i className="bi bi-arrow-up-circle-fill" aria-hidden />
                 Biggest Winners ({moversTimeframe})
               </h4>
-              {(view === 'crypto' ? CRYPTO_WINNERS : COMMODITY_WINNERS).map((w) => (
-                <div key={w.sym} className="am-mover-line">
-                  <span className="am-mover-rank">{w.rank}</span>
-                  <span style={{ fontWeight: 800, color: '#f0f6fc' }}>{w.sym}</span>
-                  <span className="am-td-chg up">
-                    ▲ {w.chg} {w.price}
-                  </span>
+              <div className="am-mover-table">
+                <div className="am-mover-head">
+                  <span className="am-mover-h-rank">#</span>
+                  <span>Ticker</span>
+                  <span>24h</span>
+                  <span>Price</span>
                 </div>
-              ))}
+                {(view === 'crypto' ? CRYPTO_WINNERS : COMMODITY_WINNERS).map((w) => (
+                  <div key={w.sym} className="am-mover-line">
+                    <span className="am-mover-rank">{w.rank}</span>
+                    <span className="am-mover-sym">{w.sym}</span>
+                    <span className="am-mover-chg up">
+                      ▲ {w.chg}
+                    </span>
+                    <span className="am-mover-price">{w.price}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ borderTop: '1px solid #333', paddingTop: '1rem' }}>
+            <div className="am-movers-losers-block">
               <h4 className="am-section-h4 losers">
                 <i className="bi bi-graph-down-arrow" aria-hidden />
                 Biggest Losers ({moversTimeframe})
               </h4>
-              {(view === 'crypto' ? CRYPTO_LOSERS : COMMODITY_LOSERS).map((w) => (
-                <div key={w.sym} className="am-mover-line">
-                  <span className="am-mover-rank">{w.rank}</span>
-                  <span style={{ fontWeight: 800, color: '#f0f6fc' }}>{w.sym}</span>
-                  <span className="am-td-chg down">
-                    ▼ {w.chg} {w.price}
-                  </span>
+              <div className="am-mover-table">
+                <div className="am-mover-head">
+                  <span className="am-mover-h-rank">#</span>
+                  <span>Ticker</span>
+                  <span>24h</span>
+                  <span>Price</span>
                 </div>
-              ))}
+                {(view === 'crypto' ? CRYPTO_LOSERS : COMMODITY_LOSERS).map((w) => (
+                  <div key={w.sym} className="am-mover-line">
+                    <span className="am-mover-rank">{w.rank}</span>
+                    <span className="am-mover-sym">{w.sym}</span>
+                    <span className="am-mover-chg down">
+                      ▼ {w.chg}
+                    </span>
+                    <span className="am-mover-price">{w.price}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
