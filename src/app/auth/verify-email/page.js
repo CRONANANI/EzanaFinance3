@@ -25,16 +25,12 @@ export default function VerifyEmailPage() {
     }
     const { data: profile } = await supabase
       .from('profiles')
-      .select('onboarding_completed, email_verified')
+      .select('email_verified')
       .eq('id', user.id)
       .maybeSingle();
 
     if (profile?.email_verified) {
-      if (profile.onboarding_completed) {
-        router.replace('/home');
-      } else {
-        router.replace('/onboarding');
-      }
+      router.replace('/home');
     }
   }, [router]);
 
@@ -125,7 +121,7 @@ export default function VerifyEmailPage() {
 
       if (data.success) {
         setSuccess('Email verified!');
-        setTimeout(() => router.replace('/onboarding'), 1000);
+        setTimeout(() => router.replace('/home'), 1000);
       } else {
         setError(data.error);
         setCode(['', '', '', '', '', '']);

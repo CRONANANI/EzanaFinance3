@@ -2,7 +2,7 @@
 
 /**
  * OAuth (e.g. Google) completes here: exchange code → session, then route by profile.
- * Unverified email → /auth/verify-email; verified & not onboarded → /onboarding; else redirect param or /home.
+ * Unverified email → /auth/verify-email; else redirect param or /home.
  */
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -37,7 +37,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     const { error: insErr } = await supabase.from('profiles').insert({
       id: user.id,
       email: user.email,
-      onboarding_completed: false,
+      onboarding_completed: true,
       email_verified: false,
       updated_at: new Date().toISOString(),
     });
@@ -49,7 +49,7 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
         return;
       }
     } else {
-      profile = { onboarding_completed: false, email_verified: false };
+      profile = { onboarding_completed: true, email_verified: false };
     }
   }
 
@@ -75,11 +75,6 @@ async function routeAfterSession(supabase, router, type, redirectParam) {
     }
     await supabase.auth.signOut();
     router.replace('/auth/partner-denied');
-    return;
-  }
-
-  if (profile.onboarding_completed === false) {
-    router.replace('/onboarding');
     return;
   }
 

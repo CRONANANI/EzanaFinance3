@@ -66,7 +66,7 @@ export async function POST() {
         id: user.id,
         email: user.email ?? '',
         email_verified: false,
-        onboarding_completed: false,
+        onboarding_completed: true,
         updated_at: new Date().toISOString(),
       });
       if (insertProfileErr) {

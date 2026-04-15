@@ -133,6 +133,7 @@ export async function POST(request) {
       .update({
         email,
         email_verified: true,
+        onboarding_completed: true,
         updated_at: now,
       })
       .eq('id', user.id)
@@ -148,7 +149,7 @@ export async function POST(request) {
         id: user.id,
         email,
         email_verified: true,
-        onboarding_completed: false,
+        onboarding_completed: true,
         updated_at: now,
       });
 
