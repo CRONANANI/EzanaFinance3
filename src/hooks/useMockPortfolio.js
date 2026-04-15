@@ -6,7 +6,28 @@ import { supabase } from '@/lib/supabase';
 
 const STARTING_CASH = 100_000;
 const DEBOUNCE_MS = 800;
-const LS_KEY = 'ezana_mock_portfolio_v1';
+const LS_KEY_PREFIX = 'ezana_mock_portfolio_v1';
+const LEGACY_UNSCOPED_KEY = 'ezana_mock_portfolio_v1';
+
+/** Build the per-user localStorage key. Returns null if no user. */
+function keyFor(userId) {
+  if (!userId) return null;
+  return `${LS_KEY_PREFIX}:${userId}`;
+}
+
+/** Clear the legacy unscoped key once, so stale cross-user data can't leak back in. */
+function clearLegacyUnscoped() {
+  if (typeof window === 'undefined') return;
+  try {
+    // Only clear if it still contains the OLD (unscoped) shape. Any new per-user key
+    // starting with LS_KEY_PREFIX: is untouched.
+    const raw = localStorage.getItem(LEGACY_UNSCOPED_KEY);
+    if (raw) {
+      localStorage.removeItem(LEGACY_UNSCOPED_KEY);
+      console.log('[useMockPortfolio] cleared legacy unscoped cache');
+    }
+  } catch { /* ignore */ }
+}
 
 const TICKER_SECTOR = {
   AAPL: 'Technology', MSFT: 'Technology', NVDA: 'Technology', GOOGL: 'Technology',
@@ -31,17 +52,21 @@ const SECTOR_COLORS = {
   ETF: '#06b6d4', Crypto: '#fbbf24', Commodity: '#84cc16', Other: '#6b7280',
 };
 
-function loadLocal() {
+function loadLocal(userId) {
   if (typeof window === 'undefined') return null;
+  const k = keyFor(userId);
+  if (!k) return null;
   try {
-    const raw = localStorage.getItem(LS_KEY);
+    const raw = localStorage.getItem(k);
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
 
-function saveLocal(p) {
+function saveLocal(userId, p) {
   if (typeof window === 'undefined') return;
-  try { localStorage.setItem(LS_KEY, JSON.stringify(p)); } catch { /* quota */ }
+  const k = keyFor(userId);
+  if (!k) return; // Never write to localStorage without a user — prevents cross-user leaks.
+  try { localStorage.setItem(k, JSON.stringify(p)); } catch { /* quota */ }
 }
 
 function withMeta(p) {
@@ -141,7 +166,9 @@ export function useMockPortfolio() {
       const raw = typeof update === 'function' ? update(base) : update;
       if (raw == null) return raw;
       const next = withMeta(raw);
-      saveLocal(next);
+      // Only persist to localStorage if a user is authenticated.
+      // This prevents writing to a global key that could leak between users.
+      if (user?.id) saveLocal(user.id, next);
       if (!skipSync && user?.id) {
         apiSave(next);       // immediate — fire and forget
         scheduleSave(next);  // debounce backup
@@ -177,16 +204,23 @@ export function useMockPortfolio() {
   useEffect(() => {
     if (!storageReady) return;
 
+    // One-time: wipe the legacy unscoped cache so stale cross-user data
+    // from any previous version of the code cannot leak in.
+    clearLegacyUnscoped();
+
     if (!user?.id) {
-      const local = loadLocal();
-      if (local) setPortfolioState(local);
+      // Not logged in — clear UI state. Do NOT read from any local cache.
+      // The old unscoped code read a shared key here, which is exactly
+      // what caused the cross-user leak.
+      setPortfolioState(null);
       setServerLoaded(true);
       return;
     }
 
-    // Show local cache immediately (no flash)
-    const bootLocal = loadLocal();
+    // Show this user's local cache immediately (no flash)
+    const bootLocal = loadLocal(user.id);
     if (bootLocal) setPortfolioState(bootLocal);
+    else setPortfolioState(null); // clear any leftover state from a previous user
 
     let cancelled = false;
     (async () => {
@@ -201,9 +235,10 @@ export function useMockPortfolio() {
         if (serverP && typeof serverP === 'object' && Object.keys(serverP).length > 0) {
           if (!bootLocal || serverT >= localT) {
             setPortfolioState(serverP);
-            saveLocal(serverP);
+            saveLocal(user.id, serverP);
           } else {
-            // Local is newer — push it up
+            // Local is newer — push it up (safe now because the local cache
+            // is per-user, not shared).
             setPortfolioState(bootLocal);
             apiSave(bootLocal);
           }
@@ -211,6 +246,9 @@ export function useMockPortfolio() {
           // Nothing on server — push local up
           setPortfolioState(bootLocal);
           apiSave(bootLocal);
+        } else {
+          // Nothing local, nothing on server — this user has no portfolio yet.
+          setPortfolioState(null);
         }
       } catch (err) {
         console.error('[useMockPortfolio] hydration error:', err);
