@@ -1,74 +1,78 @@
-import { createClient } from '@supabase/supabase-js';
+/**
+ * GET /api/portfolio
+ * Requires: authenticated user
+ *
+ * Returns the authenticated user's portfolio data (accounts, holdings,
+ * transactions, computed totals, top/worst performers, and asset
+ * allocation) from the Plaid tables.
+ *
+ * Uses the service-role supabaseAdmin client for queries but filters
+ * every user-scoped query by the authenticated user's ID resolved from
+ * the request via getAuthUser. This ensures that each user only ever
+ * sees their own portfolio data regardless of RLS configuration.
+ */
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/plaid';
+import { getAuthUser } from '@/lib/auth-helpers';
 
 export const dynamic = 'force-dynamic';
 
-
 export async function GET(request) {
   try {
-    // Check if environment variables exist
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      console.error('Missing environment variables:', {
-        hasUrl: !!supabaseUrl,
-        hasServiceKey: !!serviceRoleKey
-      });
+    // Resolve the authenticated user from the request (cookies or bearer token)
+    const user = await getAuthUser(request);
+    if (!user) {
       return NextResponse.json(
-        { error: 'Server configuration error - missing environment variables' },
-        { status: 500 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    // Create Supabase admin client
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const userId = user.id;
+    console.log('[portfolio] Fetching portfolio for user:', userId);
 
-    // Hardcoded user ID for testing (your test user)
-    // TODO: Replace with proper auth once working
-    const userId = 'b0a9a9d4-54a2-4461-a203-95d869dae6c1';
-
-    console.log('Fetching portfolio for user:', userId);
-
-    // Fetch accounts
-    const { data: accounts, error: accountsError } = await supabase
+    // Fetch accounts — filtered by authenticated user
+    const { data: accounts, error: accountsError } = await supabaseAdmin
       .from('plaid_accounts')
       .select('*')
       .eq('user_id', userId);
 
     if (accountsError) {
-      console.error('Accounts error:', accountsError);
+      console.error('[portfolio] Accounts error:', accountsError);
       return NextResponse.json(
         { error: 'Failed to fetch accounts', details: accountsError.message },
         { status: 500 }
       );
     }
 
-    // Fetch holdings
-    const { data: holdings, error: holdingsError } = await supabase
+    // Fetch holdings — filtered by authenticated user
+    const { data: holdings, error: holdingsError } = await supabaseAdmin
       .from('plaid_holdings')
       .select('*')
       .eq('user_id', userId);
 
     if (holdingsError) {
-      console.error('Holdings error:', holdingsError);
+      console.error('[portfolio] Holdings error:', holdingsError);
       return NextResponse.json(
         { error: 'Failed to fetch holdings', details: holdingsError.message },
         { status: 500 }
       );
     }
 
-    // Fetch securities
-    const { data: securities, error: securitiesError } = await supabase
+    // Fetch securities — this table appears to be a global reference table
+    // in the current schema (not user-scoped). Sync writes security metadata
+    // directly onto plaid_holdings rows, so this query is effectively legacy.
+    // Left unchanged for now to avoid changing behavior beyond the auth fix.
+    const { data: securities, error: securitiesError } = await supabaseAdmin
       .from('plaid_securities')
       .select('*');
 
     if (securitiesError) {
-      console.error('Securities error:', securitiesError);
+      console.error('[portfolio] Securities error:', securitiesError);
     }
 
-    // Fetch transactions
-    const { data: transactions, error: transactionsError } = await supabase
+    // Fetch transactions — filtered by authenticated user
+    const { data: transactions, error: transactionsError } = await supabaseAdmin
       .from('plaid_transactions')
       .select('*')
       .eq('user_id', userId)
@@ -76,7 +80,7 @@ export async function GET(request) {
       .limit(50);
 
     if (transactionsError) {
-      console.error('Transactions error:', transactionsError);
+      console.error('[portfolio] Transactions error:', transactionsError);
     }
 
     // If no data, return empty state
@@ -96,7 +100,7 @@ export async function GET(request) {
         worstPerformers: [],
         allocation: {},
         recentTransactions: [],
-        message: 'No portfolio data found'
+        message: 'No portfolio data found',
       });
     }
 
@@ -139,7 +143,7 @@ export async function GET(request) {
         totalValue: acctValue,
         totalCostBasis: acctCost,
         gainLoss: acctValue - acctCost,
-        gainLossPercent: acctCost > 0 ? ((acctValue - acctCost) / acctCost * 100) : 0
+        gainLossPercent: acctCost > 0 ? ((acctValue - acctCost) / acctCost * 100) : 0,
       };
     });
 
@@ -175,7 +179,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Portfolio API error:', error);
+    console.error('[portfolio] Portfolio API error:', error);
     return NextResponse.json(
       { error: 'Internal server error', message: error?.message },
       { status: 500 }
