@@ -6,6 +6,7 @@ import StockPriceChart from '@/components/research/StockPriceChart';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
+import ResetPortfolioModal from '@/components/trading/ResetPortfolioModal';
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 
@@ -170,6 +171,7 @@ export default function MockTradingPage() {
   const [amount, setAmount] = useState('');
 
   const [toast, setToast] = useState(null);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
   const toastRef = useRef(null);
   const [livePrices, setLivePrices] = useState({});
   const [priceFetchError, setPriceFetchError] = useState(null);
@@ -492,6 +494,26 @@ export default function MockTradingPage() {
     return portfolio.history || [];
   }, [dbTrades, portfolio.history]);
 
+  const enrichedPositions = useMemo(() => {
+    const list = Object.values(portfolio.positions || {});
+    return list.map((pos) => {
+      const sym = String(pos.symbol || '').trim().toUpperCase();
+      const livePx = resolveLivePrice(livePrices[sym]);
+      const curPrice = livePx ?? pos.currentPrice ?? pos.avgCost;
+      const pnl = (curPrice - pos.avgCost) * pos.qty;
+      const pnlPct = pos.avgCost ? (curPrice / pos.avgCost - 1) * 100 : 0;
+      return {
+        symbol: sym,
+        qty: pos.qty,
+        avgCost: pos.avgCost,
+        currentPrice: curPrice,
+        pnl,
+        pnlPct,
+        openedAt: resolveOpenedAt(pos, portfolio.history),
+      };
+    });
+  }, [portfolio.positions, portfolio.history, livePrices]);
+
   const positionsList = Object.values(portfolio.positions || {});
   const openPositionSymbolsKey = useMemo(() => {
     const set = new Set();
@@ -698,21 +720,25 @@ export default function MockTradingPage() {
           <button
             className="mock-reset-btn"
             type="button"
-            onClick={() => {
-              if (
-                window.confirm(
-                  'Reset your mock portfolio back to $100,000? This cannot be undone.'
-                )
-              ) {
-                const fresh = { cash: 100_000, positions: {}, history: [] };
-                userExplicitChartPickRef.current = false;
-                setPortfolio(fresh);
-                showToast('Portfolio reset to $100,000.');
-              }
-            }}
+            onClick={() => setResetModalOpen(true)}
           >
             <i className="bi bi-arrow-counterclockwise" /> Reset Portfolio
           </button>
+
+          <ResetPortfolioModal
+            open={resetModalOpen}
+            onClose={() => setResetModalOpen(false)}
+            onConfirm={(startingAmount) => {
+              const fresh = { cash: startingAmount, positions: {}, history: [] };
+              userExplicitChartPickRef.current = false;
+              setPortfolio(fresh);
+              showToast(
+                `Portfolio reset to $${startingAmount.toLocaleString('en-US')}.`,
+              );
+            }}
+            portfolio={{ ...portfolio, history: mergedActivity }}
+            enrichedPositions={enrichedPositions}
+          />
         </div>
       </div>
 

@@ -31,7 +31,7 @@ body.dashboard-page {
   height: 64px;
   background: var(--nav-bg);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--nav-border);
+  border-bottom: none;
   z-index: 100;
   font-family: var(--font-sans);
 }

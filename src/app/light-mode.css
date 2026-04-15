@@ -28,7 +28,7 @@ body.light-mode .navbar {
   background: var(--nav-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom-color: var(--nav-border);
+  border-bottom: none;
 }
 
 body.light-mode .nav-link {

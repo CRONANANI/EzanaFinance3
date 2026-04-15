@@ -1,0 +1,301 @@
+/* ═══════════════════════════════════════════════════
+   Reset Portfolio Modal — brand emerald, light + dark
+   ═══════════════════════════════════════════════════ */
+
+.rpm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: rpm-fade-in 0.2s ease;
+}
+
+@keyframes rpm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.rpm-card {
+  width: 100%;
+  max-width: 440px;
+  background: #0f1419;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(16, 185, 129, 0.05),
+    0 0 40px rgba(16, 185, 129, 0.04);
+  animation: rpm-slide-up 0.25s ease;
+}
+
+@keyframes rpm-slide-up {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body.light-mode .rpm-card,
+.light .rpm-card {
+  background: #ffffff;
+  border-color: rgba(16, 185, 129, 0.15);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(16, 185, 129, 0.08);
+}
+
+.rpm-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
+  border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+body.light-mode .rpm-header,
+.light .rpm-header {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02));
+}
+
+.rpm-header-icon {
+  color: #10b981;
+  font-size: 1.1rem;
+}
+
+.rpm-header-title {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: #f0f6fc;
+  flex: 1;
+}
+
+body.light-mode .rpm-header-title,
+.light .rpm-header-title {
+  color: #0f172a;
+}
+
+.rpm-close {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.rpm-close:hover { color: #ef4444; }
+
+.rpm-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 0 0.25rem;
+}
+
+.rpm-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(107, 114, 128, 0.3);
+  transition: background 0.3s, transform 0.3s;
+}
+
+.rpm-step-dot.active {
+  background: #10b981;
+  transform: scale(1.2);
+}
+
+.rpm-body {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.rpm-question {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin: 0 0 0.5rem;
+}
+
+body.light-mode .rpm-question,
+.light .rpm-question {
+  color: #0f172a;
+}
+
+.rpm-desc {
+  font-size: 0.8125rem;
+  color: #9ca3af;
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+}
+
+body.light-mode .rpm-desc,
+.light .rpm-desc {
+  color: #4b5563;
+}
+
+.rpm-amount-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(16, 185, 129, 0.06);
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  padding: 0.625rem 1rem;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.2s;
+}
+
+.rpm-amount-wrap:focus-within {
+  border-color: #10b981;
+}
+
+body.light-mode .rpm-amount-wrap,
+.light .rpm-amount-wrap {
+  background: rgba(16, 185, 129, 0.03);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.rpm-dollar-sign {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.rpm-amount-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0f6fc;
+  font-variant-numeric: tabular-nums;
+}
+
+body.light-mode .rpm-amount-input,
+.light .rpm-amount-input {
+  color: #0f172a;
+}
+
+.rpm-amount-input::placeholder { color: #4b5563; }
+
+.rpm-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.rpm-preset {
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.rpm-preset:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.rpm-preset.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+body.light-mode .rpm-preset,
+.light .rpm-preset {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #4b5563;
+}
+
+body.light-mode .rpm-preset:hover,
+.light .rpm-preset:hover {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: #10b981;
+  color: #059669;
+}
+
+.rpm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.rpm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.rpm-btn-primary {
+  background: #10b981;
+  color: #fff;
+}
+.rpm-btn-primary:hover:not(:disabled) { background: #059669; }
+.rpm-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.rpm-btn-outline {
+  background: transparent;
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.rpm-btn-outline:hover:not(:disabled) { background: rgba(16, 185, 129, 0.08); }
+.rpm-btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.rpm-btn-ghost {
+  background: transparent;
+  color: #6b7280;
+}
+.rpm-btn-ghost:hover { color: #f0f6fc; }
+
+body.light-mode .rpm-btn-ghost:hover,
+.light .rpm-btn-ghost:hover { color: #0f172a; }
+
+.rpm-btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+.rpm-btn-danger:hover { background: #dc2626; }
+
+.rpm-warning {
+  font-size: 0.75rem;
+  color: #f97316;
+  margin: 0.75rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rpm-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin: 0 0 0.5rem;
+}
+
+.rpm-amount-highlight {
+  color: #10b981;
+  font-weight: 700;
+}
