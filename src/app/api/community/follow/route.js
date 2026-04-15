@@ -48,13 +48,14 @@ export async function POST(request) {
       }
 
       if (inserted) {
+        let followerName = 'Someone';
         try {
           const { data: followerProfile } = await supabaseAdmin
             .from('profiles')
             .select('full_name')
             .eq('id', user.id)
             .maybeSingle();
-          const followerName =
+          followerName =
             (followerProfile?.full_name && String(followerProfile.full_name).trim()) || 'Someone';
 
           const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.getUserById(target_user_id);
@@ -90,6 +91,18 @@ export async function POST(request) {
           }
         } catch (e) {
           console.error('follow: notification email', e);
+        }
+
+        // ── In-app notification: "[Name] started following you" ──
+        try {
+          await supabaseAdmin.from('user_notifications').insert({
+            user_id: target_user_id,
+            title: `${followerName} started following you`,
+            content: 'Check out their profile and follow them back to become friends!',
+            type: 'community',
+          });
+        } catch (notifErr) {
+          console.error('follow: notification insert', notifErr);
         }
 
         const { data: reciprocal } = await supabaseAdmin
