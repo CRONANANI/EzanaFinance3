@@ -227,12 +227,23 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
               <CartesianGrid strokeDasharray="2 4" stroke="rgba(128,128,128,0.12)" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fill: 'var(--muted-foreground, #6b7280)', fontSize: 9, fontFamily: 'var(--font-mono, monospace)' }}
+                tick={{
+                  /* Theme vars are raw HSL triples — must use hsl() for valid SVG fill (fixes dark mode). */
+                  fill: 'hsl(var(--foreground))',
+                  fontSize: 9,
+                  fontFamily: 'var(--font-mono, monospace)',
+                  opacity: 0.85,
+                }}
                 axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={50}
               />
               <YAxis
                 domain={[minPrice, maxPrice]}
-                tick={{ fill: 'var(--muted-foreground, #6b7280)', fontSize: 9, fontFamily: 'var(--font-mono, monospace)' }}
+                tick={{
+                  fill: 'hsl(var(--foreground))',
+                  fontSize: 9,
+                  fontFamily: 'var(--font-mono, monospace)',
+                  opacity: 0.85,
+                }}
                 axisLine={false} tickLine={false} width={52}
                 tickFormatter={(v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
               />

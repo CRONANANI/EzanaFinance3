@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo, Fragment } from 'react';
 import Link from 'next/link';
 import StockPriceChart from '@/components/research/StockPriceChart';
 import { useAuth } from '@/components/AuthProvider';
@@ -73,6 +73,27 @@ function chunkSymbols(arr, size) {
   return out;
 }
 
+/** Position with highest market value (qty × current price), for default chart symbol. */
+function getLargestPositionByValue(positions, livePrices) {
+  const list = Object.values(positions || {});
+  if (list.length === 0) return null;
+  let best = null;
+  let bestVal = -Infinity;
+  let bestSym = '';
+  for (const pos of list) {
+    const sym = String(pos.symbol || '').trim().toUpperCase();
+    const livePx = resolveLivePrice(livePrices[sym]);
+    const px = livePx ?? pos.currentPrice ?? pos.avgCost;
+    const val = Number(px) * Number(pos.qty);
+    if (val > bestVal || (val === bestVal && sym < bestSym)) {
+      bestVal = val;
+      best = pos;
+      bestSym = sym;
+    }
+  }
+  return best;
+}
+
 const MOCK_QUOTE_CHUNK = 45;
 
 /* ──────────────────────────────────────────
@@ -136,6 +157,8 @@ export default function MockTradingPage() {
   } = useCompanySearchFinnhub();
 
   const searchRef = useRef(null);
+  /** When true, chart ticker follows user search/table picks; when false, chart defaults to largest position (or AAPL). */
+  const userExplicitChartPickRef = useRef(false);
 
   const [selectedSymbol, setSelectedSymbol] = useState('AAPL');
   const [selectedName, setSelectedName] = useState('Apple Inc');
@@ -242,7 +265,8 @@ export default function MockTradingPage() {
   };
 
   const selectAsset = useCallback(
-    (symbol, name, type) => {
+    (symbol, name, type, { userInitiated = true } = {}) => {
+      if (userInitiated) userExplicitChartPickRef.current = true;
       setSelectedSymbol(String(symbol).toUpperCase());
       setSelectedName(name || symbol);
       setSelectedType(normalizeAssetType(type));
@@ -258,7 +282,7 @@ export default function MockTradingPage() {
     const q = searchQuery.trim();
     if (!q) return;
     const sym = q.toUpperCase();
-    selectAsset(sym, sym, 'Stock');
+    selectAsset(sym, sym, 'Stock', { userInitiated: true });
   }, [searchQuery, selectAsset]);
 
   useEffect(() => {
@@ -477,6 +501,22 @@ export default function MockTradingPage() {
     }
     return [...set].sort().join(',');
   }, [portfolio.positions]);
+
+  useLayoutEffect(() => {
+    if (userExplicitChartPickRef.current) return;
+    const best = getLargestPositionByValue(portfolio.positions, livePrices);
+    if (best) {
+      const sym = String(best.symbol).toUpperCase();
+      setSelectedSymbol(sym);
+      setSelectedName(best.name || sym);
+      setSelectedType(normalizeAssetType(best.type));
+    } else {
+      setSelectedSymbol('AAPL');
+      setSelectedName('Apple Inc');
+      setSelectedType('Stock');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync default chart ticker when positions/prices change; skip when user picked explicitly
+  }, [openPositionSymbolsKey, livePrices, portfolio.positions]);
   const totalPositionValue = positionsList.reduce((s, p) => {
     const sym = String(p.symbol || '').trim().toUpperCase();
     const livePx = resolveLivePrice(livePrices[sym]);
@@ -665,6 +705,7 @@ export default function MockTradingPage() {
                 )
               ) {
                 const fresh = { cash: 100_000, positions: {}, history: [] };
+                userExplicitChartPickRef.current = false;
                 setPortfolio(fresh);
                 showToast('Portfolio reset to $100,000.');
               }
