@@ -66,7 +66,7 @@ export async function GET(request) {
       // Only search email if the query looks like it could be an email fragment
       const { data: emailRows, error: e4 } = await supabaseAdmin
         .from('profiles')
-        .select(`${cols}, email`)
+        .select(cols + ', email')
         .ilike('email', pattern)
         .limit(10);
 
