@@ -583,12 +583,96 @@
   }
 }
 
+/* ── Article detail: section headings (Related Articles, etc.) ── */
+.echo-article-page .echo-section-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--text-primary, #111827);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Light mode — force readable contrast
+   
+   Legacy theme.css sets :root --text-primary for dark UI; some bundles resolve
+   var(--text-primary) to a light value on light backgrounds. Hero copy stays
+   white on a stronger gradient; cards and article pages use explicit dark ink.
+═══════════════════════════════════════════════════════════ */
+
+/* Featured hero: darker scrim + shadow so white title stays readable on bright photos */
+body.light-mode .echo-hero-banner-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.62) 42%,
+    rgba(0, 0, 0, 0.22) 100%
+  );
+}
+
+body.light-mode .echo-hero-banner-title {
+  color: #ffffff !important;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 2px 20px rgba(0, 0, 0, 0.55);
+}
+
+body.light-mode .echo-hero-banner-excerpt {
+  color: rgba(255, 255, 255, 0.95) !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
+}
+
+body.light-mode .echo-hero-banner-meta {
+  color: rgba(255, 255, 255, 0.92) !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* Grid, blog header, feeds, article page — dark text on light surfaces */
+body.light-mode .echo-blog-title,
+body.light-mode .echo-section-heading,
+body.light-mode .echo-article-card-title,
+body.light-mode .echo-feed-row-title,
+body.light-mode .echo-trend-row-title,
+body.light-mode .echo-article-page .echo-article-h1,
+body.light-mode .echo-article-page .echo-related-title,
+body.light-mode .echo-article-page .echo-section-title {
+  color: #0f172a !important;
+}
+
+body.light-mode .echo-article-card:hover .echo-article-card-title,
+body.light-mode .echo-feed-row:hover .echo-feed-row-title,
+body.light-mode .echo-trend-row:hover .echo-trend-row-title {
+  color: #047857 !important;
+}
+
+body.light-mode .echo-blog-desc,
+body.light-mode .echo-article-card-excerpt,
+body.light-mode .echo-article-card-date,
+body.light-mode .echo-article-card-author-name,
+body.light-mode .echo-feed-row-meta,
+body.light-mode .echo-feed-row-engage,
+body.light-mode .echo-trend-group-label,
+body.light-mode .echo-trend-row-meta,
+body.light-mode .echo-sort-label,
+body.light-mode .echo-article-page .echo-article-meta,
+body.light-mode .echo-article-page .echo-article-stats {
+  color: #475569 !important;
+}
+
+body.light-mode .echo-article-page .echo-article-body,
+body.light-mode .echo-article-page .echo-article-body p {
+  color: #334155 !important;
+}
+
 /* ── Dark mode overrides ─────────────────────────────────── */
 body:not(.light-mode) .echo-blog-title,
 body:not(.light-mode) .echo-section-heading,
 body:not(.light-mode) .echo-article-card-title,
 body:not(.light-mode) .echo-feed-row-title,
-body:not(.light-mode) .echo-trend-row-title {
+body:not(.light-mode) .echo-trend-row-title,
+body:not(.light-mode) .echo-article-page .echo-article-h1,
+body:not(.light-mode) .echo-article-page .echo-related-title,
+body:not(.light-mode) .echo-article-page .echo-section-title {
   color: #f0f6fc;
 }
 body:not(.light-mode) .echo-blog-desc,
