@@ -34,6 +34,7 @@ export function ProfilePageClient({ username }) {
   const [benchmark, setBenchmark] = useState(null);
   const [activityItems, setActivityItems] = useState([]);
   const [followingItems, setFollowingItems] = useState([]);
+  const [followerItems, setFollowerItems] = useState([]);
   const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
 
   const mock = useMockPortfolio();
@@ -269,6 +270,39 @@ export function ProfilePageClient({ username }) {
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setFollowingItems(followingFeed);
 
+      const { data: followerRows } = await supabase
+        .from('user_follows')
+        .select('follower_id, created_at')
+        .eq('following_id', prof.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      const followerIds = (followerRows || []).map((r) => r.follower_id).filter(Boolean);
+      let followerMap = {};
+      if (followerIds.length > 0) {
+        const { data: followerProfiles } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url, is_partner, partner_type')
+          .in('id', followerIds);
+        followerMap = Object.fromEntries((followerProfiles || []).map((p) => [p.id, p]));
+      }
+
+      const followerFeed = (followerRows || [])
+        .map((r) => {
+          const fp = followerMap[r.follower_id];
+          return {
+            id: r.follower_id,
+            username: fp?.username || '',
+            name: fp?.full_name || fp?.username || 'User',
+            avatar_url: fp?.avatar_url || '',
+            is_partner: Boolean(fp?.is_partner),
+            partner_type: fp?.partner_type || '',
+            created_at: r.created_at,
+          };
+        })
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setFollowerItems(followerFeed);
+
       const activity = [
         ...(followingRows.data || []).map((r) => {
           const fp = followMap[r.following_id];
@@ -400,7 +434,13 @@ export function ProfilePageClient({ username }) {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{profile.username || display}</h1>
                 {profile.is_partner && <span title="Partner">⚡</span>}
               </div>
-              <p className="mt-1 text-sm text-gray-500 dark:text-[#6b7280]">{followerCount} subscribers</p>
+              <button
+                type="button"
+                onClick={() => setTab('followers')}
+                className="mt-1 text-sm text-gray-500 hover:text-emerald-500 dark:text-[#6b7280] dark:hover:text-emerald-400 transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+                {followerCount} {followerCount === 1 ? 'follower' : 'followers'}
+              </button>
               <div className="mt-3 flex flex-wrap gap-2">
                 {pills.map((p) => (
                   <span
@@ -425,7 +465,7 @@ export function ProfilePageClient({ username }) {
 
           <div className="mt-6 border-b border-gray-200 dark:border-[#1a1a24]">
             <div className="flex gap-6">
-              {['trades', 'following', 'activity', 'bookmarked'].map((t) => (
+              {['trades', 'followers', 'following', 'activity', 'bookmarked'].map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -436,11 +476,13 @@ export function ProfilePageClient({ username }) {
                 >
                   {t === 'trades'
                     ? 'My Trades'
-                    : t === 'following'
-                      ? 'Following'
-                      : t === 'activity'
-                        ? 'My Activity'
-                        : 'Bookmarked'}
+                    : t === 'followers'
+                      ? `Followers${followerCount > 0 ? ` (${followerCount})` : ''}`
+                      : t === 'following'
+                        ? 'Following'
+                        : t === 'activity'
+                          ? 'My Activity'
+                          : 'Bookmarked'}
                 </button>
               ))}
             </div>
@@ -522,6 +564,52 @@ export function ProfilePageClient({ username }) {
                     </div>
                     <p className="mt-2 text-xs text-gray-500 dark:text-[#6b7280]">{new Date(item.created_at).toLocaleString()}</p>
                   </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {tab === 'followers' && (
+            <div className="mt-6 space-y-3">
+              {followerItems.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-[#6b7280]">
+                  {isOwn
+                    ? "You don't have any followers yet. Share your profile and engage with the community!"
+                    : 'This user has no followers yet.'}
+                </p>
+              ) : (
+                followerItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/profile/${item.username || item.id}`}
+                    className="block rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-emerald-200 dark:border-[#1a1a24] dark:bg-[#111118] dark:hover:border-[#2a2a34]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 text-sm font-semibold text-gray-600 dark:border-[#1a1a24] dark:bg-[#16161f] dark:text-[#9ca3af]"
+                          style={{
+                            backgroundImage: item.avatar_url ? `url(${item.avatar_url})` : undefined,
+                            backgroundSize: 'cover',
+                          }}
+                        >
+                          {!item.avatar_url && (item.name?.[0] || '?').toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-gray-900 dark:text-[#f5f5f5]">{item.name}</p>
+                          <p className="truncate text-xs text-gray-500 dark:text-[#6b7280]">
+                            @{item.username || item.id}
+                            {item.is_partner ? ` · ${item.partner_type || 'Legendary Investor'}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      {item.is_partner && (
+                        <span className="rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">
+                          Legendary
+                        </span>
+                      )}
+                    </div>
+                  </Link>
                 ))
               )}
             </div>
