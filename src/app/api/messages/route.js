@@ -2,7 +2,7 @@
  * GET /api/messages — list conversations. POST /api/messages — send message (friend-gated).
  */
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
@@ -31,10 +31,7 @@ function orderedPair(a, b) {
 
 export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getAuthUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
@@ -134,10 +131,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getAuthUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json().catch(() => ({}));

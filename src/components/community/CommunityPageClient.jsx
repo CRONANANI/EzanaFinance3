@@ -445,7 +445,7 @@ export default function CommunityPageClient() {
   };
 
   const onPageTab = (t) => {
-    if (t === 'Messages') router.push('/community');
+    if (t === 'Messages') router.push('/community/messages');
     if (t === 'My Profile') {
       if (!user?.id) return;
       const handle =
