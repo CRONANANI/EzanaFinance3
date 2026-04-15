@@ -9,7 +9,7 @@ import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
 import { getComparableAssets } from '@/lib/comparableAssets';
-import { MOCK_WATCHLISTS as INITIAL_MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
+import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
 import { ChevronDown, Check } from 'lucide-react';
@@ -254,8 +254,21 @@ export default function WatchlistPage() {
   const [timeRange, setTimeRange] = useState('YTD');
   const [sideTab, setSideTab] = useState('All');
   const [search, setSearch] = useState('');
-  const [mockWatchlists, setMockWatchlists] = useState(() => INITIAL_MOCK_WATCHLISTS);
-  const [selectedWatchlistId, setSelectedWatchlistId] = useState('all-stocks');
+  const {
+    watchlists: mockWatchlists,
+    loading: watchlistsLoading,
+    addItem: addWatchlistItem,
+  } = useWatchlists();
+
+  const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
+
+  useEffect(() => {
+    if (!watchlistsLoading && mockWatchlists.length > 0) {
+      if (!selectedWatchlistId || !mockWatchlists.some((w) => w.id === selectedWatchlistId)) {
+        setSelectedWatchlistId(mockWatchlists[0].id);
+      }
+    }
+  }, [watchlistsLoading, mockWatchlists, selectedWatchlistId]);
   const [wlDropdownOpen, setWlDropdownOpen] = useState(false);
   const wlDropdownRef = useRef(null);
 
@@ -345,32 +358,19 @@ export default function WatchlistPage() {
     };
   }, [stripItems, isOrgUser, watchlistTickerSymbols]);
 
-  const onAddStock = useCallback((ticker, watchlistId) => {
-    const meta = getTickerMeta(ticker);
-    if (!meta) return;
-    setMockWatchlists((prev) =>
-      prev.map((list) => {
-        if (list.id !== watchlistId) return list;
-        if (list.stocks.some((s) => s.ticker === ticker)) return list;
-        return {
-          ...list,
-          stocks: [
-            ...list.stocks,
-            {
-              ticker,
-              name: meta.name,
-              price: 0,
-              change: 0,
-              changePct: 0,
-              marketCap: '—',
-              volume: '—',
-              sector: meta.sector,
-            },
-          ],
-        };
-      }),
-    );
-  }, []);
+  const onAddStock = useCallback(
+    (ticker, watchlistId) => {
+      const meta = getTickerMeta(ticker);
+      if (!meta) return;
+      addWatchlistItem(watchlistId, {
+        type: 'stock',
+        ticker,
+        name: meta.name,
+        sector: meta.sector,
+      });
+    },
+    [addWatchlistItem],
+  );
 
   const sideItems = useMemo(() => {
     if (isOrgUser) {
@@ -716,7 +716,10 @@ export default function WatchlistPage() {
                   onClick={() => setWlDropdownOpen((o) => !o)}
                   aria-expanded={wlDropdownOpen}
                 >
-                  <span>{(mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0]).label}</span>
+                  <span>
+                    {(mockWatchlists.find((w) => w.id === selectedWatchlistId) || mockWatchlists[0])?.label ??
+                      'My Watchlist'}
+                  </span>
                   <ChevronDown size={14} className={wlDropdownOpen ? 'wl-wl-chev-open' : ''} style={{ flexShrink: 0, opacity: 0.8 }} />
                 </button>
                 {wlDropdownOpen && (
