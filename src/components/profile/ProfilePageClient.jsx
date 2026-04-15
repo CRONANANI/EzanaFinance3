@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { supabase } from '@/lib/supabase';
-import { generateMockActivityForUser, generateMockTradesForUser } from '@/lib/profileMockData';
 import { TradeCard } from './TradeCard';
 import { ProfilePerformancePanel } from './ProfilePerformancePanel';
 
@@ -208,7 +207,9 @@ export function ProfilePageClient({ username }) {
           .select('*')
           .eq('user_id', prof.id)
           .order('created_at', { ascending: false });
-        const safeTrades = tr && tr.length > 0 ? tr : generateMockTradesForUser(prof.id);
+        // No fallback: show an empty state when the user has no real trades yet
+        // rather than hallucinating deterministic fake option trades from the user ID.
+        const safeTrades = tr || [];
         setTrades(safeTrades);
       }
 
@@ -301,7 +302,8 @@ export function ProfilePageClient({ username }) {
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         .slice(0, 20);
 
-      setActivityItems(activity.length ? activity : generateMockActivityForUser(prof.id));
+      // No fallback: show empty activity state for users who haven't engaged yet.
+      setActivityItems(activity);
     } catch (e) {
       console.error(e);
       setNotFound(true);

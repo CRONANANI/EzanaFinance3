@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
+import { useAlpacaPortfolioSummary } from '@/hooks/useAlpacaPortfolioSummary';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
@@ -39,6 +40,8 @@ export default function HomeTerminalPage() {
   const { user } = useAuth();
   const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
     usePlaidPortfolioSummary();
+  const { connected: alpacaConnected, summary: alpacaSummary, isLoading: alpacaSummaryLoading } =
+    useAlpacaPortfolioSummary();
   const mock = useMockPortfolio();
   const [time, setTime] = useState('');
   const [holdings, setHoldings] = useState([]);
@@ -211,15 +214,30 @@ export default function HomeTerminalPage() {
    */
   const portfolioTotalAligned = useMemo(() => {
     if (!user) return HERO_DATA['1D'].value;
+
+    // Priority 1: Alpaca brokerage account opened inside Ezana (if present).
+    if (alpacaConnected) {
+      if (alpacaSummaryLoading) return HERO_DATA['1D'].value;
+      if (alpacaSummary?.totalValue != null) return alpacaSummary.totalValue;
+    }
+
+    // Priority 2: External brokerage connected via Plaid (if present).
     if (plaidConnected) {
       if (plaidSummaryLoading) return HERO_DATA['1D'].value;
       if (plaidSummary?.totalValue != null) return plaidSummary.totalValue;
       return portfolioTotal > 0 ? portfolioTotal : HERO_DATA['1D'].value;
     }
+
+    // Priority 3: Mock practice portfolio (the $100k default).
     if (mock.hasMockPortfolio) return mock.totalValue;
+
+    // Fallback: demo value.
     return HERO_DATA['1D'].value;
   }, [
     user,
+    alpacaConnected,
+    alpacaSummaryLoading,
+    alpacaSummary?.totalValue,
     plaidConnected,
     plaidSummaryLoading,
     plaidSummary?.totalValue,
@@ -231,9 +249,20 @@ export default function HomeTerminalPage() {
   const marqueePortfolioValue = portfolioTotalAligned;
 
   const portfolioChange = useMemo(() => {
+    // Match the priority chain from portfolioTotalAligned:
+    // Alpaca → Plaid → mock → fallback
+    if (alpacaConnected && alpacaSummary?.totalGainLoss != null) {
+      return alpacaSummary.totalGainLoss;
+    }
     if (mock.hasMockPortfolio) return mock.totalPnl;
     return enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0);
-  }, [mock.hasMockPortfolio, mock.totalPnl, enrichedHoldings]);
+  }, [
+    alpacaConnected,
+    alpacaSummary?.totalGainLoss,
+    mock.hasMockPortfolio,
+    mock.totalPnl,
+    enrichedHoldings,
+  ]);
 
   const isMarketOpen = useMemo(() => {
     const now = new Date();
