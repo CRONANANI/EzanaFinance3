@@ -306,6 +306,7 @@ export default function CommunityPageClient() {
   useEffect(() => {
     if (userSearch.trim().length < 2) {
       setUserSearchResults([]);
+      setUserSearchLoading(false);
       return;
     }
     setUserSearchLoading(true);
