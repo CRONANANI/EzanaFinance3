@@ -141,6 +141,25 @@ export function DataRequestPanel() {
       </div>
 
       <div className="settings-section">
+        <h3 className="settings-section-title">Mock Portfolio Archives</h3>
+        <p className="settings-section-desc">
+          When you reset your mock portfolio, you can save a CSV copy before resetting. CSV files are downloaded
+          directly to your device. You can also export your current portfolio at any time using the button below.
+        </p>
+        <button
+          type="button"
+          className="settings-btn-secondary"
+          onClick={() => {
+            alert(
+              'Export feature coming soon — use the Reset Portfolio button on the Mock Trading page to save a CSV before resetting.',
+            );
+          }}
+        >
+          <i className="bi bi-download" /> Export Current Portfolio as CSV
+        </button>
+      </div>
+
+      <div className="settings-section">
         <p className="settings-data-request-hint">
           Signed in as <strong>{user?.email || 'your account'}</strong>
           {accountSummary ? (

@@ -10,7 +10,6 @@ import {
   isCourseFullyCompleted,
   isLevelUnlocked,
 } from '@/lib/learning-progress-logic';
-import { parseLearningBadgeKey, sortBadgeKeysForDisplay } from '@/lib/learning-badge-ui';
 import { FriendsLearningCard } from '@/components/learning/FriendsLearningCard';
 import { useOrg } from '@/contexts/OrgContext';
 import { ORG_SHORT } from '@/lib/orgMockData';
@@ -32,23 +31,6 @@ const TRACK_ICONS = {
   commodities: '🛢️',
   risk: '🧠',
 };
-
-const BADGE_TILE_EMOJI = {
-  stocks: '📈',
-  crypto: '₿',
-  betting: '🎯',
-  commodities: '🛢️',
-  risk: '🧠',
-};
-
-const MAX_BADGE_TILES = 8;
-
-function emojiForBadgeKey(key) {
-  const p = parseLearningBadgeKey(key);
-  if (!p) return '📛';
-  if (p.isMaster) return '🏆';
-  return BADGE_TILE_EMOJI[p.trackId] || '📛';
-}
 
 export function LearningCenterPage() {
   const { isOrgUser } = useOrg();
@@ -89,14 +71,23 @@ export function LearningCenterPage() {
       .slice(0, 3);
   }, [data?.courses, progressById]);
 
+  const suggestedCourses = useMemo(() => {
+    if (!data?.courses) return [];
+    const inProgIds = new Set(inProgressCourses.map((c) => c.id));
+    return data.courses
+      .filter((c) => {
+        if (inProgIds.has(c.id)) return false;
+        const access = canAccessCourse(c, progressById);
+        if (!access.ok) return false;
+        const row = progressById[c.id];
+        return !row || !isCourseFullyCompleted(row);
+      })
+      .slice(0, 3);
+  }, [data?.courses, progressById, inProgressCourses]);
+
   const coursesForView = useMemo(() => {
     return getOrderedCoursesForTrack(selectedTrack).filter((c) => c.level === selectedLevel);
   }, [selectedTrack, selectedLevel]);
-
-  const badgeKeysSorted = useMemo(
-    () => sortBadgeKeysForDisplay(data?.badges?.map((b) => b.badge_key) || []),
-    [data?.badges]
-  );
 
   const levelUnlocked = useMemo(
     () => isLevelUnlocked(selectedTrack, selectedLevel, progressById),
@@ -140,7 +131,7 @@ export function LearningCenterPage() {
     );
   }
 
-  const { overall, tracks, badges } = data;
+  const { overall, tracks } = data;
 
   return (
     <div className="dashboard-page-inset db-page lc3-page" style={{ paddingTop: 0, paddingBottom: '2rem' }}>
@@ -151,6 +142,27 @@ export function LearningCenterPage() {
             Master the markets — from beginner to expert
           </p>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+        <Link
+          href="/learning-center/badges"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.45rem 0.9rem',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            borderRadius: '8px',
+            color: '#10b981',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          <i className="bi bi-award" /> Badges
+        </Link>
       </div>
 
       {/* Your Learning Journey */}
@@ -216,67 +228,36 @@ export function LearningCenterPage() {
           </div>
 
           <div>
-            <p className="lc3-label">
-              Badges earned ({badges?.length || 0})
-            </p>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
-                gap: '8px',
-                marginTop: '0.75rem',
-              }}
-            >
-              {badgeKeysSorted.slice(0, MAX_BADGE_TILES).map((badge_key) => {
-                const parsed = parseLearningBadgeKey(badge_key);
-                const levelKey = parsed?.levelKey ?? 'basic';
-                const TIER_COLORS = {
-                  basic: { border: '#cd7f32', bg: 'rgba(205,127,50,0.08)', glow: 'rgba(205,127,50,0.2)', label: 'Bronze' },
-                  intermediate: { border: '#c0c0c0', bg: 'rgba(192,192,192,0.08)', glow: 'rgba(192,192,192,0.2)', label: 'Silver' },
-                  advanced: { border: '#d4a853', bg: 'rgba(212,168,83,0.08)', glow: 'rgba(212,168,83,0.2)', label: 'Gold' },
-                  expert: { border: '#e5e4e2', bg: 'rgba(229,228,226,0.08)', glow: 'rgba(229,228,226,0.25)', label: 'Platinum' },
-                };
-                const tc = TIER_COLORS[levelKey] ?? TIER_COLORS.basic;
+            <p className="lc3-label">Suggested courses</p>
+            {suggestedCourses.length === 0 ? (
+              <p style={{ color: '#6b7280', fontSize: '.8125rem' }}>You&apos;re all caught up — explore tracks below.</p>
+            ) : (
+              suggestedCourses.map((c) => {
+                const color = TRACK_COLORS[c.track] || '#10b981';
                 return (
-                  <div
-                    key={badge_key}
-                    title={`${badge_key} — ${tc.label}`}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '10px 6px',
-                      borderRadius: '10px',
-                      border: `1px solid ${tc.border}`,
-                      background: tc.bg,
-                      boxShadow: `0 0 8px ${tc.glow}`,
-                      minHeight: '72px',
-                      cursor: 'default',
-                    }}
-                  >
-                    <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{emojiForBadgeKey(badge_key)}</span>
-                    <span
-                      style={{
-                        fontSize: '0.45rem',
-                        fontWeight: 700,
-                        color: tc.border,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      {tc.label}
-                    </span>
+                  <div key={c.id} className="lc3-inprogress-row">
+                    <span style={{ fontSize: '.8rem' }}>{TRACK_ICONS[c.track]}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <Link
+                        href={`/learning-center/course/${c.id}`}
+                        style={{ color: '#f0f6fc', fontSize: '.8125rem', fontWeight: 700, margin: 0, textDecoration: 'none' }}
+                      >
+                        {c.title}
+                      </Link>
+                      <p style={{ color: '#6b7280', fontSize: '.625rem', margin: 0 }}>
+                        {TRACKS.find((t) => t.id === c.track)?.shortLabel} · {getLevelLabel(c.level)}
+                      </p>
+                    </div>
+                    <div style={{ width: 50 }}>
+                      <div style={{ height: 3, background: 'rgba(16,185,129,0.1)', borderRadius: 2 }}>
+                        <div style={{ width: '100%', height: '100%', background: color, borderRadius: 2, opacity: 0.35 }} />
+                      </div>
+                      <p style={{ fontSize: '.5rem', color: '#6b7280', margin: '.1rem 0 0', textAlign: 'right' }}>Start</p>
+                    </div>
                   </div>
                 );
-              })}
-              {badgeKeysSorted.length === 0 && (
-                <p style={{ color: '#6b7280', fontSize: '0.75rem', gridColumn: '1 / -1', margin: 0, padding: '0.5rem 0' }}>
-                  Complete courses to earn badges
-                </p>
-              )}
-            </div>
+              })
+            )}
           </div>
         </div>
       </div>

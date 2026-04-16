@@ -165,7 +165,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                   border: '1px solid rgba(16,185,129,0.15)',
                   borderRadius: '8px',
                   fontSize: '0.7rem',
-                  color: '#e2e8f0',
+                  color: 'var(--text-secondary, #e2e8f0)',
                 }}
                 labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
               />
@@ -279,7 +279,7 @@ function PlatformActivityTab() {
                 margin: 0,
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                color: '#f0f6fc',
+                color: 'var(--text-primary, #f0f6fc)',
               }}
             >
               {row.title}

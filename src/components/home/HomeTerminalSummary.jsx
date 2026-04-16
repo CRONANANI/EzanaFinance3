@@ -217,6 +217,7 @@ export function HomeTerminalSummary({
   const [eventsLoading, setEventsLoading] = useState(true);
   const [congressTrades, setCongressTrades] = useState([]);
   const [congressLoading, setCongressLoading] = useState(true);
+  const [portfolioValueTf, setPortfolioValueTf] = useState('1D');
   const { isOrgUser } = useOrg();
   const { openProGate } = useProGate();
 
@@ -355,7 +356,7 @@ export function HomeTerminalSummary({
     'Investor';
 
   const greeting = getGreeting();
-  const streakDays = mockData?.streak ?? 13;
+  const streakDays = mockData?.streak ?? 0;
 
   const ezanaScore = mockData?.activityScore != null ? Math.min(99, Math.round(mockData.activityScore / 4.5)) : 22;
 
@@ -514,7 +515,7 @@ export function HomeTerminalSummary({
               <div className="home-terminal-top-row">
             <div className="home-snapshot-col">
               <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
                     <h3 style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
                       Portfolio Snapshot
@@ -532,13 +533,36 @@ export function HomeTerminalSummary({
                         : '\u00a0'}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button type="button" className="db-tf-btn-sm active" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Line chart">
-                      <i className="bi bi-graph-up" />
-                    </button>
-                    <button type="button" className="db-tf-btn-sm" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Bar chart">
-                      <i className="bi bi-bar-chart-line" />
-                    </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      {['1D', '1M', '6M', '1Y'].map((tf) => (
+                        <button
+                          key={tf}
+                          type="button"
+                          onClick={() => setPortfolioValueTf(tf)}
+                          style={{
+                            padding: '0.2rem 0.45rem',
+                            borderRadius: '4px',
+                            border: 'none',
+                            fontSize: '0.625rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            background: portfolioValueTf === tf ? '#10b981' : 'rgba(107, 114, 128, 0.1)',
+                            color: portfolioValueTf === tf ? '#fff' : 'var(--home-muted)',
+                          }}
+                        >
+                          {tf}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      <button type="button" className="db-tf-btn-sm active" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Line chart">
+                        <i className="bi bi-graph-up" />
+                      </button>
+                      <button type="button" className="db-tf-btn-sm" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Bar chart">
+                        <i className="bi bi-bar-chart-line" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -549,7 +573,10 @@ export function HomeTerminalSummary({
                   {changePctStr} ({changeDollarStr})
                 </p>
 
-                <div style={{ height: 80, minHeight: 80, maxHeight: 80, marginBottom: '0.75rem', overflow: 'hidden' }}>
+                <div
+                  style={{ height: 80, minHeight: 80, maxHeight: 80, marginBottom: '0.75rem', overflow: 'hidden' }}
+                  title={`Portfolio view: ${portfolioValueTf} (chart data follows account snapshot until historical ranges are wired)`}
+                >
                   <HeroSparkline
                     portfolioValue={snapshotValueNum || currentValue}
                     changePct={displayPct}
@@ -590,7 +617,7 @@ export function HomeTerminalSummary({
                             gap: '0.5rem',
                             padding: '0.3rem 0.5rem',
                             borderRadius: '6px',
-                            background: isPos ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.04)',
+                            background: isPos ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
                             borderLeft: `3px solid ${isPos ? '#10b981' : '#ef4444'}`,
                           }}
                         >
@@ -860,7 +887,7 @@ export function HomeTerminalSummary({
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
-                        {Array.from({ length: 13 }).map((_, i) => (
+                        {Array.from({ length: 7 }).map((_, i) => (
                           <div
                             key={i}
                             style={{
@@ -868,7 +895,7 @@ export function HomeTerminalSummary({
                               height: '24px',
                               borderRadius: '3px',
                               background: i < streakDays ? '#f97316' : 'var(--card-border, rgba(16, 185, 129, 0.15))',
-                              opacity: 0.4 + (i / 13) * 0.6,
+                              opacity: 0.4 + (i / 7) * 0.6,
                             }}
                           />
                         ))}

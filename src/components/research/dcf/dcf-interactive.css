@@ -39,7 +39,7 @@
 
 .dcf-interactive-body {
   display: grid;
-  grid-template-columns: 15% 85%;
+  grid-template-columns: 220px 1fr;
   min-height: 480px;
 }
 
@@ -51,7 +51,7 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.7rem;
   overflow-y: auto;
-  max-height: 640px;
+  max-height: none;
   color: #1f2937;
 }
 body.dark-mode .dcf-assumptions-col,

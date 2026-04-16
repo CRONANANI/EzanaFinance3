@@ -162,7 +162,7 @@ export function useMockPortfolio() {
   const setPortfolio = useCallback((update, options = {}) => {
     const { skipSync = false } = options;
     setPortfolioState((prev) => {
-      const base = prev ?? { cash: STARTING_CASH, positions: {}, history: [] };
+      const base = prev ?? { cash: STARTING_CASH, positions: {}, history: [], startingCash: STARTING_CASH };
       const raw = typeof update === 'function' ? update(base) : update;
       if (raw == null) return raw;
       const next = withMeta(raw);
@@ -316,8 +316,9 @@ export function useMockPortfolio() {
 
   const totalPositionValue = enrichedPositions.reduce((s, p) => s + p.posValue, 0);
   const totalValue = cash + totalPositionValue;
-  const totalPnl = totalValue - STARTING_CASH;
-  const totalPnlPct = (totalValue / STARTING_CASH - 1) * 100;
+  const effectiveStart = portfolio?.startingCash ?? STARTING_CASH;
+  const totalPnl = totalValue - effectiveStart;
+  const totalPnlPct = effectiveStart > 0 ? (totalValue / effectiveStart - 1) * 100 : 0;
 
   const sectorMap = {};
   for (const pos of enrichedPositions) sectorMap[pos.sector] = (sectorMap[pos.sector] ?? 0) + pos.posValue;
@@ -361,5 +362,6 @@ export function useMockPortfolio() {
     enrichedPositions, cash, totalValue, totalPositionValue,
     totalPnl, totalPnlPct, sectorData, profitBreakdown,
     recentTransactions, liveQuotes, quotesLoading, STARTING_CASH,
+    effectiveStartingCash: effectiveStart,
   };
 }

@@ -258,6 +258,7 @@ export default function WatchlistPage() {
     watchlists: mockWatchlists,
     loading: watchlistsLoading,
     addItem: addWatchlistItem,
+    createList,
   } = useWatchlists();
 
   const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
@@ -709,6 +710,7 @@ export default function WatchlistPage() {
 
           {!isOrgUser ? (
             <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
               <div ref={wlDropdownRef} className="wl-wl-dropdown">
                 <button
                   type="button"
@@ -746,6 +748,32 @@ export default function WatchlistPage() {
                     ))}
                   </div>
                 )}
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const name = prompt('Enter a name for your new watchlist:');
+                  if (name && name.trim()) {
+                    const result = await createList(name.trim());
+                    if (result.ok && result.listId) {
+                      setSelectedWatchlistId(result.listId);
+                    }
+                  }
+                }}
+                style={{
+                  padding: '0.35rem 0.7rem',
+                  background: '#10b981',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  marginLeft: '0.5rem',
+                }}
+              >
+                + New List
+              </button>
               </div>
               <WatchlistSearch
                 query={search}

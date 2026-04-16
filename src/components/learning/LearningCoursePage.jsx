@@ -17,6 +17,8 @@ export function LearningCoursePage() {
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(true);
   const [readAck, setReadAck] = useState(false);
+  const [currentSection, setCurrentSection] = useState(0);
+  const [sectionCompleted, setSectionCompleted] = useState({});
   const [quizMode, setQuizMode] = useState(false);
   const [qIdx, setQIdx] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -69,6 +71,15 @@ export function LearningCoursePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content?.quiz?.length]);
+
+  useEffect(() => {
+    const n = content?.sections?.length ?? 0;
+    if (n > 0 && progress?.reading_complete) {
+      setReadAck(true);
+      setSectionCompleted(Object.fromEntries(Array.from({ length: n }, (_, i) => [i, true])));
+      setCurrentSection(Math.max(0, n - 1));
+    }
+  }, [content?.sections?.length, progress?.reading_complete]);
 
   const trackLabel = TRACKS.find((t) => t.id === course?.track)?.label || 'Track';
   const ordered = course ? getOrderedCoursesForTrack(course.track, course.level) : [];
@@ -216,47 +227,138 @@ export function LearningCoursePage() {
 
       {!quizMode && !result && (
         <article className="lc3-article db-card">
-          {content?.sections?.map((sec, i) => (
-            <section key={i} className="lc3-section">
-              <h2 className="lc3-h2">{sec.title}</h2>
-              <div className="lc3-body">{sec.content}</div>
-              {sec.visual && (
-                <CourseVisual
-                  type={sec.visual.type}
-                  data={sec.visual.data}
-                  caption={sec.visual.caption}
-                />
-              )}
-              {sec.callout && <div className="lc3-callout">{sec.callout}</div>}
-              {sec.keyTerms?.length > 0 && (
-                <div className="lc3-terms">
-                  <strong>Key terms:</strong> {sec.keyTerms.join(', ')}
-                </div>
-              )}
-            </section>
-          ))}
+          {content?.sections?.length > 0 ? (
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+              <div style={{ width: '220px', flexShrink: 0 }}>
+                {content.sections.map((sec, i) => {
+                  const canOpen = i <= currentSection || (i > 0 && sectionCompleted[i - 1]);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        if (canOpen) setCurrentSection(i);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        width: '100%',
+                        padding: '0.6rem 0.75rem',
+                        border: 'none',
+                        borderLeft: i === currentSection ? '3px solid #10b981' : '3px solid transparent',
+                        background: i === currentSection ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+                        color:
+                          i === currentSection
+                            ? '#10b981'
+                            : sectionCompleted[i]
+                              ? 'var(--text-primary, #f0f6fc)'
+                              : '#6b7280',
+                        fontSize: '0.8125rem',
+                        fontWeight: i === currentSection ? 700 : 500,
+                        textAlign: 'left',
+                        cursor: canOpen ? 'pointer' : 'not-allowed',
+                        opacity: canOpen ? 1 : 0.5,
+                        borderRadius: '0 6px 6px 0',
+                        transition: 'all 0.15s',
+                        marginBottom: 4,
+                      }}
+                    >
+                      {sectionCompleted[i] ? (
+                        <i className="bi bi-check-circle-fill" style={{ color: '#10b981' }} />
+                      ) : (
+                        <span
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            border: `2px solid ${i === currentSection ? '#10b981' : '#4b5563'}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.625rem',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {i + 1}
+                        </span>
+                      )}
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {sec.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {content.sections[currentSection] && (
+                  <section className="lc3-section">
+                    <h2 className="lc3-h2">{content.sections[currentSection].title}</h2>
+                    <div className="lc3-body">{content.sections[currentSection].content}</div>
+                    {content.sections[currentSection].visual && (
+                      <CourseVisual
+                        type={content.sections[currentSection].visual.type}
+                        data={content.sections[currentSection].visual.data}
+                        caption={content.sections[currentSection].visual.caption}
+                      />
+                    )}
+                    {content.sections[currentSection].callout && (
+                      <div className="lc3-callout">{content.sections[currentSection].callout}</div>
+                    )}
+                    {content.sections[currentSection].keyTerms?.length > 0 && (
+                      <div className="lc3-terms">
+                        <strong>Key terms:</strong> {content.sections[currentSection].keyTerms.join(', ')}
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                      {currentSection < content.sections.length - 1 ? (
+                        <button
+                          type="button"
+                          className="lc3-btn lc3-btn-primary"
+                          onClick={() => {
+                            setSectionCompleted((prev) => ({ ...prev, [currentSection]: true }));
+                            setCurrentSection((prev) => prev + 1);
+                          }}
+                        >
+                          Continue to next section →
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="lc3-btn lc3-btn-primary"
+                          onClick={() => {
+                            setSectionCompleted((prev) => ({ ...prev, [currentSection]: true }));
+                            setReadAck(true);
+                          }}
+                        >
+                          Complete reading ✓
+                        </button>
+                      )}
+                    </div>
+                  </section>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="lc3-muted">No sections for this course.</p>
+          )}
 
           {!quizPassed && (
             <>
-              <div className="lc3-read-row">
-                <label className="lc3-check">
-                  <input
-                    type="checkbox"
-                    checked={readAck}
-                    onChange={(e) => setReadAck(e.target.checked)}
-                    disabled={progress?.reading_complete}
-                  />
-                  <span>I&apos;ve finished reading</span>
-                </label>
-                <button
-                  type="button"
-                  className="lc3-btn lc3-btn-primary"
-                  disabled={!readAck || progress?.reading_complete || submitting}
-                  onClick={onReadingDone}
-                >
-                  {progress?.reading_complete ? 'Reading complete ✓' : 'Confirm & unlock quiz'}
-                </button>
-              </div>
+              {readAck && !progress?.reading_complete && (
+                <div className="lc3-read-row" style={{ marginTop: '1.25rem' }}>
+                  <button
+                    type="button"
+                    className="lc3-btn lc3-btn-primary"
+                    disabled={submitting}
+                    onClick={onReadingDone}
+                  >
+                    {progress?.reading_complete ? 'Reading complete ✓' : 'Confirm & unlock quiz'}
+                  </button>
+                </div>
+              )}
 
               {progress?.reading_complete && (
                 <button

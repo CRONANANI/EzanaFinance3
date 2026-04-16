@@ -8,15 +8,11 @@ import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { supabase } from '@/lib/supabase';
-import { IntIcon } from '@/components/ui/interactive-animated-arrow-icon';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
+import { useWatchlists } from '@/hooks/useWatchlists';
 import './home-dashboard.css';
 
 const HOLDINGS_PAGE_SIZE = 6;
-const LOTTIE_ARROW_LEFT =
-  'https://res.cloudinary.com/dhdupwqli/raw/upload/arrowLeftCircle_yevrp4.json';
-const LOTTIE_ARROW_RIGHT =
-  'https://res.cloudinary.com/dhdupwqli/raw/upload/arrowRightCircle_zf9kg7.json';
 
 const HOLDING_PALETTE = [
   '#4285F4',
@@ -209,7 +205,36 @@ export default function HomeDashboardPage() {
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
+  const { watchlists: userWatchlists } = useWatchlists();
+  const [selectedHomeWatchlistId, setSelectedHomeWatchlistId] = useState(null);
   const [expandedSector, setExpandedSector] = useState(null);
+
+  useEffect(() => {
+    if (userWatchlists.length > 0) {
+      if (!selectedHomeWatchlistId || !userWatchlists.some((w) => w.id === selectedHomeWatchlistId)) {
+        setSelectedHomeWatchlistId(userWatchlists[0].id);
+      }
+    }
+  }, [userWatchlists, selectedHomeWatchlistId]);
+
+  const activeHomeWatchlist = useMemo(() => {
+    if (!userWatchlists.length) return null;
+    const id = selectedHomeWatchlistId || userWatchlists[0]?.id;
+    return userWatchlists.find((w) => w.id === id) || userWatchlists[0];
+  }, [userWatchlists, selectedHomeWatchlistId]);
+
+  const watchlistRows = useMemo(() => {
+    const stocks = activeHomeWatchlist?.stocks;
+    if (stocks?.length) {
+      return stocks.map((s) => ({
+        ticker: s.ticker,
+        name: s.name || s.ticker,
+        price: typeof s.price === 'number' ? s.price : 0,
+        change: s.changePct ?? s.change ?? 0,
+      }));
+    }
+    return WATCHLIST;
+  }, [activeHomeWatchlist]);
 
   const useLiveHoldings =
     !!plaidHoldingsPayload?.connected && (plaidHoldingsPayload?.aggregated?.length ?? 0) > 0;
@@ -328,6 +353,7 @@ export default function HomeDashboardPage() {
         ...fromPlaid,
         ...fromMock,
         ...WATCHLIST.map((w) => w.ticker),
+        ...userWatchlists.flatMap((w) => (w.stocks || []).map((s) => s.ticker).filter(Boolean)),
         ...RECENT_TRANSACTIONS.map((t) => t.ticker).filter(Boolean),
       ]),
     ];
@@ -346,7 +372,7 @@ export default function HomeDashboardPage() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [plaidHoldingsPayload, useMock, mock.portfolio?.positions]);
+  }, [plaidHoldingsPayload, useMock, mock.portfolio?.positions, userWatchlists]);
 
   const userName = user?.user_metadata?.first_name
     || user?.user_metadata?.full_name?.split(' ')[0]
@@ -522,12 +548,7 @@ export default function HomeDashboardPage() {
                 onClick={() => setHoldingsPage((p) => Math.max(0, p - 1))}
                 aria-label="Previous holdings"
               >
-                <IntIcon
-                  animationData={LOTTIE_ARROW_LEFT}
-                  color="#10b981"
-                  playOnClick
-                  size={44}
-                />
+                <i className="bi bi-chevron-left" style={{ color: '#10b981', fontSize: '1rem', cursor: 'pointer' }} />
               </button>
               <h3>My Holdings</h3>
               <button
@@ -537,12 +558,7 @@ export default function HomeDashboardPage() {
                 onClick={() => setHoldingsPage((p) => Math.min(holdingsPageCount - 1, p + 1))}
                 aria-label="Next holdings"
               >
-                <IntIcon
-                  animationData={LOTTIE_ARROW_RIGHT}
-                  color="#10b981"
-                  playOnClick
-                  size={44}
-                />
+                <i className="bi bi-chevron-right" style={{ color: '#10b981', fontSize: '1rem', cursor: 'pointer' }} />
               </button>
             </div>
             <div className="db-card-header-right">
@@ -605,19 +621,40 @@ export default function HomeDashboardPage() {
 
         {/* Watchlist */}
         <div className="db-card db-watchlist-card">
-          <div className="db-card-header">
-            <h3>Watchlist</h3>
-            <button className="db-icon-btn" title="Add"><i className="bi bi-plus-lg" /></button>
+          <div className="db-card-header" style={{ alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0 }}>Watchlist</h3>
+            {userWatchlists.length > 0 && (
+              <select
+                value={selectedHomeWatchlistId || userWatchlists[0]?.id || ''}
+                onChange={(e) => setSelectedHomeWatchlistId(e.target.value)}
+                style={{
+                  background: 'rgba(16, 185, 129, 0.06)',
+                  border: '1px solid rgba(16, 185, 129, 0.15)',
+                  borderRadius: '6px',
+                  color: 'var(--text-primary, #f0f6fc)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  padding: '0.3rem 0.5rem',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                {userWatchlists.map((wl) => (
+                  <option key={wl.id} value={wl.id}>{wl.label}</option>
+                ))}
+              </select>
+            )}
+            <button className="db-icon-btn" title="Add" style={{ marginLeft: 'auto' }}><i className="bi bi-plus-lg" /></button>
           </div>
           <div className="db-watchlist-list">
-            {WATCHLIST.length === 0 ? (
+            {watchlistRows.length === 0 ? (
               <div className="db-watchlist-empty">
                 <i className="bi bi-bookmark" style={{ fontSize: '2rem', color: '#6b7280', marginBottom: '0.5rem' }} />
                 <p style={{ margin: 0, fontSize: '0.875rem', color: '#8b949e' }}>Empty watchlist — add stocks to track</p>
                 <button className="db-icon-btn" style={{ marginTop: '0.75rem' }} title="Add stock"><i className="bi bi-plus-lg" /></button>
               </div>
             ) : (
-              WATCHLIST.map((w) => {
+              watchlistRows.map((w) => {
                 const q = liveQuotes[w.ticker];
                 const px = q?.price ?? w.price;
                 const ch = q != null ? q.changePercent : w.change;

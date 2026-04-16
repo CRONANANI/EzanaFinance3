@@ -36,7 +36,7 @@ const SETTINGS_TABS = [
   { key: 'notifications', label: 'Notifications', icon: 'bi-bell', desc: 'Alert & push settings' },
   { key: 'integrations', label: 'Integrations', icon: 'bi-plug', desc: 'Connected services' },
   { key: 'api', label: 'API', icon: 'bi-code-slash', desc: 'API keys & access' },
-  { key: 'privacy-data', label: 'Privacy & data', icon: 'bi-shield-lock', desc: 'Access, correct, or delete your data' },
+  { key: 'privacy-data', label: 'Privacy & data', icon: 'bi-shield-lock', desc: 'Data export, mock portfolio archives' },
 ];
 
 const PANEL_MAP = {

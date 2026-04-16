@@ -82,7 +82,6 @@ export function NavNotifications() {
 
   const filtered = notifications.filter((n) => {
     if (filter === 'all') return true;
-    if (filter === 'unread') return !n.read;
     return n.type === filter;
   });
 
@@ -237,7 +236,6 @@ export function NavNotifications() {
     <div className={`nn-filters ${extraClass || ''}`}>
       {[
         { key: 'all', label: 'All' },
-        { key: 'unread', label: 'Unread' },
         { key: 'congress', label: 'Congress' },
         { key: 'market_news', label: 'Market' },
         { key: 'portfolio_alerts', label: 'Portfolio' },
@@ -251,9 +249,6 @@ export function NavNotifications() {
           type="button"
         >
           {f.label}
-          {f.key === 'unread' && unreadCount > 0 && (
-            <span className="nn-filter-count">{unreadCount}</span>
-          )}
         </button>
       ))}
     </div>

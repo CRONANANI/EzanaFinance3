@@ -19,6 +19,7 @@ const freshPortfolio = () => ({
   cash: STARTING_CASH,
   positions: {},
   history: [],
+  startingCash: STARTING_CASH,
 });
 
 /* ──────────────────────────────────────────
@@ -161,8 +162,8 @@ export default function MockTradingPage() {
   /** When true, chart ticker follows user search/table picks; when false, chart defaults to largest position (or AAPL). */
   const userExplicitChartPickRef = useRef(false);
 
-  const [selectedSymbol, setSelectedSymbol] = useState('AAPL');
-  const [selectedName, setSelectedName] = useState('Apple Inc');
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
+  const [selectedName, setSelectedName] = useState('');
   const [selectedType, setSelectedType] = useState('Stock');
   const [quoteData, setQuoteData] = useState(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
@@ -193,6 +194,10 @@ export default function MockTradingPage() {
   }, []);
 
   useEffect(() => {
+    if (!selectedSymbol) {
+      setQuoteData(null);
+      return;
+    }
     fetchQuote(selectedSymbol);
   }, [selectedSymbol, fetchQuote]);
 
@@ -304,6 +309,10 @@ export default function MockTradingPage() {
   };
 
   const executeTrade = () => {
+    if (!selectedSymbol) {
+      showToast('Search for a ticker to trade.', 'error');
+      return;
+    }
     const price = quoteData?.price;
     if (!price || price <= 0) {
       showToast('Could not get current price.', 'error');
@@ -533,8 +542,8 @@ export default function MockTradingPage() {
       setSelectedName(best.name || sym);
       setSelectedType(normalizeAssetType(best.type));
     } else {
-      setSelectedSymbol('AAPL');
-      setSelectedName('Apple Inc');
+      setSelectedSymbol(null);
+      setSelectedName('');
       setSelectedType('Stock');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync default chart ticker when positions/prices change; skip when user picked explicitly
@@ -546,8 +555,9 @@ export default function MockTradingPage() {
     return s + px * p.qty;
   }, 0);
   const totalPortfolioValue = portfolio.cash + totalPositionValue;
-  const totalPnl = totalPortfolioValue - STARTING_CASH;
-  const totalPnlPct = (totalPortfolioValue / STARTING_CASH - 1) * 100;
+  const effectiveStart = portfolio?.startingCash ?? STARTING_CASH;
+  const totalPnl = totalPortfolioValue - effectiveStart;
+  const totalPnlPct = effectiveStart > 0 ? (totalPortfolioValue / effectiveStart - 1) * 100 : 0;
 
   useEffect(() => {
     const symbols = [...new Set(
@@ -729,7 +739,7 @@ export default function MockTradingPage() {
             open={resetModalOpen}
             onClose={() => setResetModalOpen(false)}
             onConfirm={(startingAmount) => {
-              const fresh = { cash: startingAmount, positions: {}, history: [] };
+              const fresh = { cash: startingAmount, positions: {}, history: [], startingCash: startingAmount };
               userExplicitChartPickRef.current = false;
               setPortfolio(fresh);
               showToast(
@@ -760,7 +770,10 @@ export default function MockTradingPage() {
           </span>
           <span className="mock-stat-sub">
             {totalPnlPct >= 0 ? '+' : ''}
-            {totalPnlPct.toFixed(2)}% vs $100K
+            {totalPnlPct.toFixed(2)}% vs{' '}
+            {effectiveStart >= 1000
+              ? `$${(effectiveStart / 1000).toFixed(0)}K`
+              : `$${effectiveStart.toLocaleString('en-US')}`}
           </span>
         </div>
         <div className="mock-stat-card">
@@ -774,7 +787,28 @@ export default function MockTradingPage() {
         <div className="mock-left-col">
           <div className="mock-card">
             <div className="mock-card-body" style={{ paddingTop: '1.125rem' }}>
-              <StockPriceChart symbol={selectedSymbol} livePrice={currentPrice || null} />
+              {!selectedSymbol && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '300px',
+                    color: 'var(--text-secondary, #9ca3af)',
+                    textAlign: 'center',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <i className="bi bi-graph-up" style={{ fontSize: '2.5rem', opacity: 0.25, color: '#10b981' }} />
+                  <p style={{ fontSize: '0.875rem', margin: 0, maxWidth: 300 }}>
+                    Type a company or ticker in the search bar to view a chart
+                  </p>
+                </div>
+              )}
+              {selectedSymbol && (
+                <StockPriceChart symbol={selectedSymbol} livePrice={currentPrice || null} />
+              )}
             </div>
           </div>
 
@@ -1018,8 +1052,8 @@ export default function MockTradingPage() {
 
             <div className="mock-asset-selected">
               <div className="mock-asset-left">
-                <span className="mock-asset-ticker">{selectedSymbol}</span>
-                <span className="mock-asset-name">{selectedName}</span>
+                <span className="mock-asset-ticker">{selectedSymbol || '—'}</span>
+                <span className="mock-asset-name">{selectedName || 'Search to select an asset'}</span>
               </div>
               <div className="mock-asset-right">
                 {quoteLoading ? (
@@ -1153,13 +1187,14 @@ export default function MockTradingPage() {
               type="button"
               onClick={executeTrade}
               disabled={
+                !selectedSymbol ||
                 !currentPrice ||
                 !dollarAmount ||
                 dollarAmount <= 0 ||
                 (side === 'buy' && dollarAmount > portfolio.cash)
               }
             >
-              {side === 'buy' ? `Buy ${selectedSymbol}` : `Sell ${selectedSymbol}`}
+              {side === 'buy' ? `Buy ${selectedSymbol || '…'}` : `Sell ${selectedSymbol || '…'}`}
             </button>
 
             {side === 'buy' && dollarAmount > portfolio.cash && (

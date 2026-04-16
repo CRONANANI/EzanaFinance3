@@ -18,15 +18,51 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
       alert('File must be under 2MB');
       return;
     }
-    const url = URL.createObjectURL(file);
-    setAvatarPreview(url);
+
+    const localUrl = URL.createObjectURL(file);
+    setAvatarPreview(localUrl);
+
+    try {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (!authUser) {
+        alert('Please log in to upload a photo.');
+        return;
+      }
+
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `avatars/${authUser.id}/avatar.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadErr) {
+        console.error('Avatar upload error:', uploadErr);
+        alert('Failed to upload photo. Please try again.');
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const publicUrl = urlData?.publicUrl;
+
+      if (publicUrl) {
+        const bust = `${publicUrl}?t=${Date.now()}`;
+        updateSetting('avatar_url', bust);
+        setAvatarPreview(bust);
+      }
+    } catch (err) {
+      console.error('Avatar upload exception:', err);
+      alert('Failed to upload photo.');
+    }
   };
 
   const avatarSrc = avatarPreview || settings?.avatar_url;

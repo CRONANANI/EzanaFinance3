@@ -115,15 +115,15 @@
 
 body.light-mode {
   /* ── Core Backgrounds ── */
-  --bg-primary: #f8fafb;
+  --bg-primary: #ffffff;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f5f9;
   --bg-overlay: rgba(0, 0, 0, 0.4);
 
   /* ── Card / Surface ── */
   --surface-card: #ffffff;
-  --surface-card-hover: #f8fafb;
-  --surface-input: #f8fafb;
+  --surface-card-hover: #f3f4f6;
+  --surface-input: #f3f4f6;
   --surface-input-focus: #ffffff;
 
   /* ── Borders ── */
