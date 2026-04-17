@@ -12,6 +12,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
+import { UserSearch } from '@/components/community/UserSearch';
 import { extractTickerFromContent, formatRelativeTime, getInitials, normalizeTickerEmbed } from '@/lib/community-utils';
 import { TICKER_SEARCH_DATA } from '@/lib/tickerSearchData';
 import { supabase } from '@/lib/supabase';
@@ -108,9 +109,6 @@ export default function CommunityPageClient() {
   const [quoteMap, setQuoteMap] = useState({});
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [followBusy, setFollowBusy] = useState({});
-  const [userSearch, setUserSearch] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState([]);
-  const [userSearchLoading, setUserSearchLoading] = useState(false);
 
   const filteredTickers = useMemo(() => {
     const q = tickerQuery.toUpperCase().trim();
@@ -301,30 +299,6 @@ export default function CommunityPageClient() {
       cancelled = true;
     };
   }, []);
-
-  // ── User search debounce ──
-  useEffect(() => {
-    if (userSearch.trim().length < 2) {
-      setUserSearchResults([]);
-      setUserSearchLoading(false);
-      return;
-    }
-    setUserSearchLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/community/search?q=${encodeURIComponent(userSearch.trim())}`);
-        if (res.ok) {
-          const data = await res.json();
-          setUserSearchResults(data.users || []);
-        }
-      } catch {
-        /* ignore */
-      } finally {
-        setUserSearchLoading(false);
-      }
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [userSearch]);
 
   const toggleExpand = (id) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -683,158 +657,8 @@ export default function CommunityPageClient() {
       </div>
 
       {/* ── User Search ── */}
-      <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            background: 'rgba(16, 185, 129, 0.04)',
-            border: '1px solid rgba(16, 185, 129, 0.12)',
-            borderRadius: '10px',
-            padding: '0.5rem 0.875rem',
-          }}
-        >
-          <i className="bi bi-search" style={{ color: '#10b981', fontSize: '0.875rem' }} />
-          <input
-            type="text"
-            placeholder="Search users by name or email…"
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            style={{
-              flex: 1,
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              color: 'var(--text-primary, #f0f6fc)',
-              fontSize: '0.8125rem',
-              fontFamily: 'var(--font-sans)',
-            }}
-          />
-          {userSearch && (
-            <button
-              type="button"
-              onClick={() => {
-                setUserSearch('');
-                setUserSearchResults([]);
-              }}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#6b7280',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                padding: '0.15rem',
-              }}
-            >
-              <i className="bi bi-x-lg" />
-            </button>
-          )}
-        </div>
+      <UserSearch />
 
-        {/* ── Results dropdown ── */}
-        {userSearch.trim().length >= 2 && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              zIndex: 50,
-              marginTop: '4px',
-              background: 'var(--nav-bg-solid, #0a0e13)',
-              border: '1px solid rgba(16, 185, 129, 0.15)',
-              borderRadius: '10px',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
-              maxHeight: '360px',
-              overflowY: 'auto',
-            }}
-          >
-            {userSearchLoading && (
-              <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.8125rem' }}>
-                Searching…
-              </div>
-            )}
-
-            {!userSearchLoading && userSearchResults.length === 0 && (
-              <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.8125rem' }}>
-                No users found for &ldquo;{userSearch}&rdquo;
-              </div>
-            )}
-
-            {userSearchResults.map((u) => (
-              <Link
-                key={u.id}
-                href={`/profile/${u.username || u.id}`}
-                onClick={() => {
-                  setUserSearch('');
-                  setUserSearchResults([]);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 1rem',
-                  textDecoration: 'none',
-                  color: 'var(--text-primary, #f0f6fc)',
-                  borderBottom: '1px solid rgba(107, 114, 128, 0.08)',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.06)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                <div
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    flexShrink: 0,
-                  }}
-                >
-                  {(u.full_name?.[0] || '?').toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {u.full_name}
-                    {u.is_partner && <span style={{ marginLeft: '0.4rem' }}>⚡</span>}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.75rem',
-                      color: '#6b7280',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {u.username ? `@${u.username}` : ''}
-                    {u.email_hint ? ` · ${u.email_hint}` : ''}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div className="comm-3col">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

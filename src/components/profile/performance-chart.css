@@ -1,0 +1,121 @@
+.pc-card {
+  border-radius: 14px;
+  border: 1px solid var(--border-primary, rgba(16,185,129,0.12));
+  background: var(--bg-secondary, #0d1117);
+  padding: 1rem 1rem 0.75rem;
+  font-family: var(--font-sans);
+}
+
+body.light-mode .pc-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.08);
+}
+
+.pc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.pc-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  margin: 0;
+}
+
+.pc-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.pc-range {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--surface-card, rgba(16,185,129,0.04));
+  border: 1px solid var(--border-secondary, rgba(107,114,128,0.15));
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.pc-range-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #8b949e);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  font-family: inherit;
+}
+
+.pc-range-btn:hover { color: var(--text-primary, #f0f6fc); }
+
+.pc-range-btn.on {
+  background: #10b981;
+  color: #fff;
+}
+
+.pc-chart-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+.pc-tooltip {
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid var(--border-primary, rgba(16,185,129,0.25));
+  border-radius: 8px;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.75rem;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+}
+
+body.light-mode .pc-tooltip {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 6px 24px rgba(15,23,42,0.12);
+}
+
+.pc-tooltip-date {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+  margin-bottom: 4px;
+}
+
+.pc-tooltip-row {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+
+.pc-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.pc-tooltip-name {
+  color: var(--text-secondary, #e2e8f0);
+}
+
+.pc-tooltip-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.pc-note {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+  margin: 0.25rem 0 0;
+  text-align: center;
+  font-style: italic;
+}

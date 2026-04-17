@@ -659,8 +659,8 @@ export function ProfilePageClient({ username }) {
         <aside className="xl:sticky xl:top-4 xl:self-start">
           <ProfilePerformancePanel
             trades={effectiveTrades}
-            benchmarkAverages={benchmark}
-            emptyCopyIsPortfolio={isOwn}
+            ownProfile={isOwn}
+            profileSource={isOwn && effectiveTrades.length === 0 ? 'empty-own' : null}
           />
         </aside>
       </div>
