@@ -277,7 +277,8 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
-.nn-icon-congress        { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+.nn-icon-inside-the-capitol { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+.nn-icon-watchlist       { background: rgba(245, 158, 11, 0.14); color: #fbbf24; }
 .nn-icon-market_news     { background: rgba(16, 185, 129, 0.12); color: #10b981; }
 .nn-icon-portfolio_alerts { background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
 .nn-icon-community       { background: rgba(167, 139, 250, 0.12); color: #a78bfa; }

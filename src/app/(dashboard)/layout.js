@@ -8,6 +8,7 @@ import { MobileBottomNav } from '@/components/Layout/MobileBottomNav';
 import { DashboardTrialShell } from '@/components/DashboardTrialShell';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { TutorialWalkthrough } from '@/components/TutorialWalkthrough';
+import { useWatchlistPriceAlerts } from '@/hooks/useWatchlistPriceAlerts';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
 import './dashboard-polish.css';
@@ -15,6 +16,12 @@ import './dashboard-polish.css';
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const { isPartner, isLoading } = usePartner();
+
+  // Runs the watchlist price-alert poller for the whole logged-in session.
+  // Safe on every dashboard route — it's a no-op when the user has no
+  // watchlists with alerts enabled.
+  useWatchlistPriceAlerts();
+
   const isMarketAnalysisFullscreen = pathname === '/market-analysis';
   const isPartnerRoute = pathname?.startsWith('/partner-');
   const isSharedPartner =

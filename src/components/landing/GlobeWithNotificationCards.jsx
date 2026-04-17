@@ -6,10 +6,10 @@ import { InteractiveGlobe } from "@/components/ui/interactive-globe";
 import { useTheme } from "@/components/ThemeProvider";
 
 const HERO_NOTIFICATIONS = [
-  { id: "n1", type: "congress", title: "Congressional Trade Alert", content: "Nancy Pelosi disclosed new NVIDIA purchases worth $1.2M", badge: "Congress", icon: "bi-building" },
+  { id: "n1", type: "inside-the-capitol", title: "Congressional Trade Alert", content: "Nancy Pelosi disclosed new NVIDIA purchases worth $1.2M", badge: "Inside the Capitol", icon: "bi-bank" },
   { id: "n2", type: "market_news", title: "AAPL Breaking News", content: "Apple announces record Q4 earnings, stock up 5% in after-hours trading", badge: "Earnings", icon: "bi-graph-up" },
   { id: "n3", type: "portfolio_alerts", title: "Portfolio Alert", content: "Your portfolio gained $2,847.31 today (+2.26%)", badge: "Portfolio", icon: "bi-graph-up" },
-  { id: "n4", type: "congress", title: "Senate Trading Activity", content: "Sen. Richard Burr sold $1.8M in airline stocks before market crash", badge: "Congress", icon: "bi-building" },
+  { id: "n4", type: "inside-the-capitol", title: "Senate Trading Activity", content: "Sen. Richard Burr sold $1.8M in airline stocks before market crash", badge: "Inside the Capitol", icon: "bi-bank" },
   { id: "n5", type: "market_news", title: "Market Volatility Alert", content: "S&P 500 dropped 2.3% — consider rebalancing your portfolio", badge: "Market", icon: "bi-graph-down" },
   { id: "n6", type: "community", title: "Community Discussion", content: "Alex commented on your Tesla discussion thread", badge: "Community", icon: "bi-people" },
   { id: "n7", type: "market_news", title: "Earnings Report", content: "Tesla Q4 earnings beat expectations, stock up 8% pre-market", badge: "Earnings", icon: "bi-graph-up" },

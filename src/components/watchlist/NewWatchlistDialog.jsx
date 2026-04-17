@@ -162,6 +162,23 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
           }),
         ),
       );
+
+      // Persist per-list alert/color/description preferences locally so the
+      // watchlist price-alerts monitor can see them without an API change.
+      try {
+        const raw = window.localStorage.getItem('ezana.watchlistPrefs') || '{}';
+        const prefs = JSON.parse(raw);
+        prefs[res.listId] = {
+          alertsEnabled: !!alertsOn,
+          color,
+          description: description.trim() || '',
+          updatedAt: new Date().toISOString(),
+        };
+        window.localStorage.setItem('ezana.watchlistPrefs', JSON.stringify(prefs));
+      } catch {
+        /* localStorage may be disabled — non-fatal */
+      }
+
       onCreated?.(res.listId);
       onOpenChange(false);
     } catch (e) {
@@ -226,6 +243,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
         </header>
 
         <div className="nwd-body">
+          {/* 1 ── Watchlist name */}
           <div className="nwd-field">
             <label className="nwd-label" htmlFor="nwd-name">Watchlist name</label>
             <input
@@ -241,25 +259,19 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             />
           </div>
 
+          {/* 2 ── Search for a company (moved up — under name) */}
           <div className="nwd-field">
-            <label className="nwd-label">Color tag</label>
-            <div className="nwd-colors">
-              {PRESET_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  aria-label={`Select color ${c}`}
-                  aria-pressed={color === c}
-                  className={`nwd-color ${color === c ? 'on' : ''}`}
-                  style={{ background: c }}
-                >
-                  {color === c && <Check size={12} color="#fff" strokeWidth={3} />}
-                </button>
-              ))}
+            <label className="nwd-label nwd-label-inline"><Search size={14} /> Search for a company</label>
+            <div className="nwd-search-wrap">
+              <CompanySearch
+                placeholder="Search by ticker or company name…"
+                onSelect={handleSearchSelect}
+              />
+              <div className="nwd-hint nwd-hint-muted">Results are filtered to NYSE &amp; NASDAQ listings.</div>
             </div>
           </div>
 
+          {/* 3 ── Suggestions (only when name has content) */}
           {name.trim() && (
             <div className="nwd-field">
               <div className="nwd-label nwd-label-row">
@@ -311,17 +323,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             </div>
           )}
 
-          <div className="nwd-field">
-            <label className="nwd-label nwd-label-inline"><Search size={14} /> Search for a company</label>
-            <div className="nwd-search-wrap">
-              <CompanySearch
-                placeholder="Search by ticker or company name…"
-                onSelect={handleSearchSelect}
-              />
-              <div className="nwd-hint nwd-hint-muted">Results are filtered to NYSE &amp; NASDAQ listings.</div>
-            </div>
-          </div>
-
+          {/* 4 ── Added companies */}
           <div className="nwd-field">
             <div className="nwd-label-row">
               <span className="nwd-label">Added companies</span>
@@ -356,6 +358,27 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
             )}
           </div>
 
+          {/* 5 ── Color tag (moved down) */}
+          <div className="nwd-field">
+            <label className="nwd-label">Color tag</label>
+            <div className="nwd-colors">
+              {PRESET_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  aria-label={`Select color ${c}`}
+                  aria-pressed={color === c}
+                  className={`nwd-color ${color === c ? 'on' : ''}`}
+                  style={{ background: c }}
+                >
+                  {color === c && <Check size={12} color="#fff" strokeWidth={3} />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 6 ── Notes */}
           <div className="nwd-field">
             <label className="nwd-label" htmlFor="nwd-notes">Notes (optional)</label>
             <textarea

@@ -5,8 +5,19 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * Normalize a notification row for the bell UI.
+ *
+ * Legacy migration: rows that were inserted with `type = 'congress'`
+ * before the category rename are remapped on read to the canonical
+ * `'inside-the-capitol'` bucket so old notifications aren't orphaned.
+ * The SQL migration updates stored values in bulk; this fallback keeps
+ * the UI correct even if the migration hasn't been run in a given env.
+ */
 function mapDbNotification(row) {
-  const t = row.type || 'general';
+  const rawType = row.type || 'general';
+  const t = rawType === 'congress' ? 'inside-the-capitol' : rawType;
+
   const badge =
     t === 'community'
       ? 'Community'
@@ -14,11 +25,13 @@ function mapDbNotification(row) {
         ? 'Portfolio'
         : t === 'market_news'
           ? 'Market'
-          : t === 'congress'
-            ? 'Congress'
-            : t === 'learning'
-              ? 'Learning'
-              : 'Notification';
+          : t === 'inside-the-capitol'
+            ? 'Inside the Capitol'
+            : t === 'watchlist'
+              ? 'Watchlist'
+              : t === 'learning'
+                ? 'Learning'
+                : 'Notification';
   const icon =
     t === 'community'
       ? 'bi-people'
@@ -26,11 +39,13 @@ function mapDbNotification(row) {
         ? 'bi-graph-up'
         : t === 'market_news'
           ? 'bi-graph-up'
-          : t === 'congress'
-            ? 'bi-building'
-            : t === 'learning'
-              ? 'bi-mortarboard'
-              : 'bi-bell';
+          : t === 'inside-the-capitol'
+            ? 'bi-bank'
+            : t === 'watchlist'
+              ? 'bi-star'
+              : t === 'learning'
+                ? 'bi-mortarboard'
+                : 'bi-bell';
   return {
     id: row.id,
     type: t,
@@ -236,7 +251,8 @@ export function NavNotifications() {
     <div className={`nn-filters ${extraClass || ''}`}>
       {[
         { key: 'all', label: 'All' },
-        { key: 'congress', label: 'Congress' },
+        { key: 'watchlist', label: 'Watchlist' },
+        { key: 'inside-the-capitol', label: 'Inside the Capitol' },
         { key: 'market_news', label: 'Market' },
         { key: 'portfolio_alerts', label: 'Portfolio' },
         { key: 'community', label: 'Community' },
