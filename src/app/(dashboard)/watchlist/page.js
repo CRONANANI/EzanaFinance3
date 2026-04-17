@@ -12,6 +12,7 @@ import { getComparableAssets } from '@/lib/comparableAssets';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
+import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
 import { ChevronDown, Check } from 'lucide-react';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -262,6 +263,7 @@ export default function WatchlistPage() {
   } = useWatchlists();
 
   const [selectedWatchlistId, setSelectedWatchlistId] = useState(null);
+  const [newWatchlistOpen, setNewWatchlistOpen] = useState(false);
 
   useEffect(() => {
     if (!watchlistsLoading && mockWatchlists.length > 0) {
@@ -751,15 +753,7 @@ export default function WatchlistPage() {
               </div>
               <button
                 type="button"
-                onClick={async () => {
-                  const name = prompt('Enter a name for your new watchlist:');
-                  if (name && name.trim()) {
-                    const result = await createList(name.trim());
-                    if (result.ok && result.listId) {
-                      setSelectedWatchlistId(result.listId);
-                    }
-                  }
-                }}
+                onClick={() => setNewWatchlistOpen(true)}
                 style={{
                   padding: '0.35rem 0.7rem',
                   background: '#10b981',
@@ -856,6 +850,17 @@ export default function WatchlistPage() {
         subtitle="Stock fundamentals, portfolio construction & core skills"
         courses={watchlistCourses}
         viewAllHref="/learning-center?track=stocks"
+      />
+
+      <NewWatchlistDialog
+        open={newWatchlistOpen}
+        onOpenChange={setNewWatchlistOpen}
+        createList={createList}
+        addItem={addWatchlistItem}
+        onCreated={(listId) => {
+          setSelectedWatchlistId(listId);
+          completeTask('watchlist_2');
+        }}
       />
     </div>
   );
