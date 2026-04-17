@@ -9,18 +9,28 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
+import {
+  dbErrorResponse,
+  exceptionResponse,
+  validationResponse,
+} from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
 const VALID_TYPES = new Set(['stock', 'crypto', 'commodity', 'politician']);
 
 async function assertListOwnedByUser(listId, userId) {
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('user_watchlists')
     .select('id')
     .eq('id', listId)
     .eq('user_id', userId)
     .maybeSingle();
+  if (error) {
+    // Propagate so the caller can 500 with the real reason instead of a
+    // misleading "not yours" 404 when the table is missing.
+    throw error;
+  }
   return !!data;
 }
 
@@ -32,59 +42,48 @@ export async function POST(request, { params }) {
     }
 
     const { listId } = params;
-    if (!listId) {
-      return NextResponse.json({ error: 'listId required' }, { status: 400 });
-    }
+    if (!listId) return validationResponse('listId is required.');
 
     const owned = await assertListOwnedByUser(listId, user.id);
     if (!owned) {
       return NextResponse.json(
-        { error: 'List not found or not yours' },
+        { error: 'List not found or not yours.' },
         { status: 404 }
       );
     }
 
     const body = await request.json().catch(() => ({}));
     const type = typeof body?.type === 'string' ? body.type.toLowerCase() : '';
-    const ticker = typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
+    const ticker =
+      typeof body?.ticker === 'string' ? body.ticker.trim().toUpperCase() : '';
     const name = typeof body?.name === 'string' ? body.name.trim() : null;
     const sector = typeof body?.sector === 'string' ? body.sector.trim() : null;
-    const metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
+    const metadata =
+      body?.metadata && typeof body.metadata === 'object' ? body.metadata : {};
 
     if (!VALID_TYPES.has(type)) {
-      return NextResponse.json(
-        { error: `Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}` },
-        { status: 400 }
+      return validationResponse(
+        `Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`
       );
     }
     if (!ticker) {
-      return NextResponse.json({ error: 'ticker required' }, { status: 400 });
+      return validationResponse('ticker is required.');
     }
 
     // Upsert by unique (list_id, type, ticker) — idempotent add.
     const { data, error } = await supabaseAdmin
       .from('user_watchlist_items')
       .upsert(
-        {
-          list_id: listId,
-          user_id: user.id,
-          type,
-          ticker,
-          name,
-          sector,
-          metadata,
-        },
+        { list_id: listId, user_id: user.id, type, ticker, name, sector, metadata },
         { onConflict: 'list_id,type,ticker', ignoreDuplicates: false }
       )
       .select('id, list_id, type, ticker, name, sector, metadata, created_at')
       .single();
 
     if (error) {
-      console.error('[watchlist items POST] upsert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to add item' },
-        { status: 500 }
-      );
+      return dbErrorResponse('watchlist items POST', error, {
+        fallback: 'Failed to add item to watchlist.',
+      });
     }
 
     return NextResponse.json({
@@ -103,8 +102,9 @@ export async function POST(request, { params }) {
       },
     });
   } catch (e) {
-    console.error('[watchlist items POST] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    // assertListOwnedByUser may rethrow a Supabase error — treat it as a DB error.
+    if (e?.code) return dbErrorResponse('watchlist items POST ownership', e);
+    return exceptionResponse('watchlist items POST', e);
   }
 }
 
@@ -116,21 +116,16 @@ export async function DELETE(request, { params }) {
     }
 
     const { listId } = params;
-    if (!listId) {
-      return NextResponse.json({ error: 'listId required' }, { status: 400 });
-    }
+    if (!listId) return validationResponse('listId is required.');
 
     const { searchParams } = new URL(request.url);
     const ticker = (searchParams.get('ticker') || '').trim().toUpperCase();
     const type = (searchParams.get('type') || '').toLowerCase();
 
-    if (!ticker) {
-      return NextResponse.json({ error: 'ticker required' }, { status: 400 });
-    }
+    if (!ticker) return validationResponse('ticker is required.');
     if (!VALID_TYPES.has(type)) {
-      return NextResponse.json(
-        { error: `Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}` },
-        { status: 400 }
+      return validationResponse(
+        `Invalid type. Must be one of: ${[...VALID_TYPES].join(', ')}.`
       );
     }
 
@@ -143,16 +138,13 @@ export async function DELETE(request, { params }) {
       .eq('ticker', ticker);
 
     if (error) {
-      console.error('[watchlist items DELETE] error:', error);
-      return NextResponse.json(
-        { error: 'Failed to remove item' },
-        { status: 500 }
-      );
+      return dbErrorResponse('watchlist items DELETE', error, {
+        fallback: 'Failed to remove item from watchlist.',
+      });
     }
 
     return NextResponse.json({ success: true });
   } catch (e) {
-    console.error('[watchlist items DELETE] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return exceptionResponse('watchlist items DELETE', e);
   }
 }

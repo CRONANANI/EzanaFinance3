@@ -146,7 +146,7 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
       if (!res?.ok || !res.listId) {
         throw new Error(res?.reason || 'Failed to create watchlist');
       }
-      await Promise.all(
+      const itemResults = await Promise.all(
         tickers.map((t) =>
           addItem?.(res.listId, {
             type: 'stock',
@@ -162,6 +162,19 @@ export function NewWatchlistDialog({ open, onOpenChange, onCreated, createList, 
           }),
         ),
       );
+
+      const failed = itemResults.filter((r) => r && r.ok === false);
+      if (failed.length === itemResults.length && itemResults.length > 0) {
+        throw new Error(
+          failed[0]?.reason ||
+            'Watchlist was created but no tickers could be added.',
+        );
+      }
+      if (failed.length > 0) {
+        setSubmitError(
+          `Added ${itemResults.length - failed.length} of ${itemResults.length} tickers. ${failed[0]?.reason || ''}`.trim(),
+        );
+      }
 
       // Persist per-list alert/color/description preferences locally so the
       // watchlist price-alerts monitor can see them without an API change.

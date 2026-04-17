@@ -6,27 +6,49 @@
  * POST /api/watchlists
  * Creates a new named watchlist for the authenticated user.
  * Body: { label: string }
+ *
+ * 200 / 201  — success
+ * 400        — missing / invalid payload
+ * 401        — not authenticated
+ * 409        — a list with that label already exists for this user
+ * 500        — unexpected DB / runtime error (real cause in `detail` in dev)
  */
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
+import {
+  dbErrorResponse,
+  exceptionResponse,
+  validationResponse,
+} from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
+const MAX_LABEL = 80;
+
 async function ensureDefaultList(userId) {
-  const { data: existing } = await supabaseAdmin
+  const { data: existing, error: existingErr } = await supabaseAdmin
     .from('user_watchlists')
     .select('id')
     .eq('user_id', userId)
     .limit(1);
 
+  if (existingErr) {
+    // Let the caller decide — we don't want to 500 the GET just because we
+    // couldn't pre-seed. The outer select will surface the real problem.
+    console.error('[watchlists ensureDefaultList] select error:', existingErr);
+    return;
+  }
+
   if (existing && existing.length > 0) return;
 
-  await supabaseAdmin.from('user_watchlists').insert({
-    user_id: userId,
-    label: 'My Watchlist',
-    sort_order: 0,
-  });
+  const { error: insertErr } = await supabaseAdmin
+    .from('user_watchlists')
+    .insert({ user_id: userId, label: 'My Watchlist', sort_order: 0 });
+
+  if (insertErr) {
+    console.error('[watchlists ensureDefaultList] insert error:', insertErr);
+  }
 }
 
 export async function GET(request) {
@@ -46,11 +68,9 @@ export async function GET(request) {
       .order('created_at', { ascending: true });
 
     if (listsErr) {
-      console.error('[watchlists GET] lists error:', listsErr);
-      return NextResponse.json(
-        { error: 'Failed to fetch watchlists' },
-        { status: 500 }
-      );
+      return dbErrorResponse('watchlists GET lists', listsErr, {
+        fallback: 'Failed to fetch watchlists.',
+      });
     }
 
     const listIds = (lists || []).map((l) => l.id);
@@ -64,6 +84,7 @@ export async function GET(request) {
         .order('created_at', { ascending: true });
 
       if (itemsErr) {
+        // Non-fatal — the lists load fine even without items.
         console.error('[watchlists GET] items error:', itemsErr);
       } else {
         items = itemRows || [];
@@ -96,8 +117,7 @@ export async function GET(request) {
 
     return NextResponse.json({ watchlists: result });
   } catch (e) {
-    console.error('[watchlists GET] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return exceptionResponse('watchlists GET', e);
   }
 }
 
@@ -111,20 +131,28 @@ export async function POST(request) {
     const body = await request.json().catch(() => ({}));
     const label = typeof body?.label === 'string' ? body.label.trim() : '';
     if (!label) {
-      return NextResponse.json({ error: 'Label is required' }, { status: 400 });
+      return validationResponse('Label is required.');
     }
-    if (label.length > 80) {
-      return NextResponse.json({ error: 'Label too long (max 80)' }, { status: 400 });
+    if (label.length > MAX_LABEL) {
+      return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
     }
 
-    const { data: existing } = await supabaseAdmin
+    // Compute the next sort_order. A .select() error here is not fatal — we
+    // fall back to 0 — but we still log it so schema problems surface early.
+    const { data: tail, error: tailErr } = await supabaseAdmin
       .from('user_watchlists')
       .select('sort_order')
       .eq('user_id', user.id)
       .order('sort_order', { ascending: false })
       .limit(1);
 
-    const nextSort = (existing?.[0]?.sort_order ?? -1) + 1;
+    if (tailErr) {
+      return dbErrorResponse('watchlists POST tail', tailErr, {
+        fallback: 'Failed to compute next watchlist position.',
+      });
+    }
+
+    const nextSort = (tail?.[0]?.sort_order ?? -1) + 1;
 
     const { data: created, error } = await supabaseAdmin
       .from('user_watchlists')
@@ -133,18 +161,17 @@ export async function POST(request) {
       .single();
 
     if (error) {
-      console.error('[watchlists POST] insert error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create watchlist' },
-        { status: 500 }
-      );
+      return dbErrorResponse('watchlists POST insert', error, {
+        uniqueViolation: 'You already have a watchlist with that name.',
+        fallback: 'Failed to create watchlist.',
+      });
     }
 
-    return NextResponse.json({
-      watchlist: { id: created.id, label: created.label, stocks: [] },
-    });
+    return NextResponse.json(
+      { watchlist: { id: created.id, label: created.label, stocks: [] } },
+      { status: 201 }
+    );
   } catch (e) {
-    console.error('[watchlists POST] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return exceptionResponse('watchlists POST', e);
   }
 }

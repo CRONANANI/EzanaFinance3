@@ -9,8 +9,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
 import { getAuthUser } from '@/lib/auth-helpers';
+import {
+  dbErrorResponse,
+  exceptionResponse,
+  validationResponse,
+} from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
+
+const MAX_LABEL = 80;
 
 export async function PATCH(request, { params }) {
   try {
@@ -20,17 +27,13 @@ export async function PATCH(request, { params }) {
     }
 
     const { listId } = params;
-    if (!listId) {
-      return NextResponse.json({ error: 'listId required' }, { status: 400 });
-    }
+    if (!listId) return validationResponse('listId is required.');
 
     const body = await request.json().catch(() => ({}));
     const label = typeof body?.label === 'string' ? body.label.trim() : '';
-    if (!label) {
-      return NextResponse.json({ error: 'Label is required' }, { status: 400 });
-    }
-    if (label.length > 80) {
-      return NextResponse.json({ error: 'Label too long (max 80)' }, { status: 400 });
+    if (!label) return validationResponse('Label is required.');
+    if (label.length > MAX_LABEL) {
+      return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
     }
 
     const { data, error } = await supabaseAdmin
@@ -41,18 +44,23 @@ export async function PATCH(request, { params }) {
       .select('id, label')
       .single();
 
-    if (error || !data) {
-      console.error('[watchlists PATCH] update error:', error);
+    if (error) {
+      return dbErrorResponse('watchlists PATCH', error, {
+        uniqueViolation: 'You already have a watchlist with that name.',
+        notFound: 'Watchlist not found or not yours.',
+        fallback: 'Failed to rename watchlist.',
+      });
+    }
+    if (!data) {
       return NextResponse.json(
-        { error: 'Watchlist not found or not yours' },
+        { error: 'Watchlist not found or not yours.' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ watchlist: data });
   } catch (e) {
-    console.error('[watchlists PATCH] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return exceptionResponse('watchlists PATCH', e);
   }
 }
 
@@ -64,9 +72,7 @@ export async function DELETE(request, { params }) {
     }
 
     const { listId } = params;
-    if (!listId) {
-      return NextResponse.json({ error: 'listId required' }, { status: 400 });
-    }
+    if (!listId) return validationResponse('listId is required.');
 
     const { error } = await supabaseAdmin
       .from('user_watchlists')
@@ -75,16 +81,13 @@ export async function DELETE(request, { params }) {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('[watchlists DELETE] error:', error);
-      return NextResponse.json(
-        { error: 'Failed to delete watchlist' },
-        { status: 500 }
-      );
+      return dbErrorResponse('watchlists DELETE', error, {
+        fallback: 'Failed to delete watchlist.',
+      });
     }
 
     return NextResponse.json({ success: true });
   } catch (e) {
-    console.error('[watchlists DELETE] exception:', e?.message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return exceptionResponse('watchlists DELETE', e);
   }
 }

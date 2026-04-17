@@ -32,6 +32,7 @@ export function useWatchlists() {
     if (!token) throw new Error('Not authenticated');
     return fetch(url, {
       ...options,
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...(options.headers || {}),
@@ -39,6 +40,39 @@ export function useWatchlists() {
       },
     });
   }, []);
+
+  /**
+   * Read a JSON error body and bubble the server's message up verbatim.
+   * Falls back to `HTTP <status>` if the body isn't JSON or has no error text
+   * so we never strip detail silently.
+   */
+  const readServerError = async (res) => {
+    try {
+      const body = await res.clone().json();
+      const msg = body?.error || body?.detail || body?.message;
+      if (msg) {
+        const err = new Error(msg);
+        if (body?.code) err.code = body.code;
+        err.status = res.status;
+        return err;
+      }
+    } catch {
+      /* fall through to text */
+    }
+    try {
+      const text = await res.text();
+      if (text) {
+        const err = new Error(text.slice(0, 300));
+        err.status = res.status;
+        return err;
+      }
+    } catch {
+      /* fall through */
+    }
+    const err = new Error(`HTTP ${res.status}`);
+    err.status = res.status;
+    return err;
+  };
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated || !user) {
@@ -50,7 +84,7 @@ export function useWatchlists() {
     setError(null);
     try {
       const res = await authedFetch('/api/watchlists');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw await readServerError(res);
       const data = await res.json();
       setWatchlists(Array.isArray(data?.watchlists) ? data.watchlists : []);
     } catch (e) {
@@ -106,7 +140,7 @@ export function useWatchlists() {
             metadata: item.metadata,
           }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw await readServerError(res);
         const data = await res.json();
 
         // Replace the optimistic entry with the real one from the server
@@ -164,7 +198,7 @@ export function useWatchlists() {
           ticker
         )}&type=${encodeURIComponent(type)}`;
         const res = await authedFetch(url, { method: 'DELETE' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw await readServerError(res);
         return { ok: true };
       } catch (e) {
         console.error('[useWatchlists] removeItem error:', e?.message);
@@ -185,7 +219,7 @@ export function useWatchlists() {
           method: 'POST',
           body: JSON.stringify({ label: label.trim() }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw await readServerError(res);
         const data = await res.json();
         const newList = data.watchlist;
         if (!newList) throw new Error('No list returned');
@@ -194,7 +228,7 @@ export function useWatchlists() {
       } catch (e) {
         console.error('[useWatchlists] createList error:', e?.message);
         setError(e?.message || 'Failed to create list');
-        return { ok: false, reason: e?.message };
+        return { ok: false, reason: e?.message, status: e?.status };
       }
     },
     [authedFetch]
@@ -212,7 +246,7 @@ export function useWatchlists() {
           method: 'PATCH',
           body: JSON.stringify({ label: label.trim() }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw await readServerError(res);
         return { ok: true };
       } catch (e) {
         console.error('[useWatchlists] renameList error:', e?.message);
@@ -233,7 +267,7 @@ export function useWatchlists() {
         const res = await authedFetch(`/api/watchlists/${listId}`, {
           method: 'DELETE',
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw await readServerError(res);
         return { ok: true };
       } catch (e) {
         console.error('[useWatchlists] deleteList error:', e?.message);
