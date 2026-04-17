@@ -457,166 +457,96 @@ export default function CommunityPageClient() {
     }
   };
 
+  // ─── Derived KPI values for the stats strip ─────────────────────
+  // All values come from state the page already fetches/computes — no
+  // new data or requests are introduced.
+  const topSuggestedReturn = suggestedUsers[0]?.return ?? null;
+  const hottestTopic = TRENDING_TOPICS[0] || null;
+  const totalTrendingPosts = TRENDING_TOPICS.reduce(
+    (sum, topic) => sum + (Number(topic.posts) || 0),
+    0,
+  );
+
+  const trophyRoster = [
+    { icon: '🥇', name: 'First Return', earned: true, color: '#d4a853' },
+    { icon: '📈', name: '10% Month', earned: true, color: '#10b981' },
+    { icon: '🏆', name: '25% Year', earned: false, color: '#6b7280' },
+    { icon: '✍️', name: 'First Post', earned: true, color: '#3b82f6' },
+    { icon: '🦋', name: 'Social Butterfly', earned: false, color: '#6b7280' },
+    { icon: '⚡', name: 'Top Trader', earned: false, color: '#6b7280' },
+    { icon: '🌐', name: 'Diversified', earned: true, color: '#8b5cf6' },
+    { icon: '👑', name: 'Community Legend', earned: false, color: '#6b7280' },
+    { icon: '💎', name: 'Consistent Earner', earned: false, color: '#6b7280' },
+  ];
+  const earnedTrophyCount = trophyRoster.filter((t) => t.earned).length;
+
   return (
     <div className="dashboard-page-inset db-page" style={{ paddingTop: 0, paddingBottom: '2rem' }}>
-      <div
-        className="comm-hero-row"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: '1.25rem',
-          marginBottom: '1.25rem',
-        }}
-      >
-        <div
-          className="comm-hero-greeting"
-          style={{ minWidth: 0, flex: '0 0 32%', maxWidth: '32%' }}
-        >
-          <h1
-            className="db-greeting"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              flexWrap: 'nowrap',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
-              maxWidth: '100%',
-            }}
-          >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+      {/* ═══ Hero row: greeting + Trending Topics + Trophy Cabinet ═══ */}
+      <div className="comm-hero-row">
+        <div className="comm-hero-greeting">
+          <h1 className="db-greeting">
+            <span>
               {getGreeting()}, {firstName}
             </span>
-            <span className="db-greeting-waving" style={{ flexShrink: 0 }}>👋</span>
+            <span className="db-greeting-waving" aria-hidden>👋</span>
           </h1>
           <p className="db-greeting-sub">Connect, share, and grow with the investing community</p>
           <p className="db-greeting-date">{formatDateLine()}</p>
         </div>
-        <div
-          className="comm-hero-cards"
-          style={{
-            flex: '1 1 0',
-            minWidth: 0,
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1.25rem',
-            alignSelf: 'stretch',
-          }}
-        >
-          <div className="db-card" style={{ padding: '1rem 1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, color: 'var(--home-heading, #f0f6fc)' }}>
-                  Trending Topics
-                </h3>
-                <p style={{ margin: '2px 0 0', fontSize: '0.625rem', color: '#6b7280' }}>What&apos;s hot in the community</p>
+        <div className="comm-hero-cards">
+          <div className="db-card comm-hero-card">
+            <div className="comm-hero-card-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
+                <div className="comm-card-icon" aria-hidden>
+                  <i className="bi bi-fire" />
+                </div>
+                <div className="comm-card-head-meta">
+                  <h3>Trending Topics</h3>
+                  <p>What&apos;s hot in the community</p>
+                </div>
               </div>
-              <button
-                type="button"
-                style={{
-                  padding: '3px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(16,185,129,0.15)',
-                  background: 'rgba(16,185,129,0.05)',
-                  color: '#10b981',
-                  fontSize: '0.6875rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-sans)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                View All
-              </button>
+              <button type="button" className="comm-hero-card-link">View All</button>
             </div>
-            <div
-              className="trending-strip"
-              style={{
-                display: 'flex',
-                gap: '8px',
-                overflowX: 'auto',
-                paddingBottom: '2px',
-                scrollbarWidth: 'none',
-              }}
-            >
+            <div className="comm-trending-strip">
               {TRENDING_TOPICS.map((topic) => (
-                <button
-                  key={topic.tag}
-                  type="button"
-                  style={{
-                    whiteSpace: 'nowrap',
-                    padding: '5px 12px',
-                    borderRadius: '999px',
-                    border: '1px solid rgba(16,185,129,0.28)',
-                    background: 'rgba(16,185,129,0.10)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#10b981',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <span style={{ color: '#10b981' }}>#</span>
+                <button key={topic.tag} type="button" className="comm-trending-chip">
+                  <span className="hash">#</span>
                   {topic.tag}
-                  <span style={{ color: '#6b7280', fontSize: '0.6rem', fontWeight: 400 }}>
-                    {topic.posts}
-                  </span>
+                  <span className="count">{topic.posts}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="db-card comm-trophy-strip" style={{ padding: '1rem 1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 800, color: 'var(--home-heading, #f0f6fc)' }}>
-                  🏆 Trophy Cabinet
-                </h3>
-                <p style={{ margin: '2px 0 0', fontSize: '0.625rem', color: '#6b7280' }}>Your achievements</p>
+          <div className="db-card comm-hero-card comm-trophy-strip">
+            <div className="comm-hero-card-head">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
+                <div className="comm-card-icon" aria-hidden>
+                  <i className="bi bi-trophy" />
+                </div>
+                <div className="comm-card-head-meta">
+                  <h3>Trophy Cabinet</h3>
+                  <p>Your achievements &middot; {earnedTrophyCount}/{trophyRoster.length} earned</p>
+                </div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '6px' }}>
-              {[
-                { icon: '🥇', name: 'First Return', earned: true, color: '#d4a853' },
-                { icon: '📈', name: '10% Month', earned: true, color: '#10b981' },
-                { icon: '🏆', name: '25% Year', earned: false, color: '#6b7280' },
-                { icon: '✍️', name: 'First Post', earned: true, color: '#3b82f6' },
-                { icon: '🦋', name: 'Social Butterfly', earned: false, color: '#6b7280' },
-                { icon: '⚡', name: 'Top Trader', earned: false, color: '#6b7280' },
-                { icon: '🌐', name: 'Diversified', earned: true, color: '#8b5cf6' },
-                { icon: '👑', name: 'Community Legend', earned: false, color: '#6b7280' },
-                { icon: '💎', name: 'Consistent Earner', earned: false, color: '#6b7280' },
-              ].map((trophy) => (
+            <div className="comm-trophy-grid">
+              {trophyRoster.map((trophy) => (
                 <div
                   key={trophy.name}
                   title={trophy.name}
+                  className="comm-trophy-cell"
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '6px 2px',
-                    borderRadius: '7px',
                     border: `1px solid ${trophy.earned ? trophy.color + '35' : 'rgba(107,114,128,0.1)'}`,
                     background: trophy.earned ? `${trophy.color}10` : 'rgba(107,114,128,0.03)',
                     opacity: trophy.earned ? 1 : 0.4,
                     cursor: trophy.earned ? 'pointer' : 'default',
-                    gap: '2px',
                   }}
                 >
                   <span
-                    style={{
-                      fontSize: '1rem',
-                      lineHeight: 1,
-                      filter: trophy.earned ? 'none' : 'grayscale(1)',
-                    }}
+                    className="comm-trophy-emoji"
+                    style={{ filter: trophy.earned ? 'none' : 'grayscale(1)' }}
                   >
                     {trophy.icon}
                   </span>
@@ -627,26 +557,54 @@ export default function CommunityPageClient() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* ═══ KPI strip — community-wide snapshot ═══ */}
+      <section className="comm-kpi-row" aria-label="Community at a glance">
+        <div className="db-card comm-kpi-card">
+          <div className="comm-kpi-icon" aria-hidden><i className="bi bi-chat-square-text" /></div>
+          <div className="comm-kpi-body">
+            <span className="comm-kpi-label">Posts in feed</span>
+            <span className="comm-kpi-value">{feedPosts.length}</span>
+            <span className="comm-kpi-sub">Live from the community</span>
+          </div>
+        </div>
+        <div className="db-card comm-kpi-card">
+          <div className="comm-kpi-icon" aria-hidden><i className="bi bi-graph-up-arrow" /></div>
+          <div className="comm-kpi-body">
+            <span className="comm-kpi-label">Top performer</span>
+            <span className="comm-kpi-value">{topSuggestedReturn || '—'}</span>
+            <span className="comm-kpi-sub positive">
+              {suggestedUsers[0]?.name ? `@${suggestedUsers[0].username || suggestedUsers[0].name.split(' ')[0].toLowerCase()}` : 'Weekly leader'}
+            </span>
+          </div>
+        </div>
+        <div className="db-card comm-kpi-card">
+          <div className="comm-kpi-icon" aria-hidden><i className="bi bi-fire" /></div>
+          <div className="comm-kpi-body">
+            <span className="comm-kpi-label">Hottest topic</span>
+            <span className="comm-kpi-value">#{hottestTopic?.tag || '—'}</span>
+            <span className="comm-kpi-sub">{totalTrendingPosts.toLocaleString()} posts trending</span>
+          </div>
+        </div>
+        <div className="db-card comm-kpi-card">
+          <div className="comm-kpi-icon" aria-hidden><i className="bi bi-person-plus" /></div>
+          <div className="comm-kpi-body">
+            <span className="comm-kpi-label">Investors to follow</span>
+            <span className="comm-kpi-value">{suggestedUsers.length}</span>
+            <span className="comm-kpi-sub">Suggested for you</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Page-level tabs ═══ */}
+      <div className="comm-page-tabs" role="tablist">
         {PAGE_TABS.map((t) => (
           <button
             key={t}
             type="button"
+            role="tab"
+            aria-selected={t === 'Community'}
             onClick={() => onPageTab(t)}
-            style={{
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
-              border: 'none',
-              fontSize: '0.8125rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              background: t === 'Community' ? '#10b981' : 'rgba(16, 185, 129, 0.04)',
-              color: t === 'Community' ? '#fff' : '#8b949e',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              fontFamily: 'var(--font-sans)',
-            }}
+            className={`comm-page-tab ${t === 'Community' ? 'is-active' : ''}`}
           >
             {t === 'Community' && <i className="bi bi-people" />}
             {t === 'My Profile' && <i className="bi bi-person-circle" />}
@@ -656,8 +614,23 @@ export default function CommunityPageClient() {
         ))}
       </div>
 
-      {/* ── User Search ── */}
-      <UserSearch />
+      {/* ═══ Find investors — user search wrapped in the shared card shell ═══ */}
+      <section className="db-card comm-usersearch-card" aria-label="Find investors">
+        <div className="db-card-header has-icon">
+          <div className="comm-card-head-left">
+            <div className="comm-card-icon" aria-hidden>
+              <i className="bi bi-search" />
+            </div>
+            <div className="comm-card-head-meta">
+              <h3>Find investors</h3>
+              <p>Search by name or email to view their profile and trading activity.</p>
+            </div>
+          </div>
+        </div>
+        <div className="comm-usersearch-body">
+          <UserSearch />
+        </div>
+      </section>
 
 
       <div className="comm-3col">
@@ -665,8 +638,16 @@ export default function CommunityPageClient() {
           <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
 
           <div className="db-card suggested-for-you-card">
-            <div className="db-card-header">
-              <h3>Suggested for You</h3>
+            <div className="db-card-header has-icon">
+              <div className="comm-card-head-left">
+                <div className="comm-card-icon" aria-hidden>
+                  <i className="bi bi-stars" />
+                </div>
+                <div className="comm-card-head-meta">
+                  <h3>Suggested for You</h3>
+                  <p>Investors worth following this week</p>
+                </div>
+              </div>
               <Link href="/leaderboard" style={{ color: '#10b981', fontSize: '0.6875rem', fontWeight: 600, textDecoration: 'none' }}>
                 View All
               </Link>
@@ -1621,10 +1602,15 @@ export default function CommunityPageClient() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="db-card">
-            <div className="db-card-header">
-              <div>
-                <h3 style={{ margin: 0 }}>Friends Activity</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>See what your friends are up to</p>
+            <div className="db-card-header has-icon">
+              <div className="comm-card-head-left">
+                <div className="comm-card-icon" aria-hidden>
+                  <i className="bi bi-activity" />
+                </div>
+                <div className="comm-card-head-meta">
+                  <h3>Friends Activity</h3>
+                  <p>See what your friends are up to</p>
+                </div>
               </div>
               <Link href="/community" style={{ color: '#10b981', fontSize: '0.6875rem', fontWeight: 600, textDecoration: 'none' }}>
                 View All
@@ -1682,10 +1668,15 @@ export default function CommunityPageClient() {
           </div>
 
           <div className="db-card">
-            <div className="db-card-header">
-              <div>
-                <h3 style={{ margin: 0 }}>Trending Discussions</h3>
-                <p style={{ color: '#6b7280', fontSize: '0.6875rem', margin: '0.15rem 0 0' }}>What everyone is talking about</p>
+            <div className="db-card-header has-icon">
+              <div className="comm-card-head-left">
+                <div className="comm-card-icon" aria-hidden>
+                  <i className="bi bi-chat-quote" />
+                </div>
+                <div className="comm-card-head-meta">
+                  <h3>Trending Discussions</h3>
+                  <p>What everyone is talking about</p>
+                </div>
               </div>
               <Link href="/community" style={{ color: '#10b981', fontSize: '0.6875rem', fontWeight: 600, textDecoration: 'none' }}>
                 View All
