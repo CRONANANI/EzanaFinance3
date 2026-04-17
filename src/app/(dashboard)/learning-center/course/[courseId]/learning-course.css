@@ -363,3 +363,137 @@ body.light-mode .lc3-pass {
 body.light-mode .lc3-fail {
   color: #b91c1c;
 }
+
+/* Results header — pass / fail summary with a circular icon badge */
+.lc3-results-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  padding: 0.5rem 0 1rem;
+}
+.lc3-results-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.lc3-results-badge.pass {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.lc3-results-badge.fail {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+body.light-mode .lc3-results-badge.pass {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+body.light-mode .lc3-results-badge.fail {
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+}
+
+/* Per-question review block */
+.lc3-review-block {
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.02);
+}
+.lc3-review-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+.lc3-review li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+}
+.lc3-review li:last-child {
+  border-bottom: none;
+}
+.lc3-review-q {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.lc3-review-mark {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-top: 1px;
+}
+.lc3-review li.ok .lc3-review-mark {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+.lc3-review li.bad .lc3-review-mark {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.lc3-review-text {
+  flex: 1;
+  color: var(--text-primary, #f0f6fc);
+}
+.lc3-review-detail {
+  margin: 0.5rem 0 0 1.625rem;
+  font-size: 0.8125rem;
+  display: grid;
+  gap: 0.2rem;
+}
+.lc3-review-your {
+  color: #f87171;
+}
+.lc3-review-your span {
+  color: var(--text-primary, #f0f6fc);
+}
+.lc3-review-correct {
+  color: #10b981;
+}
+.lc3-review-correct span {
+  color: var(--text-primary, #f0f6fc);
+  font-weight: 600;
+}
+.lc3-review-explanation {
+  color: #9ca3af;
+  font-style: italic;
+}
+body.light-mode .lc3-review-block {
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.12);
+}
+body.light-mode .lc3-review-text,
+body.light-mode .lc3-review-your span,
+body.light-mode .lc3-review-correct span {
+  color: #111827;
+}
+body.light-mode .lc3-review-your {
+  color: #b91c1c;
+}
+body.light-mode .lc3-review-correct {
+  color: #047857;
+}
+body.light-mode .lc3-review-explanation {
+  color: #4b5563;
+}

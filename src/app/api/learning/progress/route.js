@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
-import { buildPlaceholderContent } from '@/lib/learning-content';
+import { getCourseContent } from '@/lib/learning-content';
 import {
   buildProgressMap,
   canAccessCourse,
@@ -16,7 +16,8 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-const PASS_PCT = 70;
+// Every question must be answered correctly to pass.
+const PASS_PCT = 100;
 
 function labelForLevelBadgeKey(key) {
   const m = typeof key === 'string' ? key.match(/_level_(.+)$/) : null;
@@ -182,17 +183,35 @@ export async function POST(request) {
     }
 
     if (action === 'quiz_submit') {
-      if (!Array.isArray(answers) || answers.length !== 5) {
-        return NextResponse.json({ error: 'Submit 5 answers (indices 0-3)' }, { status: 400 });
+      const { quiz } = getCourseContent(course);
+      const total = Array.isArray(quiz) ? quiz.length : 0;
+
+      if (total === 0) {
+        return NextResponse.json({ error: 'This course has no quiz yet.' }, { status: 400 });
+      }
+      if (!Array.isArray(answers) || answers.length !== total) {
+        return NextResponse.json(
+          { error: `Please answer all ${total} question${total === 1 ? '' : 's'} before submitting.` },
+          { status: 400 }
+        );
       }
 
-      const { quiz } = buildPlaceholderContent(course);
       let correct = 0;
-      for (let i = 0; i < 5; i += 1) {
-        if (Number(answers[i]) === quiz[i].correctIndex) correct += 1;
-      }
-      const scorePct = Math.round((correct / 5) * 100);
-      const passed = scorePct >= PASS_PCT;
+      const incorrectIndices = [];
+      const details = quiz.map((q, i) => {
+        const raw = answers[i];
+        const userIndex = raw === null || raw === undefined || raw === '' ? -1 : Number(raw);
+        const isCorrect = Number.isFinite(userIndex) && userIndex === q.correctIndex;
+        if (isCorrect) {
+          correct += 1;
+        } else {
+          incorrectIndices.push(i);
+        }
+        return { index: i, correct: isCorrect, userIndex, correctIndex: q.correctIndex };
+      });
+
+      const scorePct = Math.round((correct / total) * 100);
+      const passed = correct === total;
 
       const { data: existing } = await supabase
         .from('user_course_progress')
@@ -247,7 +266,9 @@ export async function POST(request) {
         progress: saved,
         scorePct,
         correct,
-        total: 5,
+        total,
+        incorrectIndices,
+        details,
         passed,
         passThreshold: PASS_PCT,
         quiz,

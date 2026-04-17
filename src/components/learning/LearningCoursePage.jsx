@@ -1,11 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { getCourseById, getLevelLabel, TRACKS } from '@/lib/learning-curriculum';
 import { getOrderedCoursesForTrack } from '@/lib/learning-progress-logic';
 import CourseVisual from './visuals/CourseVisual';
+
+// Quiz answers are keyed by questionId to avoid the index-based off-by-one
+// bugs that leaked strings like "Submit 5 answers (indices 0-3)" to the UI.
+// TODO(multi-select): when questions support multiple correct choices, the
+// value here should become an array of choice ids/indices.
+const questionKey = (courseId, idx) => `${courseId}::q${idx}`;
 
 export function LearningCoursePage() {
   const params = useParams();
@@ -21,7 +27,11 @@ export function LearningCoursePage() {
   const [sectionCompleted, setSectionCompleted] = useState({});
   const [quizMode, setQuizMode] = useState(false);
   const [qIdx, setQIdx] = useState(0);
-  const [answers, setAnswers] = useState([]);
+  // id-keyed answers: Record<questionId, number> — choiceIndex the user picked.
+  const [answers, setAnswers] = useState({});
+  // When set, the quiz only walks this subset of the original question indices.
+  // Answers for the rest are preserved across retries.
+  const [retryIndices, setRetryIndices] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,13 +74,15 @@ export function LearningCoursePage() {
   const content = payload?.content;
   const progress = payload?.progress;
 
+  // Reset answers whenever we switch courses. Within a course we keep the
+  // same answers object across retries so correct answers are preserved.
   useEffect(() => {
-    const quizLen = content?.quiz?.length || 0;
-    if (quizLen > 0 && answers.length !== quizLen) {
-      setAnswers(new Array(quizLen).fill(null));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content?.quiz?.length]);
+    setAnswers({});
+    setRetryIndices(null);
+    setQIdx(0);
+    setConfirmed(false);
+    setResult(null);
+  }, [courseId]);
 
   useEffect(() => {
     const n = content?.sections?.length ?? 0;
@@ -82,14 +94,21 @@ export function LearningCoursePage() {
   }, [content?.sections?.length, progress?.reading_complete]);
 
   const trackLabel = TRACKS.find((t) => t.id === course?.track)?.label || 'Track';
-  const ordered = course ? getOrderedCoursesForTrack(course.track, course.level) : [];
-  const pos = course ? ordered.findIndex((c) => c.id === course.id) + 1 : 0;
+  const ordered = useMemo(
+    () => (course ? getOrderedCoursesForTrack(course.track) : []),
+    [course]
+  );
+  const currentIdx = course ? ordered.findIndex((c) => c.id === course.id) : -1;
+  const pos = currentIdx + 1;
+  const nextCourse = currentIdx >= 0 ? ordered[currentIdx + 1] || null : null;
 
   const goNextCourse = () => {
-    const nextIdx = pos;
-    const next = ordered[nextIdx];
-    if (next) router.push(`/learning-center/course/${next.id}`);
+    if (nextCourse) router.push(`/learning-center/course/${nextCourse.id}`);
     else router.push('/learning-center');
+  };
+
+  const goBackToCenter = () => {
+    router.push('/learning-center');
   };
 
   const onReadingDone = async () => {
@@ -99,7 +118,7 @@ export function LearningCoursePage() {
       const res = await fetch('/api/learning/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId, action: 'reading_done' }),
+        body: JSON.stringify({ courseId, action: 'reading_complete' }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
@@ -111,23 +130,46 @@ export function LearningCoursePage() {
     }
   };
 
+  // Serialize the id-keyed answers into the full-length array the API expects.
+  // Unanswered slots become null so the server can flag them; we never fabricate
+  // a fake index (no more "Number(null) === 0" false positives).
+  const buildAnswersPayload = useCallback(
+    (quizArr) =>
+      quizArr.map((_, i) => {
+        const v = answers[questionKey(courseId, i)];
+        return v === undefined ? null : v;
+      }),
+    [answers, courseId]
+  );
+
   const submitQuiz = async () => {
-    if (answers.some((a) => a === null || a === undefined)) {
-      setErr('Answer all questions');
+    const quizArr = content?.quiz || [];
+    const payloadAnswers = buildAnswersPayload(quizArr);
+    const missing = payloadAnswers
+      .map((a, i) => (a === null ? i : -1))
+      .filter((i) => i !== -1);
+    if (missing.length > 0) {
+      const first = missing[0];
+      setErr(`Please answer question ${first + 1} before submitting.`);
+      setQIdx(first);
+      setConfirmed(false);
       return;
     }
+
     setSubmitting(true);
     setErr(null);
     try {
       const res = await fetch('/api/learning/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId, action: 'quiz_submit', answers }),
+        body: JSON.stringify({ courseId, action: 'quiz_submit', answers: payloadAnswers }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
       setResult(json);
       setQuizMode(false);
+      // Leaving retry mode — the next action (retry or back) resets it explicitly.
+      setRetryIndices(null);
       await load();
     } catch (e) {
       setErr(e.message);
@@ -170,17 +212,30 @@ export function LearningCoursePage() {
   const quizLen = quiz.length;
   const quizPassed = progress?.quiz_passed === true;
 
-  const currentQuestion = quiz[qIdx];
-  const currentAnswer = answers[qIdx];
-  const isLastQuestion = qIdx === quizLen - 1;
+  // The walker iterates over either the full quiz or just the retry subset.
+  // Each entry is the ORIGINAL question index, which keeps answers stable
+  // across attempts and lets the server score against the full quiz.
+  const walkIndices = useMemo(
+    () =>
+      Array.isArray(retryIndices) && retryIndices.length > 0
+        ? retryIndices
+        : Array.from({ length: quizLen }, (_, i) => i),
+    [retryIndices, quizLen]
+  );
+  const walkLen = walkIndices.length;
+  const currentOriginalIdx = walkIndices[qIdx];
+  const currentQuestion = quiz[currentOriginalIdx];
+  const currentAnswer = answers[questionKey(courseId, currentOriginalIdx)];
+  const isLastQuestion = qIdx === walkLen - 1;
   const isCorrect = confirmed && currentAnswer === currentQuestion?.correctIndex;
-  const quizProgressPct = quizLen > 0 ? Math.round(((qIdx + (confirmed ? 1 : 0)) / quizLen) * 100) : 0;
+  const quizProgressPct = walkLen > 0 ? Math.round(((qIdx + (confirmed ? 1 : 0)) / walkLen) * 100) : 0;
 
   const handleOptionPick = (optionIndex) => {
     if (confirmed) return;
-    const next = [...answers];
-    next[qIdx] = optionIndex;
-    setAnswers(next);
+    setAnswers((prev) => ({
+      ...prev,
+      [questionKey(courseId, currentOriginalIdx)]: optionIndex,
+    }));
     setConfirmed(true);
   };
 
@@ -189,11 +244,31 @@ export function LearningCoursePage() {
     setQIdx((i) => i + 1);
   };
 
-  const handleRetakeQuiz = () => {
+  const handleRetryIncorrect = () => {
+    const incorrect = Array.isArray(result?.incorrectIndices) ? result.incorrectIndices : [];
+    if (incorrect.length === 0) return;
+    // Clear stale answers for the retry subset only — preserve correct answers.
+    setAnswers((prev) => {
+      const next = { ...prev };
+      for (const idx of incorrect) {
+        delete next[questionKey(courseId, idx)];
+      }
+      return next;
+    });
+    setRetryIndices(incorrect);
     setResult(null);
-    setAnswers(new Array(quizLen).fill(null));
     setQIdx(0);
     setConfirmed(false);
+    setQuizMode(true);
+    setErr(null);
+  };
+
+  const handleStartQuiz = () => {
+    setRetryIndices(null);
+    setAnswers({});
+    setQIdx(0);
+    setConfirmed(false);
+    setResult(null);
     setQuizMode(true);
   };
 
@@ -219,9 +294,15 @@ export function LearningCoursePage() {
       {quizPassed && !result && (
         <div className="lc3-banner">
           ✅ Course completed · Quiz {progress.quiz_score}%
-          <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
-            Next course →
-          </button>
+          {nextCourse ? (
+            <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
+              Begin “{nextCourse.title}” →
+            </button>
+          ) : (
+            <button type="button" className="lc3-btn lc3-btn-primary" onClick={goBackToCenter}>
+              {trackLabel} series complete 🏆
+            </button>
+          )}
         </div>
       )}
 
@@ -365,12 +446,7 @@ export function LearningCoursePage() {
                   type="button"
                   className="lc3-btn lc3-btn-primary"
                   style={{ marginTop: '0.75rem' }}
-                  onClick={() => {
-                    setQuizMode(true);
-                    setQIdx(0);
-                    setConfirmed(false);
-                    setAnswers(new Array(quizLen).fill(null));
-                  }}
+                  onClick={handleStartQuiz}
                   data-task-target="learning-quiz-button"
                 >
                   Take Quiz →
@@ -384,13 +460,21 @@ export function LearningCoursePage() {
       {quizMode && currentQuestion && (
         <div className="lc3-quiz db-card">
           <h2 className="lc3-h2">
-            Quiz: {course.title} ({qIdx + 1} of {quizLen})
+            {retryIndices
+              ? `Retry: ${course.title} (${qIdx + 1} of ${walkLen})`
+              : `Quiz: ${course.title} (${qIdx + 1} of ${walkLen})`}
           </h2>
+          {retryIndices && (
+            <p className="lc3-muted" style={{ marginTop: '-0.25rem' }}>
+              Answering the {walkLen} question{walkLen === 1 ? '' : 's'} you missed.
+              Your correct answers are preserved.
+            </p>
+          )}
 
           <div className="lc3-quiz-progress-wrap">
             <div className="lc3-quiz-progress-label">
               <span>
-                Question {qIdx + 1} / {quizLen}
+                Question {qIdx + 1} / {walkLen}
               </span>
               <span>{quizProgressPct}% complete</span>
             </div>
@@ -413,7 +497,7 @@ export function LearningCoursePage() {
                 <label key={oi} className={cls}>
                   <input
                     type="radio"
-                    name={`q-${qIdx}`}
+                    name={`q-${currentOriginalIdx}`}
                     checked={currentAnswer === oi}
                     disabled={confirmed}
                     onChange={() => handleOptionPick(oi)}
@@ -482,11 +566,30 @@ export function LearningCoursePage() {
 
       {result && (
         <div className="lc3-results db-card">
-          <h2 className="lc3-h2">Quiz Results</h2>
-          <p className={result.passed ? 'lc3-pass' : 'lc3-fail'}>
-            Score: {result.correct}/{result.total} ({result.scorePct}%) {result.passed ? '✅ Passed' : '❌ Not passed'}
-          </p>
-          <p className="lc3-muted">Passing score: {result.passThreshold}%</p>
+          <div className="lc3-results-header">
+            {result.passed ? (
+              <>
+                <div className="lc3-results-badge pass">🏆</div>
+                <h2 className="lc3-h2" style={{ margin: 0 }}>Perfect score!</h2>
+                <p className="lc3-muted">
+                  You got {result.correct} out of {result.total} right. You&apos;ve completed{' '}
+                  <strong style={{ color: 'var(--text-primary, #f0f6fc)' }}>{course.title}</strong>.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="lc3-results-badge fail">↻</div>
+                <h2 className="lc3-h2" style={{ margin: 0 }}>
+                  You got {result.correct} out of {result.total}
+                </h2>
+                <p className="lc3-muted">
+                  You need {result.total} out of {result.total} to complete this course.
+                  Review the questions you missed and try again — your correct answers
+                  are saved.
+                </p>
+              </>
+            )}
+          </div>
 
           <div className="lc3-results-chart">
             <div className="lc3-results-chart-title">Performance Summary</div>
@@ -513,28 +616,73 @@ export function LearningCoursePage() {
             </div>
           </div>
 
-          <ul className="lc3-review">
-            {result.quiz?.map((q, i) => {
-              const ok = Number(answers[i]) === q.correctIndex;
-              return (
-                <li key={i} className={ok ? 'ok' : 'bad'}>
-                  {ok ? '✅' : '❌'} Q{i + 1}: {ok ? 'Correct' : `Incorrect — ${q.explanation}`}
-                </li>
-              );
-            })}
-          </ul>
+          <div className="lc3-review-block">
+            <h3 className="lc3-review-title">Review</h3>
+            <ol className="lc3-review">
+              {result.quiz?.map((q, i) => {
+                const userIndex = answers[questionKey(courseId, i)];
+                const ok = userIndex === q.correctIndex;
+                const userText =
+                  userIndex === undefined || userIndex === null
+                    ? '—'
+                    : q.options?.[userIndex] ?? '—';
+                const correctText = q.options?.[q.correctIndex] ?? '';
+                return (
+                  <li key={i} className={ok ? 'ok' : 'bad'}>
+                    <div className="lc3-review-q">
+                      <span className="lc3-review-mark">{ok ? '✓' : '✗'}</span>
+                      <span className="lc3-review-text">
+                        <strong>Q{i + 1}.</strong> {q.question}
+                      </span>
+                    </div>
+                    {!ok && (
+                      <div className="lc3-review-detail">
+                        <div className="lc3-review-your">
+                          Your answer: <span>{userText}</span>
+                        </div>
+                        <div className="lc3-review-correct">
+                          Correct answer: <span>{correctText}</span>
+                        </div>
+                        {q.explanation && (
+                          <div className="lc3-review-explanation">{q.explanation}</div>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
           <div className="lc3-results-actions">
             {result.passed ? (
-              <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
-                Continue to next course →
-              </button>
+              <>
+                <button type="button" className="lc3-btn" onClick={goBackToCenter}>
+                  Back to Learning Center
+                </button>
+                {nextCourse ? (
+                  <button type="button" className="lc3-btn lc3-btn-primary" onClick={goNextCourse}>
+                    Begin “{nextCourse.title}” →
+                  </button>
+                ) : (
+                  <button type="button" className="lc3-btn lc3-btn-primary" onClick={goBackToCenter}>
+                    {trackLabel} series complete 🏆
+                  </button>
+                )}
+              </>
             ) : (
               <>
-                <Link href="/learning-center" className="lc3-btn">
-                  Review Learning Center
-                </Link>
-                <button type="button" className="lc3-btn lc3-btn-primary" onClick={handleRetakeQuiz}>
-                  Retake quiz
+                <button type="button" className="lc3-btn" onClick={goBackToCenter}>
+                  Back to Learning Center
+                </button>
+                <button
+                  type="button"
+                  className="lc3-btn lc3-btn-primary"
+                  onClick={handleRetryIncorrect}
+                  disabled={!result.incorrectIndices || result.incorrectIndices.length === 0}
+                >
+                  Retry {result.incorrectIndices?.length ?? 0} incorrect{' '}
+                  {result.incorrectIndices?.length === 1 ? 'question' : 'questions'}
                 </button>
               </>
             )}
