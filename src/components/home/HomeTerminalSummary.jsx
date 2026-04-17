@@ -12,6 +12,7 @@ import { useProGate } from '@/components/upgrade/ProGateContext';
 import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
+import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -92,58 +93,31 @@ const WORST_SECTORS = [
   { name: 'Utilities', change: '-0.017%' },
 ];
 
-/** Generate fallback placeholder events starting from today, spread through the rest of the month. */
-function buildFallbackEvents() {
-  const now = new Date();
-  const todayDay = now.getDate();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  // Days remaining including today
-  const daysLeft = daysInMonth - todayDay + 1;
-
-  // Need at least one day to show anything
-  if (daysLeft < 1) return [];
-
-  // Templates — assigned to days from today through end of month
-  const templates = [
-    { type: 'fed', icon: '🏛️', title: 'Fed Rate Decision', time: '2:00 PM', color: '#3b82f6' },
-    { type: 'earnings', icon: '📊', title: 'NVDA Earnings', time: '4:30 PM', color: '#10b981' },
-    { type: 'economic', icon: '📈', title: 'CPI Release', time: '8:30 AM', color: '#6366f1' },
-    { type: 'earnings', icon: '📊', title: 'AAPL Earnings', time: '4:30 PM', color: '#10b981' },
-    { type: 'fed', icon: '🏛️', title: 'Fed Minutes', time: '2:00 PM', color: '#3b82f6' },
-    { type: 'economic', icon: '📉', title: 'Retail Sales', time: '8:30 AM', color: '#6366f1' },
-    { type: 'earnings', icon: '📊', title: 'MSFT Earnings', time: '4:30 PM', color: '#10b981' },
-    { type: 'economic', icon: '🏠', title: 'Housing Starts', time: '8:30 AM', color: '#6366f1' },
-    { type: 'fed', icon: '🏛️', title: 'Fed Speaker: Powell', time: '10:00 AM', color: '#3b82f6' },
-    { type: 'economic', icon: '💵', title: 'PPI Data Release', time: '8:30 AM', color: '#6366f1' },
-    { type: 'earnings', icon: '📊', title: 'SPY Rebalance', time: 'After Close', color: '#10b981' },
-    { type: 'economic', icon: '📊', title: 'Consumer Confidence', time: '10:00 AM', color: '#6366f1' },
-  ];
-
-  const count = Math.min(templates.length, daysLeft);
-  // Space events evenly across remaining days (skip weekends where possible)
-  const step = Math.max(1, Math.floor(daysLeft / count));
-
-  return templates.slice(0, count).map((t, i) => {
-    // Start at today (i=0 → today, i=1 → today+step, etc.)
-    const day = Math.min(todayDay + i * step, daysInMonth);
-    return { ...t, id: i + 1, day };
-  });
-}
+// Fallback mock events were removed along with the "April 17" bug. When the
+// live feed is empty we show a proper empty state instead of fabricating rows.
 
 const EVENT_COLOURS = {
-  fed: '#3b82f6',
   earnings: '#10b981',
-  alert: '#f59e0b',
+  dividends: '#22c55e',
+  ipos: '#a855f7',
   economic: '#6366f1',
+  fed: '#3b82f6',
+  alert: '#f59e0b',
 };
 
 const EVENT_LEGEND = [
   { type: 'earnings', label: 'Earnings', colour: '#10b981' },
-  { type: 'fed', label: 'Fed / Macro', colour: '#3b82f6' },
+  { type: 'dividends', label: 'Dividends', colour: '#22c55e' },
+  { type: 'ipos', label: 'IPOs', colour: '#a855f7' },
   { type: 'economic', label: 'Economic', colour: '#6366f1' },
-  { type: 'alert', label: 'Alert', colour: '#f59e0b' },
+];
+
+const EVENT_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'earnings', label: 'Earnings' },
+  { key: 'dividends', label: 'Dividends' },
+  { key: 'ipos', label: 'IPOs' },
+  { key: 'economic', label: 'Economic' },
 ];
 
 const DAY_LABELS_SUN_FIRST = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -213,8 +187,13 @@ export function HomeTerminalSummary({
 }) {
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
-  const [liveEvents, setLiveEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(true);
+  const {
+    events: liveEvents,
+    errors: eventsErrors,
+    isLoading: eventsLoading,
+    isRateLimited: eventsRateLimited,
+  } = useUpcomingEvents();
+  const [eventFilter, setEventFilter] = useState('all');
   const [congressTrades, setCongressTrades] = useState([]);
   const [congressLoading, setCongressLoading] = useState(true);
   const [portfolioValueTf, setPortfolioValueTf] = useState('1D');
@@ -226,15 +205,6 @@ export function HomeTerminalSummary({
       setMockData(generateUserMockData(user.id));
     }
   }, [user?.id]);
-
-  useEffect(() => {
-    const _bust = new Date().toISOString().slice(0, 10);
-    fetch(`/api/market-data/upcoming-events?d=${_bust}`)
-      .then((r) => (r.ok ? r.json() : { events: [] }))
-      .then((d) => setLiveEvents(d.events || []))
-      .catch(() => setLiveEvents([]))
-      .finally(() => setEventsLoading(false));
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -371,54 +341,51 @@ export function HomeTerminalSummary({
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     const dayToType = {};
 
-    const today = new Date();
-    const todayDayOfMonth = today.getDate();
-    // Today midnight — include events happening today through end of month
+    const todayDayOfMonth = now.getDate();
     const todayMidnight = new Date(y, m, todayDayOfMonth, 0, 0, 0);
 
-    const filteredLive = liveEvents.filter((ev) => {
-      if (ev.fullDate) {
-        const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
-        const [ey, em, ed] = datePart.split('-').map(Number);
-        if (!ey || !em || !ed) return false;
-        // Today or later in the current month
-        const evDate = new Date(ey, em - 1, ed);
-        return evDate >= todayMidnight && ey === y && em - 1 === m;
-      }
-      // For fallback events without fullDate, today or later within this month
-      return ev.day >= todayDayOfMonth && ev.day <= daysInMonth;
+    // Defensive client-side window check — matches todayAndEndOfMonth() on the
+    // server. Guards against the API returning items outside the requested
+    // range (FMP occasionally does this) so we never paint a stale date like
+    // last month's "April 17" on the calendar.
+    const inWindow = liveEvents.filter((ev) => {
+      if (!ev.fullDate) return false;
+      const [ey, em, ed] = String(ev.fullDate).slice(0, 10).split('-').map(Number);
+      if (!ey || !em || !ed) return false;
+      const evDate = new Date(ey, em - 1, ed);
+      return evDate >= todayMidnight;
     });
 
-    // Rebuild fallback each render so it always uses today's date, not module-load time
-    const fallback = buildFallbackEvents();
-    const eventsSource = filteredLive.length > 0 ? filteredLive : fallback;
+    const filtered =
+      eventFilter === 'all'
+        ? inWindow
+        : inWindow.filter((ev) => ev.category === eventFilter);
 
-    // Dev-only: warn if every event somehow ends up on the same date
-    if (process.env.NODE_ENV !== 'production' && eventsSource.length > 1) {
-      const firstKey = eventsSource[0].fullDate || `day-${eventsSource[0].day}`;
-      const allSame = eventsSource.every(
-        (e) => (e.fullDate || `day-${e.day}`) === firstKey,
-      );
-      if (allSame) {
-        console.warn(
-          '[UpcomingEvents] All events share the same date — check API response or filter logic.',
-          eventsSource,
-        );
+    // Calendar dots always reflect the full set (not just the active filter)
+    // so users see at-a-glance where every event sits, even when narrowing
+    // the left panel to one category.
+    inWindow.forEach((ev) => {
+      const ed = parseInt(String(ev.fullDate).slice(8, 10), 10);
+      const em = parseInt(String(ev.fullDate).slice(5, 7), 10) - 1;
+      if (em !== m) return;
+      if (ed >= 1 && ed <= daysInMonth) {
+        // First event wins per day — good enough for a colour hint.
+        if (!dayToType[ed]) dayToType[ed] = ev.category || ev.type;
       }
+    });
+
+    // Group the visible (filtered) events by day for the "Today / Tomorrow /
+    // Fri, Apr 25" section headers.
+    const groupMap = new Map();
+    for (const ev of filtered) {
+      const key = String(ev.fullDate).slice(0, 10);
+      if (!groupMap.has(key)) groupMap.set(key, []);
+      groupMap.get(key).push(ev);
     }
+    const dayGroups = Array.from(groupMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, items]) => ({ day, label: formatEventDay(day), items }));
 
-    eventsSource.forEach((ev) => {
-      let dom;
-      if (ev.fullDate) {
-        const datePart = String(ev.fullDate).trim().split(' ')[0].split('T')[0];
-        const parts = datePart.split('-');
-        const dd = parseInt(parts[2], 10);
-        dom = dd >= 1 && dd <= daysInMonth ? dd : null;
-      } else {
-        dom = Math.min(Math.max(1, ev.day), daysInMonth);
-      }
-      if (dom) dayToType[dom] = ev.type;
-    });
     return {
       y,
       m,
@@ -426,9 +393,12 @@ export function HomeTerminalSummary({
       cells,
       dayToType,
       monthTitle: `${MONTH_SHORT[m]} ${y}`,
-      eventsSource,
+      eventsSource: filtered,
+      dayGroups,
+      totalVisible: filtered.length,
+      totalAll: inWindow.length,
     };
-  }, [liveEvents]);
+  }, [liveEvents, eventFilter]);
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
@@ -660,59 +630,101 @@ export function HomeTerminalSummary({
 
               <div className="home-terminal-left-below">
                 <div className="db-card hts-card home-events-compact home-events-rail-wide">
-                  <div className="db-card-header" style={{ padding: '0.75rem 1.25rem' }}>
+                  <div
+                    className="db-card-header hts-events-header"
+                    style={{ padding: '0.75rem 1.25rem' }}
+                  >
                     <h3 style={{ margin: 0 }}>Upcoming Events &amp; Alerts</h3>
+                    <div className="hts-events-filter-row" role="tablist" aria-label="Event category filter">
+                      {EVENT_FILTERS.map((f) => (
+                        <button
+                          key={f.key}
+                          type="button"
+                          role="tab"
+                          aria-selected={eventFilter === f.key}
+                          className={`hts-events-filter-chip${eventFilter === f.key ? ' is-active' : ''}`}
+                          onClick={() => setEventFilter(f.key)}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div className="hts-card-body home-events-compact-body">
+                    {(eventsErrors?.length > 0 || eventsRateLimited) && (
+                      <div className="hts-events-warn">
+                        <i className="bi bi-exclamation-triangle" aria-hidden />
+                        <span>
+                          {eventsRateLimited
+                            ? 'Refreshing soon…'
+                            : `Some feeds didn't load: ${eventsErrors.map((e) => e.split(':')[0]).join(', ')}`}
+                        </span>
+                      </div>
+                    )}
                     <div className="hts-events-grid-calendar">
                       <div className="hts-events-grid-left">
-                        <div className="hts-events-3x4-grid">
-                          {eventsLoading ? (
-                            <div
-                              style={{
-                                padding: '1rem',
-                                color: 'var(--home-muted)',
-                                fontSize: '0.75rem',
-                                gridColumn: '1 / -1',
-                              }}
-                            >
-                              Loading events…
-                            </div>
-                          ) : (
-                            upcomingCalendar.eventsSource.map((ev) => {
-                              const dateLabel = (() => {
-                                if (ev.fullDate) {
-                                  const parts = String(ev.fullDate).split('T')[0].split('-');
-                                  const em = parseInt(parts[1], 10) - 1;
-                                  const ed = parseInt(parts[2], 10);
-                                  return `${MONTH_SHORT[em]} ${ed}`;
-                                }
-                                return `${MONTH_SHORT[upcomingCalendar.m]} ${Math.min(Math.max(1, ev.day), upcomingCalendar.daysInMonth)}`;
-                              })();
-                              return (
-                                <div
-                                  key={ev.id}
-                                  className="hts-events-grid-cell"
-                                  style={{
-                                    background: `${ev.color}12`,
-                                    border: `1px solid ${ev.color}30`,
-                                  }}
-                                >
-                                  <div className="hts-events-grid-cell-head">
-                                    <span className="hts-events-grid-icon" aria-hidden>
-                                      {ev.icon}
-                                    </span>
-                                    <span className="hts-events-grid-date" style={{ color: ev.color }}>
-                                      {dateLabel}
-                                    </span>
-                                  </div>
-                                  <p className="hts-events-grid-title">{ev.title}</p>
-                                  <p className="hts-events-grid-time">{ev.time}</p>
+                        {eventsLoading && upcomingCalendar.eventsSource.length === 0 ? (
+                          <div className="hts-events-loading">
+                            {[0, 1, 2, 3, 4, 5].map((i) => (
+                              <div key={i} className="hts-events-skeleton" />
+                            ))}
+                          </div>
+                        ) : upcomingCalendar.totalVisible === 0 ? (
+                          <div className="hts-events-empty">
+                            <i className="bi bi-calendar-event" aria-hidden />
+                            <p>
+                              {upcomingCalendar.totalAll === 0
+                                ? 'No events scheduled through the end of the month.'
+                                : `No ${EVENT_FILTERS.find((f) => f.key === eventFilter)?.label.toLowerCase()} events in this window.`}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="hts-events-day-list">
+                            {upcomingCalendar.dayGroups.map((group) => (
+                              <div key={group.day} className="hts-events-day-group">
+                                <div className="hts-events-day-label">
+                                  <span>{group.label}</span>
+                                  <span className="hts-events-day-count">{group.items.length}</span>
                                 </div>
-                              );
-                            })
-                          )}
-                        </div>
+                                <div className="hts-events-3x4-grid">
+                                  {group.items.map((ev) => (
+                                    <div
+                                      key={ev.id}
+                                      className="hts-events-grid-cell"
+                                      style={{
+                                        background: `${ev.color}12`,
+                                        border: `1px solid ${ev.color}30`,
+                                      }}
+                                      title={ev.subtitle || ev.title}
+                                    >
+                                      <div className="hts-events-grid-cell-head">
+                                        <span className="hts-events-grid-icon" aria-hidden>
+                                          {ev.icon}
+                                        </span>
+                                        <span
+                                          className="hts-events-grid-date"
+                                          style={{ color: ev.color }}
+                                        >
+                                          {(() => {
+                                            const [, em, ed] = String(ev.fullDate).slice(0, 10).split('-').map(Number);
+                                            return `${MONTH_SHORT[em - 1]} ${ed}`;
+                                          })()}
+                                        </span>
+                                        {ev.impact === 'High' && (
+                                          <span className="hts-events-impact-pill high">High</span>
+                                        )}
+                                      </div>
+                                      <p className="hts-events-grid-title">{ev.title}</p>
+                                      <p className="hts-events-grid-time">
+                                        {ev.subtitle ? ev.subtitle : ev.time}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="hts-events-calendar-right">
                         <div className="hts-events-cal-month">{upcomingCalendar.monthTitle}</div>
