@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }) {
     <ErrorBoundary>
       <TutorialWalkthrough />
       <main
-        className={`dashboard-main dashboard-main-content${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
+        className={`dashboard-main dashboard-main-content bg-app${isMarketAnalysisFullscreen ? ' dashboard-main-content--fullscreen' : ''}`}
         id="main-content"
       >
         <div className={`dashboard-container${isPartnerExperience ? ' dashboard-container--partner-inset' : ''}`}>

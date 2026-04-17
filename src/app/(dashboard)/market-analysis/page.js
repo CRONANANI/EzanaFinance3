@@ -1089,7 +1089,7 @@ export default function MarketAnalysisPage() {
   }, [setClickedCountry]);
 
   return (
-    <div className={`ma-fullscreen ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}>
+    <div className={`ma-fullscreen force-dark-theme ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}>
       {view === 'map' && (
         <div className="ma-ticker-bar">
           <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>

@@ -52,6 +52,7 @@ module.exports = {
           foreground: '#ffffff',
           hover: '#34d399',
         },
+        app: 'var(--app-bg)',
         background: '#0f1419',
         foreground: '#ffffff',
         card: 'rgba(26, 35, 50, 0.6)',

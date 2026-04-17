@@ -11,7 +11,10 @@
   /* Viewport below fixed navbar (64px); align with --navbar-height in dashboard layout */
   height: calc(100vh - var(--navbar-height));
   overflow: hidden;
-  background: #070a0e;
+  /* Reads --app-bg. On this route the body carries `route-market-analysis`
+     which forces --app-bg to the dark nav color (#0a0e13), so the page
+     shell and the nav above it paint the exact same pixel value. */
+  background: var(--app-bg);
 }
 
 /* ═══ Top bar ═══ */

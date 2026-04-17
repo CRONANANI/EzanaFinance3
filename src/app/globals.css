@@ -22,18 +22,19 @@
 @import './dashboard-app-icons.css';
 @import './responsive-system.css';
 
-/* Prevents dark/light flash during route transitions and first paint.
-   Matches the dashboard navbar color (var(--nav-bg-solid)) so the underlying
-   surface never contrasts with what's painted above it. */
+/* Unified app background — drives body AND the top navbar off a single
+   token (--app-bg) so there is zero visible seam between nav and page
+   in either light or dark mode. Prevents dark/light flash during route
+   transitions and first paint. */
 html,
 body {
-  background-color: var(--nav-bg-solid);
+  background-color: var(--app-bg);
 }
 
 /* Unlayered so this wins over the rule above (and @layer base) when .light-mode is set */
 html.light-mode,
 body.light-mode {
-  background-color: var(--nav-bg-solid);
+  background-color: var(--app-bg);
 }
 
 /* Marketing / public pages that need a different background continue

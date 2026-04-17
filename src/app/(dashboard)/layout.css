@@ -18,7 +18,7 @@
   max-width: 100%;
   box-sizing: border-box;
   min-height: 100vh;
-  background-color: var(--nav-bg-solid);
+  background-color: var(--app-bg);
 }
 
 /* Full-screen routes (e.g. market analysis) — no horizontal inset; top clears fixed nav only */
@@ -97,30 +97,29 @@
   }
 }
 
-/* ───────── Dashboard background matches top navbar (var(--nav-bg-solid)) ───────── */
-/* Applies to every logged-in page EXCEPT global market analysis. */
-body:not(.route-market-analysis) .dashboard-main,
-body:not(.route-market-analysis) .dashboard-main-content {
-  background-color: var(--nav-bg-solid);
+/* ───────── Page shell background = top navbar background ─────────
+   Every logged-in page reads from the same --app-bg token so the nav
+   and the page surface are always identical in both light and dark mode.
+   The Global Market Analysis route also uses --app-bg, but its body
+   class (`route-market-analysis`) redefines --app-bg to the dark value
+   via the force-dark scope in theme-variables.css, locking that page
+   to a dark shell regardless of the user's global theme toggle. */
+body .dashboard-main,
+body .dashboard-main-content {
+  background-color: var(--app-bg);
   min-height: 100vh;
 }
 
 /* Belt-and-suspenders: paint the body too so any gap behind the
    wrapper (e.g. during route transitions) shows the right color. */
-body:not(.route-market-analysis):has(.dashboard-main) {
-  background-color: var(--nav-bg-solid);
+body:has(.dashboard-main) {
+  background-color: var(--app-bg);
 }
 
 /* Opaque nav matches page bg (no translucent seam). Partner chrome keeps its own styles. */
-body:not(.route-market-analysis) .main-nav:not(.partner-nav) {
-  background: var(--nav-bg-solid) !important;
+body .main-nav:not(.partner-nav) {
+  background: var(--app-bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border-bottom: none !important;
-}
-
-/* Explicit reset for the excluded route — let the page own its bg. */
-body.route-market-analysis .dashboard-main,
-body.route-market-analysis .dashboard-main-content {
-  background-color: transparent;
 }

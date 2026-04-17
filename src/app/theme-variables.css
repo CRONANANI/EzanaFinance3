@@ -89,6 +89,11 @@
   --nav-bg-solid: #0a0e13;
   --nav-border: rgba(16, 185, 129, 0.08);
 
+  /* ── Unified app background ──
+     Single source of truth for the logged-in page shell AND the top navbar,
+     so they never contrast. Exposed to Tailwind as `bg-app`. */
+  --app-bg: var(--nav-bg-solid);
+
   /* ── Scrollbar ── */
   --scrollbar-track: transparent;
   --scrollbar-thumb: rgba(16, 185, 129, 0.15);
@@ -193,6 +198,70 @@ body.light-mode {
 
   /* ── Badge ── */
   --badge-ring: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORCED DARK SCOPE — for pages that must always render dark
+   (e.g. Global Market Analysis), regardless of the user's
+   global light/dark toggle.
+
+   Applied two ways:
+     1. `body.route-market-analysis` — toggled by the dashboard
+        layout useEffect when the MA route is active.
+     2. `.force-dark-theme` — a reusable scoping class you can
+        put on any wrapper to force dark vars in its subtree.
+
+   The selector beats `body.light-mode` because it appears later
+   in the cascade (equal specificity) and, for `.force-dark-theme`,
+   the explicit `body.light-mode .force-dark-theme` fallback
+   ensures it wins when nested inside a light-mode body.
+   ═══════════════════════════════════════════════════════════ */
+body.route-market-analysis,
+.force-dark-theme,
+body.light-mode .force-dark-theme {
+  /* Core backgrounds */
+  --bg-primary: #0a0e13;
+  --bg-secondary: #0d1117;
+  --bg-tertiary: #161b22;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+
+  /* Card / surface */
+  --surface-card: rgba(16, 185, 129, 0.02);
+  --surface-card-hover: rgba(16, 185, 129, 0.04);
+  --surface-input: rgba(16, 185, 129, 0.04);
+  --surface-input-focus: rgba(16, 185, 129, 0.06);
+
+  /* Borders */
+  --border-primary: rgba(16, 185, 129, 0.08);
+  --border-secondary: rgba(16, 185, 129, 0.06);
+  --border-hover: rgba(16, 185, 129, 0.2);
+  --border-focus: rgba(16, 185, 129, 0.4);
+  --border-input: rgba(16, 185, 129, 0.1);
+
+  /* Text */
+  --text-primary: #f0f6fc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #8b949e;
+  --text-faint: #6b7280;
+  --text-ghost: #4b5563;
+
+  /* Navbar */
+  --nav-bg: rgba(10, 14, 19, 0.95);
+  --nav-bg-solid: #0a0e13;
+  --nav-border: rgba(16, 185, 129, 0.08);
+
+  /* Unified app bg — resolves to the dark nav color in this scope */
+  --app-bg: #0a0e13;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
+
+  /* Badge ring */
+  --badge-ring: #0f1419;
 }
 
 /* Partner app (shared routes + /partner-*): light mode uses gold accents instead of emerald */
