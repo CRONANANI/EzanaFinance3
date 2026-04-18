@@ -58,7 +58,7 @@ export function Navbar() {
       isActive: isResearchActive,
       items: [
         { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
-        { id: 22, title: 'Company Research', description: 'Financial analysis', url: '/company-research', icon: 'bi-bar-chart-line' },
+        { id: 22, title: 'Company & Portfolio Research', description: 'Stock analysis + portfolio modeling', url: '/company-research', icon: 'bi-bar-chart-line' },
         { id: 23, title: 'Global Market Analysis', description: 'Worldwide sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
         { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
         { id: 27, title: 'Alternative Markets', description: 'Crypto & commodities', url: '/alternative-markets', icon: 'bi-globe2' },
@@ -320,7 +320,7 @@ export function Navbar() {
               </Link>
               <Link href="/company-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-bar-chart-line"></i>
-                <div><div className="item-title">Company Research</div></div>
+                <div><div className="item-title">Company &amp; Portfolio Research</div></div>
               </Link>
               <Link href="/market-analysis" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
                 <i className="bi bi-graph-up-arrow"></i>

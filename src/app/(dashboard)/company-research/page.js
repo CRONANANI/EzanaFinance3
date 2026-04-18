@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
 import StockPriceChart from '@/components/research/StockPriceChart';
@@ -21,6 +21,7 @@ import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection
 import { getCoursesByTrack } from '@/lib/learning-curriculum';
 import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
+import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -30,12 +31,78 @@ import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import '../../../../app-legacy/pages/company-research.css';
 import '../../../../app-legacy/components/grpv/snappy-slider.css';
 import '@/components/research/ai-analysis-panel.css';
+import '@/components/research/model-card-shell.css';
+import '@/components/research/market/market-portfolio.css';
+import './company-research-theme.css';
 
-/* ── Carousel model configs from the prompts library ── */
-const CAROUSEL_MODELS = getCarouselModels();
+/* ── Carousel model configs from the prompts library ──
+ * The "risk" model's stress-test capability now lives on the
+ * Market/Portfolio view as a dedicated Stress Test card, so it is filtered
+ * out of the Company-side carousel to avoid duplication. The underlying
+ * prompt stays in the library for future use.
+ */
+const CAROUSEL_MODELS = getCarouselModels().filter((m) => m.id !== 'risk');
+
+function ResearchPageHeader({ view, setView }) {
+  return (
+    <header className="cpr-page-header">
+      <div className="cpr-page-header-text">
+        <span className="cpr-page-eyebrow">Research</span>
+        <h1 className="cpr-page-title">Company &amp; Portfolio Research</h1>
+        <p className="cpr-page-subtitle">
+          {view === 'company'
+            ? 'Deep dive on individual companies — fundamentals, valuation, and signals.'
+            : 'Analyze the market as a whole and stress-test portfolios across regimes.'}
+        </p>
+      </div>
+      <div
+        role="tablist"
+        aria-label="Research view"
+        className="cpr-view-toggle"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'company'}
+          onClick={() => setView('company')}
+          className={`cpr-view-toggle-btn ${view === 'company' ? 'is-active' : ''}`}
+        >
+          <i className="bi bi-building" />
+          Company
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === 'market'}
+          onClick={() => setView('market')}
+          className={`cpr-view-toggle-btn ${view === 'market' ? 'is-active' : ''}`}
+        >
+          <i className="bi bi-graph-up-arrow" />
+          Market / Portfolio
+        </button>
+      </div>
+    </header>
+  );
+}
 
 function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const view = searchParams.get('view') === 'market' ? 'market' : 'company';
+  const setView = useCallback(
+    (next) => {
+      const sp = new URLSearchParams(searchParams.toString());
+      if (next === 'company') {
+        sp.delete('view');
+      } else {
+        sp.set('view', next);
+      }
+      const qs = sp.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
   const { completeTask } = useChecklist();
   const [selectedStock, setSelectedStock] = useState(null);
   const [stats, setStats] = useState({ mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' });
@@ -265,8 +332,18 @@ function CompanyResearchPageInner() {
       </div>
     ));
 
+  if (view === 'market') {
+    return (
+      <div className="dashboard-page-inset cr-page">
+        <ResearchPageHeader view={view} setView={setView} />
+        <MarketPortfolioView />
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-page-inset cr-page">
+      <ResearchPageHeader view={view} setView={setView} />
       <div className="company-search-wrapper relative" ref={searchRef} data-task-target="research-search-bar">
         <AnimatedGlowingSearchBar
           value={query}

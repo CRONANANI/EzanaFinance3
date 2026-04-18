@@ -6,7 +6,7 @@
 export const SECTION_NAMES = {
   dashboard: 'Dashboard',
   capitol: 'Inside the Capitol',
-  research: 'Company Research',
+  research: 'Company & Portfolio Research',
   betting: 'Betting Markets',
   quants: 'For the Quants',
   watchlist: 'Watchlist',

@@ -123,7 +123,7 @@ export function PartnerNavbar() {
                 </Link>
                 <Link href="/company-research" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-building" />
-                  <div><span className="nav-dropdown-title">Company Research</span><span className="nav-dropdown-desc">Financial analysis</span></div>
+                  <div><span className="nav-dropdown-title">Company &amp; Portfolio Research</span><span className="nav-dropdown-desc">Stock analysis + portfolio modeling</span></div>
                 </Link>
                 <Link href="/market-analysis" className="nav-dropdown-item" onClick={closeResearch}>
                   <i className="bi bi-graph-up" />
