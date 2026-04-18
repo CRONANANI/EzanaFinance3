@@ -21,10 +21,15 @@ import {
   exceptionResponse,
   validationResponse,
 } from '@/lib/api-errors';
+import {
+  computeNextPosition,
+  POSITION_STEP,
+} from '@/lib/watchlists/position';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_LABEL = 80;
+const MAX_POSITION_RETRIES = 3;
 
 async function ensureDefaultList(userId) {
   const { data: existing, error: existingErr } = await supabaseAdmin
@@ -121,6 +126,28 @@ export async function GET(request) {
   }
 }
 
+/**
+ * Read all existing sort_order values for a user. Returns an empty array on
+ * any error — the goal is that a read failure never masks the real cause of
+ * an eventual write failure; if the table is missing or auth is broken, the
+ * INSERT below will surface the same error with the correct code + hint.
+ */
+async function readUserPositions(userId) {
+  const { data, error } = await supabaseAdmin
+    .from('user_watchlists')
+    .select('sort_order')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.warn('[watchlists POST] position pre-fetch failed (non-fatal):', {
+      code: error.code,
+      message: error.message,
+    });
+    return [];
+  }
+  return Array.isArray(data) ? data.map((r) => r.sort_order) : [];
+}
+
 export async function POST(request) {
   try {
     const user = await getAuthUser(request);
@@ -137,39 +164,52 @@ export async function POST(request) {
       return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
     }
 
-    // Compute the next sort_order. A .select() error here is not fatal — we
-    // fall back to 0 — but we still log it so schema problems surface early.
-    const { data: tail, error: tailErr } = await supabaseAdmin
-      .from('user_watchlists')
-      .select('sort_order')
-      .eq('user_id', user.id)
-      .order('sort_order', { ascending: false })
-      .limit(1);
+    // Retry loop — if a future (user_id, sort_order) unique index is ever
+    // added, two concurrent inserts could compute the same position. We
+    // recompute up to MAX_POSITION_RETRIES times before giving up. Duplicate
+    // name (unique (user_id, label)) is handled separately below with a 409.
+    let attempt = 0;
+    while (attempt <= MAX_POSITION_RETRIES) {
+      const positions = await readUserPositions(user.id);
+      const nextSort =
+        computeNextPosition(positions) + attempt * POSITION_STEP;
 
-    if (tailErr) {
-      return dbErrorResponse('watchlists POST tail', tailErr, {
-        fallback: 'Failed to compute next watchlist position.',
-      });
-    }
+      const { data: created, error } = await supabaseAdmin
+        .from('user_watchlists')
+        .insert({ user_id: user.id, label, sort_order: nextSort })
+        .select('id, label, sort_order, created_at, updated_at')
+        .single();
 
-    const nextSort = (tail?.[0]?.sort_order ?? -1) + 1;
+      if (!error) {
+        return NextResponse.json(
+          { watchlist: { id: created.id, label: created.label, stocks: [] } },
+          { status: 201 }
+        );
+      }
 
-    const { data: created, error } = await supabaseAdmin
-      .from('user_watchlists')
-      .insert({ user_id: user.id, label, sort_order: nextSort })
-      .select('id, label, sort_order, created_at, updated_at')
-      .single();
+      // Detect a (user_id, sort_order) collision specifically — keep
+      // retrying. Any other unique violation (e.g. duplicate label) or any
+      // other DB error stops the loop and bubbles the real cause up.
+      const isPositionCollision =
+        error.code === '23505' &&
+        typeof error.message === 'string' &&
+        /sort_order/i.test(error.message);
 
-    if (error) {
+      if (isPositionCollision && attempt < MAX_POSITION_RETRIES) {
+        attempt += 1;
+        continue;
+      }
+
       return dbErrorResponse('watchlists POST insert', error, {
         uniqueViolation: 'You already have a watchlist with that name.',
         fallback: 'Failed to create watchlist.',
       });
     }
 
+    // Exhausted retries — extremely unlikely path.
     return NextResponse.json(
-      { watchlist: { id: created.id, label: created.label, stocks: [] } },
-      { status: 201 }
+      { error: 'Could not assign a watchlist position after several attempts. Please try again.' },
+      { status: 503 }
     );
   } catch (e) {
     return exceptionResponse('watchlists POST', e);
