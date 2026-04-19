@@ -3,23 +3,25 @@
 import { useMemo, useState } from 'react';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
 import { useSectorPerformance } from '@/hooks/useSectorPerformance';
-import { GICS_SECTORS } from '@/lib/stress-test';
 
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
 /**
- * Returns a subtle tile background — green for gains, red for losses. We cap
- * the intensity at ±3% so a single extreme outlier doesn't blow out the
- * visual scale on calm days.
+ * Range-aware tint: a +2% day is impressive but a +2% YTD is unremarkable.
+ * The ceiling scales with the window so the green↔red gradient stays
+ * meaningful instead of collapsing everything to the same washed-out tone
+ * on longer ranges.
  */
-function tintFor(changePct) {
+function tintFor(changePct, range) {
   const v = Number.isFinite(changePct) ? changePct : 0;
-  const clamped = Math.max(-3, Math.min(3, v));
-  const intensity = Math.abs(clamped) / 3;
+  const ceiling =
+    range === '1D' ? 3 : range === '1W' ? 6 : range === '1M' ? 12 : 25; // YTD
+  const clamped = Math.max(-ceiling, Math.min(ceiling, v));
+  const intensity = Math.abs(clamped) / ceiling;
   if (clamped >= 0) {
-    return `rgba(16, 185, 129, ${0.12 + intensity * 0.45})`;
+    return `rgba(16, 185, 129, ${0.12 + intensity * 0.5})`;
   }
-  return `rgba(239, 68, 68, ${0.12 + intensity * 0.45})`;
+  return `rgba(239, 68, 68, ${0.12 + intensity * 0.5})`;
 }
 
 function formatChange(value) {
@@ -28,32 +30,47 @@ function formatChange(value) {
   return `${sign}${value.toFixed(2)}%`;
 }
 
+function describeRange(range) {
+  switch (range) {
+    case '1D':
+      return "Today's move by sector";
+    case '1W':
+      return '5-day cumulative return, compounded daily';
+    case '1M':
+      return '21-day cumulative return, compounded daily';
+    case 'YTD':
+    default:
+      return 'Year to date, compounded daily';
+  }
+}
+
 export function SectorHeatmap() {
   const [range, setRange] = useState('1D');
   const { sectors, isLoading, error } = useSectorPerformance(range);
 
-  const tiles = useMemo(() => {
-    const byName = new Map(
-      (sectors || []).map((s) => [s.name, { ...s, changePct: Number(s.changePct) }]),
-    );
-    // Keep stable GICS ordering but fall back to whatever FMP returned for
-    // sectors we didn't predeclare (e.g. 'Health' vs 'Health Care' naming).
-    const merged = GICS_SECTORS.map((name) => {
-      const match = byName.get(name);
-      if (match) {
-        byName.delete(name);
-        return match;
-      }
-      return { name, changePct: null };
-    });
-    for (const extra of byName.values()) merged.push(extra);
-    return merged.sort((a, b) => {
-      if (a.changePct == null && b.changePct == null) return 0;
-      if (a.changePct == null) return 1;
-      if (b.changePct == null) return -1;
+  // Sort descending by change so the top performer sits top-left. Sectors
+  // missing from the feed (rare — FMP occasionally drops one for a given
+  // exchange filter) sink to the end.
+  const sorted = useMemo(() => {
+    const rows = (sectors || []).map((s) => ({
+      ...s,
+      changePct: Number(s.changePct),
+    }));
+    return rows.sort((a, b) => {
+      const aNum = Number.isFinite(a.changePct);
+      const bNum = Number.isFinite(b.changePct);
+      if (!aNum && !bNum) return 0;
+      if (!aNum) return 1;
+      if (!bNum) return -1;
       return b.changePct - a.changePct;
     });
   }, [sectors]);
+
+  const { best, worst } = useMemo(() => {
+    const rows = sorted.filter((s) => Number.isFinite(s.changePct));
+    if (rows.length === 0) return { best: null, worst: null };
+    return { best: rows[0], worst: rows[rows.length - 1] };
+  }, [sorted]);
 
   const rangeControl = (
     <div className="shm-range-group" role="tablist" aria-label="Time range">
@@ -76,10 +93,10 @@ export function SectorHeatmap() {
     <ModelCardShell
       icon="bi-grid-3x3-gap"
       title="Sector performance"
-      description="How each S&P 500 sector is moving"
+      description={describeRange(range)}
       actions={rangeControl}
     >
-      {error && (
+      {error && !isLoading && (
         <div className="shm-warning">
           <i className="bi bi-exclamation-triangle" />
           <span>{error}</span>
@@ -88,14 +105,14 @@ export function SectorHeatmap() {
 
       <div className="shm-grid" aria-live="polite">
         {isLoading
-          ? GICS_SECTORS.map((name) => (
-              <div key={name} className="shm-skeleton-tile" aria-label={`Loading ${name}`} />
+          ? Array.from({ length: 11 }).map((_, i) => (
+              <div key={i} className="shm-skeleton-tile" aria-label="Loading sector" />
             ))
-          : tiles.map((s) => (
+          : sorted.map((s) => (
               <div
-                key={s.name}
+                key={s.sector || s.name}
                 className="shm-tile"
-                style={{ backgroundColor: tintFor(s.changePct) }}
+                style={{ backgroundColor: tintFor(s.changePct, range) }}
                 title={s.name}
               >
                 <div className="shm-tile-name">{s.name}</div>
@@ -103,6 +120,25 @@ export function SectorHeatmap() {
               </div>
             ))}
       </div>
+
+      {!isLoading && best && worst && best !== worst && (
+        <div className="shm-summary">
+          <span className="shm-summary-item">
+            <span className="shm-summary-label">Top</span>
+            <span className="shm-summary-name shm-summary-name--up">{best.name}</span>
+            <span className="shm-summary-value shm-summary-value--up">
+              {formatChange(best.changePct)}
+            </span>
+          </span>
+          <span className="shm-summary-item">
+            <span className="shm-summary-label">Bottom</span>
+            <span className="shm-summary-name shm-summary-name--down">{worst.name}</span>
+            <span className="shm-summary-value shm-summary-value--down">
+              {formatChange(worst.changePct)}
+            </span>
+          </span>
+        </div>
+      )}
     </ModelCardShell>
   );
 }
