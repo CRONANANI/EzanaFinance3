@@ -7,8 +7,7 @@
  * Delete a watchlist and all its items (cascade).
  */
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { getAuthContext } from '@/lib/auth-helpers';
 import {
   dbErrorResponse,
   exceptionResponse,
@@ -21,8 +20,8 @@ const MAX_LABEL = 80;
 
 export async function PATCH(request, { params }) {
   try {
-    const user = await getAuthUser(request);
-    if (!user) {
+    const { user, supabase } = await getAuthContext(request);
+    if (!user || !supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -36,7 +35,7 @@ export async function PATCH(request, { params }) {
       return validationResponse(`Label too long (max ${MAX_LABEL} characters).`);
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from('user_watchlists')
       .update({ label, updated_at: new Date().toISOString() })
       .eq('id', listId)
@@ -66,15 +65,15 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const user = await getAuthUser(request);
-    if (!user) {
+    const { user, supabase } = await getAuthContext(request);
+    if (!user || !supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { listId } = params;
     if (!listId) return validationResponse('listId is required.');
 
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
       .from('user_watchlists')
       .delete()
       .eq('id', listId)

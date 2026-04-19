@@ -14,8 +14,7 @@
  * 500        — unexpected DB / runtime error (real cause in `detail` in dev)
  */
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { getAuthContext } from '@/lib/auth-helpers';
 import {
   dbErrorResponse,
   exceptionResponse,
@@ -31,23 +30,29 @@ export const dynamic = 'force-dynamic';
 const MAX_LABEL = 80;
 const MAX_POSITION_RETRIES = 3;
 
-async function ensureDefaultList(userId) {
-  const { data: existing, error: existingErr } = await supabaseAdmin
+/**
+ * All queries here run against a JWT-bound Supabase client — RLS policies
+ * on user_watchlists / user_watchlist_items enforce that the authenticated
+ * user can only touch their own rows. This removes the dependency on
+ * SUPABASE_SERVICE_ROLE_KEY for watchlist CRUD, which previously caused
+ * every write to fail when the key was missing from the environment.
+ */
+
+async function ensureDefaultList(supabase, userId) {
+  const { data: existing, error: existingErr } = await supabase
     .from('user_watchlists')
     .select('id')
     .eq('user_id', userId)
     .limit(1);
 
   if (existingErr) {
-    // Let the caller decide — we don't want to 500 the GET just because we
-    // couldn't pre-seed. The outer select will surface the real problem.
     console.error('[watchlists ensureDefaultList] select error:', existingErr);
     return;
   }
 
   if (existing && existing.length > 0) return;
 
-  const { error: insertErr } = await supabaseAdmin
+  const { error: insertErr } = await supabase
     .from('user_watchlists')
     .insert({ user_id: userId, label: 'My Watchlist', sort_order: 0 });
 
@@ -58,14 +63,14 @@ async function ensureDefaultList(userId) {
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
-    if (!user) {
+    const { user, supabase } = await getAuthContext(request);
+    if (!user || !supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await ensureDefaultList(user.id);
+    await ensureDefaultList(supabase, user.id);
 
-    const { data: lists, error: listsErr } = await supabaseAdmin
+    const { data: lists, error: listsErr } = await supabase
       .from('user_watchlists')
       .select('id, label, sort_order, created_at, updated_at')
       .eq('user_id', user.id)
@@ -81,7 +86,7 @@ export async function GET(request) {
     const listIds = (lists || []).map((l) => l.id);
     let items = [];
     if (listIds.length > 0) {
-      const { data: itemRows, error: itemsErr } = await supabaseAdmin
+      const { data: itemRows, error: itemsErr } = await supabase
         .from('user_watchlist_items')
         .select('id, list_id, type, ticker, name, sector, metadata, created_at')
         .eq('user_id', user.id)
@@ -89,7 +94,6 @@ export async function GET(request) {
         .order('created_at', { ascending: true });
 
       if (itemsErr) {
-        // Non-fatal — the lists load fine even without items.
         console.error('[watchlists GET] items error:', itemsErr);
       } else {
         items = itemRows || [];
@@ -132,8 +136,8 @@ export async function GET(request) {
  * an eventual write failure; if the table is missing or auth is broken, the
  * INSERT below will surface the same error with the correct code + hint.
  */
-async function readUserPositions(userId) {
-  const { data, error } = await supabaseAdmin
+async function readUserPositions(supabase, userId) {
+  const { data, error } = await supabase
     .from('user_watchlists')
     .select('sort_order')
     .eq('user_id', userId);
@@ -150,8 +154,8 @@ async function readUserPositions(userId) {
 
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
-    if (!user) {
+    const { user, supabase } = await getAuthContext(request);
+    if (!user || !supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -170,11 +174,11 @@ export async function POST(request) {
     // name (unique (user_id, label)) is handled separately below with a 409.
     let attempt = 0;
     while (attempt <= MAX_POSITION_RETRIES) {
-      const positions = await readUserPositions(user.id);
+      const positions = await readUserPositions(supabase, user.id);
       const nextSort =
         computeNextPosition(positions) + attempt * POSITION_STEP;
 
-      const { data: created, error } = await supabaseAdmin
+      const { data: created, error } = await supabase
         .from('user_watchlists')
         .insert({ user_id: user.id, label, sort_order: nextSort })
         .select('id, label, sort_order, created_at, updated_at')

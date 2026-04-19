@@ -7,8 +7,7 @@
  * Remove an item from a watchlist. ticker and type identify the row.
  */
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
-import { getAuthUser } from '@/lib/auth-helpers';
+import { getAuthContext } from '@/lib/auth-helpers';
 import {
   dbErrorResponse,
   exceptionResponse,
@@ -19,8 +18,8 @@ export const dynamic = 'force-dynamic';
 
 const VALID_TYPES = new Set(['stock', 'crypto', 'commodity', 'politician']);
 
-async function assertListOwnedByUser(listId, userId) {
-  const { data, error } = await supabaseAdmin
+async function assertListOwnedByUser(supabase, listId, userId) {
+  const { data, error } = await supabase
     .from('user_watchlists')
     .select('id')
     .eq('id', listId)
@@ -36,15 +35,15 @@ async function assertListOwnedByUser(listId, userId) {
 
 export async function POST(request, { params }) {
   try {
-    const user = await getAuthUser(request);
-    if (!user) {
+    const { user, supabase } = await getAuthContext(request);
+    if (!user || !supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { listId } = params;
     if (!listId) return validationResponse('listId is required.');
 
-    const owned = await assertListOwnedByUser(listId, user.id);
+    const owned = await assertListOwnedByUser(supabase, listId, user.id);
     if (!owned) {
       return NextResponse.json(
         { error: 'List not found or not yours.' },
@@ -71,7 +70,7 @@ export async function POST(request, { params }) {
     }
 
     // Upsert by unique (list_id, type, ticker) — idempotent add.
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from('user_watchlist_items')
       .upsert(
         { list_id: listId, user_id: user.id, type, ticker, name, sector, metadata },
@@ -110,8 +109,8 @@ export async function POST(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const user = await getAuthUser(request);
-    if (!user) {
+    const { user, supabase } = await getAuthContext(request);
+    if (!user || !supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -129,7 +128,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
       .from('user_watchlist_items')
       .delete()
       .eq('list_id', listId)
