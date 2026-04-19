@@ -687,13 +687,24 @@ export default function WatchlistPage() {
         <aside className="wl-side">
           <div className="wl-side-hdr">
             <div>
-              <h3>
-                {isOrgUser
-                  ? orgRole === 'executive'
-                    ? 'Council Watchlist'
-                    : `${orgTeamPerf?.team_name || 'Team'} Watchlist`
-                  : 'My Watchlist'}
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <h3>
+                  {isOrgUser
+                    ? orgRole === 'executive'
+                      ? 'Council Watchlist'
+                      : `${orgTeamPerf?.team_name || 'Team'} Watchlist`
+                    : 'My Watchlist'}
+                </h3>
+                {!isOrgUser && (
+                  <button
+                    type="button"
+                    onClick={() => setNewWatchlistOpen(true)}
+                    className="wl-new-list-btn"
+                  >
+                    + New List
+                  </button>
+                )}
+              </div>
               {!isOrgUser && (
                 <p
                   style={{
@@ -712,7 +723,6 @@ export default function WatchlistPage() {
 
           {!isOrgUser ? (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
               <div ref={wlDropdownRef} className="wl-wl-dropdown">
                 <button
                   type="button"
@@ -750,24 +760,6 @@ export default function WatchlistPage() {
                     ))}
                   </div>
                 )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setNewWatchlistOpen(true)}
-                style={{
-                  padding: '0.35rem 0.7rem',
-                  background: '#10b981',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  marginLeft: '0.5rem',
-                }}
-              >
-                + New List
-              </button>
               </div>
               <WatchlistSearch
                 query={search}

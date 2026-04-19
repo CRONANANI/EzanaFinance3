@@ -334,6 +334,32 @@
 }
 .wl-side-hdr { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
 .wl-side-hdr h3 { font-size: .875rem; font-weight: 800; color: var(--foreground,#f0f6fc); margin: 0; }
+
+/* Inline "+ New List" button rendered beside the "My Watchlist" heading.
+   Uses the same emerald accent as the rest of the sidebar so it reads as
+   a primary affordance without fighting the h3 for visual weight. */
+.wl-new-list-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  background: #10b981;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.wl-new-list-btn:hover { background: #059669; }
+.wl-new-list-btn:active { transform: translateY(1px); }
+.wl-new-list-btn:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.55);
+  outline-offset: 2px;
+}
 .wl-side-cnt {
   font-size: .625rem; font-weight: 700; color: #10b981;
   background: rgba(16,185,129,.08); padding: .15rem .5rem; border-radius: 8px;
