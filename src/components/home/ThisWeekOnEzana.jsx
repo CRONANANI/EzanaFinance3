@@ -171,12 +171,12 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               />
               <Legend
                 iconType="plainline"
-                iconSize={8}
+                iconSize={14}
                 wrapperStyle={{
-                  fontSize: compact ? '0.5rem' : '0.5625rem',
+                  fontSize: compact ? '0.875rem' : '1rem',
                   color: 'var(--home-muted-soft)',
-                  paddingTop: 2,
-                  lineHeight: 1.2,
+                  paddingTop: 6,
+                  lineHeight: 1.25,
                 }}
                 formatter={(value) => (
                   <span style={{ color: 'var(--home-row-text)' }}>{value}</span>
