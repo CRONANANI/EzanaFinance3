@@ -546,3 +546,84 @@ body.light-mode .nwd-footer {
   .nwd-sug-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
   .nwd-sug-side { width: 100%; justify-content: space-between; }
 }
+
+/* ---------- Polymorphic item kind picker ---------- */
+.nwd-kind-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.nwd-kind-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.25));
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.nwd-kind-chip:hover {
+  color: var(--text-primary, #f0f6fc);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+.nwd-kind-chip.is-active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: var(--emerald, #10b981);
+}
+
+.nwd-quickpicks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.55rem;
+}
+
+.nwd-quickpick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px dashed var(--border-subtle, rgba(148, 163, 184, 0.35));
+  background: transparent;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.nwd-quickpick:hover:not(:disabled) {
+  color: var(--text-primary, #f0f6fc);
+  border-color: rgba(16, 185, 129, 0.55);
+  background: rgba(16, 185, 129, 0.06);
+}
+.nwd-quickpick.added,
+.nwd-quickpick:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Per-kind chip accents on the "Added items" list */
+.nwd-badge-politician {
+  background: rgba(249, 115, 22, 0.14);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.nwd-badge-crypto {
+  background: rgba(251, 191, 36, 0.14);
+  color: #d97706;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+.nwd-badge-commodity {
+  background: rgba(132, 204, 22, 0.14);
+  color: #65a30d;
+  border: 1px solid rgba(132, 204, 22, 0.35);
+}

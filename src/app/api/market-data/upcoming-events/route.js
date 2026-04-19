@@ -5,9 +5,17 @@ import {
   getDividendEvents,
   getIpoEvents,
   getEconomicEvents,
+  getCongressTrades,
+  getCryptoEvents,
+  getCommodityEvents,
   getFmpKey,
   todayAndEndOfMonth,
 } from '@/lib/fmp/upcoming-events';
+import {
+  parseSet,
+  canonicalPoliticianKey,
+  canonicalPoliticianSet,
+} from '@/lib/upcoming-events/relevance-params';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +31,9 @@ const ICONS = {
   ipos: '🚀',
   economic: '📈',
   fed: '🏛️',
+  'inside-the-capitol': '🏛',
+  crypto: '🪙',
+  commodity: '🛢️',
 };
 
 const COLORS = {
@@ -31,6 +42,9 @@ const COLORS = {
   ipos: '#a855f7',
   economic: '#6366f1',
   fed: '#3b82f6',
+  'inside-the-capitol': '#f97316',
+  crypto: '#fbbf24',
+  commodity: '#84cc16',
 };
 
 /** "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" → local Date (null if invalid). */
@@ -153,8 +167,7 @@ function normalizers() {
     economic: (e, i) => {
       const d = parseLocalDate(e.date);
       if (!d || !e.event) return null;
-      const impactRaw = String(e.impact ?? '').trim();
-      const impactLower = impactRaw.toLowerCase();
+      const impactLower = String(e.impact ?? '').trim().toLowerCase();
       const isHigh = impactLower === 'high';
       const impact =
         impactLower === 'high' ? 'High'
@@ -182,6 +195,77 @@ function normalizers() {
         previous: e.previous ?? null,
       };
     },
+    'inside-the-capitol': (c, i) => {
+      const rawDate = c.transactionDate || c.disclosureDate;
+      const dt = parseLocalDate(rawDate);
+      if (!dt || !c.symbol) return null;
+      const name = c.firstName
+        ? `${c.firstName} ${c.lastName || ''}`.trim()
+        : c.representative || c.senator || 'Unknown';
+      const rawType = String(c.type || c.transactionType || '').toLowerCase();
+      const isBuy = rawType.includes('purchase') || rawType.includes('buy');
+      const action = isBuy ? 'Bought' : 'Sold';
+      const chamber = c.chamber || (c.senator ? 'Senate' : 'House');
+      return {
+        id: `congress-${c.symbol}-${fmtDateLabel(rawDate)}-${name}-${i}`,
+        category: 'inside-the-capitol',
+        type: 'inside-the-capitol',
+        icon: ICONS['inside-the-capitol'],
+        title: `${name} ${action} ${c.symbol}`,
+        subtitle: [chamber, c.amount || null].filter(Boolean).join(' · ') || null,
+        symbol: c.symbol,
+        politician: name,
+        fullDate: fmtDateLabel(rawDate),
+        day: dt.getDate(),
+        month: dt.getMonth(),
+        year: dt.getFullYear(),
+        time: 'Disclosure',
+        color: COLORS['inside-the-capitol'],
+        impact: null,
+        chamber,
+        action,
+      };
+    },
+    crypto: (c, i) => {
+      const dt = parseLocalDate(c.date);
+      if (!dt || !c.symbol) return null;
+      return {
+        id: `crypto-${c.symbol}-${fmtDateLabel(c.date)}-${c.kind || 'event'}-${i}`,
+        category: 'crypto',
+        type: 'crypto',
+        icon: ICONS.crypto,
+        title: c.title ? `${c.symbol}: ${c.title}` : c.symbol,
+        subtitle: c.subtitle || null,
+        symbol: c.symbol,
+        fullDate: fmtDateLabel(c.date),
+        day: dt.getDate(),
+        month: dt.getMonth(),
+        year: dt.getFullYear(),
+        time: c.time || '—',
+        color: COLORS.crypto,
+        impact: null,
+      };
+    },
+    commodity: (c, i) => {
+      const dt = parseLocalDate(c.date);
+      if (!dt || !c.symbol) return null;
+      return {
+        id: `commodity-${c.symbol}-${fmtDateLabel(c.date)}-${i}`,
+        category: 'commodity',
+        type: 'commodity',
+        icon: ICONS.commodity,
+        title: c.title ? `${c.symbol}: ${c.title}` : c.symbol,
+        subtitle: c.subtitle || null,
+        symbol: c.symbol,
+        fullDate: fmtDateLabel(c.date),
+        day: dt.getDate(),
+        month: dt.getMonth(),
+        year: dt.getFullYear(),
+        time: c.time || '—',
+        color: COLORS.commodity,
+        impact: null,
+      };
+    },
   };
 }
 
@@ -195,6 +279,15 @@ function withinWindow(ev, fromDate, toDate) {
   return d >= fromDate && d <= toDate;
 }
 
+function hasRelevance(params) {
+  return (
+    params.tickers.size > 0 ||
+    params.politicians.size > 0 ||
+    params.cryptos.size > 0 ||
+    params.commodities.size > 0
+  );
+}
+
 export async function GET(request) {
   try {
     if (!getFmpKey()) {
@@ -206,27 +299,66 @@ export async function GET(request) {
 
     const url = new URL(request.url);
     const country = url.searchParams.get('country') || 'US';
+    const tickers = parseSet(url.searchParams.get('tickers'));
+    const politicians = canonicalPoliticianSet(
+      parseSet(url.searchParams.get('politicians'), { upper: false })
+    );
+    const cryptos = parseSet(url.searchParams.get('cryptos'));
+    const commodities = parseSet(url.searchParams.get('commodities'));
+    const relevance = { tickers, politicians, cryptos, commodities };
 
+    // Skip relevance-gated feeds entirely if the user follows nothing of
+    // that kind — saves an FMP roundtrip and keeps the response tiny.
     const loaders = [
-      { key: 'earnings', run: getEarningsEvents },
-      { key: 'dividends', run: getDividendEvents },
-      { key: 'ipos', run: getIpoEvents },
-      { key: 'economic', run: () => getEconomicEvents(country) },
+      { key: 'earnings', run: getEarningsEvents, gated: tickers.size > 0 },
+      { key: 'dividends', run: getDividendEvents, gated: tickers.size > 0 },
+      { key: 'ipos', run: getIpoEvents, gated: tickers.size > 0 },
+      // Economic is always shown for the user's country — not gated.
+      { key: 'economic', run: () => getEconomicEvents(country), gated: true },
+      {
+        key: 'inside-the-capitol',
+        run: getCongressTrades,
+        gated: politicians.size > 0,
+      },
+      { key: 'crypto', run: getCryptoEvents, gated: cryptos.size > 0 },
+      { key: 'commodity', run: getCommodityEvents, gated: commodities.size > 0 },
     ];
 
-    const results = await Promise.allSettled(loaders.map((l) => l.run()));
+    const activeLoaders = loaders.filter((l) => l.gated);
+    const results = await Promise.allSettled(activeLoaders.map((l) => l.run()));
 
     const norm = normalizers();
     const errors = [];
     const events = [];
 
     results.forEach((r, idx) => {
-      const key = loaders[idx].key;
+      const key = activeLoaders[idx].key;
       if (r.status === 'fulfilled') {
         const arr = Array.isArray(r.value) ? r.value : [];
         for (let i = 0; i < arr.length; i += 1) {
           const mapped = norm[key](arr[i], i);
-          if (mapped) events.push(mapped);
+          if (!mapped) continue;
+
+          // Relevance gating per event. Economic always passes (country was
+          // already applied upstream). All other categories require the
+          // event's subject to be in the user's followed set.
+          if (key === 'earnings' || key === 'dividends' || key === 'ipos') {
+            if (!relevance.tickers.has(String(mapped.symbol || '').toUpperCase())) {
+              continue;
+            }
+          } else if (key === 'inside-the-capitol') {
+            const politicianKey = canonicalPoliticianKey(mapped.politician);
+            if (!relevance.politicians.has(politicianKey)) continue;
+          } else if (key === 'crypto') {
+            if (!relevance.cryptos.has(String(mapped.symbol || '').toUpperCase())) {
+              continue;
+            }
+          } else if (key === 'commodity') {
+            if (!relevance.commodities.has(String(mapped.symbol || '').toUpperCase())) {
+              continue;
+            }
+          }
+          events.push(mapped);
         }
       } else {
         const msg = r.reason?.message || String(r.reason || 'unknown error');
@@ -238,19 +370,26 @@ export async function GET(request) {
     const { from, to } = todayAndEndOfMonth();
     const fromDate = parseLocalDate(from);
     const toDate = parseLocalDate(to);
-    // End-of-day for the `to` boundary so events dated `to` are included.
     if (toDate) toDate.setHours(23, 59, 59, 999);
 
     const inWindow = events.filter((ev) => withinWindow(ev, fromDate, toDate));
 
-    // Drop economic "Low" impact events — the card is meant to highlight
-    // market-moving items. Keep everything Medium+ and anything uncategorised.
+    // Drop economic "Low" impact events — the card highlights market-moving
+    // items only. Everything else (earnings, dividends, congress, …) is
+    // already gated by the user's relevance set, so it all passes through.
     const priority = inWindow.filter((ev) => {
       if (ev.category !== 'economic') return true;
       return ev.impact !== 'Low';
     });
 
-    priority.sort((a, b) => {
+    // Dedupe — the same event may be normalised from multiple sources (eg.
+    // an earnings date that's also in a politician's disclosed trades).
+    const byId = new Map();
+    for (const ev of priority) {
+      if (!byId.has(ev.id)) byId.set(ev.id, ev);
+    }
+
+    const sorted = Array.from(byId.values()).sort((a, b) => {
       const da = parseLocalDate(a.fullDate)?.getTime() ?? 0;
       const db = parseLocalDate(b.fullDate)?.getTime() ?? 0;
       if (da !== db) return da - db;
@@ -258,7 +397,19 @@ export async function GET(request) {
     });
 
     return NextResponse.json(
-      { events: priority, errors, window: { from, to } },
+      {
+        events: sorted,
+        errors,
+        window: { from, to },
+        relevance: {
+          tickers: tickers.size,
+          politicians: politicians.size,
+          cryptos: cryptos.size,
+          commodities: commodities.size,
+          country,
+          isEmpty: !hasRelevance(relevance),
+        },
+      },
       { headers: CACHE_HEADERS }
     );
   } catch (error) {

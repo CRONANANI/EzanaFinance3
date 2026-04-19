@@ -1754,6 +1754,25 @@ body.light-mode .hts-events-warn {
   line-height: 1.4;
 }
 
+.hts-events-empty-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--home-heading, #0f172a);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.hts-events-empty-cta:hover {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.55);
+}
+
 .home-events-compact .hts-chain-item {
   padding: 0 0 0.65rem 0.65rem;
 }

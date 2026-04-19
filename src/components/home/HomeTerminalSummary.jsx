@@ -13,6 +13,7 @@ import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
+import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -102,6 +103,9 @@ const EVENT_COLOURS = {
   ipos: '#a855f7',
   economic: '#6366f1',
   fed: '#3b82f6',
+  'inside-the-capitol': '#f97316',
+  crypto: '#fbbf24',
+  commodity: '#84cc16',
   alert: '#f59e0b',
 };
 
@@ -110,14 +114,22 @@ const EVENT_LEGEND = [
   { type: 'dividends', label: 'Dividends', colour: '#22c55e' },
   { type: 'ipos', label: 'IPOs', colour: '#a855f7' },
   { type: 'economic', label: 'Economic', colour: '#6366f1' },
+  { type: 'inside-the-capitol', label: 'Capitol', colour: '#f97316' },
 ];
 
+// Every category the user can potentially see. Chips for categories with
+// zero events in the current window are hidden at render time — this
+// keeps the filter row clean for users who follow only a subset (e.g.
+// stocks + politicians but no crypto).
 const EVENT_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'earnings', label: 'Earnings' },
   { key: 'dividends', label: 'Dividends' },
   { key: 'ipos', label: 'IPOs' },
   { key: 'economic', label: 'Economic' },
+  { key: 'inside-the-capitol', label: 'Capitol' },
+  { key: 'crypto', label: 'Crypto' },
+  { key: 'commodity', label: 'Commodities' },
 ];
 
 const DAY_LABELS_SUN_FIRST = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -187,12 +199,14 @@ export function HomeTerminalSummary({
 }) {
   const { user } = useAuth();
   const [mockData, setMockData] = useState(null);
+  const relevance = useUserRelevanceSet();
   const {
     events: liveEvents,
     errors: eventsErrors,
     isLoading: eventsLoading,
     isRateLimited: eventsRateLimited,
-  } = useUpcomingEvents();
+    relevanceEmpty,
+  } = useUpcomingEvents({ relevance });
   const [eventFilter, setEventFilter] = useState('all');
   const [congressTrades, setCongressTrades] = useState([]);
   const [congressLoading, setCongressLoading] = useState(true);
@@ -386,6 +400,12 @@ export function HomeTerminalSummary({
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([day, items]) => ({ day, label: formatEventDay(day), items }));
 
+    // Which categories actually have events in the current window?
+    // Chips for empty categories are hidden so the filter row doesn't
+    // mislead users into thinking the API failed for, say, crypto when
+    // they follow none.
+    const categoriesWithEvents = new Set(inWindow.map((ev) => ev.category));
+
     return {
       y,
       m,
@@ -397,8 +417,27 @@ export function HomeTerminalSummary({
       dayGroups,
       totalVisible: filtered.length,
       totalAll: inWindow.length,
+      categoriesWithEvents,
     };
   }, [liveEvents, eventFilter]);
+
+  const availableFilters = useMemo(
+    () =>
+      EVENT_FILTERS.filter(
+        (f) => f.key === 'all' || upcomingCalendar.categoriesWithEvents.has(f.key),
+      ),
+    [upcomingCalendar.categoriesWithEvents],
+  );
+
+  // If the user switched to a filter whose category no longer has events
+  // (e.g. they removed the only crypto they followed), quietly snap back
+  // to "all" so they don't stare at an empty panel.
+  useEffect(() => {
+    if (eventFilter === 'all') return;
+    if (!availableFilters.some((f) => f.key === eventFilter)) {
+      setEventFilter('all');
+    }
+  }, [availableFilters, eventFilter]);
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
@@ -636,7 +675,7 @@ export function HomeTerminalSummary({
                   >
                     <h3 style={{ margin: 0 }}>Upcoming Events &amp; Alerts</h3>
                     <div className="hts-events-filter-row" role="tablist" aria-label="Event category filter">
-                      {EVENT_FILTERS.map((f) => (
+                      {availableFilters.map((f) => (
                         <button
                           key={f.key}
                           type="button"
@@ -671,12 +710,59 @@ export function HomeTerminalSummary({
                           </div>
                         ) : upcomingCalendar.totalVisible === 0 ? (
                           <div className="hts-events-empty">
-                            <i className="bi bi-calendar-event" aria-hidden />
-                            <p>
-                              {upcomingCalendar.totalAll === 0
-                                ? 'No events scheduled through the end of the month.'
-                                : `No ${EVENT_FILTERS.find((f) => f.key === eventFilter)?.label.toLowerCase()} events in this window.`}
-                            </p>
+                            <i
+                              className={
+                                relevanceEmpty || relevance?.isEmpty
+                                  ? 'bi bi-eye'
+                                  : 'bi bi-calendar-event'
+                              }
+                              aria-hidden
+                            />
+                            {relevanceEmpty || relevance?.isEmpty ? (
+                              <>
+                                <p style={{ marginBottom: '0.25rem', fontWeight: 600 }}>
+                                  Nothing to watch yet
+                                </p>
+                                <p style={{ fontSize: '0.75rem', opacity: 0.75, maxWidth: 320, margin: '0 auto' }}>
+                                  Add companies to your portfolio, or follow tickers, politicians,
+                                  crypto, or commodities on the Watchlist page to see upcoming
+                                  events tailored to you.
+                                </p>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    gap: '0.5rem',
+                                    justifyContent: 'center',
+                                    marginTop: '0.75rem',
+                                  }}
+                                >
+                                  <Link
+                                    href="/watchlist"
+                                    className="hts-events-empty-cta"
+                                  >
+                                    Go to watchlists
+                                  </Link>
+                                  <Link
+                                    href="/trading/mock"
+                                    className="hts-events-empty-cta"
+                                  >
+                                    Build portfolio
+                                  </Link>
+                                </div>
+                              </>
+                            ) : upcomingCalendar.totalAll === 0 ? (
+                              <p>
+                                No upcoming events for your holdings or watchlists in the
+                                remainder of the month. Economic events for your region will
+                                appear here when scheduled.
+                              </p>
+                            ) : (
+                              <p>
+                                No{' '}
+                                {EVENT_FILTERS.find((f) => f.key === eventFilter)?.label.toLowerCase()}{' '}
+                                events in this window.
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <div className="hts-events-day-list">

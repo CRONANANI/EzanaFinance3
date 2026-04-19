@@ -110,5 +110,75 @@ export async function getEconomicEvents(country = 'US') {
   return fetchJson(buildUrl('/economic-calendar', { country }));
 }
 
-/** Which 4 endpoints this client wraps — used by the aggregator route. */
-export const FEED_KEYS = ['earnings', 'dividends', 'ipos', 'economic'];
+/**
+ * Fetch the latest congressional trades (merged House + Senate) from FMP.
+ * Mirrors the shape /api/fmp/congress-latest uses so downstream filtering
+ * by followed politicians is straightforward.
+ *
+ * @returns {Promise<Array<{
+ *   symbol: string, transactionDate?: string, disclosureDate?: string,
+ *   type?: string, transactionType?: string,
+ *   firstName?: string, lastName?: string,
+ *   representative?: string, senator?: string,
+ *   amountLow?: number|string, amountHigh?: number|string, amount?: string,
+ *   chamber: 'House'|'Senate',
+ * }>>}
+ */
+export async function getCongressTrades() {
+  const key = encodeURIComponent(getFmpKey());
+  if (!key) return [];
+  const fetchOne = async (endpoint, chamber) => {
+    try {
+      const url = `${FMP_STABLE}/${endpoint}?page=0&apikey=${key}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (!Array.isArray(data)) return [];
+      return data.map((t) => ({ ...t, chamber }));
+    } catch {
+      return [];
+    }
+  };
+  const [house, senate] = await Promise.all([
+    fetchOne('house-trades', 'House'),
+    fetchOne('senate-trades', 'Senate'),
+  ]);
+  return [...house, ...senate];
+}
+
+/**
+ * Placeholder for a future crypto-events feed. The server route already
+ * wires filtering against the user's followed crypto symbols — once a
+ * real data source is connected, swap this stub for the live fetch.
+ *
+ * Expected row shape (when implemented):
+ *   { symbol: 'BTC', date: '2026-04-20', title: 'Halving', subtitle?: string,
+ *     kind: 'halving'|'upgrade'|'listing'|'unlock'|... }
+ *
+ * TODO: wire to a real provider (CoinMarketCap events API, Messari, etc.).
+ */
+export async function getCryptoEvents() {
+  return [];
+}
+
+/**
+ * Placeholder for a future commodity-events feed (WASDE reports, OPEC
+ * meetings, inventory releases, etc.). See getCryptoEvents() for the
+ * expected shape once implemented.
+ *
+ * TODO: wire to an economic data provider (FRED, USDA, EIA).
+ */
+export async function getCommodityEvents() {
+  return [];
+}
+
+/** Which endpoints this client wraps — used by the aggregator route. */
+export const FEED_KEYS = [
+  'earnings',
+  'dividends',
+  'ipos',
+  'economic',
+  'inside-the-capitol',
+  'crypto',
+  'commodity',
+];
