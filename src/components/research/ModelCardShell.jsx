@@ -3,8 +3,13 @@
 import './model-card-shell.css';
 
 /**
- * ModelCardShell — shared green-tinted card wrapper used across the Research
+ * ModelCardShell — shared neutral card wrapper used across the Research
  * page for *model / analysis* cards (GARP/GRPV, DCF, Stress Test, MPT, etc.).
+ *
+ * The card surface uses the same tokens (--surface-card / --border-primary)
+ * as every other card in the app, which resolve to the same color as the
+ * top nav bar. The icon pill stays emerald because that's the primary-on-
+ * subtle-primary treatment used on every other card header.
  *
  * Props:
  *   icon        — Bootstrap Icons class, e.g. 'bi-shield-exclamation'
