@@ -107,6 +107,22 @@ function classify(pgError, overrides = {}) {
     return { status: 404, message: overrides.notFound || 'Not found.' };
   }
 
+  // PGRST205 — PostgREST can't see the table in its schema cache. This is
+  // almost always "migrations haven't been applied to this Supabase project
+  // yet" (or the schema cache is stale after a fresh DDL change). Give the
+  // operator an actionable instruction instead of the raw PostgREST text.
+  if (code === 'PGRST205') {
+    const match = /'([^']+)'/.exec(message || '');
+    const table = match ? match[1] : 'a required table';
+    return {
+      status: 503,
+      message:
+        `Database is missing ${table}. Apply the pending Supabase migrations ` +
+        `(run "supabase db push" or paste the migration SQL into the ` +
+        `Supabase SQL Editor), then reload. [${code}]`,
+    };
+  }
+
   // PostgREST generic errors (PGRST###) — surface the real message so the
   // client can distinguish "policy violation" from "column missing" etc.
   if (typeof code === 'string' && code.startsWith('PGRST')) {
