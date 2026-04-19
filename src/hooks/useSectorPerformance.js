@@ -4,15 +4,24 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * useSectorPerformance — fetches GICS sector performance for a given range
- * (1D / 1W / 1M / YTD). Server-side computes cumulative compounded returns
- * from FMP's sector-performance-snapshot + live v3 sector-performance feeds.
+ * (1D / 1W / 1M / YTD) from /api/fmp/sector-performance.
+ *
+ * Return shape:
+ *   - sectors   : [{ sector, name, changePct }]
+ *   - asOf      : ISO date of the most recent snapshot used (or null)
+ *   - degraded  : { reason } when we had to fall back (e.g. no recent
+ *                 trading-day data) — the grid is still populated but the
+ *                 UI should explain why values look unusual.
+ *   - error     : { message, detail? } for hard failures
  *
  * Refresh cadence matches the underlying data:
- *   - 1D: 60s (live intraday updates once a minute)
- *   - 1W / 1M / YTD: 10 min (historical snapshots don't change intraday)
+ *   - 1D: 60s (in case "today's" snapshot lands mid-session)
+ *   - 1W/1M/YTD: 10 min (historical snapshots don't move intraday)
  */
 export function useSectorPerformance(range = '1D') {
   const [sectors, setSectors] = useState([]);
+  const [asOf, setAsOf] = useState(null);
+  const [degraded, setDegraded] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const abortRef = useRef(null);
@@ -29,20 +38,27 @@ export function useSectorPerformance(range = '1D') {
         });
         const body = await res.json().catch(() => ({}));
         const nextSectors = Array.isArray(body?.sectors) ? body.sectors : [];
+
         if (!res.ok) {
-          // Surface the error string but still render whatever partial data
-          // we got so the UI can show "last known" values rather than
-          // flashing an empty grid.
           setSectors(nextSectors);
-          setError(body?.error || `Failed to load sectors (${res.status})`);
+          setAsOf(body?.asOf ?? null);
+          setDegraded(body?.degraded ?? null);
+          setError({
+            message: body?.error || `Failed to load sectors (${res.status})`,
+            detail: body?.detail,
+          });
           return;
         }
+
         setSectors(nextSectors);
-        setError(body?.error || null);
+        setAsOf(body?.asOf ?? null);
+        setDegraded(body?.degraded ?? null);
       } catch (err) {
         if (err?.name === 'AbortError') return;
-        setError(err?.message || 'Failed to load sectors');
+        setError({ message: err?.message || 'Failed to load sectors' });
         setSectors([]);
+        setAsOf(null);
+        setDegraded(null);
       } finally {
         setIsLoading(false);
       }
@@ -55,11 +71,11 @@ export function useSectorPerformance(range = '1D') {
     const ctl = new AbortController();
     abortRef.current = ctl;
 
-    // Reset the sector list on range change so the grid doesn't show stale
-    // 1D values while a 1W computation is in flight. The hook's `isLoading`
-    // flag drives the skeleton — with stale data mixed in, users can't tell
-    // which range they're actually looking at.
+    // Clear between range changes so the skeleton shows during the next fetch
+    // instead of stale values from the previous range.
     setSectors([]);
+    setAsOf(null);
+    setDegraded(null);
     load(ctl.signal);
 
     const refreshMs = range === '1D' ? 60_000 : 10 * 60_000;
@@ -72,8 +88,10 @@ export function useSectorPerformance(range = '1D') {
 
   return {
     sectors,
-    isLoading,
+    asOf,
+    degraded,
     error,
+    isLoading,
     refresh: () => load(),
   };
 }

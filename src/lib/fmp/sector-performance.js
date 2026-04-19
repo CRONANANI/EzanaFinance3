@@ -1,38 +1,35 @@
 /**
  * FMP sector performance — server-side helpers.
  *
- * Two upstream endpoints:
- *   1. Historical snapshot (per trading day):
- *      GET {STABLE}/sector-performance-snapshot?date=YYYY-MM-DD&exchange=...
- *      → [{ date, sector, exchange, averageChange }]
- *   2. Live intraday ("today's move"):
- *      GET {V3}/sector-performance
- *      → [{ sector, changesPercentage: "0.50185%" }]
+ * Upstream: https://financialmodelingprep.com/stable/sector-performance-snapshot
+ *   GET ?date=YYYY-MM-DD&exchange=NASDAQ|NYSE|... &apikey=...
+ *   → [{ date, sector, exchange, averageChange }]
+ *
+ * IMPORTANT: the previous v3 "live intraday" endpoint
+ * (financialmodelingprep.com/api/v3/sector-performance) was retired for
+ * accounts opened after Aug 31, 2025. Calling it now returns HTTP 200 with:
+ *   { "Error Message": "Legacy Endpoint : ... no longer supported" }
+ * That's what was surfacing as "Failed to fetch sector performance" in the
+ * heatmap. So we derive every window — including 1D — from the stable
+ * snapshot endpoint, which is what FMP's own public sector page uses too.
  *
  * Range computation:
- *   1D  → live endpoint only
- *   1W  → compound (today live) × (5 previous trading-day snapshots)
- *   1M  → compound (today live) × (21 previous trading-day snapshots)
- *   YTD → compound (today live) × (all trading-day snapshots since Jan 1)
+ *   1D  → the most recent available trading-day snapshot (today's move, or
+ *         Friday's close if called on a weekend, or the last close before a
+ *         holiday). Matches the "1D" column on financialmodelingprep.com.
+ *   1W  → the 5 most recent trading-day snapshots, compounded.
+ *   1M  → the 21 most recent trading-day snapshots, compounded.
+ *   YTD → every trading-day snapshot since Jan 1 of the current year,
+ *         compounded.
  *
- * We *compound* daily averageChange values instead of summing them — the gap
- * is small on any single day but matters over weeks and in volatile periods.
+ * Compounding (not summing) matters over longer windows:
  *   cumReturn = (prod(1 + d_i / 100) - 1) * 100
- *
- * We intentionally never call the historical snapshot endpoint for "today".
- * FMP's snapshot is meant for closed trading days; today's move lives on
- * the live v3 endpoint.
  *
  * API key is server-only — never prefix with NEXT_PUBLIC_.
  */
 
 const STABLE = 'https://financialmodelingprep.com/stable';
-const V3 = 'https://financialmodelingprep.com/api/v3';
 
-// Single source of truth for the 11 sectors. FMP's own spelling lives here;
-// CANONICAL_TO_DISPLAY maps to the GICS-style labels used across the rest of
-// the app (see src/lib/stress-test.js → GICS_SECTORS) so the heatmap stays
-// consistent with other research components.
 export const CANONICAL_SECTORS = [
   'Basic Materials',
   'Communication Services',
@@ -47,6 +44,7 @@ export const CANONICAL_SECTORS = [
   'Utilities',
 ];
 
+// Canonical (FMP) → display label used elsewhere in the app (GICS-style).
 const CANONICAL_TO_DISPLAY = {
   'Basic Materials': 'Materials',
   'Communication Services': 'Communication Services',
@@ -62,10 +60,20 @@ const CANONICAL_TO_DISPLAY = {
 };
 
 /**
- * FMP ships sector names with inconsistent casing / pluralization between
- * endpoints and even between accounts. Fold all of them back to the
- * canonical spelling used above.
+ * Structured error surfaced to the route so it can classify 401/402/403/410/429.
+ * We use `status` as the discriminator even for upstream 200-with-error-body
+ * responses — see fetchJson() for the classifier.
  */
+export class FmpError extends Error {
+  constructor(status, body, url) {
+    super(`FMP ${status}: ${(body || '').slice(0, 200)}`);
+    this.name = 'FmpError';
+    this.status = status;
+    this.body = body;
+    this.url = url;
+  }
+}
+
 function normalizeSector(name) {
   if (typeof name !== 'string') return null;
   const clean = name.trim();
@@ -89,7 +97,6 @@ function normalizeSector(name) {
   return clean;
 }
 
-/** Parse FMP's "0.50185%" string (or a bare number) to a finite number. Returns 0 for unparseable. */
 function parsePercent(input) {
   if (typeof input === 'number') return Number.isFinite(input) ? input : 0;
   if (typeof input === 'string') {
@@ -99,56 +106,73 @@ function parsePercent(input) {
   return 0;
 }
 
-async function fetchJson(url) {
-  // next.revalidate = 60 lets Next.js cache upstream responses for 60s; the
-  // same stable URL called twice in close succession hits the cache instead
-  // of FMP. Critical on the snapshot walk (20+ same-day calls from different
-  // range toggles) — otherwise we'd burn the API limit very quickly.
-  const res = await fetch(url, { next: { revalidate: 60 } });
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`FMP ${res.status}: ${(body || url).slice(0, 200)}`);
-  }
-  return res.json();
-}
-
 function requireApiKey() {
   const key = process.env.FMP_API_KEY;
-  if (!key) throw new Error('FMP_API_KEY is not configured on the server.');
+  if (!key) {
+    throw new Error(
+      'FMP_API_KEY is not set. Add it to .env.local and restart the dev server.',
+    );
+  }
   return key;
 }
 
-/** Live intraday sector performance — 1D only. Returns a Map<canonicalSector, pct>. */
-async function getLivePerformance() {
-  const apikey = requireApiKey();
-  const url = `${V3}/sector-performance?apikey=${encodeURIComponent(apikey)}`;
-  const raw = await fetchJson(url);
-  const out = new Map();
-  if (!Array.isArray(raw)) return out;
-  for (const row of raw) {
-    const sector = normalizeSector(row?.sector);
-    if (!sector) continue;
-    const pct = parsePercent(
-      row?.changesPercentage ?? row?.changePercentage ?? row?.averageChange,
-    );
-    out.set(sector, pct);
+/**
+ * GET JSON from FMP. Throws `FmpError` on HTTP failures AND on the quirky
+ * 200-with-error-object responses FMP sometimes returns (legacy-endpoint
+ * retirement notices come back as 200 + `{"Error Message": ...}`).
+ *
+ * The classifier maps message keywords to canonical HTTP codes so upstream
+ * can decide whether to degrade vs surface an error:
+ *   "Legacy Endpoint"     → 410 Gone
+ *   "Invalid API Key"     → 401 Unauthorized
+ *   "Premium"/"Exclusive" → 402 Payment Required
+ */
+async function fetchJson(url, revalidate) {
+  const res = await fetch(url, { next: { revalidate } });
+  const text = await res.text();
+
+  if (text.trimStart().startsWith('{"Error Message"')) {
+    let syntheticStatus = res.status === 200 ? 400 : res.status;
+    if (/legacy endpoint/i.test(text)) syntheticStatus = 410;
+    else if (/invalid api key/i.test(text)) syntheticStatus = 401;
+    else if (/premium|special endpoint|exclusive/i.test(text)) syntheticStatus = 402;
+    throw new FmpError(syntheticStatus, text, url);
   }
-  return out;
+
+  if (!res.ok) throw new FmpError(res.status, text, url);
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new FmpError(res.status, text, url);
+  }
 }
 
-/** Historical snapshot for a specific date. Returns Map<canonicalSector, pct>. */
+function isoDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Historical snapshot for a specific date. Returns a Map<canonicalSector, pct>
+ * with the ISO date stamped as a non-enumerable `__date` property so callers
+ * can carry "as-of" back to the UI without an extra fetch.
+ */
 async function getSnapshotForDate(date, exchange) {
   const apikey = requireApiKey();
   const params = new URLSearchParams({ date, apikey });
   if (exchange) params.set('exchange', exchange);
   const url = `${STABLE}/sector-performance-snapshot?${params.toString()}`;
-  const raw = await fetchJson(url);
-  if (!Array.isArray(raw)) return new Map();
 
-  // Aggregate across exchanges if no filter was applied. FMP doesn't return
-  // a consolidated row on the unfiltered call — it returns one row per
-  // (sector, exchange). Equal-weight averaging is an approximation but
-  // matches what the upstream heatmap on financialmodelingprep.com shows.
+  // Historical snapshots are immutable once the day closes. 24h cache means
+  // repeat calls from 1W/1M/YTD toggles hit Next's fetch cache instead of
+  // FMP's rate limiter.
+  const raw = await fetchJson(url, 24 * 60 * 60);
+  const out = new Map();
+  if (!Array.isArray(raw) || raw.length === 0) return out;
+
+  // FMP returns one row per (sector, exchange). Equal-weight average across
+  // exchanges when no filter was applied — matches the consolidated view on
+  // FMP's public sector page.
   const buckets = new Map();
   for (const row of raw) {
     const sector = normalizeSector(row?.sector);
@@ -159,33 +183,34 @@ async function getSnapshotForDate(date, exchange) {
     cur.n += 1;
     buckets.set(sector, cur);
   }
-  const out = new Map();
   for (const [sector, { sum, n }] of buckets) {
     out.set(sector, n > 0 ? sum / n : 0);
   }
+  Object.defineProperty(out, '__date', { value: date, enumerable: false });
   return out;
 }
 
-function isoDate(d) {
-  return d.toISOString().slice(0, 10);
-}
-
 /**
- * Walk back `tradingDaysBack` trading days from yesterday, collecting snapshot
- * maps. Skips weekends and days that come back empty (holidays, pre-listing
- * dates, FMP gaps). Requests are SERIALIZED on purpose — the snapshot endpoint
- * is rate-sensitive and the per-URL Next cache does the heavy lifting on
- * repeat calls from different range toggles.
+ * Walk back from today, returning up to `count` non-empty trading-day
+ * snapshots (most recent first). Skips weekends and days FMP returned empty
+ * (holidays, or "today" before market close).
+ *
+ * Serialized on purpose. The snapshot URL for a given date is static, so
+ * Next's per-URL cache turns subsequent callers into cache hits — this also
+ * keeps us well below FMP's per-minute rate limit even on the YTD walk.
  */
-async function getTradingDaySnapshots(tradingDaysBack, exchange) {
+async function walkBackSnapshots({ count, exchange, stopWhen }) {
   const snapshots = [];
-  if (tradingDaysBack <= 0) return snapshots;
-
   const cursor = new Date();
-  cursor.setUTCDate(cursor.getUTCDate() - 1); // start from yesterday (today = live endpoint)
+  // Budget of calendar days we'll probe. Trading days ≈ 252/365 of calendar
+  // days, so 2× + 10 days of slack covers weekends + holiday clusters.
+  const budget = typeof count === 'number' ? count * 2 + 10 : 400;
+  let safety = budget;
 
-  let safety = tradingDaysBack * 3 + 10; // weekends + holidays cushion
-  while (snapshots.length < tradingDaysBack && safety > 0) {
+  while (safety > 0) {
+    if (typeof stopWhen === 'function' && stopWhen(cursor)) break;
+    if (typeof count === 'number' && snapshots.length >= count) break;
+
     const dow = cursor.getUTCDay();
     if (dow !== 0 && dow !== 6) {
       const snap = await getSnapshotForDate(isoDate(cursor), exchange);
@@ -197,35 +222,6 @@ async function getTradingDaySnapshots(tradingDaysBack, exchange) {
   return snapshots;
 }
 
-/**
- * Snapshot walk for YTD: walk back from yesterday until we cross into last
- * year, OR until we've collected more trading days than could plausibly have
- * elapsed (safety ceiling). Stops early when the cursor hits Dec 31 of the
- * prior year.
- */
-async function getYtdSnapshots(exchange) {
-  const snapshots = [];
-  const now = new Date();
-  const thisYear = now.getUTCFullYear();
-  const cursor = new Date();
-  cursor.setUTCDate(cursor.getUTCDate() - 1);
-
-  // 253 = one full trading year of cushion — we'll always bail out earlier
-  // once we cross into the prior year.
-  let safety = 400;
-  while (cursor.getUTCFullYear() === thisYear && safety > 0) {
-    const dow = cursor.getUTCDay();
-    if (dow !== 0 && dow !== 6) {
-      const snap = await getSnapshotForDate(isoDate(cursor), exchange);
-      if (snap.size > 0) snapshots.push(snap);
-    }
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
-    safety -= 1;
-  }
-  return snapshots;
-}
-
-/** Compound an array of daily percent changes into a cumulative % return. */
 function compound(dailyPercents) {
   let factor = 1;
   for (const p of dailyPercents) {
@@ -234,71 +230,80 @@ function compound(dailyPercents) {
   return (factor - 1) * 100;
 }
 
-/**
- * Emit a stable 11-tile list in canonical order, mapping to the display
- * labels used elsewhere in the app (GICS-style). Missing sectors come out
- * as 0 so the heatmap is always exactly 11 tiles.
- */
 function toPoints(results) {
   return CANONICAL_SECTORS.map((canonical) => {
     const displayName = CANONICAL_TO_DISPLAY[canonical] || canonical;
     const raw = results.get(canonical);
     const changePct = Number.isFinite(raw) ? raw : 0;
-    return {
-      sector: canonical,
-      name: displayName,
-      changePct,
-    };
+    return { sector: canonical, name: displayName, changePct };
   });
 }
 
 /**
  * Public entry — cumulative % change per sector for the requested window.
+ *
  * @param {'1D'|'1W'|'1M'|'YTD'} range
- * @param {string} [exchange]  Optional FMP exchange filter (NASDAQ, NYSE, ...)
+ * @param {string} [exchange]  Optional FMP exchange filter
+ * @returns {Promise<{
+ *   data: Array<{sector:string,name:string,changePct:number}>,
+ *   asOf: string|null,
+ *   degraded?: { reason: string }
+ * }>}
  */
 export async function getSectorPerformance(range, exchange) {
-  if (range === '1D') {
-    const live = await getLivePerformance();
-    return toPoints(live);
-  }
+  let count;
+  let stopWhen;
 
-  let snapshots;
-  if (range === '1W') {
-    snapshots = await getTradingDaySnapshots(4, exchange); // + today = 5 days
+  if (range === '1D') {
+    count = 1;
+  } else if (range === '1W') {
+    count = 5;
   } else if (range === '1M') {
-    snapshots = await getTradingDaySnapshots(20, exchange); // + today = 21 days
+    count = 21;
   } else if (range === 'YTD') {
-    snapshots = await getYtdSnapshots(exchange);
+    const year = new Date().getUTCFullYear();
+    stopWhen = (cursor) => cursor.getUTCFullYear() < year;
   } else {
     throw new Error(`Unsupported range: ${range}`);
   }
 
-  const live = await getLivePerformance();
+  const snapshots = await walkBackSnapshots({ count, exchange, stopWhen });
+
+  if (snapshots.length === 0) {
+    // Not an error per se — could happen right after new-year rollover with
+    // a holiday-heavy opening stretch. Surface clearly so the UI can show a
+    // helpful empty state instead of silently rendering all-zero tiles.
+    return {
+      data: toPoints(new Map()),
+      asOf: null,
+      degraded: { reason: 'No recent trading-day data available from FMP yet.' },
+    };
+  }
 
   const result = new Map();
   for (const sector of CANONICAL_SECTORS) {
     const daily = [];
-    const today = live.get(sector);
-    if (typeof today === 'number') daily.push(today);
     for (const snap of snapshots) {
       const v = snap.get(sector);
-      // FMP returning an empty averageChange → treat as 0 for that day; don't
-      // throw, don't skip the sector entirely.
+      // Missing averageChange for a sector on a given date → treat as 0.
       daily.push(typeof v === 'number' ? v : 0);
     }
     result.set(sector, compound(daily));
   }
-  return toPoints(result);
+
+  // Most recent snapshot date — useful in the UI so "1D" shows the right
+  // trading date when the market's closed (Sat/Sun → Friday's close).
+  const asOf = snapshots[0]?.__date ?? null;
+
+  return { data: toPoints(result), asOf };
 }
 
-// Exported for tests + reuse in other research cards that want the raw map.
+// Exposed for tests + adjacent research cards that want the raw helpers.
 export const __internals__ = {
+  CANONICAL_TO_DISPLAY,
+  compound,
   normalizeSector,
   parsePercent,
-  compound,
-  getLivePerformance,
   getSnapshotForDate,
-  getTradingDaySnapshots,
-  CANONICAL_TO_DISPLAY,
+  walkBackSnapshots,
 };

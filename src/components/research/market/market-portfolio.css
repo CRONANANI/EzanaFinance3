@@ -184,7 +184,49 @@ body.light-mode .shm-range-group {
   border: 1px solid rgba(245, 158, 11, 0.35);
   background: rgba(245, 158, 11, 0.08);
   color: #f59e0b;
+  margin-bottom: 0.6rem;
 }
+
+.shm-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  margin-bottom: 0.6rem;
+}
+.shm-error > i {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+}
+.shm-error-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+.shm-error-message {
+  font-weight: 600;
+  color: #fecaca;
+}
+.shm-error-detail {
+  margin-top: 0.2rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  color: rgba(254, 202, 202, 0.7);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+body.light-mode .shm-error {
+  color: #991b1b;
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+}
+body.light-mode .shm-error-message { color: #991b1b; }
+body.light-mode .shm-error-detail  { color: rgba(153, 27, 27, 0.75); }
 
 .shm-grid {
   display: grid;
