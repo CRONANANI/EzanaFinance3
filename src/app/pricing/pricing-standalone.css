@@ -365,7 +365,14 @@
   border-collapse: collapse;
   font-size: 0.85rem;
   min-width: 720px;
+  /* Fixed layout respects the <colgroup> widths below so every value cell
+     shares a centerline with the plan-name header directly above it. */
+  table-layout: fixed;
 }
+/* Explicit column widths — first column carries the feature label, remaining
+   columns split evenly across the plan count (4 plans → 16.5% each). */
+.comparison-table col.comp-col-feature { width: 34%; }
+.comparison-table col.comp-col-plan { width: 16.5%; }
 .comparison-table th {
   padding: 1rem;
   text-align: center;
@@ -376,14 +383,20 @@
 }
 .comparison-table th:first-child {
   text-align: left;
-  width: 34%;
+}
+/* Stacks the plan name over its price label along the same vertical axis
+   that <td><div class="comp-cell">… uses, so headers and body align. */
+.comp-plan-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 .comp-plan-name {
   font-size: 0.95rem;
   font-weight: 700;
 }
 .comp-plan-sub {
-  margin-top: 2px;
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted, #64748b);
@@ -413,11 +426,22 @@
   font-weight: 500;
   color: var(--text-primary, #0f172a) !important;
 }
+/* Single centering primitive used for every body-cell variant (check, dash,
+   string). Using a flex container rather than relying on text-align:center
+   means inline-block icons (which some global resets set to display:block)
+   center the same way plain text does. */
+.comp-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.25rem;
+}
 .cell-check { color: var(--emerald-text, #059669); }
 .cell-x { color: rgba(0, 0, 0, 0.22); }
 .cell-text {
   font-size: 0.78rem;
   color: var(--text-muted, #64748b);
+  text-align: center;
 }
 
 /* ── FAQ ───────────────────────────────────────────────────────────────── */

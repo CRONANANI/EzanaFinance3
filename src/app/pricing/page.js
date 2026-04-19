@@ -197,9 +197,20 @@ const FAQ_ITEMS = [
 /* ────────────────────────────────────────────────────────────────────────── */
 
 function CellValue({ value }) {
-  if (value === true) return <Check className="cell-check" size={18} aria-hidden />;
-  if (value === false) return <Minus className="cell-x" size={18} aria-hidden />;
-  return <span className="cell-text">{value}</span>;
+  /* Every cell variant renders inside a flex container so checkmarks, dashes,
+     and string values all land on the same vertical centerline under the
+     column's plan-name header. `text-align: center` on the <td> alone is not
+     enough — some global resets flip <svg> to display:block, which kills
+     inline text-align centering for the icon but not for text. */
+  let content;
+  if (value === true) {
+    content = <Check className="cell-check" size={18} aria-label="Included" />;
+  } else if (value === false) {
+    content = <Minus className="cell-x" size={18} aria-label="Not included" />;
+  } else {
+    content = <span className="cell-text">{value}</span>;
+  }
+  return <div className="comp-cell">{content}</div>;
 }
 
 export default function PricingPage() {
@@ -415,6 +426,16 @@ export default function PricingPage() {
         <h2 id="compare-heading">Compare plans</h2>
         <div className="comparison-table-wrap">
           <table className="comparison-table">
+            {/* Fixed column widths so every body cell shares a centerline with
+                the plan-name header directly above it. Without this, long row
+                labels can make one column wider than its neighbors and shift
+                the visual center of the checkmarks. */}
+            <colgroup>
+              <col className="comp-col-feature" />
+              {PLANS.map((p) => (
+                <col key={p.id} className="comp-col-plan" />
+              ))}
+            </colgroup>
             <thead>
               <tr>
                 <th className="comp-feature-col">Features</th>
@@ -423,9 +444,11 @@ export default function PricingPage() {
                   const isHi = p.highlight;
                   return (
                     <th key={p.id} className={isHi ? 'comp-highlight-col' : ''}>
-                      <div className="comp-plan-name">{p.name}</div>
-                      <div className="comp-plan-sub">
-                        {subPrice === null ? 'Custom' : `$${subPrice}/mo`}
+                      <div className="comp-plan-head">
+                        <div className="comp-plan-name">{p.name}</div>
+                        <div className="comp-plan-sub">
+                          {subPrice === null ? 'Custom' : `$${subPrice}/mo`}
+                        </div>
                       </div>
                     </th>
                   );
@@ -436,7 +459,7 @@ export default function PricingPage() {
               {COMPARISON_FEATURES.map((group) => (
                 <Fragment key={group.category}>
                   <tr className="comp-category-row">
-                    <td colSpan={5}>{group.category}</td>
+                    <td colSpan={PLANS.length + 1}>{group.category}</td>
                   </tr>
                   {group.rows.map((row) => (
                     <tr key={row.name}>
