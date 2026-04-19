@@ -1,92 +1,115 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+/* ============================================================================
+ *  PRICING PAGE — Design tokens inherited from the landing page (`/`)
+ *  ----------------------------------------------------------------------------
+ *  The landing route force-mounts light mode via ThemeProvider, so this page
+ *  does the same to stay visually consistent. Tokens (see theme-variables.css
+ *  and landing-light-mode.css) used here:
+ *
+ *    Background:      var(--bg-primary)        → #ffffff (page), #f8fafb (nav)
+ *    Surface:         var(--surface-card)      → #ffffff
+ *    Surface hover:   var(--surface-card-hover)→ #f3f4f6
+ *    Text primary:    var(--text-primary)      → #0f172a
+ *    Text muted:      var(--text-muted)        → #64748b
+ *    Text faint:      var(--text-faint)        → #94a3b8
+ *    Accent:          var(--emerald-text)      → #059669 (light) / #10b981 (dark)
+ *    Border:          var(--border-primary)    → rgba(0,0,0,0.08)
+ *    Border hover:    var(--border-hover)      → rgba(16,185,129,0.25)
+ *    Shadow sm/md:    landing uses var(--shadow-sm) and var(--shadow-md)
+ *    Heading gradient: linear-gradient(135deg,#0f172a 0%,#059669 100%)
+ *                     (matches FeaturesSection h2 on landing)
+ *    Typography:      same font stack as `body` (system UI + Inter fallback)
+ * ==========================================================================*/
+
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Check, X, ArrowRight } from 'lucide-react';
+import { Check, Minus, ArrowRight, Sparkles, ShieldCheck, Loader2 } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 import './pricing-standalone.css';
 
+/* ──────────────────────────────────────────────────────────────────────────
+ *  Plan catalog for the marketing page.
+ *
+ *  `stripeKey` maps each marketing tier to the concrete Stripe plan key in
+ *  `src/config/pricing.js` so /api/stripe/create-checkout-session can resolve
+ *  a real Price ID. Enterprise routes to sales (no Stripe), and a null
+ *  stripeKey means the button falls back to signup.
+ * ────────────────────────────────────────────────────────────────────────── */
 const PLANS = [
   {
+    id: 'starter',
     name: 'Starter',
-    tagline: 'Perfect for beginners',
+    tagline: 'Everything you need to start investing with confidence.',
     monthlyPrice: 5,
-    yearlyPrice: 4,
-    cta: 'Get Started',
-    ctaHref: '/auth/signup?plan=starter',
+    yearlyPrice: 4, // effective /mo when billed yearly ($48/yr)
     highlight: false,
+    stripeKey: { month: 'personal_monthly', year: 'individual_annual' },
     features: [
       'Congressional trade alerts (24hr delay)',
       'Basic portfolio dashboard',
       'Market news feed',
-      'Community access (read only)',
       '5 watchlist slots',
-      'Weekly market digest email',
+      'Weekly market digest',
+      'Community access (read only)',
       'Mobile app access',
     ],
   },
   {
+    id: 'advanced',
     name: 'Advanced',
-    tagline: 'For serious investors',
-    monthlyPrice: 20,
-    yearlyPrice: 16,
-    cta: 'Start 14-Day Free Trial',
-    ctaHref: '/auth/signup?plan=advanced',
+    tagline: 'Serious tools for the everyday investor.',
+    monthlyPrice: 19,
+    yearlyPrice: 15, // effective /mo when billed yearly ($180/yr)
     highlight: true,
     badge: 'Most Popular',
+    stripeKey: { month: 'personal_advanced_monthly', year: 'personal_advanced_annual' },
     features: [
       'Real-time congressional trade alerts',
       'Advanced portfolio analytics',
-      'Full market intelligence suite',
-      'Community posting & discussion',
       'Unlimited watchlists',
       'Risk & volatility scoring',
       'Dividend tracking',
       'Sector exposure analysis',
-      'Contract & lobbying data',
-      'Email & push notifications',
-      'API access (limited)',
+      'Earnings & IPO alerts',
+      'Priority email support',
     ],
   },
   {
+    id: 'family',
     name: 'Family',
-    tagline: 'Share with your family',
-    monthlyPrice: 60,
-    yearlyPrice: 48,
-    cta: 'Get Started',
-    ctaHref: '/auth/signup?plan=family',
+    tagline: 'Pro-tier tools shared across your household.',
+    monthlyPrice: 49,
+    yearlyPrice: 39, // effective /mo when billed yearly ($468/yr)
     highlight: false,
+    stripeKey: { month: 'family_monthly', year: 'family_annual' },
     features: [
       'Everything in Advanced',
-      'Up to 5 family members',
+      'Up to 5 household accounts',
       'Shared watchlists & portfolios',
-      'Family dashboard',
-      'Individual accounts per member',
+      'Consolidated household view',
       'Parental controls',
-      'Family investment insights',
       'Priority support',
     ],
   },
   {
+    id: 'enterprise',
     name: 'Enterprise',
-    tagline: 'For teams & institutions',
+    tagline: 'For teams, RIAs, and institutions.',
     monthlyPrice: null,
     yearlyPrice: null,
-    cta: 'Contact Sales',
-    ctaHref: 'mailto:enterprise@ezana.world',
     highlight: false,
-    external: true,
+    contactSales: true,
+    ctaHref: 'mailto:enterprise@ezana.world',
     features: [
       'Everything in Family',
       'Custom team size',
-      'Team dashboards & shared watchlists',
       'Full API access',
-      'Custom alerts & reports',
-      'Organization management (Team Hub)',
-      'Dedicated account manager',
       'SSO / SAML authentication',
-      'Data export & compliance tools',
+      'Team Hub organization management',
+      'Dedicated account manager',
+      'Compliance & data export tools',
       'Custom integrations',
-      'White-label options',
     ],
   },
 ];
@@ -94,122 +117,184 @@ const PLANS = [
 const COMPARISON_FEATURES = [
   {
     category: 'Core Platform',
-    features: [
-      { name: 'Portfolio Dashboard', starter: true, advanced: true, family: true, enterprise: true },
-      { name: 'Real-Time Market Data', starter: 'Delayed', advanced: true, family: true, enterprise: true },
+    rows: [
+      { name: 'Portfolio dashboard', starter: true, advanced: true, family: true, enterprise: true },
+      { name: 'Real-time market data', starter: 'Delayed', advanced: true, family: true, enterprise: true },
       { name: 'Watchlists', starter: '5 slots', advanced: 'Unlimited', family: 'Unlimited', enterprise: 'Unlimited' },
-      { name: 'Market News Feed', starter: true, advanced: true, family: true, enterprise: true },
-      { name: 'Mobile App Access', starter: true, advanced: true, family: true, enterprise: true },
+      { name: 'Mobile app', starter: true, advanced: true, family: true, enterprise: true },
     ],
   },
   {
     category: 'Congressional Trading',
-    features: [
-      { name: 'Trade Alerts', starter: '24hr delay', advanced: 'Real-time', family: 'Real-time', enterprise: 'Real-time' },
-      { name: 'Politician Filtering', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Historical Trade Database', starter: '90 days', advanced: 'Full history', family: 'Full history', enterprise: 'Full history' },
-      { name: 'Trade Pattern Analysis', starter: false, advanced: true, family: true, enterprise: true },
+    rows: [
+      { name: 'Trade alerts', starter: '24hr delay', advanced: 'Real-time', family: 'Real-time', enterprise: 'Real-time' },
+      { name: 'Politician filtering', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Historical trade database', starter: '90 days', advanced: 'Full history', family: 'Full history', enterprise: 'Full history' },
+      { name: 'Trade pattern analysis', starter: false, advanced: true, family: true, enterprise: true },
     ],
   },
   {
     category: 'Analytics & Intelligence',
-    features: [
-      { name: 'Portfolio Risk Scoring', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Sector Exposure Analysis', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Government Contract Data', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Lobbying Expenditure Tracking', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Patent Filing Intelligence', starter: false, advanced: true, family: true, enterprise: true },
-      { name: 'Custom Reports & Export', starter: false, advanced: false, family: true, enterprise: true },
+    rows: [
+      { name: 'Portfolio risk scoring', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Sector exposure analysis', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Government contracts & lobbying', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Patent filing intelligence', starter: false, advanced: true, family: true, enterprise: true },
+      { name: 'Custom reports & export', starter: false, advanced: false, family: true, enterprise: true },
     ],
   },
   {
-    category: 'Family & Team Features',
-    features: [
-      { name: 'Multiple User Accounts', starter: '1', advanced: '1', family: 'Up to 5', enterprise: 'Unlimited' },
-      { name: 'Shared Watchlists', starter: false, advanced: false, family: true, enterprise: true },
-      { name: 'Family Dashboard', starter: false, advanced: false, family: true, enterprise: true },
-      { name: 'Team Management', starter: false, advanced: false, family: false, enterprise: true },
+    category: 'Household & Team',
+    rows: [
+      { name: 'Accounts included', starter: '1', advanced: '1', family: 'Up to 5', enterprise: 'Unlimited' },
+      { name: 'Shared watchlists', starter: false, advanced: false, family: true, enterprise: true },
+      { name: 'Team management', starter: false, advanced: false, family: false, enterprise: true },
       { name: 'Organization Hub', starter: false, advanced: false, family: false, enterprise: true },
     ],
   },
   {
-    category: 'Community & Support',
-    features: [
-      { name: 'Community Access', starter: 'Read only', advanced: 'Full access', family: 'Full access', enterprise: 'Full access' },
-      { name: 'Notifications', starter: 'Email only', advanced: 'Email + Push', family: 'Email + Push', enterprise: 'Email + Push + API' },
-      { name: 'Support', starter: 'Help center', advanced: 'Email support', family: 'Priority support', enterprise: 'Dedicated + Priority' },
-      { name: 'API Access', starter: false, advanced: 'Limited', family: 'Full', enterprise: 'Full + Custom' },
+    category: 'Support & Integrations',
+    rows: [
+      { name: 'Community access', starter: 'Read only', advanced: 'Full', family: 'Full', enterprise: 'Full' },
+      { name: 'Notifications', starter: 'Email', advanced: 'Email + Push', family: 'Email + Push', enterprise: 'Email + Push + API' },
+      { name: 'Support', starter: 'Help center', advanced: 'Priority email', family: 'Priority', enterprise: 'Dedicated manager' },
+      { name: 'API access', starter: false, advanced: 'Limited', family: 'Full', enterprise: 'Full + custom' },
     ],
   },
 ];
 
 const FAQ_ITEMS = [
   {
-    q: 'Is there a free trial on paid plans?',
-    a: 'Yes. When you subscribe through our checkout, you get a trial period before your card is charged. You can cancel anytime during the trial from your account settings.',
+    q: 'Do I need a credit card to start the free trial?',
+    a: 'Yes, a card is required so your account can continue seamlessly once the trial ends — but you will not be charged for 14 days, and you can cancel anytime from your account settings during the trial with zero charge.',
   },
   {
-    q: 'What is the difference between this page and checkout?',
-    a: 'This page summarizes plans and features. When you are ready to pay with a card, use Subscribe & checkout to complete purchase through our secure Stripe billing.',
+    q: 'What happens when my 14-day trial ends?',
+    a: 'On day 15 your card is charged for the plan and billing interval you selected. We send a reminder email 3 days before the trial ends so you can change your mind or switch plans.',
   },
   {
-    q: 'Can I switch between monthly and annual billing?',
-    a: 'You can choose monthly or annual before checkout. Annual billing is shown as an effective monthly rate with savings compared to paying month-to-month.',
+    q: 'Can I cancel anytime?',
+    a: 'Yes. Cancel from your account settings at any time — during the trial, or after. If you cancel during a paid billing period, you keep access until the end of that period.',
+  },
+  {
+    q: 'Can I change plans later?',
+    a: 'Any time. Upgrades take effect immediately with a prorated charge for the remainder of the billing cycle. Downgrades take effect at the end of the current period.',
   },
   {
     q: 'Do you offer refunds?',
-    a: 'Contact support for billing questions. Enterprise contracts are customized and may include separate terms.',
+    a: 'If you forget to cancel and get charged, email support within 14 days of the charge and we will refund in full, no questions asked.',
   },
   {
-    q: 'How does the Family plan work?',
-    a: 'The Family plan allows up to 5 family members to have their own individual accounts while sharing premium features. Each member gets their own login, personalized dashboard, and can collaborate through shared watchlists and portfolios.',
+    q: 'What payment methods do you accept?',
+    a: 'All major credit and debit cards via Stripe. Apple Pay and Google Pay are supported on compatible devices. Enterprise customers can invoice ACH.',
   },
   {
-    q: 'What happens when I need more than the Family plan offers?',
-    a: 'If you need more than 5 users or require advanced features like custom integrations, SSO, or white-label options, our Enterprise plan is perfect for you. Contact our sales team for a custom quote tailored to your needs.',
+    q: 'Is my financial data secure?',
+    a: 'We never store your brokerage credentials. Live brokerage connections use read-only tokens through regulated aggregators, and everything in transit is encrypted (TLS 1.2+).',
   },
 ];
 
+/* ────────────────────────────────────────────────────────────────────────── */
+
 function CellValue({ value }) {
   if (value === true) return <Check className="cell-check" size={18} aria-hidden />;
-  if (value === false) return <X className="cell-x" size={18} aria-hidden />;
+  if (value === false) return <Minus className="cell-x" size={18} aria-hidden />;
   return <span className="cell-text">{value}</span>;
 }
 
-function PlanCta({ plan }) {
-  const className = `plan-cta ${plan.highlight ? 'plan-cta--primary' : ''}`;
+export default function PricingPage() {
+  const [billing, setBilling] = useState('yearly'); // Annual default for higher conversion
+  const [pendingPlan, setPendingPlan] = useState(null);
+  const [errorMsg, setErrorMsg] = useState('');
+  const { theme, setTheme } = useTheme();
+  const prevThemeRef = useRef(null);
 
-  if (plan.external) {
-    return (
-      <a href={plan.ctaHref} className={className}>
-        {plan.cta} <ArrowRight size={16} aria-hidden />
-      </a>
-    );
+  /* Force light mode on this route to match the landing page's presentation.
+     Restore the user's prior theme when they navigate away. */
+  useEffect(() => {
+    prevThemeRef.current = theme;
+    if (theme !== 'light') setTheme('light');
+    return () => {
+      if (prevThemeRef.current && prevThemeRef.current !== 'light') {
+        setTheme(prevThemeRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* Auto-dismiss a transient error banner so it doesn't linger. */
+  useEffect(() => {
+    if (!errorMsg) return;
+    const t = setTimeout(() => setErrorMsg(''), 6000);
+    return () => clearTimeout(t);
+  }, [errorMsg]);
+
+  /**
+   * Silently kick off Stripe Checkout and redirect. No URL is ever rendered
+   * to the user — the browser simply navigates to Stripe's hosted page.
+   */
+  async function startCheckout(plan) {
+    if (plan.contactSales) {
+      window.location.href = plan.ctaHref;
+      return;
+    }
+
+    const planKey = plan.stripeKey?.[billing === 'yearly' ? 'year' : 'month'];
+    if (!planKey) {
+      window.location.href = `/auth/signup?plan=${plan.id}`;
+      return;
+    }
+
+    setPendingPlan(plan.id);
+    setErrorMsg('');
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ planKey, cancelPath: '/pricing' }),
+      });
+
+      if (res.status === 401) {
+        // Not signed in — send them to signup with the chosen plan preserved
+        window.location.href = `/auth/signup?plan=${plan.id}&billing=${billing}`;
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || `Checkout failed (${res.status})`);
+      }
+
+      window.location.assign(data.url);
+    } catch (err) {
+      console.error('[pricing] startCheckout failed:', err);
+      setErrorMsg("Couldn't start checkout — please try again in a moment.");
+      setPendingPlan(null);
+    }
   }
 
   return (
-    <Link href={plan.ctaHref} className={className}>
-      {plan.cta} <ArrowRight size={16} aria-hidden />
-    </Link>
-  );
-}
-
-export default function PricingPage() {
-  const [billing, setBilling] = useState('monthly');
-
-  return (
     <div className="pricing-page--standalone">
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
       <header className="pricing-hero">
-        <p className="pricing-eyebrow">Pricing</p>
-        <h1>Explore which plan fits you best</h1>
+        <div className="pricing-trial-pill" role="note">
+          <Sparkles size={13} aria-hidden />
+          14-day free trial on every paid plan
+        </div>
+        <h1 className="pricing-h1">
+          Simple pricing. <span className="pricing-h1-accent">Serious investing.</span>
+        </h1>
         <p className="pricing-subtitle">
-          Start with our affordable plans. Upgrade when you need more power. Paid subscriptions include a free trial where configured.{' '}
-          <Link href="/subscribe">Open Stripe checkout</Link> when you are ready to bill a card.
+          Start with the plan that fits where you are. Every paid plan includes a full
+          14-day free trial — cancel anytime, no charge until the trial ends.
         </p>
 
-        <div className="billing-toggle-wrap">
+        <div className="billing-toggle-wrap" role="tablist" aria-label="Billing interval">
           <button
             type="button"
+            role="tab"
+            aria-selected={billing === 'monthly'}
             className={`billing-btn ${billing === 'monthly' ? 'active' : ''}`}
             onClick={() => setBilling('monthly')}
           >
@@ -217,6 +302,8 @@ export default function PricingPage() {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={billing === 'yearly'}
             className={`billing-btn ${billing === 'yearly' ? 'active' : ''}`}
             onClick={() => setBilling('yearly')}
           >
@@ -225,36 +312,85 @@ export default function PricingPage() {
         </div>
       </header>
 
+      {errorMsg && (
+        <div className="pricing-error-banner" role="alert">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* ── Plan Cards ──────────────────────────────────────────────── */}
       <section className="pricing-cards-section" aria-label="Plans">
         <div className="pricing-cards-grid pricing-cards-grid--four">
           {PLANS.map((plan) => {
             const price = billing === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+            const isContact = plan.contactSales;
+            const isPending = pendingPlan === plan.id;
+            const ctaLabel = isContact
+              ? 'Contact Sales'
+              : isPending
+                ? 'Starting checkout…'
+                : 'Start 14-day free trial';
+
             return (
-              <div key={plan.name} className={`plan-card ${plan.highlight ? 'plan-card--highlight' : ''}`}>
+              <div
+                key={plan.id}
+                className={`plan-card ${plan.highlight ? 'plan-card--highlight' : ''}`}
+              >
                 {plan.badge ? <span className="plan-badge">{plan.badge}</span> : null}
+
                 <h3 className="plan-name">{plan.name}</h3>
                 <p className="plan-tagline">{plan.tagline}</p>
+
+                {/* Consistent trial ribbon slot on every card */}
+                <div className="plan-trial-row">
+                  {isContact ? (
+                    <span className="plan-trial-chip plan-trial-chip--neutral">
+                      Custom pricing
+                    </span>
+                  ) : (
+                    <span className="plan-trial-chip">14-day free trial</span>
+                  )}
+                </div>
+
                 <div className="plan-price">
                   {price === null ? (
                     <span className="plan-price-amount">Custom</span>
                   ) : (
                     <>
                       <span className="plan-price-amount">${price}</span>
-                      <span className="plan-price-interval">/month</span>
+                      <span className="plan-price-interval">
+                        /{billing === 'yearly' ? 'mo billed annually' : 'month'}
+                      </span>
                     </>
                   )}
                 </div>
-                {billing === 'yearly' && price !== null ? (
-                  <p className="plan-annual-note">${price * 12}/year billed annually</p>
-                ) : price === null ? (
-                  <p className="plan-annual-note">Contact us for pricing</p>
-                ) : null}
-                <PlanCta plan={plan} />
-                {plan.highlight ? (
-                  <p className="plan-checkout-note">
-                    Already decided? <Link href="/subscribe">Go to live plan checkout</Link>
-                  </p>
-                ) : null}
+                <p className="plan-annual-note">
+                  {price === null
+                    ? 'Tailored to your organization'
+                    : billing === 'yearly'
+                      ? `$${price * 12}/year billed annually`
+                      : 'Billed monthly · cancel anytime'}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => startCheckout(plan)}
+                  disabled={isPending}
+                  className={`plan-cta ${plan.highlight ? 'plan-cta--primary' : ''}`}
+                  aria-busy={isPending}
+                >
+                  {isPending ? <Loader2 size={16} className="plan-cta-spin" aria-hidden /> : null}
+                  <span>{ctaLabel}</span>
+                  {!isPending ? <ArrowRight size={16} aria-hidden /> : null}
+                </button>
+                <p className="plan-finesub">
+                  {isContact
+                    ? 'We reply within 1 business day'
+                    : 'Cancel anytime during trial · No charge'}
+                </p>
+
+                <div className="plan-features-divider" />
+                <div className="plan-features-label">What's included</div>
                 <ul className="plan-features">
                   {plan.features.map((f) => (
                     <li key={f}>
@@ -267,42 +403,48 @@ export default function PricingPage() {
             );
           })}
         </div>
+
+        <div className="pricing-secure-row">
+          <ShieldCheck size={14} aria-hidden />
+          Secure checkout powered by Stripe · Cancel anytime from your account
+        </div>
       </section>
 
+      {/* ── Comparison Table ───────────────────────────────────────── */}
       <section className="pricing-comparison-section" aria-labelledby="compare-heading">
-        <h2 id="compare-heading">Compare plans in detail</h2>
+        <h2 id="compare-heading">Compare plans</h2>
         <div className="comparison-table-wrap">
           <table className="comparison-table">
             <thead>
               <tr>
-                <th className="comp-feature-col">Feature</th>
-                <th>Starter</th>
-                <th className="comp-highlight-col">Advanced</th>
-                <th>Family</th>
-                <th>Enterprise</th>
+                <th className="comp-feature-col">Features</th>
+                {PLANS.map((p) => {
+                  const subPrice = billing === 'yearly' ? p.yearlyPrice : p.monthlyPrice;
+                  const isHi = p.highlight;
+                  return (
+                    <th key={p.id} className={isHi ? 'comp-highlight-col' : ''}>
+                      <div className="comp-plan-name">{p.name}</div>
+                      <div className="comp-plan-sub">
+                        {subPrice === null ? 'Custom' : `$${subPrice}/mo`}
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {COMPARISON_FEATURES.map((category) => (
-                <Fragment key={category.category}>
+              {COMPARISON_FEATURES.map((group) => (
+                <Fragment key={group.category}>
                   <tr className="comp-category-row">
-                    <td colSpan={5}>{category.category}</td>
+                    <td colSpan={5}>{group.category}</td>
                   </tr>
-                  {category.features.map((f) => (
-                    <tr key={f.name}>
-                      <td className="comp-feature-name">{f.name}</td>
-                      <td>
-                        <CellValue value={f.starter} />
-                      </td>
-                      <td className="comp-highlight-col">
-                        <CellValue value={f.advanced} />
-                      </td>
-                      <td>
-                        <CellValue value={f.family} />
-                      </td>
-                      <td>
-                        <CellValue value={f.enterprise} />
-                      </td>
+                  {group.rows.map((row) => (
+                    <tr key={row.name}>
+                      <td className="comp-feature-name">{row.name}</td>
+                      <td><CellValue value={row.starter} /></td>
+                      <td className="comp-highlight-col"><CellValue value={row.advanced} /></td>
+                      <td><CellValue value={row.family} /></td>
+                      <td><CellValue value={row.enterprise} /></td>
                     </tr>
                   ))}
                 </Fragment>
@@ -312,33 +454,50 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* ── FAQ ─────────────────────────────────────────────────────── */}
       <section className="pricing-faq-section" aria-labelledby="faq-heading">
-        <h2 id="faq-heading">Frequently asked questions</h2>
+        <h2 id="faq-heading">Frequently asked</h2>
         <div className="pricing-faq-list">
           {FAQ_ITEMS.map((item) => (
             <details key={item.q} className="pricing-faq-item">
-              <summary>{item.q}</summary>
+              <summary>
+                <span>{item.q}</span>
+                <span className="pricing-faq-marker" aria-hidden>+</span>
+              </summary>
               <p className="pricing-faq-answer">{item.a}</p>
             </details>
           ))}
         </div>
       </section>
 
-      <section className="pricing-bottom-cta">
-        <h2>Start making smarter investment decisions today</h2>
-        <p>Join thousands of investors using Ezana Finance for institutional-grade insights.</p>
-        <Link href="/auth/signup" className="pricing-bottom-btn">
-          Get Started <ArrowRight size={18} aria-hidden />
-        </Link>
+      {/* ── Final CTA ───────────────────────────────────────────────── */}
+      <section className="pricing-bottom-cta" aria-label="Get started">
+        <div className="pricing-bottom-cta-card">
+          <h2>Start investing smarter today</h2>
+          <p>
+            Try any paid plan free for 14 days. No charge until the trial ends,
+            cancel whenever.
+          </p>
+          <button
+            type="button"
+            className="pricing-bottom-btn"
+            onClick={() => startCheckout(PLANS.find((p) => p.highlight) || PLANS[1])}
+          >
+            Start 14-day free trial <ArrowRight size={18} aria-hidden />
+          </button>
+          <div className="pricing-bottom-finesub">
+            No charge for 14 days · Cancel anytime
+          </div>
+        </div>
       </section>
 
+      {/* ── Footer ──────────────────────────────────────────────────── */}
       <footer className="pricing-footer">
         <p>© {new Date().getFullYear()} Ezana Finance. All rights reserved.</p>
         <div className="pricing-footer-links">
           <Link href="/">Home</Link>
           <Link href="/#features">Features</Link>
-          <Link href="/subscribe">Subscribe</Link>
-          <Link href="/auth/login">Sign In</Link>
+          <Link href="/auth/login">Sign in</Link>
         </div>
       </footer>
     </div>

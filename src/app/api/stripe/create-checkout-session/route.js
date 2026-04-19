@@ -114,7 +114,7 @@ export async function POST(request) {
           supabase_user_id: user.id,
           plan_key: planKey,
         },
-        ...(hasExistingSubscription ? {} : { trial_period_days: 7 }),
+        ...(hasExistingSubscription ? {} : { trial_period_days: 14 }),
       },
       metadata: {
         supabase_user_id: user.id,
