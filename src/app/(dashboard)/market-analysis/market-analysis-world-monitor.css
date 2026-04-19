@@ -4,7 +4,7 @@
    Full-viewport geospatial finance terminal
    ============================================ */
 
-/* ═══ Full-screen layout ═══ */
+/* ????????? Full-screen layout ????????? */
 .ma-fullscreen {
   position: relative;
   width: 100%;
@@ -17,7 +17,7 @@
   background: var(--app-bg);
 }
 
-/* ═══ Top bar ═══ */
+/* ????????? Top bar ????????? */
 .ma-top-bar {
   position: absolute;
   top: 0;
@@ -105,7 +105,7 @@
   width: 100%;
 }
 
-/* Global Power Map trigger — same gold system as Empire link, full-width in sidebar */
+/* Global Power Map trigger ??? same gold system as Empire link, full-width in sidebar */
 .ma-power-map-trigger {
   width: 100%;
   justify-content: center;
@@ -302,7 +302,7 @@
 .ma-power-map-legend-dot--yellow { background: #facc15; }
 .ma-power-map-legend-dot--red { background: #ef4444; }
 
-/* ═══ Map area ═══ */
+/* ????????? Map area ????????? */
 .ma-map-area {
   position: absolute;
   inset: 0;
@@ -362,7 +362,7 @@
   user-select: none;
 }
 
-/* SVG overlay must match map image exactly — same aspect ratio, same mask */
+/* SVG overlay must match map image exactly ??? same aspect ratio, same mask */
 .world-map-svg {
   pointer-events: none;
   mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);
@@ -373,7 +373,7 @@
   pointer-events: auto;
 }
 
-/* ═══ Sidebar (bottom-left) ═══ */
+/* ????????? Sidebar (bottom-left) ????????? */
 .ma-sidebar {
   position: absolute;
   bottom: 100px;
@@ -418,7 +418,7 @@
 
 .ma-sidebar-btn i { font-size: 0.75rem; }
 
-/* ═══ Controls (bottom-right) ═══ */
+/* ????????? Controls (bottom-right) ????????? */
 .ma-controls {
   position: absolute;
   bottom: 100px;
@@ -458,7 +458,7 @@
   background: rgba(16, 185, 129, 0.06);
 }
 
-/* ═══ Floating panel ═══ */
+/* ????????? Floating panel ????????? */
 .ma-panel {
   position: absolute;
   top: 50px;
@@ -647,7 +647,7 @@
   margin: 0;
 }
 
-/* ═══ Filter panel ═══ */
+/* ????????? Filter panel ????????? */
 .ma-filter-body, .ma-settings-body {
   padding: 1rem 0.875rem;
   overflow-y: auto;
@@ -723,7 +723,7 @@
   margin-top: 0.25rem;
 }
 
-/* ═══ Live Ticker Bar ═══ */
+/* ????????? Live Ticker Bar ????????? */
 .ma-ticker-bar {
   position: absolute;
   top: 0;
@@ -830,7 +830,7 @@ body.light-mode .ma-ticker-sep {
   color: #e2e8f0;
 }
 
-/* ═══ News panel (map dot click) ═══ */
+/* ????????? News panel (map dot click) ????????? */
 .ma-news-panel {
   position: fixed;
   top: var(--nav-height, 64px);
@@ -939,7 +939,7 @@ body.light-mode .ma-ticker-sep {
 
 .ma-news-impact strong { color: #10b981; }
 
-/* ═══ Chain view — full width within dashboard gutters (2rem), same as layout.css main padding ═══ */
+/* ????????? Chain view ??? full width within dashboard gutters (2rem), same as layout.css main padding ????????? */
 .ma-fullscreen.ma-view-chain {
   display: flex;
   flex-direction: column;
@@ -1061,7 +1061,7 @@ body.light-mode .ma-ticker-sep {
   margin: 0;
 }
 
-/* ═══ City news panel — slides in from right ═══ */
+/* ????????? City news panel ??? slides in from right ????????? */
 .ma-city-panel {
   position: absolute;
   top: 0;
@@ -1250,7 +1250,7 @@ body.light-mode .ma-ticker-sep {
   font-family: var(--font-mono, monospace);
 }
 
-/* ═══ NEW: Sector bars for Sectors tab ═══ */
+/* ????????? NEW: Sector bars for Sectors tab ????????? */
 .ma-sector-item {
   padding: 0.75rem 0.875rem;
 }
@@ -1269,7 +1269,7 @@ body.light-mode .ma-ticker-sep {
   transition: width 0.35s ease-out;
 }
 
-/* ═══ NEW: Gold Pulse animation for Central Banks layer ═══ */
+/* ????????? NEW: Gold Pulse animation for Central Banks layer ????????? */
 @keyframes goldPulse {
   0% {
     box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
@@ -1295,7 +1295,7 @@ body.light-mode .ma-ticker-sep {
   animation: goldPulse 2s infinite;
 }
 
-/* ═══ Toast notification animation ═══ */
+/* ????????? Toast notification animation ????????? */
 @keyframes slideIn {
   from {
     transform: translateX(400px);
@@ -1406,7 +1406,7 @@ body.light-mode .ma-ticker-sep {
   color: #10b981;
 }
 
-/* ═══ Responsive ═══ */
+/* ????????? Responsive ????????? */
 @media (max-width: 768px) {
   .ma-sidebar { bottom: 140px; }
   .ma-panel { left: 0.5rem; right: 0.5rem; width: auto; top: 40px; }
@@ -1418,7 +1418,7 @@ body.light-mode .ma-ticker-sep {
   }
 }
 
-/* ═══ Event Analysis modal — same shell & typography as Sentinel report modal ═══ */
+/* ????????? Event Analysis modal ??? same shell & typography as Sentinel report modal ????????? */
 .ma-event-analysis-shell {
   max-width: 960px;
   width: 100%;
@@ -1452,7 +1452,7 @@ body.light-mode .ma-ticker-sep {
   color: #e8c84a;
 }
 
-/* ── Global Power Map — bouncing arrow indicator ── */
+/* ?????? Global Power Map ??? bouncing arrow indicator ?????? */
 
 @keyframes gpm-bounce {
   0%,  100% { transform: translateY(0)    scale(1);    }
@@ -1473,7 +1473,7 @@ body.light-mode .ma-ticker-sep {
 .gpm-arrow-indicator {
   position:        absolute;
   /* Positioned to the left of the Global Power Map button.
-     Adjusted in JS using the button's getBoundingClientRect — see Step 2. */
+     Adjusted in JS using the button's getBoundingClientRect ??? see Step 2. */
   pointer-events:  none;
   display:         flex;
   align-items:     center;
@@ -1492,7 +1492,7 @@ body.light-mode .ma-ticker-sep {
   line-height: 1;
   animation:   gpm-bounce 0.9s ease-in-out infinite;
   filter:      drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
-  /* Unicode right-pointing arrow: → */
+  /* Unicode right-pointing arrow: ??? */
 }
 
 .gpm-arrow-label {
@@ -1506,4 +1506,572 @@ body.light-mode .ma-ticker-sep {
   white-space:   nowrap;
   animation:     gpm-bounce 0.9s ease-in-out infinite;
   animation-delay: 0.05s;
+}
+
+/* ---------------------------------------------------------------------------
+   ISR / Tutorial / Help ? Global Market Analysis
+   (Intelligence, Surveillance & Reconnaissance: public news aggregation only)
+   --------------------------------------------------------------------------- */
+
+/* Help "?" button ? replays the tutorial. Pinned top-right of the page so
+   it stays out of the way of the centered view-toggle chrome. */
+.ma-help-btn {
+  position: absolute;
+  top: 44px;
+  right: 0.75rem;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(10, 14, 19, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #c7d2fe;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  backdrop-filter: blur(6px);
+}
+.ma-fullscreen.ma-view-chain .ma-help-btn { top: 12px; }
+.ma-help-btn:hover {
+  color: #f1f5f9;
+  border-color: rgba(99, 102, 241, 0.7);
+  background: rgba(49, 46, 129, 0.4);
+  transform: translateY(-1px);
+}
+.ma-help-btn i { font-size: 0.95rem; font-weight: 700; }
+
+/* Dedicated look for the ISR sidebar button ? indigo accent to signal a new
+   tool without overriding the established green category vocabulary. */
+.ma-sidebar-btn--isr {
+  color: #c7d2fe;
+}
+.ma-sidebar-btn--isr:hover {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+.ma-sidebar-btn--isr.active {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+.ma-sidebar-btn--isr i { color: inherit; }
+
+/* --- Tutorial overlay ---------------------------------------------------- */
+.mat-root {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  color: #f1f5f9;
+}
+.mat-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.mat-tooltip {
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 14, 19, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.05rem 1.1rem 0.95rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(99, 102, 241, 0.08);
+  backdrop-filter: blur(12px);
+  animation: mat-pop 0.24s ease-out both;
+}
+@keyframes mat-pop {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.mat-tooltip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+.mat-step-counter {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+.mat-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #94a3b8;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+.mat-icon-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.mat-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+.mat-body {
+  margin: 0 0 0.8rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+.mat-progress {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.85rem;
+}
+.mat-dot {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.18);
+  transition: background 0.2s ease;
+}
+.mat-dot--done { background: rgba(99, 102, 241, 0.45); }
+.mat-dot--active { background: #818cf8; box-shadow: 0 0 8px rgba(129, 140, 248, 0.5); }
+.mat-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.mat-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  border: 1px solid transparent;
+}
+.mat-btn--ghost {
+  color: #94a3b8;
+  background: transparent;
+}
+.mat-btn--ghost:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.05);
+}
+.mat-btn--ghost:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mat-btn--primary {
+  background: #6366f1;
+  color: #fff;
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+.mat-btn--primary:hover {
+  background: #818cf8;
+}
+.mat-btn i { font-size: 0.75rem; }
+
+/* --- ISR Feed Card (side-docked panel) ----------------------------------- */
+.isr-card {
+  position: absolute;
+  top: 80px;
+  right: 0.75rem;
+  width: 420px;
+  max-width: calc(100vw - 1.5rem);
+  max-height: calc(100vh - 220px);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(10, 14, 19, 0.96) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px);
+  color: #e2e8f0;
+  animation: isr-slide-in 0.2s ease-out both;
+}
+@keyframes isr-slide-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.isr-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.isr-card-header-title {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  min-width: 0;
+}
+.isr-card-header-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+.isr-card-header-text { min-width: 0; }
+.isr-card-header-text h3 {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.005em;
+}
+.isr-card-header-text p {
+  margin: 0.15rem 0 0;
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+.isr-card-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+}
+.isr-card-close:hover { color: #f8fafc; background: rgba(255, 255, 255, 0.05); }
+.isr-filters {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.isr-filter-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.isr-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.isr-chip {
+  font-size: 0.62rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.isr-chip:hover { color: #e2e8f0; border-color: rgba(255, 255, 255, 0.18); }
+.isr-chip--active {
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+.isr-select-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.isr-select {
+  flex: 1 1 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.isr-select > span {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.isr-select select {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.isr-select select:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.6);
+}
+
+.isr-feed-scroll {
+  flex: 1;
+  min-height: 180px;
+  overflow-y: auto;
+}
+.isr-skeleton-stack {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.isr-skeleton {
+  height: 58px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.03) 100%);
+  background-size: 200% 100%;
+  animation: isr-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes isr-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.isr-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: center;
+}
+.isr-empty i { font-size: 1.3rem; color: #64748b; }
+.isr-empty span { font-size: 0.65rem; color: #64748b; }
+.isr-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.isr-feed-list li + li { border-top: 1px solid rgba(255, 255, 255, 0.04); }
+.isr-feed-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.isr-feed-item:hover { background: rgba(255, 255, 255, 0.03); }
+.isr-feed-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.56rem;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+.isr-feed-dot { color: rgba(148, 163, 184, 0.4); }
+.isr-feed-loc { color: #94a3b8; }
+.isr-feed-source { color: #94a3b8; }
+.isr-feed-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.isr-feed-headline {
+  flex: 1;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #f1f5f9;
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.isr-sev {
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: transparent;
+  align-self: flex-start;
+}
+.isr-sev--low      { color: #94a3b8; }
+.isr-sev--medium   { color: #eab308; }
+.isr-sev--high     { color: #f59e0b; }
+.isr-sev--critical { color: #ef4444; }
+.isr-polymarket-pill {
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.38);
+  color: #bfdbfe;
+  font-size: 0.62rem;
+  max-width: 100%;
+}
+.isr-polymarket-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.6);
+  animation: isr-pm-pulse 1.8s infinite;
+}
+@keyframes isr-pm-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.55); }
+  70%  { box-shadow: 0 0 0 6px rgba(96, 165, 250, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
+}
+.isr-polymarket-label {
+  font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.58rem;
+}
+.isr-polymarket-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.isr-polymarket-odds {
+  font-weight: 700;
+  color: #dbeafe;
+  font-variant-numeric: tabular-nums;
+}
+
+.isr-card-footer {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.58rem;
+  color: #64748b;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.isr-card-footer i { font-size: 0.68rem; }
+
+/* --- ISR article modal ? Polymarket banner ------------------------------ */
+.isr-polymarket-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #dbeafe;
+  margin-bottom: 1rem;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.isr-polymarket-banner:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(96, 165, 250, 0.55);
+}
+.isr-polymarket-banner-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.isr-polymarket-banner-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #60a5fa;
+  animation: isr-pm-pulse 1.8s infinite;
+}
+.isr-polymarket-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+.isr-polymarket-banner-kicker {
+  font-size: 0.58rem;
+  color: #93c5fd;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.isr-polymarket-banner-title {
+  margin-top: 2px;
+  font-size: 0.9rem;
+  color: #f1f5f9;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.isr-polymarket-banner-meta {
+  font-size: 0.7rem;
+  color: #bfdbfe;
+  margin-top: 2px;
+}
+.isr-polymarket-banner-ext {
+  color: #93c5fd;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.isr-article-source-link {
+  color: #10b981;
+  text-decoration: none;
+}
+.isr-article-source-link:hover { text-decoration: underline; }
+.isr-article-disclaimer {
+  margin-top: 0.5rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+/* Narrower screens: let the ISR card take up more of the viewport. */
+@media (max-width: 900px) {
+  .isr-card {
+    width: calc(100vw - 1.5rem);
+    right: 0.75rem;
+    left: 0.75rem;
+    top: 76px;
+  }
 }

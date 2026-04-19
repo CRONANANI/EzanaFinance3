@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
@@ -8,6 +8,10 @@ import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
 import { useProGate } from '@/components/upgrade/ProGateContext';
+import { useAuth } from '@/components/AuthProvider';
+import { TutorialOverlay } from '@/components/market-analysis/TutorialOverlay';
+import { ISRFeedCard } from '@/components/market-analysis/ISRFeedCard';
+import { ISRArticleModal } from '@/components/market-analysis/ISRArticleModal';
 import {
   PANEL_ID_TO_CITY_KEY,
   PANEL_ID_TO_FINHUB_CITY_ID,
@@ -974,7 +978,92 @@ function ChainView() {
   );
 }
 
+// ISR tutorial steps — centered on the distinctive features of this page.
+// Each target is a data-tour selector attached to the live DOM node.
+const TUTORIAL_STEPS = [
+  {
+    id: 'welcome',
+    title: 'Welcome to Global Market Analysis',
+    body:
+      "Here's a quick tour of what each tool does. You can skip at any time and replay from the help icon in the top-right.",
+    placement: 'center',
+  },
+  {
+    id: 'power-map',
+    title: 'Global Power Map',
+    body:
+      'Toggle overlays to visualize geopolitical influence, reserves, trade flows, and more across every country on the map.',
+    target: "[data-tour='sidebar-power-map']",
+    placement: 'right',
+  },
+  {
+    id: 'markets',
+    title: 'Markets',
+    body: 'Live global market indices, session status, and regional snapshots at a glance.',
+    target: "[data-tour='sidebar-markets']",
+    placement: 'right',
+  },
+  {
+    id: 'central-banks',
+    title: 'Central Banks',
+    body: 'Rate decisions, policy stances, and upcoming meetings for major central banks worldwide.',
+    target: "[data-tour='sidebar-central-banks']",
+    placement: 'right',
+  },
+  {
+    id: 'indices',
+    title: 'Indices',
+    body: 'Major world indices with real-time moves and relative strength.',
+    target: "[data-tour='sidebar-indices']",
+    placement: 'right',
+  },
+  {
+    id: 'commodities',
+    title: 'Commodities',
+    body: 'Oil, gold, copper, wheat, and more — spot levels and futures curves.',
+    target: "[data-tour='sidebar-commodities']",
+    placement: 'right',
+  },
+  {
+    id: 'currencies',
+    title: 'Currencies',
+    body: 'FX pairs, DXY, and currency strength indexes across the majors.',
+    target: "[data-tour='sidebar-currencies']",
+    placement: 'right',
+  },
+  {
+    id: 'isr',
+    title: 'ISR — Intelligence, Surveillance & Reconnaissance',
+    body:
+      'Live geolocated news from public sources, plus Polymarket signals when events could move prediction markets.',
+    target: "[data-tour='sidebar-isr']",
+    placement: 'right',
+  },
+  {
+    id: 'globe',
+    title: 'The map',
+    body:
+      'Drag to pan, scroll to zoom. Pulsating dots mark live news events — click one to read the article inline.',
+    target: "[data-tour='globe-canvas']",
+    placement: 'left',
+  },
+  {
+    id: 'done',
+    title: "You're set",
+    body: 'You can replay this tour anytime from the help icon in the top-right.',
+    placement: 'center',
+  },
+];
+
+// Tutorial persistence key prefix. We scope by user so different accounts on
+// the same device each get their own tour, with a "guest" fallback when the
+// user isn't authenticated yet.
+function tutorialKeyFor(userId) {
+  return `ezana.tutorial.globalMarket.${userId || 'guest'}`;
+}
+
 export default function MarketAnalysisPage() {
+  const { user } = useAuth() || {};
   const [view, setView] = useState('map');
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
@@ -983,6 +1072,11 @@ export default function MarketAnalysisPage() {
   const [selectedDot, setSelectedDot] = useState(null);
   const [selectedPowerCountry, setSelectedPowerCountry] = useState(null);
   const [tickerData, setTickerData] = useState([]);
+  const [isrOpen, setIsrOpen] = useState(false);
+  const [isrEvents, setIsrEvents] = useState([]);
+  const [isrMatches, setIsrMatches] = useState({});
+  const [selectedIsrEvent, setSelectedIsrEvent] = useState(null);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const mapRef = useRef(null);
   const gpmButtonRef = useRef(null);
   const arrowDismissTimer = useRef(null);
@@ -992,6 +1086,69 @@ export default function MarketAnalysisPage() {
   const countryScores = useGlobalPowerMap((s) => s.countryScores);
   const setClickedCountry = useGlobalPowerMap((s) => s.setClickedCountry);
   const isPowerMapActive = selectedLayers.length > 0;
+
+  // First-visit tutorial: fire once per user, persisted in localStorage.
+  // Deliberately gated behind a short timeout so the layout has a chance to
+  // settle before we start measuring spotlight targets.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const key = tutorialKeyFor(user?.id);
+    if (window.localStorage.getItem(key)) return undefined;
+    const t = setTimeout(() => setTutorialOpen(true), 600);
+    return () => clearTimeout(t);
+  }, [user?.id]);
+
+  const finishTutorial = useCallback(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(tutorialKeyFor(user?.id), 'done');
+      }
+    } catch {
+      // localStorage can throw in private-mode Safari; safe to ignore
+    }
+    setTutorialOpen(false);
+  }, [user?.id]);
+
+  const replayTutorial = useCallback(() => {
+    setTutorialOpen(true);
+  }, []);
+
+  // ISR events lifted out of ISRFeedCard so we can render the same list as
+  // pulsating dots on the map and resolve Polymarket matches in the article.
+  const handleIsrEventsChange = useCallback((events, matches) => {
+    setIsrEvents(events || []);
+    setIsrMatches(matches || {});
+  }, []);
+
+  const openIsrEvent = useCallback((event, match) => {
+    setSelectedIsrEvent({ event, match: match || null });
+  }, []);
+
+  const openIsrEventById = useCallback(
+    (eventId) => {
+      const ev = isrEvents.find((e) => e.id === eventId);
+      if (!ev) return;
+      setSelectedIsrEvent({ event: ev, match: isrMatches?.[eventId] || null });
+    },
+    [isrEvents, isrMatches]
+  );
+
+  // Decorate the ISR events with a hasPolymarket flag so the WorldMap can
+  // show the blue Polymarket indicator dot without needing the full match.
+  const isrEventsForMap = useMemo(
+    () =>
+      (isrEvents || []).map((ev) => ({
+        id: ev.id,
+        lat: ev.lat,
+        lng: ev.lng,
+        severity: ev.severity,
+        headline: ev.headline,
+        city: ev.city,
+        country: ev.country,
+        hasPolymarket: Boolean(isrMatches?.[ev.id]),
+      })),
+    [isrEvents, isrMatches]
+  );
 
   const dismissArrow = useCallback(() => {
     setDismissingArrow(true);
@@ -1137,6 +1294,17 @@ export default function MarketAnalysisPage() {
         </div>
       </div>
 
+      <button
+        type="button"
+        className="ma-help-btn"
+        onClick={replayTutorial}
+        data-tour="help-icon"
+        aria-label="Replay Global Market Analysis tour"
+        title="Replay tour"
+      >
+        <i className="bi bi-question-lg" aria-hidden />
+      </button>
+
       {view === 'map' ? (
         <>
           <div
@@ -1147,7 +1315,7 @@ export default function MarketAnalysisPage() {
               setClickedCountry(null);
             }}
           >
-            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <div style={{ position: 'relative', width: '100%', height: '100%' }} data-tour="globe-canvas">
               <WorldMap
                 ref={mapRef}
                 lineColor="#10b981"
@@ -1159,6 +1327,8 @@ export default function MarketAnalysisPage() {
                 hideControls
                 hideFinancialDots={isPowerMapActive}
                 powerCountryScores={countryScores}
+                isrEvents={isrOpen ? isrEventsForMap : []}
+                onIsrEventClick={openIsrEventById}
               />
 
               {/* Top 5 ranking bar */}
@@ -1341,7 +1511,7 @@ export default function MarketAnalysisPage() {
           </div>
 
           <div className="ma-sidebar">
-            <div className="ma-sidebar-power-wrap">
+            <div className="ma-sidebar-power-wrap" data-tour="sidebar-power-map">
               {showGpmArrow && (
                 <div
                   className={`gpm-arrow-indicator ${dismissingArrow ? 'dismissing' : ''}`}
@@ -1361,11 +1531,27 @@ export default function MarketAnalysisPage() {
               <GlobalPowerMapControl ref={gpmButtonRef} />
             </div>
             {['markets', 'central-banks', 'indices', 'commodities', 'currencies'].map((cat) => (
-              <button key={cat} type="button" className={`ma-sidebar-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => toggleCategory(cat)}>
+              <button
+                key={cat}
+                type="button"
+                className={`ma-sidebar-btn ${activeCategory === cat ? 'active' : ''}`}
+                onClick={() => toggleCategory(cat)}
+                data-tour={`sidebar-${cat}`}
+              >
                 <i className={`bi ${cat === 'markets' ? 'bi-graph-up' : cat === 'central-banks' ? 'bi-bank' : cat === 'indices' ? 'bi-bar-chart-line' : cat === 'commodities' ? 'bi-gem' : 'bi-currency-exchange'}`} />
                 {cat.replace('-', ' ').toUpperCase()}
               </button>
             ))}
+            <button
+              type="button"
+              className={`ma-sidebar-btn ma-sidebar-btn--isr ${isrOpen ? 'active' : ''}`}
+              onClick={() => setIsrOpen((v) => !v)}
+              data-tour="sidebar-isr"
+              title="Intelligence, Surveillance & Reconnaissance"
+            >
+              <i className="bi bi-airplane-fill" />
+              ISR
+            </button>
           </div>
 
           <div className="ma-controls">
@@ -1403,10 +1589,33 @@ export default function MarketAnalysisPage() {
               }}
             />
           )}
+
+          {isrOpen && (
+            <ISRFeedCard
+              onSelectEvent={openIsrEvent}
+              onClose={() => setIsrOpen(false)}
+              onEventsChange={handleIsrEventsChange}
+            />
+          )}
         </>
       ) : (
         <ChainView />
       )}
+
+      {selectedIsrEvent && (
+        <ISRArticleModal
+          event={selectedIsrEvent.event}
+          polymarket={selectedIsrEvent.match}
+          onClose={() => setSelectedIsrEvent(null)}
+        />
+      )}
+
+      <TutorialOverlay
+        steps={TUTORIAL_STEPS}
+        open={tutorialOpen}
+        onComplete={finishTutorial}
+        onSkip={finishTutorial}
+      />
     </div>
   );
 }

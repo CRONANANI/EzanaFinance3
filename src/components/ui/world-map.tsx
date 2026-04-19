@@ -218,6 +218,30 @@ type WorldMapProps = {
     lng: number;
     lat: number;
   }) => void;
+  /**
+   * ISR (Intelligence, Surveillance & Reconnaissance) event overlay. When
+   * provided, renders pulsating dots at each event's lat/lng — colored by
+   * severity and click-selectable. See ISRFeedCard for the data shape.
+   * Public news aggregation only — not a surveillance feed.
+   */
+  isrEvents?: Array<{
+    id: string;
+    lat?: number;
+    lng?: number;
+    severity?: string;
+    headline?: string;
+    city?: string;
+    country?: string;
+    hasPolymarket?: boolean;
+  }>;
+  onIsrEventClick?: (eventId: string) => void;
+};
+
+const ISR_SEVERITY_COLOR: Record<string, string> = {
+  Critical: '#ef4444',
+  High: '#f59e0b',
+  Medium: '#eab308',
+  Low: '#94a3b8',
 };
 
 export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function WorldMap(
@@ -231,6 +255,8 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
     hideFinancialDots = false,
     powerCountryScores = [],
     onPowerCountryClick,
+    isrEvents = [],
+    onIsrEventClick,
   },
   ref
 ) {
@@ -845,6 +871,63 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               </g>
             );
           })}
+          {/* ISR event dots — pulsating markers for geolocated news events.
+              These come from public news aggregation (GDELT / NewsData.io /
+              Event Registry in production, seed data in dev). Color by
+              severity; click routes to the ISR article modal. */}
+          {isrEvents && isrEvents.length > 0 &&
+            isrEvents
+              .filter((ev) => typeof ev.lat === 'number' && typeof ev.lng === 'number')
+              .map((ev) => {
+                const point = projectPoint(ev.lat as number, ev.lng as number);
+                const color = ISR_SEVERITY_COLOR[ev.severity || 'Low'] || ISR_SEVERITY_COLOR.Low;
+                return (
+                  <g
+                    key={`isr-${ev.id}`}
+                    data-world-map-isr="1"
+                    data-isr-id={ev.id}
+                    style={{ cursor: 'pointer' }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      dragMovedRef.current = false;
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (dragMovedRef.current) return;
+                      onIsrEventClick?.(ev.id);
+                    }}
+                  >
+                    <circle cx={point.x} cy={point.y} r="0.5" fill="none" stroke={color} strokeWidth="0.18" opacity="0">
+                      <animate attributeName="r" from="0.5" to="2.6" dur="1.8s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" from="0.7" to="0" dur="1.8s" repeatCount="indefinite" />
+                      <animate attributeName="stroke-width" from="0.18" to="0.02" dur="1.8s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx={point.x} cy={point.y} r="0.5" fill="none" stroke={color} strokeWidth="0.18" opacity="0">
+                      <animate attributeName="r" from="0.5" to="2.6" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" from="0.7" to="0" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
+                      <animate attributeName="stroke-width" from="0.18" to="0.02" dur="1.8s" begin="0.9s" repeatCount="indefinite" />
+                    </circle>
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r="0.55"
+                      fill={color}
+                      stroke="rgba(0,0,0,0.35)"
+                      strokeWidth="0.08"
+                    />
+                    {ev.hasPolymarket && (
+                      <circle
+                        cx={point.x + 0.85}
+                        cy={point.y - 0.85}
+                        r="0.32"
+                        fill="#3b82f6"
+                        stroke="#0b1220"
+                        strokeWidth="0.08"
+                      />
+                    )}
+                  </g>
+                );
+              })}
         </svg>
         </div>
       </div>
