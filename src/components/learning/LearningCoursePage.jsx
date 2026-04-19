@@ -102,6 +102,22 @@ export function LearningCoursePage() {
   const pos = currentIdx + 1;
   const nextCourse = currentIdx >= 0 ? ordered[currentIdx + 1] || null : null;
 
+  // IMPORTANT: this useMemo MUST live here, before any conditional early returns
+  // below (loading / !course / !unlocked). React's Rules of Hooks require every
+  // render to call the same hooks in the same order — if this moves below a
+  // conditional `return`, the first render (loading) skips it while later
+  // renders (loaded) include it, which React detects as "Rendered more hooks
+  // than during the previous render" and the dashboard error boundary dresses
+  // up as the generic "Something went wrong" page.
+  const quizForWalker = content?.quiz || [];
+  const walkIndices = useMemo(
+    () =>
+      Array.isArray(retryIndices) && retryIndices.length > 0
+        ? retryIndices
+        : Array.from({ length: quizForWalker.length }, (_, i) => i),
+    [retryIndices, quizForWalker.length]
+  );
+
   const goNextCourse = () => {
     if (nextCourse) router.push(`/learning-center/course/${nextCourse.id}`);
     else router.push('/learning-center');
@@ -208,20 +224,12 @@ export function LearningCoursePage() {
   }
 
   const pct = progress?.progress_pct ?? 0;
-  const quiz = content?.quiz || [];
+  // `walkIndices` is already memoized above (before the early returns) to keep
+  // the hook order stable — just reuse the same `quizForWalker` reference as
+  // `quiz` for the render code below.
+  const quiz = quizForWalker;
   const quizLen = quiz.length;
   const quizPassed = progress?.quiz_passed === true;
-
-  // The walker iterates over either the full quiz or just the retry subset.
-  // Each entry is the ORIGINAL question index, which keeps answers stable
-  // across attempts and lets the server score against the full quiz.
-  const walkIndices = useMemo(
-    () =>
-      Array.isArray(retryIndices) && retryIndices.length > 0
-        ? retryIndices
-        : Array.from({ length: quizLen }, (_, i) => i),
-    [retryIndices, quizLen]
-  );
   const walkLen = walkIndices.length;
   const currentOriginalIdx = walkIndices[qIdx];
   const currentQuestion = quiz[currentOriginalIdx];

@@ -2,35 +2,27 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
-export default function DashboardError({ error, reset }) {
-  const pathname = usePathname();
-  const isPartnerRoute = pathname?.startsWith('/partner-');
-  const dashboardHref = isPartnerRoute ? '/partner-home' : '/home-dashboard';
+export default function LearningCenterError({ error, reset }) {
   const isDev = process.env.NODE_ENV === 'development';
 
   useEffect(() => {
-    // Always log the real error + stack so future debugging is trivial.
-    // The previous boundary swallowed this, which was how a Rules-of-Hooks
-    // violation on the Learning Center course page stayed invisible for so long.
     // eslint-disable-next-line no-console
-    console.error('[DashboardError]', error, {
-      digest: error?.digest,
-      pathname,
-    });
-  }, [error, pathname]);
+    console.error('[LearningCenterError]', error, { digest: error?.digest });
+  }, [error]);
 
   const devMessage = error?.message || String(error || 'Unknown error');
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
       <div className="max-w-xl">
-        <h2 className="text-2xl font-bold text-foreground mb-2">We couldn&apos;t load this page</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">
+          We couldn&apos;t load this course
+        </h2>
         <p className="text-muted-foreground mb-4">
           {isDev
             ? 'A render-time error was caught below. Check the browser console for the full stack.'
-            : 'Something went wrong on our end. Try refreshing, or come back in a moment.'}
+            : 'Try refreshing, or pick another course from the Learning Center while we look into it.'}
         </p>
 
         {isDev && (
@@ -56,10 +48,10 @@ export default function DashboardError({ error, reset }) {
             Try again
           </button>
           <Link
-            href={dashboardHref}
+            href="/learning-center"
             className="px-6 py-3 bg-muted text-foreground rounded-xl font-medium hover:bg-muted/80 transition-colors"
           >
-            Go to Dashboard
+            Back to Learning Center
           </Link>
         </div>
       </div>
