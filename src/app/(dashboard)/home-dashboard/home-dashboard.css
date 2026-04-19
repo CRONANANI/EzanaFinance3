@@ -292,6 +292,7 @@ body.light-mode .db-page {
   cursor: pointer;
   line-height: 0;
   flex-shrink: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .db-holdings-nav-btn:disabled {
@@ -299,8 +300,16 @@ body.light-mode .db-page {
   cursor: not-allowed;
 }
 
+/* Lottie asset uses black strokes; force brand emerald on enabled controls (light + dark). */
+.db-holdings-nav-btn:not(:disabled) svg path,
+.db-holdings-nav-btn:not(:disabled) svg line,
+.db-holdings-nav-btn:not(:disabled) svg polyline,
+.db-holdings-nav-btn:not(:disabled) svg circle {
+  stroke: #10b981 !important;
+}
+
 .db-holdings-nav-btn:not(:disabled):hover {
-  opacity: 0.92;
+  transform: scale(1.06);
 }
 
 .db-portfolio-grid {
@@ -366,6 +375,12 @@ body.light-mode .db-page {
   text-align: right;
   max-width: 48%;
 }
+/* Gain/loss tint for the per-share price pill in the top-right of each
+   holding card. Uses the same emerald/red as the change pill below it so
+   the card reads consistently. These !important the color to beat the
+   existing light-mode override that pins per-share to var(--db-muted). */
+.db-holding-per-share.positive { color: #10b981 !important; }
+.db-holding-per-share.negative { color: #ef4444 !important; }
 
 .db-holding-info {
   display: flex;

@@ -590,7 +590,7 @@ export default function HomeDashboardPage() {
                           <span className="db-holding-label">
                             {h.name} ({h.ticker})
                           </span>
-                          <span className="db-holding-per-share">
+                          <span className={`db-holding-per-share ${chSafe >= 0 ? 'positive' : 'negative'}`}>
                             ${h.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
                             per share
                           </span>
@@ -607,7 +607,9 @@ export default function HomeDashboardPage() {
                           {chSafe.toFixed(2)}% ({h.changeDollar >= 0 ? '+' : ''}$
                           {Math.abs(h.changeDollar).toFixed(2)})
                         </span>
-                        <span className="db-holding-qty">Quantity: {h.qty}</span>
+                        <span className="db-holding-qty">
+                          Quantity: {Number.isFinite(Number(h.qty)) ? Number(h.qty).toFixed(1) : h.qty}
+                        </span>
                       </div>
                     </div>
                     {h.worst && <span className="db-holding-worst-badge">Underperforming</span>}
