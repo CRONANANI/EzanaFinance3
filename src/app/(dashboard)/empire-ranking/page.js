@@ -6,6 +6,15 @@ import { useSearchParams } from 'next/navigation';
 import EconomicLeadershipTimeline from '@/components/empire-ranking/EconomicLeadershipTimeline';
 import AssetCrisisRegimes from '@/components/empire-ranking/AssetCrisisRegimes';
 import InnovationLeadershipIndex from '@/components/empire-ranking/InnovationLeadershipIndex';
+import {
+  CardControls,
+  ToggleChips,
+  ToggleSelect,
+  ToggleMultiSelect,
+  useEmpireChartTokens,
+} from '@/components/empire-ranking/card-controls';
+import { useCardConfig } from '@/hooks/useCardConfig';
+import { auditContrast } from '@/lib/a11y/audit-contrast';
 import { fetchEmpireRankings } from '@/lib/empire-db';
 import {
   LineChart,
@@ -33,6 +42,68 @@ import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import './empire-ranking.css';
+
+/* Scope filter codes for the rankings + scorecard cards. Best-effort
+ * grouping for an illustrative mock dataset — EUR represents the
+ * Eurozone bloc rather than a single state. */
+const SCOPE_FILTERS = {
+  world: null,
+  g20: new Set(['USA', 'CHN', 'EUR', 'DEU', 'JPN', 'IND', 'GBR', 'FRA', 'RUS']),
+  g7: new Set(['USA', 'DEU', 'JPN', 'GBR', 'FRA']),
+  brics: new Set(['CHN', 'IND', 'RUS']),
+  nato: new Set(['USA', 'DEU', 'GBR', 'FRA', 'NLD', 'ESP']),
+};
+
+const SCOPE_OPTIONS = [
+  { value: 'world', label: 'World' },
+  { value: 'g20', label: 'G20' },
+  { value: 'g7', label: 'G7' },
+  { value: 'brics', label: 'BRICS' },
+  { value: 'nato', label: 'NATO' },
+];
+
+function applyScope(rows, scope) {
+  const filter = SCOPE_FILTERS[scope];
+  if (!filter) return rows;
+  return rows.filter((r) => filter.has(r.code));
+}
+
+/* Dimension subsets for the radar — 18 dims is too noisy to scan when the
+ * user only cares about (say) economic factors, so we let them focus. */
+const DIMENSION_GROUPS = {
+  all: null,
+  economic: new Set([
+    'Debt Burden',
+    'Expected Growth',
+    'Economic Output',
+    'Markets & Financial Center',
+    'Reserve Currency Status',
+    'Trade',
+    'Cost Competitiveness',
+  ]),
+  military: new Set([
+    'Military Strength',
+    'Geology',
+    'Resource Efficiency',
+    'Internal Conflict',
+    'Infrastructure',
+  ]),
+  social: new Set([
+    'Education',
+    'Innovation & Technology',
+    'Character & Civility',
+    'Rule of Law',
+    'Wealth Gaps',
+    'Acts of Nature',
+  ]),
+};
+
+const DIMENSION_OPTIONS = [
+  { value: 'all', label: 'All 18' },
+  { value: 'economic', label: 'Economic' },
+  { value: 'military', label: 'Military' },
+  { value: 'social', label: 'Social' },
+];
 
 const LAYER_SECTION_MAP = {
   trade: 'section-trade-power',
@@ -430,129 +501,198 @@ function Card({ icon, title, subtitle, children, wide, actions, className = '', 
   );
 }
 
-const chartTooltipStyle = {
-  background: '#161b22',
-  border: '1px solid rgba(212, 175, 55, 0.25)',
-  borderRadius: 8,
-  fontSize: '0.72rem',
-  color: '#e2e8f0',
-};
-
 function trajectoryIcon(t) {
   if (t === 'up') return { icon: 'bi-arrow-up-right', color: '#10b981' };
   if (t === 'down') return { icon: 'bi-arrow-down-right', color: '#ef4444' };
   return { icon: 'bi-dash-lg', color: '#9ca3af' };
 }
 
+const RANKINGS_TOPN_OPTIONS = [
+  { value: 5, label: 'Top 5' },
+  { value: 10, label: 'Top 10' },
+  { value: 99, label: 'All' },
+];
+
 function PowerRankingsCard({ empireData }) {
-  const data = [...empireData]
-    .sort((a, b) => b.score - a.score)
-    .map((d) => ({
+  const [cfg, setCfg] = useCardConfig('power-rankings', {
+    scope: 'world',
+    topN: 10,
+    direction: 'desc',
+  });
+  const tokens = useEmpireChartTokens();
+
+  const data = useMemo(() => {
+    const scoped = applyScope(empireData, cfg.scope);
+    const sorted = [...scoped].sort((a, b) =>
+      cfg.direction === 'desc' ? b.score - a.score : a.score - b.score,
+    );
+    return sorted.slice(0, cfg.topN).map((d) => ({
       name: `${d.flag} ${d.code}`,
       fullName: d.name,
       score: d.score,
       rank: d.rank,
     }));
+  }, [empireData, cfg.scope, cfg.topN, cfg.direction]);
 
   return (
-    <Card id="section-economic-power" icon="bi-trophy" title="Global Power Rankings" subtitle="Overall Empire Score (0–1)" wide>
-      <div style={{ height: 380 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-            <XAxis
-              type="number"
-              domain={[0, 1]}
-              tick={{ fill: '#6b7280', fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tick={{ fill: '#e2e8f0', fontSize: 11, fontWeight: 600 }}
-              axisLine={false}
-              tickLine={false}
-              width={80}
-            />
-            <Tooltip contentStyle={chartTooltipStyle} formatter={(v, _n, p) => [v.toFixed(2), p.payload.fullName]} />
-            <Bar dataKey="score" radius={[0, 4, 4, 0]}>
-              {data.map((entry, i) => (
-                <Cell
-                  key={entry.rank}
-                  fill={i === 0 ? '#d4af37' : i < 3 ? '#10b981' : i < 6 ? '#6366f1' : '#6b7280'}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+    <Card
+      id="section-economic-power"
+      icon="bi-trophy"
+      title="Global Power Rankings"
+      subtitle={`Overall Empire Score (0–1) · ${SCOPE_OPTIONS.find((s) => s.value === cfg.scope)?.label ?? 'World'}`}
+      wide
+      actions={
+        <CardControls>
+          <ToggleChips
+            label="Scope"
+            options={SCOPE_OPTIONS}
+            value={cfg.scope}
+            onChange={(v) => setCfg({ scope: v })}
+          />
+          <ToggleChips
+            label="Show"
+            options={RANKINGS_TOPN_OPTIONS}
+            value={cfg.topN}
+            onChange={(v) => setCfg({ topN: v })}
+          />
+          <ToggleChips
+            label="Sort"
+            options={[
+              { value: 'desc', label: 'Strongest' },
+              { value: 'asc', label: 'Weakest' },
+            ]}
+            value={cfg.direction}
+            onChange={(v) => setCfg({ direction: v })}
+          />
+        </CardControls>
+      }
+    >
+      {data.length === 0 ? (
+        <div className="er-empty">No countries in the selected scope.</div>
+      ) : (
+        <div style={{ height: Math.max(220, data.length * 34 + 40) }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} horizontal={false} />
+              <XAxis
+                type="number"
+                domain={[0, 1]}
+                tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={{ fill: tokens.axisTickEmphasis, fontSize: 11, fontWeight: 600 }}
+                axisLine={false}
+                tickLine={false}
+                width={80}
+              />
+              <Tooltip
+                contentStyle={tokens.tooltipStyle}
+                formatter={(v, _n, p) => [v.toFixed(2), p.payload.fullName]}
+              />
+              <Bar dataKey="score" radius={[0, 4, 4, 0]}>
+                {data.map((entry, i) => (
+                  <Cell
+                    key={entry.rank}
+                    fill={i === 0 ? '#d4af37' : i < 3 ? '#10b981' : i < 6 ? '#6366f1' : '#6b7280'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </Card>
   );
 }
 
 function PowerDimensionRadar({ empireData }) {
-  const [countryA, setCountryA] = useState('USA');
-  const [countryB, setCountryB] = useState('CHN');
-
-  const data = POWER_DIMENSIONS.map((dim) => {
-    const a = empireData.find((e) => e.code === countryA)?.scores[dim] ?? 0;
-    const b = empireData.find((e) => e.code === countryB)?.scores[dim] ?? 0;
-    return {
-      dimension: dim.length > 16 ? `${dim.substring(0, 14)}…` : dim,
-      [countryA]: a + 3,
-      [countryB]: b + 3,
-    };
+  const [cfg, setCfg] = useCardConfig('power-radar', {
+    countryA: 'USA',
+    countryB: 'CHN',
+    dimensionGroup: 'all',
   });
+  const tokens = useEmpireChartTokens();
+
+  const countryOptions = useMemo(
+    () => empireData.map((c) => ({ value: c.code, label: `${c.flag} ${c.name}` })),
+    [empireData],
+  );
+
+  const dimensions = useMemo(() => {
+    const set = DIMENSION_GROUPS[cfg.dimensionGroup];
+    return set ? POWER_DIMENSIONS.filter((d) => set.has(d)) : POWER_DIMENSIONS;
+  }, [cfg.dimensionGroup]);
+
+  const data = useMemo(
+    () =>
+      dimensions.map((dim) => {
+        const a = empireData.find((e) => e.code === cfg.countryA)?.scores[dim] ?? 0;
+        const b = empireData.find((e) => e.code === cfg.countryB)?.scores[dim] ?? 0;
+        return {
+          dimension: dim.length > 16 ? `${dim.substring(0, 14)}…` : dim,
+          [cfg.countryA]: a + 3,
+          [cfg.countryB]: b + 3,
+        };
+      }),
+    [dimensions, empireData, cfg.countryA, cfg.countryB],
+  );
 
   return (
     <Card
       id="section-energy-power"
       icon="bi-diagram-3"
       title="Power Dimension Comparison"
-      subtitle="Head-to-head across 18 measures of power"
+      subtitle={`Head-to-head across ${dimensions.length} measures of power`}
       actions={
-        <div style={{ display: 'flex', gap: 6 }}>
-          <select className="er-select" value={countryA} onChange={(e) => setCountryA(e.target.value)}>
-            {empireData.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.flag} {c.name}
-              </option>
-            ))}
-          </select>
-          <select className="er-select" value={countryB} onChange={(e) => setCountryB(e.target.value)}>
-            {empireData.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.flag} {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CardControls>
+          <ToggleSelect
+            label="A"
+            options={countryOptions}
+            value={cfg.countryA}
+            onChange={(v) => setCfg({ countryA: v })}
+          />
+          <ToggleSelect
+            label="B"
+            options={countryOptions}
+            value={cfg.countryB}
+            onChange={(v) => setCfg({ countryB: v })}
+          />
+          <ToggleChips
+            label="Focus"
+            options={DIMENSION_OPTIONS}
+            value={cfg.dimensionGroup}
+            onChange={(v) => setCfg({ dimensionGroup: v })}
+          />
+        </CardControls>
       }
       wide
     >
       <div style={{ height: 360 }}>
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">
-            <PolarGrid stroke="rgba(212,175,55,0.15)" />
-            <PolarAngleAxis dataKey="dimension" tick={{ fill: '#9ca3af', fontSize: 9 }} />
+            <PolarGrid stroke="rgba(212,175,55,0.22)" />
+            <PolarAngleAxis dataKey="dimension" tick={{ fill: tokens.axisTick, fontSize: 9 }} />
             <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 6]} />
             <Radar
-              name={countryA}
-              dataKey={countryA}
+              name={cfg.countryA}
+              dataKey={cfg.countryA}
               stroke="#d4af37"
               fill="rgba(212,175,55,0.18)"
               strokeWidth={2}
             />
             <Radar
-              name={countryB}
-              dataKey={countryB}
+              name={cfg.countryB}
+              dataKey={cfg.countryB}
               stroke="#10b981"
               fill="rgba(16,185,129,0.18)"
               strokeWidth={2}
             />
-            <Legend wrapperStyle={{ fontSize: '0.7rem', color: '#9ca3af' }} />
-            <Tooltip contentStyle={chartTooltipStyle} formatter={(v) => (v - 3).toFixed(1)} />
+            <Legend wrapperStyle={{ fontSize: '0.7rem', color: tokens.legend }} />
+            <Tooltip contentStyle={tokens.tooltipStyle} formatter={(v) => (v - 3).toFixed(1)} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
@@ -560,26 +700,57 @@ function PowerDimensionRadar({ empireData }) {
   );
 }
 
+const BIG_CYCLE_TIMEFRAMES = [
+  { value: 100, label: 'Last 100Y' },
+  { value: 250, label: 'Last 250Y' },
+  { value: 9999, label: 'All' },
+];
+
 function BigCycleCard({ empireData }) {
-  const [country, setCountry] = useState('USA');
-  const data = useMemo(() => generateBigCycle(country), [country]);
-  const current = empireData.find((e) => e.code === country);
+  const [cfg, setCfg] = useCardConfig('big-cycle', {
+    country: 'USA',
+    window: 250,
+  });
+  const tokens = useEmpireChartTokens();
+
+  const fullSeries = useMemo(() => generateBigCycle(cfg.country), [cfg.country]);
+  const data = useMemo(() => {
+    if (cfg.window >= 9999) return fullSeries;
+    const cutoff = 2030 - cfg.window;
+    return fullSeries.filter((p) => p.year >= cutoff);
+  }, [fullSeries, cfg.window]);
+
+  const current = empireData.find((e) => e.code === cfg.country);
   const traj = current ? trajectoryIcon(current.trajectory) : null;
+
+  const countryOptions = useMemo(
+    () => empireData.map((c) => ({ value: c.code, label: `${c.flag} ${c.name}` })),
+    [empireData],
+  );
+
+  const windowLabel = BIG_CYCLE_TIMEFRAMES.find((t) => t.value === cfg.window)?.label ?? 'All';
 
   return (
     <Card
       id="section-conflict-risk"
       icon="bi-graph-up-arrow"
       title="The Big Cycle — Rise & Fall"
-      subtitle="Historical power trajectory (1500–2030, mock data)"
+      subtitle={`Historical power trajectory · ${windowLabel} (illustrative)`}
       actions={
-        <select className="er-select" value={country} onChange={(e) => setCountry(e.target.value)}>
-          {empireData.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.flag} {c.name}
-            </option>
-          ))}
-        </select>
+        <CardControls>
+          <ToggleSelect
+            label="Country"
+            options={countryOptions}
+            value={cfg.country}
+            onChange={(v) => setCfg({ country: v })}
+          />
+          <ToggleChips
+            label="Window"
+            options={BIG_CYCLE_TIMEFRAMES}
+            value={cfg.window}
+            onChange={(v) => setCfg({ window: v })}
+          />
+        </CardControls>
       }
       wide
     >
@@ -592,21 +763,21 @@ function BigCycleCard({ empireData }) {
                 <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
             <XAxis
               dataKey="year"
-              tick={{ fill: '#6b7280', fontSize: 10 }}
+              tick={{ fill: tokens.axisTick, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
-              interval={4}
+              interval={Math.max(0, Math.floor(data.length / 12))}
             />
-            <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} />
-            <Tooltip contentStyle={chartTooltipStyle} formatter={(v) => [`${v}`, 'Power Index']} />
+            <YAxis tick={{ fill: tokens.axisTick, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} />
+            <Tooltip contentStyle={tokens.tooltipStyle} formatter={(v) => [`${v}`, 'Power Index']} />
             <ReferenceLine
               x={2025}
               stroke="#d4af37"
               strokeDasharray="4 2"
-              label={{ value: 'Now', fill: '#d4af37', fontSize: 10, position: 'top' }}
+              label={{ value: 'Now', fill: tokens.referenceAccent, fontSize: 10, position: 'top' }}
             />
             <Area type="monotone" dataKey="value" stroke="#ef4444" fill="url(#cycleGradient)" strokeWidth={2.5} />
           </AreaChart>
@@ -634,81 +805,185 @@ function BigCycleCard({ empireData }) {
   );
 }
 
+const DEBT_COUNTRY_OPTIONS = [
+  { value: 'USA', label: '🇺🇸 USA', color: '#d4af37' },
+  { value: 'CHN', label: '🇨🇳 China', color: '#ef4444' },
+  { value: 'JPN', label: '🇯🇵 Japan', color: '#8b5cf6' },
+  { value: 'DEU', label: '🇩🇪 Germany', color: '#10b981' },
+  { value: 'GBR', label: '🇬🇧 UK', color: '#3b82f6' },
+  { value: 'EUR', label: '🇪🇺 Eurozone', color: '#f59e0b' },
+];
+
+const DEBT_TIMEFRAMES = [
+  { value: 5, label: '5Y' },
+  { value: 10, label: '10Y' },
+  { value: 25, label: '25Y' },
+];
+
 function DebtCycleCard() {
-  const years = Array.from({ length: 25 }, (_, i) => 2000 + i);
-  const data = years.map((year) => {
-    const t = (year - 2000) / 25;
-    return {
-      year,
-      USA: 55 + t * 75 + Math.sin(t * 6) * 8,
-      CHN: 20 + t * 55 + Math.sin(t * 4) * 5,
-      JPN: 135 + t * 130 + Math.sin(t * 5) * 10,
-      DEU: 60 + t * 10 + Math.sin(t * 4) * 6,
-      GBR: 40 + t * 60 + Math.sin(t * 5) * 7,
-      EUR: 70 + t * 25 + Math.sin(t * 4) * 6,
-    };
+  const [cfg, setCfg] = useCardConfig('debt-cycle', {
+    countries: ['USA', 'CHN', 'JPN', 'DEU', 'GBR', 'EUR'],
+    window: 25,
   });
+  const tokens = useEmpireChartTokens();
+
+  const data = useMemo(() => {
+    const startYear = 2025 - cfg.window;
+    const years = Array.from({ length: cfg.window + 1 }, (_, i) => startYear + i);
+    return years.map((year) => {
+      const t = (year - 2000) / 25;
+      return {
+        year,
+        USA: 55 + t * 75 + Math.sin(t * 6) * 8,
+        CHN: 20 + t * 55 + Math.sin(t * 4) * 5,
+        JPN: 135 + t * 130 + Math.sin(t * 5) * 10,
+        DEU: 60 + t * 10 + Math.sin(t * 4) * 6,
+        GBR: 40 + t * 60 + Math.sin(t * 5) * 7,
+        EUR: 70 + t * 25 + Math.sin(t * 4) * 6,
+      };
+    });
+  }, [cfg.window]);
+
+  const activeCountries = DEBT_COUNTRY_OPTIONS.filter((c) => cfg.countries.includes(c.value));
 
   return (
-    <Card id="section-interest-rates" icon="bi-cash-stack" title="Debt Burden Cycles" subtitle="Debt-to-GDP ratio across major empires (%)">
-      <div style={{ height: 260 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="year" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis
-              tick={{ fill: '#6b7280', fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => `${v}%`}
-            />
-            <Tooltip contentStyle={chartTooltipStyle} formatter={(v) => `${v.toFixed(0)}%`} />
-            <Legend wrapperStyle={{ fontSize: '0.65rem' }} iconType="plainline" />
-            <Line type="monotone" dataKey="USA" stroke="#d4af37" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="CHN" stroke="#ef4444" strokeWidth={1.8} dot={false} />
-            <Line type="monotone" dataKey="JPN" stroke="#8b5cf6" strokeWidth={1.8} dot={false} />
-            <Line type="monotone" dataKey="DEU" stroke="#10b981" strokeWidth={1.8} dot={false} />
-            <Line type="monotone" dataKey="GBR" stroke="#3b82f6" strokeWidth={1.8} dot={false} />
-            <Line type="monotone" dataKey="EUR" stroke="#f59e0b" strokeWidth={1.8} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+    <Card
+      id="section-interest-rates"
+      icon="bi-cash-stack"
+      title="Debt Burden Cycles"
+      subtitle={`Debt-to-GDP · ${activeCountries.length} of ${DEBT_COUNTRY_OPTIONS.length} · last ${cfg.window}Y`}
+      actions={
+        <CardControls>
+          <ToggleMultiSelect
+            label="Countries"
+            options={DEBT_COUNTRY_OPTIONS}
+            values={cfg.countries}
+            onChange={(v) => setCfg({ countries: v })}
+            placeholder="None"
+          />
+          <ToggleChips
+            label="Window"
+            options={DEBT_TIMEFRAMES}
+            value={cfg.window}
+            onChange={(v) => setCfg({ window: v })}
+          />
+        </CardControls>
+      }
+    >
+      {activeCountries.length === 0 ? (
+        <div className="er-empty">Pick at least one country to plot.</div>
+      ) : (
+        <div style={{ height: 260 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+              <XAxis dataKey="year" tick={{ fill: tokens.axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis
+                tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip contentStyle={tokens.tooltipStyle} formatter={(v) => `${v.toFixed(0)}%`} />
+              <Legend wrapperStyle={{ fontSize: '0.65rem', color: tokens.legend }} iconType="plainline" />
+              {activeCountries.map((c) => (
+                <Line
+                  key={c.value}
+                  type="monotone"
+                  dataKey={c.value}
+                  stroke={c.color}
+                  strokeWidth={c.value === 'USA' ? 2 : 1.8}
+                  dot={false}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </Card>
   );
 }
 
+const MILITARY_DATA = [
+  { country: 'USA', spending: 877, gdpPct: 3.5 },
+  { country: 'CHN', spending: 292, gdpPct: 1.6 },
+  { country: 'RUS', spending: 86, gdpPct: 4.1 },
+  { country: 'IND', spending: 81, gdpPct: 2.4 },
+  { country: 'GBR', spending: 68, gdpPct: 2.2 },
+  { country: 'DEU', spending: 55, gdpPct: 1.4 },
+  { country: 'FRA', spending: 53, gdpPct: 1.9 },
+  { country: 'JPN', spending: 46, gdpPct: 1.1 },
+];
+
+const MILITARY_METRICS = [
+  { value: 'spending', label: 'USD bn' },
+  { value: 'gdpPct', label: '% of GDP' },
+];
+
+const MILITARY_TOPN = [
+  { value: 5, label: 'Top 5' },
+  { value: 8, label: 'All 8' },
+];
+
 function MilitaryCard() {
-  const data = [
-    { country: 'USA', spending: 877, gdpPct: 3.5 },
-    { country: 'CHN', spending: 292, gdpPct: 1.6 },
-    { country: 'RUS', spending: 86, gdpPct: 4.1 },
-    { country: 'IND', spending: 81, gdpPct: 2.4 },
-    { country: 'GBR', spending: 68, gdpPct: 2.2 },
-    { country: 'DEU', spending: 55, gdpPct: 1.4 },
-    { country: 'FRA', spending: 53, gdpPct: 1.9 },
-    { country: 'JPN', spending: 46, gdpPct: 1.1 },
-  ];
+  const [cfg, setCfg] = useCardConfig('military', {
+    metric: 'spending',
+    topN: 8,
+  });
+  const tokens = useEmpireChartTokens();
+
+  const data = useMemo(
+    () =>
+      [...MILITARY_DATA]
+        .sort((a, b) => b[cfg.metric] - a[cfg.metric])
+        .slice(0, cfg.topN),
+    [cfg.metric, cfg.topN],
+  );
+
+  const metricLabel = MILITARY_METRICS.find((m) => m.value === cfg.metric)?.label ?? '';
+  const format = cfg.metric === 'spending' ? (v) => `$${v}B` : (v) => `${v}%`;
 
   return (
-    <Card id="section-military-power" icon="bi-shield-fill" title="Military Strength" subtitle="Defense spending (2023 est., USD bn)">
+    <Card
+      id="section-military-power"
+      icon="bi-shield-fill"
+      title="Military Strength"
+      subtitle={`Defense ${cfg.metric === 'spending' ? 'spending' : 'burden'} · 2023 est · ${metricLabel}`}
+      actions={
+        <CardControls>
+          <ToggleChips
+            label="Metric"
+            options={MILITARY_METRICS}
+            value={cfg.metric}
+            onChange={(v) => setCfg({ metric: v })}
+          />
+          <ToggleChips
+            label="Show"
+            options={MILITARY_TOPN}
+            value={cfg.topN}
+            onChange={(v) => setCfg({ topN: v })}
+          />
+        </CardControls>
+      }
+    >
       <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="country" tick={{ fill: '#9ca3af', fontSize: 10 }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+            <XAxis dataKey="country" tick={{ fill: tokens.axisTickEmphasis, fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis
-              tick={{ fill: '#6b7280', fontSize: 10 }}
+              tick={{ fill: tokens.axisTick, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `$${v}B`}
+              tickFormatter={format}
             />
             <Tooltip
-              contentStyle={chartTooltipStyle}
-              formatter={(v, name) => [name === 'spending' ? `$${v}B` : `${v}% GDP`, name]}
+              contentStyle={tokens.tooltipStyle}
+              formatter={(v) => [format(v), metricLabel]}
             />
-            <Bar dataKey="spending" radius={[4, 4, 0, 0]}>
-              {data.map((_, i) => (
-                <Cell key={data[i].country} fill={i === 0 ? '#d4af37' : '#ef4444'} />
+            <Bar dataKey={cfg.metric} radius={[4, 4, 0, 0]}>
+              {data.map((row, i) => (
+                <Cell key={row.country} fill={i === 0 ? '#d4af37' : '#ef4444'} />
               ))}
             </Bar>
           </BarChart>
@@ -718,40 +993,118 @@ function MilitaryCard() {
   );
 }
 
+const RESERVE_WINDOWS = [
+  { value: 10, label: '10Y' },
+  { value: 25, label: '25Y' },
+];
+
+const RESERVE_DISPLAY = [
+  { value: 'stacked', label: 'Stacked %' },
+  { value: 'absolute', label: 'Absolute %' },
+];
+
 function ReserveCurrencyCard() {
-  const years = Array.from({ length: 25 }, (_, i) => 2000 + i);
-  const data = years.map((year) => {
-    const t = (year - 2000) / 24;
-    return {
-      year,
-      USD: 72 - t * 14,
-      EUR: 18 + t * 4,
-      JPY: 6 - t * 1,
-      CNY: 0.5 + t * 3,
-      GBP: 3.5 + t * 0.5,
-    };
+  const [cfg, setCfg] = useCardConfig('reserve-currency', {
+    window: 25,
+    display: 'stacked',
   });
+  const tokens = useEmpireChartTokens();
+
+  const data = useMemo(() => {
+    const start = 2025 - cfg.window;
+    const years = Array.from({ length: cfg.window + 1 }, (_, i) => start + i);
+    return years.map((year) => {
+      const t = (year - 2000) / 24;
+      return {
+        year,
+        USD: 72 - t * 14,
+        EUR: 18 + t * 4,
+        JPY: 6 - t * 1,
+        CNY: 0.5 + t * 3,
+        GBP: 3.5 + t * 0.5,
+      };
+    });
+  }, [cfg.window]);
 
   return (
-    <Card id="section-governance" icon="bi-currency-exchange" title="Reserve Currency Share" subtitle="% of global forex reserves">
+    <Card
+      id="section-governance"
+      icon="bi-currency-exchange"
+      title="Reserve Currency Share"
+      subtitle={`% of global forex reserves · last ${cfg.window}Y`}
+      actions={
+        <CardControls>
+          <ToggleChips
+            label="Window"
+            options={RESERVE_WINDOWS}
+            value={cfg.window}
+            onChange={(v) => setCfg({ window: v })}
+          />
+          <ToggleChips
+            label="View"
+            options={RESERVE_DISPLAY}
+            value={cfg.display}
+            onChange={(v) => setCfg({ display: v })}
+          />
+        </CardControls>
+      }
+    >
       <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }} stackOffset="expand">
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="year" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
+          <AreaChart
+            data={data}
+            margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
+            stackOffset={cfg.display === 'stacked' ? 'expand' : 'none'}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+            <XAxis dataKey="year" tick={{ fill: tokens.axisTick, fontSize: 10 }} axisLine={false} tickLine={false} />
             <YAxis
-              tick={{ fill: '#6b7280', fontSize: 10 }}
+              tick={{ fill: tokens.axisTick, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+              tickFormatter={
+                cfg.display === 'stacked'
+                  ? (v) => `${(v * 100).toFixed(0)}%`
+                  : (v) => `${v.toFixed(0)}%`
+              }
             />
-            <Tooltip contentStyle={chartTooltipStyle} formatter={(v) => `${v.toFixed(1)}%`} />
-            <Legend wrapperStyle={{ fontSize: '0.65rem' }} />
-            <Area type="monotone" dataKey="USD" stackId="1" stroke="#d4af37" fill="rgba(212,175,55,0.7)" />
-            <Area type="monotone" dataKey="EUR" stackId="1" stroke="#3b82f6" fill="rgba(59,130,246,0.7)" />
-            <Area type="monotone" dataKey="JPY" stackId="1" stroke="#8b5cf6" fill="rgba(139,92,246,0.7)" />
-            <Area type="monotone" dataKey="CNY" stackId="1" stroke="#ef4444" fill="rgba(239,68,68,0.7)" />
-            <Area type="monotone" dataKey="GBP" stackId="1" stroke="#10b981" fill="rgba(16,185,129,0.7)" />
+            <Tooltip contentStyle={tokens.tooltipStyle} formatter={(v) => `${v.toFixed(1)}%`} />
+            <Legend wrapperStyle={{ fontSize: '0.65rem', color: tokens.legend }} />
+            <Area
+              type="monotone"
+              dataKey="USD"
+              stackId={cfg.display === 'stacked' ? '1' : undefined}
+              stroke="#d4af37"
+              fill="rgba(212,175,55,0.7)"
+            />
+            <Area
+              type="monotone"
+              dataKey="EUR"
+              stackId={cfg.display === 'stacked' ? '1' : undefined}
+              stroke="#3b82f6"
+              fill="rgba(59,130,246,0.7)"
+            />
+            <Area
+              type="monotone"
+              dataKey="JPY"
+              stackId={cfg.display === 'stacked' ? '1' : undefined}
+              stroke="#8b5cf6"
+              fill="rgba(139,92,246,0.7)"
+            />
+            <Area
+              type="monotone"
+              dataKey="CNY"
+              stackId={cfg.display === 'stacked' ? '1' : undefined}
+              stroke="#ef4444"
+              fill="rgba(239,68,68,0.7)"
+            />
+            <Area
+              type="monotone"
+              dataKey="GBP"
+              stackId={cfg.display === 'stacked' ? '1' : undefined}
+              stroke="#10b981"
+              fill="rgba(16,185,129,0.7)"
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -759,33 +1112,85 @@ function ReserveCurrencyCard() {
   );
 }
 
+const SCORECARD_SORTS = [
+  { value: 'rank', label: 'Rank' },
+  { value: 'score', label: 'Score' },
+  { value: 'trajectory', label: 'Trajectory' },
+];
+
+const TRAJECTORY_RANK = { up: 0, flat: 1, down: 2 };
+
 function ScorecardGrid({ empireData }) {
+  const [cfg, setCfg] = useCardConfig('scorecards', {
+    scope: 'world',
+    sort: 'rank',
+  });
+
+  const rows = useMemo(() => {
+    const scoped = applyScope(empireData, cfg.scope);
+    const sorted = [...scoped].sort((a, b) => {
+      if (cfg.sort === 'score') return b.score - a.score;
+      if (cfg.sort === 'trajectory') {
+        return (TRAJECTORY_RANK[a.trajectory] ?? 1) - (TRAJECTORY_RANK[b.trajectory] ?? 1);
+      }
+      return a.rank - b.rank;
+    });
+    return sorted;
+  }, [empireData, cfg.scope, cfg.sort]);
+
   return (
-    <Card icon="bi-grid-3x3-gap" title="Country Scorecards" subtitle="All 11 major powers at a glance" wide>
-      <div className="er-scorecard-grid">
-        {empireData.map((c) => {
-          const traj = trajectoryIcon(c.trajectory);
-          return (
-            <div key={c.code} className="er-scorecard">
-              <div className="er-scorecard-header">
-                <span className="er-scorecard-flag">{c.flag}</span>
-                <div>
-                  <div className="er-scorecard-name">{c.name}</div>
-                  <div className="er-scorecard-code">{c.code}</div>
+    <Card
+      icon="bi-grid-3x3-gap"
+      title="Country Scorecards"
+      subtitle={`${rows.length} ${SCOPE_OPTIONS.find((s) => s.value === cfg.scope)?.label ?? 'World'} powers · sorted by ${SCORECARD_SORTS.find((s) => s.value === cfg.sort)?.label ?? 'Rank'}`}
+      wide
+      actions={
+        <CardControls>
+          <ToggleChips
+            label="Scope"
+            options={SCOPE_OPTIONS}
+            value={cfg.scope}
+            onChange={(v) => setCfg({ scope: v })}
+          />
+          <ToggleChips
+            label="Sort by"
+            options={SCORECARD_SORTS}
+            value={cfg.sort}
+            onChange={(v) => setCfg({ sort: v })}
+          />
+        </CardControls>
+      }
+    >
+      {rows.length === 0 ? (
+        <div className="er-empty">No countries in the selected scope.</div>
+      ) : (
+        <div className="er-scorecard-grid">
+          {rows.map((c) => {
+            const traj = trajectoryIcon(c.trajectory);
+            return (
+              <div key={c.code} className="er-scorecard">
+                <div className="er-scorecard-header">
+                  <span className="er-scorecard-flag" data-contrast-ignore>
+                    {c.flag}
+                  </span>
+                  <div>
+                    <div className="er-scorecard-name">{c.name}</div>
+                    <div className="er-scorecard-code">{c.code}</div>
+                  </div>
+                  <span className="er-scorecard-rank">#{c.rank}</span>
                 </div>
-                <span className="er-scorecard-rank">#{c.rank}</span>
+                <div className="er-scorecard-score-row">
+                  <div className="er-scorecard-score">{c.score.toFixed(2)}</div>
+                  <i className={`bi ${traj.icon} er-scorecard-trajectory`} style={{ color: traj.color }} />
+                </div>
+                <div className="er-scorecard-bar-track">
+                  <div className="er-scorecard-bar-fill" style={{ width: `${c.score * 100}%` }} />
+                </div>
               </div>
-              <div className="er-scorecard-score-row">
-                <div className="er-scorecard-score">{c.score.toFixed(2)}</div>
-                <i className={`bi ${traj.icon} er-scorecard-trajectory`} style={{ color: traj.color }} />
-              </div>
-              <div className="er-scorecard-bar-track">
-                <div className="er-scorecard-bar-fill" style={{ width: `${c.score * 100}%` }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }
@@ -819,6 +1224,15 @@ function EmpireRankingPageContent() {
 
   const [empireData, setEmpireData] = useState(EMPIRE_DATA);
   const [loading, setLoading] = useState(false);
+
+  // Dev-only a11y sanity check. Scoped to `.er-page` so we don't flag
+  // dashboard-shell elements we don't control. Runs after first paint
+  // so Recharts + themed classes have stabilized. No-op in production.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return undefined;
+    const t = setTimeout(() => auditContrast('.er-page'), 600);
+    return () => clearTimeout(t);
+  }, [empireData]);
 
   useEffect(() => {
     if (!USE_LIVE_DATA) return;

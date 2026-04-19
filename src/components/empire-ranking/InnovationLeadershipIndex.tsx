@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { CardControls, ToggleChips } from "./card-controls";
+import { useCardConfig } from "@/hooks/useCardConfig";
 
 type Metric = "patents" | "rd_spend" | "ai_pubs" | "startup_funding" | "composite";
 
@@ -68,15 +69,27 @@ const countries: {
   },
 ];
 
+const TOPN_OPTIONS = [
+  { value: 5, label: "Top 5" },
+  { value: 8, label: "All 8" },
+];
+
+const METRIC_OPTIONS = metrics.map((m) => ({ value: m.key, label: m.label }));
+
+type Config = { metric: Metric; topN: number };
+
 export default function InnovationLeadershipIndex() {
-  const [activeMetric, setActiveMetric] = useState<Metric>("composite");
+  const [cfg, setCfg] = useCardConfig<Config>("innovation-index", {
+    metric: "composite",
+    topN: 8,
+  });
 
-  const metric = metrics.find((m) => m.key === activeMetric)!;
-  const maxVal = Math.max(...countries.map((c) => c.scores[activeMetric]));
-
+  const metric = metrics.find((m) => m.key === cfg.metric) ?? metrics[0];
   const sorted = [...countries].sort(
-    (a, b) => b.scores[activeMetric] - a.scores[activeMetric]
+    (a, b) => b.scores[cfg.metric] - a.scores[cfg.metric],
   );
+  const visible = sorted.slice(0, cfg.topN);
+  const maxVal = Math.max(...visible.map((c) => c.scores[cfg.metric]));
 
   return (
     <section className="er-card w-full">
@@ -85,55 +98,62 @@ export default function InnovationLeadershipIndex() {
           <i className="bi bi-lightning-charge" aria-hidden />
           <div>
             <h3>Innovation Leadership Index</h3>
-            <p className="er-card-subtitle">Countries ranked by technological innovation capacity</p>
+            <p className="er-card-subtitle">
+              Ranked by {metric.label.toLowerCase()} · {visible.length} of {countries.length}
+            </p>
           </div>
+        </div>
+        <div className="er-card-actions">
+          <CardControls>
+            <ToggleChips
+              label="Metric"
+              options={METRIC_OPTIONS}
+              value={cfg.metric}
+              onChange={(v) => setCfg({ metric: v as Metric })}
+            />
+            <ToggleChips
+              label="Show"
+              options={TOPN_OPTIONS}
+              value={cfg.topN}
+              onChange={(v) => setCfg({ topN: v as number })}
+            />
+          </CardControls>
         </div>
       </div>
 
       <div className="er-card-body">
-        <div className="er-pill-toggle-group">
-          {metrics.map((m) => (
-            <button
-              key={m.key}
-              type="button"
-              onClick={() => setActiveMetric(m.key)}
-              className={`er-pill-toggle${activeMetric === m.key ? " er-pill-toggle--active" : ""}`}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-          {sorted.map((country, rank) => {
-            const pct = (country.scores[activeMetric] / maxVal) * 100;
+          {visible.map((country, rank) => {
+            const pct = (country.scores[cfg.metric] / maxVal) * 100;
             const isTopTwo = rank < 2;
             return (
               <div
                 key={country.name}
                 className="flex items-center gap-3 p-2 rounded-lg transition-all"
                 style={{
-                  background: "rgba(0,0,0,0.12)",
-                  border: "1px solid rgba(212, 175, 55, 0.06)",
+                  background: "var(--er-surface-inset)",
+                  border: "1px solid var(--er-border-soft)",
                 }}
               >
                 <div className="w-6 shrink-0 text-center">
                   {rank === 0 ? (
-                    <span className="text-sm">🥇</span>
+                    <span className="text-sm" data-contrast-ignore>🥇</span>
                   ) : rank === 1 ? (
-                    <span className="text-sm">🥈</span>
+                    <span className="text-sm" data-contrast-ignore>🥈</span>
                   ) : rank === 2 ? (
-                    <span className="text-sm">🥉</span>
+                    <span className="text-sm" data-contrast-ignore>🥉</span>
                   ) : (
                     <span className="text-xs font-mono er-analytics-muted">#{rank + 1}</span>
                   )}
                 </div>
 
                 <div className="w-32 flex items-center gap-2 shrink-0 min-w-0">
-                  <span className="text-sm leading-none">{country.flag}</span>
+                  <span className="text-sm leading-none" data-contrast-ignore>
+                    {country.flag}
+                  </span>
                   <span
                     className="text-sm truncate font-medium"
-                    style={{ color: isTopTwo ? country.color : "#e2e8f0" }}
+                    style={{ color: isTopTwo ? country.color : "var(--er-text-body)" }}
                   >
                     {country.name}
                   </span>
@@ -152,7 +172,7 @@ export default function InnovationLeadershipIndex() {
 
                 <div className="w-[5.5rem] text-right shrink-0">
                   <span className="text-xs font-mono" style={{ color: country.color }}>
-                    {country.scores[activeMetric].toLocaleString()} {metric.unit}
+                    {country.scores[cfg.metric].toLocaleString()} {metric.unit}
                   </span>
                 </div>
               </div>
@@ -160,7 +180,7 @@ export default function InnovationLeadershipIndex() {
           })}
         </div>
 
-        <p className="er-analytics-muted" style={{ fontSize: "0.65rem", marginTop: "1rem", marginBottom: 0 }}>
+        <p className="er-analytics-muted" style={{ fontSize: "0.7rem", marginTop: "1rem", marginBottom: 0 }}>
           Data: WIPO patents, OECD R&D, arXiv AI publications, PitchBook funding. ~2023 estimates.
         </p>
       </div>

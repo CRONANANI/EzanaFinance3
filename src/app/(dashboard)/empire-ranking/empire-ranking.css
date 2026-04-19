@@ -1,10 +1,46 @@
 /* Empire Ranking & Analysis — gold + emerald on dark, Dalio-inspired */
 
+/* ── Text tokens ───────────────────────────────────────────────────
+ * Single source of truth for text colors on er-card. Every hex in
+ * this file (and inline styles in page.js / the TSX analytics cards)
+ * should resolve through one of these so light-mode flips everything
+ * together. Dark-mode values are picked to clear WCAG AA (4.5:1) on
+ * the gold-tinted dark card surface; light-mode values clear AA on
+ * white. Values verified with the dev auditor in src/lib/a11y.
+ */
 .er-page {
+  --er-text-primary: #f0f6fc;   /* headings, card titles */
+  --er-text-body:    #e2e8f0;   /* primary body / value text */
+  --er-text-muted:   #9ca3af;   /* secondary labels, axis ticks, subtitle */
+  --er-text-faint:   #cbd5e1;   /* legend, small captions on chart */
+  --er-text-label:   #9ca3af;   /* uppercase labels (cycle stats, controls) */
+  --er-accent:       #d4af37;   /* gold accent */
+  --er-accent-soft:  #e6c35a;
+  --er-surface:      rgba(212, 175, 55, 0.02);
+  --er-surface-inset: rgba(0, 0, 0, 0.2);
+  --er-border-soft:  rgba(212, 175, 55, 0.08);
+  --er-border:       rgba(212, 175, 55, 0.15);
+  --er-border-hover: rgba(212, 175, 55, 0.35);
+
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding-bottom: 3rem;
+}
+
+body.light-mode .er-page {
+  --er-text-primary: #111827;
+  --er-text-body:    #1f2937;
+  --er-text-muted:   #4b5563;
+  --er-text-faint:   #374151;
+  --er-text-label:   #4b5563;
+  --er-accent:       #b3902f;
+  --er-accent-soft:  #c9a548;
+  --er-surface:      #ffffff;
+  --er-surface-inset: #fafafa;
+  --er-border-soft:  rgba(17, 24, 39, 0.08);
+  --er-border:       rgba(212, 175, 55, 0.22);
+  --er-border-hover: rgba(212, 175, 55, 0.5);
 }
 
 /* ── Hero ──────────────────────────────────────────────── */
@@ -178,22 +214,29 @@
   padding: 0.35rem 0.65rem;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(212, 175, 55, 0.12);
-  color: #6b7280;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  color: var(--er-text-muted);
   cursor: pointer;
   font-family: inherit;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
 .er-pill-toggle:hover {
-  color: #9ca3af;
-  border-color: rgba(212, 175, 55, 0.22);
+  color: var(--er-text-body);
+  border-color: rgba(212, 175, 55, 0.32);
 }
 
 .er-pill-toggle--active {
-  color: #d4af37;
-  border-color: rgba(212, 175, 55, 0.35);
-  background: rgba(212, 175, 55, 0.08);
+  color: var(--er-accent);
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+body.light-mode .er-pill-toggle {
+  background: rgba(17, 24, 39, 0.04);
+}
+body.light-mode .er-pill-toggle--active {
+  background: rgba(212, 175, 55, 0.14);
 }
 
 .er-analytics-bar-track {
@@ -217,19 +260,19 @@
 }
 
 .er-analytics-muted {
-  color: #6b7280;
+  color: var(--er-text-muted);
 }
 
 .er-analytics-timeline-era {
   font-size: 0.68rem;
-  color: #6b7280;
+  color: var(--er-text-muted);
   text-align: right;
   line-height: 1.25;
 }
 
 .er-analytics-timeline-body {
   font-size: 0.72rem;
-  color: #9ca3af;
+  color: var(--er-text-faint);
   margin-top: 0.35rem;
   line-height: 1.4;
 }
@@ -242,8 +285,8 @@
 
 /* ── Cards ─────────────────────────────────────────────── */
 .er-card {
-  background: rgba(212, 175, 55, 0.02);
-  border: 1px solid rgba(212, 175, 55, 0.1);
+  background: var(--er-surface);
+  border: 1px solid var(--er-border-soft);
   border-radius: 14px;
   overflow: hidden;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
@@ -284,13 +327,13 @@
 .er-card-header h3 {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #f0f6fc;
+  color: var(--er-text-primary);
   margin: 0;
 }
 
 .er-card-subtitle {
-  font-size: 0.68rem;
-  color: #6b7280;
+  font-size: 0.7rem;
+  color: var(--er-text-muted);
   margin: 2px 0 0;
 }
 
@@ -312,14 +355,19 @@
   padding: 0.3rem 0.55rem;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(212, 175, 55, 0.15);
-  color: #e2e8f0;
+  border: 1px solid var(--er-border);
+  color: var(--er-text-body);
   cursor: pointer;
 }
 
 .er-select:focus {
   outline: none;
-  border-color: #d4af37;
+  border-color: var(--er-accent);
+}
+
+body.light-mode .er-select {
+  background: #f8fafc;
+  color: var(--er-text-body);
 }
 
 /* ── Big Cycle stat row ────────────────────────────────── */
@@ -339,9 +387,9 @@
 }
 
 .er-cycle-stat-label {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--er-text-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -349,7 +397,7 @@
 .er-cycle-stat-value {
   font-size: 1.1rem;
   font-weight: 800;
-  color: #f0f6fc;
+  color: var(--er-text-primary);
 }
 
 /* ── Scorecard grid ────────────────────────────────────── */
@@ -360,8 +408,8 @@
 }
 
 .er-scorecard {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(212, 175, 55, 0.08);
+  background: var(--er-surface-inset);
+  border: 1px solid var(--er-border-soft);
   border-radius: 10px;
   padding: 0.75rem 0.85rem;
   transition: border-color 0.15s;
@@ -386,12 +434,12 @@
 .er-scorecard-name {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #f0f6fc;
+  color: var(--er-text-primary);
 }
 
 .er-scorecard-code {
-  font-size: 0.6rem;
-  color: #6b7280;
+  font-size: 0.62rem;
+  color: var(--er-text-muted);
   font-family: monospace;
 }
 
@@ -415,7 +463,7 @@
 .er-scorecard-score {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #d4af37;
+  color: var(--er-accent);
   font-feature-settings: 'tnum' 1;
 }
 
@@ -449,27 +497,192 @@
 }
 
 /* ── Light mode ────────────────────────────────────────── */
-body.light-mode .er-card {
-  background: #ffffff;
-  border-color: rgba(212, 175, 55, 0.18);
-}
-
-body.light-mode .er-card-header h3 {
-  color: #111827;
-}
-
 body.light-mode .er-hero {
   background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
 }
 
-body.light-mode .er-scorecard {
-  background: #fafafa;
+/* ── Control row (chips + selects + slider) ──────────────
+ * A unified visual language for per-card configuration.
+ * Lives in .er-card-actions (or as a body prefix on some wide
+ * cards) and wraps gracefully on narrow screens.
+ */
+.er-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
 }
 
-body.light-mode .er-scorecard-name {
-  color: #111827;
+.er-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
 }
 
-body.light-mode .er-cycle-stat-value {
-  color: #111827;
+.er-control-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--er-text-label);
+  white-space: nowrap;
+}
+
+.er-chip-group {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--er-border-soft);
+}
+
+body.light-mode .er-chip-group {
+  background: rgba(17, 24, 39, 0.04);
+}
+
+.er-chip {
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  background: transparent;
+  border: none;
+  color: var(--er-text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.er-chip:hover {
+  color: var(--er-text-body);
+}
+
+.er-chip--active {
+  background: rgba(212, 175, 55, 0.16);
+  color: var(--er-accent);
+}
+body.light-mode .er-chip--active {
+  background: rgba(212, 175, 55, 0.18);
+}
+
+.er-select--chip {
+  font-size: 0.66rem;
+  padding: 0.32rem 0.55rem;
+}
+
+.er-multiselect-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-right: 0.4rem;
+  min-width: 90px;
+  justify-content: space-between;
+}
+
+.er-multiselect-trigger i {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.er-multiselect-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  min-width: 180px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: #161b22;
+  border: 1px solid var(--er-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.light-mode .er-multiselect-menu {
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.12);
+}
+
+.er-multiselect-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.72rem;
+  color: var(--er-text-body);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.er-multiselect-item:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.er-multiselect-item input[type='checkbox'] {
+  accent-color: var(--er-accent);
+  cursor: pointer;
+}
+
+.er-control-group--slider {
+  min-width: 220px;
+  flex: 1 1 220px;
+}
+
+.er-slider {
+  flex: 1;
+  accent-color: var(--er-accent);
+  min-width: 80px;
+}
+
+.er-slider-end,
+.er-slider-value {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--er-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.er-slider-value {
+  color: var(--er-accent);
+  font-weight: 800;
+}
+
+/* Delta (±) color tokens — safe on both dark card and white card. */
+.er-delta--up {
+  color: #10b981;
+}
+.er-delta--down {
+  color: #ef4444;
+}
+body.light-mode .er-delta--up {
+  color: #047857;
+}
+body.light-mode .er-delta--down {
+  color: #b91c1c;
+}
+
+/* Dev-only visualization of contrast failures (auditContrast() adds the
+ * attribute). This is NEVER shipped to production because the auditor
+ * early-returns under NODE_ENV === 'production'.
+ */
+[data-contrast-fail] {
+  outline: 2px dashed #ef4444 !important;
+  outline-offset: 2px;
+}
+
+/* Empty-state copy inside .er-card bodies (used by cards whose toggles
+ * can legitimately filter everything out). */
+.er-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--er-text-muted);
 }
