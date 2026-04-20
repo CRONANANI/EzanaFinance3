@@ -501,6 +501,25 @@ body.light-mode .landing-page > footer .text-foreground {
   color: #0f172a !important;
 }
 
+/* Newsletter email input — inherit footer surface, no harsh outline */
+body.light-mode .landing-page > footer .footer-newsletter-input {
+  background-color: transparent !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+body.light-mode .landing-page > footer .footer-newsletter-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+body.light-mode .landing-page > footer .footer-newsletter-input:focus,
+body.light-mode .landing-page > footer .footer-newsletter-input:focus-visible {
+  outline: none !important;
+  border-color: rgba(16, 185, 129, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+}
+
 /* ── Privacy policy — light document; marketing nav matches light landing
    (page has no .landing-page, so the rules above would not apply) ── */
 html:has(.privacy-policy-page) .navbar,

@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -28,10 +27,15 @@ export function FooterSection({ onContactClick }) {
               Join our newsletter for the latest updates and exclusive offers.
             </p>
             <form className="relative" onSubmit={handleNewsletterSubmit}>
-              <Input
+              <label htmlFor="footer-newsletter-email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="footer-newsletter-email"
                 type="email"
                 placeholder="Enter your email"
-                className="pr-12 backdrop-blur-sm"
+                autoComplete="email"
+                className="footer-newsletter-input flex h-10 w-full rounded-full border border-border bg-transparent px-4 pr-12 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-0"
               />
               <Button
                 type="submit"
