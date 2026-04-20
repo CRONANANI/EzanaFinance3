@@ -221,13 +221,14 @@ export default function PricingPage() {
   const prevThemeRef = useRef(null);
 
   /* Force light mode on this route to match the landing page's presentation.
-     Restore the user's prior theme when they navigate away. */
+     Uses persist:false so the user's saved preference is NOT overwritten
+     by a visit to pricing. Theme is restored on unmount. */
   useEffect(() => {
     prevThemeRef.current = theme;
-    if (theme !== 'light') setTheme('light');
+    if (theme !== 'light') setTheme('light', { persist: false });
     return () => {
       if (prevThemeRef.current && prevThemeRef.current !== 'light') {
-        setTheme(prevThemeRef.current);
+        setTheme(prevThemeRef.current, { persist: false });
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

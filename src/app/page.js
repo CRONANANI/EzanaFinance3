@@ -36,16 +36,16 @@ export default function HomePage() {
   const prevThemeRef = useRef(null);
 
   // Force light mode on the landing page — always, regardless of user preference.
-  // Restore previous theme when navigating away.
+  // Uses persist:false so the user's saved dark preference is NOT overwritten
+  // just by visiting the landing page. Theme is restored on unmount.
   useEffect(() => {
     prevThemeRef.current = theme;
     if (theme !== 'light') {
-      setTheme('light');
+      setTheme('light', { persist: false });
     }
     return () => {
-      // Restore the user's preferred theme when they leave the landing page
       if (prevThemeRef.current && prevThemeRef.current !== 'light') {
-        setTheme(prevThemeRef.current);
+        setTheme(prevThemeRef.current, { persist: false });
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

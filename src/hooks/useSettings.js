@@ -106,6 +106,21 @@ export function useSettings() {
         return false;
       }
 
+      /* Mirror the saved theme into the `ezana.theme` cookie so the blocking
+         <head> script on the next reload can apply the correct class before
+         first paint — eliminates any split-theme flash on login / refresh. */
+      try {
+        if (settings.theme === 'dark' || settings.theme === 'light') {
+          const secure =
+            typeof window !== 'undefined' && window.location.protocol === 'https:'
+              ? '; secure'
+              : '';
+          document.cookie = `ezana.theme=${settings.theme}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax${secure}`;
+        }
+      } catch {
+        /* non-fatal; server will still read the DB on next load */
+      }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
       return true;
