@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase';
 
 const CONVO_POLL_MS = 30_000;
 const CHAT_POLL_MS = 8_000;
+const TYPING_TTL_MS = 4_000;
+const TYPING_BROADCAST_THROTTLE_MS = 1_500;
 
 async function authedFetch(url, options = {}) {
   const {
@@ -36,8 +38,13 @@ export function useMessages() {
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  const [typingUserIds, setTypingUserIds] = useState([]);
   const convoPollRef = useRef(null);
   const chatPollRef = useRef(null);
+  const typingChannelRef = useRef(null);
+  const lastTypingSentRef = useRef(0);
+  const typingExpiryMapRef = useRef(new Map());
+  const typingSweepRef = useRef(null);
 
   const loadConversations = useCallback(async () => {
     if (!isAuthenticated || !user) {
@@ -105,12 +112,15 @@ export function useMessages() {
       setActiveConvoId(convoId);
       setMessages([]);
       setOtherUser(null);
+      setTypingUserIds([]);
+      typingExpiryMapRef.current.clear();
       loadMessages(convoId);
       markRead(convoId);
     },
     [loadMessages, markRead],
   );
 
+  // Gentle polling fallback for messages in the active convo
   useEffect(() => {
     if (!activeConvoId) return undefined;
     chatPollRef.current = setInterval(() => {
@@ -118,6 +128,119 @@ export function useMessages() {
     }, CHAT_POLL_MS);
     return () => clearInterval(chatPollRef.current);
   }, [activeConvoId, loadMessages]);
+
+  // Realtime: new messages in the active conversation
+  useEffect(() => {
+    if (!activeConvoId || !user?.id) return undefined;
+    const channel = supabase
+      .channel(`messages:thread:${activeConvoId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${activeConvoId}`,
+        },
+        (payload) => {
+          const m = payload?.new;
+          if (!m) return;
+          setMessages((prev) => {
+            if (prev.some((x) => x.id === m.id)) return prev;
+            return [
+              {
+                id: m.id,
+                sender_id: m.sender_id,
+                content: m.content,
+                created_at: m.created_at,
+                read_at: m.read_at,
+                is_mine: m.sender_id === user.id,
+              },
+              ...prev,
+            ];
+          });
+          if (m.sender_id !== user.id) markRead(activeConvoId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeConvoId, user?.id, markRead]);
+
+  // Realtime: any new message in any of my conversations -> refresh list
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const channel = supabase
+      .channel('messages:inbox')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        () => {
+          loadConversations();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, loadConversations]);
+
+  // Typing broadcast — subscribe + maintain TTL expiry for each user
+  useEffect(() => {
+    if (!activeConvoId || !user?.id) return undefined;
+
+    const ch = supabase
+      .channel(`messages:typing:${activeConvoId}`, {
+        config: { broadcast: { self: false } },
+      })
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        const uid = payload?.userId;
+        if (!uid || uid === user.id) return;
+        const expires = Date.now() + TYPING_TTL_MS;
+        typingExpiryMapRef.current.set(uid, expires);
+        setTypingUserIds(Array.from(typingExpiryMapRef.current.keys()));
+      })
+      .subscribe();
+
+    typingChannelRef.current = ch;
+
+    typingSweepRef.current = setInterval(() => {
+      const now = Date.now();
+      let changed = false;
+      for (const [uid, exp] of typingExpiryMapRef.current.entries()) {
+        if (exp < now) {
+          typingExpiryMapRef.current.delete(uid);
+          changed = true;
+        }
+      }
+      if (changed) {
+        setTypingUserIds(Array.from(typingExpiryMapRef.current.keys()));
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(typingSweepRef.current);
+      typingExpiryMapRef.current.clear();
+      setTypingUserIds([]);
+      supabase.removeChannel(ch);
+      typingChannelRef.current = null;
+    };
+  }, [activeConvoId, user?.id]);
+
+  const broadcastTyping = useCallback(() => {
+    const ch = typingChannelRef.current;
+    if (!ch || !user?.id) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < TYPING_BROADCAST_THROTTLE_MS) return;
+    lastTypingSentRef.current = now;
+    ch.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { userId: user.id, at: now },
+    });
+  }, [user?.id]);
 
   const sendMessage = useCallback(
     async (toUserId, content) => {
@@ -136,7 +259,10 @@ export function useMessages() {
         }
         const data = await res.json();
         if (data?.message) {
-          setMessages((prev) => [data.message, ...prev]);
+          setMessages((prev) => {
+            if (prev.some((x) => x.id === data.message.id)) return prev;
+            return [data.message, ...prev];
+          });
         }
         loadConversations();
         return { ok: true, message: data.message };
@@ -180,6 +306,8 @@ export function useMessages() {
     setActiveConvoId(null);
     setMessages([]);
     setOtherUser(null);
+    setTypingUserIds([]);
+    typingExpiryMapRef.current.clear();
     clearInterval(chatPollRef.current);
   }, []);
 
@@ -195,11 +323,13 @@ export function useMessages() {
     friendsLoading,
     sending,
     error,
+    typingUserIds,
     openConversation,
     closeConversation,
     sendMessage,
     loadFriends,
     loadMore,
+    broadcastTyping,
     refreshConversations: loadConversations,
   };
 }

@@ -1,23 +1,34 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
-import Link from 'next/link';
-import { useMessages } from '@/hooks/useMessages';
+/* ============================================================================
+ * Messages Page — Ezana brand tokens
+ * ----------------------------------------------------------------------------
+ *   Page bg:        var(--app-bg)              (bg-app)
+ *   Card surface:   var(--surface-card)         (.m-panel)
+ *   Accent:         var(--emerald)              (own-message bubble, CTA)
+ *   Own bubble:     var(--emerald) + #fff
+ *   Received:       var(--surface-card-hover) + var(--text-primary)
+ *   Borders:        var(--border-primary) / --border-secondary
+ *   Muted text:     var(--text-muted) / --text-faint
+ *   Selected row:   var(--emerald-bg) + 2px border-left var(--emerald)
+ * All classes prefixed `.m-*` live in messages.css.
+ * ==========================================================================*/
 
-function timeAgo(iso) {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useMessages } from '@/hooks/useMessages';
+import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
+import { MessagesHeader } from '@/components/community/messages/MessagesHeader';
+import { ConversationList } from '@/components/community/messages/ConversationList';
+import { MessageThread } from '@/components/community/messages/MessageThread';
+import { EmptyConversationState } from '@/components/community/messages/EmptyConversationState';
+import { NewMessageDialog } from '@/components/community/messages/NewMessageDialog';
 
 export default function MessagesPageClient() {
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+
   const {
     conversations,
     convosLoading,
@@ -30,294 +41,181 @@ export default function MessagesPageClient() {
     friendsLoading,
     sending,
     error,
+    typingUserIds,
     openConversation,
     closeConversation,
     sendMessage,
     loadFriends,
     loadMore,
+    broadcastTyping,
   } = useMessages();
 
-  const [composerText, setComposerText] = useState('');
   const [showNewMessage, setShowNewMessage] = useState(false);
-  const [friendSearch, setFriendSearch] = useState('');
   const [pendingFriend, setPendingFriend] = useState(null);
-  const messagesEndRef = useRef(null);
+  const [composerText, setComposerText] = useState('');
+  const [mobileView, setMobileView] = useState('list');
+  const [onlineIds, setOnlineIds] = useState([]);
 
-  const prevMsgCount = useRef(0);
+  const initialConvoId = searchParams.get('conversation');
+
   useEffect(() => {
-    if (messages.length > 0 && messages.length !== prevMsgCount.current) {
-      if (prevMsgCount.current === 0 || messages.length - prevMsgCount.current <= 2) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }
+    if (initialConvoId && !activeConvoId) {
+      openConversation(initialConvoId);
+      setMobileView('thread');
     }
-    prevMsgCount.current = messages.length;
-  }, [messages.length]);
+  }, [initialConvoId, activeConvoId, openConversation]);
 
   useEffect(() => {
-    if (showNewMessage) loadFriends();
-  }, [showNewMessage, loadFriends]);
+    if (activeConvoId || pendingFriend) setMobileView('thread');
+  }, [activeConvoId, pendingFriend]);
 
-  const filteredFriends = useMemo(() => {
-    if (!friendSearch.trim()) return friends;
-    const q = friendSearch.toLowerCase();
-    return friends.filter((f) => f.name.toLowerCase().includes(q));
-  }, [friends, friendSearch]);
+  useEffect(() => {
+    loadFriends();
+  }, [loadFriends]);
 
-  const handleSend = async () => {
-    if (!composerText.trim()) return;
-    const toId = otherUser?.id;
-    if (!toId) return;
-    const result = await sendMessage(toId, composerText);
-    if (result.ok) setComposerText('');
+  // Presence: track which users are currently on the messages page
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const ch = supabase.channel('community:presence', {
+      config: { presence: { key: user.id } },
+    });
+    ch.on('presence', { event: 'sync' }, () => {
+      const state = ch.presenceState();
+      setOnlineIds(Object.keys(state));
+    });
+    ch.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await ch.track({ online_at: new Date().toISOString() });
+      }
+    });
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [user?.id]);
+
+  const handleSelect = (id) => {
+    setPendingFriend(null);
+    openConversation(id);
+    setMobileView('thread');
+    setComposerText('');
   };
 
-  const handleStartConvoWithFriend = async (friend) => {
+  const handleBack = () => {
+    setMobileView('list');
+  };
+
+  const handleOpenNewMessage = () => {
+    setShowNewMessage(true);
+  };
+
+  const handlePickFriend = (friend) => {
     setShowNewMessage(false);
-    setFriendSearch('');
     if (friend.conversation_id) {
       openConversation(friend.conversation_id);
     } else {
       closeConversation();
       setPendingFriend(friend);
     }
+    setMobileView('thread');
+    setComposerText('');
   };
 
-  const handleSendToPending = async () => {
-    if (!composerText.trim() || !pendingFriend) return;
-    const result = await sendMessage(pendingFriend.id, composerText);
+  const handleSend = async () => {
+    const text = composerText.trim();
+    if (!text) return;
+    const toId = pendingFriend?.id || otherUser?.id;
+    if (!toId) return;
+    const result = await sendMessage(toId, text);
     if (result.ok) {
       setComposerText('');
-      setPendingFriend(null);
-      if (result.message?.conversation_id) {
+      if (pendingFriend && result.message?.conversation_id) {
         openConversation(result.message.conversation_id);
+        setPendingFriend(null);
       }
     }
   };
 
-  const isInChat = !!activeConvoId || !!pendingFriend;
-  const chatPartnerName = otherUser?.name || pendingFriend?.name || 'Chat';
+  const partnerName =
+    pendingFriend?.name || otherUser?.name || 'Conversation';
+  const partnerAvatarUrl =
+    pendingFriend?.avatar_url || otherUser?.avatar_url || null;
 
-  const displayMessages = useMemo(() => [...messages].reverse(), [messages]);
+  const hasActive = Boolean(activeConvoId || pendingFriend);
+  const listHiddenOnMobile = hasActive && mobileView === 'thread';
+  const threadHiddenOnMobile = !hasActive || mobileView === 'list';
+
+  const onlineUsers = useMemo(() => {
+    const set = new Set(onlineIds);
+    return friends.filter((f) => set.has(f.id)).slice(0, 8);
+  }, [friends, onlineIds]);
 
   return (
-    <div className="msgs-page dashboard-page-inset db-page">
-      <div className="msgs-header">
-        <Link href="/community" className="msgs-back">
-          ← Community
-        </Link>
-        <h1 className="msgs-title">Messages</h1>
-        <button
-          type="button"
-          className="msgs-new-btn"
-          onClick={() => {
-            setShowNewMessage(true);
-            closeConversation();
-            setPendingFriend(null);
-          }}
-        >
-          <i className="bi bi-pencil-square" /> New
-        </button>
-      </div>
+    <div className="m-page dashboard-page-inset">
+      <MessagesHeader />
 
-      <div className="msgs-layout">
-        <div className={`msgs-sidebar ${isInChat ? 'msgs-sidebar-hidden-mobile' : ''}`}>
-          {showNewMessage && (
-            <div className="msgs-friend-picker db-card">
-              <div className="msgs-fp-header">
-                <span>New message</span>
-                <button
-                  type="button"
-                  className="msgs-fp-close"
-                  onClick={() => {
-                    setShowNewMessage(false);
-                    setFriendSearch('');
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-              <input
-                type="text"
-                className="msgs-fp-search"
-                placeholder="Search friends…"
-                value={friendSearch}
-                onChange={(e) => setFriendSearch(e.target.value)}
+      <div className="m-body">
+        <div className="m-grid">
+          <aside
+            className={`m-panel m-panel--list${
+              listHiddenOnMobile ? ' is-hidden-mobile' : ''
+            }`}
+            aria-label="Conversations"
+          >
+            <ConversationList
+              conversations={conversations}
+              loading={convosLoading}
+              selectedId={activeConvoId}
+              onSelect={handleSelect}
+              onNewMessage={handleOpenNewMessage}
+              onlineUsers={onlineUsers}
+            />
+          </aside>
+
+          <main
+            className={`m-panel m-panel--thread${
+              threadHiddenOnMobile ? ' is-hidden-mobile' : ''
+            }`}
+            aria-label="Conversation"
+          >
+            {hasActive ? (
+              <MessageThread
+                conversationId={activeConvoId}
+                partnerName={partnerName}
+                partnerAvatarUrl={partnerAvatarUrl}
+                currentUserId={user?.id}
+                messages={messages}
+                loading={messagesLoading}
+                hasMore={hasMore}
+                onLoadMore={loadMore}
+                onBack={handleBack}
+                typingUserIds={typingUserIds}
+                composerValue={composerText}
+                onComposerChange={setComposerText}
+                onSend={handleSend}
+                sending={sending}
+                error={error}
+                onTyping={broadcastTyping}
+                canSend={Boolean(pendingFriend?.id || otherUser?.id)}
+                composerPlaceholder={
+                  pendingFriend
+                    ? `Say hi to ${pendingFriend.name}…`
+                    : 'Type message'
+                }
               />
-              <div className="msgs-fp-list">
-                {friendsLoading && <p className="msgs-muted">Loading friends…</p>}
-                {!friendsLoading && filteredFriends.length === 0 && (
-                  <p className="msgs-muted">
-                    {friends.length === 0
-                      ? 'No friends yet. Follow someone and have them follow you back!'
-                      : 'No friends match your search.'}
-                  </p>
-                )}
-                {filteredFriends.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    className="msgs-fp-item"
-                    onClick={() => handleStartConvoWithFriend(f)}
-                  >
-                    <div className="msgs-avatar-sm">{f.name.charAt(0).toUpperCase()}</div>
-                    <span>{f.name}</span>
-                    {f.conversation_id && <span className="msgs-fp-existing">•</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {convosLoading && conversations.length === 0 && (
-            <div className="msgs-empty">
-              <div className="msgs-spinner" />
-              <p>Loading conversations…</p>
-            </div>
-          )}
-
-          {!convosLoading && conversations.length === 0 && !showNewMessage && (
-            <div className="msgs-empty">
-              <i
-                className="bi bi-chat-dots"
-                style={{ fontSize: '2rem', color: '#10b981', opacity: 0.5 }}
-              />
-              <p>No conversations yet</p>
-              <p className="msgs-muted">
-                Click <strong>New</strong> to message a friend.
-              </p>
-            </div>
-          )}
-
-          {conversations.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`msgs-convo-item ${activeConvoId === c.id ? 'active' : ''}`}
-              onClick={() => {
-                setShowNewMessage(false);
-                setPendingFriend(null);
-                openConversation(c.id);
-              }}
-            >
-              <div className="msgs-avatar">{c.other_user.name.charAt(0).toUpperCase()}</div>
-              <div className="msgs-convo-body">
-                <div className="msgs-convo-top">
-                  <span className="msgs-convo-name">{c.other_user.name}</span>
-                  <span className="msgs-convo-time">{timeAgo(c.last_message_at)}</span>
-                </div>
-                <div className="msgs-convo-preview">
-                  {c.last_message ? (
-                    <>
-                      {c.last_message.is_mine && <span className="msgs-you">You: </span>}
-                      {c.last_message.content}
-                    </>
-                  ) : (
-                    <span className="msgs-muted">No messages yet</span>
-                  )}
-                </div>
-              </div>
-              {c.unread_count > 0 && (
-                <span className="msgs-unread-badge">{c.unread_count}</span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        <div className={`msgs-chat ${!isInChat ? 'msgs-chat-hidden-mobile' : ''}`}>
-          {!isInChat && (
-            <div className="msgs-chat-empty">
-              <i
-                className="bi bi-chat-left-text"
-                style={{ fontSize: '3rem', color: '#10b981', opacity: 0.3 }}
-              />
-              <p>Select a conversation or start a new one</p>
-            </div>
-          )}
-
-          {isInChat && (
-            <>
-              <div className="msgs-chat-header">
-                <button
-                  type="button"
-                  className="msgs-chat-back"
-                  onClick={() => {
-                    closeConversation();
-                    setPendingFriend(null);
-                  }}
-                >
-                  <i className="bi bi-arrow-left" />
-                </button>
-                <div className="msgs-avatar-sm">{chatPartnerName.charAt(0).toUpperCase()}</div>
-                <span className="msgs-chat-partner-name">{chatPartnerName}</span>
-              </div>
-
-              <div className="msgs-chat-messages">
-                {hasMore && (
-                  <button type="button" className="msgs-load-more" onClick={loadMore}>
-                    Load older messages
-                  </button>
-                )}
-
-                {messagesLoading && displayMessages.length === 0 && (
-                  <div className="msgs-chat-loading">
-                    <div className="msgs-spinner" />
-                    <span>Loading messages…</span>
-                  </div>
-                )}
-
-                {!messagesLoading && displayMessages.length === 0 && (
-                  <div className="msgs-chat-empty-inner">
-                    <p>Start the conversation! Send your first message below.</p>
-                  </div>
-                )}
-
-                {displayMessages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`msgs-bubble-row ${m.is_mine ? 'mine' : 'theirs'}`}
-                  >
-                    <div className={`msgs-bubble ${m.is_mine ? 'mine' : 'theirs'}`}>
-                      <p className="msgs-bubble-text">{m.content}</p>
-                      <span className="msgs-bubble-time">{timeAgo(m.created_at)}</span>
-                    </div>
-                  </div>
-                ))}
-
-                <div ref={messagesEndRef} />
-              </div>
-
-              <div className="msgs-composer">
-                {error && <p className="msgs-composer-error">{error}</p>}
-                <div className="msgs-composer-row">
-                  <input
-                    type="text"
-                    className="msgs-composer-input"
-                    placeholder="Type a message…"
-                    value={composerText}
-                    onChange={(e) => setComposerText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        if (pendingFriend) handleSendToPending();
-                        else handleSend();
-                      }
-                    }}
-                    disabled={sending}
-                  />
-                  <button
-                    type="button"
-                    className="msgs-send-btn"
-                    disabled={!composerText.trim() || sending}
-                    onClick={pendingFriend ? handleSendToPending : handleSend}
-                  >
-                    {sending ? '…' : <i className="bi bi-send-fill" />}
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+            ) : (
+              <EmptyConversationState onStartNew={handleOpenNewMessage} />
+            )}
+          </main>
         </div>
       </div>
+
+      <NewMessageDialog
+        open={showNewMessage}
+        friends={friends}
+        loading={friendsLoading}
+        onClose={() => setShowNewMessage(false)}
+        onPickFriend={handlePickFriend}
+      />
     </div>
   );
 }

@@ -66,7 +66,7 @@ export async function GET(request, { params }) {
 
     const { data: otherProfile } = await supabaseAdmin
       .from('profiles')
-      .select('id, full_name, user_settings')
+      .select('id, full_name, avatar_url, user_settings')
       .eq('id', otherId)
       .maybeSingle();
 
@@ -85,7 +85,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({
       conversation_id: conversationId,
-      other_user: { id: otherId, name: otherName },
+      other_user: { id: otherId, name: otherName, avatar_url: otherProfile?.avatar_url || null },
       messages: formatted,
       has_more: formatted.length === limit,
     });

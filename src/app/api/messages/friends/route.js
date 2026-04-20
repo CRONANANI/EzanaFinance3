@@ -38,7 +38,7 @@ export async function GET(request) {
 
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
-      .select('id, full_name, user_settings')
+      .select('id, full_name, avatar_url, user_settings')
       .in('id', friendIds);
 
     const { data: existingConvos } = await supabaseAdmin
@@ -61,6 +61,7 @@ export async function GET(request) {
         return {
           id: p.id,
           name: displayName,
+          avatar_url: p.avatar_url || null,
           conversation_id: convoByFriend.get(p.id) || null,
         };
       })

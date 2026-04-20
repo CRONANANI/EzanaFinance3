@@ -60,7 +60,7 @@ export async function GET(request) {
 
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
-      .select('id, full_name, user_settings')
+      .select('id, full_name, avatar_url, user_settings')
       .in('id', uniqueOtherIds);
 
     const profileMap = Object.fromEntries((profiles || []).map((p) => [p.id, p]));
@@ -104,6 +104,7 @@ export async function GET(request) {
         other_user: {
           id: otherId,
           name: displayName,
+          avatar_url: prof?.avatar_url || null,
         },
         last_message: lastMsg
           ? {
