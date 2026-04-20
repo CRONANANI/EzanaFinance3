@@ -74,6 +74,28 @@ export function ThemeProvider({ initialTheme = 'light', children }) {
     applyTheme(theme);
   }, [theme]);
 
+  /* Sync the ezana.theme cookie to the server-resolved theme on every
+     hydration. This eliminates the "stale cookie" trap that caused the
+     black-frame-around-light-content bug on fresh login:
+
+     Before the fix, an anonymous visitor could leave a dark cookie
+     behind, then sign in to an account that has theme=light in the DB.
+     The server would correctly render light mode, but the blocking head
+     script (on the next navigation or reload) would read the old dark
+     cookie and strip `light-mode` off <html>/<body>, yielding a
+     dark nav + dark body padding wrapping a light content area.
+
+     Writing the cookie here after every mount guarantees the cookie
+     always reflects the authoritative server value, so the blocking
+     script can never disagree with the server again. Cheap (string
+     write), idempotent, and crucially runs even on first-load hydration
+     before the user ever touches the theme toggle. */
+  useEffect(() => {
+    writeThemeCookie(safeInitial);
+    // Intentional: only on mount. Later toggles persist via setTheme/toggleTheme.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const setTheme = useCallback((next, options = {}) => {
     const normalized = next === 'dark' ? 'dark' : 'light';
     const { persist = false } = options;
