@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { getInitials } from '@/lib/community-utils';
 import { LearningTrackBadgeChips } from '@/components/learning/LearningTrackBadgeChips';
 import { learningTrackBiClass } from '@/lib/dashboard-bi-icons';
+import {
+  LearningCard,
+  CardPrimary,
+  CardMuted,
+} from '@/components/learning/LearningCard';
 
 /** When `friends` is omitted, loads from `/api/learning/friends-activity`. */
 export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp }) {
@@ -33,23 +38,48 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
   }, [controlled, load]);
 
   return (
-    <section className="db-card lc3-friends-card" aria-label="Friends learning activity">
+    <LearningCard
+      as="section"
+      surface="default"
+      className="db-card lc3-friends-card"
+      aria-label="Friends learning activity"
+    >
       <div className="db-card-header">
         <h3>
-          <i className="bi bi-people-fill" style={{ marginRight: '.35rem', color: '#10b981' }} aria-hidden />
+          <i
+            className="bi bi-people-fill"
+            style={{ marginRight: '.35rem', color: 'var(--emerald-text)' }}
+            aria-hidden
+          />
           Friends Learning
         </h3>
-        <Link href="/community" style={{ color: '#10b981', fontSize: '.6875rem', fontWeight: 600, textDecoration: 'none' }}>
+        <Link
+          href="/community"
+          style={{
+            color: 'var(--emerald-text)',
+            fontSize: '.75rem',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
           See All
         </Link>
       </div>
       <div style={{ padding: '0 1.25rem 1rem' }}>
         {loading ? (
-          <p style={{ color: '#6b7280', fontSize: '.8125rem', padding: '.75rem 0' }}>Loading…</p>
+          <CardMuted
+            as="p"
+            style={{ fontSize: '.8125rem', padding: '.75rem 0', margin: 0 }}
+          >
+            Loading…
+          </CardMuted>
         ) : !friends?.length ? (
-          <p style={{ color: '#6b7280', fontSize: '.8125rem', padding: '.75rem 0' }}>
+          <CardMuted
+            as="p"
+            style={{ fontSize: '.8125rem', padding: '.75rem 0', margin: 0 }}
+          >
             Follow people in Community to see what they&apos;re learning.
-          </p>
+          </CardMuted>
         ) : (
           friends.map((f) => (
             <div
@@ -59,7 +89,7 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
                 alignItems: 'flex-start',
                 gap: '.65rem',
                 padding: '.65rem 0',
-                borderBottom: '1px solid rgba(16,185,129,0.04)',
+                borderBottom: '1px solid var(--border-secondary)',
               }}
             >
               <div
@@ -67,12 +97,12 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
-                  background: 'rgba(16,185,129,0.08)',
+                  background: 'var(--emerald-bg)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#10b981',
-                  fontSize: '.6rem',
+                  color: 'var(--emerald-text)',
+                  fontSize: '.6875rem',
                   fontWeight: 700,
                   flexShrink: 0,
                 }}
@@ -80,19 +110,53 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
                 {getInitials(f.displayName, '')}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '.5rem' }}>
-                  <span className="lc3-friend-name" style={{ fontSize: '.8125rem', fontWeight: 700 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '.5rem',
+                  }}
+                >
+                  <CardPrimary
+                    as="span"
+                    className="lc3-friend-name"
+                    style={{ fontSize: '.8125rem', fontWeight: 700 }}
+                  >
                     {f.displayName}
+                  </CardPrimary>
+                  <span
+                    style={{
+                      color: 'var(--emerald-text)',
+                      fontSize: '.6875rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {f.progressPct}%
                   </span>
-                  <span style={{ color: '#10b981', fontSize: '.625rem', fontWeight: 700 }}>{f.progressPct}%</span>
                 </div>
-                <p style={{ color: '#6b7280', fontSize: '.625rem', margin: '.2rem 0 0' }}>
+                <CardMuted
+                  as="p"
+                  style={{ fontSize: '.6875rem', margin: '.2rem 0 0' }}
+                >
                   Taking: &quot;{f.currentCourseTitle}&quot;
-                </p>
-                <p style={{ color: '#6b7280', fontSize: '.55rem', margin: '.15rem 0 0', display: 'flex', alignItems: 'center', gap: '.25rem' }}>
-                  <i className={`bi ${learningTrackBiClass(f.trackId)}`} aria-hidden />
+                </CardMuted>
+                <CardMuted
+                  as="p"
+                  style={{
+                    fontSize: '.625rem',
+                    margin: '.15rem 0 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '.25rem',
+                  }}
+                >
+                  <i
+                    className={`bi ${learningTrackBiClass(f.trackId)}`}
+                    aria-hidden
+                  />
                   {f.trackLabel}
-                </p>
+                </CardMuted>
                 {f.badgeKeys?.length ? (
                   <div style={{ marginTop: '.35rem' }}>
                     <LearningTrackBadgeChips badgeKeys={f.badgeKeys} />
@@ -103,6 +167,6 @@ export function FriendsLearningCard({ friends: friendsProp, loading: loadingProp
           ))
         )}
       </div>
-    </section>
+    </LearningCard>
   );
 }

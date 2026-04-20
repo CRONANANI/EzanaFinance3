@@ -992,3 +992,288 @@ body.light-mode .lc3-partner-section-title {
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Surface-context system — Learning Center
+   Every card declares a `surface`; every CardPrimary / CardSecondary /
+   CardMuted / CardBadge inside reads the matching foreground token.
+   All values resolve via CSS variables so dark + light + partner-gold
+   all work without per-instance overrides.
+
+   See: src/components/learning/LearningCard.jsx
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.lc-surface {
+  /* sensible defaults — overridden by surface variant */
+  --lc-primary-fg: var(--text-primary);
+  --lc-secondary-fg: var(--text-secondary);
+  --lc-muted-fg: var(--text-muted);
+  --lc-badge-bg: var(--emerald-bg);
+  --lc-badge-fg: var(--emerald-text);
+  color: var(--lc-primary-fg);
+}
+
+.lc-surface-default {
+  --lc-primary-fg: var(--text-primary);
+  --lc-secondary-fg: var(--text-secondary);
+  --lc-muted-fg: var(--text-muted);
+  --lc-badge-bg: var(--emerald-bg);
+  --lc-badge-fg: var(--emerald-text);
+}
+
+/* Emerald-washed — card background is a soft brand tint, text stays normal */
+.lc-surface-tinted {
+  --lc-primary-fg: var(--text-primary);
+  --lc-secondary-fg: var(--text-secondary);
+  --lc-muted-fg: var(--text-muted);
+  --lc-badge-bg: var(--surface-card);
+  --lc-badge-fg: var(--text-primary);
+}
+.lc-surface-tinted.db-card,
+.db-card.lc-surface-tinted {
+  background: var(--emerald-bg-subtle);
+  border-color: var(--emerald-border);
+}
+
+/* Brand-colored card — emerald background, white foreground regardless of theme */
+.lc-surface-accent {
+  --lc-primary-fg: #ffffff;
+  --lc-secondary-fg: rgba(255, 255, 255, 0.92);
+  --lc-muted-fg: rgba(255, 255, 255, 0.82);
+  --lc-badge-bg: rgba(255, 255, 255, 0.2);
+  --lc-badge-fg: #ffffff;
+}
+.lc-surface-accent.db-card,
+.db-card.lc-surface-accent {
+  background: var(--emerald);
+  border-color: var(--emerald);
+  color: #ffffff;
+}
+
+.lc-surface-muted {
+  --lc-primary-fg: var(--text-primary);
+  --lc-secondary-fg: var(--text-secondary);
+  --lc-muted-fg: var(--text-muted);
+  --lc-badge-bg: var(--surface-card);
+  --lc-badge-fg: var(--text-primary);
+}
+.lc-surface-muted.db-card,
+.db-card.lc-surface-muted {
+  background: var(--surface-card-hover);
+  border-color: var(--border-primary);
+}
+
+/* Completed — subtle green wash, normal foreground so title reads clearly */
+.lc-surface-completed {
+  --lc-primary-fg: var(--text-primary);
+  --lc-secondary-fg: var(--text-secondary);
+  --lc-muted-fg: var(--text-muted);
+  --lc-badge-bg: var(--positive-bg);
+  --lc-badge-fg: var(--emerald-text);
+}
+.lc-surface-completed.db-card,
+.db-card.lc-surface-completed {
+  background: var(--positive-bg);
+  border-color: var(--emerald-border);
+}
+
+/* Locked — dimmed but readable; passes AA against its card background */
+.lc-surface-locked {
+  --lc-primary-fg: var(--text-muted);
+  --lc-secondary-fg: var(--text-muted);
+  --lc-muted-fg: var(--text-faint);
+  --lc-badge-bg: var(--surface-card-hover);
+  --lc-badge-fg: var(--text-muted);
+}
+.lc-surface-locked.db-card,
+.db-card.lc-surface-locked {
+  background: var(--surface-card-hover);
+  border-color: var(--border-secondary);
+}
+
+body.light-mode .lc-surface-locked {
+  --lc-primary-fg: #475569;
+  --lc-secondary-fg: #475569;
+  --lc-muted-fg: #64748b;
+}
+
+/* Text helpers — consume the foreground variable set above */
+.lc-fg-primary {
+  color: var(--lc-primary-fg, var(--text-primary));
+}
+.lc-fg-secondary {
+  color: var(--lc-secondary-fg, var(--text-secondary));
+}
+.lc-fg-muted {
+  color: var(--lc-muted-fg, var(--text-muted));
+}
+
+/* Badge primitive */
+.lc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: var(--lc-badge-bg, var(--emerald-bg));
+  color: var(--lc-badge-fg, var(--emerald-text));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+
+.lc-badge-tone-positive {
+  background: var(--positive-bg);
+  color: var(--emerald-text);
+}
+.lc-badge-tone-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+.lc-badge-tone-negative {
+  background: var(--negative-bg);
+  color: var(--negative);
+}
+.lc-badge-tone-info {
+  background: var(--info-bg);
+  color: var(--info);
+}
+.lc-badge-tone-neutral {
+  background: var(--surface-card-hover);
+  color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Contrast-safety overrides for existing .lc3-* classes that previously
+   only worked in dark mode. Adds light-mode rules so text reaches WCAG AA.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Page title was #f0f6fc (near-white) — unreadable on light page bg */
+.lc3-page-title {
+  color: var(--text-primary);
+}
+
+.lc3-label {
+  color: var(--text-muted);
+}
+
+/* Tracks tile — wire to surface system when wrapped; standalone button still
+   needs theme-aware bg + border so the tile itself passes AA in light mode. */
+body.light-mode .lc3-track-card-btn {
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .lc3-track-card-btn--selected {
+  outline-color: var(--emerald);
+}
+
+/* Level tabs: inactive text was #6b7280 on a muted green tint — boost contrast
+   in light mode so normal body text passes AA against the tab bg. */
+.lc3-level-tab {
+  background: var(--surface-card-hover);
+  color: var(--text-secondary);
+  transition: background 150ms ease, color 150ms ease;
+}
+.lc3-level-tab:hover {
+  background: var(--emerald-bg-hover);
+  color: var(--text-primary);
+}
+.lc3-level-tab:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.lc3-level-tab--active,
+.lc3-level-tab--active:hover {
+  background: var(--emerald);
+  color: #ffffff;
+}
+
+/* Course row disabled — opacity: 0.95 gave a false sense of accessibility.
+   Swap to a proper readable muted foreground. */
+.lc3-course-row-link--disabled {
+  opacity: 1;
+  color: var(--text-muted);
+}
+.lc3-course-row-link--disabled * {
+  cursor: not-allowed;
+}
+
+/* New surface-aware course row card — replaces the old .lc3-course-row-link
+   row layout. Surface class (.lc-surface-*) supplies background + border +
+   text tokens. Interactive states flip in both themes automatically. */
+.lc3-course-row-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.4rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+.lc3-course-row-card:last-child {
+  margin-bottom: 0;
+}
+a.lc3-course-row-card:hover {
+  border-color: var(--border-hover);
+  background: var(--emerald-bg-subtle);
+  transform: translateY(-1px);
+}
+a.lc3-course-row-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Surface-specific row bg/border overrides win over the default row bg */
+.lc3-course-row-card.lc-surface-tinted {
+  background: var(--emerald-bg-subtle);
+  border-color: var(--emerald-border);
+}
+.lc3-course-row-card.lc-surface-completed {
+  background: var(--positive-bg);
+  border-color: var(--emerald-border);
+}
+.lc3-course-row-card.lc-surface-locked {
+  background: var(--surface-card-hover);
+  border-color: var(--border-secondary);
+}
+
+.lc3-course-row-card--disabled {
+  cursor: not-allowed;
+}
+.lc3-course-row-card--disabled,
+.lc3-course-row-card--disabled * {
+  pointer-events: none;
+}
+
+/* In-progress row inside Journey card — ensure the tint still reads in light */
+body.light-mode .lc3-inprogress-row {
+  background: var(--emerald-bg-subtle);
+  border-color: var(--emerald-border);
+}
+
+/* Friends-name: retain light-mode override already in file, but also provide
+   a dark mode explicit binding via var so partner-gold flip works. */
+.lc3-friend-name {
+  color: var(--text-primary);
+}
+body.light-mode .lc3-friend-name {
+  color: var(--text-primary);
+}
+
+/* Hover contrast on the badges CTA pill (inline-styled), partner cell, etc. */
+body.light-mode .lc3-partner-cell-meta {
+  color: var(--text-muted);
+}
+body.light-mode .lc3-partner-cell-time {
+  color: var(--text-faint);
+}
+
+
+
