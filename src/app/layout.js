@@ -1,30 +1,7 @@
 import './globals.css';
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { validateEnv } from '@/lib/env';
-
-/* Self-host the two fonts we actually use. This replaces the render-blocking
-   <link href="https://fonts.googleapis.com/..."> pair that used to sit in
-   <head>. next/font inlines font-face declarations, preloads the files, and
-   swaps via font-display:swap so the first paint is never blocked on the
-   Google Fonts round-trip. Only the weights actually used across the app
-   are loaded; Latin subset only. */
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  display: 'swap',
-  variable: '--font-plus-jakarta-sans',
-  fallback: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
-  fallback: ['ui-monospace', 'Menlo', 'Consolas', 'monospace'],
-});
 
 validateEnv();
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -84,12 +61,10 @@ export default async function RootLayout({ children }) {
     ? { backgroundColor: '#0a0e13', colorScheme: 'light' }
     : { backgroundColor: '#ffffff', colorScheme: 'light' };
 
-  const fontClassName = `${plusJakartaSans.variable} ${jetBrainsMono.variable}`;
-
   return (
     <html
       lang="en"
-      className={`${htmlClassName} ${fontClassName}`}
+      className={htmlClassName}
       style={htmlStyle}
       suppressHydrationWarning
     >
@@ -156,6 +131,18 @@ export default async function RootLayout({ children }) {
           }}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Google Fonts — restored to the exact pre-perf-optimization form
+            the product design is calibrated against (Plus Jakarta Sans with
+            the full italic + 200..800 weight axis, JetBrains Mono 400–700).
+            next/font was swapping in a slightly different rendering because
+            it only bundled a subset of weights; keeping the CDN <link>
+            preserves the original number / text rendering users expect. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          rel="stylesheet"
+        />
         {/* Bootstrap Icons: preconnect so the jsdelivr CDN is warmed early,
             preload the stylesheet so it races with other assets, then attach
             it non-blocking via media="print" → "all" swap. This removes the
