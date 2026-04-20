@@ -1,56 +1,112 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 const DEFAULT_ITEMS = [
   {
-    question: "How does Ezana Finance know what politicians are trading before the news does?",
+    id: "what-is-ezana",
+    question: "What exactly does Ezana do?",
     answer:
-      "We aggregate data directly from official congressional financial disclosures filed with the Clerk of the House and Secretary of the Senate under the STOCK Act. Our system parses new filings within minutes of publication — often days or weeks before mainstream media picks them up. Every trade you see on the platform links back to the original government filing so you can verify it yourself.",
+      "Ezana is a personal investment research platform that combines portfolio tracking, company and macro analysis, prediction market signals, and a learning center — all designed for everyday investors rather than professional traders. You can paper-trade, connect a real brokerage, follow politicians' trades, watch sectors and geopolitics, and compare yourself honestly against the broader platform.",
   },
   {
-    question: "Is it legal to trade based on what members of Congress buy and sell?",
+    id: "need-brokerage",
+    question: "Do I need a brokerage account to use Ezana?",
     answer:
-      "Yes. Congressional trade disclosures are public records made available under the STOCK Act of 2012. While members of Congress are prohibited from trading on nonpublic information, the public is free to view and act on their disclosed transactions. Ezana simply makes this public data easier to access, filter, and analyze — we do not provide investment advice.",
+      "No. Every feature works with a paper-trading portfolio you build inside Ezana. If you later connect a real brokerage, the platform automatically switches to using your live holdings — your watchlists, metrics, and analysis all carry over seamlessly.",
   },
   {
-    question: "What happens to my data when I connect my brokerage account?",
+    id: "data-sources",
+    question: "Where does Ezana get its data?",
     answer:
-      "Your brokerage connection is handled through Plaid and Alpaca — industry-standard infrastructure used by apps like Venmo, Robinhood, and Coinbase. Ezana never sees or stores your brokerage login credentials. We receive read-only access to your holdings and transactions for portfolio tracking. Your financial data is encrypted in transit and at rest, and you can disconnect your brokerage at any time from Settings.",
+      "From the source providers you'd expect: Financial Modeling Prep for market and sector data, the World Bank and IMF for macro indicators, SEC EDGAR for filings, Polymarket for prediction market odds, GDELT for geolocated global news, and additional specialized providers for areas like congressional trading and institutional holdings. Every data category on the landing page shows its sources on hover.",
   },
   {
-    question: "How is Ezana different from free tools like Quiver Quantitative or Capitol Trades?",
+    id: "peer-comparison",
+    question: "How is my portfolio compared to other users?",
     answer:
-      "Free congressional trade trackers show you raw data. Ezana turns that data into actionable intelligence. We combine congressional trades with hedge fund 13F filings, government contract awards, lobbying expenditures, and patent data — then correlate it all with market movements. Add real-time alerts, portfolio analytics, copy trading, community insights, and a full brokerage account, and you have an institutional-grade platform, not just a data table.",
+      "Your performance chart shows your cumulative return alongside the platform-wide median — what the typical Ezana user earned over the same window — plus the top 25% cohort line. All peer data is aggregated and anonymized; individual users' portfolios are never exposed. Comparisons are available across 1W, 1M, 3M, and YTD windows.",
   },
   {
-    question: "What does the first 1,000 users get lifetime legacy access actually mean?",
+    id: "pricing",
+    question: "Is the platform free?",
     answer:
-      "The first 1,000 users who sign up during our early access period receive permanent Personal Advanced access — the full $19/month tier — forever. No monthly subscription, no annual renewal, no price increases. This includes real-time congressional alerts, full 13F filing access, legendary investor portfolios, unlimited watchlists, AI-powered research, API access, and priority support. Once the 1,000 spots are filled, the offer closes permanently.",
+      "The Starter tier is free forever and includes paper trading, core research, community access, and the Learning Center basics. Paid tiers unlock unlimited watchlists, real brokerage connections, and advanced analytics like stress testing, MPT, Black-Litterman, and Monte Carlo simulation. Every paid plan includes a 14-day free trial, no charge until the trial ends.",
   },
   {
-    question: "Can I actually execute trades directly on Ezana, or is it just a research tool?",
+    id: "cancel",
+    question: "Can I cancel anytime?",
     answer:
-      "Both. Ezana is a full-featured platform. You can use our research tools — congressional trading data, company analysis, market intelligence — without ever placing a trade. But if you want to act on what you find, you can open a brokerage account directly within Ezana (powered by Alpaca Securities, a FINRA/SIPC member). Buy and sell stocks, invest fractional shares, copy partner strategies, and manage your portfolio all in one place. Your account is SIPC insured up to $500,000.",
+      "Yes, from your account settings. Cancel during the trial and you're never charged. Cancel during a paid period and you keep access through the end of that period — no proration surprises, no retention gauntlets.",
+  },
+  {
+    id: "security",
+    question: "Is my financial data secure?",
+    answer:
+      "We never store your brokerage credentials. Live accounts connect through regulated read-only aggregators, all data in transit is encrypted, and we don't sell user data or serve ads inside the product. Aggregate peer comparisons pool data across users in a way that can't be reverse-engineered to identify individuals.",
+  },
+  {
+    id: "achievements",
+    question: "How do I earn badges and achievements?",
+    answer:
+      "By doing the things that make you a better investor over time — completing Learning Center courses, participating in community discussions, hitting portfolio milestones like diversification and contribution streaks. Badges appear on your profile, and earning them unlocks features and recognition across the community.",
   },
 ];
 
 export function Faq1({
-  heading = "Frequently asked questions",
+  heading = "Frequently asked",
   items = DEFAULT_ITEMS,
   onContactClick,
 }) {
+  const [openId, setOpenId] = useState(null);
+  const buttonRefs = useRef([]);
+
+  const toggle = (id) => {
+    setOpenId((prev) => (prev === id ? null : id));
+  };
+
+  // Arrow-key navigation between the question buttons. Keeps Tab order intact
+  // (each button is still focusable in sequence) but lets keyboard users move
+  // up/down through the list quickly once focused.
+  const handleKeyDown = (event, index) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      const next = buttonRefs.current[(index + 1) % items.length];
+      next?.focus();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      const prev =
+        buttonRefs.current[(index - 1 + items.length) % items.length];
+      prev?.focus();
+    }
+  };
+
   return (
     <section className="landing-faq-section">
       <div className="landing-faq-container">
         <h2 className="landing-faq-heading">{heading}</h2>
         <div className="landing-faq-list">
-          {items.map((item, index) => (
-            <details key={index} className="landing-faq-item">
-              <summary className="landing-faq-question">{item.question}</summary>
-              <p className="landing-faq-answer">{item.answer}</p>
-            </details>
-          ))}
+          {items.map((item, index) => {
+            const id = item.id || `faq-${index}`;
+            const isOpen = openId === id;
+            return (
+              <FaqRow
+                key={id}
+                id={id}
+                question={item.question}
+                answer={item.answer}
+                isOpen={isOpen}
+                isFirst={index === 0}
+                onToggle={() => toggle(id)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                buttonRef={(el) => {
+                  buttonRefs.current[index] = el;
+                }}
+              />
+            );
+          })}
         </div>
         <p className="landing-faq-help-link">
           <Link href="/help-center">
@@ -78,5 +134,62 @@ export function Faq1({
         )}
       </div>
     </section>
+  );
+}
+
+function FaqRow({
+  id,
+  question,
+  answer,
+  isOpen,
+  isFirst,
+  onToggle,
+  onKeyDown,
+  buttonRef,
+}) {
+  const answerRef = useRef(null);
+  const [height, setHeight] = useState(0);
+
+  // Measure the answer's natural height when opening so the transition animates
+  // from 0 → actual-height, then back to 0 on close. Using scrollHeight here
+  // (rather than letting content drive height directly) is what gives us the
+  // smooth collapse that a raw <details> element can't do.
+  useEffect(() => {
+    if (!answerRef.current) return;
+    setHeight(isOpen ? answerRef.current.scrollHeight : 0);
+  }, [isOpen, answer]);
+
+  return (
+    <div className={`landing-faq-item${isFirst ? " landing-faq-item--first" : ""}`}>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={onToggle}
+        onKeyDown={onKeyDown}
+        aria-expanded={isOpen}
+        aria-controls={`faq-panel-${id}`}
+        id={`faq-trigger-${id}`}
+        className={`landing-faq-question${isOpen ? " landing-faq-question--open" : ""}`}
+      >
+        <span className="landing-faq-question-text">{question}</span>
+        <span
+          className={`landing-faq-icon${isOpen ? " landing-faq-icon--open" : ""}`}
+          aria-hidden="true"
+        >
+          <Plus size={16} strokeWidth={2.5} />
+        </span>
+      </button>
+      <div
+        id={`faq-panel-${id}`}
+        role="region"
+        aria-labelledby={`faq-trigger-${id}`}
+        className="landing-faq-answer-wrap"
+        style={{ height: `${height}px` }}
+      >
+        <div ref={answerRef} className="landing-faq-answer-inner">
+          <p className="landing-faq-answer">{answer}</p>
+        </div>
+      </div>
+    </div>
   );
 }

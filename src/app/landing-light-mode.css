@@ -392,13 +392,14 @@ body.light-mode .landing-page .landing-faq-heading {
   color: var(--text-primary);
 }
 
+/* Seamless rows: no per-item card, just a top divider between items. */
 body.light-mode .landing-page .landing-faq-item {
-  border-color: var(--border-primary);
-  background: var(--surface-card);
+  background: transparent;
+  border-top-color: var(--border-primary);
 }
 
-body.light-mode .landing-page .landing-faq-item:hover {
-  border-color: var(--border-hover);
+body.light-mode .landing-page .landing-faq-item.landing-faq-item--first {
+  border-top: none;
 }
 
 body.light-mode .landing-page .landing-faq-question {
@@ -407,6 +408,16 @@ body.light-mode .landing-page .landing-faq-question {
 
 body.light-mode .landing-page .landing-faq-question:hover {
   color: var(--text-primary);
+}
+
+body.light-mode .landing-page .landing-faq-icon {
+  color: var(--text-muted);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .landing-page .landing-faq-question:hover .landing-faq-icon {
+  color: var(--text-primary);
+  border-color: rgba(16, 185, 129, 0.55);
 }
 
 body.light-mode .landing-page .landing-faq-answer {
