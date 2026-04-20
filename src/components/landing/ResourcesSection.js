@@ -1,65 +1,66 @@
 'use client';
 
-import { useState } from 'react';
 import DatabaseWithRestApi from '@/components/ui/database-with-rest-api';
 
 const DATA_SOURCES = [
   {
     id: 'congress',
     label: 'Congress',
-    details: [
-      'Capitol Trades API',
-      'House & Senate PTRs',
-      'STOCK Act filings',
+    tagline: 'Political trading and legislative signals',
+    sources: [
+      { name: 'Quiver Quantitative', description: 'Congressional trading disclosures' },
+      { name: 'House Financial Disclosures', description: 'Official US House filings' },
+      { name: 'Senate Financial Disclosures', description: 'Official US Senate filings' },
+      { name: 'OpenSecrets', description: 'Campaign finance and lobbying context' },
     ],
   },
   {
     id: '13f',
     label: '13F Filings',
-    details: [
-      'SEC EDGAR filings',
-      'Institutional holdings',
-      'Hedge fund positions',
+    tagline: 'Institutional positions disclosed quarterly',
+    sources: [
+      { name: 'SEC EDGAR', description: '13F, 13D, and 13G filings direct from the source' },
+      { name: 'WhaleWisdom', description: 'Institutional holder consolidation and change detection' },
+      { name: 'Financial Modeling Prep', description: 'Normalized institutional holdings feed' },
     ],
   },
   {
     id: 'institutional',
     label: 'Institutional Portfolios',
-    details: [
-      'Legendary investor portfolios',
-      'Ownership tracking',
-      'Position changes',
+    tagline: 'Fund composition and manager behavior',
+    sources: [
+      { name: 'Financial Modeling Prep', description: 'Fund holdings and manager profiles' },
+      { name: 'Morningstar API', description: 'Fund composition and performance' },
+      { name: 'SEC EDGAR', description: 'Fund disclosures and prospectuses' },
     ],
   },
   {
     id: 'analytics',
     label: 'Alternative Analytics',
-    details: [
-      'FRED economic data',
-      'News & sentiment',
-      'Custom metrics',
+    tagline: 'Markets, macro, and prediction data',
+    sources: [
+      { name: 'Polymarket', description: 'Prediction market odds and live bets' },
+      { name: 'GDELT Project', description: 'Geolocated global news and event data' },
+      { name: 'World Bank Open Data API', description: 'Macroeconomic indicators' },
+      { name: 'IMF Data API', description: 'Fiscal and financial stability data' },
+      { name: 'Financial Modeling Prep', description: 'Sector performance, earnings, dividends, IPOs, economic calendar' },
     ],
   },
   {
     id: 'community',
     label: 'Community',
-    details: [
-      'Crowdsourced insights',
-      'Expert recommendations',
-      'Sentiment analysis',
+    tagline: 'Retail sentiment and platform activity',
+    sources: [
+      { name: 'Ezana Platform', description: 'User-generated watchlists, discussions, and posts' },
+      { name: 'Reddit API', description: 'Relevant investing subreddit signals' },
+      { name: 'StockTwits', description: 'Retail sentiment streams' },
     ],
   },
 ];
 
 export function ResourcesSection() {
-  const [selectedSource, setSelectedSource] = useState(null);
-
-  const handleBadgeClick = (id) => {
-    setSelectedSource(selectedSource === id ? null : id);
-  };
-
   const sourceDetails = DATA_SOURCES.reduce((acc, source) => {
-    acc[source.id] = source.details;
+    acc[source.id] = { tagline: source.tagline, sources: source.sources };
     return acc;
   }, {});
 
@@ -67,9 +68,11 @@ export function ResourcesSection() {
     <section className="resources-section" id="resources">
       <div className="resources-container">
         <div className="resources-header">
-          <h2>Data Sources & Resources</h2>
+          <h2>Data Sources &amp; Resources</h2>
           <p className="max-w-4xl mx-auto">
-            Institutional-grade market intelligence powered by verified data feeds. Congressional trades, hedge fund 13F filings, legendary investor portfolios, and advanced analytics—all aggregated through our secure REST API for real-time investment insights.
+            Every signal, traced to its source. Hover a category to see which providers and
+            datasets power it — from SEC EDGAR filings and Polymarket prediction odds to the
+            World Bank, GDELT, and our own platform signals.
           </p>
         </div>
 
@@ -85,8 +88,6 @@ export function ResourcesSection() {
             title="Institutional-grade data from verified sources"
             circleText="Ezana"
             lightColor="#10b981"
-            onBadgeClick={handleBadgeClick}
-            selectedSource={selectedSource}
             sourceDetails={sourceDetails}
           />
         </div>
