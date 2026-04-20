@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { usePartner } from '@/contexts/PartnerContext';
 import { matchesPartnerRouteList, PARTNER_SHARED_APP_ROUTES } from '@/lib/partner-chrome';
@@ -12,6 +12,13 @@ import { useWatchlistPriceAlerts } from '@/hooks/useWatchlistPriceAlerts';
 import '@/components/Layout/mobile-bottom-nav.css';
 import './layout.css';
 import './dashboard-polish.css';
+
+/* `useLayoutEffect` runs synchronously after DOM mutation but before the
+   browser paints — so any correction to body classes happens in the same
+   frame as hydration, never as a visible flash. Falls back to useEffect
+   during SSR where useLayoutEffect is a no-op (and would warn). */
+const useIsomorphicLayoutEffect =
+  typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -28,14 +35,26 @@ export default function DashboardLayout({ children }) {
     !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
   const isPartnerExperience = isPartnerRoute || isSharedPartner;
 
-  useEffect(() => {
+  /* Body classes (`dashboard-page`, `route-regular-dashboard`,
+     `route-market-analysis`) are ALSO applied server-side by the root
+     layout based on the forwarded pathname (see lib/route-shell.js). The
+     effects below are kept to:
+       - Keep classes in sync during client-side navigation between
+         dashboard segments (SPA transitions don't re-run the server
+         layout).
+       - Promote a shared-partner viewer (detected only after the partner
+         context resolves) from `route-regular-dashboard` → partner chrome
+         without reloading.
+       - Clean up the classes when the user leaves the dashboard segment
+         entirely. */
+  useIsomorphicLayoutEffect(() => {
     document.body.classList.add('dashboard-page');
     return () => {
       document.body.classList.remove('dashboard-page');
     };
   }, []);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const body = document.body;
     const isRegularDashboard = !isPartnerExperience;
 

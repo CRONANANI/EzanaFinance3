@@ -1,5 +1,6 @@
 import './globals.css';
 import { Suspense } from 'react';
+import { headers } from 'next/headers';
 import { validateEnv } from '@/lib/env';
 
 validateEnv();
@@ -16,6 +17,17 @@ import { ActiveTaskProvider } from '@/contexts/ActiveTaskContext';
 import { ConditionalNavbar } from '@/components/Layout/ConditionalNavbar';
 import { PartnerChromeEffects } from '@/components/partner/PartnerChromeEffects';
 import { getServerTheme } from '@/lib/user-preferences/server';
+import { resolveRouteShellClasses } from '@/lib/route-shell';
+
+/* Force dynamic rendering on every route. The root layout reads `cookies()`
+   (inside getServerTheme) and the forwarded `x-pathname` header, both of
+   which are per-request — so caching the layout/HTML would ship stale theme
+   classes to logged-in users on Home / Dashboard (the exact split-theme
+   flash this fix is eliminating). Explicit opt-out keeps the intent
+   obvious and prevents a future `export const` elsewhere from flipping
+   any route back to static. */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Ezana Finance - Follow the moves that matter',
@@ -29,6 +41,20 @@ export default async function RootLayout({ children }) {
      main content rendered light. */
   const initialTheme = await getServerTheme();
   const isDark = initialTheme === 'dark';
+
+  /* Read the request pathname forwarded by middleware so we can pre-apply
+     route-scoped body classes (`dashboard-page`, `route-regular-dashboard`,
+     `route-market-analysis`). Historically these were set by a useEffect
+     inside the dashboard layout, which meant the first paint was missing
+     them — the root cause of the "nav dark, content light" split that
+     resolved only after client-side navigation to another dashboard
+     route. Setting them in SSR eliminates that race. */
+  const pathname = headers().get('x-pathname') ?? '';
+  const routeShellClasses = resolveRouteShellClasses(pathname);
+
+  const bodyClassName = ['app-body', isDark ? null : 'light-mode', ...routeShellClasses]
+    .filter(Boolean)
+    .join(' ');
 
   const htmlClassName = isDark ? 'dark' : 'light-mode';
   const htmlStyle = isDark
@@ -98,7 +124,7 @@ export default async function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
         />
       </head>
-      <body className={`app-body ${isDark ? '' : 'light-mode'}`}>
+      <body className={bodyClassName}>
         <a href="#main-content" className="skip-to-content">Skip to content</a>
         <ThemeProvider initialTheme={initialTheme}>
           <AuthProvider>

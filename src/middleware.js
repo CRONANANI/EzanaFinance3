@@ -7,17 +7,24 @@ const ALLOWED_ORIGINS = ['https://ezana.world', 'http://localhost:3000', 'http:/
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
 
+  /* Forward the resolved pathname as a request header so server components
+     (e.g. the root layout) can pre-compute route-scoped body classes
+     server-side. Eliminates the class-application race on first paint that
+     was causing the split-theme flash on Home / Dashboard. */
+  const forwardedHeaders = new Headers(request.headers);
+  forwardedHeaders.set('x-pathname', pathname);
+
   /** Stripe webhook must receive the raw body — skip session / CORS handling */
   if (pathname.startsWith('/api/stripe/webhook')) {
-    return NextResponse.next({ request: { headers: request.headers } });
+    return NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 
   /** Alpaca Broker webhooks — no auth cookie; forward as-is */
   if (pathname.startsWith('/api/trading/webhook')) {
-    return NextResponse.next({ request: { headers: request.headers } });
+    return NextResponse.next({ request: { headers: forwardedHeaders } });
   }
 
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  let response = NextResponse.next({ request: { headers: forwardedHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
