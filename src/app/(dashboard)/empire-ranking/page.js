@@ -17,6 +17,7 @@ import { useCardConfig } from '@/hooks/useCardConfig';
 import { useEmpireScores } from '@/hooks/useEmpireScores';
 import { auditContrast } from '@/lib/a11y/audit-contrast';
 import { fetchEmpireRankings } from '@/lib/empire-db';
+import { colorFor, ANCHOR_ISO3S } from '@/lib/empire/country-colors';
 import {
   LineChart,
   Line,
@@ -490,21 +491,65 @@ function normalizedToMockScale(score) {
   return (score - 50) / 16.67; // (score - 50) / (100 / 6) → spans [-3, +3]
 }
 
-function generateBigCycle(country) {
-  const shapes = {
-    USA: { rise: 1850, peak: 1960, current: 2025, peakVal: 100, nowVal: 87 },
-    CHN: { rise: 1980, peak: 2050, current: 2025, peakVal: 95, nowVal: 75 },
-    EUR: { rise: 1700, peak: 1900, current: 2025, peakVal: 85, nowVal: 55 },
-    GBR: { rise: 1700, peak: 1870, current: 2025, peakVal: 100, nowVal: 27 },
-    NLD: { rise: 1550, peak: 1680, current: 2025, peakVal: 90, nowVal: 25 },
-    ESP: { rise: 1480, peak: 1600, current: 2025, peakVal: 80, nowVal: 20 },
-    DEU: { rise: 1850, peak: 1940, current: 2025, peakVal: 75, nowVal: 37 },
-    JPN: { rise: 1870, peak: 1990, current: 2025, peakVal: 70, nowVal: 30 },
-    IND: { rise: 1995, peak: 2060, current: 2025, peakVal: 80, nowVal: 27 },
-    RUS: { rise: 1850, peak: 1950, current: 2025, peakVal: 65, nowVal: 23 },
-    FRA: { rise: 1650, peak: 1810, current: 2025, peakVal: 85, nowVal: 25 },
-  };
-  const s = shapes[country] || shapes.USA;
+/**
+ * Hand-tuned Big Cycle shapes for the countries Dalio discusses at length.
+ * Anything outside this set falls back to a deterministic rank-based
+ * shape synthesized in `synthesizeBigCycleShape()` below — that way a
+ * 60-country overlay still has 60 plausibly-varied trajectories without
+ * hand-curating every one.
+ */
+const BIG_CYCLE_SHAPES = {
+  USA: { rise: 1850, peak: 1960, current: 2025, peakVal: 100, nowVal: 87 },
+  CHN: { rise: 1980, peak: 2050, current: 2025, peakVal: 95, nowVal: 75 },
+  EUR: { rise: 1700, peak: 1900, current: 2025, peakVal: 85, nowVal: 55 },
+  GBR: { rise: 1700, peak: 1870, current: 2025, peakVal: 100, nowVal: 27 },
+  NLD: { rise: 1550, peak: 1680, current: 2025, peakVal: 90, nowVal: 25 },
+  ESP: { rise: 1480, peak: 1600, current: 2025, peakVal: 80, nowVal: 20 },
+  DEU: { rise: 1850, peak: 1940, current: 2025, peakVal: 75, nowVal: 37 },
+  JPN: { rise: 1870, peak: 1990, current: 2025, peakVal: 70, nowVal: 30 },
+  IND: { rise: 1995, peak: 2060, current: 2025, peakVal: 80, nowVal: 27 },
+  RUS: { rise: 1850, peak: 1950, current: 2025, peakVal: 65, nowVal: 23 },
+  FRA: { rise: 1650, peak: 1810, current: 2025, peakVal: 85, nowVal: 25 },
+};
+
+/**
+ * Deterministic 32-bit hash of a string. Used to seed the rank-based
+ * shape synthesis so the same ISO-3 always produces the same curve.
+ */
+function hashString(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+/**
+ * Synthesize a reasonable Big Cycle shape for any country given its
+ * current economic rank (1 = largest economy). Higher-rank countries
+ * anchor at higher peak values; rise/peak years and decay tempo are
+ * spread using a deterministic hash of the ISO-3 so neighbors don't
+ * overlap identically.
+ */
+function synthesizeBigCycleShape(code, economicRank) {
+  const rank = Number.isFinite(economicRank) && economicRank > 0 ? economicRank : 45;
+  const h = hashString(code);
+  const peakVal = Math.max(25, 90 - (rank - 1) * 1.2); // rank 1 → 90, rank 60 → 19
+  const nowVal = Math.max(8, peakVal * (0.35 + ((h >> 3) % 40) / 100)); // 35-75% of peak
+  const rise = 1600 + ((h >> 7) % 350);                  // 1600–1950
+  const peak = Math.min(2020, rise + 80 + ((h >> 11) % 140)); // rise + 80–220y
+  return { rise, peak, current: 2025, peakVal, nowVal };
+}
+
+/**
+ * Generate the illustrative Big Cycle points (1500 → 2030, step 10y) for
+ * a country. Uses a hand-tuned shape when available, else synthesizes one
+ * from the catalog rank. Kept synchronous + deterministic so multiple
+ * callers (single-country area chart + all-countries overlay) share the
+ * same trajectory.
+ */
+function generateBigCycle(country, economicRank) {
+  const s = BIG_CYCLE_SHAPES[country] ?? synthesizeBigCycleShape(country, economicRank);
   const points = [];
   for (let year = 1500; year <= 2030; year += 10) {
     let v = 5;
@@ -798,36 +843,177 @@ const BIG_CYCLE_TIMEFRAMES = [
   { value: 9999, label: 'All' },
 ];
 
+const BIG_CYCLE_ALL = 'all';
+
+const BIG_CYCLE_REGIONS = [
+  { value: 'Americas', label: 'Americas' },
+  { value: 'Europe', label: 'Europe' },
+  { value: 'Asia-Pacific', label: 'Asia-Pacific' },
+  { value: 'MENA', label: 'MENA' },
+  { value: 'Africa', label: 'Africa' },
+];
+
+const BIG_CYCLE_TOPN = [
+  { value: 5, label: 'Top 5' },
+  { value: 10, label: 'Top 10' },
+  { value: 20, label: 'Top 20' },
+  { value: 40, label: 'Top 40' },
+  { value: 999, label: 'All' },
+];
+
+/**
+ * Shape the radar/legend uses to describe a selectable country. We merge
+ * the legacy `empireData` mock with the 60-country catalog returned from
+ * `/api/empire/scores`, preferring catalog metadata (region, economic
+ * rank) when present and falling back to the mock for display-only bits
+ * (flag emoji). Deduped by code.
+ */
+function mergeCountryCatalog(empireData, liveCountries) {
+  /** @type {Map<string, { code, name, flag, region, economicRank }>} */
+  const merged = new Map();
+  for (const c of empireData ?? []) {
+    merged.set(c.code, {
+      code: c.code,
+      name: c.name,
+      flag: c.flag ?? '',
+      region: c.region ?? 'Europe',
+      economicRank: 500, // sentinel; mock-only countries drift to the back
+    });
+  }
+  for (const c of liveCountries ?? []) {
+    const prev = merged.get(c.code) ?? {};
+    merged.set(c.code, {
+      code: c.code,
+      name: c.name,
+      flag: prev.flag || c.flag || '',
+      region: c.region || prev.region || 'Europe',
+      economicRank: c.economic_rank ?? prev.economicRank ?? 500,
+    });
+  }
+  return Array.from(merged.values()).filter((c) => c.code !== 'EUR');
+}
+
+/**
+ * Pivot { code -> points[{year,value}] } into the wide-format array
+ * Recharts expects ([{year, USA: 80, CHN: 45, ...}, ...]). Only years
+ * present in the first series are emitted; since all series are produced
+ * by generateBigCycle() in lockstep (1500..2030 step 10), they align.
+ */
+function pivotBigCycleWide(seriesByCode, yearStart) {
+  const codes = Object.keys(seriesByCode);
+  if (codes.length === 0) return [];
+  const anchor = seriesByCode[codes[0]];
+  return anchor
+    .filter((p) => p.year >= yearStart)
+    .map((p) => {
+      /** @type {Record<string, number>} */
+      const row = { year: p.year };
+      for (const code of codes) {
+        const point = seriesByCode[code].find((q) => q.year === p.year);
+        if (point) row[code] = point.value;
+      }
+      return row;
+    });
+}
+
 function BigCycleCard({ empireData }) {
   const [cfg, setCfg] = useCardConfig('big-cycle', {
-    country: 'USA',
+    country: 'USA',                   // can also be the sentinel 'all'
     window: 250,
+    regions: ['Americas', 'Europe', 'Asia-Pacific', 'MENA', 'Africa'],
+    topN: 20,
   });
   const tokens = useEmpireChartTokens();
 
-  const fullSeries = useMemo(() => generateBigCycle(cfg.country), [cfg.country]);
-  const data = useMemo(() => {
-    if (cfg.window >= 9999) return fullSeries;
-    const cutoff = 2030 - cfg.window;
-    return fullSeries.filter((p) => p.year >= cutoff);
-  }, [fullSeries, cfg.window]);
-
-  const current = empireData.find((e) => e.code === cfg.country);
-  const traj = current ? trajectoryIcon(current.trajectory) : null;
-
-  const countryOptions = useMemo(
-    () => empireData.map((c) => ({ value: c.code, label: `${c.flag} ${c.name}` })),
-    [empireData],
+  // Pull the 60-country catalog for the multi-country mode. The hook
+  // degrades gracefully (empty arrays) so single-country mode keeps
+  // working without the backbone having been synced.
+  const live = useEmpireScores();
+  const catalog = useMemo(
+    () => mergeCountryCatalog(empireData, live.countries),
+    [empireData, live.countries],
   );
 
-  const windowLabel = BIG_CYCLE_TIMEFRAMES.find((t) => t.value === cfg.window)?.label ?? 'All';
+  const isAllMode = cfg.country === BIG_CYCLE_ALL;
+
+  // Country dropdown: "All Countries" at the top, then catalog sorted by rank.
+  const countryOptions = useMemo(() => {
+    const options = [{ value: BIG_CYCLE_ALL, label: '🌐 All Countries' }];
+    const sorted = [...catalog].sort((a, b) => a.economicRank - b.economicRank);
+    for (const c of sorted) {
+      options.push({ value: c.code, label: `${c.flag ? `${c.flag} ` : ''}${c.name}` });
+    }
+    return options;
+  }, [catalog]);
+
+  // Which countries to plot in all-mode (region-filtered, then sliced by Top-N).
+  const visibleCountries = useMemo(() => {
+    if (!isAllMode) return [];
+    const regionSet = new Set(cfg.regions);
+    return [...catalog]
+      .filter((c) => regionSet.has(c.region))
+      .sort((a, b) => a.economicRank - b.economicRank)
+      .slice(0, cfg.topN >= 999 ? catalog.length : cfg.topN);
+  }, [catalog, cfg.regions, cfg.topN, isAllMode]);
+
+  // Build the wide-format data for the all-mode multi-line chart.
+  const allModeData = useMemo(() => {
+    if (!isAllMode) return [];
+    const yearStart = cfg.window >= 9999 ? 1500 : 2030 - cfg.window;
+    /** @type {Record<string, ReturnType<typeof generateBigCycle>>} */
+    const seriesByCode = {};
+    for (const c of visibleCountries) {
+      seriesByCode[c.code] = generateBigCycle(c.code, c.economicRank);
+    }
+    return pivotBigCycleWide(seriesByCode, yearStart);
+  }, [isAllMode, visibleCountries, cfg.window]);
+
+  // Single-country mode keeps the original AreaChart + stat row.
+  const singleSeries = useMemo(() => {
+    if (isAllMode) return [];
+    const country = catalog.find((c) => c.code === cfg.country);
+    return generateBigCycle(cfg.country, country?.economicRank);
+  }, [isAllMode, cfg.country, catalog]);
+  const singleData = useMemo(() => {
+    if (cfg.window >= 9999) return singleSeries;
+    const cutoff = 2030 - cfg.window;
+    return singleSeries.filter((p) => p.year >= cutoff);
+  }, [singleSeries, cfg.window]);
+
+  const current = !isAllMode ? empireData.find((e) => e.code === cfg.country) : null;
+  const traj = current ? trajectoryIcon(current.trajectory) : null;
+
+  const windowLabel =
+    BIG_CYCLE_TIMEFRAMES.find((t) => t.value === cfg.window)?.label ?? 'All';
+
+  // ─── All-mode hover / pin state ──────────────────────────────────────────
+  const [hoveredIso, setHoveredIso] = useState(null);
+  const [pinnedIsos, setPinnedIsos] = useState(() => new Set(ANCHOR_ISO3S));
+  const togglePin = (iso3) => {
+    setPinnedIsos((prev) => {
+      const next = new Set(prev);
+      if (next.has(iso3)) next.delete(iso3);
+      else next.add(iso3);
+      return next;
+    });
+  };
+  const resetPins = () => setPinnedIsos(new Set(ANCHOR_ISO3S));
+  const hasCustomPins = useMemo(() => {
+    if (pinnedIsos.size !== ANCHOR_ISO3S.length) return true;
+    for (const iso of ANCHOR_ISO3S) if (!pinnedIsos.has(iso)) return true;
+    return false;
+  }, [pinnedIsos]);
+
+  const subtitle = isAllMode
+    ? `${visibleCountries.length} countries · ${windowLabel} (illustrative)`
+    : `Historical power trajectory · ${windowLabel} (illustrative)`;
 
   return (
     <Card
       id="section-conflict-risk"
       icon="bi-graph-up-arrow"
       title="The Big Cycle — Rise & Fall"
-      subtitle={`Historical power trajectory · ${windowLabel} (illustrative)`}
+      subtitle={subtitle}
       actions={
         <CardControls>
           <ToggleSelect
@@ -842,56 +1028,230 @@ function BigCycleCard({ empireData }) {
             value={cfg.window}
             onChange={(v) => setCfg({ window: v })}
           />
+          {isAllMode && (
+            <>
+              <ToggleMultiSelect
+                label="Region"
+                options={BIG_CYCLE_REGIONS}
+                values={cfg.regions}
+                onChange={(v) => setCfg({ regions: v })}
+              />
+              <ToggleChips
+                label="Show"
+                options={BIG_CYCLE_TOPN}
+                value={cfg.topN}
+                onChange={(v) => setCfg({ topN: v })}
+              />
+              {hasCustomPins && (
+                <button
+                  type="button"
+                  className="er-big-cycle-reset"
+                  onClick={resetPins}
+                >
+                  Reset pins
+                </button>
+              )}
+            </>
+          )}
         </CardControls>
       }
       wide
     >
-      <div style={{ height: 280 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-            <defs>
-              <linearGradient id="cycleGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
-            <XAxis
-              dataKey="year"
-              tick={{ fill: tokens.axisTick, fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-              interval={Math.max(0, Math.floor(data.length / 12))}
-            />
-            <YAxis tick={{ fill: tokens.axisTick, fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} />
-            <Tooltip contentStyle={tokens.tooltipStyle} formatter={(v) => [`${v}`, 'Power Index']} />
-            <ReferenceLine
-              x={2025}
-              stroke="#d4af37"
-              strokeDasharray="4 2"
-              label={{ value: 'Now', fill: tokens.referenceAccent, fontSize: 10, position: 'top' }}
-            />
-            <Area type="monotone" dataKey="value" stroke="#ef4444" fill="url(#cycleGradient)" strokeWidth={2.5} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-      {current && traj && (
-        <div className="er-cycle-stat-row">
-          <div className="er-cycle-stat">
-            <span className="er-cycle-stat-label">Current Score</span>
-            <span className="er-cycle-stat-value">{current.score.toFixed(2)}</span>
+      {isAllMode ? (
+        <div className="er-big-cycle-all">
+          <div className="er-big-cycle-all__chart" style={{ height: 360 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={allModeData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+                <XAxis
+                  dataKey="year"
+                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={Math.max(0, Math.floor(allModeData.length / 12))}
+                />
+                <YAxis
+                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100]}
+                  label={{
+                    value: 'Empire Score',
+                    angle: -90,
+                    position: 'insideLeft',
+                    fill: tokens.axisTick,
+                    fontSize: 10,
+                  }}
+                />
+                <Tooltip
+                  contentStyle={tokens.tooltipStyle}
+                  // With 40-60 overlapping lines a shared tooltip would
+                  // dump every country at that year into one box. Scope
+                  // it to just the hovered line so the reading is sharp.
+                  shared={false}
+                  formatter={(v, name) => [
+                    `${v}`,
+                    catalog.find((c) => c.code === name)?.name ?? name,
+                  ]}
+                />
+                <ReferenceLine
+                  x={2025}
+                  stroke="#d4af37"
+                  strokeDasharray="4 2"
+                  label={{
+                    value: 'Now',
+                    fill: tokens.referenceAccent,
+                    fontSize: 10,
+                    position: 'top',
+                  }}
+                />
+                {visibleCountries.map((c) => {
+                  const pinned = pinnedIsos.has(c.code);
+                  const isHovered = hoveredIso === c.code;
+                  const isAnchor = pinned || isHovered;
+                  const opacity = isAnchor ? 1 : hoveredIso ? 0.15 : 0.35;
+                  const width = isAnchor ? 2.5 : 1.25;
+                  return (
+                    <Line
+                      key={c.code}
+                      type="monotone"
+                      dataKey={c.code}
+                      name={c.code}
+                      stroke={colorFor(c.code)}
+                      strokeWidth={width}
+                      strokeOpacity={opacity}
+                      dot={false}
+                      isAnimationActive={false}
+                      connectNulls
+                      activeDot={isAnchor ? { r: 3 } : false}
+                      onMouseEnter={() => setHoveredIso(c.code)}
+                      onMouseLeave={() => setHoveredIso(null)}
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <div className="er-cycle-stat">
-            <span className="er-cycle-stat-label">Global Rank</span>
-            <span className="er-cycle-stat-value">#{current.rank}</span>
-          </div>
-          <div className="er-cycle-stat">
-            <span className="er-cycle-stat-label">Trajectory</span>
-            <span className="er-cycle-stat-value" style={{ color: traj.color }}>
-              <i className={`bi ${traj.icon}`} />
-            </span>
-          </div>
+
+          <aside className="er-big-cycle-legend" aria-label="Countries">
+            <div className="er-big-cycle-legend__header">
+              Countries ({visibleCountries.length})
+            </div>
+            <ul className="er-big-cycle-legend__list">
+              {visibleCountries.map((c) => {
+                const pinned = pinnedIsos.has(c.code);
+                const isHovered = hoveredIso === c.code;
+                return (
+                  <li key={c.code}>
+                    <button
+                      type="button"
+                      className={
+                        'er-big-cycle-legend__item' +
+                        (pinned ? ' er-big-cycle-legend__item--pinned' : '') +
+                        (isHovered ? ' er-big-cycle-legend__item--hovered' : '')
+                      }
+                      onClick={() => togglePin(c.code)}
+                      onMouseEnter={() => setHoveredIso(c.code)}
+                      onMouseLeave={() => setHoveredIso(null)}
+                      aria-pressed={pinned}
+                      title={pinned ? 'Unpin' : 'Pin'}
+                    >
+                      <span
+                        className="er-big-cycle-legend__dot"
+                        style={{ backgroundColor: colorFor(c.code) }}
+                        aria-hidden
+                      />
+                      <span className="er-big-cycle-legend__name">{c.name}</span>
+                      <span className="er-big-cycle-legend__rank" aria-hidden>
+                        #{c.economicRank >= 500 ? '—' : c.economicRank}
+                      </span>
+                      {pinned && (
+                        <i
+                          className="bi bi-pin-angle-fill er-big-cycle-legend__pin"
+                          aria-hidden
+                        />
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+              {visibleCountries.length === 0 && (
+                <li className="er-big-cycle-legend__empty">
+                  No countries match the selected regions.
+                </li>
+              )}
+            </ul>
+          </aside>
         </div>
+      ) : (
+        <>
+          <div style={{ height: 280 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={singleData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="cycleGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
+                <XAxis
+                  dataKey="year"
+                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={Math.max(0, Math.floor(singleData.length / 12))}
+                />
+                <YAxis
+                  tick={{ fill: tokens.axisTick, fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={tokens.tooltipStyle}
+                  formatter={(v) => [`${v}`, 'Power Index']}
+                />
+                <ReferenceLine
+                  x={2025}
+                  stroke="#d4af37"
+                  strokeDasharray="4 2"
+                  label={{
+                    value: 'Now',
+                    fill: tokens.referenceAccent,
+                    fontSize: 10,
+                    position: 'top',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#ef4444"
+                  fill="url(#cycleGradient)"
+                  strokeWidth={2.5}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          {current && traj && (
+            <div className="er-cycle-stat-row">
+              <div className="er-cycle-stat">
+                <span className="er-cycle-stat-label">Current Score</span>
+                <span className="er-cycle-stat-value">{current.score.toFixed(2)}</span>
+              </div>
+              <div className="er-cycle-stat">
+                <span className="er-cycle-stat-label">Global Rank</span>
+                <span className="er-cycle-stat-value">#{current.rank}</span>
+              </div>
+              <div className="er-cycle-stat">
+                <span className="er-cycle-stat-label">Trajectory</span>
+                <span className="er-cycle-stat-value" style={{ color: traj.color }}>
+                  <i className={`bi ${traj.icon}`} />
+                </span>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </Card>
   );

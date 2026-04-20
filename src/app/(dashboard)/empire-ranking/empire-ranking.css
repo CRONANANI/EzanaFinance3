@@ -417,6 +417,152 @@ body.light-mode .er-select {
   color: var(--er-text-primary);
 }
 
+/* ── Big Cycle · All-countries overlay ─────────────────────
+ * Two-column layout: multi-line chart on the left, scrollable
+ * pin-toggle legend on the right. On narrow viewports the legend
+ * collapses below the chart and becomes horizontal-scrollable so
+ * 40–60 countries still fit without fighting the chart for space.
+ */
+.er-big-cycle-all {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 1rem;
+}
+
+.er-big-cycle-all__chart {
+  min-width: 0; /* let the grid cell constrain Recharts' ResponsiveContainer */
+}
+
+.er-big-cycle-legend {
+  border-left: 1px solid var(--er-border-soft);
+  padding-left: 0.75rem;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.er-big-cycle-legend__header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--er-text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+  padding: 0 0.25rem;
+  position: sticky;
+  top: 0;
+  background: var(--er-surface-card);
+  z-index: 1;
+}
+
+.er-big-cycle-legend__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.er-big-cycle-legend__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--er-text-muted);
+  font-size: 0.72rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.er-big-cycle-legend__item:hover,
+.er-big-cycle-legend__item--hovered {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--er-text-primary);
+}
+
+.er-big-cycle-legend__item--pinned {
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--er-text-primary);
+  font-weight: 600;
+}
+
+body.light-mode .er-big-cycle-legend__item:hover,
+body.light-mode .er-big-cycle-legend__item--hovered {
+  background: rgba(17, 24, 39, 0.06);
+}
+
+body.light-mode .er-big-cycle-legend__item--pinned {
+  background: rgba(212, 175, 55, 0.14);
+}
+
+.er-big-cycle-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.er-big-cycle-legend__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.er-big-cycle-legend__rank {
+  font-size: 0.6rem;
+  color: var(--er-text-label);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.er-big-cycle-legend__pin {
+  font-size: 0.65rem;
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.er-big-cycle-legend__empty {
+  font-size: 0.7rem;
+  color: var(--er-text-muted);
+  padding: 0.5rem 0.25rem;
+  list-style: none;
+}
+
+.er-big-cycle-reset {
+  background: transparent;
+  border: none;
+  color: var(--er-text-muted);
+  font-size: 0.68rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0 0.35rem;
+  transition: color 0.15s;
+}
+
+.er-big-cycle-reset:hover {
+  color: var(--er-text-primary);
+}
+
+@media (max-width: 860px) {
+  .er-big-cycle-all {
+    grid-template-columns: 1fr;
+  }
+  .er-big-cycle-legend {
+    border-left: none;
+    border-top: 1px solid var(--er-border-soft);
+    padding-left: 0;
+    padding-top: 0.75rem;
+    max-height: 200px;
+  }
+}
+
 /* ── Scorecard grid ────────────────────────────────────── */
 .er-scorecard-grid {
   display: grid;
