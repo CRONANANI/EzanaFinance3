@@ -44,6 +44,11 @@ body.light-mode .er-page {
 }
 
 /* ── Hero ──────────────────────────────────────────────── */
+/* Hero: centered title block in the middle of the card. The back-link and
+ * mock/live badge are pinned to the top-left / top-right corners so the
+ * title + subtitle can claim the full card width and be visually centered,
+ * not just left-anchored.
+ */
 .er-hero {
   position: relative;
   overflow: hidden;
@@ -55,15 +60,19 @@ body.light-mode .er-page {
     rgba(10, 14, 19, 0.95) 100%
   );
   border: 1px solid rgba(212, 175, 55, 0.15);
-  padding: 1.25rem 1.75rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  padding: 2.75rem 1.75rem 1.5rem;
+  display: block;
+}
+
+.er-hero-left {
+  display: block;
+  width: 100%;
 }
 
 .er-back-link {
+  position: absolute;
+  top: 1rem;
+  left: 1.5rem;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -71,7 +80,6 @@ body.light-mode .er-page {
   font-weight: 600;
   color: #8b949e;
   text-decoration: none;
-  margin-bottom: 0.75rem;
   transition: color 0.15s;
 }
 
@@ -81,8 +89,12 @@ body.light-mode .er-page {
 
 .er-hero-title-row {
   display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .er-hero-icon {
@@ -105,14 +117,16 @@ body.light-mode .er-page {
   color: #d4af37;
   margin: 0 0 0.35rem;
   letter-spacing: -0.01em;
+  text-align: center;
 }
 
 .er-hero-sub {
   font-size: 0.82rem;
   color: #9ca3af;
-  margin: 0;
+  margin: 0 auto;
   max-width: 620px;
-  line-height: 1.5;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .er-hero-sub em {
@@ -121,6 +135,9 @@ body.light-mode .er-page {
 }
 
 .er-hero-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
   font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -486,9 +503,24 @@ body.light-mode .er-select {
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* On narrow viewports the absolutely-pinned badge can collide with the
+   * back-link, and the centered title needs less top/side padding. Drop
+   * the badge back into flow at the top of the hero and tighten padding. */
   .er-hero {
-    flex-direction: column;
-    padding: 1rem 1.25rem;
+    padding: 1rem 1.25rem 1.25rem;
+    text-align: center;
+  }
+  .er-back-link {
+    position: static;
+    margin-bottom: 0.5rem;
+  }
+  .er-hero-badge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+  }
+  .er-hero-title-row {
+    gap: 0.6rem;
   }
 
   .er-scorecard-grid {
