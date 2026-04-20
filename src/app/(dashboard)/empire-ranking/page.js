@@ -14,6 +14,7 @@ import {
   useEmpireChartTokens,
 } from '@/components/empire-ranking/card-controls';
 import { useCardConfig } from '@/hooks/useCardConfig';
+import { useEmpireScores } from '@/hooks/useEmpireScores';
 import { auditContrast } from '@/lib/a11y/audit-contrast';
 import { fetchEmpireRankings } from '@/lib/empire-db';
 import {
@@ -452,6 +453,43 @@ const POWER_DIMENSIONS = [
   'Acts of Nature',
 ];
 
+/**
+ * Bridges the UI's display labels to the canonical dimension ids stored
+ * in `empire_dimensions`. Keeps the radar card able to pull live scores
+ * from the new `/api/empire/scores` endpoint without renaming the legacy
+ * mock-data keys (which would require touching every country's scores map
+ * above).
+ */
+const UI_DIMENSION_TO_ID = {
+  'Debt Burden': 'debt_burden',
+  'Expected Growth': 'expected_growth',
+  'Internal Conflict': 'internal_conflict',
+  Education: 'education',
+  'Innovation & Technology': 'innovation_technology',
+  'Cost Competitiveness': 'cost_competition',
+  'Military Strength': 'military_strength',
+  Trade: 'trade',
+  'Economic Output': 'economic_output',
+  'Markets & Financial Center': 'markets_financial_center',
+  'Reserve Currency Status': 'reserve_currency',
+  Geology: 'geology',
+  'Resource Efficiency': 'resource_efficiency',
+  Infrastructure: 'infrastructure',
+  'Character & Civility': 'character_social_contracts',
+  'Rule of Law': 'rule_of_law',
+  'Wealth Gaps': 'wealth_gaps',
+  'Acts of Nature': 'acts_of_nature',
+};
+
+/**
+ * Convert a normalized 0-100 score from the backbone into the -3…+3 mock
+ * scale the existing radar/scorecard UI expects. 50 → 0 (neutral).
+ */
+function normalizedToMockScale(score) {
+  if (score == null || !Number.isFinite(score)) return null;
+  return (score - 50) / 16.67; // (score - 50) / (100 / 6) → spans [-3, +3]
+}
+
 function generateBigCycle(country) {
   const shapes = {
     USA: { rise: 1850, peak: 1960, current: 2025, peakVal: 100, nowVal: 87 },
@@ -627,26 +665,80 @@ function PowerDimensionRadar({ empireData }) {
     return set ? POWER_DIMENSIONS.filter((d) => set.has(d)) : POWER_DIMENSIONS;
   }, [cfg.dimensionGroup]);
 
+  // Pull live composite scores from the Empire Rankings backbone. When the
+  // matview is empty (pre-first-sync) or the fetch fails, `hasData` stays
+  // false and we fall back to the legacy mock scores without breaking.
+  const live = useEmpireScores({
+    countries: [cfg.countryA, cfg.countryB].filter((c) => c && c !== 'EUR'),
+  });
+
   const data = useMemo(
     () =>
       dimensions.map((dim) => {
-        const a = empireData.find((e) => e.code === cfg.countryA)?.scores[dim] ?? 0;
-        const b = empireData.find((e) => e.code === cfg.countryB)?.scores[dim] ?? 0;
+        const dimId = UI_DIMENSION_TO_ID[dim];
+        const mockA = empireData.find((e) => e.code === cfg.countryA)?.scores[dim] ?? 0;
+        const mockB = empireData.find((e) => e.code === cfg.countryB)?.scores[dim] ?? 0;
+
+        const liveA = live.hasData && dimId
+          ? normalizedToMockScale(
+              live.scoresByCountryByDimension.get(cfg.countryA)?.get(dimId),
+            )
+          : null;
+        const liveB = live.hasData && dimId
+          ? normalizedToMockScale(
+              live.scoresByCountryByDimension.get(cfg.countryB)?.get(dimId),
+            )
+          : null;
+
+        const a = liveA ?? mockA;
+        const b = liveB ?? mockB;
         return {
           dimension: dim.length > 16 ? `${dim.substring(0, 14)}…` : dim,
           [cfg.countryA]: a + 3,
           [cfg.countryB]: b + 3,
         };
       }),
-    [dimensions, empireData, cfg.countryA, cfg.countryB],
+    [
+      dimensions,
+      empireData,
+      cfg.countryA,
+      cfg.countryB,
+      live.hasData,
+      live.scoresByCountryByDimension,
+    ],
   );
+
+  // Coverage counter for the "Data:" badge in the card subtitle.
+  const liveCoverage = useMemo(() => {
+    if (!live.hasData) return null;
+    const covered = dimensions.filter((d) => {
+      const id = UI_DIMENSION_TO_ID[d];
+      if (!id) return false;
+      return (
+        live.scoresByCountryByDimension.get(cfg.countryA)?.has(id) ||
+        live.scoresByCountryByDimension.get(cfg.countryB)?.has(id)
+      );
+    }).length;
+    return { covered, total: dimensions.length, year: live.year };
+  }, [
+    live.hasData,
+    live.year,
+    live.scoresByCountryByDimension,
+    dimensions,
+    cfg.countryA,
+    cfg.countryB,
+  ]);
+
+  const subtitle = liveCoverage
+    ? `Head-to-head across ${dimensions.length} measures · Live data for ${liveCoverage.covered}/${liveCoverage.total} dimensions · ${liveCoverage.year}`
+    : `Head-to-head across ${dimensions.length} measures of power`;
 
   return (
     <Card
       id="section-energy-power"
       icon="bi-diagram-3"
       title="Power Dimension Comparison"
-      subtitle={`Head-to-head across ${dimensions.length} measures of power`}
+      subtitle={subtitle}
       actions={
         <CardControls>
           <ToggleSelect

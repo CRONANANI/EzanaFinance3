@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/platform-aggregates",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-empire-data",
+      "schedule": "0 6 * * 1"
     }
   ]
 }
