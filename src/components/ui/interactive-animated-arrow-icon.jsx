@@ -61,12 +61,16 @@ export function IntIcon({
             : '#FFFFFF';
     const elements = svgElement.querySelectorAll('path, circle, rect, ellipse, polygon, line, polyline');
     elements.forEach((el) => {
-      if (el.getAttribute('fill') && el.getAttribute('fill') !== 'none') {
-        el.style.fill = colorValue;
-      }
-      if (el.getAttribute('stroke') && el.getAttribute('stroke') !== 'none') {
-        el.style.stroke = colorValue;
-      }
+      const fillAttr = el.getAttribute('fill');
+      const strokeAttr = el.getAttribute('stroke');
+      const hasFill =
+        (fillAttr && fillAttr !== 'none') ||
+        (el.style.fill && el.style.fill !== '' && el.style.fill !== 'none');
+      const hasStroke =
+        (strokeAttr && strokeAttr !== 'none') ||
+        (el.style.stroke && el.style.stroke !== '' && el.style.stroke !== 'none');
+      if (hasFill) el.style.fill = colorValue;
+      if (hasStroke) el.style.stroke = colorValue;
     });
   }, []);
 

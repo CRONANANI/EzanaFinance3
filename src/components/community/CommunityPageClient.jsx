@@ -4,12 +4,24 @@ import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import '@/app/(dashboard)/community/community.css';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { usePartner } from '@/contexts/PartnerContext';
-import { CommunityFeedPost } from '@/components/community/CommunityFeedPost';
+
+/* CommunityFeedPost pulls in Recharts (for the ticker embed charts some
+   posts have) plus its own 700+ line UI. Feed posts render below the
+   composer and the first user interaction is typically with the composer,
+   so we dynamic-import the feed post component. Result: Recharts stays
+   out of the initial /community bundle (~289 kB before → measurably
+   smaller). A minimal placeholder prevents the feed from collapsing
+   while the chunk streams in. */
+const CommunityFeedPost = dynamic(
+  () => import('@/components/community/CommunityFeedPost').then((m) => ({ default: m.CommunityFeedPost })),
+  { ssr: false, loading: () => <div className="community-feed-post-skeleton" style={{ minHeight: 180 }} aria-hidden /> }
+);
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import { UserSearch } from '@/components/community/UserSearch';

@@ -1,12 +1,24 @@
 'use client';
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo, Fragment } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import StockPriceChart from '@/components/research/StockPriceChart';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
-import ResetPortfolioModal from '@/components/trading/ResetPortfolioModal';
+
+/* Both StockPriceChart (Recharts) and ResetPortfolioModal are not on the
+   critical path for the mock-trading dashboard — the chart renders inside a
+   tab panel, the modal only after a confirm click. Lazy chunks keep the
+   initial 268 kB bundle smaller. */
+const StockPriceChart = dynamic(
+  () => import('@/components/research/StockPriceChart'),
+  { ssr: false, loading: () => <div style={{ height: 360 }} aria-hidden /> }
+);
+const ResetPortfolioModal = dynamic(
+  () => import('@/components/trading/ResetPortfolioModal'),
+  { ssr: false, loading: () => null }
+);
 import '../../home-dashboard/home-dashboard.css';
 import './mock-trading.css';
 

@@ -1,7 +1,30 @@
 import './globals.css';
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { validateEnv } from '@/lib/env';
+
+/* Self-host the two fonts we actually use. This replaces the render-blocking
+   <link href="https://fonts.googleapis.com/..."> pair that used to sit in
+   <head>. next/font inlines font-face declarations, preloads the files, and
+   swaps via font-display:swap so the first paint is never blocked on the
+   Google Fonts round-trip. Only the weights actually used across the app
+   are loaded; Latin subset only. */
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-plus-jakarta-sans',
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+  fallback: ['ui-monospace', 'Menlo', 'Consolas', 'monospace'],
+});
 
 validateEnv();
 import { ThemeProvider } from '@/components/ThemeProvider';
@@ -61,10 +84,12 @@ export default async function RootLayout({ children }) {
     ? { backgroundColor: '#0a0e13', colorScheme: 'light' }
     : { backgroundColor: '#ffffff', colorScheme: 'light' };
 
+  const fontClassName = `${plusJakartaSans.variable} ${jetBrainsMono.variable}`;
+
   return (
     <html
       lang="en"
-      className={htmlClassName}
+      className={`${htmlClassName} ${fontClassName}`}
       style={htmlStyle}
       suppressHydrationWarning
     >
@@ -131,16 +156,37 @@ export default async function RootLayout({ children }) {
           }}
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Bootstrap Icons: preconnect so the jsdelivr CDN is warmed early,
+            preload the stylesheet so it races with other assets, then attach
+            it non-blocking via media="print" → "all" swap. This removes the
+            render-blocking CSS request from the critical path (Lighthouse
+            flagged the old <link rel="stylesheet"> as a top opportunity on
+            both mobile and desktop). React SSR doesn't serialize onload
+            attributes, so we emit the whole block as raw HTML. noscript
+            fallback keeps icons working for users with JS disabled. */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-          rel="stylesheet"
+          rel="preload"
+          as="style"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
         />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+          media="print"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var l=document.querySelector('link[href*=\"bootstrap-icons\"][media=\"print\"]');if(l){l.media='all';}})();",
+          }}
+        />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+          />
+        </noscript>
       </head>
       <body className={bodyClassName} suppressHydrationWarning>
         <a href="#main-content" className="skip-to-content">Skip to content</a>

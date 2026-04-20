@@ -11,7 +11,16 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import './centaur-intelligence.css';
 import '../empire-ranking/empire-ranking.css';
 import { CentaurPromptBox } from '@/components/ui/chatgpt-prompt-input';
-import { SentinelReportModal } from '@/components/centaur/SentinelReportModal';
+import dynamicImport from 'next/dynamic';
+
+/* SentinelReportModal is a modal + Recharts-heavy dialog that never renders
+   before the user clicks a sentinel. Ship it in its own chunk so it doesn't
+   sit in the initial bundle of /centaur-intelligence (previously ~298 kB
+   First Load). */
+const SentinelReportModal = dynamicImport(
+  () => import('@/components/centaur/SentinelReportModal').then((m) => ({ default: m.SentinelReportModal })),
+  { ssr: false, loading: () => null }
+);
 
 const TooltipProvider = TooltipPrimitive.Provider;
 

@@ -108,9 +108,15 @@
   --badge-bg: #ef4444;
   --badge-ring: #0f1419;
 
-  /* ── Typography (Dashboard + app-wide) ── */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  /* ── Typography (Dashboard + app-wide) ──
+     Primary tokens resolve through the next/font CSS variables set on <html>
+     (see src/app/layout.js). If next/font hasn't loaded yet the fallback
+     system fonts paint immediately — font-display:swap on the next/font
+     declarations then swaps in Plus Jakarta Sans / JetBrains Mono when
+     ready. Previously these pointed at the CDN-loaded font families
+     directly, which blocked first paint on the Google Fonts request. */
+  --font-sans: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
 

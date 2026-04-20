@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { StockHeatmap } from '@/components/company-research/StockHeatmap';
 import { AnimatedGlowingSearchBar } from '@/components/ui/animated-glowing-search-bar';
-import StockPriceChart from '@/components/research/StockPriceChart';
 import {
   KeyMetrics,
   AnalystRecommendations,
@@ -22,6 +22,19 @@ import { getCoursesByTrack } from '@/lib/learning-curriculum';
 import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
+
+/* StockPriceChart imports Recharts. Before this change Recharts was in the
+   initial bundle of /company-research (~342 kB First Load). The chart renders
+   below the ticker header, so deferring it keeps the critical path lean and
+   lets the browser paint the header/metrics faster. Fixed-height skeleton
+   keeps CLS at zero. */
+const StockPriceChart = dynamic(
+  () => import('@/components/research/StockPriceChart'),
+  {
+    ssr: false,
+    loading: () => <div style={{ height: 360 }} aria-hidden />,
+  }
+);
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';

@@ -5,7 +5,17 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
-import { ThisWeekOnEzana } from './ThisWeekOnEzana';
+import dynamic from 'next/dynamic';
+
+/* ThisWeekOnEzana renders several Recharts line/bar charts. Loading
+   Recharts (~150 KB gz) on initial Home paint delayed LCP even though
+   these charts sit below the fold — the data is weekly metadata, not
+   part of the hero. Dynamic-importing with ssr:false keeps the server
+   HTML simple and delays the Recharts chunk until the browser is idle. */
+const ThisWeekOnEzana = dynamic(
+  () => import('./ThisWeekOnEzana').then((m) => ({ default: m.ThisWeekOnEzana })),
+  { ssr: false, loading: () => null }
+);
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { useOrg } from '@/contexts/OrgContext';
 import { useProGate } from '@/components/upgrade/ProGateContext';

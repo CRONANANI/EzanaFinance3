@@ -1,8 +1,19 @@
 'use client';
 
 import { useMemo } from 'react';
-import { PerformanceChart } from './PerformanceChart';
+import dynamic from 'next/dynamic';
 import { MetricsGrid } from './MetricsGrid';
+
+/* PerformanceChart pulls in Recharts — dynamic-import with a fixed-height
+   placeholder so the panel doesn't reflow when the chart hydrates (keeps
+   CLS at zero on the profile page). */
+const PerformanceChart = dynamic(
+  () => import('./PerformanceChart').then((m) => ({ default: m.PerformanceChart })),
+  {
+    ssr: false,
+    loading: () => <div style={{ height: 280 }} aria-hidden />,
+  }
+);
 import { AchievementsGrid } from './AchievementsGrid';
 import { useProfileActivity } from '@/hooks/useProfileActivity';
 import { computeProfileMetrics } from '@/lib/profile-metrics';

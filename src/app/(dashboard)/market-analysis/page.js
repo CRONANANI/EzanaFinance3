@@ -1,17 +1,36 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
-import GlobalPowerMapControl from '@/components/market-analysis/GlobalPowerMapControl';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
 import { useProGate } from '@/components/upgrade/ProGateContext';
 import { useAuth } from '@/components/AuthProvider';
-import { TutorialOverlay } from '@/components/market-analysis/TutorialOverlay';
-import { ISRFeedCard } from '@/components/market-analysis/ISRFeedCard';
-import { ISRArticleModal } from '@/components/market-analysis/ISRArticleModal';
+
+/* WorldMap itself stays eagerly imported because it's the LCP element on
+   this route (the dotted world map is the first meaningful paint). Lazy-
+   loading it would regress LCP. The surrounding UI — control panel, ISR
+   feed, tutorial, modal — is below the fold / interaction-triggered, so
+   we dynamic-import those to take ~80 KB off the critical bundle. */
+const GlobalPowerMapControl = dynamic(
+  () => import('@/components/market-analysis/GlobalPowerMapControl'),
+  { ssr: false, loading: () => null }
+);
+const TutorialOverlay = dynamic(
+  () => import('@/components/market-analysis/TutorialOverlay').then((m) => ({ default: m.TutorialOverlay })),
+  { ssr: false, loading: () => null }
+);
+const ISRFeedCard = dynamic(
+  () => import('@/components/market-analysis/ISRFeedCard').then((m) => ({ default: m.ISRFeedCard })),
+  { ssr: false, loading: () => null }
+);
+const ISRArticleModal = dynamic(
+  () => import('@/components/market-analysis/ISRArticleModal').then((m) => ({ default: m.ISRArticleModal })),
+  { ssr: false, loading: () => null }
+);
 import {
   PANEL_ID_TO_CITY_KEY,
   PANEL_ID_TO_FINHUB_CITY_ID,
