@@ -130,7 +130,12 @@
     --chart-height-mobile: 300px;
 }
 
-/* LIGHT MODE - Professional Clean Design */
+/* LIGHT MODE - Professional Clean Design
+   Scoped to html.light-mode as well so the tokens resolve on the
+   <html> element itself — otherwise the <html> paints with the
+   :root dark values even while the body is in light mode, which
+   shows up as a black frame around the light content. */
+html.light-mode,
 body.light-mode {
   --background: #f8f9fb;
   --foreground: #111827;

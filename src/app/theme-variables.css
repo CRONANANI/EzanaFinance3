@@ -122,8 +122,21 @@
 
 /* ═══════════════════════════════════════════════════════════
    LIGHT MODE — Complete Override
+
+   Scoped to BOTH `html.light-mode` AND `body.light-mode` so the
+   `--nav-bg-solid` / `--app-bg` tokens resolve correctly on the
+   <html> element too, not only on <body>. CSS custom properties
+   don't propagate upward from body → html, so overriding only at
+   the body scope left <html> reading the :root dark default —
+   which caused the "black outer frame around light content" bug
+   on Home / Dashboard / Messages the moment the ThemeProvider's
+   mount effect cleared the SSR inline background from <html>.
+   Declaring the override on html.light-mode lets html itself
+   inherit the right value, so every descendant (nav, body,
+   dashboard wrappers) cascades cleanly.
    ═══════════════════════════════════════════════════════════ */
 
+html.light-mode,
 body.light-mode {
   /* ── Core Backgrounds ── */
   --bg-primary: #ffffff;
@@ -221,7 +234,13 @@ body.light-mode {
    in the cascade (equal specificity) and, for `.force-dark-theme`,
    the explicit `body.light-mode .force-dark-theme` fallback
    ensures it wins when nested inside a light-mode body.
-   ═══════════════════════════════════════════════════════════ */
+
+   The `html:has(body.route-market-analysis)` variant also forces
+   the dark tokens onto <html> itself, so when a light-mode user
+   visits market-analysis the html element doesn't peek through
+   as white behind the dark map during route transitions (mirrors
+   the html.light-mode override added above). ═══════════════════════════════════════════════════════════ */
+html:has(body.route-market-analysis),
 body.route-market-analysis,
 .force-dark-theme,
 body.light-mode .force-dark-theme {
