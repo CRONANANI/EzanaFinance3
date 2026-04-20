@@ -25,14 +25,15 @@ export function ProfilePerformancePanel({
 
   // Use the live feed for own profile; synthesize from `trades` prop
   // otherwise. `trades` here are the public rows from `user_trades`.
-  const { positions, totalReturnPct, userSeries, platformAvgSeries, cohortSeries, platformAverages, benchmarkReturnPct } = useMemo(() => {
+  // Note: PerformanceChart fetches its own platform/cohort overlays from
+  // /api/platform-aggregates, so we only need to feed it the user's own
+  // cumulative-from-inception daily series.
+  const { positions, totalReturnPct, userSeriesFull, platformAverages, benchmarkReturnPct } = useMemo(() => {
     if (isOwn) {
       return {
         positions: activity.positions,
         totalReturnPct: activity.totalReturnPct,
-        userSeries: activity.userSeries,
-        platformAvgSeries: activity.platformAvgSeries,
-        cohortSeries: activity.cohortSeries,
+        userSeriesFull: activity.userSeriesFull,
         platformAverages: activity.platformAverages,
         benchmarkReturnPct: activity.benchmarkReturnPct,
       };
@@ -55,19 +56,26 @@ export function ProfilePerformancePanel({
       marketValue: 100 * (1 + avgReturn / 100),
       sector: '',
     }];
+    // Extend far enough back that the chart's YTD range has data. The shape
+    // matches what useProfileActivity produces for own profiles.
     const today = new Date();
-    const userSeries = Array.from({ length: 30 }, (_, i) => {
+    today.setUTCHours(0, 0, 0, 0);
+    const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1));
+    const daysSinceYearStart = Math.round((today.getTime() - yearStart.getTime()) / 86_400_000);
+    const points = Math.max(100, daysSinceYearStart + 1);
+    const userSeriesFull = Array.from({ length: points }, (_, i) => {
       const d = new Date(today);
-      d.setUTCDate(today.getUTCDate() - (29 - i));
-      const t = i / 29;
-      return { date: d.toISOString().slice(0, 10), user: Number((avgReturn * t).toFixed(3)) };
+      d.setUTCDate(today.getUTCDate() - (points - 1 - i));
+      const t = i / Math.max(1, points - 1);
+      return {
+        date: d.toISOString().slice(0, 10),
+        cumReturnPct: Number((avgReturn * t).toFixed(3)),
+      };
     });
     return {
       positions: pseudoPositions,
       totalReturnPct: avgReturn,
-      userSeries,
-      platformAvgSeries: activity.platformAvgSeries,
-      cohortSeries: activity.cohortSeries,
+      userSeriesFull,
       platformAverages: activity.platformAverages,
       benchmarkReturnPct: activity.benchmarkReturnPct,
     };
@@ -105,11 +113,7 @@ export function ProfilePerformancePanel({
         </div>
       )}
 
-      <PerformanceChart
-        userSeries={userSeries}
-        platformAvgSeries={platformAvgSeries}
-        cohortSeries={cohortSeries}
-      />
+      <PerformanceChart userSeriesFull={userSeriesFull} />
 
       <MetricsGrid metrics={metrics} />
 

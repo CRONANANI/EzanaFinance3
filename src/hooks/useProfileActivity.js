@@ -6,16 +6,33 @@ import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { supabase } from '@/lib/supabase';
 
 /**
- * Build a synthetic performance series (array of `{date, user}` where
- * `user` is cumulative return %). We use this because brokerage endpoints
- * expose current holdings, not day-by-day P&L history. The curve is
- * deterministic for a given final return, so the chart doesn't jitter
- * between renders.
+ * Build a synthetic per-day cumulative-return series ending at `endReturnPct`.
+ *
+ * Brokerage endpoints expose only current holdings, not day-by-day P&L
+ * history, so we fabricate a deterministic curve from inception to today.
+ * The curve is pinned so the terminal point equals `endReturnPct` exactly
+ * and has a stable sinusoidal shape in between — it doesn't jitter between
+ * renders.
+ *
+ * We output at least 100 days (enough to cover 3M windows mid-year) and
+ * always extend back to the start of the current calendar year so the
+ * chart's YTD range has something to plot. Shape is `{date, cumReturnPct}`
+ * so it plugs directly into PerformanceChart.userSeriesFull.
+ *
+ * Once per-user daily returns are persisted in `portfolio_daily_returns`
+ * this helper becomes redundant and should be replaced with a DB read.
  */
-function buildUserSeries(endReturnPct, points = 30) {
-  const out = [];
+function buildUserSeriesFull(endReturnPct) {
   const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const yearStart = new Date(Date.UTC(today.getUTCFullYear(), 0, 1));
+  const daysSinceYearStart = Math.round(
+    (today.getTime() - yearStart.getTime()) / 86_400_000,
+  );
+  const points = Math.max(100, daysSinceYearStart + 1);
+
   const safe = Math.abs(endReturnPct) < 0.001 ? 0 : endReturnPct;
+  const out = [];
   for (let i = 0; i < points; i += 1) {
     const t = i / Math.max(1, points - 1);
     const base = safe * t;
@@ -26,10 +43,10 @@ function buildUserSeries(endReturnPct, points = 30) {
     d.setUTCDate(today.getUTCDate() - (points - 1 - i));
     out.push({
       date: d.toISOString().slice(0, 10),
-      user: Number((base + wobble).toFixed(3)),
+      cumReturnPct: Number((base + wobble).toFixed(3)),
     });
   }
-  if (out.length) out[out.length - 1].user = Number(safe.toFixed(3));
+  if (out.length) out[out.length - 1].cumReturnPct = Number(safe.toFixed(3));
   return out;
 }
 
@@ -186,9 +203,16 @@ export function useProfileActivity() {
     };
   }, [source, plaid, alpaca, mock]);
 
-  const userSeries = useMemo(() => buildUserSeries(data.totalReturnPct, 30), [data.totalReturnPct]);
-  const platformAvgSeries = platformAggregates?.performanceSeries || null;
-  const cohortSeries = platformAggregates?.cohortSeries || null;
+  // Full cumulative-from-inception series covering at least YTD so the
+  // chart can slice/rebase per-range client-side. PerformanceChart now
+  // fetches its own platform/cohort data from /api/platform-aggregates, so
+  // this hook no longer surfaces platformAvgSeries/cohortSeries. The
+  // metric-oriented fields from /api/platform/aggregates (averages,
+  // percentileBreaks, benchmarkReturnPct) are still used by MetricsGrid.
+  const userSeriesFull = useMemo(
+    () => buildUserSeriesFull(data.totalReturnPct),
+    [data.totalReturnPct],
+  );
 
   return {
     source,
@@ -206,9 +230,7 @@ export function useProfileActivity() {
     totalValue: data.totalValue,
     totalReturnPct: data.totalReturnPct,
     startingCash: data.startingCash,
-    userSeries,
-    platformAvgSeries,
-    cohortSeries,
+    userSeriesFull,
     platformAverages: platformAggregates?.averages || {},
     benchmarkReturnPct: Number(platformAggregates?.benchmarkReturnPct ?? 0),
     platformAggregatesLoading: aggregatesLoading,
