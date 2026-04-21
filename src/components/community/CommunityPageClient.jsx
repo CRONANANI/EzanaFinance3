@@ -37,11 +37,21 @@ import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
 import { auditContrast } from '@/lib/a11y/audit-contrast';
 
 const TRENDING_TOPICS = [
-  { tag: 'EarningsSeason', posts: '1.2K' },
-  { tag: 'AIStocks', posts: '892' },
-  { tag: 'LongTermGrowth', posts: '745' },
-  { tag: 'Crypto', posts: '612' },
-  { tag: 'DividendInvesting', posts: '523' },
+  { tag: 'EarningsSeason', posts: '1.2K', category: 'Macro', trend: 'up' },
+  { tag: 'AIStocks', posts: '892', category: 'Tech', trend: 'up' },
+  { tag: 'LongTermGrowth', posts: '745', category: 'Strategy', trend: 'up' },
+  { tag: 'Crypto', posts: '612', category: 'Digital Assets', trend: 'down' },
+  { tag: 'DividendInvesting', posts: '523', category: 'Income', trend: 'up' },
+  { tag: 'FedWatch', posts: '489', category: 'Macro', trend: 'up' },
+  { tag: 'Semiconductors', posts: '445', category: 'Tech', trend: 'up' },
+  { tag: 'RenewableEnergy', posts: '412', category: 'ESG', trend: 'down' },
+  { tag: 'EmergingMarkets', posts: '389', category: 'Global', trend: 'up' },
+  { tag: 'IPOWatch', posts: '367', category: 'New Listings', trend: 'up' },
+  { tag: 'OptionsFlow', posts: '321', category: 'Derivatives', trend: 'down' },
+  { tag: 'ValueInvesting', posts: '298', category: 'Strategy', trend: 'up' },
+  { tag: 'RealEstate', posts: '276', category: 'Alternative', trend: 'down' },
+  { tag: 'Commodities', posts: '255', category: 'Macro', trend: 'up' },
+  { tag: 'RiskManagement', posts: '234', category: 'Strategy', trend: 'up' },
 ];
 
 const FRIENDS_ACTIVITY_MOCK = [
@@ -462,25 +472,16 @@ export default function CommunityPageClient() {
     return sum + asNumber * multiplier;
   }, 0);
 
-  const trophyRoster = [
-    { icon: '🥇', name: 'First Return', earned: true, color: '#d4a853' },
-    { icon: '📈', name: '10% Month', earned: true, color: '#10b981' },
-    { icon: '🏆', name: '25% Year', earned: false, color: '#6b7280' },
-    { icon: '✍️', name: 'First Post', earned: true, color: '#3b82f6' },
-    { icon: '🦋', name: 'Social Butterfly', earned: false, color: '#6b7280' },
-    { icon: '⚡', name: 'Top Trader', earned: false, color: '#6b7280' },
-    { icon: '🌐', name: 'Diversified', earned: true, color: '#8b5cf6' },
-    { icon: '👑', name: 'Community Legend', earned: false, color: '#6b7280' },
-    { icon: '💎', name: 'Consistent Earner', earned: false, color: '#6b7280' },
-  ];
-  const earnedTrophyCount = trophyRoster.filter((t) => t.earned).length;
-
   return (
     <div
       className="dashboard-page-inset db-page community-root"
       style={{ paddingTop: 0, paddingBottom: '2rem' }}
     >
-      {/* ═══ Hero row: greeting + Trending Topics + Trophy Cabinet ═══ */}
+      {/* ═══ Hero row: greeting + Trending Topics (spans full card slot) ═══
+          Trophies have been consolidated into the unified Badge system
+          (see /community/badges), so the standalone Trophy Cabinet card
+          was retired from the hero row. Trending Topics now fills the
+          full width and shows a richer scrollable list of topics. */}
       <div className="comm-hero-row">
         <div className="comm-hero-greeting">
           <h1 className="db-greeting">
@@ -497,7 +498,7 @@ export default function CommunityPageClient() {
 
         <div className="comm-hero-cards">
           <section
-            className="db-card comm-hero-card"
+            className="db-card comm-hero-card comm-trending-card"
             data-community-card
             aria-label="Trending topics"
           >
@@ -508,74 +509,50 @@ export default function CommunityPageClient() {
                 </div>
                 <div className="comm-card-head-meta">
                   <h3>Trending Topics</h3>
-                  <p>What&apos;s hot in the community</p>
+                  <p>What&apos;s hot in the community right now</p>
                 </div>
               </div>
               <Link href="/community" className="comm-hero-card-link">
                 View All
               </Link>
             </div>
-            <div className="comm-trending-strip">
-              {TRENDING_TOPICS.map((topic) => (
-                <button
-                  key={topic.tag}
-                  type="button"
-                  className="comm-trending-chip"
-                >
-                  <span className="hash">#</span>
-                  {topic.tag}
-                  <span className="count">{topic.posts}</span>
-                </button>
-              ))}
-            </div>
-          </section>
 
-          <section
-            className="db-card comm-hero-card comm-trophy-strip"
-            data-community-card
-            aria-label="Trophy cabinet"
-          >
-            <div className="comm-hero-card-head">
-              <div className="comm-card-head-left" style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
-                <div className="comm-card-icon" aria-hidden>
-                  <i className="bi bi-trophy" />
-                </div>
-                <div className="comm-card-head-meta">
-                  <h3>Trophy Cabinet</h3>
-                  <p>
-                    Your achievements &middot; {earnedTrophyCount}/
-                    {trophyRoster.length} earned
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="comm-trophy-grid">
-              {trophyRoster.map((trophy) => (
-                <div
-                  key={trophy.name}
-                  title={trophy.name}
-                  className="comm-trophy-cell"
-                  style={{
-                    border: `1px solid ${
-                      trophy.earned ? `${trophy.color}35` : 'rgba(107,114,128,0.18)'
-                    }`,
-                    background: trophy.earned
-                      ? `${trophy.color}10`
-                      : 'rgba(107,114,128,0.04)',
-                    opacity: trophy.earned ? 1 : 0.55,
-                    cursor: trophy.earned ? 'pointer' : 'default',
-                  }}
-                >
-                  <span
-                    className="comm-trophy-emoji"
-                    style={{ filter: trophy.earned ? 'none' : 'grayscale(1)' }}
-                    aria-hidden
+            <ul className="comm-trending-list" aria-label="Ranked trending topics">
+              {TRENDING_TOPICS.map((topic, idx) => (
+                <li key={topic.tag}>
+                  <button
+                    type="button"
+                    className="comm-trending-row"
                   >
-                    {trophy.icon}
-                  </span>
-                </div>
+                    <span className="comm-trending-row__rank" aria-hidden>
+                      {idx + 1}
+                    </span>
+                    <span className="comm-trending-row__body">
+                      <span className="comm-trending-row__tag">
+                        <span className="comm-trending-row__hash">#</span>
+                        {topic.tag}
+                      </span>
+                      <span className="comm-trending-row__meta">
+                        {topic.posts} posts · {topic.category}
+                      </span>
+                    </span>
+                    <span
+                      className={`comm-trending-row__trend comm-trending-row__trend--${topic.trend}`}
+                      aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
+                    >
+                      <i
+                        className={
+                          topic.trend === 'up'
+                            ? 'bi bi-arrow-up-right'
+                            : 'bi bi-arrow-down-right'
+                        }
+                        aria-hidden
+                      />
+                    </span>
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         </div>
       </div>
