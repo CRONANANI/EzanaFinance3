@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, FileText } from 'lucide-react';
 import { PARTNER_CATEGORIES } from '@/lib/help-center-content';
+import '../../../help-center.css';
 
 const BASE = '/help-center/partner';
 
@@ -14,10 +15,10 @@ export default function PartnerHelpCategoryPage() {
 
   if (!category) {
     return (
-      <div className="min-h-screen bg-[#0f1419] px-4 py-16">
+      <div className="hc-page px-4 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h1 className="mb-4 text-2xl font-semibold text-white">Category not found</h1>
-          <Link href={BASE} className="inline-flex items-center gap-2 text-[#10b981] hover:underline">
+          <h1 className="hc-title mb-4 text-2xl font-semibold">Category not found</h1>
+          <Link href={BASE} className="hc-link inline-flex items-center gap-2 hover:underline">
             <ChevronLeft className="h-4 w-4" />
             Back to Partner Help Center
           </Link>
@@ -27,23 +28,26 @@ export default function PartnerHelpCategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f1419]">
+    <div className="hc-page">
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <Link href={BASE} className="mb-8 inline-flex items-center gap-2 text-[#10b981] hover:underline">
+        <Link href={BASE} className="hc-link mb-8 inline-flex items-center gap-2 hover:underline">
           <ChevronLeft className="h-4 w-4" />
           Back to Partner Help Center
         </Link>
-        <h1 className="mb-10 text-3xl font-bold text-white">{category.title}</h1>
+        <h1 className="hc-title mb-3 text-3xl font-bold">{category.title}</h1>
+        {category.description && (
+          <p className="hc-subtitle mb-10 text-base">{category.description}</p>
+        )}
         <div className="space-y-2">
           {category.articles.map((art) => (
             <Link
               key={art.slug}
               href={`${BASE}/article/${art.slug}`}
-              className="flex items-center gap-4 rounded-lg border border-[rgba(16,185,129,0.1)] bg-[rgba(26,35,50,0.4)] p-4 transition-all hover:border-[#10b981]/30 hover:bg-[rgba(16,185,129,0.05)]"
+              className="hc-card-compact flex items-center gap-4 p-4"
             >
-              <FileText className="h-5 w-5 flex-shrink-0 text-[#10b981]" />
-              <span className="text-white hover:text-[#10b981]">{art.title}</span>
-              <ChevronLeft className="ml-auto h-4 w-4 rotate-180 text-[#6b7280]" />
+              <FileText className="hc-accent h-5 w-5 flex-shrink-0" />
+              <span className="hc-title">{art.title}</span>
+              <ChevronLeft className="hc-faint ml-auto h-4 w-4 rotate-180" />
             </Link>
           ))}
         </div>
