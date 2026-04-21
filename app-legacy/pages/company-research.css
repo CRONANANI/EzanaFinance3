@@ -1380,15 +1380,24 @@ body.light-mode .model-metric-card:hover {
   min-height: 420px;
 }
 
+/*
+ * "Stock Analysis Models" sidebar — intentionally flush with the page.
+ *
+ * Previously had a faint green-tinted fill + border, which read as a
+ * distinct tinted card surface. The design calls for it to blend with
+ * the page background so the MODEL cards inside are what the eye picks
+ * up, not their outer wrapper. Background + border removed; inner
+ * model cards retain their own surfaces.
+ */
 .cr-heatmap-sidebar {
   min-height: 0;
   align-self: stretch;
   display: flex;
   flex-direction: column;
   padding: 0.75rem 0.5rem;
-  background: rgba(16, 185, 129, 0.02);
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  border-radius: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 .cr-sidebar-heading {
@@ -1584,8 +1593,8 @@ body.light-mode .model-metric-card:hover {
 }
 
 body.light-mode .cr-heatmap-sidebar {
-  background: rgba(5, 150, 105, 0.04);
-  border-color: rgba(5, 150, 105, 0.12);
+  background: transparent;
+  border-color: transparent;
 }
 
 body.light-mode .cr-db-card,

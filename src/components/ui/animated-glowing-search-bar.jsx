@@ -43,7 +43,13 @@ export function AnimatedGlowingSearchBar({
             autoComplete="off"
             className="bg-[#010201] border border-gray-700 w-full h-[56px] rounded-lg text-white pl-12 pr-14 text-base focus:outline-none focus:border-gray-500 placeholder:text-gray-400"
           />
-          <div className="absolute top-2 right-2 flex items-center justify-center z-[2] pr-3">
+          {/*
+           * Filter icon: `top-1/2 -translate-y-1/2` vertically centers it
+           * against the input's full height regardless of input size or
+           * icon size — replaces the previous `top-2` which pinned it to
+           * the top of the 56px input and left it visually too high.
+           */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-[2]">
             <SlidersHorizontal className="w-4 h-4 text-gray-500" strokeWidth={1.5} />
           </div>
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
