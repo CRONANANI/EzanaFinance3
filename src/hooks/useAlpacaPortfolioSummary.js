@@ -43,6 +43,9 @@ export function useAlpacaPortfolioSummary() {
       }
       const res = await fetch('/api/alpaca/positions', {
         headers: { Authorization: `Bearer ${token}` },
+        // Portfolio data is user-specific and changes with every trade —
+        // never accept a cached response from the browser / CDN.
+        cache: 'no-store',
       });
 
       // 404 from /api/alpaca/positions means "user has no Alpaca brokerage account"

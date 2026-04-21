@@ -12,7 +12,9 @@ export function usePortfolio() {
     setError(null);
 
     try {
-      const response = await fetch('/api/portfolio');
+      const response = await fetch('/api/portfolio', {
+        cache: 'no-store',
+      });
 
       if (!response.ok) {
         if (response.status === 401) {

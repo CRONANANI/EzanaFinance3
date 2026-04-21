@@ -33,6 +33,9 @@ export function usePlaidPortfolioSummary() {
       }
       const res = await fetch('/api/plaid/holdings', {
         headers: { Authorization: `Bearer ${token}` },
+        // Portfolio data is user-specific and changes with every trade —
+        // never accept a cached response from the browser / CDN.
+        cache: 'no-store',
       });
       if (!res.ok) {
         setConnected(false);

@@ -59,6 +59,7 @@ export function PortfolioProvider({ children }) {
 
       const res = await fetch('/api/plaid/holdings', {
         headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
       });
 
       if (!res.ok) {

@@ -4,30 +4,89 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * useMockPortfolio — Supabase-backed mock ("paper") portfolio.
+ *
+ * Design note / bug fix (stale-data flash):
+ *   Previous versions of this hook rehydrated `portfolio` state from
+ *   `localStorage` synchronously on mount, so every page that used the
+ *   hook briefly rendered the user's OLD portfolio (pre-reset /
+ *   pre-trade positions) before the authoritative server response
+ *   arrived. On Home / Dashboard that manifested as "wrong current
+ *   value, stale holdings" for a beat after login / nav.
+ *
+ *   The server is now the single source of truth for portfolio data.
+ *   We keep a module-level in-memory cache so moving between pages
+ *   within the same SPA session doesn't re-fetch from scratch, but
+ *   nothing is persisted to localStorage, IndexedDB, or anywhere else
+ *   on disk. On every hard reload we go back to the server. Any
+ *   legacy `ezana_mock_portfolio_v1*` keys from prior versions are
+ *   purged once on first mount.
+ */
+
 const STARTING_CASH = 100_000;
 const DEBOUNCE_MS = 800;
-const LS_KEY_PREFIX = 'ezana_mock_portfolio_v1';
-const LEGACY_UNSCOPED_KEY = 'ezana_mock_portfolio_v1';
+const LEGACY_LS_PREFIX = 'ezana_mock_portfolio_v1';
 
-/** Build the per-user localStorage key. Returns null if no user. */
-function keyFor(userId) {
-  if (!userId) return null;
-  return `${LS_KEY_PREFIX}:${userId}`;
+/* ─────────────────────────────────────────────────────────────────
+   MODULE-LEVEL IN-MEMORY CACHE
+   Lives for the lifetime of the JS module (i.e. one tab session).
+   Hard reload wipes it. Never touches disk.
+───────────────────────────────────────────────────────────────── */
+
+/** @type {Map<string, { portfolio: any, updatedAt: number }>} */
+const memoryStore = new Map();
+/** @type {Set<(userId: string) => void>} */
+const subscribers = new Set();
+
+function publish(userId, portfolio) {
+  memoryStore.set(userId, { portfolio, updatedAt: Date.now() });
+  subscribers.forEach((fn) => {
+    try { fn(userId); } catch { /* ignore */ }
+  });
 }
 
-/** Clear the legacy unscoped key once, so stale cross-user data can't leak back in. */
-function clearLegacyUnscoped() {
+function clearMemoryFor(userId) {
+  memoryStore.delete(userId);
+  subscribers.forEach((fn) => {
+    try { fn(userId); } catch { /* ignore */ }
+  });
+}
+
+/**
+ * One-time purge of any legacy portfolio data persisted to localStorage
+ * by prior versions of this hook. Runs at most once per tab.
+ *
+ * Doing this here (rather than in the app root) guarantees it runs on
+ * every page that previously consumed the portfolio hook, covering any
+ * user who still has bad persisted state.
+ */
+let legacyPurgeDone = false;
+function purgeLegacyLocalStorage() {
+  if (legacyPurgeDone) return;
+  legacyPurgeDone = true;
   if (typeof window === 'undefined') return;
   try {
-    // Only clear if it still contains the OLD (unscoped) shape. Any new per-user key
-    // starting with LS_KEY_PREFIX: is untouched.
-    const raw = localStorage.getItem(LEGACY_UNSCOPED_KEY);
-    if (raw) {
-      localStorage.removeItem(LEGACY_UNSCOPED_KEY);
-      console.log('[useMockPortfolio] cleared legacy unscoped cache');
+    const toDelete = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k) continue;
+      // Matches the legacy unscoped key AND every per-user scoped key.
+      if (k === LEGACY_LS_PREFIX || k.startsWith(`${LEGACY_LS_PREFIX}:`)) {
+        toDelete.push(k);
+      }
+    }
+    toDelete.forEach((k) => localStorage.removeItem(k));
+    if (toDelete.length > 0) {
+      // eslint-disable-next-line no-console
+      console.log(`[useMockPortfolio] purged ${toDelete.length} legacy localStorage key(s)`);
     }
   } catch { /* ignore */ }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   STATIC METADATA
+───────────────────────────────────────────────────────────────── */
 
 const TICKER_SECTOR = {
   AAPL: 'Technology', MSFT: 'Technology', NVDA: 'Technology', GOOGL: 'Technology',
@@ -52,29 +111,15 @@ const SECTOR_COLORS = {
   ETF: '#06b6d4', Crypto: '#fbbf24', Commodity: '#84cc16', Other: '#6b7280',
 };
 
-function loadLocal(userId) {
-  if (typeof window === 'undefined') return null;
-  const k = keyFor(userId);
-  if (!k) return null;
-  try {
-    const raw = localStorage.getItem(k);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-
-function saveLocal(userId, p) {
-  if (typeof window === 'undefined') return;
-  const k = keyFor(userId);
-  if (!k) return; // Never write to localStorage without a user — prevents cross-user leaks.
-  try { localStorage.setItem(k, JSON.stringify(p)); } catch { /* quota */ }
-}
-
 function withMeta(p) {
   if (!p || typeof p !== 'object') return p;
   return { ...p, _meta: { ...(p._meta || {}), updatedAt: Date.now() } };
 }
 
-/** Get the current access token from the Supabase browser client */
+/* ─────────────────────────────────────────────────────────────────
+   SERVER I/O
+───────────────────────────────────────────────────────────────── */
+
 async function getAccessToken() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -84,10 +129,10 @@ async function getAccessToken() {
   }
 }
 
-/** Save portfolio to server — sends access token in Authorization header */
 async function apiSave(portfolio) {
   const token = await getAccessToken();
   if (!token) {
+    // eslint-disable-next-line no-console
     console.error('[useMockPortfolio] no access token — cannot save');
     return false;
   }
@@ -102,23 +147,27 @@ async function apiSave(portfolio) {
     });
     if (!res.ok) {
       const text = await res.text().catch(() => '');
+      // eslint-disable-next-line no-console
       console.error('[useMockPortfolio] save failed', res.status, text);
       return false;
     }
     return true;
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error('[useMockPortfolio] save error:', e?.message);
     return false;
   }
 }
 
-/** Load portfolio from server — sends access token in Authorization header */
 async function apiLoad() {
   const token = await getAccessToken();
   if (!token) return null;
   try {
     const res = await fetch('/api/mock-portfolio', {
       headers: { 'Authorization': `Bearer ${token}` },
+      // Portfolio data is user-specific and changes with every trade —
+      // never serve from an HTTP cache.
+      cache: 'no-store',
     });
     if (!res.ok) return null;
     return await res.json();
@@ -127,19 +176,26 @@ async function apiLoad() {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   HOOK
+───────────────────────────────────────────────────────────────── */
+
 export function useMockPortfolio() {
   const { user } = useAuth();
+
+  // Seed synchronously from the in-memory cache when this hook is
+  // being mounted on a page the user already navigated through in
+  // this session. This is the ONLY place we accept a non-server value
+  // as the initial state, and it's scoped per userId + wiped on reload.
   const [portfolio, setPortfolioState] = useState(null);
   const [serverLoaded, setServerLoaded] = useState(false);
-  const [storageReady, setStorageReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [liveQuotes, setLiveQuotes] = useState({});
   const [quotesLoading, setQuotesLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const intervalRef = useRef(null);
   const debounceRef = useRef(null);
   const pendingRef = useRef(null);
-
-  useEffect(() => { setStorageReady(true); }, []);
 
   const flushSave = useCallback(async () => {
     if (!user?.id || !pendingRef.current) return;
@@ -164,22 +220,29 @@ export function useMockPortfolio() {
     setPortfolioState((prev) => {
       const base = prev ?? { cash: STARTING_CASH, positions: {}, history: [], startingCash: STARTING_CASH };
       const raw = typeof update === 'function' ? update(base) : update;
-      if (raw == null) return raw;
+      if (raw == null) {
+        if (user?.id) clearMemoryFor(user.id);
+        return raw;
+      }
       const next = withMeta(raw);
-      // Only persist to localStorage if a user is authenticated.
-      // This prevents writing to a global key that could leak between users.
-      if (user?.id) saveLocal(user.id, next);
+      // Publish to the in-memory cache so any other mounted instance
+      // of this hook (e.g. on a different dashboard page) picks up
+      // the change without having to wait for the server round-trip.
+      if (user?.id) publish(user.id, next);
       if (!skipSync && user?.id) {
-        apiSave(next);       // immediate — fire and forget
-        scheduleSave(next);  // debounce backup
+        // Fire-and-forget immediate save, plus a debounced backup in
+        // case the user clicks through a bunch of trades quickly.
+        apiSave(next);
+        scheduleSave(next);
       }
       return next;
     });
   }, [scheduleSave, user?.id]);
 
-  // Flush on tab close / hide
+  // Flush any pending debounced save on tab close / hide so the
+  // server has the freshest state before the next page load runs.
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) return undefined;
     const flush = () => {
       if (!pendingRef.current) return;
       const p = pendingRef.current;
@@ -200,27 +263,44 @@ export function useMockPortfolio() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
 
-  // Hydrate on login: show local immediately, then load from server
+  // Cross-instance sync: when another mounted instance of this hook
+  // publishes new state for the same user, pick it up here.
   useEffect(() => {
-    if (!storageReady) return;
+    if (!user?.id) return undefined;
+    const fn = (changedId) => {
+      if (changedId !== user.id) return;
+      const cached = memoryStore.get(user.id);
+      setPortfolioState(cached?.portfolio ?? null);
+    };
+    subscribers.add(fn);
+    return () => { subscribers.delete(fn); };
+  }, [user?.id]);
 
-    // One-time: wipe the legacy unscoped cache so stale cross-user data
-    // from any previous version of the code cannot leak in.
-    clearLegacyUnscoped();
+  // Hydration: ALWAYS fetch from the server on mount (per user).
+  // If the in-memory cache has data for this user from an earlier
+  // page in the session, we render that while the fetch is in-flight
+  // so there's no visible "flash to empty" on SPA navigation.
+  useEffect(() => {
+    purgeLegacyLocalStorage();
 
     if (!user?.id) {
-      // Not logged in — clear UI state. Do NOT read from any local cache.
-      // The old unscoped code read a shared key here, which is exactly
-      // what caused the cross-user leak.
       setPortfolioState(null);
       setServerLoaded(true);
-      return;
+      setIsLoading(false);
+      return undefined;
     }
 
-    // Show this user's local cache immediately (no flash)
-    const bootLocal = loadLocal(user.id);
-    if (bootLocal) setPortfolioState(bootLocal);
-    else setPortfolioState(null); // clear any leftover state from a previous user
+    const cached = memoryStore.get(user.id);
+    if (cached) {
+      // In-memory only — produced by the current tab's own actions
+      // earlier in this session. Safe to render immediately.
+      setPortfolioState(cached.portfolio);
+    } else {
+      setPortfolioState(null);
+    }
+
+    setIsLoading(true);
+    setServerLoaded(false);
 
     let cancelled = false;
     (async () => {
@@ -229,36 +309,31 @@ export function useMockPortfolio() {
         if (cancelled) return;
 
         const serverP = data?.portfolio;
-        const serverT = data?.updated_at ? new Date(data.updated_at).getTime() : 0;
-        const localT = bootLocal?._meta?.updatedAt ?? 0;
-
         if (serverP && typeof serverP === 'object' && Object.keys(serverP).length > 0) {
-          if (!bootLocal || serverT >= localT) {
-            setPortfolioState(serverP);
-            saveLocal(user.id, serverP);
-          } else {
-            // Local is newer — push it up (safe now because the local cache
-            // is per-user, not shared).
-            setPortfolioState(bootLocal);
-            apiSave(bootLocal);
-          }
-        } else if (bootLocal) {
-          // Nothing on server — push local up
-          setPortfolioState(bootLocal);
-          apiSave(bootLocal);
+          setPortfolioState(serverP);
+          memoryStore.set(user.id, {
+            portfolio: serverP,
+            updatedAt: data?.updated_at ? new Date(data.updated_at).getTime() : Date.now(),
+          });
         } else {
-          // Nothing local, nothing on server — this user has no portfolio yet.
+          // Server says this user has no portfolio yet. Clear any
+          // in-memory cache so subsequent mounts don't resurrect it.
           setPortfolioState(null);
+          memoryStore.delete(user.id);
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('[useMockPortfolio] hydration error:', err);
       } finally {
-        if (!cancelled) setServerLoaded(true);
+        if (!cancelled) {
+          setServerLoaded(true);
+          setIsLoading(false);
+        }
       }
     })();
 
     return () => { cancelled = true; };
-  }, [storageReady, user?.id]);
+  }, [user?.id]);
 
   const fetchPrices = useCallback(async (positions) => {
     const symbols = Object.keys(positions || {});
@@ -359,6 +434,7 @@ export function useMockPortfolio() {
 
   return {
     hasMockPortfolio, portfolio, setPortfolio, syncing,
+    isLoading,
     enrichedPositions, cash, totalValue, totalPositionValue,
     totalPnl, totalPnlPct, sectorData, profitBreakdown,
     recentTransactions, liveQuotes, quotesLoading, STARTING_CASH,
