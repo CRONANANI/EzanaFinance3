@@ -781,3 +781,214 @@ body.light-mode .itc-lob-date,
 body.light-mode .itc-13f-filed {
   color: #4b5563;
 }
+
+/* =============================================
+   TOP PERFORMING POLITICIANS — replacement card
+   Driven by real FMP congressional disclosures +
+   historical prices. See TopPerformingPoliticiansCard.jsx.
+   ============================================= */
+.itc-top-perf {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 0.9rem;
+}
+.itc-top-perf-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.itc-top-perf-hdr-main { min-width: 0; }
+.itc-top-perf-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f0f6fc;
+}
+.itc-top-perf-sub {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: #8b949e;
+}
+.itc-top-perf-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.itc-top-perf-year-lbl {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+.itc-top-perf-year {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  color: #f0f6fc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.itc-top-perf-year:focus {
+  outline: 2px solid rgba(16, 185, 129, 0.35);
+  outline-offset: 1px;
+}
+.itc-top-perf-info-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid rgba(139, 148, 158, 0.18);
+  background: transparent;
+  color: #8b949e;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  padding: 0;
+}
+.itc-top-perf-info-btn:hover,
+.itc-top-perf-info-btn[aria-pressed="true"] {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+.itc-top-perf-method {
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: #8b949e;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+}
+.itc-top-perf-method strong { color: #f0f6fc; font-weight: 700; }
+.itc-top-perf-method em { font-style: italic; color: #10b981; }
+
+.itc-top-perf-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #8b949e;
+  font-size: 0.85rem;
+}
+.itc-top-perf-state-hint {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: #6b7280;
+}
+
+.itc-top-perf-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .itc-top-perf-body { grid-template-columns: 1fr; }
+}
+.itc-top-perf-chart { min-width: 0; }
+
+.itc-top-perf-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.itc-top-perf-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid rgba(139, 148, 158, 0.08);
+  font-size: 0.82rem;
+}
+.itc-top-perf-row:last-child { border-bottom: none; }
+.itc-top-perf-rank {
+  width: 20px;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+.itc-top-perf-id {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.itc-top-perf-name {
+  color: #f0f6fc;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+a.itc-top-perf-name:hover { color: #10b981; }
+.itc-top-perf-meta {
+  font-size: 0.68rem;
+  color: #8b949e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.itc-top-perf-pnl {
+  flex-shrink: 0;
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+.itc-top-perf-pnl.pos { color: #10b981; }
+.itc-top-perf-pnl.neg { color: #ef4444; }
+.itc-top-perf-pct {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #8b949e;
+  margin-top: 2px;
+}
+.itc-top-perf-foot {
+  font-size: 0.65rem;
+  color: #6b7280;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(139, 148, 158, 0.08);
+}
+
+/* Light mode */
+body.light-mode .itc-top-perf-title,
+body.light-mode .itc-top-perf-name,
+body.light-mode .itc-top-perf-method strong { color: #111827; }
+body.light-mode .itc-top-perf-sub,
+body.light-mode .itc-top-perf-meta,
+body.light-mode .itc-top-perf-state,
+body.light-mode .itc-top-perf-method { color: #4b5563; }
+body.light-mode .itc-top-perf-foot,
+body.light-mode .itc-top-perf-rank,
+body.light-mode .itc-top-perf-pct,
+body.light-mode .itc-top-perf-state-hint { color: #6b7280; }
+body.light-mode .itc-top-perf-year {
+  background: rgba(16, 185, 129, 0.04);
+  color: #111827;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+body.light-mode .itc-top-perf-row {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .itc-top-perf-foot {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
