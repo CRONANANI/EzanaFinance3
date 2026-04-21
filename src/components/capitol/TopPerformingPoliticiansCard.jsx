@@ -72,21 +72,28 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
   const [performers, setPerformers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
     setError(null);
 
-    fetch(`/api/politicians/top-performers?year=${year}&limit=10`)
-      .then((r) => r.json())
-      .then((d) => {
+    const q = encodeURIComponent(year);
+    fetch(`/api/politicians/top-performers?year=${q}&limit=10`, { cache: 'no-store' })
+      .then(async (r) => {
+        const d = await r.json().catch(() => ({}));
         if (cancelled) return;
+        if (!r.ok) {
+          const base = d?.error || `Request failed (${r.status})`;
+          const code = d?.code ? ` · ${d.code}` : '';
+          throw new Error(`${base}${code}`);
+        }
         if (d?.error) throw new Error(d.error);
         setPerformers(Array.isArray(d?.performers) ? d.performers : []);
       })
       .catch((e) => {
-        if (!cancelled) setError(e.message);
+        if (!cancelled) setError(e?.message || 'Unknown error');
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -95,7 +102,7 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
     return () => {
       cancelled = true;
     };
-  }, [year]);
+  }, [year, retryNonce]);
 
   const chartData = useMemo(
     () =>
@@ -172,7 +179,17 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
       {isLoading ? (
         <div className="itc-top-perf-state">Loading performance data…</div>
       ) : error ? (
-        <div className="itc-top-perf-state">Could not load performance data.</div>
+        <div className="itc-top-perf-state itc-top-perf-state--error">
+          <p>Could not load performance data.</p>
+          <p className="itc-top-perf-err-detail">{error}</p>
+          <button
+            type="button"
+            className="itc-top-perf-retry"
+            onClick={() => setRetryNonce((n) => n + 1)}
+          >
+            Retry
+          </button>
+        </div>
       ) : chartData.length === 0 ? (
         <div className="itc-top-perf-state">
           No disclosed-trade data available for {yearLabel} yet.

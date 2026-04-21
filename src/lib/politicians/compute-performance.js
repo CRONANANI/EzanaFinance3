@@ -40,8 +40,11 @@ const START_YEAR = 2016;
 export async function computeAllPoliticianPerformance(opts) {
   const years = opts?.years ?? rangeInclusive(START_YEAR, CURRENT_YEAR);
   let ingested = 0;
+  const startedAt = Date.now();
+  console.log('[politician-perf] starting sync, year list:', years);
 
   for (const year of years) {
+    const yearStart = Date.now();
     const from = `${year}-01-01`;
     const to = `${year}-12-31`;
 
@@ -69,8 +72,14 @@ export async function computeAllPoliticianPerformance(opts) {
     }
 
     await computeYearPerformance(year);
+    console.log(
+      `[politician-perf] year ${year} completed in ${Date.now() - yearStart}ms (cumulative ingested rows: ${ingested})`
+    );
   }
 
+  console.log(
+    `[politician-perf] sync finished in ${Date.now() - startedAt}ms, total FMP rows ingested: ${ingested}, years: ${years.join(',')}`
+  );
   return { ingested, years };
 }
 

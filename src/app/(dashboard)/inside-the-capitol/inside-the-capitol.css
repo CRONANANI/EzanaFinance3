@@ -885,6 +885,44 @@ body.light-mode .itc-13f-filed {
   color: #6b7280;
 }
 
+.itc-top-perf-state--error p {
+  margin: 0 0 0.35rem;
+}
+.itc-top-perf-state--error p:first-child {
+  color: #f87171;
+  font-weight: 600;
+}
+.itc-top-perf-err-detail {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: #6b7280;
+  word-break: break-word;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.itc-top-perf-retry {
+  margin-top: 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  cursor: pointer;
+  font-family: var(--font-sans, inherit);
+}
+.itc-top-perf-retry:hover {
+  background: rgba(16, 185, 129, 0.15);
+}
+body.light-mode .itc-top-perf-state--error p:first-child {
+  color: #b91c1c;
+}
+body.light-mode .itc-top-perf-err-detail {
+  color: #6b7280;
+}
+
 .itc-top-perf-body {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);

@@ -12,12 +12,40 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import {
+  createServerSupabaseClient,
+  isServerSupabaseConfigured,
+} from '@/lib/supabase-service-role';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(request) {
+  try {
+    return await handleGet(request);
+  } catch (err) {
+    console.error('[top-performers] unexpected:', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleGet(request) {
+  if (!isServerSupabaseConfigured()) {
+    console.error(
+      '[top-performers] missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+    );
+    return NextResponse.json(
+      {
+        error: 'Server database is not configured',
+        code: 'MISSING_SUPABASE_CONFIG',
+      },
+      { status: 503 }
+    );
+  }
+
   const sp = new URL(request.url).searchParams;
   const yearParam = sp.get('year') ?? String(new Date().getFullYear());
   const limitRaw = Number.parseInt(sp.get('limit') ?? '10', 10);
@@ -45,7 +73,11 @@ export async function GET(request) {
 
     const { data, error } = await q;
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('[top-performers] DB error (all):', error);
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 500 }
+      );
     }
 
     const rollup = new Map();
@@ -95,18 +127,21 @@ export async function GET(request) {
     );
   }
 
+  // Apply filters before order/limit so PostgREST builds a single correct query.
   let q = supabase
     .from('politician_annual_performance')
     .select('*')
-    .eq('year', year)
-    .order('estimated_pnl', { ascending: false })
-    .limit(limit);
-
+    .eq('year', year);
   if (chamber) q = q.eq('chamber', chamber);
+  q = q.order('estimated_pnl', { ascending: false }).limit(limit);
 
   const { data, error } = await q;
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[top-performers] DB error:', error);
+    return NextResponse.json(
+      { error: error.message, code: error.code },
+      { status: 500 }
+    );
   }
   return NextResponse.json({ year, performers: data ?? [] });
 }
