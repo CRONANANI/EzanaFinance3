@@ -274,7 +274,7 @@ export function LearningCenterPage() {
         <div
           style={{
             height: 10,
-            background: 'var(--emerald-bg)',
+            background: 'var(--surface-card-hover)',
             borderRadius: 6,
             overflow: 'hidden',
             marginBottom: '1.25rem',
@@ -335,7 +335,7 @@ export function LearningCenterPage() {
                       <div
                         style={{
                           height: 3,
-                          background: 'var(--emerald-bg-hover)',
+                          background: 'var(--surface-card-hover)',
                           borderRadius: 2,
                         }}
                       >
@@ -407,7 +407,7 @@ export function LearningCenterPage() {
                       <div
                         style={{
                           height: 3,
-                          background: 'var(--emerald-bg-hover)',
+                          background: 'var(--surface-card-hover)',
                           borderRadius: 2,
                         }}
                       >

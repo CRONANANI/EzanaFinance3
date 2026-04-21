@@ -1185,7 +1185,7 @@ body.light-mode .lc3-track-card-btn--selected {
   transition: background 150ms ease, color 150ms ease;
 }
 .lc3-level-tab:hover {
-  background: var(--emerald-bg-hover);
+  background: var(--surface-card-hover);
   color: var(--text-primary);
 }
 .lc3-level-tab:focus-visible {
@@ -1229,7 +1229,7 @@ body.light-mode .lc3-track-card-btn--selected {
 }
 a.lc3-course-row-card:hover {
   border-color: var(--border-hover);
-  background: var(--emerald-bg-subtle);
+  background: var(--surface-card-hover);
   transform: translateY(-1px);
 }
 a.lc3-course-row-card:focus-visible {
