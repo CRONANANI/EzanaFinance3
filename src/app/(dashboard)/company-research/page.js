@@ -22,6 +22,7 @@ import { getCoursesByTrack } from '@/lib/learning-curriculum';
 import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
+import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 
 /* StockPriceChart imports Recharts. Before this change Recharts was in the
    initial bundle of /company-research (~342 kB First Load). The chart renders
@@ -323,7 +324,11 @@ function CompanyResearchPageInner() {
       >
         {model.flagship ? (
           <div className="grpv-brand-logo">
-            <img src="/ezana-logo.svg" alt="Ezana Finance" className="grpv-logo-img" />
+            <EzanaNavLogo
+              width={28}
+              height={24}
+              className="grpv-logo-img nav-logo-img nav-logo-img--wing"
+            />
           </div>
         ) : (
           <div className={`model-metric-icon ${model.id}`} style={{ 

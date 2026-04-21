@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { supabase } from '@/lib/supabase';
@@ -118,15 +118,7 @@ export function Navbar() {
       <nav ref={landingNavRef} className="navbar navbar-sticky">
         <div className="nav-container nav-container-centered">
           <Link href="/" className="logo logo-centered nav-brand nav-home-btn" title="Ezana Finance">
-            <Image
-              src="/ezana-nav-logo.png"
-              alt="Ezana Finance"
-              width={60}
-              height={51}
-              priority={isLanding || isPricing}
-              className="nav-logo-img nav-logo-img--wing"
-              style={{ objectFit: 'contain', display: 'block', transform: 'scaleX(-1)' }}
-            />
+            <EzanaNavLogo priority={isLanding || isPricing} />
           </Link>
           <button
             className="mobile-hamburger"
@@ -278,14 +270,7 @@ export function Navbar() {
         {/* ── LEFT ZONE: Logo + bell + checklist (checklist right of bell) ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
-            <Image
-              src="/ezana-nav-logo.png"
-              alt="Ezana Finance"
-              width={60}
-              height={51}
-              className="nav-logo-img nav-logo-img--wing"
-              style={{ objectFit: 'contain', display: 'block', transform: 'scaleX(-1)' }}
-            />
+            <EzanaNavLogo />
           </Link>
           <div className="nav-bell-checklist-wrap">
             <div className="nn-wrapper">
