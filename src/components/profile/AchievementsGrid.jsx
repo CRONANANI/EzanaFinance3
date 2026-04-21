@@ -87,7 +87,7 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0 }) {
   const selected = sorted.find((a) => a.id === selectedId) || null;
 
   return (
-    <div className="ag-card">
+    <div className="ag-card" data-profile-card="achievements">
       <div className="ag-head">
         <div className="ag-head-left">
           <Trophy size={14} className="ag-trophy-icon" />
@@ -141,7 +141,10 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0 }) {
                 </div>
                 {!earned && a.progress > 0 && (
                   <div className="ag-tile-bar">
-                    <div className="ag-tile-bar-fill" style={{ width: `${a.progress}%` }} />
+                    <div
+                      className="ag-tile-bar-fill"
+                      style={{ width: `${Math.min(100, Math.max(0, a.progress))}%` }}
+                    />
                   </div>
                 )}
               </button>

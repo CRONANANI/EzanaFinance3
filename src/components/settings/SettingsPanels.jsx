@@ -20,9 +20,17 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File must be under 2MB');
+
+    const MAX_BYTES = 2 * 1024 * 1024;
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!ALLOWED.includes(file.type)) {
+      alert('Only JPEG, PNG, or WebP images are allowed.');
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      alert('File must be under 2MB.');
       return;
     }
 
@@ -35,33 +43,90 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
       } = await supabase.auth.getUser();
       if (!authUser) {
         alert('Please log in to upload a photo.');
+        URL.revokeObjectURL(localUrl);
+        setAvatarPreview(null);
         return;
       }
 
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const path = `avatars/${authUser.id}/avatar.${ext}`;
+      /*
+       * Path is `<uid>/avatar.<ext>` — no redundant `avatars/` prefix. The
+       * storage RLS policy checks `(storage.foldername(name))[1]` against
+       * `auth.uid()::text`, so the first path segment MUST be the user id
+       * or INSERT/UPDATE will be blocked.
+       */
+      const rawExt = file.name.split('.').pop()?.toLowerCase();
+      const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+      const path = `${authUser.id}/avatar.${ext}`;
 
       const { error: uploadErr } = await supabase.storage
         .from('avatars')
         .upload(path, file, { upsert: true, contentType: file.type });
 
       if (uploadErr) {
-        console.error('Avatar upload error:', uploadErr);
-        alert('Failed to upload photo. Please try again.');
+        console.error('[avatar upload] storage error:', uploadErr);
+        alert(`Failed to upload photo: ${uploadErr.message || 'unknown error'}`);
+        URL.revokeObjectURL(localUrl);
+        setAvatarPreview(settings?.avatar_url || null);
         return;
       }
 
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
       const publicUrl = urlData?.publicUrl;
+      if (!publicUrl) {
+        console.error('[avatar upload] no public URL returned for path:', path);
+        alert('Photo uploaded but URL could not be resolved. Please refresh.');
+        URL.revokeObjectURL(localUrl);
+        return;
+      }
 
-      if (publicUrl) {
-        const bust = `${publicUrl}?t=${Date.now()}`;
-        updateSetting('avatar_url', bust);
-        setAvatarPreview(bust);
+      const bust = `${publicUrl}?t=${Date.now()}`;
+      updateSetting('avatar_url', bust);
+      setAvatarPreview(bust);
+      URL.revokeObjectURL(localUrl);
+
+      /*
+       * Persist `avatar_url` into profiles.user_settings immediately so the
+       * new photo survives a page reload / navigation even if the user
+       * never clicks "Save changes". Report DB errors separately from the
+       * storage error so users know the photo did upload.
+       */
+      const { data: existing, error: readErr } = await supabase
+        .from('profiles')
+        .select('user_settings')
+        .eq('id', authUser.id)
+        .maybeSingle();
+
+      if (readErr) {
+        console.error('[avatar upload] profile read error:', readErr);
+        alert('Photo uploaded but could not read your profile. Click "Save changes" to retry.');
+        return;
+      }
+
+      const merged = {
+        ...(existing?.user_settings || {}),
+        avatar_url: bust,
+      };
+
+      const { error: dbErr } = await supabase
+        .from('profiles')
+        .update({
+          user_settings: merged,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', authUser.id);
+
+      if (dbErr) {
+        console.error('[avatar upload] profile update error:', dbErr);
+        alert(
+          `Photo uploaded but profile update failed: ${dbErr.message || 'unknown error'}. ` +
+            'Click "Save changes" to retry.',
+        );
       }
     } catch (err) {
-      console.error('Avatar upload exception:', err);
-      alert('Failed to upload photo.');
+      console.error('[avatar upload] unexpected error:', err);
+      alert(`Failed to upload photo: ${err?.message || 'unknown error'}`);
+      URL.revokeObjectURL(localUrl);
+      setAvatarPreview(settings?.avatar_url || null);
     }
   };
 
@@ -82,10 +147,10 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
               <i className="bi bi-person-fill" />
             )}
           </div>
-          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleAvatarChange} className="settings-avatar-input" />
+          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="settings-avatar-input" />
           <div className="settings-avatar-actions">
             <span className="settings-avatar-name">Profile photo</span>
-            <span className="settings-avatar-hint">JPG, PNG. Max 2MB. Paste an image URL below to sync across devices.</span>
+            <span className="settings-avatar-hint">JPG, PNG, or WebP. Max 2MB. Paste an image URL below to sync across devices.</span>
             <button type="button" className="settings-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => fileInputRef.current?.click()}>Upload</button>
           </div>
         </div>
