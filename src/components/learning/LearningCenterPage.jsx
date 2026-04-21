@@ -591,7 +591,7 @@ export function LearningCenterPage() {
                 style={{
                   fontSize: '1.5rem',
                   fontWeight: 800,
-                  color: selected ? '#ffffff' : color,
+                  color: color,
                   margin: '.35rem 0 .25rem',
                 }}
               >
@@ -600,9 +600,7 @@ export function LearningCenterPage() {
               <div
                 style={{
                   height: 4,
-                  background: selected
-                    ? 'rgba(255,255,255,0.25)'
-                    : 'var(--emerald-bg-hover)',
+                  background: 'var(--surface-card-hover)',
                   borderRadius: 2,
                   marginBottom: '.25rem',
                 }}
@@ -611,7 +609,7 @@ export function LearningCenterPage() {
                   style={{
                     width: `${pct}%`,
                     height: '100%',
-                    background: selected ? '#ffffff' : color,
+                    background: color,
                     borderRadius: 2,
                   }}
                 />

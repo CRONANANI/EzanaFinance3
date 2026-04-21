@@ -673,8 +673,8 @@ body.light-mode .lc2-header-title {
   gap: 0.65rem;
   padding: 0.6rem 0.85rem;
   border-radius: 10px;
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.06);
+  background: var(--surface-card);
+  border: 1px solid var(--border-primary);
   margin-bottom: 0.5rem;
 }
 
@@ -721,8 +721,8 @@ body.light-mode .lc2-header-title {
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s, transform 0.15s;
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid var(--border-primary);
+  background: var(--surface-card);
 }
 
 .lc3-track-card-btn:hover {
@@ -1021,33 +1021,37 @@ body.light-mode .lc3-partner-section-title {
   --lc-badge-fg: var(--emerald-text);
 }
 
-/* Emerald-washed — card background is a soft brand tint, text stays normal */
+/* Previously emerald-washed — now a plain neutral card. Tint was visually
+   redundant with default cards once the surface system took over; a subtle
+   border change would have read as "broken theme" more than "highlighted." */
 .lc-surface-tinted {
   --lc-primary-fg: var(--text-primary);
   --lc-secondary-fg: var(--text-secondary);
   --lc-muted-fg: var(--text-muted);
-  --lc-badge-bg: var(--surface-card);
-  --lc-badge-fg: var(--text-primary);
+  --lc-badge-bg: var(--emerald-bg);
+  --lc-badge-fg: var(--emerald-text);
 }
 .lc-surface-tinted.db-card,
 .db-card.lc-surface-tinted {
-  background: var(--emerald-bg-subtle);
-  border-color: var(--emerald-border);
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
-/* Brand-colored card — emerald background, white foreground regardless of theme */
+/* Previously a brand-green hero card with forced-white text. Selected state
+   is now signaled by the outline ring on .lc3-track-card-btn--selected and
+   by the track-colored metric inside the card, not by a green background. */
 .lc-surface-accent {
-  --lc-primary-fg: #ffffff;
-  --lc-secondary-fg: rgba(255, 255, 255, 0.92);
-  --lc-muted-fg: rgba(255, 255, 255, 0.82);
-  --lc-badge-bg: rgba(255, 255, 255, 0.2);
-  --lc-badge-fg: #ffffff;
+  --lc-primary-fg: var(--text-primary);
+  --lc-secondary-fg: var(--text-secondary);
+  --lc-muted-fg: var(--text-muted);
+  --lc-badge-bg: var(--emerald-bg);
+  --lc-badge-fg: var(--emerald-text);
 }
 .lc-surface-accent.db-card,
 .db-card.lc-surface-accent {
-  background: var(--emerald);
-  border-color: var(--emerald);
-  color: #ffffff;
+  background: var(--surface-card);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
 }
 
 .lc-surface-muted {
@@ -1063,7 +1067,10 @@ body.light-mode .lc3-partner-section-title {
   border-color: var(--border-primary);
 }
 
-/* Completed — subtle green wash, normal foreground so title reads clearly */
+/* Previously had a green wash to signal completion — now neutral. The
+   "Complete" checkmark circle, the positive-tone status badge, and the
+   progress-bar fill still carry the green signal, so completion reads
+   clearly without the whole-card tint. */
 .lc-surface-completed {
   --lc-primary-fg: var(--text-primary);
   --lc-secondary-fg: var(--text-secondary);
@@ -1073,8 +1080,8 @@ body.light-mode .lc3-partner-section-title {
 }
 .lc-surface-completed.db-card,
 .db-card.lc-surface-completed {
-  background: var(--positive-bg);
-  border-color: var(--emerald-border);
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
 /* Locked — dimmed but readable; passes AA against its card background */
@@ -1230,14 +1237,17 @@ a.lc3-course-row-card:focus-visible {
   outline-offset: 2px;
 }
 
-/* Surface-specific row bg/border overrides win over the default row bg */
+/* Surface-specific row overrides — neutralized so course rows no longer
+   carry a persistent green wash. Completion / in-progress / locked state
+   is signaled via the row's status pill, the circle icon, and (for
+   completed) the progress-bar fill — not via the row background. */
 .lc3-course-row-card.lc-surface-tinted {
-  background: var(--emerald-bg-subtle);
-  border-color: var(--emerald-border);
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 .lc3-course-row-card.lc-surface-completed {
-  background: var(--positive-bg);
-  border-color: var(--emerald-border);
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 .lc3-course-row-card.lc-surface-locked {
   background: var(--surface-card-hover);
@@ -1252,10 +1262,13 @@ a.lc3-course-row-card:focus-visible {
   pointer-events: none;
 }
 
-/* In-progress row inside Journey card — ensure the tint still reads in light */
+/* In-progress row inside Journey card — neutralized so the row sits on a
+   plain surface like every other card. The row is already visually scoped
+   by its container (the Journey card) and by the small track-colored
+   progress bar on the right. */
 body.light-mode .lc3-inprogress-row {
-  background: var(--emerald-bg-subtle);
-  border-color: var(--emerald-border);
+  background: var(--surface-card);
+  border-color: var(--border-primary);
 }
 
 /* Friends-name: retain light-mode override already in file, but also provide
