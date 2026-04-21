@@ -3224,3 +3224,362 @@ body.light-mode .comm-composer-ticker-result {
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT-MODE CONTRAST PASS (WCAG AA)
+   -------------------------------------------------------------------
+   The Community page originally borrowed color tokens from
+   `home-terminal-summary.css`, specifically `--home-heading` and
+   `--home-muted`. Those variables are scoped to the home terminal
+   component and are NOT defined globally, so `var(--home-heading,
+   #f0f6fc)` fell through to its dark-mode fallback (#f0f6fc ≈ white),
+   leaving KPI values and card titles at ~1.1:1 contrast on a white
+   card in light mode — effectively invisible.
+   We define the variables here at the `.community-root` scope and
+   then override the handful of classes that hard-code dark-mode
+   palette entries (`#10b981`, `#8b949e`, `#e2e8f0`, etc.) or rely on
+   `--text-faint` (which is #94a3b8 in light — only 2.66:1 on white).
+
+   Green tokens in light mode: `#047857` (5.5:1) and `#065f46` (7.5:1)
+   are used for any text that must pass AA body (>=4.5:1); tinted
+   pill backgrounds stay green so the brand feel is preserved.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.community-root {
+  /* Make the `var(--home-heading, ...)` / `var(--home-muted, ...)`
+     fallbacks resolvable — previously only defined on the home
+     terminal card, which left this page using the dark fallback
+     unconditionally. */
+  --home-heading: #f0f6fc;
+  --home-muted: #6b7280;
+  /* Community-scoped accent — used by feed-post inline styles that
+     can't target theme vars directly. Dark mode uses the brand tone;
+     light mode drops to emerald-700 so text passes WCAG AA body on a
+     white card. */
+  --comm-accent-text: #10b981;
+  --comm-accent-text-strong: #10b981;
+}
+
+body.light-mode .community-root {
+  --home-heading: #0f172a;
+  --home-muted: #475569;
+  --comm-accent-text: #047857;
+  --comm-accent-text-strong: #065f46;
+}
+
+/* ─── Hero row ─── */
+body.light-mode .community-root .comm-card-head-meta > h3,
+body.light-mode .community-root .comm-hero-card-title {
+  color: #0f172a;
+}
+
+body.light-mode .community-root .comm-trending-chip {
+  color: #047857; /* emerald-700 — AA body on tinted white */
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+body.light-mode .community-root .comm-trending-chip:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(5, 150, 105, 0.45);
+}
+
+body.light-mode .community-root .comm-trending-chip .hash {
+  color: #047857;
+}
+
+body.light-mode .community-root .comm-trending-chip .count {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-hero-card-link {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+body.light-mode .community-root .comm-hero-card-link:hover {
+  color: #065f46;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(5, 150, 105, 0.5);
+}
+
+/* ─── KPI strip ─── */
+body.light-mode .community-root .comm-kpi-label {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-kpi-value {
+  color: #0f172a;
+}
+
+body.light-mode .community-root .comm-kpi-sub {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-kpi-sub.positive {
+  color: #047857;
+}
+
+body.light-mode .community-root .comm-kpi-sub.negative {
+  color: #b91c1c;
+}
+
+body.light-mode .community-root .comm-kpi-icon {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(5, 150, 105, 0.28);
+}
+
+body.light-mode .community-root .comm-card-icon {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(5, 150, 105, 0.25);
+}
+
+/* ─── Leaderboard / friends / discussions shared rows ─── */
+body.light-mode .community-root .comm-list-row__trail-secondary {
+  /* default --text-faint (#94a3b8) fails body on white; tighten. */
+  color: #64748b;
+}
+
+body.light-mode .community-root .comm-list-row__handle,
+body.light-mode .community-root .comm-list-row__meta {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-card-view-all {
+  color: #047857;
+}
+
+body.light-mode .community-root .comm-card-view-all:hover {
+  color: #065f46;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+body.light-mode .community-root .comm-follow-btn {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+
+body.light-mode .community-root .comm-follow-btn:hover {
+  color: #065f46;
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(5, 150, 105, 0.55);
+}
+
+/* ─── Feed navigation + composer CTAs ─── */
+body.light-mode .community-root .comm-feed-nav__tab.is-active {
+  background: #047857;
+  border-color: #047857;
+  color: #ffffff;
+}
+
+body.light-mode .community-root .comm-feed-nav__tab.is-active:hover {
+  background: #065f46;
+  border-color: #065f46;
+}
+
+body.light-mode .community-root .comm-feed-nav__cta {
+  background: #047857;
+  border-color: #047857;
+  color: #ffffff;
+}
+
+body.light-mode .community-root .comm-feed-nav__cta:hover {
+  background: #065f46;
+  border-color: #065f46;
+}
+
+body.light-mode .community-root .comm-feed-nav__sort {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-composer-tool.is-active {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+body.light-mode .community-root .comm-composer-post-btn {
+  background: #047857;
+  border-color: #047857;
+}
+
+body.light-mode .community-root .comm-composer-post-btn:hover:not(:disabled) {
+  background: #065f46;
+  border-color: #065f46;
+}
+
+body.light-mode .community-root .comm-composer-post-btn:disabled {
+  background: rgba(4, 120, 87, 0.35);
+  border-color: rgba(4, 120, 87, 0.35);
+  color: #ffffff;
+}
+
+body.light-mode .community-root .comm-composer-ticker-next {
+  background: #047857;
+}
+
+body.light-mode .community-root .comm-composer-ticker-next:hover {
+  background: #065f46;
+}
+
+body.light-mode .community-root .comm-composer-ticker-period-btn.is-active {
+  background: #047857;
+  border-color: #047857;
+  color: #ffffff;
+}
+
+/* ─── Community feed post card ─── */
+body.light-mode .community-root .comm-post-handle,
+body.light-mode .community-root .comm-post-time,
+body.light-mode .community-root .comm-post-menu-btn,
+body.light-mode .community-root .comm-engage-btn {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-engage-btn:hover {
+  color: #0f172a;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+body.light-mode .community-root .comm-post-expand {
+  color: #047857;
+}
+
+body.light-mode .community-root .comm-post-return-badge.is-pos {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(5, 150, 105, 0.32);
+}
+
+body.light-mode .community-root .comm-post-return-badge.is-neg {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(185, 28, 28, 0.3);
+}
+
+body.light-mode .community-root .comm-post-partner-pill {
+  color: #92400e; /* amber-800 → AA body on #fef1d6 tinted pill */
+  background: rgba(245, 158, 11, 0.18);
+}
+
+body.light-mode .community-root .comm-post-badge {
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.18);
+}
+
+body.light-mode .community-root .comm-ticker-chg.up {
+  color: #047857;
+}
+
+body.light-mode .community-root .comm-ticker-chg.dn {
+  color: #b91c1c;
+}
+
+body.light-mode .community-root .comm-post-text,
+body.light-mode .community-root .comm-post-text--card,
+body.light-mode .community-root .comm-ticker-sym,
+body.light-mode .community-root .comm-ticker-price {
+  color: #0f172a;
+}
+
+body.light-mode .community-root .comm-comment-text {
+  color: #0f172a;
+}
+
+body.light-mode .community-root .comm-comment-thread-head {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-comment-collapse {
+  color: #047857;
+}
+
+/* ─── UserSearch (Find investors card) ─── */
+body.light-mode .community-root .us-handle {
+  color: #64748b;
+}
+
+body.light-mode .community-root .us-row-sub,
+body.light-mode .community-root .us-state-hint,
+body.light-mode .community-root .us-chev,
+body.light-mode .community-root .us-section-head {
+  color: #64748b;
+}
+
+body.light-mode .community-root .us-state {
+  color: #475569;
+}
+
+body.light-mode .community-root .us-hl {
+  color: #047857;
+}
+
+body.light-mode .community-root .us-section-clear,
+body.light-mode .community-root .us-icon,
+body.light-mode .community-root .us-spin {
+  color: #047857;
+}
+
+body.light-mode .community-root .us-badge.tone-gold {
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+body.light-mode .community-root .us-badge.tone-accent {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+
+body.light-mode .community-root .us-badge.tone-neutral {
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.3);
+}
+
+/* ─── Social-connect card (hero-left column) ─── */
+body.light-mode .community-root .comm-social-connect .comm-social-connect__hint,
+body.light-mode .community-root .comm-social-connect .comm-social-connect__footer p {
+  color: #64748b;
+}
+
+/* ─── State cards (loading / empty / error) ─── */
+body.light-mode .community-root .comm-state-card__title {
+  color: #0f172a;
+}
+
+body.light-mode .community-root .comm-state-card__desc {
+  color: #475569;
+}
+
+body.light-mode .community-root .comm-state-card__retry {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+
+body.light-mode .community-root .comm-state-card__retry:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+/* ─── Page-level tab bar ─── */
+body.light-mode .community-root .comm-page-tab.is-active {
+  background: #047857;
+  border-color: #047857;
+  color: #ffffff;
+}
+
+body.light-mode .community-root .comm-page-tab.is-active:hover {
+  background: #065f46;
+  border-color: #065f46;
+}
+
+/* Note on `.comm-list-row__icon` (Trending discussions):
+   the tone palette is applied via inline `style={{ color, background }}`
+   so a CSS rule can't override it. These icons are decorative
+   (aria-hidden) and sit next to their label text, so WCAG 1.4.11
+   (non-text contrast) does not apply — safe to leave. */

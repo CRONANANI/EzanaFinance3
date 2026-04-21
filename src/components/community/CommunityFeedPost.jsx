@@ -351,7 +351,7 @@ export function CommunityFeedPost({
                         style={{
                           position: 'relative',
                           fontSize: '0.8125rem',
-                          color: '#e2e8f0',
+                          color: 'var(--text-primary, #e2e8f0)',
                           fontWeight: isMyVote ? 700 : 400,
                         }}
                       >
@@ -364,7 +364,9 @@ export function CommunityFeedPost({
                             position: 'relative',
                             fontSize: '0.75rem',
                             fontWeight: 700,
-                            color: isMyVote ? '#10b981' : '#6b7280',
+                            color: isMyVote
+                              ? 'var(--comm-accent-text, #10b981)'
+                              : 'var(--text-muted, #6b7280)',
                           }}
                         >
                           {pct}%
@@ -374,7 +376,13 @@ export function CommunityFeedPost({
                   );
                 })}
               </div>
-              <p style={{ margin: '0.5rem 0 0', fontSize: '0.625rem', color: '#6b7280' }}>
+              <p
+                style={{
+                  margin: '0.5rem 0 0',
+                  fontSize: '0.625rem',
+                  color: 'var(--text-muted, #6b7280)',
+                }}
+              >
                 {pollData.total_votes ?? 0} vote{(pollData.total_votes ?? 0) !== 1 ? 's' : ''}
                 {!user && ' · Sign in to vote'}
               </p>
@@ -403,10 +411,18 @@ export function CommunityFeedPost({
                   marginBottom: '0.35rem',
                 }}
               >
-                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#10b981' }}>
+                <span
+                  style={{
+                    fontSize: '0.8125rem',
+                    fontWeight: 700,
+                    color: 'var(--comm-accent-text, #10b981)',
+                  }}
+                >
                   {tickerNorm.symbols.map((s) => `$${s.symbol}`).join(' · ')}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: '#6b7280' }}>{tickerNorm.period}</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted, #6b7280)' }}>
+                  {tickerNorm.period}
+                </span>
               </div>
 
               {chartSeries.map((row, idx) => {
@@ -420,7 +436,7 @@ export function CommunityFeedPost({
                       style={{
                         textAlign: 'center',
                         fontSize: '0.75rem',
-                        color: '#6b7280',
+                        color: 'var(--text-muted, #6b7280)',
                         padding: '0.75rem 0',
                         margin: 0,
                       }}
@@ -437,7 +453,7 @@ export function CommunityFeedPost({
                       style={{
                         textAlign: 'center',
                         fontSize: '0.75rem',
-                        color: '#6b7280',
+                        color: 'var(--text-muted, #6b7280)',
                         padding: '0.5rem 0',
                         margin: 0,
                       }}
@@ -479,7 +495,7 @@ export function CommunityFeedPost({
                     >
                       ${row.symbol}
                       {hp != null && (
-                        <span style={{ color: '#6b7280', fontWeight: 500, marginLeft: '0.35rem' }}>
+                        <span style={{ color: 'var(--text-muted, #6b7280)', fontWeight: 500, marginLeft: '0.35rem' }}>
                           ★ ${hp}
                         </span>
                       )}
@@ -570,7 +586,7 @@ export function CommunityFeedPost({
                   </span>
                 </>
               ) : (
-                <span className="comm-ticker-price" style={{ color: '#6b7280', fontSize: '0.6875rem' }}>
+                <span className="comm-ticker-price" style={{ color: 'var(--text-muted, #6b7280)', fontSize: '0.6875rem' }}>
                   Quote unavailable
                 </span>
               )}
