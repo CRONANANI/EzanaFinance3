@@ -11,6 +11,7 @@ import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { useProGate } from '@/components/upgrade/ProGateContext';
+import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
@@ -89,15 +90,6 @@ export function Navbar() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileMenuOpen]);
 
   useEffect(() => {
     if (!showLandingNav) return undefined;
@@ -288,126 +280,11 @@ export function Navbar() {
           <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
         </button>
         <AnimatedNav items={userNavItems} accentColor="#10b981" onProGateClick={openProGate} />
-        <div className={`nav-links ${mobileMenuOpen ? 'nav-links-open' : ''}`}>
-          <Link href="/home-dashboard" className={`nav-link ${pathname?.includes('home-dashboard') ? 'active' : ''}`} data-page="home-dashboard" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
-          </Link>
-          <div className={`nav-dropdown mobile-dropdown-flat ${isResearchActive ? 'active' : ''}`}>
-            <span className={`nav-link mobile-dropdown-label ${isResearchActive ? 'active' : ''}`}>
-              <i className="bi bi-search"></i>
-              <span>Research</span>
-            </span>
-            <div className="mobile-dropdown-items">
-              <Link href="/inside-the-capitol" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-building"></i>
-                <div><div className="item-title">Inside The Capitol</div></div>
-              </Link>
-              <Link href="/company-research" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-bar-chart-line"></i>
-                <div><div className="item-title">Company &amp; Portfolio Research</div></div>
-              </Link>
-              <Link href="/market-analysis" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-graph-up-arrow"></i>
-                <div><div className="item-title">Global Market Analysis</div></div>
-              </Link>
-              <Link href="/ezana-echo" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-newspaper"></i>
-                <div><div className="item-title">Ezana Echo</div></div>
-              </Link>
-              <Link href="/alternative-markets" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-globe2"></i>
-                <div><div className="item-title">Alternative Markets</div></div>
-              </Link>
-              <button
-                type="button"
-                className="dropdown-item dropdown-item--gold"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  openProGate();
-                }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit' }}
-              >
-                <i className="bi bi-cloud-sun-fill"></i>
-                <div>
-                  <div className="item-title">Kairos Signal</div>
-                  <div className="item-desc">Weather &amp; alternative macro data</div>
-                </div>
-              </button>
-              <button
-                type="button"
-                className="dropdown-item dropdown-item--gold"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  openProGate();
-                }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit' }}
-              >
-                <i className="bi bi-bullseye"></i>
-                <div>
-                  <div className="item-title">Betting Markets</div>
-                  <div className="item-desc">Odds, predictions &amp; EV models</div>
-                </div>
-              </button>
-              <button
-                type="button"
-                className="dropdown-item dropdown-item--gold"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  openProGate();
-                }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', font: 'inherit', color: 'inherit' }}
-              >
-                <i className="bi bi-calculator"></i>
-                <div>
-                  <div className="item-title">For The Quants</div>
-                  <div className="item-desc">Quant tools &amp; backtesting</div>
-                </div>
-              </button>
-            </div>
-          </div>
-          <div className={`nav-dropdown mobile-dropdown-flat ${isTradingActive ? 'active' : ''}`}>
-            <span className={`nav-link mobile-dropdown-label ${isTradingActive ? 'active' : ''}`}>
-              <i className="bi bi-graph-up-arrow"></i>
-              <span>Trading</span>
-            </span>
-            <div className="mobile-dropdown-items">
-              <Link href="/trading" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-bank"></i>
-                <div><div className="item-title">Brokerage Account</div></div>
-              </Link>
-              <Link href="/trading/mock" className="dropdown-item" onClick={() => setMobileMenuOpen(false)}>
-                <i className="bi bi-controller"></i>
-                <div>
-                  <div className="item-title">Mock Portfolio</div>
-                  <div className="item-desc">$100K paper trading account</div>
-                </div>
-              </Link>
-            </div>
-          </div>
-          <Link href="/watchlist" className={`nav-link ${pathname?.includes('watchlist') ? 'active' : ''}`} data-page="watchlist" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-bookmark"></i>
-            <span>Watchlist</span>
-          </Link>
-          {isOrgUser ? (
-            <Link href="/org-team-hub" className={`nav-link nav-link--purple ${pathname?.includes('org-team-hub') ? 'active' : ''}`} data-page="org-team-hub" onClick={() => setMobileMenuOpen(false)}>
-              <i className="bi bi-building"></i>
-              <span>Team Hub</span>
-            </Link>
-          ) : (
-            <Link href="/community" className={`nav-link ${pathname?.includes('community') ? 'active' : ''}`} data-page="community" onClick={() => setMobileMenuOpen(false)}>
-              <i className="bi bi-people"></i>
-              <span>Community</span>
-            </Link>
-          )}
-          <Link href="/learning-center" className={`nav-link ${pathname?.includes('learning-center') ? 'active' : ''}`} data-page="learning-center" onClick={() => setMobileMenuOpen(false)}>
-            <i className="bi bi-mortarboard"></i>
-            <span>Learning Center</span>
-          </Link>
-        </div>
+        <MobileAuthNavDrawer
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          isOrgUser={isOrgUser}
+        />
         <div className="nav-actions">
           <Link
             href="/settings"
@@ -432,7 +309,6 @@ export function Navbar() {
           </button>
         </div>
       </div>
-      {mobileMenuOpen && <div className="mobile-menu-backdrop" onClick={() => setMobileMenuOpen(false)} />}
     </nav>
   );
 }
