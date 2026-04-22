@@ -77,10 +77,10 @@ export default function UserProfileSettingsPage() {
       <div className="py-12">
         <div className="flex flex-wrap items-center justify-between gap-6 mb-12">
           <div>
-            <h1 className="text-4xl font-light text-foreground tracking-tight page-title-shiny">
+            <h1 className="text-page-title font-light text-foreground tracking-tight page-title-shiny">
               Profile Settings
             </h1>
-            <p className="text-muted-foreground mt-3 text-lg">
+            <p className="text-muted-foreground mt-3 text-base sm:text-lg">
               Manage your account preferences and personal information
             </p>
           </div>

@@ -138,9 +138,9 @@ export function PerformanceChart({
         </div>
       </div>
 
-      <div className="pc-chart-wrap">
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={merged} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+      <div className="pc-chart-wrap chart-viewport w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={merged} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="var(--chart-grid, rgba(107,114,128,0.18))"
@@ -151,14 +151,15 @@ export function PerformanceChart({
               tick={{ fontSize: 10, fill: 'var(--text-muted, #8b949e)' }}
               tickLine={false}
               axisLine={false}
-              minTickGap={24}
+              interval="preserveStartEnd"
+              minTickGap={20}
             />
             <YAxis
               tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
               tick={{ fontSize: 10, fill: 'var(--text-muted, #8b949e)' }}
               tickLine={false}
               axisLine={false}
-              width={48}
+              width={40}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(16,185,129,0.25)' }} />
             <Legend

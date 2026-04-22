@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PageContainer } from '@/components/Layout/PageContainer';
 
 export const metadata = {
   title: 'Login | Ezana Finance',
@@ -7,21 +8,25 @@ export const metadata = {
 
 export default function LoginChoicePage() {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f4f7f5] px-4 py-10">
+    <div className="min-h-[100svh] w-full bg-[#f4f7f5]">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-emerald-400/25 blur-3xl" />
         <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl" />
       </div>
 
+      <PageContainer
+        maxWidth="md"
+        className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center"
+      >
       <Link
         href="/"
-        className="relative z-10 mb-6 text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+        className="mb-6 text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
       >
         ← Back to home
       </Link>
 
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-gray-200/90 bg-white p-8 shadow-lg shadow-gray-200/40">
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">Login</h1>
+      <div className="w-full max-w-md rounded-2xl border border-gray-200/90 bg-white p-6 shadow-lg shadow-gray-200/40 sm:p-8">
+        <h1 className="text-page-title mb-2 text-gray-900">Login</h1>
         <p className="mb-8 text-gray-600">Choose how you would like to sign in to your account.</p>
 
         <div className="flex flex-col gap-4">
@@ -75,6 +80,7 @@ export default function LoginChoicePage() {
           </Link>
         </p>
       </div>
+      </PageContainer>
     </div>
   );
 }

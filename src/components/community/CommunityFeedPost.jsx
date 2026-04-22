@@ -500,20 +500,23 @@ export function CommunityFeedPost({
                         </span>
                       )}
                     </div>
-                    <ResponsiveContainer width="100%" height={140}>
-                      <LineChart data={chartData} margin={{ top: 6, right: 8, left: -20, bottom: 0 }}>
+                    <div className="h-[120px] w-full min-w-0 overflow-hidden sm:h-[140px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                         <XAxis
                           dataKey="t"
                           tick={{ fill: '#6b7280', fontSize: 9 }}
                           tickLine={false}
                           axisLine={false}
                           interval="preserveStartEnd"
+                          minTickGap={16}
                         />
                         <YAxis
                           domain={[minP - pad, maxP + pad]}
                           tick={{ fill: '#6b7280', fontSize: 9 }}
                           tickLine={false}
                           axisLine={false}
+                          width={40}
                           tickFormatter={(v) =>
                             `$${v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v.toFixed(0)}`
                           }
@@ -567,6 +570,7 @@ export function CommunityFeedPost({
                         )}
                       </LineChart>
                     </ResponsiveContainer>
+                    </div>
                   </div>
                 );
               })}

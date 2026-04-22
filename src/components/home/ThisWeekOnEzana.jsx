@@ -100,7 +100,8 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     ];
   }, [chartData]);
 
-  const chartH = chartOnly ? (compact ? 240 : 260) : compact ? 180 : 220;
+  /* Shorter on small phones, scale up with breakpoint via CSS where possible */
+  const chartH = chartOnly ? (compact ? 220 : 240) : compact ? 160 : 200;
 
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
@@ -120,10 +121,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
       {!loading && !failed && (
         <div
+          className="w-full min-w-0 overflow-hidden"
           style={{
             height: chartH,
             minHeight: chartH,
-            width: '100%',
             position: 'relative',
           }}
         >
@@ -138,9 +139,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
             >
               <XAxis
                 dataKey="day"
-                interval={0}
+                interval="preserveStartEnd"
+                minTickGap={12}
                 padding={{ left: 12, right: 8 }}
-                tick={{ fill: 'var(--home-muted)', fontSize: 10 }}
+                tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
               />

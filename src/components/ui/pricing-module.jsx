@@ -131,7 +131,7 @@ export function PricingModule({
       )}
     >
       <div className="max-w-6xl mx-auto text-center">
-        <h2 className="text-4xl font-bold tracking-tight mb-2">{title}</h2>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl mb-2">{title}</h2>
         <p className="text-muted-foreground mb-8">{subtitle}</p>
 
         <div className="flex flex-wrap items-center justify-center gap-4 mb-10">

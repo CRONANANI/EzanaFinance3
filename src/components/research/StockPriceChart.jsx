@@ -178,7 +178,7 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
       </div>
 
       {/* ── Chart body ── */}
-      <div style={{ width: '100%', height: '220px', position: 'relative' }}>
+      <div className="chart-viewport-sm relative w-full">
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px', color: 'var(--muted-foreground, #6b7280)', fontSize: '0.78rem' }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}>
@@ -244,7 +244,7 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                   fontFamily: 'var(--font-mono, monospace)',
                   opacity: 0.85,
                 }}
-                axisLine={false} tickLine={false} width={52}
+                axisLine={false} tickLine={false} width={40}
                 tickFormatter={(v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }} />
@@ -258,16 +258,8 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
       {/* ── Stat cards: Market Cap · P/E · Div Yield · EPS ── */}
       {stats && (
         <div
-          className="stock-stat-cards-grid"
+          className="stock-stat-cards-grid grid grid-cols-2 gap-3 border-t border-[rgba(128,128,128,0.12)] pt-4 mt-5 sm:grid-cols-4 sm:gap-3"
           data-stat-cards
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '0.75rem',
-            marginTop: '1.25rem',
-            paddingTop: '1rem',
-            borderTop: '1px solid rgba(128,128,128,0.12)',
-          }}
         >
           {[
             { label: 'Market Cap',    value: stats.mcap,     sub: stats.capType  },

@@ -653,9 +653,9 @@ function PowerRankingsCard({ empireData }) {
       {data.length === 0 ? (
         <div className="er-empty">No countries in the selected scope.</div>
       ) : (
-        <div style={{ height: Math.max(220, data.length * 34 + 40) }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
+        <div className="w-full min-w-0 overflow-x-auto" style={{ height: Math.max(220, data.length * 34 + 40) }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <BarChart data={data} layout="vertical" margin={{ top: 8, right: 24, left: 8, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} horizontal={false} />
               <XAxis
                 type="number"
@@ -808,8 +808,8 @@ function PowerDimensionRadar({ empireData }) {
       }
       wide
     >
-      <div style={{ height: 360 }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="w-full min-w-0 overflow-hidden" style={{ height: 360 }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">
             <PolarGrid stroke="rgba(212,175,55,0.22)" />
             <PolarAngleAxis dataKey="dimension" tick={{ fill: tokens.axisTick, fontSize: 9 }} />
@@ -1059,9 +1059,9 @@ function BigCycleCard({ empireData }) {
     >
       {isAllMode ? (
         <div className="er-big-cycle-all">
-          <div className="er-big-cycle-all__chart" style={{ height: 360 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={allModeData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <div className="er-big-cycle-all__chart w-full min-w-0 overflow-hidden" style={{ height: 360 }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <LineChart data={allModeData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={tokens.grid} />
                 <XAxis
                   dataKey="year"

@@ -246,6 +246,9 @@
 /* ── Chart wrap ────────────────────────────────────────────── */
 .kairos-chart-wrap {
   margin-top: 0.5rem;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .kairos-chart-wrap--centered {

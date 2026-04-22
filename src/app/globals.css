@@ -1113,3 +1113,48 @@ html:has(body.route-regular-dashboard) {
 html:has(body.route-regular-dashboard.route-market-analysis) {
   background-color: var(--nav-bg-solid);
 }
+
+/* —— Mobile-first foundation (typography + touch + chart shells) —— */
+@layer components {
+  .text-hero {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight;
+  }
+
+  .text-page-title {
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight;
+  }
+
+  .text-section-title {
+    @apply text-lg sm:text-xl md:text-2xl font-semibold;
+  }
+
+  .text-card-title {
+    @apply text-sm sm:text-base font-semibold;
+  }
+
+  .text-body {
+    @apply text-sm sm:text-base leading-relaxed;
+  }
+
+  .text-meta {
+    @apply text-xs sm:text-sm text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .touch-target {
+    @apply min-h-11 min-w-[44px] flex items-center justify-center;
+  }
+
+  .touch-target-lg {
+    @apply min-h-12 min-w-12 flex items-center justify-center;
+  }
+
+  .chart-viewport {
+    @apply h-[220px] w-full min-w-0 overflow-hidden sm:h-[280px] md:h-[320px] lg:h-[400px];
+  }
+
+  .chart-viewport-sm {
+    @apply h-[200px] w-full min-w-0 overflow-hidden sm:h-[220px] md:h-[240px];
+  }
+}

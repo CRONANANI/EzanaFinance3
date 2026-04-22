@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { User, Building2, ChevronRight } from 'lucide-react';
+import { PageContainer } from '@/components/Layout/PageContainer';
 import './help-center.css';
 
 export default function HelpCenterChoicePage() {
   return (
-    <div className="hc-page">
+    <PageContainer maxWidth="7xl" className="hc-page min-h-screen">
       <section className="hc-hero">
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="hc-title mb-4 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
@@ -77,6 +78,6 @@ export default function HelpCenterChoicePage() {
           </Link>
         </div>
       </section>
-    </div>
+    </PageContainer>
   );
 }

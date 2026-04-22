@@ -170,7 +170,7 @@ function TemperatureAnomalyCard({ weatherData, region }) {
       </div>
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={200}>
-          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
@@ -254,7 +254,7 @@ function PrecipitationCard({ weatherData, region }) {
       </div>
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={200}>
-          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
             <XAxis
               dataKey="date"
@@ -317,7 +317,7 @@ function GrowingDegreeDaysCard({ weatherData }) {
       </p>
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gddGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
@@ -378,7 +378,7 @@ function WindSolarCard({ weatherData }) {
       </div>
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
             <XAxis
               dataKey="date"

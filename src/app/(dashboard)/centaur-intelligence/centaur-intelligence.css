@@ -627,6 +627,8 @@ button:active:not(:disabled) {
 .sentinel-chart-h {
   height: 140px;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .sentinel-chart-h--bar {

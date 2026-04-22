@@ -86,7 +86,7 @@ export function StockQuote({ symbol }) {
         </div>
       </div>
       <div className="mb-6">
-        <p className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">{formatPrice(price)}</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight sm:text-3xl md:text-4xl">{formatPrice(price)}</p>
         <div className={`flex items-center gap-2 mt-2 ${isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500'}`}>
           {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
           <span className="font-semibold text-lg">

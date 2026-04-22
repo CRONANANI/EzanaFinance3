@@ -115,7 +115,7 @@ export function LeaderboardPageClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by username"
-              className="w-56 rounded-lg border border-gray-300 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14] py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder:text-[#6b7280]"
+              className="w-full min-w-0 max-w-full rounded-lg border border-gray-300 dark:border-[#1a1a24] bg-white dark:bg-[#0d0d14] py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder:text-[#6b7280] sm:max-w-xs md:w-56"
             />
           </div>
         </div>

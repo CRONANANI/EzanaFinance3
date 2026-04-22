@@ -199,26 +199,31 @@ export function TopPerformingPoliticiansCard({ onOpenPolitician }) {
         </div>
       ) : (
         <div className="itc-top-perf-body">
-          <div className="itc-top-perf-chart">
-            <ResponsiveContainer width="100%" height={Math.max(220, chartData.length * 28)}>
+          <div className="itc-top-perf-chart w-full min-w-0 overflow-x-auto">
+            <ResponsiveContainer
+              width="100%"
+              height={Math.max(220, chartData.length * 28)}
+              minHeight={220}
+            >
               <BarChart
                 data={chartData}
                 layout="vertical"
-                margin={{ top: 4, right: 24, left: 8, bottom: 4 }}
+                margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
               >
                 <XAxis
                   type="number"
-                  tick={{ fontSize: 10, fill: 'var(--text-secondary, #8b949e)' }}
+                  tick={{ fontSize: 9, fill: 'var(--text-secondary, #8b949e)' }}
                   tickFormatter={(v) => formatCurrency(v)}
                   domain={[0, maxPnl > 0 ? 'auto' : 1]}
                   axisLine={false}
                   tickLine={false}
+                  interval="preserveStartEnd"
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: 'var(--text-primary, #f0f6fc)' }}
-                  width={90}
+                  tick={{ fontSize: 10, fill: 'var(--text-primary, #f0f6fc)' }}
+                  width={72}
                   axisLine={false}
                   tickLine={false}
                 />
