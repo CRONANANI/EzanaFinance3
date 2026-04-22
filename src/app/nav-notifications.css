@@ -44,6 +44,22 @@
   }
 }
 
+/* Mobile: same 44px tap as hamburger; neutral foreground (not brand green) */
+@media (max-width: 767px) {
+  .main-nav .nn-bell-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1.25rem;
+    transform: none;
+  }
+  .main-nav .nn-bell-btn i {
+    display: block;
+    line-height: 1;
+  }
+}
+
 .nn-bell-btn:hover,
 .nn-bell-btn.nn-bell-active {
   background: rgba(16, 185, 129, 0.08);

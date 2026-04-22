@@ -206,6 +206,21 @@ body {
   .main-nav .nav-container {
     padding: 0 1rem;
   }
+
+  /* Logged-in top bar: hamburger uses theme primary (emerald), not default neutral */
+  .main-nav .mobile-hamburger,
+  .main-nav .mobile-hamburger i,
+  .partner-nav .mobile-hamburger,
+  .partner-nav .mobile-hamburger i {
+    color: var(--primary, #10b981);
+  }
+  .main-nav .mobile-hamburger:hover,
+  .main-nav .mobile-hamburger:focus-visible,
+  .partner-nav .mobile-hamburger:hover,
+  .partner-nav .mobile-hamburger:focus-visible {
+    background: rgba(16, 185, 129, 0.1);
+    outline: none;
+  }
 }
 
 /* ============================================
@@ -831,6 +846,7 @@ body {
   button,
   a.nav-link,
   .nav-action-btn,
+  .nav-action-tap,
   .filter-btn,
   .feed-tab,
   .tab-btn,

@@ -21,20 +21,28 @@ body.light-mode .partner-badge-nav {
   background: rgba(184, 146, 47, 0.06);
   border-color: rgba(184, 146, 47, 0.15);
 }
-body.light-mode .partner-nav .nav-action-btn {
+body.light-mode .partner-nav .nav-action-btn,
+body.light-mode .partner-nav .nav-action-tap {
   color: #64748b;
 }
-body.light-mode .partner-nav .nav-action-btn:hover {
+body.light-mode .partner-nav .nav-action-btn:hover,
+body.light-mode .partner-nav .nav-action-tap:hover {
   color: #92731d;
   background: rgba(184, 146, 47, 0.06);
 }
-body.light-mode .partner-nav .nav-settings-gear,
-body.light-mode .partner-nav .nav-settings-gear i {
+body.light-mode .partner-nav .nav-action-inner.nav-settings-gear,
+body.light-mode .partner-nav .nav-action-inner.nav-settings-gear i {
   color: #92731d;
-}
-body.light-mode .partner-nav .nav-settings-gear:hover {
-  color: #6b5315;
+  border-color: rgba(184, 146, 47, 0.35);
   background: rgba(184, 146, 47, 0.08);
+}
+body.light-mode .partner-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear {
+  color: #6b5315;
+  background: rgba(184, 146, 47, 0.14);
+  border-color: rgba(107, 83, 21, 0.35);
+}
+body.light-mode .partner-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear i {
+  color: #6b5315;
 }
 body.light-mode .partner-nav .theme-toggle-btn {
   border-color: rgba(0, 0, 0, 0.08);

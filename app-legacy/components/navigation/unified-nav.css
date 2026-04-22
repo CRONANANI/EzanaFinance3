@@ -227,62 +227,118 @@ body:not(.light-mode) .dropdown-menu {
   flex-shrink: 0;
 }
 
+/* Settings / Logout: 44×44 tap target, 36px visible circle, ~16px icon (see .nav-action-inner) */
+.nav-action-tap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s ease;
+  box-sizing: border-box;
+}
+
+a.nav-action-tap {
+  text-decoration: none;
+}
+
+.nav-action-tap:hover,
+.nav-action-tap:focus-visible {
+  background: rgba(16, 185, 129, 0.06);
+  outline: none;
+}
+
+body:not(.light-mode) .nav-action-tap:hover,
+body:not(.light-mode) .nav-action-tap:focus-visible {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.nav-action-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem; /* 16px — visual weight with bell / hamburger */
+  line-height: 1;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-action-inner i {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 /* Settings gear — deep emerald + light outline on icon */
-.main-nav .nav-action-btn.nav-settings-gear,
-.partner-nav .nav-action-btn.nav-settings-gear {
+.main-nav .nav-action-inner.nav-settings-gear,
+.partner-nav .nav-action-inner.nav-settings-gear {
   color: #047857;
-  border-color: rgba(4, 120, 87, 0.45);
+  border: 1px solid rgba(4, 120, 87, 0.45);
   background: rgba(4, 120, 87, 0.12);
 }
 
-.main-nav .nav-action-btn.nav-settings-gear i,
-.partner-nav .nav-action-btn.nav-settings-gear i {
+.main-nav .nav-action-inner.nav-settings-gear i,
+.partner-nav .nav-action-inner.nav-settings-gear i {
   color: #047857;
   -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.88);
   paint-order: stroke fill;
 }
 
-.main-nav .nav-action-btn.nav-settings-gear:hover,
-.partner-nav .nav-action-btn.nav-settings-gear:hover {
+.main-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear,
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear {
   background: #047857;
   color: #ffffff;
   border-color: #047857;
 }
 
-.main-nav .nav-action-btn.nav-settings-gear:hover i,
-.partner-nav .nav-action-btn.nav-settings-gear:hover i {
+.main-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear i,
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear i {
   color: #ffffff;
   -webkit-text-stroke: 0;
 }
 
 /* Logout — red accent + light outline on icon */
-.main-nav .nav-action-btn.nav-logout-btn,
-.partner-nav .nav-action-btn.nav-logout-btn {
+.main-nav .nav-action-inner.nav-logout-btn,
+.partner-nav .nav-action-inner.nav-logout-btn {
   color: #b91c1c;
-  border-color: rgba(185, 28, 28, 0.45);
+  border: 1px solid rgba(185, 28, 28, 0.45);
   background: rgba(185, 28, 28, 0.12);
 }
 
-.main-nav .nav-action-btn.nav-logout-btn i,
-.partner-nav .nav-action-btn.nav-logout-btn i {
+.main-nav .nav-action-inner.nav-logout-btn i,
+.partner-nav .nav-action-inner.nav-logout-btn i {
   color: #b91c1c;
   -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.92);
   paint-order: stroke fill;
 }
 
-.main-nav .nav-action-btn.nav-logout-btn:hover,
-.partner-nav .nav-action-btn.nav-logout-btn:hover {
+.main-nav .nav-action-tap:hover .nav-action-inner.nav-logout-btn,
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-logout-btn {
   background: #b91c1c;
   color: #ffffff;
   border-color: #b91c1c;
 }
 
-.main-nav .nav-action-btn.nav-logout-btn:hover i,
-.partner-nav .nav-action-btn.nav-logout-btn:hover i {
+.main-nav .nav-action-tap:hover .nav-action-inner.nav-logout-btn i,
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-logout-btn i {
   color: #ffffff;
   -webkit-text-stroke: 0;
 }
 
+/* Legacy: single pill (unused by main / partner top nav after nav-action-tap) */
 .nav-action-btn {
   width: 32px;
   height: 32px;

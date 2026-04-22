@@ -17,13 +17,28 @@
 /* ── Partner Navbar Overrides ── */
 .partner-nav { border-bottom: 1px solid rgba(212, 168, 83, 0.12); }
 .partner-nav .nav-link.active { color: #d4a853; }
-.partner-nav .nav-settings-gear,
-.partner-nav .nav-settings-gear i {
-  color: #d4a853;
+/* Softer 44px tap hit-area (override unified-nav emerald) */
+.partner-nav .nav-action-tap:hover,
+.partner-nav .nav-action-tap:focus-visible {
+  background: rgba(212, 168, 83, 0.08) !important;
+  outline: none;
 }
-.partner-nav .nav-settings-gear:hover {
-  color: #e8c97a;
-  background: rgba(212, 168, 83, 0.08);
+/* Gold settings chip — must beat unified-nav .nav-action-inner defaults */
+.partner-nav .nav-action-inner.nav-settings-gear,
+.partner-nav .nav-action-inner.nav-settings-gear i {
+  color: #d4a853;
+  border-color: rgba(212, 168, 83, 0.45);
+  background: rgba(212, 168, 83, 0.12);
+  -webkit-text-stroke: 0;
+}
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear {
+  color: #0a0e13;
+  background: #d4a853;
+  border-color: #d4a853;
+}
+.partner-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear i {
+  color: #0a0e13;
+  -webkit-text-stroke: 0;
 }
 .partner-brand { position: relative; }
 

@@ -40,11 +40,13 @@ body.light-mode .nav-link.active {
   color: var(--emerald-text);
 }
 
-body.light-mode .nav-action-btn {
+body.light-mode .nav-action-btn,
+body.light-mode .nav-action-tap {
   color: var(--text-muted);
 }
 
-body.light-mode .nav-action-btn:hover {
+body.light-mode .nav-action-btn:hover,
+body.light-mode .nav-action-tap:hover {
   color: var(--emerald-text);
   background: var(--emerald-bg);
 }

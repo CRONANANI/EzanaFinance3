@@ -157,16 +157,21 @@ export function PartnerNavbar() {
         </div>
 
         <div className="nav-actions">
-          <Link href="/settings" className="nav-action-btn nav-settings-gear" title="Settings" aria-label="Settings">
-            <i className="bi bi-gear" />
+          <Link href="/settings" className="nav-action-tap" title="Settings" aria-label="Settings">
+            <span className="nav-action-inner nav-settings-gear">
+              <i className="bi bi-gear" aria-hidden="true" />
+            </span>
           </Link>
           <button
+            type="button"
             onClick={handleLogout}
-            className="nav-action-btn nav-logout-btn"
+            className="nav-action-tap"
             title="Log out"
             aria-label="Log out"
           >
-            <i className="bi bi-box-arrow-right" />
+            <span className="nav-action-inner nav-logout-btn">
+              <i className="bi bi-box-arrow-right" aria-hidden="true" />
+            </span>
           </button>
         </div>
       </div>
