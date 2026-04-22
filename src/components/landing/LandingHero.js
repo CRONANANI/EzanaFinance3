@@ -17,10 +17,28 @@ const RUN_ANIM_MS = 100;
 /** When CTA copy can finish animating; hero background mounts after this (no pattern before CTA). */
 const CTA_PHASE_MS = 2550;
 
+/** Canvas size (square) for InteractiveGlobe — must match .globe-container CSS to avoid mobile crop/clipping. */
+function useHeroGlobeSize() {
+  const [size, setSize] = useState(400);
+  useEffect(() => {
+    const compute = () => {
+      const w = window.innerWidth;
+      const horizontalPad = 48;
+      // Same composition as desktop: full sphere, scaled to viewport; never larger than 460
+      setSize(Math.min(460, Math.max(280, w - horizontalPad)));
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+  return size;
+}
+
 export function LandingHero() {
   const [ctaPhaseDone, setCtaPhaseDone] = useState(false);
   const [globeReady, setGlobeReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const globeSize = useHeroGlobeSize();
 
   const onGlobeReady = useCallback(() => {
     setGlobeReady(true);
@@ -121,7 +139,7 @@ export function LandingHero() {
         </div>
         <div className={`card-preview globe-preview ${showHeroVisual ? 'globe-preview--visible' : ''}`}>
           <div className="globe-aurora-glow" aria-hidden="true" />
-          <GlobeWithNotificationCards size={460} onGlobeReady={onGlobeReady} />
+          <GlobeWithNotificationCards size={globeSize} onGlobeReady={onGlobeReady} />
         </div>
       </div>
     </div>

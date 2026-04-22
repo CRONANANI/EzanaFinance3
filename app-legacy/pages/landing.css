@@ -1043,14 +1043,16 @@ body:has(.landing-page) {
     justify-content: center;
     min-height: 400px;
     margin-top: 6rem;
+    overflow: visible;
 }
 
 .globe-container {
     width: 100%;
     max-width: 460px;
-    height: 460px;
-    min-height: 360px;
+    /* InteractiveGlobe sets canvas w/h in px — do not fix a smaller box than the canvas or the sphere looks cropped */
     position: relative;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Dark circle behind the globe to mask aurora beams from showing
@@ -1195,12 +1197,11 @@ body:has(.landing-page) {
 
 @media (max-width: 1024px) {
     .globe-preview {
-        min-height: 360px;
+        min-height: 0;
         order: 2;
     }
     .globe-container {
-        height: 360px;
-        max-width: 360px;
+        max-width: min(100%, 460px);
     }
     .globe-with-cards-wrapper {
         flex-direction: column;
@@ -1224,8 +1225,11 @@ body:has(.landing-page) {
 
 @media (max-width: 768px) {
     .globe-container {
-        height: 320px;
-        max-width: 320px;
+        max-width: min(100%, 460px);
+    }
+    .globe-preview {
+        min-height: 0;
+        margin-top: 1.25rem;
     }
     .globe-with-cards-wrapper {
         flex-direction: column;

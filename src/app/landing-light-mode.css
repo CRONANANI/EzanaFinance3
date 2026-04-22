@@ -100,6 +100,25 @@ body.light-mode .landing-page .word-animate:hover {
   text-shadow: 0 0 20px rgba(5, 150, 105, 0.25);
 }
 
+/* Mobile: hamburger on light hero — default nav color was ~#f0f6fc (invisible on #f8fafb) */
+@media (max-width: 768px) {
+  body.light-mode:has(.landing-page) .navbar .mobile-hamburger {
+    min-width: 48px;
+    min-height: 48px;
+    color: var(--emerald-text, #059669) !important;
+  }
+
+  body.light-mode:has(.landing-page) .navbar .mobile-hamburger i {
+    color: inherit !important;
+  }
+
+  body.light-mode:has(.landing-page) .navbar .mobile-hamburger:hover,
+  body.light-mode:has(.landing-page) .navbar .mobile-hamburger:focus-visible {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-radius: 0.5rem;
+  }
+}
+
 /* Waitlist input (Tailwind arbitrary dark bg) */
 body.light-mode .landing-page #main input[type='email'] {
   background-color: #ffffff !important;

@@ -51,7 +51,7 @@ body.light-mode {
 .landing-page .main-content.hero-section {
   position: relative;
   z-index: 10;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100svh - 80px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +65,7 @@ body.light-mode {
 .landing-page .hero-cybercore-root {
   position: relative;
   width: 100%;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100svh - 80px);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -249,6 +249,13 @@ body.light-mode {
   display: block;
 }
 
+@media (max-width: 480px) {
+  .landing-page .hero-tagline {
+    font-size: clamp(1.25rem, 5.5vw, 1.85rem);
+    margin-bottom: 1rem;
+  }
+}
+
 .landing-page .hero-subtitle {
   font-size: 0.9375rem;
   line-height: 1.5;
@@ -360,6 +367,20 @@ body.light-mode {
   justify-content: center;
   min-height: 400px;
   margin-top: 6rem;
+}
+
+@media (max-width: 768px) {
+  .landing-page .card-preview.globe-preview {
+    min-height: 0;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .landing-page .globe-aurora-glow {
+    width: min(96vw, 420px);
+    height: min(96vw, 420px);
+  }
 }
 
 /* Trusted by section */
