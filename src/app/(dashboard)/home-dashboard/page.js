@@ -332,6 +332,74 @@ export default function HomeDashboardPage() {
     [normalizedHoldings, holdingsPage],
   );
 
+  /** Total Profits: all positions, largest by market value first (scroll inside card) */
+  const totalProfitsRows = useMemo(() => {
+    if (useMock && mock.enrichedPositions.length > 0) {
+      return [...mock.enrichedPositions]
+        .sort((a, b) => b.posValue - a.posValue)
+        .map((p) => ({
+          symbol: p.symbol,
+          posValue: p.posValue,
+          pnl: p.pnl,
+          pnlPct: p.pnlPct,
+          color: p.color,
+        }));
+    }
+    if (normalizedHoldings.length > 0) {
+      return [...normalizedHoldings]
+        .sort((a, b) => b.positionValue - a.positionValue)
+        .map((h) => ({
+          symbol: h.ticker,
+          posValue: h.positionValue,
+          pnl: null,
+          pnlPct: h.change,
+          dayDelta: h.changeDollar,
+          color: h.color,
+        }));
+    }
+    return [];
+  }, [useMock, mock.enrichedPositions, normalizedHoldings]);
+
+  const profitDonutSegmentSum = useMemo(
+    () => totalProfitsRows.reduce((s, r) => s + (r.posValue || 0), 0) || 1,
+    [totalProfitsRows],
+  );
+
+  const profitDonutSegments = useMemo(() => {
+    if (totalProfitsRows.length > 0) {
+      return totalProfitsRows.map((r) => {
+        const pv = r.posValue || 0;
+        return {
+          label: r.symbol,
+          pct: (pv / profitDonutSegmentSum) * 100,
+          color: r.color,
+          value: typeof r.pnl === 'number' && r.pnl > 0 ? r.pnl : 0,
+        };
+      });
+    }
+    if (useMock) {
+      return mock.profitBreakdown.length
+        ? mock.profitBreakdown
+        : [{ label: 'No positions yet', pct: 100, color: '#2a2f3a' }];
+    }
+    return PROFIT_BREAKDOWN;
+  }, [totalProfitsRows, profitDonutSegmentSum, useMock, mock.profitBreakdown]);
+
+  const profitPositionWeights = useMemo(() => {
+    const sum = totalProfitsRows.reduce((s, r) => s + (r.posValue || 0), 0) || 1;
+    return totalProfitsRows.map((r) => ({
+      ...r,
+      weightPct: ((r.posValue || 0) / sum) * 100,
+    }));
+  }, [totalProfitsRows]);
+
+  const displayTransactions = useMemo(() => {
+    if (useMock) return mock.recentTransactions;
+    return [...RECENT_TRANSACTIONS].sort(
+      (a, b) => new Date(b.date) - new Date(a.date),
+    );
+  }, [useMock, mock.recentTransactions]);
+
   useEffect(() => {
     setHoldingsPage(0);
   }, [timeframe, useLiveHoldings, plaidHoldingsPayload?.aggregated?.length]);
@@ -688,21 +756,19 @@ export default function HomeDashboardPage() {
 
       {/* ═══ ROW 3: Profits + Sectors + Transactions ═══ */}
       <div className="db-row-3">
-        {/* Total Profits */}
-        <div className="db-card db-profits-card">
+        {/* Total Profits — fixed height; list scrolls (positions by value, largest first) */}
+        <div className="db-card db-profits-card" data-dashboard-card>
           <div className="db-card-header">
             <h3>Total Profits</h3>
-            <button className="db-icon-btn"><i className="bi bi-box-arrow-up-right" /></button>
+            <Link href="/trading" className="db-icon-btn" title="View trading" aria-label="View trading">
+              <i className="bi bi-box-arrow-up-right" />
+            </Link>
           </div>
           <div className="db-profits-body">
             <div className="db-profits-chart-wrap">
               {useMock ? (
                 <DonutChart
-                  segments={
-                    mock.profitBreakdown.length > 0
-                      ? mock.profitBreakdown
-                      : [{ label: 'No profits yet', pct: 100, color: '#2a2f3a' }]
-                  }
+                  segments={profitDonutSegments}
                   size={150}
                   strokeWidth={20}
                   centerValue={`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
@@ -710,7 +776,7 @@ export default function HomeDashboardPage() {
                 />
               ) : (
                 <DonutChart
-                  segments={PROFIT_BREAKDOWN}
+                  segments={profitDonutSegments}
                   size={150}
                   strokeWidth={20}
                   centerValue="$4,030"
@@ -718,24 +784,33 @@ export default function HomeDashboardPage() {
                 />
               )}
             </div>
-            <div className="db-profits-legend">
-              {(useMock
-                ? mock.profitBreakdown.length > 0
-                  ? mock.profitBreakdown
-                  : [{ label: 'No profits yet', pct: 0, color: '#6b7280', value: 0 }]
-                : PROFIT_BREAKDOWN
-              ).map((p) => (
-                <div key={p.label} className="db-profits-legend-item">
-                  <span className="db-legend-dot" style={{ background: p.color }} />
-                  <span className="db-legend-label">{p.label}</span>
-                  <span className="db-legend-amt">
-                    {typeof p.value === 'number' && p.value > 0
-                      ? `+$${p.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                      : ''}
-                  </span>
-                  <span className="db-legend-pct">{p.pct}%</span>
-                </div>
-              ))}
+            <div className="db-profits-legend-scroll">
+              {totalProfitsRows.length === 0 ? (
+                <p className="db-profits-empty" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--db-muted)' }}>
+                  No positions to show. {useMock ? 'Add mock positions' : 'Link an account or use demo data'} to see P&amp;L by holding.
+                </p>
+              ) : (
+                <ul className="db-profits-position-list">
+                  {profitPositionWeights.map((p) => {
+                    const pnl = p.pnl;
+                    const hasPnl = typeof pnl === 'number';
+                    return (
+                      <li key={p.symbol} className="db-profits-legend-item">
+                        <span className="db-legend-dot" style={{ background: p.color }} />
+                        <span className="db-legend-label">{p.symbol}</span>
+                        <span className="db-legend-amt">
+                          {hasPnl
+                            ? `${pnl >= 0 ? '+' : '-'}$${Math.abs(pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                            : typeof p.dayDelta === 'number'
+                              ? `Day ${p.dayDelta >= 0 ? '+' : ''}$${Math.abs(p.dayDelta).toFixed(0)}`
+                              : '—'}
+                        </span>
+                        <span className="db-legend-pct">{p.weightPct.toFixed(0)}%</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -847,41 +922,46 @@ export default function HomeDashboardPage() {
           )}
         </div>
 
-        {/* Recent Transactions */}
-        <div className="db-card db-transactions-card">
+        {/* Recent Transactions — fixed height; list scrolls (newest first) */}
+        <div className="db-card db-transactions-card" data-dashboard-card>
           <div className="db-card-header">
             <h3>Recent Transactions</h3>
-            <button className="db-icon-btn"><i className="bi bi-box-arrow-up-right" /></button>
+            <Link href="/trading/dashboard" className="db-icon-btn" title="Trading activity" aria-label="View trading activity">
+              <i className="bi bi-box-arrow-up-right" />
+            </Link>
           </div>
           <div className="db-tx-table-header">
             <span>Companies</span>
             <span>Amount</span>
             <span>Transaction ID</span>
           </div>
-          <div className="db-tx-list">
-            {(useMock ? mock.recentTransactions : RECENT_TRANSACTIONS).map((tx) => {
-              const q = tx.ticker ? liveQuotes[tx.ticker] : null;
-              return (
-              <div key={tx.txId} className="db-tx-item">
-                <div className="db-tx-company">
-                  <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
-                  <div>
-                    <span className="db-tx-name">{tx.company} ({tx.ticker})</span>
-                    <span className="db-tx-date">{tx.date}</span>
-                    {q && (
-                      <span className="db-tx-date" style={{ display: 'block', color: '#9ca3af' }}>
-                        Last: ${q.price.toFixed(2)}
-                      </span>
-                    )}
+          <div className="db-tx-scroll">
+            <div className="db-tx-list">
+              {displayTransactions.map((tx) => {
+                const q = tx.ticker ? liveQuotes[tx.ticker] : null;
+                const rowKey = tx.id != null ? `tx-${tx.id}` : `tx-${tx.txId}`;
+                return (
+                  <div key={rowKey} className="db-tx-item">
+                    <div className="db-tx-company">
+                      <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
+                      <div>
+                        <span className="db-tx-name">{tx.company} ({tx.ticker})</span>
+                        <span className="db-tx-date">{tx.date}</span>
+                        {q && (
+                          <span className="db-tx-date" style={{ display: 'block', color: '#9ca3af' }}>
+                            Last: ${q.price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
+                      {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
+                    </span>
+                    <span className="db-tx-id">{tx.txId}</span>
                   </div>
-                </div>
-                <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
-                  {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
-                </span>
-                <span className="db-tx-id">{tx.txId}</span>
-              </div>
-            );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

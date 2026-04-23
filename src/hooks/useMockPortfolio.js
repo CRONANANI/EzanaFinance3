@@ -426,11 +426,18 @@ export function useMockPortfolio() {
     color: PROFIT_COLORS[i % PROFIT_COLORS.length],
   }));
 
-  const recentTransactions = history.slice(0, 8).map((h) => ({
-    company: h.symbol, ticker: h.symbol,
-    date: new Date(h.ts).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-    amount: h.total, positive: h.side === 'buy', txId: `#${h.id.toString().slice(-9)}`,
-  }));
+  const recentTransactions = [...history]
+    .sort((a, b) => b.ts - a.ts)
+    .map((h) => ({
+      id: h.id,
+      company: h.symbol,
+      ticker: h.symbol,
+      date: new Date(h.ts).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+      ts: h.ts,
+      amount: h.total,
+      positive: h.side === 'buy',
+      txId: `#${h.id.toString().slice(-9)}`,
+    }));
 
   return {
     hasMockPortfolio, portfolio, setPortfolio, syncing,

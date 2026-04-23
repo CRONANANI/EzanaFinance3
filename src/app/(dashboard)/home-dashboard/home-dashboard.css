@@ -108,6 +108,11 @@ body.light-mode .db-page {
   gap: 0.5rem;
 }
 
+a.db-icon-btn {
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
 .db-icon-btn {
   width: 32px;
   height: 32px;
@@ -556,11 +561,12 @@ body.light-mode .db-page {
   gap: 1.25rem;
 }
 
-/* ── Total Profits (Donut) ── */
+/* ── Total Profits (Donut) — fixed row height; inner list scrolls ── */
 .db-profits-card {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 560px;
 }
 
 .db-profits-body {
@@ -569,16 +575,33 @@ body.light-mode .db-page {
   flex-direction: column;
   align-items: stretch;
   padding: 1.25rem;
-  gap: 1rem;
+  gap: 0.75rem;
   min-height: 0;
+  overflow: hidden;
 }
 
 .db-profits-chart-wrap {
-  flex: 1;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.db-profits-legend-scroll {
+  flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.db-profits-position-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.db-profits-legend-scroll .db-profits-legend-item {
+  flex: 0 0 auto;
 }
 
 .db-donut-wrap {
@@ -731,7 +754,14 @@ body.light-mode .db-page {
 }
 
 
-/* ── Recent Transactions ── */
+/* ── Recent Transactions — same fixed height; table body scrolls ── */
+.db-transactions-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 560px;
+}
+
 .db-tx-table-header {
   display: grid;
   grid-template-columns: 1fr 0.7fr 0.8fr;
@@ -742,6 +772,14 @@ body.light-mode .db-page {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(16, 185, 129, 0.05);
+  flex-shrink: 0;
+}
+
+.db-tx-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .db-tx-list { padding: 0; }
