@@ -9,13 +9,16 @@ function hasSupabase() {
 
 /**
  * @param {import('@/lib/earnings/fmp-client').RawTranscript} t
+ * @returns {number | null}
  */
 function parseQuarterFromTranscript(t) {
-  const q = parseInt(String(t.period).replace(/\D/g, ''), 10);
-  if (!q || q < 1 || q > 4) {
-    throw new Error(`Invalid period: ${t.period}`);
+  const fromPeriod = parseInt(String(t.period ?? '').replace(/\D/g, ''), 10);
+  if (fromPeriod >= 1 && fromPeriod <= 4) return fromPeriod;
+  if (t.date) {
+    const d = new Date(t.date);
+    if (!Number.isNaN(d.getTime())) return Math.floor(d.getMonth() / 3) + 1;
   }
-  return q;
+  return null;
 }
 
 /**
@@ -52,107 +55,138 @@ function findEarningsRowForQuarter(earnings, year, quarter) {
  * @param {Array<{ topic: string; mentions: number }> | null} priorTopics
  */
 function enrichTopicsWithDelta(currentTopics, priorTopics) {
-  const priorMap = new Map((priorTopics || []).map((x) => [x.topic, x.mentions]));
-  return currentTopics.map((t) => ({
-    topic: t.topic,
-    mentions: t.mentions,
-    delta_vs_prior: priorMap.has(t.topic) ? t.mentions - priorMap.get(t.topic) : null,
-  }));
+  const priorMap = new Map((priorTopics || []).filter((x) => x?.topic).map((x) => [x.topic, x.mentions]));
+  return (currentTopics || [])
+    .filter((t) => t?.topic)
+    .map((t) => ({
+      topic: t.topic,
+      mentions: t.mentions,
+      delta_vs_prior: priorMap.has(t.topic) ? t.mentions - priorMap.get(t.topic) : null,
+    }));
 }
 
 /**
  * @param {import('@/lib/earnings/fmp-client').RawTranscript} t
+ * @param {string} symbolUpper
+ * @returns {Promise<object | null>}
  */
-async function getOrComputeAnalysis(t) {
+async function getOrComputeAnalysis(t, symbolUpper) {
   const quarter = parseQuarterFromTranscript(t);
+  if (quarter == null) {
+    console.warn('[earnings/analysis] skip transcript: unknown quarter', {
+      period: t.period,
+      date: t.date,
+    });
+    return null;
+  }
+
+  const year = Number(t.year);
+  if (!Number.isFinite(year)) {
+    console.warn('[earnings/analysis] skip transcript: invalid year', t.year);
+    return null;
+  }
+
+  const sym = (t.symbol && String(t.symbol).toUpperCase()) || symbolUpper;
   const callDate = toDateOnly(t.date);
 
   if (hasSupabase()) {
-    const { data: cached, error: cacheErr } = await supabaseAdmin
-      .from('earnings_transcript_analysis')
-      .select('*')
-      .eq('symbol', t.symbol)
-      .eq('year', t.year)
-      .eq('quarter', quarter)
-      .maybeSingle();
+    try {
+      const { data: cached, error: cacheErr } = await supabaseAdmin
+        .from('earnings_transcript_analysis')
+        .select('*')
+        .eq('symbol', sym)
+        .eq('year', year)
+        .eq('quarter', quarter)
+        .maybeSingle();
 
-    if (cacheErr) {
-      console.warn('[earnings/analysis] cache read:', cacheErr.message);
-    }
+      if (cacheErr) {
+        console.warn('[earnings/analysis] cache read:', cacheErr.message);
+      }
 
-    if (cached) {
-      const topTopics = Array.isArray(cached.top_topics) ? cached.top_topics : [];
-      return {
-        symbol: t.symbol,
-        year: t.year,
-        quarter,
-        callDate: cached.call_date || t.date,
-        analysis: {
-          wordCount: cached.word_count,
-          positiveCount: cached.positive_word_count,
-          negativeCount: cached.negative_word_count,
-          uncertaintyCount: cached.uncertainty_word_count,
-          sentimentScore: Number(cached.sentiment_score),
-          confidenceScore: Number(cached.confidence_score),
-          uncertaintyScore: Number(cached.uncertainty_score),
-          litigiousScore: Number(cached.litigious_score),
-          preparedRemarksSentiment: Number(cached.prepared_remarks_sentiment),
-          qaSentiment: Number(cached.qa_sentiment),
-          qaEvasivenessScore: Number(cached.qa_evasiveness_score),
-          topTopics,
-          litigiousCount: 0,
-        },
-      };
+      if (cached) {
+        const topTopics = Array.isArray(cached.top_topics) ? cached.top_topics : [];
+        return {
+          symbol: sym,
+          year,
+          quarter,
+          callDate: cached.call_date || t.date,
+          analysis: {
+            wordCount: cached.word_count,
+            positiveCount: cached.positive_word_count,
+            negativeCount: cached.negative_word_count,
+            uncertaintyCount: cached.uncertainty_word_count,
+            sentimentScore: Number(cached.sentiment_score),
+            confidenceScore: Number(cached.confidence_score),
+            uncertaintyScore: Number(cached.uncertainty_score),
+            litigiousScore: Number(cached.litigious_score),
+            preparedRemarksSentiment: Number(cached.prepared_remarks_sentiment),
+            qaSentiment: Number(cached.qa_sentiment),
+            qaEvasivenessScore: Number(cached.qa_evasiveness_score),
+            topTopics,
+            litigiousCount: 0,
+          },
+        };
+      }
+    } catch (e) {
+      console.warn('[earnings/analysis] cache read threw:', e?.message);
     }
   }
 
   if (hasSupabase()) {
-    const { error: trErr } = await supabaseAdmin.from('earnings_transcripts').upsert(
-      {
-        symbol: t.symbol,
-        year: t.year,
-        quarter,
-        call_date: callDate,
-        content: t.content,
-      },
-      { onConflict: 'symbol,year,quarter' },
-    );
-    if (trErr) console.warn('[earnings/analysis] transcript upsert:', trErr.message);
+    try {
+      const { error: trErr } = await supabaseAdmin.from('earnings_transcripts').upsert(
+        {
+          symbol: sym,
+          year,
+          quarter,
+          call_date: callDate,
+          content: t.content,
+        },
+        { onConflict: 'symbol,year,quarter' },
+      );
+      if (trErr) console.warn('[earnings/analysis] transcript upsert:', trErr.message);
+    } catch (e) {
+      console.warn('[earnings/analysis] transcript upsert threw:', e?.message);
+    }
   }
 
   const analysis = analyzeTranscript(t.content);
 
   if (hasSupabase()) {
-    const { error: anErr } = await supabaseAdmin.from('earnings_transcript_analysis').upsert(
-      {
-        symbol: t.symbol,
-        year: t.year,
-        quarter,
-        call_date: callDate,
-        sentiment_score: analysis.sentimentScore,
-        confidence_score: analysis.confidenceScore,
-        uncertainty_score: analysis.uncertaintyScore,
-        litigious_score: analysis.litigiousScore,
-        prepared_remarks_sentiment: analysis.preparedRemarksSentiment,
-        qa_sentiment: analysis.qaSentiment,
-        qa_evasiveness_score: analysis.qaEvasivenessScore,
-        top_topics: analysis.topTopics,
-        word_count: analysis.wordCount,
-        positive_word_count: analysis.positiveCount,
-        negative_word_count: analysis.negativeCount,
-        uncertainty_word_count: analysis.uncertaintyCount,
-        directional_tilt: 'neutral',
-        tilt_confidence: 'low',
-        tilt_reasoning: '',
-      },
-      { onConflict: 'symbol,year,quarter' },
-    );
-    if (anErr) console.warn('[earnings/analysis] analysis upsert:', anErr.message);
+    try {
+      const { error: anErr } = await supabaseAdmin.from('earnings_transcript_analysis').upsert(
+        {
+          symbol: sym,
+          year,
+          quarter,
+          call_date: callDate,
+          sentiment_score: analysis.sentimentScore,
+          confidence_score: analysis.confidenceScore,
+          uncertainty_score: analysis.uncertaintyScore,
+          litigious_score: analysis.litigiousScore,
+          prepared_remarks_sentiment: analysis.preparedRemarksSentiment,
+          qa_sentiment: analysis.qaSentiment,
+          qa_evasiveness_score: analysis.qaEvasivenessScore,
+          top_topics: analysis.topTopics,
+          word_count: analysis.wordCount,
+          positive_word_count: analysis.positiveCount,
+          negative_word_count: analysis.negativeCount,
+          uncertainty_word_count: analysis.uncertaintyCount,
+          directional_tilt: 'neutral',
+          tilt_confidence: 'low',
+          tilt_reasoning: '',
+        },
+        { onConflict: 'symbol,year,quarter' },
+      );
+      if (anErr) console.warn('[earnings/analysis] analysis upsert:', anErr.message);
+    } catch (e) {
+      console.warn('[earnings/analysis] analysis upsert threw:', e?.message);
+    }
   }
 
   return {
-    symbol: t.symbol,
-    year: t.year,
+    symbol: sym,
+    year,
     quarter,
     callDate: t.date,
     analysis,
@@ -167,43 +201,83 @@ async function getOrComputeAnalysis(t) {
  */
 async function persistSynthesis(symbol, year, quarter, synthesis) {
   if (!hasSupabase()) return;
-  const { error } = await supabaseAdmin
-    .from('earnings_transcript_analysis')
-    .update({
-      directional_tilt: synthesis.tilt,
-      tilt_confidence: synthesis.confidence,
-      tilt_reasoning: synthesis.reasoning,
-    })
-    .eq('symbol', symbol)
-    .eq('year', year)
-    .eq('quarter', quarter);
-  if (error) console.warn('[earnings/analysis] synthesis update:', error.message);
+  try {
+    const { error } = await supabaseAdmin
+      .from('earnings_transcript_analysis')
+      .update({
+        directional_tilt: synthesis.tilt,
+        tilt_confidence: synthesis.confidence,
+        tilt_reasoning: synthesis.reasoning,
+      })
+      .eq('symbol', symbol)
+      .eq('year', year)
+      .eq('quarter', quarter);
+    if (error) console.warn('[earnings/analysis] synthesis update:', error.message);
+  } catch (e) {
+    console.warn('[earnings/analysis] synthesis update threw:', e?.message);
+  }
 }
 
-export async function GET(_req, { params }) {
-  const symbol = String(params.symbol || '')
+export async function GET(_req, context) {
+  const raw = String(context?.params?.symbol ?? '')
     .trim()
     .toUpperCase();
-  if (!symbol) {
-    return NextResponse.json({ error: 'Symbol required' }, { status: 400 });
+  const symbol = raw.replace(/\s+/g, '');
+
+  if (!symbol || !/^[A-Z0-9.-]{1,15}$/.test(symbol)) {
+    return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
   }
 
   if (!process.env.FMP_API_KEY) {
+    console.error('[earnings/analysis] FMP_API_KEY is not set');
     return NextResponse.json(
-      { error: 'Earnings call analysis requires FMP_API_KEY on the server.' },
+      { error: 'Service misconfigured — missing FMP API key.', detail: 'Set FMP_API_KEY on the server.' },
       { status: 503 },
     );
   }
 
   try {
-    const [transcripts, earnings] = await Promise.all([
-      fetchLastNTranscripts(symbol, 4),
-      fetchEarningsHistory(symbol, 12),
-    ]);
+    console.log(`[earnings/analysis] ${symbol}: starting`);
+
+    const { transcripts, fmpAccessDenied } = await fetchLastNTranscripts(symbol, 4);
+
+    const earnings = await fetchEarningsHistory(symbol, 12).catch((err) => {
+      console.warn(`[earnings/analysis] ${symbol} earnings history failed:`, err?.message);
+      return [];
+    });
+
+    console.log(
+      `[earnings/analysis] ${symbol}: ${transcripts.length} transcripts, ${earnings.length} earnings rows, fmpAccessDenied=${fmpAccessDenied}`,
+    );
+
+    if (transcripts.length > 0) {
+      const t0 = transcripts[0];
+      console.log(`[earnings/analysis] ${symbol}: first transcript`, {
+        period: t0.period,
+        year: t0.year,
+        contentLength: t0.content?.length ?? 0,
+      });
+    }
+
+    if (fmpAccessDenied && transcripts.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            'Financial Modeling Prep returned HTTP 402/403 for earning-call transcripts. Your API plan may not include this endpoint.',
+          detail:
+            'Upgrade the FMP subscription to include earning call transcripts, or verify FMP_API_KEY. Other FMP routes may still work.',
+        },
+        { status: 503 },
+      );
+    }
 
     if (transcripts.length === 0) {
       return NextResponse.json(
-        { error: 'No earnings transcripts available for this symbol yet.' },
+        {
+          error: 'No earnings call transcripts available for this ticker.',
+          detail:
+            'Transcript coverage is limited on FMP for some symbols. Try large-cap US listings such as AAPL, MSFT, NVDA, or TSLA.',
+        },
         { status: 404 },
       );
     }
@@ -211,11 +285,22 @@ export async function GET(_req, { params }) {
     /** @type {Awaited<ReturnType<typeof getOrComputeAnalysis>>[]} */
     const analyses = [];
     for (const t of transcripts) {
-      const row = await getOrComputeAnalysis({
-        ...t,
-        symbol: t.symbol?.toUpperCase?.() || symbol,
-      });
-      analyses.push(row);
+      try {
+        const row = await getOrComputeAnalysis(t, symbol);
+        if (row) analyses.push(row);
+      } catch (err) {
+        console.error(`[earnings/analysis] ${symbol} analyze failed for period:`, t?.period, t?.year, err);
+      }
+    }
+
+    if (analyses.length === 0) {
+      return NextResponse.json(
+        {
+          error: 'Transcripts were found but analysis could not be completed.',
+          detail: 'Check server logs for cache or parsing errors. Try again in a moment.',
+        },
+        { status: 500 },
+      );
     }
 
     const current = analyses[0];
@@ -261,7 +346,13 @@ export async function GET(_req, { params }) {
       synthesis,
     });
   } catch (err) {
-    console.error('[earnings/analysis]', err);
-    return NextResponse.json({ error: err?.message ?? 'Unknown' }, { status: 500 });
+    console.error(`[earnings/analysis] ${symbol} failed:`, err);
+    return NextResponse.json(
+      {
+        error: err?.message ?? 'Unknown error',
+        symbol,
+      },
+      { status: 500 },
+    );
   }
 }

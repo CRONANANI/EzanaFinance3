@@ -32,12 +32,12 @@ import { ModelVariableStrip } from '@/components/research/models/ModelVariableSt
 export function EarningsAnalysisCard({ symbol, onClose }) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorInfo, setErrorInfo] = useState(null);
 
   const load = useCallback(async () => {
     if (!symbol) return;
     setIsLoading(true);
-    setError(null);
+    setErrorInfo(null);
     setData(null);
     try {
       const res = await fetch(`/api/earnings/analysis/${encodeURIComponent(symbol)}`, {
@@ -45,14 +45,27 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(json.error || `Request failed (${res.status})`);
+        setErrorInfo({
+          status: res.status,
+          message: json.error || `Request failed (${res.status})`,
+          detail: json.detail,
+        });
+        return;
       }
       if (json.error) {
-        throw new Error(json.error);
+        setErrorInfo({
+          status: res.status || 500,
+          message: json.error,
+          detail: json.detail,
+        });
+        return;
       }
       setData(json);
     } catch (e) {
-      setError(e?.message || 'Failed to load');
+      setErrorInfo({
+        status: 0,
+        message: e?.message || 'Failed to load',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +76,11 @@ export function EarningsAnalysisCard({ symbol, onClose }) {
   }, [load]);
 
   if (isLoading) return <EarningsLoading />;
-  if (error || !data) {
-    return <EarningsEmpty symbol={symbol} message={error} onRetry={load} />;
+  if (errorInfo) {
+    return <EarningsError symbol={symbol} error={errorInfo} onRetry={load} onClose={onClose} />;
+  }
+  if (!data) {
+    return <EarningsEmpty symbol={symbol} onRetry={load} onClose={onClose} />;
   }
 
   const { current, history, earningsHistory, synthesis } = data;
@@ -359,13 +375,24 @@ function EarningsLoading() {
   );
 }
 
-function EarningsEmpty({ symbol, message, onRetry }) {
+function EarningsEmpty({ symbol, onRetry, onClose }) {
   return (
     <section className="rounded-xl border border-border bg-card p-5 text-center space-y-2">
+      <div className="flex justify-end gap-2">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium hover:bg-muted/50"
+          >
+            Close
+          </button>
+        )}
+      </div>
       <p className="text-sm font-medium">No earnings call analysis available for {symbol}</p>
-      <p className="text-xs text-muted-foreground">
-        {message ||
-          'Try a widely covered US listing. Transcripts come from Financial Modeling Prep; cache fills after the first successful load.'}
+      <p className="text-xs text-muted-foreground max-w-md mx-auto">
+        Try a widely covered US listing. Transcripts come from Financial Modeling Prep; cache fills after
+        the first successful load.
       </p>
       {onRetry && (
         <button
@@ -374,6 +401,110 @@ function EarningsEmpty({ symbol, message, onRetry }) {
           className="mt-2 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted/50"
         >
           Retry
+        </button>
+      )}
+    </section>
+  );
+}
+
+/**
+ * @param {{ symbol: string; error: { status: number; message: string; detail?: string }; onRetry: () => void; onClose?: () => void }} props
+ */
+function EarningsError({ symbol, error, onRetry, onClose }) {
+  const { status, message, detail } = error;
+
+  if (status === 404) {
+    return (
+      <section className="rounded-xl border border-border bg-card p-5 text-center space-y-2">
+        <div className="flex justify-end gap-2">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium hover:bg-muted/50"
+            >
+              Close
+            </button>
+          )}
+        </div>
+        <p className="text-sm font-medium text-foreground">No earnings transcripts available</p>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+          {detail ||
+            'Earnings call transcripts are limited for some tickers on our data provider. Try a large-cap such as AAPL, MSFT, NVDA, or TSLA.'}
+        </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted/50"
+          >
+            Retry
+          </button>
+        )}
+      </section>
+    );
+  }
+
+  if (status === 503) {
+    return (
+      <section className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 text-center space-y-2">
+        <div className="flex justify-end gap-2">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium hover:bg-muted/50"
+            >
+              Close
+            </button>
+          )}
+        </div>
+        <p className="text-sm font-medium text-foreground">Transcript data unavailable</p>
+        <p className="text-xs text-muted-foreground max-w-lg mx-auto">{message}</p>
+        {detail && <p className="text-[11px] text-muted-foreground max-w-lg mx-auto">{detail}</p>}
+        <p className="text-[10px] text-muted-foreground">
+          Tip: visit <code className="rounded bg-muted px-1">/api/health/earnings</code> to verify FMP and
+          database checks.
+        </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted/50"
+          >
+            Retry
+          </button>
+        )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-xl border border-destructive/30 bg-card p-5 text-center space-y-3">
+      <div className="flex justify-end gap-2">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium hover:bg-muted/50"
+          >
+            Close
+          </button>
+        )}
+      </div>
+      <p className="text-sm font-medium text-destructive">Analysis failed</p>
+      <p className="text-xs text-muted-foreground">
+        {message}
+        {symbol ? ` (${symbol})` : ''}
+      </p>
+      {detail && <p className="text-[11px] text-muted-foreground">{detail}</p>}
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="text-xs font-medium text-primary hover:underline"
+        >
+          Retry analysis
         </button>
       )}
     </section>

@@ -28,6 +28,9 @@ import {
  * @returns {{ prepared: string; qa: string }}
  */
 function splitSections(content) {
+  if (!content || typeof content !== 'string') {
+    return { prepared: '', qa: '' };
+  }
   const qaStartPatterns = [
     /we[''']ll now (?:take|begin|open) .{0,50}questions?/i,
     /we[''']ll (?:now )?open (?:up |it |the line )?for questions?/i,
@@ -163,51 +166,85 @@ function extractTopTopics(content, topN = 5) {
 }
 
 /**
+ * @returns {AnalysisResult}
+ */
+function createEmptyAnalysis() {
+  return {
+    wordCount: 0,
+    positiveCount: 0,
+    negativeCount: 0,
+    uncertaintyCount: 0,
+    litigiousCount: 0,
+    sentimentScore: 50,
+    confidenceScore: 50,
+    uncertaintyScore: 0,
+    litigiousScore: 0,
+    preparedRemarksSentiment: 50,
+    qaSentiment: 50,
+    qaEvasivenessScore: 0,
+    topTopics: [],
+  };
+}
+
+/**
  * @param {string} content
  * @returns {AnalysisResult}
  */
 export function analyzeTranscript(content) {
-  const { prepared, qa } = splitSections(content);
+  if (!content || typeof content !== 'string' || content.length < 400) {
+    return createEmptyAnalysis();
+  }
 
-  const allTokens = tokenize(content);
-  const preparedTokens = tokenize(prepared);
-  const qaTokens = tokenize(qa);
+  try {
+    const { prepared, qa } = splitSections(content);
 
-  const overall = scoreLexicon(allTokens);
-  const preparedScores = scoreLexicon(preparedTokens);
-  const qaScores = scoreLexicon(qaTokens);
+    const allTokens = tokenize(content);
+    if (allTokens.length === 0) {
+      return createEmptyAnalysis();
+    }
 
-  const sentimentScore = computeSentimentScore(overall.positive, overall.negative, allTokens.length);
+    const preparedTokens = tokenize(prepared);
+    const qaTokens = tokenize(qa);
 
-  const uncertaintyScore = computeRateScore(overall.uncertainty, allTokens.length);
-  const confidenceScore = 100 - uncertaintyScore;
-  const litigiousScore = computeRateScore(overall.litigious, allTokens.length);
+    const overall = scoreLexicon(allTokens);
+    const preparedScores = scoreLexicon(preparedTokens);
+    const qaScores = scoreLexicon(qaTokens);
 
-  const preparedRemarksSentiment = computeSentimentScore(
-    preparedScores.positive,
-    preparedScores.negative,
-    preparedTokens.length,
-  );
-  const qaSentiment = computeSentimentScore(qaScores.positive, qaScores.negative, qaTokens.length);
+    const sentimentScore = computeSentimentScore(overall.positive, overall.negative, allTokens.length);
 
-  const qaEvasivenessScore = detectEvasiveness(qa);
-  const topTopics = extractTopTopics(content);
+    const uncertaintyScore = computeRateScore(overall.uncertainty, allTokens.length);
+    const confidenceScore = 100 - uncertaintyScore;
+    const litigiousScore = computeRateScore(overall.litigious, allTokens.length);
 
-  return {
-    wordCount: allTokens.length,
-    positiveCount: overall.positive,
-    negativeCount: overall.negative,
-    uncertaintyCount: overall.uncertainty,
-    litigiousCount: overall.litigious,
-    sentimentScore,
-    confidenceScore,
-    uncertaintyScore,
-    litigiousScore,
-    preparedRemarksSentiment,
-    qaSentiment,
-    qaEvasivenessScore,
-    topTopics,
-  };
+    const preparedRemarksSentiment = computeSentimentScore(
+      preparedScores.positive,
+      preparedScores.negative,
+      preparedTokens.length,
+    );
+    const qaSentiment = computeSentimentScore(qaScores.positive, qaScores.negative, qaTokens.length);
+
+    const qaEvasivenessScore = detectEvasiveness(qa);
+    const topTopics = extractTopTopics(content);
+
+    return {
+      wordCount: allTokens.length,
+      positiveCount: overall.positive,
+      negativeCount: overall.negative,
+      uncertaintyCount: overall.uncertainty,
+      litigiousCount: overall.litigious,
+      sentimentScore,
+      confidenceScore,
+      uncertaintyScore,
+      litigiousScore,
+      preparedRemarksSentiment,
+      qaSentiment,
+      qaEvasivenessScore,
+      topTopics,
+    };
+  } catch (err) {
+    console.error('[analyzeTranscript] failed:', err);
+    return createEmptyAnalysis();
+  }
 }
 
 /**
