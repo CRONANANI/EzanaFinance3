@@ -4,7 +4,20 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { getModelStripVariables } from '@/lib/research/modelStripVariables';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
+import { EarningsAnalysisCard } from '@/components/research/models/EarningsAnalysisCard';
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
+
+function EarningsAnalysisPanel({ symbol, onClose }) {
+  const panelRef = useRef(null);
+  useEffect(() => {
+    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [symbol]);
+  return (
+    <div ref={panelRef} className="ai-analysis-panel">
+      <EarningsAnalysisCard symbol={symbol} onClose={onClose} />
+    </div>
+  );
+}
 
 /**
  * AIAnalysisPanel — Full-width expandable panel for AI stock analysis
@@ -14,6 +27,10 @@ import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 export function AIAnalysisPanel({ modelId, symbol, onClose }) {
   if (modelId === 'dcf') {
     return <DCFInteractiveModel symbol={symbol} onClose={onClose} />;
+  }
+
+  if (modelId === 'earnings') {
+    return <EarningsAnalysisPanel symbol={symbol} onClose={onClose} />;
   }
 
   const [analysis, setAnalysis] = useState(null);
