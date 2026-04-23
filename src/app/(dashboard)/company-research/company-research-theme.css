@@ -55,3 +55,89 @@ body.light-mode .dcf-interactive-root:hover {
   border-color: rgba(5, 150, 105, 0.35) !important;
   box-shadow: 0 4px 16px rgba(5, 150, 105, 0.1) !important;
 }
+
+/* ══ Stock analysis model tiles (carousel + sidebar) — card surfaces, gold premium row ══ */
+.model-metric-card.cr-model-tile {
+  position: relative;
+  background: var(--card, #0d1117) !important;
+  border: 1px solid var(--border, rgba(148, 163, 184, 0.25)) !important;
+}
+
+body.light-mode .model-metric-card.cr-model-tile {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Premium: DCF, Earnings, Technical, Dividend — gold text, border, icon (no gold fill) */
+.model-metric-card.cr-model-tile--premium {
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  color: #b45309;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12);
+}
+
+body.light-mode .model-metric-card.cr-model-tile--premium {
+  color: #b45309;
+  border-color: rgba(217, 119, 6, 0.45) !important;
+}
+
+body:not(.light-mode) .model-metric-card.cr-model-tile--premium {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.45) !important;
+}
+
+.model-metric-card.cr-model-tile--premium .model-metric-icon {
+  background: rgba(245, 158, 11, 0.12) !important;
+  color: #d97706 !important;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+body:not(.light-mode) .model-metric-card.cr-model-tile--premium .model-metric-icon {
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.model-metric-card.cr-model-tile--premium .model-metric-label,
+.model-metric-card.cr-model-tile--premium .cr-model-tile__title {
+  color: inherit !important;
+  font-weight: 800;
+}
+
+.model-metric-card.cr-model-tile--premium .model-metric-value {
+  color: inherit !important;
+  opacity: 0.9;
+}
+
+.model-metric-card.cr-model-tile--premium .model-metric-change {
+  color: inherit !important;
+  opacity: 0.8;
+}
+
+.model-metric-card.cr-model-tile--premium.active {
+  border-color: rgba(245, 158, 11, 0.75) !important;
+  box-shadow:
+    0 0 0 1px rgba(245, 158, 11, 0.35),
+    0 4px 18px rgba(0, 0, 0, 0.12);
+  background: var(--card, #0d1117) !important;
+}
+
+body.light-mode .model-metric-card.cr-model-tile--premium.active {
+  background: #ffffff !important;
+}
+
+.cr-model-premium-star {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #d97706;
+  opacity: 0.9;
+  align-self: center;
+}
+
+body:not(.light-mode) .cr-model-premium-star {
+  color: #fbbf24;
+}
+
+.cr-models-vertical .model-metric-card.cr-model-tile--premium.active,
+.cr-models-above-chart .model-metric-card.cr-model-tile--premium.active {
+  border-color: rgba(245, 158, 11, 0.75) !important;
+}

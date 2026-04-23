@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 
 /**
  * Efficient-frontier slider stub.
@@ -54,12 +55,25 @@ export function MPTCard() {
           ? 'Growth-oriented — higher expected return with larger drawdowns.'
           : 'Aggressive — near max equity, accept substantial short-term volatility.';
 
+  const stripVariables = useMemo(
+    () => [
+      { label: 'Risk-free rate', value: 0.04, format: 'percent' },
+      { label: 'Market premium', value: 0.055, format: 'percent' },
+      { label: 'Risk tolerance', value: risk, format: 'number' },
+      { label: 'Rebalance freq.', value: 'Monthly', format: undefined },
+      { label: 'Asset classes', value: 5, format: 'number' },
+      { label: 'Implied return', value: 0.05 + (risk / 100) * 0.055, format: 'percent' },
+    ],
+    [risk],
+  );
+
   return (
     <ModelCardShell
       icon="bi-pie-chart"
       title="Modern Portfolio Theory (MPT)"
       description="Find the optimal asset mix along the efficient frontier"
     >
+      <ModelVariableStrip variables={stripVariables} className="mb-1" />
       <label className="stc-field">
         <span className="stc-field-label">
           Risk tolerance{' '}

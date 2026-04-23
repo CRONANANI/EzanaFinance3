@@ -230,7 +230,7 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                 tick={{
                   /* Theme vars are raw HSL triples — must use hsl() for valid SVG fill (fixes dark mode). */
                   fill: 'hsl(var(--foreground))',
-                  fontSize: 9,
+                  fontSize: 10,
                   fontFamily: 'var(--font-mono, monospace)',
                   opacity: 0.85,
                 }}
@@ -240,7 +240,7 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                 domain={[minPrice, maxPrice]}
                 tick={{
                   fill: 'hsl(var(--foreground))',
-                  fontSize: 9,
+                  fontSize: 10,
                   fontFamily: 'var(--font-mono, monospace)',
                   opacity: 0.85,
                 }}

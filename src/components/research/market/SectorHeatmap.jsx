@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useSectorPerformance } from '@/hooks/useSectorPerformance';
 
 const RANGES = ['1D', '1W', '1M', 'YTD'];
@@ -65,6 +66,18 @@ export function SectorHeatmap() {
     return { best: rows[0], worst: rows[rows.length - 1] };
   }, [sorted]);
 
+  const stripVariables = useMemo(
+    () => [
+      { label: 'Time window', value: range, format: undefined },
+      { label: 'Sectors', value: sorted.length, format: 'number' },
+      { label: 'As of', value: asOf || '—', format: undefined },
+      { label: 'Top move', value: best ? formatChange(best.changePct) : '—', format: undefined },
+      { label: 'Bottom move', value: worst ? formatChange(worst.changePct) : '—', format: undefined },
+      { label: 'Data quality', value: degraded ? 'Partial' : 'Full', format: undefined },
+    ],
+    [range, sorted.length, asOf, best, worst, degraded],
+  );
+
   const rangeControl = (
     <div className="shm-range-group" role="tablist" aria-label="Time range">
       {RANGES.map((r) => (
@@ -89,6 +102,7 @@ export function SectorHeatmap() {
       description={describeRange(range, asOf)}
       actions={rangeControl}
     >
+      <ModelVariableStrip variables={stripVariables} className="mb-1" />
       {error && !isLoading && (
         <div className="shm-error" role="alert">
           <i className="bi bi-exclamation-triangle" />

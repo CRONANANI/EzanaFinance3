@@ -1,10 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DCF_ASSUMPTIONS, DEFAULT_ASSUMPTIONS, formatAssumption } from './dcf-assumptions';
 import DCFInfoModal from './DCFInfoModal';
 import PriceComparisonChart from './PriceComparisonChart';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import './dcf-interactive.css';
+
+/** Rough WACC for strip display: weighted cost of equity & debt. */
+function approximateWaccForStrip(a) {
+  const re = a?.costOfEquity ?? 0;
+  const rd = a?.costOfDebt ?? 0;
+  const t = a?.taxRate ?? 0.21;
+  const we = 0.65;
+  const wd = 0.35;
+  return we * re + wd * rd * (1 - t);
+}
 
 export default function DCFInteractiveModel({ symbol, onClose }) {
   const [assumptions, setAssumptions] = useState(DEFAULT_ASSUMPTIONS);
@@ -185,6 +196,19 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
     return acc;
   }, {});
 
+  const dcfStripVariables = useMemo(() => {
+    const a = assumptions;
+    const wacc = approximateWaccForStrip(a);
+    return [
+      { label: 'Risk-free rate', value: a.riskFreeRate, format: 'percent' },
+      { label: 'Equity risk premium', value: a.marketRiskPremium, format: 'percent' },
+      { label: 'Beta', value: a.beta, format: 'number' },
+      { label: 'WACC (approx.)', value: wacc, format: 'percent' },
+      { label: 'Terminal growth', value: a.longTermGrowthRate, format: 'percent' },
+      { label: 'Projection years', value: String(Math.round(a.forecastYears ?? 10)), format: undefined },
+    ];
+  }, [assumptions]);
+
   return (
     <div className="dcf-interactive-root">
       <div className="dcf-interactive-header">
@@ -192,6 +216,10 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
         <button type="button" className="dcf-close-btn" onClick={onClose} aria-label="Close">
           <i className="bi bi-x-lg" /> Close
         </button>
+      </div>
+
+      <div className="dcf-variable-strip-outer px-3 pt-2 sm:px-4">
+        <ModelVariableStrip variables={dcfStripVariables} className="mb-0" />
       </div>
 
       <div className="dcf-interactive-body">

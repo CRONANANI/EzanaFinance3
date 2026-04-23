@@ -33,7 +33,7 @@ const StockPriceChart = dynamic(
   () => import('@/components/research/StockPriceChart'),
   {
     ssr: false,
-    loading: () => <div style={{ height: 360 }} aria-hidden />,
+    loading: () => <div style={{ height: 216 }} aria-hidden />,
   }
 );
 
@@ -242,6 +242,12 @@ function CompanyResearchPageInner() {
     setActiveModel(null);
   }, []);
 
+  /** DCF, Earnings, Technical, Dividend — gold accent on tiles (see company-research-theme.css). */
+  const PREMIUM_MODEL_IDS = useMemo(
+    () => new Set(['dcf', 'earnings', 'technical', 'dividend']),
+    [],
+  );
+
   useEffect(() => {
     const handler = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) clearSuggestions();
@@ -291,64 +297,59 @@ function CompanyResearchPageInner() {
   );
 
   const renderModelCards = (keyPrefix) =>
-    CAROUSEL_MODELS.map((model) => (
-      <div
-        key={`${keyPrefix}-${model.id}`}
-        className={`model-metric-card model-card ai-model-card ${model.flagship ? 'grpv-flagship' : ''} ${activeModel === model.id ? 'active' : ''}`}
-        data-model={model.id}
-        onClick={() => handleModelClick(model.id)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
-        style={!model.flagship ? {
-          background: 'rgba(212, 175, 55, 0.08)',
-          border: '1px solid rgba(212, 175, 55, 0.3)',
-          borderRadius: '8px',
-          transition: 'all 0.15s ease',
-          cursor: 'pointer',
-        } : {}}
-        onMouseEnter={(e) => {
-          if (!model.flagship) {
-            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.18)';
-            e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.7)';
-            e.currentTarget.style.boxShadow = '0 0 12px rgba(212, 175, 55, 0.15)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!model.flagship) {
-            e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
-            e.currentTarget.style.borderColor = 'rgba(212, 175, 55, 0.3)';
-            e.currentTarget.style.boxShadow = 'none';
-          }
-        }}
-      >
-        {model.flagship ? (
-          <div className="grpv-brand-logo">
-            <EzanaNavLogo
-              width={28}
-              height={24}
-              className="grpv-logo-img nav-logo-img nav-logo-img--wing"
-            />
+    CAROUSEL_MODELS.map((model) => {
+      const isPremium = PREMIUM_MODEL_IDS.has(model.id);
+      const isActive = activeModel === model.id;
+      const tileClass = [
+        'model-metric-card',
+        'model-card',
+        'ai-model-card',
+        'cr-model-tile',
+        model.flagship ? 'grpv-flagship' : '',
+        isPremium ? 'cr-model-tile--premium' : 'cr-model-tile--neutral',
+        isActive ? 'active' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      return (
+        <div
+          key={`${keyPrefix}-${model.id}`}
+          className={tileClass}
+          data-model={model.id}
+          onClick={() => handleModelClick(model.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && handleModelClick(model.id)}
+        >
+          {model.flagship ? (
+            <div className="grpv-brand-logo">
+              <EzanaNavLogo
+                width={28}
+                height={24}
+                className="grpv-logo-img nav-logo-img nav-logo-img--wing"
+              />
+            </div>
+          ) : (
+            <div className={`model-metric-icon ${model.id} cr-model-tile__icon`}>
+              <i className={`bi ${model.icon}`} />
+            </div>
+          )}
+          <div className="model-metric-content">
+            <span className="model-metric-label cr-model-tile__title">{model.name}</span>
+            <span className="model-metric-value">{model.description}</span>
+            <span className="model-metric-change">
+              {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
+            </span>
           </div>
-        ) : (
-          <div className={`model-metric-icon ${model.id}`} style={{ 
-            background: 'rgba(212, 175, 55, 0.15)',
-            color: '#D4AF37',
-            borderRadius: '8px',
-            padding: '8px',
-          }}>
-            <i className={`bi ${model.icon}`} />
-          </div>
-        )}
-        <div className="model-metric-content">
-          <span className="model-metric-label" style={!model.flagship ? { color: '#D4AF37' } : {}}>{model.name}</span>
-          <span className="model-metric-value">{model.description}</span>
-          <span className="model-metric-change">
-            {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
-          </span>
+          {isPremium && (
+            <span className="cr-model-premium-star" aria-hidden>
+              ★
+            </span>
+          )}
         </div>
-      </div>
-    ));
+      );
+    });
 
   if (view === 'market') {
     return (

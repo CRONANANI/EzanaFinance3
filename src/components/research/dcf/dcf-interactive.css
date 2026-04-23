@@ -4,6 +4,7 @@
   border: 1px solid var(--card-border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
+  max-height: min(90vh, 900px);
 }
 
 .dcf-interactive-header {
@@ -40,7 +41,9 @@
 .dcf-interactive-body {
   display: grid;
   grid-template-columns: 220px 1fr;
-  min-height: 480px;
+  min-height: 384px;
+  max-height: min(70vh, 700px);
+  overflow-y: auto;
 }
 
 /* ═══ LEFT COLUMN — Assumptions list ═══ */
@@ -241,7 +244,7 @@ body.dark-mode .dcf-peer-toggle,
   justify-content: center;
   gap: 0.75rem;
   height: 100%;
-  min-height: 300px;
+  min-height: 240px;
   color: var(--text-tertiary, #9ca3af);
   font-size: 0.875rem;
 }

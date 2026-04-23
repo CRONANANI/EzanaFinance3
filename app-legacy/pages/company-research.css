@@ -1478,12 +1478,12 @@ body.light-mode .model-metric-card:hover {
   transform: none !important;
 }
 
-.cr-models-above-chart .model-metric-card.active {
-  border-color: rgba(212, 175, 55, 0.75);
-  box-shadow:
-    0 0 0 1px rgba(212, 175, 55, 0.35),
-    0 4px 18px rgba(0, 0, 0, 0.22);
-  background: rgba(212, 175, 55, 0.07);
+/* Active-state colors: premium vs neutral — see company-research-theme.css (.cr-model-tile--*) */
+.cr-models-above-chart .model-metric-card.cr-model-tile--neutral.active,
+.cr-models-above-chart .model-metric-card.grpv-flagship.active {
+  border-color: var(--primary, var(--color-primary));
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+  background: var(--card, var(--bg-card));
 }
 
 .cr-model-detail-below-chart {

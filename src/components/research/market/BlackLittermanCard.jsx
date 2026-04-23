@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 
 /**
  * Black-Litterman combines the market's equilibrium returns with the user's
@@ -56,12 +57,25 @@ export function BlackLittermanCard() {
 
   const display = result ?? BASELINE;
 
+  const stripVariables = useMemo(
+    () => [
+      { label: 'Risk-free rate', value: 0.04, format: 'percent' },
+      { label: 'Market premium', value: 0.055, format: 'percent' },
+      { label: 'Confidence', value: confidence / 100, format: 'percent' },
+      { label: 'Rebal. frequency', value: 'Monthly', format: undefined },
+      { label: 'Asset count', value: 6, format: 'number' },
+      { label: 'Target return (tilt)', value: 0.07 + (confidence / 100) * 0.02, format: 'percent' },
+    ],
+    [confidence],
+  );
+
   return (
     <ModelCardShell
       icon="bi-sliders"
       title="Black-Litterman Model"
       description="Blend market equilibrium with your views to tilt your allocation"
     >
+      <ModelVariableStrip variables={stripVariables} className="mb-1" />
       <div className="stc-field-row">
         <label className="stc-field">
           <span className="stc-field-label">Bullish on</span>

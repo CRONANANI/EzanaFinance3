@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
+import { getModelStripVariables } from '@/lib/research/modelStripVariables';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import DCFInteractiveModel from './dcf/DCFInteractiveModel';
 
 /**
@@ -60,6 +62,11 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
     }
   }, [modelId]);
 
+  const stripVariables = useMemo(
+    () => getModelStripVariables(modelId, { analysis }),
+    [modelId, analysis],
+  );
+
   if (!modelConfig) return null;
 
   return (
@@ -114,6 +121,7 @@ export function AIAnalysisPanel({ modelId, symbol, onClose }) {
 
         {/* Body */}
         <div className="card-body ai-analysis-body">
+          <ModelVariableStrip variables={stripVariables} className="ai-model-variable-strip mb-0" />
           {/* Loading State */}
           {loading && (
             <div className="ai-analysis-loading">

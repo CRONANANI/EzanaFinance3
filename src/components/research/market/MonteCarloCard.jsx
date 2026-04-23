@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useProGate } from '@/components/upgrade/ProGateContext';
 
 /**
@@ -64,6 +65,26 @@ export function MonteCarloCard() {
     setResult(r);
   };
 
+  const stripVariables = useMemo(
+    () => [
+      { label: 'Iterations', value: '2,000', format: undefined },
+      { label: 'Time horizon', value: `${years}y`, format: undefined },
+      { label: 'Volatility', value: 0.18, format: 'percent' },
+      { label: 'Drift', value: 0.07, format: 'percent' },
+      {
+        label: 'Conf. (p hit)',
+        value: result != null && Number.isFinite(result.probability) ? result.probability : '—',
+        format: result != null && Number.isFinite(result.probability) ? 'percent' : undefined,
+      },
+      {
+        label: 'Expected return',
+        value: 0.07,
+        format: 'percent',
+      },
+    ],
+    [years, result],
+  );
+
   // Even for non-Pro users we render the ModelCardShell; the body shows a
   // locked preview instead of the simulation UI.
   if (!isProUser) {
@@ -74,6 +95,7 @@ export function MonteCarloCard() {
         description="Probability of hitting your goal across thousands of simulated market paths"
         proBadge
       >
+        <ModelVariableStrip variables={stripVariables} className="mb-1" />
         <div className="mc-lock-wrap">
           <div className="mc-lock-preview" aria-hidden="true">
             <div className="mc-lock-preview-bar" />
@@ -115,6 +137,7 @@ export function MonteCarloCard() {
       description="Probability of hitting your goal across thousands of simulated market paths"
       proBadge
     >
+      <ModelVariableStrip variables={stripVariables} className="mb-1" />
       <div className="stc-field-row">
         <label className="stc-field">
           <span className="stc-field-label">Starting balance ($)</span>

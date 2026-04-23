@@ -1154,7 +1154,8 @@ html:has(body.route-regular-dashboard.route-market-analysis) {
     @apply h-[220px] w-full min-w-0 overflow-hidden sm:h-[280px] md:h-[320px] lg:h-[400px];
   }
 
+  /* ~40% shorter than prior (200/220/240 → 120/132/144) for research stock chart */
   .chart-viewport-sm {
-    @apply h-[200px] w-full min-w-0 overflow-hidden sm:h-[220px] md:h-[240px];
+    @apply h-[120px] w-full min-w-0 overflow-hidden sm:h-[132px] md:h-[144px];
   }
 }

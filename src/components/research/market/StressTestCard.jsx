@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
+import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useStressPortfolio } from '@/hooks/useStressPortfolio';
 import {
   GICS_SECTORS,
@@ -33,6 +34,28 @@ export function StressTestCard() {
     setResult({ kind: 'scenario', ...r, context: { scenarioId, label } });
   };
 
+  const stripVariables = useMemo(() => {
+    if (mode === 'sensitivity') {
+      return [
+        { label: 'Scenario', value: 'Sector shock', format: undefined },
+        { label: 'Shock mag.', value: shockPct / 100, format: 'percent' },
+        { label: 'Correlation', value: '0.45 est.', format: undefined },
+        { label: 'Time horizon', value: '1y', format: undefined },
+        { label: 'Liquidity', value: 'T+2', format: undefined },
+        { label: 'Sector', value: sector, format: undefined },
+      ];
+    }
+    const label = SCENARIOS.find((s) => s.id === scenarioId)?.label ?? scenarioId;
+    return [
+      { label: 'Scenario', value: label, format: undefined },
+      { label: 'Shock mag.', value: '—', format: undefined },
+      { label: 'Correlation', value: '0.6 est.', format: undefined },
+      { label: 'Time horizon', value: '1y', format: undefined },
+      { label: 'Liquidity', value: 'T+2', format: undefined },
+      { label: 'Recovery', value: '24m est.', format: undefined },
+    ];
+  }, [mode, sector, shockPct, scenarioId]);
+
   const tabControl = (
     <div className="stc-tabs" role="tablist" aria-label="Stress test mode">
       <button
@@ -63,6 +86,7 @@ export function StressTestCard() {
       description="Simulate shocks across your positions and hedge toward an all-weather mix"
       actions={tabControl}
     >
+      <ModelVariableStrip variables={stripVariables} className="mb-1" />
       {isDemo && !isLoading && (
         <div className="stc-demo-banner">
           <i className="bi bi-info-circle" />{' '}
