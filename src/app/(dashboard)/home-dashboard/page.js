@@ -7,6 +7,7 @@ import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
+import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { supabase } from '@/lib/supabase';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
@@ -84,13 +85,6 @@ const HOLDINGS_DATA = {
     { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 28.00, changeDollar: 32.00, qty: 5, color: '#999999' },
     { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 22.00, changeDollar: 18.00, qty: 3, color: '#ff9900' },
   ],
-};
-
-const CHART_PATHS = {
-  '1D': 'M0,65 C40,60 80,45 120,50 C160,55 200,35 240,30 C280,25 320,40 360,20 C400,15 440,25 480,10',
-  '1M': 'M0,70 C40,65 80,55 120,60 C160,50 200,45 240,35 C280,40 320,30 360,25 C400,20 440,15 480,10',
-  '6M': 'M0,75 C40,70 80,60 120,55 C160,65 200,50 240,40 C280,35 320,25 360,30 C400,20 440,12 480,8',
-  '1Y': 'M0,80 C40,75 80,70 120,60 C160,55 200,65 240,45 C280,35 320,40 360,25 C400,18 440,12 480,5',
 };
 
 const WATCHLIST = [
@@ -196,12 +190,32 @@ export default function HomeDashboardPage() {
   const { isOrgUser, orgRole, orgData } = useOrg();
   const { connected: plaidConnected, summary: plaidSummary, isLoading: plaidSummaryLoading } =
     usePlaidPortfolioSummary();
-  const [timeframe, setTimeframe] = useState('1D');
+  const [timeframe, setTimeframe] = useState('1M');
+  const { points: valueSeriesDisplayPoints, dataForCurrentRange, isLoading: valueSeriesLoading, error: valueSeriesError } =
+    usePortfolioValueSeries(timeframe);
   const [liveQuotes, setLiveQuotes] = useState({});
   const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
   const heroData = HERO_DATA[timeframe];
-  const chartPath = CHART_PATHS[timeframe];
+
+  const valueWindowFromApi = useMemo(() => {
+    const d = dataForCurrentRange;
+    if (!d || d.length < 1) return null;
+    if (d.length < 2) {
+      return {
+        last: d[0].value,
+        changeAbs: 0,
+        changePct: 0,
+      };
+    }
+    const first = d[0].value;
+    const last = d[d.length - 1].value;
+    return {
+      last,
+      changeAbs: last - first,
+      changePct: first > 0 ? ((last - first) / first) * 100 : 0,
+    };
+  }, [dataForCurrentRange]);
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
@@ -404,11 +418,13 @@ export default function HomeDashboardPage() {
     setHoldingsPage(0);
   }, [timeframe, useLiveHoldings, plaidHoldingsPayload?.aggregated?.length]);
 
-  const currentValue = useMock
-    ? mock.totalValue
-    : !plaidSummaryLoading && plaidConnected
-      ? (plaidSummary?.totalValue ?? 0)
-      : heroData.value;
+  const currentValue = valueWindowFromApi
+    ? valueWindowFromApi.last
+    : useMock
+      ? mock.totalValue
+      : !plaidSummaryLoading && plaidConnected
+        ? (plaidSummary?.totalValue ?? 0)
+        : heroData.value;
 
   useEffect(() => {
     const fromPlaid = (plaidHoldingsPayload?.aggregated || []).map((h) => h.ticker).filter(Boolean);
@@ -537,16 +553,32 @@ export default function HomeDashboardPage() {
                 ${currentValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
               <span
-                className={`db-hero-change ${(useMock ? mock.totalPnlPct : heroData.change) >= 0 ? 'positive' : 'negative'}`}
+                className={`db-hero-change ${
+                  (() => {
+                    if (valueWindowFromApi) return valueWindowFromApi.changePct >= 0;
+                    return (useMock ? mock.totalPnlPct : heroData.change) >= 0;
+                  })()
+                    ? 'positive'
+                    : 'negative'
+                }`}
               >
-                {useMock
-                  ? `${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`
-                  : `${heroData.change >= 0 ? '+' : ''}${heroData.change}%`}
+                {valueWindowFromApi
+                  ? `${valueWindowFromApi.changePct >= 0 ? '+' : ''}${valueWindowFromApi.changePct.toFixed(2)}%`
+                  : useMock
+                    ? `${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`
+                    : `${heroData.change >= 0 ? '+' : ''}${heroData.change}%`}
                 <span className="db-hero-change-amt">
-                  {useMock
-                    ? `${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : `${heroData.changeDollar >= 0 ? '+' : ''}$${heroData.changeDollar.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                  {valueWindowFromApi
+                    ? `${valueWindowFromApi.changeAbs >= 0 ? '+' : ''}$${valueWindowFromApi.changeAbs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : useMock
+                      ? `${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : `${heroData.changeDollar >= 0 ? '+' : ''}$${heroData.changeDollar.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                 </span>
+                {valueWindowFromApi && (
+                  <span className="db-hero-tf-pill" style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}>
+                    {timeframe}
+                  </span>
+                )}
               </span>
             </div>
             <div className="db-hero-timeframes">
@@ -599,7 +631,10 @@ export default function HomeDashboardPage() {
         <HeroSparkline
           portfolioValue={currentValue}
           changePct={useMock ? mock.totalPnlPct : heroData.change}
-          chartPath={chartPath}
+          seriesPoints={valueSeriesDisplayPoints}
+          range={timeframe}
+          isLoading={valueSeriesLoading}
+          loadError={valueSeriesError}
         />
       </div>
 
