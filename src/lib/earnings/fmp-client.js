@@ -30,7 +30,8 @@ async function fetchTranscriptInner(symbol, year, quarter) {
   }
   const url = `${FMP_BASE}/earning-call-transcript?symbol=${encodeURIComponent(symbol)}&year=${year}&quarter=${quarter}&apikey=${encodeURIComponent(API_KEY)}`;
   try {
-    const res = await fetch(url, { next: { revalidate: 86400 * 7 } });
+    // Do not cache: 402/403 and plan upgrades must be visible immediately; Next fetch cache can hold bad responses.
+    const res = await fetch(url, { cache: 'no-store' });
 
     if (res.status === 402 || res.status === 403) {
       console.warn(`[fmp transcript] ${symbol} Q${quarter} ${year}: HTTP ${res.status} (plan / access)`);
@@ -97,13 +98,26 @@ export async function fetchLastNTranscripts(symbol, n = 4) {
   let year = now.getFullYear();
   let quarter = Math.floor(now.getMonth() / 3) + 1;
 
+  // Start one calendar quarter back: the current quarter's call is often not published yet.
+  quarter -= 1;
+  if (quarter === 0) {
+    quarter = 4;
+    year -= 1;
+  }
+
   /** @type {RawTranscript[]} */
   const transcripts = [];
   let fmpAccessDenied = false;
-  const maxAttempts = n * 3;
+  const maxAttempts = Math.max(n * 3, 12);
 
   for (let i = 0; i < maxAttempts && transcripts.length < n; i++) {
-    const r = await fetchTranscriptInner(symbol, year, quarter);
+    let r;
+    try {
+      r = await fetchTranscriptInner(symbol, year, quarter);
+    } catch (err) {
+      console.warn(`[fetchLastNTranscripts] ${symbol} Q${quarter} ${year}:`, err?.message || err);
+      r = { miss: true };
+    }
     if (r.accessDenied) fmpAccessDenied = true;
     else if (r.transcript) transcripts.push(r.transcript);
 

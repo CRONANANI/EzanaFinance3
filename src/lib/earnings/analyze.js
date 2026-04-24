@@ -264,6 +264,11 @@ export function analyzeTranscript(content) {
  * @property {string[]} negativeSignals
  */
 
+function n(v, fallback = 0) {
+  const x = Number(v);
+  return Number.isFinite(x) ? x : fallback;
+}
+
 /**
  * @param {SynthesisInput} input
  * @returns {Synthesis}
@@ -274,28 +279,50 @@ export function synthesize(input) {
   /** @type {string[]} */
   const negative = [];
 
-  const { current, prior, epsBeat, guidanceDirection } = input;
+  if (!input?.current || typeof input.current !== 'object') {
+    return {
+      tilt: 'neutral',
+      confidence: 'low',
+      reasoning: 'Insufficient analysis data to synthesize.',
+      positiveSignals: [],
+      negativeSignals: [],
+    };
+  }
 
-  if (prior) {
-    const delta = current.sentimentScore - prior.sentimentScore;
+  try {
+  const { prior, epsBeat, guidanceDirection } = input;
+
+  const c = {
+    sentimentScore: n(input.current?.sentimentScore, 50),
+    qaSentiment: n(input.current?.qaSentiment, 50),
+    qaEvasivenessScore: n(input.current?.qaEvasivenessScore, 0),
+    uncertaintyScore: n(input.current?.uncertaintyScore, 0),
+    litigiousScore: n(input.current?.litigiousScore, 0),
+  };
+  const pPrior = prior && typeof prior === 'object'
+    ? n(prior.sentimentScore, 50)
+    : null;
+
+  if (prior && pPrior != null) {
+    const delta = c.sentimentScore - pPrior;
     if (delta > 5) positive.push(`Tone improved ${delta.toFixed(0)} pts vs. last quarter`);
     else if (delta < -5) negative.push(`Tone declined ${Math.abs(delta).toFixed(0)} pts vs. last quarter`);
   }
 
-  if (current.qaSentiment > 60) positive.push('Positive Q&A session tone');
-  else if (current.qaSentiment < 40) negative.push('Defensive Q&A session tone');
+  if (c.qaSentiment > 60) positive.push('Positive Q&A session tone');
+  else if (c.qaSentiment < 40) negative.push('Defensive Q&A session tone');
 
-  if (current.qaEvasivenessScore > 40) {
-    negative.push(`Elevated evasiveness in Q&A (${current.qaEvasivenessScore.toFixed(0)}/100)`);
+  if (c.qaEvasivenessScore > 40) {
+    negative.push(`Elevated evasiveness in Q&A (${c.qaEvasivenessScore.toFixed(0)}/100)`);
   }
 
-  if (current.uncertaintyScore > 60) {
+  if (c.uncertaintyScore > 60) {
     negative.push('High uncertainty language throughout call');
-  } else if (current.uncertaintyScore < 30) {
+  } else if (c.uncertaintyScore < 30) {
     positive.push('Low uncertainty / confident language');
   }
 
-  if (current.litigiousScore > 30) {
+  if (c.litigiousScore > 30) {
     negative.push('Legal/regulatory language elevated');
   }
 
@@ -338,4 +365,14 @@ export function synthesize(input) {
     positiveSignals: positive,
     negativeSignals: negative,
   };
+  } catch (err) {
+    console.error('[synthesize] failed:', err);
+    return {
+      tilt: 'neutral',
+      confidence: 'low',
+      reasoning: 'Synthesis could not be completed for this call.',
+      positiveSignals: [],
+      negativeSignals: [],
+    };
+  }
 }

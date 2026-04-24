@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/plaid';
 import { fetchLastNTranscripts, fetchEarningsHistory } from '@/lib/earnings/fmp-client';
 import { analyzeTranscript, synthesize } from '@/lib/earnings/analyze';
 
+export const dynamic = 'force-dynamic';
+
 function hasSupabase() {
   return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
@@ -12,9 +14,12 @@ function hasSupabase() {
  * @returns {number | null}
  */
 function parseQuarterFromTranscript(t) {
-  const fromPeriod = parseInt(String(t.period ?? '').replace(/\D/g, ''), 10);
-  if (fromPeriod >= 1 && fromPeriod <= 4) return fromPeriod;
-  if (t.date) {
+  const p = String(t?.period ?? '').trim();
+  // Prefer explicit Q1–Q4 (avoids misparsing "Q1 2025" as 12025 from digit concat)
+  const qLabel = p.match(/\bQ([1-4])\b/i);
+  if (qLabel) return parseInt(qLabel[1], 10);
+  if (/^[1-4]$/.test(p)) return parseInt(p, 10);
+  if (t?.date) {
     const d = new Date(t.date);
     if (!Number.isNaN(d.getTime())) return Math.floor(d.getMonth() / 3) + 1;
   }
@@ -55,14 +60,23 @@ function findEarningsRowForQuarter(earnings, year, quarter) {
  * @param {Array<{ topic: string; mentions: number }> | null} priorTopics
  */
 function enrichTopicsWithDelta(currentTopics, priorTopics) {
-  const priorMap = new Map((priorTopics || []).filter((x) => x?.topic).map((x) => [x.topic, x.mentions]));
+  const priorMap = new Map(
+    (priorTopics || [])
+      .filter((x) => x?.topic)
+      .map((x) => [x.topic, Number(x.mentions)]),
+  );
   return (currentTopics || [])
     .filter((t) => t?.topic)
-    .map((t) => ({
-      topic: t.topic,
-      mentions: t.mentions,
-      delta_vs_prior: priorMap.has(t.topic) ? t.mentions - priorMap.get(t.topic) : null,
-    }));
+    .map((t) => {
+      const m = Number(t.mentions);
+      const pm = priorMap.get(t.topic);
+      const hasPrior = priorMap.has(t.topic) && Number.isFinite(pm);
+      return {
+        topic: t.topic,
+        mentions: Number.isFinite(m) ? m : 0,
+        delta_vs_prior: hasPrior && Number.isFinite(m) ? m - (pm || 0) : null,
+      };
+    });
 }
 
 /**
@@ -71,6 +85,14 @@ function enrichTopicsWithDelta(currentTopics, priorTopics) {
  * @returns {Promise<object | null>}
  */
 async function getOrComputeAnalysis(t, symbolUpper) {
+  if (!t?.content || typeof t.content !== 'string' || t.content.length < 100) {
+    console.warn('[earnings/analysis] skip transcript: content too short or missing', {
+      period: t.period,
+      len: t?.content?.length ?? 0,
+    });
+    return null;
+  }
+
   const quarter = parseQuarterFromTranscript(t);
   if (quarter == null) {
     console.warn('[earnings/analysis] skip transcript: unknown quarter', {
@@ -347,10 +369,12 @@ export async function GET(_req, context) {
     });
   } catch (err) {
     console.error(`[earnings/analysis] ${symbol} failed:`, err);
+    if (err?.stack) console.error(err.stack);
     return NextResponse.json(
       {
         error: err?.message ?? 'Unknown error',
         symbol,
+        detail: process.env.NODE_ENV === 'development' ? err?.stack : undefined,
       },
       { status: 500 },
     );
