@@ -37,7 +37,8 @@ function holdingColor(ticker) {
 
 /* ═══════════════════════════════════════════════════════════
    TIMEFRAME-AWARE DATA — Hero + Holdings update when 1D/1M/6M/1Y clicked
-   (Current Value dollar amount uses live Plaid summary when connected — see currentValue)
+   Current Value matches Home + Mock Trading: mock.totalValue or Plaid summary, not
+   value-series “last” (server / DB prices can differ from client live total).
    ═══════════════════════════════════════════════════════════ */
 
 const HOLDINGS_DATA = {
@@ -198,27 +199,49 @@ export default function HomeDashboardPage() {
   const [holdingsPage, setHoldingsPage] = useState(0);
   const heroData = HERO_DATA[timeframe];
 
+  const mock = useMockPortfolio();
+  const useMock = mock.hasMockPortfolio;
+
+  /**
+   * Live total must match Home + Mock Trading: mock.totalValue (client + quotes) or
+   * Plaid summary — NOT the last point of /api/portfolio/value-series (server uses
+   * DB prices and can disagree with the headline).
+   */
+  const currentValue = useMock
+    ? mock.totalValue
+    : !plaidSummaryLoading && plaidConnected
+      ? (plaidSummary?.totalValue ?? 0)
+      : heroData.value;
+
   const valueWindowFromApi = useMemo(() => {
     const d = dataForCurrentRange;
     if (!d || d.length < 1) return null;
+    const liveLast = Number.isFinite(currentValue) ? currentValue : d[d.length - 1].value;
     if (d.length < 2) {
       return {
-        last: d[0].value,
+        last: liveLast,
         changeAbs: 0,
         changePct: 0,
       };
     }
     const first = d[0].value;
-    const last = d[d.length - 1].value;
+    const last = liveLast;
     return {
       last,
       changeAbs: last - first,
       changePct: first > 0 ? ((last - first) / first) * 100 : 0,
     };
-  }, [dataForCurrentRange]);
+  }, [dataForCurrentRange, currentValue]);
 
-  const mock = useMockPortfolio();
-  const useMock = mock.hasMockPortfolio;
+  const sparklinePoints = useMemo(() => {
+    const pts = valueSeriesDisplayPoints;
+    if (!pts?.length || !Number.isFinite(currentValue)) return pts;
+    const i = pts.length - 1;
+    const lastPt = pts[i];
+    if (Math.abs((lastPt?.value ?? 0) - currentValue) < 0.01) return pts;
+    return [...pts.slice(0, -1), { ...lastPt, value: currentValue }];
+  }, [valueSeriesDisplayPoints, currentValue]);
+
   const { watchlists: userWatchlists } = useWatchlists();
   const [selectedHomeWatchlistId, setSelectedHomeWatchlistId] = useState(null);
   const [expandedSector, setExpandedSector] = useState(null);
@@ -417,14 +440,6 @@ export default function HomeDashboardPage() {
   useEffect(() => {
     setHoldingsPage(0);
   }, [timeframe, useLiveHoldings, plaidHoldingsPayload?.aggregated?.length]);
-
-  const currentValue = valueWindowFromApi
-    ? valueWindowFromApi.last
-    : useMock
-      ? mock.totalValue
-      : !plaidSummaryLoading && plaidConnected
-        ? (plaidSummary?.totalValue ?? 0)
-        : heroData.value;
 
   useEffect(() => {
     const fromPlaid = (plaidHoldingsPayload?.aggregated || []).map((h) => h.ticker).filter(Boolean);
@@ -631,7 +646,7 @@ export default function HomeDashboardPage() {
         <HeroSparkline
           portfolioValue={currentValue}
           changePct={useMock ? mock.totalPnlPct : heroData.change}
-          seriesPoints={valueSeriesDisplayPoints}
+          seriesPoints={sparklinePoints}
           range={timeframe}
           isLoading={valueSeriesLoading}
           loadError={valueSeriesError}
