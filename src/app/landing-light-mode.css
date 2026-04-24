@@ -169,11 +169,38 @@ body.light-mode .landing-page .feature-card-title {
 }
 
 body.light-mode .landing-page .feature-card-description {
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 body.light-mode .landing-page .feature-card-link {
   color: var(--emerald-text);
+}
+
+/* Base features-section.css uses light-on-dark hexes; force readable type on light cards */
+body.light-mode .landing-page .feed-header h4,
+body.light-mode .landing-page .ledger-header h4,
+body.light-mode .landing-page .politician-name,
+body.light-mode .landing-page .intel-title,
+body.light-mode .landing-page .author-name {
+  color: var(--text-primary);
+}
+
+body.light-mode .landing-page .ledger-filters .filter-pill {
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+body.light-mode .landing-page .ledger-filters .filter-pill:hover {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  border-color: var(--emerald-border);
+}
+
+body.light-mode .landing-page .ledger-filters .filter-pill.active {
+  color: var(--emerald-text);
+  background: var(--emerald-bg);
+  border-color: var(--emerald);
 }
 
 body.light-mode .landing-page .feature-card-link:hover {

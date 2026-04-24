@@ -90,14 +90,14 @@ export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
       </div>
 
       <div className="globe-container">
-        {/* Light-mode ocean: match hero #f8fafb (FallingPattern). #c8d4db read as a pale ring behind the globe. */}
+        {/* Light-mode: cool grey ocean + emerald land dots (original hero look) */}
         <InteractiveGlobe
           size={size}
           showConnections={false}
           showMarkers={false}
           onReady={onGlobeReady}
-          oceanFill={isLight ? "#f8fafb" : "#020403"}
-          dotColor={isLight ? "rgba(5, 150, 105, ALPHA)" : "rgba(52, 211, 153, ALPHA)"}
+          oceanFill={isLight ? "#dce3ea" : "#020403"}
+          dotColor={isLight ? "rgba(16, 185, 129, ALPHA)" : "rgba(52, 211, 153, ALPHA)"}
         />
       </div>
 
