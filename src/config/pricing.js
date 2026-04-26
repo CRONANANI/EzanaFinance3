@@ -90,3 +90,20 @@ export function getPlanKeyByPriceId(priceId) {
   const entry = getPlanByPriceId(priceId);
   return entry ? entry[0] : null;
 }
+
+if (process.env.NODE_ENV === 'development') {
+  const issues = [];
+  for (const [key, plan] of Object.entries(PLANS)) {
+    if (!plan.priceId) {
+      issues.push(`  - ${key}: priceId is undefined (env var not set)`);
+    } else if (!plan.priceId.startsWith('price_')) {
+      issues.push(`  - ${key}: priceId is "${plan.priceId}" (should start with price_)`);
+    }
+  }
+  if (issues.length > 0) {
+    console.warn(
+      `[pricing config] ⚠️  ${issues.length} plan(s) have invalid Stripe Price IDs:\n${issues.join('\n')}\n` +
+        'Update the corresponding NEXT_PUBLIC_STRIPE_PRICE_* env vars with values from Stripe Dashboard → Products → Pricing.'
+    );
+  }
+}
