@@ -116,17 +116,16 @@ function MobileDataSourcesFlow({ sourceConfigs, sourceDetails, circleText, accen
           }}
         >
           {detail.tagline && (
-            <p className="mb-2 text-[11px] leading-snug text-emerald-200/85">{detail.tagline}</p>
+            <p className="mb-2 text-center text-[11px] leading-snug text-emerald-200/85">{detail.tagline}</p>
           )}
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">Powered by</p>
-          <ul className="max-h-48 space-y-2 overflow-y-auto pr-1">
+          <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">
+            Powered by
+          </p>
+          <ul className="max-h-48 space-y-3 overflow-y-auto pr-1">
             {detail.sources?.map((src) => (
-              <li key={src.name} className="flex items-start gap-2">
-                <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 text-emerald-400/70" aria-hidden />
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold text-white">{src.name}</div>
-                  <div className="text-[11px] leading-snug text-emerald-100/75">{src.description}</div>
-                </div>
+              <li key={src.name} className="text-center">
+                <div className="text-xs font-semibold text-white">{src.name}</div>
+                <div className="mt-0.5 text-[11px] leading-snug text-emerald-100/75">{src.description}</div>
               </li>
             ))}
           </ul>
@@ -421,27 +420,19 @@ export default function DatabaseWithRestApi({
                   }}
                 >
                   {detail.tagline && (
-                    <div className="text-[11px] leading-snug text-emerald-200/80 mb-3">
+                    <div className="mb-3 text-center text-[11px] leading-snug text-emerald-200/80">
                       {detail.tagline}
                     </div>
                   )}
-                  <div className="text-[10px] uppercase tracking-wide font-semibold text-emerald-400/80 mb-2">
+                  <div className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-emerald-400/80">
                     Powered by
                   </div>
-                  <ul className="space-y-2.5">
+                  <ul className="space-y-3">
                     {detail.sources?.map((src) => (
-                      <li key={src.name} className="flex items-start gap-2">
-                        <ExternalLink
-                          className="h-3 w-3 mt-[3px] text-emerald-400/70 shrink-0"
-                          aria-hidden="true"
-                        />
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold text-white">
-                            {src.name}
-                          </div>
-                          <div className="text-[11px] text-emerald-100/70 leading-snug">
-                            {src.description}
-                          </div>
+                      <li key={src.name} className="text-center">
+                        <div className="text-xs font-semibold text-white">{src.name}</div>
+                        <div className="mt-0.5 text-[11px] leading-snug text-emerald-100/70">
+                          {src.description}
                         </div>
                       </li>
                     ))}

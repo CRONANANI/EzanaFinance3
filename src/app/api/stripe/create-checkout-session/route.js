@@ -126,9 +126,28 @@ export async function POST(request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Stripe checkout session error:', error);
+    console.error('Stripe checkout session error:', {
+      message: error?.message,
+      type: error?.type,
+      code: error?.code,
+      statusCode: error?.statusCode,
+    });
+
+    if (error?.type === 'StripeAuthenticationError') {
+      return NextResponse.json(
+        { error: 'Billing authentication failed. Please contact support.' },
+        { status: 503 }
+      );
+    }
+    if (error?.type === 'StripeInvalidRequestError') {
+      return NextResponse.json(
+        { error: error.message || 'Invalid checkout request.' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: error.message || 'Failed to create checkout session' },
+      { error: error?.message || 'Failed to create checkout session' },
       { status: 500 }
     );
   }

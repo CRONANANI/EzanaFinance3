@@ -1256,8 +1256,11 @@
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 420px;
+  /* Lock to fixed height so all four feature visuals match */
+  height: 520px;
+  min-height: 520px;
+  max-height: 520px;
+  overflow: hidden;
 }
 
 /* Inner mocks fill the card like .ledger-table (flex:1) so all four look the same height */

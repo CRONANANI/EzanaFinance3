@@ -81,6 +81,18 @@ function SelectPlanContent() {
           router.push('/auth/signin?redirect=/select-plan');
           return;
         }
+        if (response.status === 503) {
+          setCheckoutError('Billing is temporarily unavailable. Please try again in a few minutes.');
+          return;
+        }
+        if (
+          response.status === 500 &&
+          typeof data.error === 'string' &&
+          data.error.includes('configuration')
+        ) {
+          setCheckoutError('Billing setup error — please contact support.');
+          return;
+        }
         setCheckoutError(data.error);
         return;
       }
@@ -88,7 +100,11 @@ function SelectPlanContent() {
       if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error('Checkout error:', err);
-      setCheckoutError('Something went wrong. Please try again.');
+      setCheckoutError(
+        err?.message
+          ? `Couldn't start checkout: ${err.message}`
+          : 'Could not connect to billing. Please try again.'
+      );
     } finally {
       setLoading(null);
     }
