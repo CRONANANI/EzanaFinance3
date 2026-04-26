@@ -200,6 +200,12 @@ body.light-mode {
   --nav-bg-solid: #ffffff;
   --nav-border: rgba(0, 0, 0, 0.06);
 
+  /* ── Unified app background — explicit white in light mode ──
+     Must be redeclared here (not just relying on var(--nav-bg-solid))
+     because CSS variable indirection through :root's --app-bg does not
+     reliably propagate the light-mode --nav-bg-solid override. */
+  --app-bg: #ffffff;
+
   /* ── Scrollbar ── */
   --scrollbar-thumb: rgba(0, 0, 0, 0.12);
 
