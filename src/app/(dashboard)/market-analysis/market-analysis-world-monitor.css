@@ -2066,6 +2066,46 @@ body.light-mode .ma-ticker-sep {
   font-style: italic;
 }
 
+.sentinel-related-markets-section {
+  margin-top: 1.5rem;
+}
+
+.sentinel-related-markets-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 8px;
+  color: #10b981;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease;
+  margin-bottom: 1rem;
+}
+
+.sentinel-related-markets-toggle:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.sentinel-related-markets-toggle .bi-chevron-up,
+.sentinel-related-markets-toggle .bi-chevron-down {
+  margin-left: auto;
+}
+
+body.light-mode .sentinel-related-markets-toggle {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+body.light-mode .sentinel-related-markets-toggle:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
 /* Narrower screens: let the ISR card take up more of the viewport. */
 @media (max-width: 900px) {
   .isr-card {

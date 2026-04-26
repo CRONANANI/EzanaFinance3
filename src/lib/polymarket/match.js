@@ -136,3 +136,121 @@ export async function findMatchingMarket(event) {
     return null;
   }
 }
+
+/**
+ * Extract noun-like keywords from longer text (descriptions, summaries).
+ * Drops short tokens, stop words, and pure numbers. Used in addition to
+ * headline extraction so descriptions contribute relevant terms.
+ */
+function extractKeywordsFromText(text) {
+  if (!text || typeof text !== 'string') return [];
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 4 && !STOP_WORDS.has(w) && !/^\d+$/.test(w))
+    .slice(0, 8);
+}
+
+/**
+ * Map a raw Polymarket market record into the shape the UI renders.
+ * Pulls out icon/image, end date, and 24h volume in addition to the existing fields.
+ */
+function formatMarket(m) {
+  return {
+    marketId: String(m?.id ?? m?.conditionId ?? ''),
+    marketTitle: String(m?.question ?? m?.title ?? 'Market'),
+    description: typeof m?.description === 'string' ? m.description : '',
+    url: buildMarketUrl(m),
+    yesProbability: normalizeProbability(m),
+    volume: Number(m?.volume ?? m?.volumeNum ?? 0),
+    volume24hr: Number(m?.volume24hr ?? m?.volume24Hr ?? 0),
+    liquidity: Number(m?.liquidity ?? 0),
+    endDate: m?.endDate || m?.end_date_iso || null,
+    icon: m?.icon || m?.image || null,
+    category: m?.category || null,
+  };
+}
+
+/**
+ * Find multiple Polymarket markets relevant to an event's keywords.
+ * Returns up to `limit` matches sorted by relevance (keyword hit count, then volume).
+ *
+ * Uses the same keyword-extraction logic as findMatchingMarket but:
+ *   - Asks Polymarket for more candidates (limit * 4 to compensate for misses)
+ *   - Returns ranked array instead of single best
+ *   - Falls back to volume-sorted matches when keyword hits are sparse
+ *
+ * @param {{ headline?: string, title?: string, summary?: string, description?: string, impactedKeywords?: string[], country?: string }} event
+ * @param {{ limit?: number }} options
+ * @returns {Promise<PolymarketMatch[]>}
+ * Used by POST /api/polymarket/related-markets (findMatchingMarkets).
+ */
+export async function findMatchingMarkets(event, { limit = 8 } = {}) {
+  try {
+    const normalizedEvent = {
+      ...event,
+      headline: event?.headline ?? event?.title ?? '',
+    };
+
+    const descKeywords = extractKeywordsFromText(
+      [event?.summary, event?.description].filter(Boolean).join(' ')
+    );
+
+    const baseTerms = extractSearchTerms(normalizedEvent);
+    const allTerms = Array.from(new Set([...baseTerms, ...descKeywords])).slice(0, 6);
+    if (allTerms.length === 0) return [];
+
+    const params = new URLSearchParams({
+      closed: 'false',
+      active: 'true',
+      limit: String(Math.max(20, limit * 4)),
+      order: 'volume',
+      ascending: 'false',
+      q: allTerms.slice(0, 3).join(' '),
+    });
+
+    const res = await fetch(`${GAMMA_BASE}/markets?${params.toString()}`, {
+      next: { revalidate: 60 },
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return [];
+
+    const payload = await res.json();
+    const list = Array.isArray(payload) ? payload : payload?.data;
+    if (!Array.isArray(list) || list.length === 0) return [];
+
+    const termLower = allTerms.map((t) => t.toLowerCase());
+    const scored = list
+      .map((m) => {
+        const haystack = [m?.question, m?.title, m?.description]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        const hits = termLower.reduce((acc, t) => acc + (haystack.includes(t) ? 1 : 0), 0);
+        return {
+          m,
+          hits,
+          vol: Number(m?.volume ?? m?.volumeNum ?? 0),
+          vol24: Number(m?.volume24hr ?? m?.volume24Hr ?? 0),
+        };
+      })
+      .filter((x) => x.hits > 0 || x.vol24 > 0);
+
+    scored.sort((a, b) => {
+      if (b.hits !== a.hits) return b.hits - a.hits;
+      if (b.vol24 !== a.vol24) return b.vol24 - a.vol24;
+      return b.vol - a.vol;
+    });
+
+    return scored
+      .slice(0, limit)
+      .map((s) => formatMarket(s.m));
+  } catch (err) {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.warn('[polymarket-multi-matcher]', err);
+    }
+    return [];
+  }
+}

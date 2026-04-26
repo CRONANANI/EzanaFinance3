@@ -7,7 +7,8 @@
  * when the event was matched to an active market.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
 
 function formatLong(iso) {
   try {
@@ -24,6 +25,8 @@ function formatLong(iso) {
 }
 
 export function ISRArticleModal({ event, polymarket, onClose }) {
+  const [showRelated, setShowRelated] = useState(false);
+
   useEffect(() => {
     if (!event) return undefined;
     const prev = document.body.style.overflow;
@@ -89,6 +92,21 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
               <i className="bi bi-box-arrow-up-right isr-polymarket-banner-ext" aria-hidden />
             </a>
           )}
+
+          <div className="sentinel-related-markets-section">
+            <button
+              type="button"
+              onClick={() => setShowRelated((v) => !v)}
+              className="sentinel-related-markets-toggle"
+            >
+              <i className="bi bi-graph-up-arrow" />
+              {showRelated ? 'Hide related markets' : 'View related prediction markets'}
+              <i className={`bi ${showRelated ? 'bi-chevron-up' : 'bi-chevron-down'}`} />
+            </button>
+            {showRelated && (
+              <RelatedMarketsPanel event={event} enabled={showRelated} limit={8} variant="inline" />
+            )}
+          </div>
 
           <div className="sentinel-report-section">
             <h3 className="sentinel-report-section-title sentinel-report-section-title--gold">

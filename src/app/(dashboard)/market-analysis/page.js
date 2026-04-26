@@ -7,6 +7,7 @@ import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
+import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
 import { useProGate } from '@/components/upgrade/ProGateContext';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -749,6 +750,11 @@ function ChainView() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState('');
   const [toast, setToast] = useState(null);
+  const [showRelatedPm, setShowRelatedPm] = useState(false);
+
+  useEffect(() => {
+    if (!analyzeEvent) setShowRelatedPm(false);
+  }, [analyzeEvent]);
 
   useEffect(() => {
     fetch('/api/market-data/economic-calendar')
@@ -790,6 +796,7 @@ function ChainView() {
 
   const handleAnalyze = async (event) => {
     setAnalyzeEvent(event);
+    setShowRelatedPm(false);
     setAnalyzing(true);
     setAnalysis('');
 
@@ -951,6 +958,33 @@ function ChainView() {
                 <div className="sentinel-report-section-body">
                   <p>{analyzeEvent.body}</p>
                 </div>
+              </div>
+
+              <div className="sentinel-related-markets-section">
+                <button
+                  type="button"
+                  onClick={() => setShowRelatedPm((v) => !v)}
+                  className="sentinel-related-markets-toggle"
+                >
+                  <i className="bi bi-graph-up-arrow" />
+                  {showRelatedPm ? 'Hide related markets' : 'View related prediction markets'}
+                  <i className={`bi ${showRelatedPm ? 'bi-chevron-up' : 'bi-chevron-down'}`} />
+                </button>
+                {showRelatedPm && (
+                  <RelatedMarketsPanel
+                    event={{
+                      id: analyzeEvent.id,
+                      headline: analyzeEvent.title,
+                      title: analyzeEvent.title,
+                      summary: analyzeEvent.body,
+                      description: analyzeEvent.body,
+                      country: analyzeEvent.country,
+                    }}
+                    enabled={showRelatedPm}
+                    limit={8}
+                    variant="inline"
+                  />
+                )}
               </div>
 
               <div className="sentinel-report-section">
