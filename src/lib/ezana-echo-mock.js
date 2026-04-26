@@ -1,9 +1,30 @@
 /**
  * Ezana Echo — article hub data (restored from pre-dashboard Echo + ongoing catalog).
  * Featured / sections / latest feed all read from this single ARTICLES array.
+ *
+ * Article content can use either:
+ *   - contentParagraphs: [string]  (legacy, plain text only)
+ *   - contentBlocks: [Block]       (rich, supports headings, charts, callouts, quotes)
+ *
+ * Block types supported by EchoArticleClient:
+ *   - paragraph  → <p>
+ *   - heading    → <h2> or <h3> based on level
+ *   - callout    → labeled statistic card
+ *   - stat-grid  → row of statistic tiles
+ *   - chart      → inline SVG chart
+ *   - quote      → pull quote with source
+ *
+ * The renderer prefers contentBlocks when present, falling back to
+ * contentParagraphs so all existing articles continue to render unchanged.
+ *
+ * Long-form rich article: best-performing-commodities-iran-war-2026
+ * (see ./ezana-echo-article-iran-commodities-2026.js)
  */
 
+import { iranWarCommoditiesArticle2026 } from './ezana-echo-article-iran-commodities-2026.js';
+
 const ARTICLES = [
+  iranWarCommoditiesArticle2026,
   {
     id: 'the-45-day-loophole-congressional-trade-disclosure',
     title: 'The 45-Day Loophole: Why Congressional Trade Disclosure Must Happen in Real Time',
@@ -28,7 +49,7 @@ const ARTICLES = [
     tickers: ['SPY', 'XLF', 'KRE'],
     readTime: 8,
     publishedAt: '2025-03-15',
-    featured: true,
+    featured: false,
     likes: 412,
     comments: 108,
     reads: 9120,
