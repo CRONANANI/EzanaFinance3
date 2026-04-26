@@ -145,18 +145,24 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
           );
         })}
 
-        {series.map((s) => {
+        {series.map((s, sIdx) => {
           const path = data
             .map((d, i) => `${i === 0 ? 'M' : 'L'} ${xScale(i)} ${yScale(d[s.key])}`)
             .join(' ');
           const last = data[data.length - 1];
+          const lastY = yScale(last[s.key]);
+          const collisions = series
+            .slice(0, sIdx)
+            .filter((other) => Math.abs(yScale(last[other.key]) - lastY) < 16);
+          const labelYOffset = collisions.length * 18;
+
           return (
             <g key={s.key}>
               <path d={path} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" />
-              <circle cx={xScale(data.length - 1)} cy={yScale(last[s.key])} r="3.5" fill={s.color} />
+              <circle cx={xScale(data.length - 1)} cy={lastY} r="3.5" fill={s.color} />
               <text
                 x={xScale(data.length - 1) + 8}
-                y={yScale(last[s.key]) + 4}
+                y={lastY + 4 + labelYOffset}
                 className="echo-chart-series-label"
                 fill={s.color}
               >
@@ -164,7 +170,7 @@ function renderLineChart({ data, series, annotations, yLabel, W, H, PADDING, inn
               </text>
               <text
                 x={xScale(data.length - 1) + 8}
-                y={yScale(last[s.key]) + 18}
+                y={lastY + 18 + labelYOffset}
                 className="echo-chart-series-value"
               >
                 {yPrefix}
@@ -327,61 +333,101 @@ export default function EchoArticleClient({ article }) {
   const relatedCards = [...related, ...fallback].slice(0, 3);
   const seedComments = ECHO_MOCK_COMMENTS_BY_ARTICLE[article.id] ?? [];
   const tickers = article.tickers ?? [];
-  const useBlocks = Array.isArray(article.contentBlocks) && article.contentBlocks.length > 0;
+  const blocks = article.contentBlocks;
   const paragraphs = article.contentParagraphs ?? [];
 
   return (
-    <div className="dashboard-page-inset echo-article-page db-page">
-      <Link href="/ezana-echo" className="echo-back">
-        <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
-      </Link>
+    <div className="echo-article-page">
+      <div className="echo-article-page-inset">
+        <Link href="/ezana-echo" className="echo-back">
+          <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
+        </Link>
 
-      <article>
-        <h1 className="echo-article-h1">{article.title}</h1>
-        <p className="echo-article-meta">
-          By {article.author} · {formatPublishedDate(article.publishedAt)} · {article.readTime} min read
-        </p>
-        {tickers.length > 0 && (
-          <div className="echo-ticker-row" style={{ marginBottom: '1.5rem' }}>
-            {tickers.map((t) => (
-              <Link key={t} href={`/company-research?q=${encodeURIComponent(t)}`} className="echo-ticker">
-                📈 {t}
-              </Link>
-            ))}
+        <article className="echo-article-shell">
+          <header className="echo-article-header">
+            <div className="echo-article-kicker">
+              <span className="echo-article-kicker-dot" aria-hidden />
+              {(article.category || 'markets').toUpperCase()}
+            </div>
+            <h1 className="echo-article-h1">{article.title}</h1>
+            {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
+            <div className="echo-article-byline">
+              <span className="echo-article-byline-author">
+                By <strong>{article.author}</strong>
+              </span>
+              <span className="echo-article-byline-divider" aria-hidden>
+                ·
+              </span>
+              <span>{formatPublishedDate(article.publishedAt)}</span>
+              <span className="echo-article-byline-divider" aria-hidden>
+                ·
+              </span>
+              <span>{article.readTime} min read</span>
+            </div>
+            {tickers.length > 0 && (
+              <div className="echo-ticker-row" role="list" aria-label="Related tickers">
+                {tickers.map((t) => (
+                  <Link
+                    key={t}
+                    href={`/company-research?q=${encodeURIComponent(t)}`}
+                    className="echo-ticker"
+                    role="listitem"
+                  >
+                    <i className="bi bi-graph-up" aria-hidden />
+                    <span>{t}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </header>
+
+          <div className="echo-article-body">
+            {Array.isArray(blocks) && blocks.length > 0
+              ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
+              : paragraphs.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
           </div>
-        )}
 
-        <div className="echo-article-body">
-          {useBlocks
-            ? article.contentBlocks.map((block, i) => <ArticleBlock key={i} block={block} />)
-            : paragraphs.map((p, i) => (
-                <p key={i}>{p}</p>
+          <div className="echo-article-footer">
+            <div className="echo-article-stats">
+              <span>
+                <i className="bi bi-heart-fill" aria-hidden /> {article.likes} likes
+              </span>
+              <span className="echo-article-stats-divider" aria-hidden>
+                ·
+              </span>
+              <span>
+                <i className="bi bi-chat-fill" aria-hidden /> {article.comments} comments
+              </span>
+            </div>
+            <EchoArticleEngagement
+              articleId={article.id}
+              initialLikes={article.likes}
+              seedComments={seedComments}
+            />
+          </div>
+
+          <section className="echo-article-related">
+            <div className="echo-article-related-header">
+              <h2 className="echo-section-title">Related Articles</h2>
+              <Link href="/ezana-echo" className="echo-article-related-link">
+                View all <i className="bi bi-arrow-right" aria-hidden />
+              </Link>
+            </div>
+            <div className="echo-related-grid">
+              {relatedCards.map((a) => (
+                <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-related-card">
+                  <span className="echo-related-card-kicker">{(a.category || 'markets').toUpperCase()}</span>
+                  <p className="echo-related-title">{a.title}</p>
+                  {a.excerpt && <p className="echo-related-excerpt">{a.excerpt}</p>}
+                  <span className="echo-related-card-meta">{a.readTime} min read</span>
+                </Link>
               ))}
-        </div>
-
-        <p className="echo-article-stats">
-          ❤️ {article.likes} likes &nbsp; 💬 {article.comments} comments
-        </p>
-
-        <EchoArticleEngagement
-          articleId={article.id}
-          initialLikes={article.likes}
-          seedComments={seedComments}
-        />
-
-        <hr className="echo-article-divider" />
-
-        <h2 className="echo-section-title" style={{ marginBottom: '1rem' }}>
-          Related Articles
-        </h2>
-        <div className="echo-related-grid">
-          {relatedCards.map((a) => (
-            <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-related-card">
-              <p className="echo-related-title">{a.title}</p>
-            </Link>
-          ))}
-        </div>
-      </article>
+            </div>
+          </section>
+        </article>
+      </div>
     </div>
   );
 }
