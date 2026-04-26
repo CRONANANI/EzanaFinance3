@@ -742,6 +742,16 @@ function EventAnalysisProse({ text }) {
   );
 }
 
+/** Stable key for chain-view events (API may omit `id`). */
+function chainEventKey(event) {
+  if (event?.id != null && String(event.id) !== '') return String(event.id);
+  return `chain-${String(event?.title ?? '')}-${String(event?.time ?? '')}`;
+}
+
+function chainPanelDomId(event) {
+  return `pm-chain-${chainEventKey(event).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+}
+
 function ChainView() {
   const { openProGate } = useProGate();
   const [events, setEvents] = useState([]);
@@ -751,6 +761,16 @@ function ChainView() {
   const [analysis, setAnalysis] = useState('');
   const [toast, setToast] = useState(null);
   const [showRelatedPm, setShowRelatedPm] = useState(false);
+  const [openMarkets, setOpenMarkets] = useState(() => new Set());
+
+  const toggleMarkets = (eventId) => {
+    setOpenMarkets((prev) => {
+      const next = new Set(prev);
+      if (next.has(eventId)) next.delete(eventId);
+      else next.add(eventId);
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!analyzeEvent) setShowRelatedPm(false);
@@ -855,8 +875,11 @@ function ChainView() {
   return (
     <div className="ma-chain chain-view-scroll custom-scrollbar">
       <div className="ma-chain-list">
-        {events.map((event) => (
-          <div key={event.id} className="ma-chain-item">
+        {events.map((event) => {
+          const eKey = chainEventKey(event);
+          const marketsOpen = openMarkets.has(eKey);
+          return (
+          <div key={eKey} className="ma-chain-item">
             <div className="ma-chain-dot" />
             <div className="ma-chain-content">
               <div className="ma-chain-header">
@@ -873,6 +896,48 @@ function ChainView() {
                     {event.source || 'Read more'} →
                   </a>
                 )}
+                <button
+                  type="button"
+                  onClick={() => toggleMarkets(eKey)}
+                  aria-expanded={marketsOpen}
+                  aria-controls={chainPanelDomId(event)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    background: marketsOpen
+                      ? 'rgba(16, 185, 129, 0.2)'
+                      : 'rgba(16, 185, 129, 0.1)',
+                    border: marketsOpen
+                      ? '1px solid #10b981'
+                      : '1px solid rgba(16, 185, 129, 0.3)',
+                    borderRadius: '4px',
+                    color: '#10b981',
+                    fontSize: '0.625rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-mono, monospace)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!marketsOpen) {
+                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.18)';
+                      e.currentTarget.style.borderColor = '#10b981';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!marketsOpen) {
+                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                    }
+                  }}
+                >
+                  <i className="bi bi-graph-up-arrow" style={{ fontSize: '0.6rem' }} />
+                  {marketsOpen ? 'Hide Markets' : 'Markets'}
+                </button>
                 <button
                   type="button"
                   onClick={openProGate}
@@ -906,9 +971,35 @@ function ChainView() {
                   Analyze
                 </button>
               </div>
+              {marketsOpen && (
+                <div
+                  id={chainPanelDomId(event)}
+                  style={{
+                    marginTop: '0.75rem',
+                    paddingTop: '0.75rem',
+                    borderTop: '1px solid rgba(16, 185, 129, 0.1)',
+                  }}
+                >
+                  <RelatedMarketsPanel
+                    event={{
+                      id: event.id,
+                      title: event.title,
+                      headline: event.title,
+                      body: event.body,
+                      description: event.body,
+                      summary: event.body,
+                      country: event.country,
+                    }}
+                    enabled={marketsOpen}
+                    limit={6}
+                    variant="inline"
+                  />
+                </div>
+              )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       
       {analyzeEvent && (
