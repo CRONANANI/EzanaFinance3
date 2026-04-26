@@ -33,7 +33,7 @@ body.light-mode {
   --sidebar-bg: #ffffff;
   --sidebar-border: #e2e8f0;
 
-  --nav-bg: rgba(255, 255, 255, 0.97);
+  --nav-bg: #ffffff;
   --nav-border: #e2e8f0;
 
   --color-primary: #059669;
@@ -55,10 +55,11 @@ body.light-mode {
 
 /* ── Dashboard Navbar ── */
 body.light-mode .main-nav {
-  background: rgba(255, 255, 255, 0.97) !important;
+  background: var(--nav-bg-solid, #ffffff) !important;
   border-bottom: 1px solid #e2e8f0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-  backdrop-filter: blur(12px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 body.light-mode .main-nav .nav-link,

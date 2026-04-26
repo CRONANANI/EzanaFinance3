@@ -41,7 +41,7 @@ body.light-mode {
 
 body.light-mode .main-nav,
 body.light-mode .main-nav.dark-nav {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--nav-bg-solid, #ffffff);
   border-bottom-color: rgba(5, 150, 105, 0.15);
 }
 

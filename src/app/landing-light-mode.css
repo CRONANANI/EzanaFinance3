@@ -570,14 +570,14 @@ body.light-mode .landing-page > footer .footer-newsletter-input:focus-visible {
    (page has no .landing-page, so the rules above would not apply) ── */
 html:has(.privacy-policy-page) .navbar,
 html:has(.privacy-policy-page) .navbar.navbar-sticky {
-  background: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  background: var(--nav-bg-solid) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
 html:has(.privacy-policy-page) .navbar.navbar-sticky.scrolled {
-  background: rgba(255, 255, 255, 0.92) !important;
+  background: var(--nav-bg-solid) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
 }
 

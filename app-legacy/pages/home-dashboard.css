@@ -29,8 +29,9 @@ body.dashboard-page {
   left: 0;
   right: 0;
   height: 64px;
-  background: var(--nav-bg);
-  backdrop-filter: blur(20px);
+  background: var(--nav-bg-solid);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-bottom: none;
   z-index: 100;
   font-family: var(--font-sans);

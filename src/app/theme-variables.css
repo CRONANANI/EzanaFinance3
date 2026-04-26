@@ -85,7 +85,7 @@
   --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
 
   /* ── Navbar ── */
-  --nav-bg: rgba(10, 14, 19, 0.95);
+  --nav-bg: #0a0e13;
   --nav-bg-solid: #0a0e13;
   --nav-border: rgba(16, 185, 129, 0.08);
 
@@ -196,7 +196,7 @@ body.light-mode {
   --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.08);
 
   /* ── Navbar ── */
-  --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-bg: #ffffff;
   --nav-bg-solid: #ffffff;
   --nav-border: rgba(0, 0, 0, 0.06);
 
@@ -265,7 +265,7 @@ body.light-mode .force-dark-theme {
   --text-ghost: #4b5563;
 
   /* Navbar */
-  --nav-bg: rgba(10, 14, 19, 0.95);
+  --nav-bg: #0a0e13;
   --nav-bg-solid: #0a0e13;
   --nav-border: rgba(16, 185, 129, 0.08);
 
