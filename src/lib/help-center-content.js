@@ -7,7 +7,8 @@
  * new docs, cross-check against this inventory so we never ship docs for
  * features that don't exist.
  *
- *   • home-dashboard          → Portfolio hero, My Holdings, Watchlist card,
+ *   • home                      → Home terminal entry (Bloomberg-style layout)
+ *   • home-dashboard            → Portfolio hero, My Holdings, Watchlist card,
  *                               Total Profits, Sector Distribution, Recent
  *                               Transactions, performance-vs-platform chart
  *   • trading/                → Live brokerage trading (Alpaca)
@@ -18,6 +19,10 @@
  *                               alert thresholds via settings/notifications
  *   • company-research        → Ticker-level research with AI summary,
  *                               peer compare, news, financials
+ *   • commodities-research    → Commodities-focused research workspace
+ *   • crypto-research         → Crypto-focused research workspace
+ *   • economic-indicators     → Macro / economic indicators dashboard
+ *   • financial-analytics     → Additional financial analytics views
  *   • market-analysis         → Sector heatmap + rotations
  *   • for-the-quants          → Risk models, Sharpe, beta, Monte Carlo
  *   • inside-the-capitol      → Congressional trades, politician profiles,
@@ -33,6 +38,10 @@
  *   • community               → Feed, friends, legendary investors
  *   • community/messages      → Direct + group messages (realtime, ⌘/ search)
  *   • community/profile       → Public investor profile
+ *   • profile                 → User profile routes under dashboard
+ *   • onboarding              → In-app onboarding flow
+ *   • org-team-hub            → Org / team hub (B2B)
+ *   • pricing                 → In-dashboard pricing / plan comparison
  *   • leaderboard             → Relative-performance ranking
  *   • empire-ranking          → 18-dimension global power index + Big Cycle
  *                               chart; GDELT ISR events; Polymarket overlay
@@ -61,6 +70,7 @@ export const USER_CATEGORIES = [
   { id: 'getting-started', title: 'Getting Started', description: 'Learn the basics of Ezana Finance', iconName: 'BookOpen', articles: [
     { title: 'Creating Your Ezana Finance Account', slug: 'creating-your-account' },
     { title: 'Your First 5 Steps on Ezana', slug: 'first-steps' },
+    { title: 'Login Streak & 30-Day Multiplier Reward', slug: 'login-streak-and-rewards' },
     { title: 'Navigating Your Dashboard', slug: 'navigating-the-dashboard' },
     { title: 'Understanding the Navigation Bar', slug: 'understanding-the-navbar' },
     { title: 'Paper Trading vs Live Trading', slug: 'paper-trading-vs-live' },
@@ -80,6 +90,7 @@ export const USER_CATEGORIES = [
   { id: 'portfolio', title: 'Portfolio & Trading', description: 'Manage investments and place trades', iconName: 'Wallet', articles: [
     { title: 'Understanding Your Portfolio Dashboard', slug: 'portfolio-overview' },
     { title: 'Paper Trading: Practicing With $100,000', slug: 'paper-trading' },
+    { title: 'Mock Trading: Practicing With Virtual Cash', slug: 'mock-trading-deep-dive' },
     { title: 'Tracking Your Performance Metrics', slug: 'performance-metrics' },
     { title: 'How to Place a Trade', slug: 'placing-trades' },
     { title: 'Fractional Share Investing', slug: 'fractional-shares' },
@@ -97,10 +108,16 @@ export const USER_CATEGORIES = [
     { title: 'Market Analysis Tools', slug: 'market-analysis' },
     { title: 'For The Quants: Advanced Analytics', slug: 'quant-tools' },
     { title: 'Betting Markets & Prediction Data', slug: 'betting-markets' },
+    { title: 'Centaur Intelligence: Your AI Research Assistant', slug: 'centaur-intelligence-overview' },
+    { title: 'Earnings Call Analyzer (NLP Sentiment)', slug: 'earnings-call-analyzer' },
+    { title: 'Kairos Signal: Event-Driven Trading Indicator', slug: 'kairos-signal-overview' },
+    { title: 'Related Prediction Markets on Events', slug: 'polymarket-related-markets' },
     { title: 'Reading and Subscribing on Ezana Echo', slug: 'ezana-echo-guide' },
   ]},
   { id: 'account', title: 'Account & Security', description: 'Account settings and security', iconName: 'Shield', articles: [
     { title: 'Managing Your Account Settings', slug: 'account-settings' },
+    { title: 'Notification Preferences', slug: 'notifications-and-email' },
+    { title: 'Managing External Brokerage Connections', slug: 'managing-brokerage-connections' },
     { title: 'Appearance: Light and Dark Mode', slug: 'appearance-theme' },
     { title: 'Enabling Two-Factor Authentication', slug: 'two-factor-auth' },
     { title: 'How Your Data Is Protected', slug: 'data-security' },
@@ -129,6 +146,7 @@ export const USER_CATEGORIES = [
   ]},
   { id: 'global-analysis', title: 'Global Analysis', description: 'Empire Rankings, Big Cycle, geopolitics', iconName: 'Globe2', articles: [
     { title: 'Empire Rankings Overview', slug: 'empire-rankings-overview' },
+    { title: 'Empire Rankings: 18-Dimension Power Index', slug: 'empire-rankings-deep-dive' },
     { title: 'Reading the Big Cycle Chart', slug: 'big-cycle-chart' },
     { title: 'Geopolitical Events Feed (ISR)', slug: 'geopolitical-events-feed' },
     { title: 'Prediction Markets on Ezana', slug: 'prediction-markets' },
@@ -142,9 +160,15 @@ export const USER_CATEGORIES = [
 
 export const USER_ARTICLES = {
   'creating-your-account': { title: 'Creating Your Ezana Finance Account', category: 'Getting Started', content: wrap([
-    "To get started, visit ezana.world and click 'Login' then 'Sign up'. You can register with your email address and a password.",
-    "After registering, you'll be taken to your personal dashboard where you can explore congressional trading data, connect your brokerage, and customize your experience.",
-    "If you received a legacy access invitation, your account will automatically be upgraded once you sign up with the same email.",
+    "To get started, visit ezana.world and click <strong>Login</strong>, then <strong>Sign up</strong>. You can register with your email address and a password.",
+    "<h3>Password requirements</h3>",
+    "<ul><li>Minimum length and complexity rules are shown on the sign-up form.</li><li>Use a unique password you don't reuse on other sites.</li><li>We recommend a password manager (1Password, Bitwarden, etc.).</li></ul>",
+    "<h3>Email verification</h3>",
+    "After sign-up, check your inbox for a verification link from Ezana. You must verify your email before some features (brokerage linking, payouts) unlock. If you don't see the message, check spam and resend from the prompt on the login page.",
+    "<h3>After you land on the dashboard</h3>",
+    "You'll see your home dashboard with portfolio cards, watchlist, and navigation to Research, Trading, Community, and Learning. You can explore congressional data and paper trading before connecting a bank or brokerage.",
+    "<h3>Legacy invitations</h3>",
+    "If you received a <strong>legacy access</strong> or early-access invitation, sign up with the <em>same email address</em> the invite was sent to. Your account tier upgrades automatically once the email matches — no separate code required in most cases.",
   ]) },
   'navigating-the-dashboard': { title: 'Navigating Your Dashboard', category: 'Getting Started', content: wrap([
     "Your dashboard is the home base of your Ezana experience. At the top, you'll see your portfolio value and daily performance.",
@@ -159,9 +183,17 @@ export const USER_ARTICLES = {
     "The sun/moon icon toggles light and dark mode, and the gear icon opens Settings.",
   ]) },
   'setting-up-alerts': { title: 'Setting Up Trade Alerts and Notifications', category: 'Getting Started', content: wrap([
-    "Navigate to Settings and select the Notifications panel. Here you can configure push notifications, email alerts, and sound settings.",
-    "Key alerts include: congressional trade notifications (when a politician you follow makes a trade), price target alerts (when a stock on your watchlist hits a target price), portfolio alerts (daily performance summaries, risk warnings), and community mentions (when someone replies to your posts).",
-    "You can set quiet hours to pause notifications during specific times.",
+    "Navigate to <strong>Settings → Notifications</strong>. Each category can be toggled independently and routed to in-app, email, and (where supported) push.",
+    "<h3>Congressional Trades</h3>",
+    "<ul><li>All new STOCK Act filings, or only politicians you follow.</li><li>Optional filters by party, chamber, or minimum trade size.</li><li>Appears under the Congressional / Capitol category in the notifications bell.</li></ul>",
+    "<h3>Watchlist &amp; prices</h3>",
+    "<ul><li>Default ±5% move alerts per watchlist ticker; customizable per ticker.</li><li>Configurable in Settings and on the Watchlist page (bell icon per row).</li></ul>",
+    "<h3>Portfolio &amp; account</h3>",
+    "<ul><li>Daily summaries, risk warnings, contribution reminders.</li><li>Earnings calendar for companies you track.</li></ul>",
+    "<h3>Community &amp; learning</h3>",
+    "<ul><li>Replies, follows, mentions, and direct messages.</li><li>Learning milestones, badge unlocks, course updates.</li></ul>",
+    "<h3>Quiet hours &amp; digests</h3>",
+    "Set quiet hours to silence push during sleep. For email-heavy categories, choose instant, daily, or weekly digest instead of one email per event.",
   ]) },
   'connecting-your-brokerage': { title: 'Connecting Your External Brokerage Account', category: 'Getting Started', content: wrap([
     "Ezana can display holdings from your existing brokerage accounts (Fidelity, Schwab, Robinhood, etc.) for portfolio tracking.",
@@ -200,8 +232,12 @@ export const USER_ARTICLES = {
   ]) },
   'portfolio-overview': { title: 'Understanding Your Portfolio Dashboard', category: 'Portfolio & Trading', content: wrap([
     "Your dashboard's hero card shows your total portfolio value, daily change (percentage and dollar amount), and a sparkline chart of recent performance.",
-    "Below it, My Holdings displays your top 4 positions by value plus your 2 worst performers marked with an 'Underperforming' badge.",
-    "Use the timeframe buttons to switch between 1-day, 1-month, 6-month, and 1-year views — the chart, portfolio value, change percentages, and all holding values update together.",
+    "<h3>Holdings strip</h3>",
+    "<ul><li><strong>My Holdings</strong> — top 4 positions by value plus 2 worst performers marked with an Underperforming badge.</li><li><strong>Watchlist</strong> — tickers you're tracking without a full position.</li><li><strong>Total Profits</strong> — return breakdown by asset type where applicable.</li></ul>",
+    "<h3>Timeframes</h3>",
+    "Use the timeframe buttons (1D, 1M, 6M, 1Y) to switch views — the chart, headline value, change percentages, and holding rows update together so you're never comparing mismatched windows.",
+    "<h3>Mock vs live</h3>",
+    "If you haven't connected a brokerage, the dashboard reflects your <strong>paper</strong> portfolio. After linking Alpaca or Plaid read-only, live holdings drive the same cards.",
   ]) },
   'placing-trades': { title: 'How to Place a Trade', category: 'Portfolio & Trading', content: wrap([
     "Navigate to Trading → Trade tab. Select Buy or Sell at the top. Search for a stock by typing its ticker or company name — results appear in a live dropdown showing the symbol, full name, and whether fractional shares are available.",
@@ -214,9 +250,15 @@ export const USER_ARTICLES = {
     "Not all stocks support fractional trading — look for the 'Fractional' badge in search results.",
   ]) },
   'funding-your-account': { title: 'Depositing and Withdrawing Funds', category: 'Portfolio & Trading', content: wrap([
-    "Go to Trading → Fund Account. To deposit, you first need to link a bank account — click your connected bank in the dropdown or link a new one through Plaid.",
-    "Enter the dollar amount and click Deposit. ACH transfers typically take 1-3 business days to settle, after which your buying power updates. Quick deposit buttons ($100, $500, $1,000, $5,000) are available for convenience.",
-    "To withdraw, select the Withdraw tab, choose your bank, enter the amount, and submit. The History tab shows all past transfers and their status.",
+    "Go to <strong>Trading → Fund Account</strong>. Deposits and withdrawals use ACH through your linked bank (via Plaid).",
+    "<h3>Linking your bank</h3>",
+    "<ul><li>Choose an existing linked account or connect a new one through Plaid's secure flow.</li><li>Some institutions use <strong>instant verification</strong> (credentials); others may use micro-deposits — two small credits that you confirm by amount in the app.</li><li>Micro-deposit verification can add 1–2 business days before the link is fully active.</li></ul>",
+    "<h3>Deposits (ACH)</h3>",
+    "Enter an amount and submit. Standard ACH takes <strong>1–3 business days</strong> to settle; buying power updates after settlement. Quick amount buttons ($100, $500, $1,000, $5,000) speed up entry.",
+    "<h3>Withdrawals</h3>",
+    "Open the <strong>Withdraw</strong> tab, pick the bank, enter the amount, and confirm. Withdrawals follow the same ACH rails — expect several business days before funds hit your external account.",
+    "<h3>History &amp; limits</h3>",
+    "The <strong>History</strong> tab lists every transfer with status (pending, completed, failed). Your broker (Alpaca) may impose daily or monthly transfer limits; the UI surfaces errors if a transfer is rejected.",
   ]) },
   'watchlist-guide': { title: 'Managing Your Watchlist', category: 'Portfolio & Trading', content: wrap([
     "Your Watchlist tracks stocks you're interested in but may not currently own. From the Dashboard, the Watchlist card shows your tracked tickers with current price and daily change percentage.",
@@ -269,8 +311,15 @@ export const USER_ARTICLES = {
     "Account deletion is permanent — all your data, watchlists, and settings will be removed within 30 days.",
   ]) },
   'plans-overview': { title: 'Understanding Ezana Plans', category: 'Billing & Subscriptions', content: wrap([
-    "Ezana offers four paid plans: Individual ($5/month — delayed congressional alerts, basic 13F access, community, weekly digest, watchlist up to 10 tickers, Ezana Echo, email notifications), Personal Advanced ($19/month — everything in Individual plus real-time alerts, full 13F database, legendary portfolios, advanced search, unlimited watchlists, AI research, 10K API calls/mo, priority support), Family ($49/month — everything in Personal Advanced plus up to 5 accounts, shared watchlists, family dashboard, consolidated reporting, 25K API calls on the main account), and Professional ($119/month — unlimited accounts, 100K API calls, custom exports, compliance logs, team roles, copy-trading infrastructure, dedicated manager, SLA, institutional data feeds).",
-    "Users without a subscription still get limited free access by default — that is not a separate plan on the pricing page. All paid plans include a 14-day free trial where configured in Stripe. Early access legacy users receive Personal Advanced features permanently at no cost.",
+    "Ezana offers four paid tiers plus a free trial. All paid plans include a <strong>14-day free trial</strong> with no charge until the trial ends.",
+    "<h3>The tiers</h3>",
+    "<ul><li><strong>Personal</strong> — $5/month or $48/year ($4/mo effective). Core dashboard, basic congressional alerts, watchlists, news feed, mock trading. For investors getting started.</li><li><strong>Personal Advanced</strong> — $19/month or $180/year ($15/mo effective). Real-time congressional alerts, advanced portfolio analytics, risk scoring, dividend tracking, sector exposure analysis. The most popular tier.</li><li><strong>Family</strong> — $49/month or $468/year ($39/mo effective). Up to 5 household accounts, shared watchlists and portfolios, parental controls, consolidated household view.</li><li><strong>Professional</strong> — $119/month or $1,140/year. API access, full data exports, priority support, custom reports. For serious traders and small advisor practices.</li></ul>",
+    "<h3>What's free without a paid plan</h3>",
+    "Ezana doesn't have a permanent free tier — instead, every paid tier includes a 14-day free trial that lets you explore everything before committing.",
+    "<h3>Switching tiers</h3>",
+    "Settings → Plan lets you upgrade or downgrade. Upgrades take effect immediately and you're prorated for the remainder of the current billing period. Downgrades take effect at the next billing cycle.",
+    "<h3>Canceling</h3>",
+    "Cancel anytime from Settings → Plan → Cancel Subscription. You keep access until the end of your current paid period. After cancellation, your account remains but Pro features become locked.",
   ]) },
   'managing-subscription': { title: 'Upgrading, Downgrading, or Canceling', category: 'Billing & Subscriptions', content: wrap([
     "Go to Settings → Plan to view your current subscription. To upgrade, click on a higher plan — you'll be prorated for the remainder of your billing cycle.",
@@ -462,15 +511,15 @@ export const USER_ARTICLES = {
     "The initial release pulls most indicators from the <strong>World Bank Open Data API</strong> and UN statistical archives. We're actively adding additional sources (IMF, SIPRI for military, OECD for education) — expect more dimensions to fill in over time. Where data is missing for a given country-year, we forward-fill from the most recent available value and mark the cell as estimated.",
   ]) },
   'big-cycle-chart': { title: 'Reading the Big Cycle Chart', category: 'Global Analysis', content: wrap([
-    "The Big Cycle chart shows the composite Empire Score for each country over time. It has two modes and several filters:",
-    "<h3>Single-country vs all-countries mode</h3>",
-    "<ul><li><strong>Single-country mode</strong> isolates one country and shows its Empire Score trajectory plus a breakdown by dimension.</li><li><strong>All-countries mode</strong> overlays every country's line on the same axes, which is the classic \"rise and fall of empires\" view.</li></ul>",
-    "<h3>Region and Top-N filters</h3>",
-    "Narrow to a region (Americas, Europe, Asia, etc.) or cap the chart at the Top N countries by current score. Useful when the all-countries view gets too crowded.",
-    "<h3>Anchor country</h3>",
-    "Pick an anchor country in the toolbar to re-index every line to the anchor's score over time. This turns the chart into a comparison of <em>relative</em> power — great for questions like \"how has China's score tracked the US over the last 30 years?\"",
-    "<h3>Hovering</h3>",
-    "Hover any year to see a snapshot card with each country's dimension-level scores for that year.",
+    "The Big Cycle chart visualizes Empire Scores for multiple countries over time, going back as far as data is available (typically 1960 onwards for World Bank–sourced metrics).",
+    "<h3>The default view</h3>",
+    "Top economies (US, China, EU, India, Japan, UK, Russia, Brazil, Canada, Germany) are plotted simultaneously. Each country is a colored line. Hovering shows that country's exact score for the year under your cursor.",
+    "<h3>Adding the All Countries overlay</h3>",
+    "Toggle <strong>All Countries</strong> in the toolbar to render every country on the map as a thin gray line, with the focus countries on top. This puts the major powers in global context.",
+    "<h3>Anchor mode</h3>",
+    "Pick an anchor country to re-index every line to the anchor's score over time. This converts absolute scores into <em>relative</em> scores — useful for questions like \"how has China's power tracked against the US over 30 years?\"",
+    "<h3>Date snapshots</h3>",
+    "Click any year on the X-axis to open a snapshot panel showing each country's per-dimension scores for that specific year — useful for understanding what was driving an inflection point in the chart.",
   ]) },
   'geopolitical-events-feed': { title: 'Geopolitical Events Feed (ISR)', category: 'Global Analysis', content: wrap([
     "The ISR (Intelligence, Surveillance, Reconnaissance) panel on the Global Analysis page is a live feed of geopolitical events pulled from <strong>GDELT</strong> — the Global Database of Events, Language, and Tone.",
@@ -490,6 +539,109 @@ export const USER_ARTICLES = {
     "A market shows \"Yes\" at 62¢ means traders currently price the event at a 62% implied probability. Odds move in real-time as volume flows in.",
     "<h3>Important disclaimer</h3>",
     "Prediction-market odds are <em>not</em> forecasts from Ezana or from any single expert. They reflect the aggregate of what people willing to put money on the question currently believe. Treat them as a useful data point alongside the rest of your research, not as a prediction.",
+  ]) },
+
+  'login-streak-and-rewards': { title: 'Login Streak & 30-Day Multiplier Reward', category: 'Getting Started', content: wrap([
+    "Ezana tracks how many consecutive days you've logged in via the <strong>Day Streak</strong> card on your home page. Each day you visit Ezana, your streak grows by one. Skip a day and the streak resets to 1.",
+    "<h3>How the streak is counted</h3>",
+    "<ul><li>One streak day per calendar day, regardless of how many times you log in.</li><li>Counted in UTC — if you log in late at night your local time, the streak day rolls over to the next UTC date.</li><li>Tracked uniquely per user. Your streak is private to your account.</li></ul>",
+    "<h3>The 30-day multiplier</h3>",
+    "Reaching a 30-day streak unlocks a 7-day multiplier window where points and rewards earned across the platform (badge XP, mock-trading milestone bonuses, learning rewards) are multiplied. The Day Streak card visualizes your progress with 30 bars that fill as you advance — the final 9 bars turn gold to signal you're approaching the reward.",
+    "<h3>What happens if you miss a day</h3>",
+    "Your current streak resets to 1, but your <strong>longest streak</strong> is preserved. The longest streak is the all-time peak displayed on your profile.",
+  ]) },
+  'mock-trading-deep-dive': { title: 'Mock Trading: Practicing With Virtual Cash', category: 'Portfolio & Trading', content: wrap([
+    "Every Ezana account starts with $100,000 in virtual cash for paper trading. This is genuine simulation — you can place buy and sell orders against live market prices and watch your portfolio respond as the market moves.",
+    "<h3>Where to find it</h3>",
+    "<ul><li><strong>Trading → Mock</strong> — the dedicated paper-trading interface with a portfolio summary, holdings list, and order entry form.</li><li><strong>Home page Mock Portfolio card</strong> — a snapshot of your virtual portfolio's current value and daily change.</li></ul>",
+    "<h3>How orders fill</h3>",
+    "Mock buys and sells fill at the most recent close price. There's no slippage, no commission, no fractional-share restrictions, and orders settle instantly. This makes the core mechanics tangible without simulating every nuance of real-world trading.",
+    "<h3>What's not simulated</h3>",
+    "<ul><li>Options, futures, crypto, margin, short selling — long equity only.</li><li>After-hours fills and pre-market trading.</li><li>Real T+1 settlement (mock cash settles instantly).</li><li>Tax events — mock gains and losses don't generate 1099s.</li></ul>",
+    "<h3>Resetting your mock portfolio</h3>",
+    "Settings → Account has a <strong>Reset Mock Portfolio</strong> button. This wipes all virtual holdings and returns you to $100,000 cash. Your trading history is cleared, but any badges earned for paper-trading milestones are kept.",
+    "<h3>Switching between mock and live</h3>",
+    "Once you connect a real brokerage (Plaid read-only or open an Ezana brokerage account via Alpaca), the dashboard's portfolio cards show real holdings. The mock portfolio remains intact in the background — useful for testing strategies you don't yet want to commit real money to.",
+  ]) },
+  'centaur-intelligence-overview': { title: 'Centaur Intelligence: Your AI Research Assistant', category: 'Research Tools', content: wrap([
+    "Centaur Intelligence is Ezana's AI research assistant. It runs autonomous multi-step research sessions to answer questions you'd typically need to spend hours on yourself.",
+    "<h3>What you can ask</h3>",
+    "<ul><li>\"Compare NVDA's growth trajectory to AMD's over the last 5 years.\"</li><li>\"Summarize the key risks Tesla mentioned across its last four earnings calls.\"</li><li>\"What's the bull case and bear case for the semiconductor sector right now?\"</li><li>\"Show me politicians who bought clean-energy stocks before the IRA passed.\"</li></ul>",
+    "<h3>How sessions work</h3>",
+    "<ol><li>You ask a question on the Centaur Intelligence page.</li><li>Centaur breaks the question into research sub-steps and works through them sequentially — pulling data from Ezana's databases (congressional trades, market data, etc.) and the web.</li><li>You see each step as it runs, with sources cited.</li><li>The final answer synthesizes everything into a structured response with charts and references.</li></ol>",
+    "<h3>What Centaur is and isn't</h3>",
+    "<ul><li><strong>It is:</strong> a research accelerator that gathers, structures, and summarizes information.</li><li><strong>It isn't:</strong> personalized investment advice. Treat the output as research, not a recommendation.</li></ul>",
+    "<h3>Limits and caveats</h3>",
+    "Centaur sessions can take 30 seconds to a few minutes depending on complexity. Sessions are rate-limited per plan tier. The AI can be wrong — always verify specific numerical claims by clicking the cited source.",
+  ]) },
+  'earnings-call-analyzer': { title: 'Earnings Call Analyzer (NLP Sentiment)', category: 'Research Tools', content: wrap([
+    "The Earnings Call Analyzer in Company Research uses natural language processing to extract sentiment and key themes from a company's earnings call transcripts.",
+    "<h3>How to use it</h3>",
+    "On any company's research page, select the <strong>Earnings Analysis</strong> model. The card shows the most recent quarter's transcript scored across four dimensions:",
+    "<ul><li><strong>Tone</strong> — how positive or negative management's language was overall.</li><li><strong>Confidence</strong> — how strongly management hedged versus committed.</li><li><strong>Q&amp;A evasiveness</strong> — how often executives sidestepped analyst questions.</li><li><strong>Topic shifts</strong> — what topics got more or less airtime versus prior quarters.</li></ul>",
+    "<h3>What you see</h3>",
+    "<ul><li>A directional tilt (Bullish, Neutral, Bearish, Mixed) with a confidence level (Low, Moderate, High).</li><li>The 4-quarter trend on each metric.</li><li>The top topics from the transcript.</li><li>A list of positive and negative signals that justified the tilt.</li></ul>",
+    "<h3>Important caveats</h3>",
+    "Earnings-call NLP produces a <em>signal</em>, not a prediction. Academic research on similar techniques shows roughly 55–60% directional accuracy over 5–10 day windows for mid-caps — meaningful but modest edge. Use it alongside fundamental analysis, not as a replacement.",
+    "<h3>Sources</h3>",
+    "Transcripts are sourced from Financial Modeling Prep. Sentiment scoring uses the Loughran-McDonald financial dictionary, the academic standard for finance text analysis.",
+  ]) },
+  'kairos-signal-overview': { title: 'Kairos Signal: Event-Driven Trading Indicator', category: 'Research Tools', content: wrap([
+    "Kairos Signal monitors macro and alternative-data inputs to flag moments when conditions favor specific sectors or themes.",
+    "<h3>What it watches</h3>",
+    "<ul><li>Weather and climate data that historically correlates with commodity moves (e.g. drought conditions and ag futures).</li><li>Macro indicators from the World Bank, IMF, and FRED.</li><li>Geopolitical event clusters from GDELT.</li><li>Prediction-market odds from Polymarket as a sentiment proxy.</li></ul>",
+    "<h3>How to read a signal</h3>",
+    "Each signal card shows a thesis (\"Drought in the US Midwest is intensifying — historically correlated with corn futures upside\"), the data points behind it, the implied directional tilt, and a confidence score.",
+    "<h3>What this is, and isn't</h3>",
+    "Kairos surfaces patterns and lets you decide what to do with them. It does not place trades, recommend specific tickers, or guarantee outcomes. Like any signal-based tool, treat it as one input among many.",
+  ]) },
+  'polymarket-related-markets': { title: 'Related Prediction Markets on Events', category: 'Research Tools', content: wrap([
+    "Many event detail views in Ezana — geopolitical events, market analysis chain entries, Ezana Echo articles — show a <strong>Markets</strong> button that surfaces related prediction markets from Polymarket.",
+    "<h3>Where you'll find it</h3>",
+    "<ul><li>Global Market Analysis chain view (each event row).</li><li>ISR Article modals (geopolitical news).</li><li>Anywhere an event has a headline and description we can match to live markets.</li></ul>",
+    "<h3>How matching works</h3>",
+    "Ezana extracts keywords from the event's headline and body, queries Polymarket's public Gamma API for active markets matching those terms, then ranks results by keyword overlap and 24-hour trading volume. Closed and inactive markets are filtered out.",
+    "<h3>Reading the panel</h3>",
+    "Each market shows the question, current YES/NO odds in cents (e.g. <strong>65¢ YES</strong> means 65% implied probability), 24-hour volume, and how soon the market closes. Click any row to open the live market on polymarket.com.",
+    "<h3>Why no results sometimes appear</h3>",
+    "If an event is niche or breaking news, Polymarket may not have an active market on it yet. The empty state confirms this — it's not a bug, it's accurate reporting that no relevant market exists.",
+    "<h3>Disclaimers</h3>",
+    "Prediction-market odds are aggregated probabilities from people willing to put money on a question — useful as a data point, not as a forecast from Ezana. We don't earn commission on Polymarket trades; the integration is informational only.",
+  ]) },
+  'empire-rankings-deep-dive': { title: 'Empire Rankings: 18-Dimension Power Index', category: 'Global Analysis', content: wrap([
+    "Empire Rankings is Ezana's quantitative index of national power, inspired by Ray Dalio's <em>Changing World Order</em>. Each country is scored across 18 dimensions and aggregated into a single Empire Score.",
+    "<h3>The 18 dimensions</h3>",
+    "<ul><li><strong>Economic:</strong> economic output, trade, markets &amp; financial center, reserve currency status, debt burden, expected growth, cost competition, infrastructure, geology, resource efficiency.</li><li><strong>Power:</strong> military strength, innovation &amp; technology, education.</li><li><strong>Stability:</strong> internal conflict, character &amp; social contracts, rule of law, wealth gaps.</li><li><strong>External:</strong> acts of nature.</li></ul>",
+    "<h3>Where the data comes from</h3>",
+    "<ul><li>World Bank Open Data API for economic indicators (GDP, debt, trade balance, etc.).</li><li>IMF, FRED, and the Bank for International Settlements for financial-center metrics.</li><li>SIPRI for military expenditure.</li><li>WIPO for innovation/patent data.</li><li>UNESCO for education.</li><li>Other open data providers as documented on each dimension's detail page.</li></ul>",
+    "<h3>The Big Cycle chart</h3>",
+    "Empire Rankings includes a multi-country overlay chart that plots the Empire Score over time — the so-called Big Cycle. You can compare the trajectories of major powers (US, China, UK, EU, Japan, India, Russia) on one chart, or anchor any country to see relative scores indexed against it.",
+    "<h3>Caveats</h3>",
+    "<ul><li>Dimensions backed by partner data sources are filled in over time. Some countries have full coverage; others have placeholders for dimensions where the source isn't yet integrated.</li><li>The aggregation weights are debatable — different weighting schemes produce different rankings. We expose the per-dimension breakdown so you can form your own view.</li></ul>",
+  ]) },
+  'notifications-and-email': { title: 'Notification Preferences', category: 'Account & Security', content: wrap([
+    "Settings → Notifications controls every alert and email Ezana might send. Each category can be toggled on/off independently and configured per channel (in-app, email, push).",
+    "<h3>Categories</h3>",
+    "<ul><li><strong>Congressional Trades</strong> — alerts for new STOCK Act filings, optionally filtered to politicians you follow.</li><li><strong>Watchlist Movement</strong> — fires when a watchlist ticker moves ±5% (default) or your custom threshold per ticker.</li><li><strong>Earnings Calendar</strong> — companies you watch reporting earnings.</li><li><strong>Portfolio Health</strong> — daily summaries, risk warnings, contribution streak reminders.</li><li><strong>Community</strong> — replies, follows, mentions, direct messages.</li><li><strong>Learning</strong> — new courses, badge unlocks, streak milestones.</li><li><strong>Product Updates</strong> — feature launches and platform announcements.</li></ul>",
+    "<h3>Quiet Hours</h3>",
+    "Set a window (e.g. 10pm–7am local time) where push notifications are silenced. In-app and email notifications still arrive but don't interrupt you.",
+    "<h3>Email digest frequency</h3>",
+    "For email-eligible categories, choose <strong>Instant</strong> (one email per event), <strong>Daily</strong> (one summary email per day), or <strong>Weekly</strong> (Sunday digest).",
+    "<h3>Unsubscribing</h3>",
+    "Every email has an unsubscribe link in the footer that opens these settings preconfigured for the specific category that triggered the email.",
+  ]) },
+  'managing-brokerage-connections': { title: 'Managing External Brokerage Connections', category: 'Account & Security', content: wrap([
+    "Ezana uses Plaid to connect to external brokerages with read-only access. We can see your positions and balances; we cannot place trades or move money.",
+    "<h3>Supported brokerages</h3>",
+    "<ul><li>Charles Schwab</li><li>Fidelity</li><li>Vanguard</li><li>Robinhood</li><li>Interactive Brokers</li><li>Webull</li><li>Wealthfront</li><li>Many others — Plaid supports 12,000+ financial institutions.</li></ul>",
+    "<h3>How to connect</h3>",
+    "Settings → Integrations → Connect Brokerage. You'll be redirected to Plaid's secure flow where you log into your brokerage. Plaid stores the credentials, not Ezana — we only receive a token that lets us request balances and positions.",
+    "<h3>How to disconnect</h3>",
+    "Settings → Integrations → click the trash icon next to a connected account. The connection is severed immediately and Ezana retains a snapshot of the most recent data for 30 days before deleting it. You can also revoke connections at the source — every brokerage has a Connected Apps page where Plaid appears.",
+    "<h3>What we read, and how often</h3>",
+    "Holdings, transactions, and cash balances are refreshed every 4 hours during market hours and once daily after close. We do not read order history, dividends in transit, or any margin/loan information.",
+    "<h3>What we never see</h3>",
+    "Your brokerage username, password, 2FA codes. Plaid handles authentication and never shares credentials with us.",
   ]) },
 
   // ── New: Legal ────────────────────────────────────────────────────────
@@ -536,6 +688,7 @@ export const PARTNER_CATEGORIES = [
     { title: 'The Editorial Review Process', slug: 'article-review-process' },
     { title: 'Tracking Your Article Performance', slug: 'tracking-article-performance' },
     { title: 'Ezana Echo Content Guidelines', slug: 'content-guidelines' },
+    { title: 'Building and Selling Courses on Ezana', slug: 'building-courses' },
   ]},
   { id: 'copy-trading', title: 'Copy Trading & Commissions', description: 'Earn from copy trades and referrals', iconName: 'Repeat', articles: [
     { title: 'How Copy Trading Works for Partners', slug: 'how-copy-trading-works' },
@@ -546,6 +699,7 @@ export const PARTNER_CATEGORIES = [
   { id: 'dashboard', title: 'Partner Dashboard', description: 'Manage your partner account', iconName: 'LayoutDashboard', articles: [
     { title: 'Partner Dashboard Overview', slug: 'dashboard-overview' },
     { title: 'Understanding Your Partner Metrics', slug: 'reading-metrics' },
+    { title: 'How Copier Metrics Update in Real Time', slug: 'realtime-copier-metrics' },
     { title: 'Tips for Growing Your Copier Base', slug: 'growing-copiers' },
   ]},
   { id: 'community', title: 'Community & Engagement', description: 'Engage followers and build audience', iconName: 'Users', articles: [
@@ -562,8 +716,13 @@ export const PARTNER_CATEGORIES = [
 
 export const PARTNER_ARTICLES = {
   'becoming-a-partner': { title: 'How to Become an Ezana Partner', category: 'Partner Onboarding', content: wrap([
-    "To become a partner, click 'Become a Partner' on the landing page or navigate to /auth/partner/apply. Fill out the application with your background, areas of expertise, and how you plan to contribute to the platform.",
-    "Applications are reviewed within 5-7 business days. Once approved, you'll receive a partner account with access to the Partner Hub, Content Studio, and all partner-exclusive features. Partners get a golden verified badge visible across the platform.",
+    "To become a partner, click <strong>Become a Partner</strong> on the landing page or navigate to <code>/auth/partner/apply</code>. The application asks for your background, areas of expertise, audience size (if any), and how you plan to contribute.",
+    "<h3>What reviewers look for</h3>",
+    "<ul><li>Credible investing or finance experience (professional, educator, or documented track record).</li><li>Alignment with Ezana's compliance posture — no guaranteed-return marketing.</li><li>Willingness to complete KYC-style checks where required for payouts.</li></ul>",
+    "<h3>Timeline</h3>",
+    "Applications are typically reviewed in <strong>5–7 business days</strong>. You'll receive email at each stage (received, approved, or more information needed).",
+    "<h3>After approval</h3>",
+    "Approved partners get a partner-tier account, access to Partner Hub / Content Studio / Community Hub, and a gold verified badge on profiles and Echo bylines. Feature flags (Echo Writer, API) may require separate applications.",
   ]) },
   'partner-vs-user': { title: 'Partner Account vs Regular User Account', category: 'Partner Onboarding', content: wrap([
     "Partners see a completely different version of the web app with a gold-themed interface. Your Partner Hub replaces the regular dashboard with earnings tracking, copier metrics, and content management.",
@@ -665,5 +824,25 @@ export const PARTNER_ARTICLES = {
   'webhook-setup': { title: 'Setting Up Webhooks', category: 'API & Technical', content: wrap([
     "Webhooks send real-time notifications to your server when events occur. In Settings → API → Webhooks, enter your endpoint URL and select which events to receive: new congressional trades, portfolio alerts, copier events (new copier, copier removed), and payout notifications.",
     "Webhook payloads are sent as JSON POST requests with an HMAC signature for verification. Test your webhook using the 'Send Test' button before enabling it for production events.",
+  ]) },
+  'realtime-copier-metrics': { title: 'How Copier Metrics Update in Real Time', category: 'Partner Dashboard', content: wrap([
+    "Your Partner Dashboard shows several copier metrics that refresh on different cadences:",
+    "<h3>Refresh schedule</h3>",
+    "<ul><li><strong>Total Copiers / New This Week</strong> — updates the moment a user starts or stops copying you.</li><li><strong>AUM</strong> — recalculated every 15 minutes based on copier portfolio values.</li><li><strong>Monthly Return</strong> — recalculated nightly using the close prices of all positions in your strategy.</li><li><strong>Total Earnings</strong> — accrued continuously but locked at month-end for the next payout.</li></ul>",
+    "<h3>How AUM differs from copier dollars</h3>",
+    "AUM measures the total dollar value copiers have allocated to follow your strategies — not the dollar value of those copiers' total portfolios. A copier with $50,000 in their account who allocates $5,000 to copying you contributes $5,000 to your AUM.",
+    "<h3>When metrics may briefly mismatch</h3>",
+    "During market hours, Copier Count updates instantly but Earnings and AUM use the most recent quote refresh. A 15-minute lag in earnings figures during high-volatility periods is normal.",
+  ]) },
+  'building-courses': { title: 'Building and Selling Courses on Ezana', category: 'Content Studio & Ezana Echo', content: wrap([
+    "Partners with Echo Writer status can build paid courses through Content Studio → Courses.",
+    "<h3>Course structure</h3>",
+    "<ul><li><strong>Modules</strong> — top-level sections, e.g. \"Introduction,\" \"Reading Financial Statements,\" \"Building a Watchlist.\"</li><li><strong>Lessons</strong> — individual units within a module. Each lesson can include text, video (YouTube embed), images, and inline quizzes.</li><li><strong>Quizzes</strong> — multiple-choice or short-answer questions checked at lesson end.</li><li><strong>Capstone</strong> — optional final project that grants a course completion badge to students.</li></ul>",
+    "<h3>Pricing</h3>",
+    "Set a one-time price ($29–$499) or make the course free for follower acquisition. The 70/30 partner-platform revenue split applies to all paid sales. Bundles let you package multiple courses for a discount.",
+    "<h3>Submitting for review</h3>",
+    "Courses go through editorial review (typically 5 business days) before publication. Reviewers check for accuracy, structure, audio/video quality, and adherence to content guidelines. You'll receive specific feedback if revisions are required.",
+    "<h3>Marketing your course</h3>",
+    "Once published, your course appears in the Learning Center catalog. Promote it via your Community posts, Echo articles, and direct messages to existing copiers. Course completion rates and revenue are visible in Content Studio → Analytics.",
   ]) },
 };

@@ -475,8 +475,8 @@ body.light-mode .landing-page .landing-faq-help-link a {
 }
 
 body.light-mode .landing-page .landing-faq-contact-box {
-  border-color: var(--border-primary);
-  background: var(--surface-card);
+  border-color: transparent;
+  background: transparent;
 }
 
 body.light-mode .landing-page .landing-faq-contact-title {
@@ -484,7 +484,7 @@ body.light-mode .landing-page .landing-faq-contact-title {
 }
 
 body.light-mode .landing-page .landing-faq-contact-text {
-  color: var(--text-muted);
+  color: var(--emerald-text);
 }
 
 /* ── Testimonials (if used under .landing-page) ── */
