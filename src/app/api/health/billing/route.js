@@ -23,10 +23,11 @@ export async function GET() {
   }
 
   for (const [key, plan] of Object.entries(PLANS)) {
+    const id = plan.priceId;
     checks.plans[key] = {
-      has_price_id: !!plan.priceId,
-      starts_with_price: plan.priceId ? plan.priceId.startsWith('price_') : false,
-      price_id_preview: plan.priceId ? `${plan.priceId.slice(0, 12)}...` : null,
+      has_price_id: !!id,
+      starts_with_price: id ? id.startsWith('price_') : false,
+      preview: id ? `${id.slice(0, 12)}...` : null,
     };
   }
 

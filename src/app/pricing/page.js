@@ -241,10 +241,6 @@ export default function PricingPage() {
     return () => clearTimeout(t);
   }, [errorMsg]);
 
-  /**
-   * Silently kick off Stripe Checkout and redirect. No URL is ever rendered
-   * to the user — the browser simply navigates to Stripe's hosted page.
-   */
   async function startCheckout(plan) {
     if (plan.contactSales) {
       window.location.href = plan.ctaHref;
@@ -259,6 +255,7 @@ export default function PricingPage() {
 
     setPendingPlan(plan.id);
     setErrorMsg('');
+
     try {
       const res = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -267,21 +264,54 @@ export default function PricingPage() {
         body: JSON.stringify({ planKey, cancelPath: '/pricing' }),
       });
 
+      // 401 means user isn't signed in → send to signup, preserve plan choice
       if (res.status === 401) {
-        // Not signed in — send them to signup with the chosen plan preserved
         window.location.href = `/auth/signup?plan=${plan.id}&billing=${billing}`;
         return;
       }
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.url) {
-        throw new Error(data?.error || `Checkout failed (${res.status})`);
+
+      // Log everything so the actual cause is visible in the console
+      console.log('[pricing] checkout response:', {
+        status: res.status,
+        ok: res.ok,
+        url: data?.url,
+        error: data?.error,
+        planKey,
+        billing,
+      });
+
+      if (res.ok && data?.url) {
+        window.location.assign(data.url);
+        return;
       }
 
-      window.location.assign(data.url);
+      // Map the route's known error responses to user-friendly messages
+      // while preserving the technical detail in the console.
+      let userMessage;
+      if (res.status === 503) {
+        userMessage = 'Billing is temporarily unavailable. Please try again in a few minutes.';
+      } else if (res.status === 400 && data?.error?.toLowerCase().includes('invalid plan')) {
+        userMessage = `This plan isn't available right now. Please pick another or contact support. (${planKey})`;
+      } else if (res.status === 500 && data?.error?.toLowerCase().includes('configuration')) {
+        userMessage = 'Billing setup error — our team has been notified. Please contact support.';
+      } else if (data?.error) {
+        // Surface server's actual error message — this is what makes the bug debuggable
+        userMessage = `Checkout failed: ${data.error}`;
+      } else {
+        userMessage = `Checkout failed (HTTP ${res.status}). Please try again.`;
+      }
+
+      setErrorMsg(userMessage);
+      setPendingPlan(null);
     } catch (err) {
-      console.error('[pricing] startCheckout failed:', err);
-      setErrorMsg("Couldn't start checkout — please try again in a moment.");
+      console.error('[pricing] startCheckout exception:', err);
+      setErrorMsg(
+        err?.message
+          ? `Couldn't start checkout: ${err.message}`
+          : 'Could not connect to billing. Please check your connection and try again.'
+      );
       setPendingPlan(null);
     }
   }
