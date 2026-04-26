@@ -68,32 +68,33 @@ body.light-mode .model-metric-card.cr-model-tile {
   border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Premium: DCF, Earnings, Technical, Dividend — gold text, border, icon (no gold fill) */
+/* Premium: DCF, Earnings, Technical, Dividend — champagne gold text, border, icon
+   (matches Kairos Signal / Betting Markets / For The Quants dropdown styling) */
 .model-metric-card.cr-model-tile--premium {
-  border-color: rgba(245, 158, 11, 0.45) !important;
-  color: #b45309;
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12);
+  border-color: rgba(212, 175, 55, 0.45) !important;
+  color: #c9a227;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.12);
 }
 
 body.light-mode .model-metric-card.cr-model-tile--premium {
-  color: #b45309;
-  border-color: rgba(217, 119, 6, 0.45) !important;
+  color: #c9a227;
+  border-color: rgba(212, 175, 55, 0.45) !important;
 }
 
 body:not(.light-mode) .model-metric-card.cr-model-tile--premium {
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.45) !important;
+  color: #e6c35a;
+  border-color: rgba(212, 175, 55, 0.5) !important;
 }
 
 .model-metric-card.cr-model-tile--premium .model-metric-icon {
-  background: rgba(245, 158, 11, 0.12) !important;
-  color: #d97706 !important;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(212, 175, 55, 0.12) !important;
+  color: #d4af37 !important;
+  border: 1px solid rgba(212, 175, 55, 0.35);
 }
 
 body:not(.light-mode) .model-metric-card.cr-model-tile--premium .model-metric-icon {
-  color: #fbbf24 !important;
-  border-color: rgba(251, 191, 36, 0.4);
+  color: #e6c35a !important;
+  border-color: rgba(212, 175, 55, 0.4);
 }
 
 .model-metric-card.cr-model-tile--premium .model-metric-label,
@@ -113,9 +114,9 @@ body:not(.light-mode) .model-metric-card.cr-model-tile--premium .model-metric-ic
 }
 
 .model-metric-card.cr-model-tile--premium.active {
-  border-color: rgba(245, 158, 11, 0.75) !important;
+  border-color: rgba(212, 175, 55, 0.75) !important;
   box-shadow:
-    0 0 0 1px rgba(245, 158, 11, 0.35),
+    0 0 0 1px rgba(212, 175, 55, 0.35),
     0 4px 18px rgba(0, 0, 0, 0.12);
   background: var(--card, #0d1117) !important;
 }
@@ -128,16 +129,16 @@ body.light-mode .model-metric-card.cr-model-tile--premium.active {
   flex-shrink: 0;
   font-size: 0.65rem;
   font-weight: 800;
-  color: #d97706;
+  color: #d4af37;
   opacity: 0.9;
   align-self: center;
 }
 
 body:not(.light-mode) .cr-model-premium-star {
-  color: #fbbf24;
+  color: #e6c35a;
 }
 
 .cr-models-vertical .model-metric-card.cr-model-tile--premium.active,
 .cr-models-above-chart .model-metric-card.cr-model-tile--premium.active {
-  border-color: rgba(245, 158, 11, 0.75) !important;
+  border-color: rgba(212, 175, 55, 0.75) !important;
 }
