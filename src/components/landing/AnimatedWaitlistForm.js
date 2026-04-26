@@ -59,38 +59,38 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
 
         <div
           id="poda"
-          className={`relative flex w-full max-w-xl items-center ${alignLeft ? 'justify-start' : 'justify-center'} group`}
+          className={`relative flex w-full max-w-3xl items-center ${alignLeft ? 'justify-start' : 'justify-center'} group`}
         >
           {/* Glow Layer 1 - Outer */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-[min(100%,36rem)] rounded-xl blur-[3px]
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-[min(100%,48rem)] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[999px] before:h-[999px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[60deg]
                           before:bg-[conic-gradient(#000,#10b981_5%,#000_38%,#000_50%,#059669_60%,#000_87%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-120deg] group-focus-within:before:rotate-[420deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
           {/* Glow Layer 2 */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[min(100%,36rem)] rounded-xl blur-[3px]
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[min(100%,48rem)] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
           {/* Glow Layer 3 */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[min(100%,36rem)] rounded-xl blur-[3px]
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-[min(100%,48rem)] rounded-xl blur-[3px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
                           group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
           {/* Glow Layer 4 - Inner bright */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[52px] max-w-[min(100%,36rem)] rounded-lg blur-[2px]
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[52px] max-w-[min(100%,48rem)] rounded-lg blur-[2px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[83deg]
                           before:bg-[conic-gradient(rgba(0,0,0,0)_0%,#34d399,rgba(0,0,0,0)_8%,rgba(0,0,0,0)_50%,#6ee7b7,rgba(0,0,0,0)_58%)]
                           before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-97deg] group-focus-within:before:rotate-[443deg] group-focus-within:before:duration-[4000ms]">
           </div>
 
           {/* Glow Layer 5 - Border */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[50px] max-w-[min(100%,36rem)] rounded-xl blur-[0.5px]
+          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[50px] max-w-[min(100%,48rem)] rounded-xl blur-[0.5px]
                           before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[70deg]
                           before:bg-[conic-gradient(#0a0f0a,#10b981_5%,#0a0f0a_14%,#0a0f0a_50%,#059669_60%,#0a0f0a_64%)]
                           before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-110deg] group-focus-within:before:rotate-[430deg] group-focus-within:before:duration-[4000ms]">
@@ -108,13 +108,13 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
               className="bg-[#0a0f0a] border border-emerald-700/70 w-full min-w-0 max-w-full h-11 rounded-full text-white pl-12 pr-14 text-sm focus:outline-none focus:border-emerald-500 placeholder-gray-500 disabled:opacity-60 transition-colors duration-300"
             />
 
-            <div className="pointer-events-none w-[30px] h-[18px] absolute bg-[#10b981] top-2 left-1.5 blur-2xl opacity-80 transition-all duration-[2000ms] group-hover:opacity-0" />
+            <div className="pointer-events-none w-[30px] h-[18px] absolute bg-[#10b981] top-1/2 left-1.5 -translate-y-1/2 blur-2xl opacity-80 transition-all duration-[2000ms] group-hover:opacity-0" />
 
             <button
               type="submit"
               disabled={status === 'loading' || status === 'success'}
               aria-label="Submit email"
-              className="absolute top-1.5 right-1.5 flex items-center justify-center z-[2] h-9 w-9 overflow-hidden rounded-full bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] border border-emerald-900/50 hover:border-emerald-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              className="absolute top-1/2 right-1.5 -translate-y-1/2 flex items-center justify-center z-[2] h-9 w-9 overflow-hidden rounded-full bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] border border-emerald-900/50 hover:border-emerald-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {status === 'loading' ? (
                 <svg className="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24">
