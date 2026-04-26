@@ -4,7 +4,7 @@
    ============================================ */
 
 .ezana-terminal {
-  background: var(--background, #0f1419);
+  background: var(--app-bg, #0a0e13);
   min-height: calc(100vh - 64px);
   font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, sans-serif);
   font-size: var(--font-sm, 0.875rem);

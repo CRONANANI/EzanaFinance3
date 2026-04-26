@@ -556,10 +556,6 @@ body.light-mode .betting-markets-container {
   color: #111827 !important;
 }
 
-body.light-mode .dashboard-main {
-  background: #f8f9fb !important;
-}
-
 /* ── Charts (canvas containers) ── */
 body.light-mode .chart-container,
 body.light-mode .portfolio-chart-wrap,
