@@ -45,6 +45,11 @@ export function EchoArticleEngagement({ articleId, seedComments = [] }) {
 
   return (
     <div className="echo-engage-block">
+      {!commentsOpen && (
+        <button type="button" className="echo-article-show-comments" onClick={() => setCommentsOpen(true)}>
+          Show comments ({comments.length})
+        </button>
+      )}
       {commentsOpen && (
         <div className="comm-comment-thread" role="region" aria-label="Comments">
           <div className="comm-comment-thread-head">
