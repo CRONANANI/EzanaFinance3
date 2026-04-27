@@ -477,85 +477,77 @@ export default function CommunityPageClient() {
       className="dashboard-page-inset db-page community-root"
       style={{ paddingTop: 0, paddingBottom: '2rem' }}
     >
-      {/* ═══ Hero row: greeting + Trending Topics (spans full card slot) ═══
-          Trophies have been consolidated into the unified Badge system
-          (see /community/badges), so the standalone Trophy Cabinet card
-          was retired from the hero row. Trending Topics now fills the
-          full width and shows a richer scrollable list of topics. */}
-      <div className="comm-hero-row">
-        <div className="comm-hero-greeting">
-          <h1 className="db-greeting">
-            <span>
-              {getGreeting()}, {firstName}
-            </span>
-            <span className="db-greeting-waving" aria-hidden>👋</span>
-          </h1>
-          <p className="db-greeting-sub">
-            Connect, share, and grow with the investing community
-          </p>
-          <p className="db-greeting-date">{formatDateLine()}</p>
-        </div>
-
-        <div className="comm-hero-cards">
-          <section
-            className="db-card comm-hero-card comm-trending-card"
-            data-community-card
-            aria-label="Trending topics"
-          >
-            <div className="comm-hero-card-head">
-              <div className="comm-card-head-left" style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0 }}>
-                <div className="comm-card-icon" aria-hidden>
-                  <i className="bi bi-fire" />
-                </div>
-                <div className="comm-card-head-meta">
-                  <h3>Trending Topics</h3>
-                  <p>What&apos;s hot in the community right now</p>
-                </div>
-              </div>
-              <Link href="/community" className="comm-hero-card-link">
-                View All
-              </Link>
-            </div>
-
-            <ul className="comm-trending-list" aria-label="Ranked trending topics">
-              {TRENDING_TOPICS.map((topic, idx) => (
-                <li key={topic.tag}>
-                  <button
-                    type="button"
-                    className="comm-trending-row"
-                  >
-                    <span className="comm-trending-row__rank" aria-hidden>
-                      {idx + 1}
-                    </span>
-                    <span className="comm-trending-row__body">
-                      <span className="comm-trending-row__tag">
-                        <span className="comm-trending-row__hash">#</span>
-                        {topic.tag}
-                      </span>
-                      <span className="comm-trending-row__meta">
-                        {topic.posts} posts · {topic.category}
-                      </span>
-                    </span>
-                    <span
-                      className={`comm-trending-row__trend comm-trending-row__trend--${topic.trend}`}
-                      aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
-                    >
-                      <i
-                        className={
-                          topic.trend === 'up'
-                            ? 'bi bi-arrow-up-right'
-                            : 'bi bi-arrow-down-right'
-                        }
-                        aria-hidden
-                      />
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
+      {/* ═══ Greeting — full width, on its own row ═══ */}
+      <div className="comm-greeting-section">
+        <h1 className="db-greeting">
+          <span>
+            {getGreeting()}, {firstName}
+          </span>
+          <span className="db-greeting-waving" aria-hidden>👋</span>
+        </h1>
+        <p className="db-greeting-sub">
+          Connect, share, and grow with the investing community
+        </p>
+        <p className="db-greeting-date">{formatDateLine()}</p>
       </div>
+
+      {/* ═══ TRENDING TOPICS — full width below greeting ═══ */}
+      <section
+        className="db-card comm-trending-card"
+        data-community-card
+        aria-label="Trending topics"
+      >
+        <div className="comm-trending-card-head">
+          <div className="comm-trending-card-head-left">
+            <div className="comm-trending-card-icon" aria-hidden>
+              <i className="bi bi-fire" />
+            </div>
+            <div className="comm-trending-card-head-meta">
+              <h3>Trending Topics</h3>
+              <p>What&apos;s hot in the community right now</p>
+            </div>
+          </div>
+          <Link href="/community" className="comm-trending-card-link">
+            View All <i className="bi bi-arrow-right" aria-hidden />
+          </Link>
+        </div>
+
+        <div className="comm-trending-grid">
+          {TRENDING_TOPICS.map((topic, idx) => (
+            <button
+              key={topic.tag}
+              type="button"
+              className="comm-trending-tile"
+            >
+              <span className="comm-trending-tile__rank" aria-hidden>
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+              <div className="comm-trending-tile__body">
+                <span className="comm-trending-tile__tag">
+                  <span className="comm-trending-tile__hash">#</span>
+                  {topic.tag}
+                </span>
+                <span className="comm-trending-tile__meta">
+                  {topic.posts} posts · {topic.category}
+                </span>
+              </div>
+              <span
+                className={`comm-trending-tile__trend comm-trending-tile__trend--${topic.trend}`}
+                aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
+              >
+                <i
+                  className={
+                    topic.trend === 'up'
+                      ? 'bi bi-arrow-up-right'
+                      : 'bi bi-arrow-down-right'
+                  }
+                  aria-hidden
+                />
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* ═══ KPI strip — community-wide snapshot ═══ */}
       <section className="comm-kpi-row" aria-label="Community at a glance">

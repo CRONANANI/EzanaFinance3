@@ -1288,5 +1288,13 @@ body.light-mode .lc3-partner-cell-time {
   color: var(--text-faint);
 }
 
+/* ── Defensive override: ensure learning center surface matches navbar ── */
+body.light-mode .learning-center-page,
+body.light-mode .lc-page,
+body.light-mode .learning-center-root,
+body.light-mode .lc3-page {
+  background-color: #ffffff;
+}
+
 
 

@@ -1636,255 +1636,357 @@ body.light-mode .comm-profile-page .db-card span {
   color: inherit;
 }
 
-/* Legacy .comm-top-row — superseded by .comm-hero-row (kept in case of stale references) */
+/* Legacy layout hook — harmless if unused */
 .comm-top-row {
   display: block;
 }
 
-/* Hero row: greeting (left) + Trending Topics card spanning full right
-   slot. Trophy Cabinet used to occupy the second slot but has been retired
-   in favor of the unified Badge system (see /community/badges). */
+/* ════════════════════════════════════════════════════════════
+   COMMUNITY HERO — Greeting on top, Trending Topics full-width below
+   Replaces the previous side-by-side .comm-hero-row layout.
+   ════════════════════════════════════════════════════════════ */
 
-@media (max-width: 1024px) {
-  .comm-hero-row .comm-hero-greeting {
-    flex: 1 1 100% !important;
-    max-width: 100% !important;
-  }
-  .comm-hero-row .comm-hero-cards {
-    flex: 1 1 100% !important;
-  }
+.comm-greeting-section {
+  margin-bottom: 1.5rem;
 }
 
-.comm-hero-row .comm-hero-cards .trending-strip::-webkit-scrollbar {
-  display: none;
+.comm-greeting-section .db-greeting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+body.light-mode .comm-greeting-section .db-greeting {
+  color: #0f172a;
+}
+
+.comm-greeting-section .db-greeting-waving {
+  font-size: 1.4rem;
+}
+
+.comm-greeting-section .db-greeting-sub {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #9ca3af);
+  margin: 0 0 0.25rem;
+}
+
+body.light-mode .comm-greeting-section .db-greeting-sub {
+  color: #475569;
+}
+
+.comm-greeting-section .db-greeting-date {
+  font-size: 0.75rem;
+  color: var(--text-faint, #6b7280);
+  margin: 0;
+}
+
+body.light-mode .comm-greeting-section .db-greeting-date {
+  color: #94a3b8;
+}
+
+/* ─── TRENDING TOPICS CARD ─── full width, polished card chrome */
+.comm-trending-card {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  padding: 1.5rem;
+  background: var(--card, rgba(16, 185, 129, 0.02));
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 14px;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+body.light-mode .comm-trending-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.comm-trending-card:hover {
+  border-color: rgba(16, 185, 129, 0.18);
+}
+
+body.light-mode .comm-trending-card:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Card header — icon + title + view-all link */
+.comm-trending-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.comm-trending-card-head-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.comm-trending-card-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(239, 68, 68, 0.12));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 10px;
+  color: #f59e0b;
+  font-size: 1.1rem;
+}
+
+body.light-mode .comm-trending-card-icon {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.08));
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+}
+
+.comm-trending-card-head-meta h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  margin: 0 0 0.15rem;
+  letter-spacing: -0.01em;
+}
+
+body.light-mode .comm-trending-card-head-meta h3 {
+  color: #0f172a;
+}
+
+.comm-trending-card-head-meta p {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #9ca3af);
+  margin: 0;
+}
+
+body.light-mode .comm-trending-card-head-meta p {
+  color: #64748b;
+}
+
+.comm-trending-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  color: #10b981;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.comm-trending-card-link:hover {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  text-decoration: none;
+  gap: 0.6rem;
+}
+
+.comm-trending-card-link i {
+  font-size: 0.75rem;
+  transition: transform 150ms ease;
+}
+
+.comm-trending-card-link:hover i {
+  transform: translateX(2px);
+}
+
+body.light-mode .comm-trending-card-link {
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.18);
+  color: #059669;
+}
+
+body.light-mode .comm-trending-card-link:hover {
+  background: rgba(5, 150, 105, 0.12);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+/* ─── TRENDING TILES GRID ─── responsive 2-3 columns */
+.comm-trending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.65rem;
+}
+
+.comm-trending-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 200ms ease;
+}
+
+.comm-trending-tile:hover,
+.comm-trending-tile:focus-visible {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.04);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+body.light-mode .comm-trending-tile {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .comm-trending-tile:hover {
+  border-color: rgba(5, 150, 105, 0.3);
+  background: rgba(5, 150, 105, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.comm-trending-tile__rank {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #10b981;
+  font-variant-numeric: tabular-nums;
+}
+
+body.light-mode .comm-trending-tile__rank {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.18);
+  color: #059669;
+}
+
+.comm-trending-tile__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.comm-trending-tile__tag {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.light-mode .comm-trending-tile__tag {
+  color: #0f172a;
+}
+
+.comm-trending-tile__hash {
+  color: #10b981;
+  margin-right: 1px;
+  font-weight: 700;
+}
+
+body.light-mode .comm-trending-tile__hash {
+  color: #059669;
+}
+
+.comm-trending-tile__meta {
+  font-size: 0.6875rem;
+  color: var(--text-secondary, #9ca3af);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.light-mode .comm-trending-tile__meta {
+  color: #64748b;
+}
+
+.comm-trending-tile__trend {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.comm-trending-tile__trend--up {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.comm-trending-tile__trend--down {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+body.light-mode .comm-trending-tile__trend--up {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+}
+
+body.light-mode .comm-trending-tile__trend--down {
+  background: rgba(220, 38, 38, 0.06);
+  color: #dc2626;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .comm-greeting-section .db-greeting {
+    font-size: 1.5rem;
+  }
+
+  .comm-trending-card {
+    padding: 1rem;
+  }
+
+  .comm-trending-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comm-trending-card-link {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .comm-trending-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    Aesthetic refactor — Community page matches Home Dashboard tokens.
-   These rules replace inline styles in CommunityPageClient.jsx and
-   standardize every card header, the hero row, the KPI strip, and the
-   page-level tab bar. Do not edit the values in isolation — they mirror
-   home-dashboard.css on purpose.
+   (KPI strip, tabs, shared card headers below.)
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Hero row — greeting on the left, two accent cards on the right */
-.comm-hero-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
-.comm-hero-row .comm-hero-greeting {
-  min-width: 0;
-  flex: 0 0 32%;
-  max-width: 32%;
-}
-
-.comm-hero-row .comm-hero-greeting .db-greeting {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-wrap: nowrap;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.comm-hero-row .comm-hero-greeting .db-greeting > span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.comm-hero-row .comm-hero-greeting .db-greeting-waving {
-  flex-shrink: 0;
-}
-
-.comm-hero-row .comm-hero-cards {
-  flex: 1 1 0;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-  align-self: stretch;
-}
-
-/* Accent card inside the hero row — lighter padding, still .db-card */
-.comm-hero-card {
-  padding: 1rem 1.25rem;
-}
-
-/* Trending Topics card — full-width inside .comm-hero-cards, with a
-   scrollable ranked list that fills the available vertical space.
-   The card flex-columns so the list flex-grows; the list itself caps
-   at a sensible max-height so the hero row doesn't grow unbounded. */
-.comm-trending-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.comm-trending-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: clamp(220px, 42vh, 360px);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-right: 4px;
-}
-
-.comm-trending-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.comm-trending-list::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
-  border-radius: 999px;
-}
-
-.comm-trending-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.comm-trending-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.5rem 0.55rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: inherit;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.comm-trending-row:hover,
-.comm-trending-row:focus-visible {
-  background: rgba(16, 185, 129, 0.06);
-  border-color: rgba(16, 185, 129, 0.22);
-  outline: none;
-}
-
-.comm-trending-row__rank {
-  flex-shrink: 0;
-  width: 20px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #6b7280;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-
-.comm-trending-row__body {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.comm-trending-row__tag {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--home-heading, #f0f6fc);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.comm-trending-row__hash {
-  color: #10b981;
-  margin-right: 1px;
-}
-
-.comm-trending-row__meta {
-  font-size: 0.6875rem;
-  color: var(--home-muted, #6b7280);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.comm-trending-row__trend {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-}
-
-.comm-trending-row__trend--up {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
-}
-
-.comm-trending-row__trend--down {
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
-}
-
-.comm-hero-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.65rem;
-  margin-bottom: 0.75rem;
-}
-
-.comm-hero-card-title {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 800;
-  color: var(--home-heading, #f0f6fc);
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.comm-hero-card-sub {
-  margin: 2px 0 0;
-  font-size: 0.625rem;
-  color: #6b7280;
-}
-
-.comm-hero-card-link {
-  padding: 3px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  background: rgba(16, 185, 129, 0.05);
-  color: #10b981;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  white-space: nowrap;
-  text-decoration: none;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.comm-hero-card-link:hover {
-  border-color: rgba(16, 185, 129, 0.35);
-  background: rgba(16, 185, 129, 0.1);
-}
-
-/* Trending topic chips inside the hero card */
+/* Trending topic chips — horizontal strip variant (other community surfaces) */
 .comm-trending-strip {
   display: flex;
   gap: 8px;
@@ -3294,21 +3396,6 @@ body.light-mode .comm-composer-ticker-result {
   gap: 1rem;
 }
 
-/* Make sure the overall page shell doesn't let the hero row collapse to
-   one column and then stretch the cards to the full container width,
-   which previously introduced a visual gap mid-page. */
-@media (max-width: 900px) {
-  .comm-hero-row .comm-hero-greeting {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-
-  .comm-hero-row .comm-hero-cards {
-    flex: 1 1 100%;
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════════════
    LIGHT-MODE CONTRAST PASS (WCAG AA)
    -------------------------------------------------------------------
@@ -3351,9 +3438,8 @@ body.light-mode .community-root {
   --comm-accent-text-strong: #065f46;
 }
 
-/* ─── Hero row ─── */
-body.light-mode .community-root .comm-card-head-meta > h3,
-body.light-mode .community-root .comm-hero-card-title {
+/* ─── Shared card headers ─── */
+body.light-mode .community-root .comm-card-head-meta > h3 {
   color: #0f172a;
 }
 
@@ -3374,42 +3460,6 @@ body.light-mode .community-root .comm-trending-chip .hash {
 
 body.light-mode .community-root .comm-trending-chip .count {
   color: #475569;
-}
-
-body.light-mode .community-root .comm-trending-row:hover,
-body.light-mode .community-root .comm-trending-row:focus-visible {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(5, 150, 105, 0.28);
-}
-
-body.light-mode .community-root .comm-trending-row__rank {
-  color: #475569;
-}
-
-body.light-mode .community-root .comm-trending-row__hash {
-  color: #047857;
-}
-
-body.light-mode .community-root .comm-trending-row__trend--up {
-  color: #047857;
-  background: rgba(16, 185, 129, 0.12);
-}
-
-body.light-mode .community-root .comm-trending-row__trend--down {
-  color: #b91c1c;
-  background: rgba(239, 68, 68, 0.12);
-}
-
-body.light-mode .community-root .comm-hero-card-link {
-  color: #047857;
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(5, 150, 105, 0.3);
-}
-
-body.light-mode .community-root .comm-hero-card-link:hover {
-  color: #065f46;
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(5, 150, 105, 0.5);
 }
 
 /* ─── KPI strip ─── */
@@ -3691,3 +3741,44 @@ body.light-mode .community-root .comm-page-tab.is-active:hover {
    so a CSS rule can't override it. These icons are decorative
    (aria-hidden) and sit next to their label text, so WCAG 1.4.11
    (non-text contrast) does not apply — safe to leave. */
+
+/* ── Defensive override: ensure community page surface matches navbar ── */
+body.light-mode .community-root,
+body.light-mode .comm-root {
+  background-color: #ffffff;
+}
+
+/* ─── KPI CARDS — light-mode polish ─── */
+body.light-mode .community-root .comm-kpi-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 200ms ease;
+}
+
+body.light-mode .community-root .comm-kpi-card:hover {
+  border-color: rgba(5, 150, 105, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+body.light-mode .community-root .comm-kpi-icon {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+}
+
+body.light-mode .community-root .comm-kpi-label {
+  color: #64748b;
+}
+
+body.light-mode .community-root .comm-kpi-value {
+  color: #0f172a;
+}
+
+body.light-mode .community-root .comm-kpi-sub {
+  color: #94a3b8;
+}
+
+body.light-mode .community-root .comm-kpi-sub.positive {
+  color: #059669;
+}
