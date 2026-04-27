@@ -2,6 +2,15 @@
 
 import { useState } from 'react';
 
+/**
+ * Email waitlist form for the landing page hero.
+ *
+ * Redesigned to be visually clean — single subtle emerald glow on focus,
+ * proper width to display "Enter your email for early access..." without clipping,
+ * and accessible loading/success/error states.
+ *
+ * Behavior unchanged: posts to /api/waitlist with referralSource='landing_page'.
+ */
 export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
@@ -22,13 +31,8 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
     try {
       const response = await fetch('/api/waitlist', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          referralSource: 'landing_page',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, referralSource: 'landing_page' }),
       });
 
       const data = await response.json();
@@ -40,8 +44,9 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
       }
 
       setStatus('success');
-      setMessage("Thank you for subscribing to our events newsletter, we will email you when we are ready to onboard you.");
-
+      setMessage(
+        "Thank you for subscribing to our events newsletter, we will email you when we are ready to onboard you."
+      );
       setEmail('');
     } catch (error) {
       console.error('Waitlist submission error:', error);
@@ -50,120 +55,152 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
     }
   };
 
+  const isDisabled = status === 'loading' || status === 'success';
+
   return (
-    <div className={`flex w-full min-w-0 flex-col ${alignLeft ? 'items-start' : 'items-center'} ${className}`}>
-      <div
-        className={`relative flex w-full min-w-0 items-center ${alignLeft ? 'justify-start' : 'justify-center'}`}
+    <div
+      className={`waitlist-root flex w-full flex-col ${alignLeft ? 'items-start' : 'items-center'} ${className}`}
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="waitlist-form group relative w-full"
+        noValidate
       >
-        <div className="absolute z-[-1] w-full"></div>
-
+        {/* Subtle focus glow — replaces the 5 stacked glow layers from the previous design.
+            Becomes visible only on focus-within, so it's a quiet decorative touch
+            rather than constant motion. */}
         <div
-          id="poda"
-          className={`relative flex w-full min-w-0 max-w-full items-center ${alignLeft ? 'justify-start' : 'justify-center'} group`}
-        >
-          {/* Glow Layer 1 - Outer */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[58px] max-w-full rounded-xl blur-[3px]
-                          before:absolute before:content-[''] before:z-[-2] before:w-[999px] before:h-[999px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[60deg]
-                          before:bg-[conic-gradient(#000,#10b981_5%,#000_38%,#000_50%,#059669_60%,#000_87%)] before:transition-all before:duration-[2000ms]
-                          group-hover:before:rotate-[-120deg] group-focus-within:before:rotate-[420deg] group-focus-within:before:duration-[4000ms]">
-          </div>
+          className="waitlist-glow pointer-events-none absolute -inset-1 rounded-2xl opacity-0 blur-md transition-opacity duration-500 group-focus-within:opacity-100"
+          aria-hidden
+        />
 
-          {/* Glow Layer 2 */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-full rounded-xl blur-[3px]
-                          before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
-                          before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
-                          group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
-          </div>
-
-          {/* Glow Layer 3 */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[54px] max-w-full rounded-xl blur-[3px]
-                          before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[82deg]
-                          before:bg-[conic-gradient(rgba(0,0,0,0),#047857,rgba(0,0,0,0)_10%,rgba(0,0,0,0)_50%,#10b981,rgba(0,0,0,0)_60%)] before:transition-all before:duration-[2000ms]
-                          group-hover:before:rotate-[-98deg] group-focus-within:before:rotate-[442deg] group-focus-within:before:duration-[4000ms]">
-          </div>
-
-          {/* Glow Layer 4 - Inner bright */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[52px] max-w-full rounded-lg blur-[2px]
-                          before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[83deg]
-                          before:bg-[conic-gradient(rgba(0,0,0,0)_0%,#34d399,rgba(0,0,0,0)_8%,rgba(0,0,0,0)_50%,#6ee7b7,rgba(0,0,0,0)_58%)]
-                          before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-97deg] group-focus-within:before:rotate-[443deg] group-focus-within:before:duration-[4000ms]">
-          </div>
-
-          {/* Glow Layer 5 - Border */}
-          <div className="absolute z-[-1] overflow-hidden h-full w-full max-h-[50px] max-w-full rounded-xl blur-[0.5px]
-                          before:absolute before:content-[''] before:z-[-2] before:w-[600px] before:h-[600px] before:bg-no-repeat before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:rotate-[70deg]
-                          before:bg-[conic-gradient(#0a0f0a,#10b981_5%,#0a0f0a_14%,#0a0f0a_50%,#059669_60%,#0a0f0a_64%)]
-                          before:transition-all before:duration-[2000ms] group-hover:before:rotate-[-110deg] group-focus-within:before:rotate-[430deg] group-focus-within:before:duration-[4000ms]">
-          </div>
-
-          <form onSubmit={handleSubmit} id="main" className="relative group w-full min-w-0">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email for early access..."
-              autoComplete="email"
-              aria-label="Email address for early access"
-              disabled={status === 'loading' || status === 'success'}
-              className="bg-[#0a0f0a] border border-emerald-700/70 w-full min-w-0 max-w-full h-11 rounded-full text-white pl-12 pr-14 text-sm focus:outline-none focus:border-emerald-500 placeholder-gray-500 disabled:opacity-60 transition-colors duration-300"
-            />
-
-            <div className="pointer-events-none w-[30px] h-[18px] absolute bg-[#10b981] top-1/2 left-1.5 -translate-y-1/2 blur-2xl opacity-80 transition-all duration-[2000ms] group-hover:opacity-0" />
-
-            <button
-              type="submit"
-              disabled={status === 'loading' || status === 'success'}
-              aria-label="Submit email"
-              className="absolute top-1/2 right-1.5 -translate-y-1/2 flex items-center justify-center z-[2] h-9 w-9 overflow-hidden rounded-full bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] border border-emerald-900/50 hover:border-emerald-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        {/* The actual input shell */}
+        <div className="relative">
+          {/* Email icon (left) */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="waitlist-icon"
+              aria-hidden
             >
-              {status === 'loading' ? (
-                <svg className="animate-spin w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              ) : status === 'success' ? (
-                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              )}
-            </button>
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </div>
 
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#emailGradientWaitlist)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="20" height="16" x="2" y="4" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                <defs>
-                  <linearGradient id="emailGradientWaitlist" gradientTransform="rotate(50)">
-                    <stop offset="0%" stopColor="#6ee7b7" />
-                    <stop offset="100%" stopColor="#10b981" />
-                  </linearGradient>
-                </defs>
+          {/* Input */}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email for early access..."
+            autoComplete="email"
+            aria-label="Email address for early access"
+            disabled={isDisabled}
+            className="waitlist-input"
+          />
+
+          {/* Submit button (right) */}
+          <button
+            type="submit"
+            disabled={isDisabled}
+            aria-label={
+              status === 'loading'
+                ? 'Submitting'
+                : status === 'success'
+                  ? 'Submitted'
+                  : 'Submit email for early access'
+            }
+            className="waitlist-submit"
+          >
+            {status === 'loading' ? (
+              <svg
+                className="animate-spin h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
-            </div>
-          </form>
+            ) : status === 'success' ? (
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            )}
+          </button>
         </div>
-      </div>
+      </form>
 
+      {/* Status message (success or error) */}
       {message && (
-        <p className={`mt-4 text-sm ${alignLeft ? 'text-left' : 'text-center'} ${status === 'error' ? 'text-red-400' : 'text-emerald-400'}`}>
+        <p
+          className={`mt-3 text-sm ${alignLeft ? 'text-left' : 'text-center'} ${
+            status === 'error' ? 'text-red-400' : 'text-emerald-400'
+          }`}
+          role={status === 'error' ? 'alert' : 'status'}
+        >
           {message}
         </p>
       )}
 
+      {/* Reassurance footer */}
       {status !== 'success' && (
         <p
-          className={`mt-4 text-xs text-gray-500 flex items-center gap-2 ${alignLeft ? '' : 'justify-center'}`}
+          className={`mt-3 flex items-center gap-1.5 text-xs text-gray-500 ${
+            alignLeft ? '' : 'justify-center'
+          }`}
         >
-          <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          <svg
+            className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+            />
           </svg>
           No spam, ever.
         </p>
