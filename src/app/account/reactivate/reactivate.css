@@ -1,0 +1,122 @@
+.reactivate-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--app-bg, #0a0e13);
+}
+
+.reactivate-card {
+  max-width: 480px;
+  width: 100%;
+  padding: 3rem 2.5rem;
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 16px;
+  text-align: center;
+}
+
+body.light-mode .reactivate-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.reactivate-icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.reactivate-icon-wrap--info {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.reactivate-icon-wrap--success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.reactivate-icon-wrap--error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.reactivate-card h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+  margin: 0 0 0.75rem;
+}
+
+body.light-mode .reactivate-card h1 {
+  color: #0f172a;
+}
+
+.reactivate-card p {
+  font-size: 0.95rem;
+  color: var(--text-secondary, #d1d5db);
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+body.light-mode .reactivate-card p {
+  color: #475569;
+}
+
+.reactivate-btn {
+  display: inline-block;
+  padding: 0.85rem 2rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.reactivate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.reactivate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reactivate-link {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-faint, #6b7280);
+  text-decoration: none;
+}
+
+.reactivate-link:hover {
+  color: #10b981;
+  text-decoration: underline;
+}
+
+.reactivate-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1.5rem;
+  border: 3px solid rgba(16, 185, 129, 0.2);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: react-spin 0.8s linear infinite;
+}
+
+@keyframes react-spin {
+  to { transform: rotate(360deg); }
+}

@@ -107,7 +107,7 @@ export async function middleware(request) {
   if (user && (onPartnerProtectedRoute || onUserProtectedRoute) && !isTradingPublicPath) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email_verified')
+      .select('email_verified, deleted_at, deletion_scheduled_for')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -116,6 +116,35 @@ export async function middleware(request) {
       url.pathname = '/auth/verify-email';
       url.search = '';
       return NextResponse.redirect(url);
+    }
+
+    if (profile?.deleted_at && profile?.deletion_scheduled_for) {
+      const scheduledFor = new Date(profile.deletion_scheduled_for);
+      if (scheduledFor < new Date()) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/signin';
+        url.search = '';
+        url.searchParams.set('reason', 'account_deleted');
+        const redirectResponse = NextResponse.redirect(url);
+        const supabaseSignOut = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          {
+            cookies: {
+              getAll() {
+                return request.cookies.getAll();
+              },
+              setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) => {
+                  redirectResponse.cookies.set(name, value, options);
+                });
+              },
+            },
+          },
+        );
+        await supabaseSignOut.auth.signOut();
+        return redirectResponse;
+      }
     }
   }
 

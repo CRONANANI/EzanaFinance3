@@ -16,6 +16,7 @@ import { useAuth } from '@/components/AuthProvider';
 export function MyDetailsPanel({ onSave, settings, updateSetting }) {
   const { user } = useAuth();
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleAvatarChange = async (e) => {
@@ -280,19 +281,32 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
           <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
         </div>
         <div className="settings-danger-zone">
-          <h3 className="settings-danger-title"><i className="bi bi-exclamation-triangle" /> Danger Zone</h3>
+          <h3 className="settings-danger-title">
+            <i className="bi bi-exclamation-triangle" /> Danger Zone
+          </h3>
           <div className="settings-danger-card">
-            <div>
+            <div className="settings-danger-text">
               <strong>Delete account</strong>
               <p>Permanently delete your account and all associated data. This cannot be undone.</p>
             </div>
-            <button type="button" className="settings-btn-danger" onClick={() => {
-              if (confirm('Are you sure? This will permanently delete your account.')) {
-                alert('Account deletion would be processed. Connect to your auth provider to implement.');
-              }
-            }}>Delete account</button>
+            <button
+              type="button"
+              className="settings-btn-danger"
+              onClick={() => setDeleteModalOpen(true)}
+            >
+              Delete account
+            </button>
           </div>
         </div>
+
+        {deleteModalOpen && (
+          <DeleteAccountModal
+            onClose={() => setDeleteModalOpen(false)}
+            onDeleted={() => {
+              window.location.href = '/auth/signin?reason=account_deletion';
+            }}
+          />
+        )}
       </div>
     </div>
   );
@@ -1116,6 +1130,99 @@ export function ApiPanel({ onSave }) {
         </div>
         <div className="settings-btn-row">
           <button type="button" className="settings-btn-primary" onClick={onSave}>Save changes</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeleteAccountModal({ onClose, onDeleted }) {
+  const [confirmText, setConfirmText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const isConfirmed = confirmText.trim().toUpperCase() === 'DELETE';
+
+  const handleDelete = async () => {
+    if (!isConfirmed || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const res = await fetch('/api/account/delete', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Could not schedule deletion');
+        setBusy(false);
+        return;
+      }
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        /* non-blocking */
+      }
+      onDeleted();
+    } catch (err) {
+      setError(err.message || 'Network error');
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div
+      className="settings-delete-modal-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !busy) onClose();
+      }}
+    >
+      <div
+        className="settings-delete-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-modal-title"
+      >
+        <h2 id="delete-modal-title">
+          <i className="bi bi-exclamation-triangle" /> Delete your account?
+        </h2>
+        <p>This will:</p>
+        <ul>
+          <li>Cancel your subscription at the end of the current billing period (no further charges)</li>
+          <li>Sign you out of all your devices</li>
+          <li>Mark your account for permanent deletion when the billing period ends</li>
+          <li>Send you an email with a reactivation link in case you change your mind</li>
+        </ul>
+        <p className="settings-delete-modal__highlight">
+          You can reactivate your account anytime <strong>before</strong> your billing period ends.
+          After that, your data is permanently removed and cannot be recovered.
+        </p>
+
+        <label className="settings-delete-modal__confirm-label" htmlFor="delete-confirm-input">
+          Type <code>DELETE</code> to confirm:
+        </label>
+        <input
+          id="delete-confirm-input"
+          type="text"
+          className="settings-delete-modal__input"
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="DELETE"
+          autoComplete="off"
+          autoFocus
+          disabled={busy}
+        />
+
+        {error && <p className="settings-delete-modal__error">{error}</p>}
+
+        <div className="settings-delete-modal__actions">
+          <button type="button" className="settings-btn-secondary" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="settings-btn-danger"
+            onClick={handleDelete}
+            disabled={!isConfirmed || busy}
+          >
+            {busy ? 'Deleting...' : 'Delete my account'}
+          </button>
         </div>
       </div>
     </div>
