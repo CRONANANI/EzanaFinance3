@@ -36,6 +36,7 @@ import {
   Crown,
   CreditCard,
   ShoppingCart,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -170,7 +171,7 @@ function buildPartnerNavGroups() {
   ];
 }
 
-export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant = 'user' }) {
+export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant = 'user', onLogout }) {
   const pathname = usePathname();
   const groups =
     variant === 'partner' ? buildPartnerNavGroups() : buildNavGroups(isOrgUser);
@@ -280,6 +281,23 @@ export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant 
             </section>
           ))}
         </div>
+
+        {onLogout && (
+          <div className="mobile-drawer-footer shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onLogout();
+              }}
+              className="mobile-drawer-logout"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4 shrink-0" aria-hidden />
+              <span>Sign out</span>
+            </button>
+          </div>
+        )}
       </nav>
     </div>,
     document.body

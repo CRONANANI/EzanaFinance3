@@ -223,6 +223,120 @@ body {
   }
 }
 
+/* ════════════════════════════════════════════════════════════
+   MOBILE NAVBAR REORGANIZATION (≤768px only)
+   Centered logo+bell (or partner badge); hamburger on the right;
+   gear + logout hidden (in drawer). Desktop unchanged.
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .main-nav .nav-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 1rem;
+    min-height: 56px;
+  }
+
+  .main-nav .nav-left-zone {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .main-nav .nav-action-tap--desktop-only {
+    display: none !important;
+  }
+
+  .main-nav .nav-actions {
+    margin-left: auto;
+    margin-right: 0;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .main-nav .mobile-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    color: var(--primary, #10b981);
+    font-size: 1.35rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 150ms ease;
+  }
+
+  .main-nav .mobile-hamburger:hover,
+  .main-nav .mobile-hamburger:focus-visible {
+    background: rgba(16, 185, 129, 0.1);
+    outline: none;
+  }
+
+  .main-nav .animated-nav {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .main-nav .mobile-hamburger {
+    display: none;
+  }
+}
+
+/* ─── Drawer footer — sign-out at bottom ─── */
+.mobile-drawer-footer {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.light-mode .mobile-drawer-footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.mobile-drawer-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.mobile-drawer-logout:hover {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+body.light-mode .mobile-drawer-logout {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.18);
+  color: #b91c1c;
+}
+
+body.light-mode .mobile-drawer-logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
 /* ============================================
    NOTIFICATIONS SIDEBAR - fullscreen overlay on mobile
    ============================================ */

@@ -259,7 +259,7 @@ export function Navbar() {
   return (
     <nav className="main-nav" id="mainNav" data-tutorial="main-nav">
       <div className="nav-container">
-        {/* ── LEFT ZONE: Logo + bell + checklist (checklist right of bell) ── */}
+        {/* ── LEFT ZONE: Logo + bell + checklist ── */}
         <div className="nav-left-zone">
           <Link href="/home" className="nav-brand nav-home-btn" title="Home">
             <EzanaNavLogo />
@@ -271,24 +271,14 @@ export function Navbar() {
             {isAuthenticated && <ChecklistProgressIcon />}
           </div>
         </div>
-        <button
-          className="mobile-hamburger"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          type="button"
-          aria-label="Toggle menu"
-        >
-          <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
-        </button>
+
         <AnimatedNav items={userNavItems} accentColor="#10b981" onProGateClick={openProGate} />
-        <MobileAuthNavDrawer
-          open={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          isOrgUser={isOrgUser}
-        />
+
+        {/* ── RIGHT ZONE: gear + logout (desktop) | hamburger (mobile) ── */}
         <div className="nav-actions">
           <Link
             href="/settings"
-            className="nav-action-tap"
+            className="nav-action-tap nav-action-tap--desktop-only"
             title="Settings"
             aria-label="Settings"
           >
@@ -299,7 +289,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={handleLogout}
-            className="nav-action-tap"
+            className="nav-action-tap nav-action-tap--desktop-only"
             title="Log out"
             aria-label="Log out"
           >
@@ -307,7 +297,24 @@ export function Navbar() {
               <i className="bi bi-box-arrow-right" aria-hidden="true" />
             </span>
           </button>
+
+          <button
+            className="mobile-hamburger"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
+          </button>
         </div>
+
+        <MobileAuthNavDrawer
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          isOrgUser={isOrgUser}
+          onLogout={handleLogout}
+        />
       </div>
     </nav>
   );

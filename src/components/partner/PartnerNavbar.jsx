@@ -44,24 +44,15 @@ export function PartnerNavbar() {
           </div>
         </div>
 
-        <button
-          className="mobile-hamburger"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          type="button"
-          aria-label="Toggle menu"
-        >
-          <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
-        </button>
-
         <AnimatedNav items={partnerNavItems} accentColor="#d4a853" />
-        <MobileAuthNavDrawer
-          open={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          variant="partner"
-        />
 
         <div className="nav-actions">
-          <Link href="/settings" className="nav-action-tap" title="Settings" aria-label="Settings">
+          <Link
+            href="/settings"
+            className="nav-action-tap nav-action-tap--desktop-only"
+            title="Settings"
+            aria-label="Settings"
+          >
             <span className="nav-action-inner nav-settings-gear">
               <i className="bi bi-gear" aria-hidden="true" />
             </span>
@@ -69,7 +60,7 @@ export function PartnerNavbar() {
           <button
             type="button"
             onClick={handleLogout}
-            className="nav-action-tap"
+            className="nav-action-tap nav-action-tap--desktop-only"
             title="Log out"
             aria-label="Log out"
           >
@@ -77,7 +68,23 @@ export function PartnerNavbar() {
               <i className="bi bi-box-arrow-right" aria-hidden="true" />
             </span>
           </button>
+          <button
+            className="mobile-hamburger"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <i className={`bi ${mobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`} />
+          </button>
         </div>
+
+        <MobileAuthNavDrawer
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          variant="partner"
+          onLogout={handleLogout}
+        />
       </div>
     </nav>
   );
