@@ -44,6 +44,8 @@ export function MessageThread({
   onTyping,
   canSend,
   composerPlaceholder,
+  highlightTerm = '',
+  highlightedMessageIds = [],
 }) {
   const scrollRef = useRef(null);
   const prevCount = useRef(0);
@@ -153,6 +155,8 @@ export function MessageThread({
                       isSelf={isSelf}
                       sender={{ name: partnerName, avatar_url: partnerAvatarUrl }}
                       showAvatar={showAvatar}
+                      highlightTerm={highlightTerm}
+                      isMatched={highlightedMessageIds.includes(m.id)}
                     />
                   );
                 })}

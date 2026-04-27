@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCheck } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
 
 function getInitials(name) {
   if (!name) return '?';
@@ -21,12 +22,49 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function ConversationRow({ conversation, selected, onClick }) {
+/**
+ * Highlights matches of `term` inside `text` by wrapping them in a <mark>.
+ */
+function Highlight({ text, term }) {
+  if (!term || text == null) return <>{text}</>;
+  const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = String(text).split(new RegExp(`(${safeTerm})`, 'gi'));
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.toLowerCase() === term.toLowerCase() ? (
+          <mark key={i} className="m-search-mark">
+            {p}
+          </mark>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+export function ConversationRow({
+  conversation,
+  selected,
+  onClick,
+  highlightTerm = '',
+  contentMatches = [],
+}) {
+  const { user } = useAuth();
   const name = conversation.other_user?.name || 'Member';
-  const preview = conversation.last_message?.content || 'No messages yet';
+  const defaultPreview = conversation.last_message?.content || '';
   const isMine = conversation.last_message?.is_mine;
   const time = timeAgo(conversation.last_message_at);
   const unread = conversation.unread_count || 0;
+
+  const matchedFirst =
+    highlightTerm && contentMatches?.length > 0 ? contentMatches[0] : null;
+  const previewText = matchedFirst ? matchedFirst.content : defaultPreview;
+  const showYouPrefix = matchedFirst
+    ? matchedFirst.sender_id === user?.id
+    : Boolean(isMine);
+  const hasPreview = Boolean(conversation.last_message || matchedFirst);
 
   return (
     <li>
@@ -54,7 +92,9 @@ export function ConversationRow({ conversation, selected, onClick }) {
 
         <div className="m-row__body">
           <div className="m-row__top">
-            <span className="m-row__name">{name}</span>
+            <span className="m-row__name">
+              <Highlight text={name} term={highlightTerm} />
+            </span>
             {time && <span className="m-row__time">{time}</span>}
           </div>
           <div className="m-row__bottom">
@@ -63,10 +103,10 @@ export function ConversationRow({ conversation, selected, onClick }) {
                 isMine && unread === 0 ? ' m-row__preview--mine' : ''
               }`}
             >
-              {conversation.last_message ? (
+              {hasPreview ? (
                 <>
-                  {isMine ? 'You: ' : ''}
-                  {preview}
+                  {showYouPrefix ? 'You: ' : ''}
+                  <Highlight text={previewText} term={highlightTerm} />
                 </>
               ) : (
                 <em>No messages yet</em>

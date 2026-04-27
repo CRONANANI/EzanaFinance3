@@ -162,6 +162,24 @@ export function useMessages() {
           if (m.sender_id !== user.id) markRead(activeConvoId);
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${activeConvoId}`,
+        },
+        (payload) => {
+          const updated = payload?.new;
+          if (!updated) return;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === updated.id ? { ...m, read_at: updated.read_at } : m,
+            ),
+          );
+        },
+      )
       .subscribe();
 
     return () => {

@@ -55,6 +55,7 @@ export default function MessagesPageClient() {
   const [composerText, setComposerText] = useState('');
   const [mobileView, setMobileView] = useState('list');
   const [onlineIds, setOnlineIds] = useState([]);
+  const [activeSearch, setActiveSearch] = useState({ query: '', matches: {} });
 
   const initialConvoId = searchParams.get('conversation');
 
@@ -168,6 +169,7 @@ export default function MessagesPageClient() {
               onSelect={handleSelect}
               onNewMessage={handleOpenNewMessage}
               onlineUsers={onlineUsers}
+              onSearchMatchesChange={setActiveSearch}
             />
           </aside>
 
@@ -200,6 +202,12 @@ export default function MessagesPageClient() {
                   pendingFriend
                     ? `Say hi to ${pendingFriend.name}…`
                     : 'Type message'
+                }
+                highlightTerm={activeSearch.query}
+                highlightedMessageIds={
+                  activeConvoId && activeSearch.matches[activeConvoId]
+                    ? activeSearch.matches[activeConvoId].map((m) => m.id)
+                    : []
                 }
               />
             ) : (

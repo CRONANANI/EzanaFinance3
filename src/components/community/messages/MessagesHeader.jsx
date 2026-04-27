@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
@@ -14,16 +13,6 @@ function getInitials(name) {
 export function MessagesHeader() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
-  const [isLight, setIsLight] = useState(false);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const apply = () => setIsLight(document.body.classList.contains('light-mode'));
-    apply();
-    const obs = new MutationObserver(apply);
-    obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    return () => obs.disconnect();
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,11 +38,6 @@ export function MessagesHeader() {
     user?.email?.split('@')[0] ||
     'You';
 
-  const toggleTheme = () => {
-    if (typeof document === 'undefined') return;
-    document.body.classList.toggle('light-mode');
-  };
-
   return (
     <header className="m-header">
       <div className="m-header__title-wrap">
@@ -62,17 +46,6 @@ export function MessagesHeader() {
       </div>
 
       <div className="m-header__actions">
-        <button
-          type="button"
-          className="m-iconbtn"
-          aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-          onClick={toggleTheme}
-        >
-          {isLight ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
-        <button type="button" className="m-iconbtn" aria-label="Notifications">
-          <Bell size={16} />
-        </button>
         <div className="m-header__user">
           {profile?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element

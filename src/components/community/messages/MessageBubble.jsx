@@ -8,7 +8,33 @@ function getInitials(name) {
   return parts.map((p) => p.charAt(0).toUpperCase()).join('') || '?';
 }
 
-export function MessageBubble({ message, isSelf, sender, showAvatar = true }) {
+function Highlight({ text, term }) {
+  if (!term || text == null) return <>{text}</>;
+  const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = String(text).split(new RegExp(`(${safeTerm})`, 'gi'));
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.toLowerCase() === term.toLowerCase() ? (
+          <mark key={i} className="m-search-mark">
+            {p}
+          </mark>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+export function MessageBubble({
+  message,
+  isSelf,
+  sender,
+  showAvatar = true,
+  highlightTerm = '',
+  isMatched = false,
+}) {
   const time = message.created_at
     ? new Date(message.created_at).toLocaleTimeString([], {
         hour: '2-digit',
@@ -42,8 +68,14 @@ export function MessageBubble({ message, isSelf, sender, showAvatar = true }) {
         {!isSelf && showAvatar && senderName && (
           <div className="m-bubble-sender">{senderName}</div>
         )}
-        <div className={`m-bubble ${isSelf ? 'm-bubble--self' : 'm-bubble--theirs'}`}>
-          <p className="m-bubble__text">{message.content}</p>
+        <div
+          className={`m-bubble ${isSelf ? 'm-bubble--self' : 'm-bubble--theirs'}${
+            isMatched ? ' m-bubble--matched' : ''
+          }`}
+        >
+          <p className="m-bubble__text">
+            <Highlight text={message.content} term={highlightTerm} />
+          </p>
           <div className="m-bubble__foot">
             <span>{time}</span>
             {isSelf &&
