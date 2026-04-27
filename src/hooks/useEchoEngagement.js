@@ -2,21 +2,31 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/lib/supabase';
+
+async function echoFetch(url, options = {}) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  return fetch(url, { ...options, headers });
+}
 
 /**
- * Manages all engagement state for an Ezana Echo article:
- *   - Like count + whether the current user has liked
- *   - Comment count + the comments themselves
- *   - Loading + error states for both
- *   - Optimistic updates: like button feels instant; reverts on error
- *
- * Designed to be the single source of truth for the article's engagement —
- * the component just renders what this returns.
+ * Likes + comments for an Echo article (slug = articleId).
  */
-export function useEchoEngagement(articleId) {
+export function useEchoEngagement(articleId, { initialLikeCount } = {}) {
   const { user } = useAuth();
 
-  const [likeCount, setLikeCount] = useState(0);
+  const [likeCount, setLikeCount] = useState(
+    typeof initialLikeCount === 'number' ? initialLikeCount : 0,
+  );
   const [userHasLiked, setUserHasLiked] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
   const [comments, setComments] = useState([]);
@@ -24,7 +34,6 @@ export function useEchoEngagement(articleId) {
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState(null);
 
-  // Initial load: fetch counts + comments in parallel
   useEffect(() => {
     if (!articleId) return;
 
@@ -33,17 +42,17 @@ export function useEchoEngagement(articleId) {
     setError(null);
 
     Promise.all([
-      fetch(`/api/echo/engagement?article_id=${encodeURIComponent(articleId)}`).then((r) =>
-        r.ok ? r.json() : { like_count: 0, comment_count: 0, user_has_liked: false }
+      echoFetch(`/api/echo/engagement?articleId=${encodeURIComponent(articleId)}`).then((r) =>
+        r.ok ? r.json() : { like_count: 0, comment_count: 0, user_has_liked: false },
       ),
-      fetch(`/api/echo/comments?article_id=${encodeURIComponent(articleId)}`).then((r) =>
-        r.ok ? r.json() : { comments: [] }
+      echoFetch(`/api/echo/comments?articleId=${encodeURIComponent(articleId)}`).then((r) =>
+        r.ok ? r.json() : { comments: [] },
       ),
     ])
       .then(([eng, comm]) => {
         if (cancelled) return;
         const list = comm.comments || [];
-        setLikeCount(eng.like_count || 0);
+        setLikeCount(eng.like_count ?? 0);
         setUserHasLiked(Boolean(eng.user_has_liked));
         setCommentCount(eng.comment_count ?? list.length);
         setComments(list);
@@ -60,7 +69,6 @@ export function useEchoEngagement(articleId) {
     };
   }, [articleId, user?.id]);
 
-  // Toggle like — optimistic, with rollback on error
   const toggleLike = useCallback(async () => {
     if (!user) return { error: 'auth' };
 
@@ -71,19 +79,18 @@ export function useEchoEngagement(articleId) {
     setLikeCount(prevCount + (prevLiked ? -1 : 1));
 
     try {
-      const res = await fetch('/api/echo/like', {
+      const res = await echoFetch('/api/echo/like', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          article_id: articleId,
-          action: prevLiked ? 'unlike' : 'like',
-        }),
+        body: JSON.stringify({ articleId }),
       });
-      if (!res.ok) throw new Error('Failed to update like');
-      const data = await res.json();
-
-      setLikeCount(data.like_count || 0);
-      setUserHasLiked(Boolean(data.user_has_liked));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setUserHasLiked(prevLiked);
+        setLikeCount(prevCount);
+        return { error: data?.error || 'request_failed' };
+      }
+      setLikeCount(data.like_count ?? prevCount);
+      setUserHasLiked(Boolean(data.user_has_liked ?? data.liked));
       return { ok: true };
     } catch (err) {
       setUserHasLiked(prevLiked);
@@ -100,18 +107,19 @@ export function useEchoEngagement(articleId) {
 
       setIsPosting(true);
       try {
-        const res = await fetch('/api/echo/comments', {
+        const res = await echoFetch('/api/echo/comments', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ article_id: articleId, content: text }),
+          body: JSON.stringify({ articleId, content: text }),
         });
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
           throw new Error(data?.error || 'Failed to post comment');
         }
-        const { comment } = await res.json();
-        setComments((prev) => [...prev, comment]);
-        setCommentCount((n) => n + 1);
+        const { comment } = data;
+        if (comment) {
+          setComments((prev) => [...prev, comment]);
+          setCommentCount((n) => n + 1);
+        }
         return { ok: true };
       } catch (err) {
         return { error: err.message };
@@ -119,30 +127,27 @@ export function useEchoEngagement(articleId) {
         setIsPosting(false);
       }
     },
-    [user, articleId]
+    [user, articleId],
   );
 
-  const deleteComment = useCallback(
-    async (commentId) => {
-      if (!user) return { error: 'auth' };
+  const deleteComment = useCallback(async (commentId) => {
+    if (!user) return { error: 'auth' };
 
-      const prevComments = comments;
-      const prevCount = commentCount;
-      setComments((prev) => prev.filter((c) => c.id !== commentId));
-      setCommentCount((n) => Math.max(0, n - 1));
+    const prevComments = comments;
+    const prevCount = commentCount;
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    setCommentCount((n) => Math.max(0, n - 1));
 
-      try {
-        const res = await fetch(`/api/echo/comments/${commentId}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Failed to delete');
-        return { ok: true };
-      } catch (err) {
-        setComments(prevComments);
-        setCommentCount(prevCount);
-        return { error: err.message };
-      }
-    },
-    [user, comments, commentCount]
-  );
+    try {
+      const res = await echoFetch(`/api/echo/comments/${commentId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      return { ok: true };
+    } catch (err) {
+      setComments(prevComments);
+      setCommentCount(prevCount);
+      return { error: err.message };
+    }
+  }, [user, comments, commentCount]);
 
   return {
     likeCount,

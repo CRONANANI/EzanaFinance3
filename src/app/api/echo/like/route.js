@@ -1,78 +1,73 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getAuthUser } from '@/lib/auth-helpers';
+import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+function parseArticleId(body) {
+  return String(body?.articleId ?? body?.article_id ?? '').trim();
+}
+
 /**
  * POST /api/echo/like
- * Body: { article_id: string, action: 'like' | 'unlike' }
+ * Body: { articleId: string } (or article_id)
  *
- * Idempotent: liking an already-liked article is a no-op (not an error).
- * Unliking an unliked article is also a no-op. The DB constraint
- * UNIQUE(article_id, user_id) enforces one like per user per article.
+ * Toggle like. Unique (user_id, article_id) → insert or delete on 23505.
  */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const article_id = String(body?.article_id || '').trim();
-    const action = body?.action;
-
-    if (!article_id) {
-      return NextResponse.json({ error: 'article_id required' }, { status: 400 });
-    }
-    if (action !== 'like' && action !== 'unlike') {
-      return NextResponse.json({ error: "action must be 'like' or 'unlike'" }, { status: 400 });
-    }
-
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getAuthUser(request);
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Sign in to like articles.' }, { status: 401 });
     }
 
-    if (action === 'like') {
-      const { error } = await supabase
-        .from('echo_article_likes')
-        .insert({ article_id, user_id: user.id });
+    const body = await request.json().catch(() => ({}));
+    const articleId = parseArticleId(body);
+    if (!articleId) {
+      return NextResponse.json({ error: 'articleId required' }, { status: 400 });
+    }
 
-      // Duplicate-key error means already liked — that's idempotent success
-      if (error && error.code !== '23505' && !error.message?.includes('duplicate')) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    const { error: insertErr } = await supabaseAdmin
+      .from('echo_article_likes')
+      .insert({ user_id: user.id, article_id: articleId });
+
+    let liked;
+    if (insertErr) {
+      if (insertErr.code === '23505') {
+        const { error: deleteErr } = await supabaseAdmin
+          .from('echo_article_likes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('article_id', articleId);
+        if (deleteErr) {
+          console.error('[echo/like] delete failed:', deleteErr);
+          return NextResponse.json({ error: 'Could not unlike' }, { status: 500 });
+        }
+        liked = false;
+      } else {
+        console.error('[echo/like] insert failed:', insertErr);
+        return NextResponse.json({ error: 'Could not like' }, { status: 500 });
       }
     } else {
-      const { error } = await supabase
-        .from('echo_article_likes')
-        .delete()
-        .eq('article_id', article_id)
-        .eq('user_id', user.id);
-
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
+      liked = true;
     }
 
-    const [likesCountRes, userLikeRes] = await Promise.all([
-      supabase
-        .from('echo_article_likes')
-        .select('id', { count: 'exact', head: true })
-        .eq('article_id', article_id),
-      supabase
-        .from('echo_article_likes')
-        .select('id')
-        .eq('article_id', article_id)
-        .eq('user_id', user.id)
-        .maybeSingle(),
-    ]);
+    const { count: likeCount } = await supabaseAdmin
+      .from('echo_article_likes')
+      .select('id', { count: 'exact', head: true })
+      .eq('article_id', articleId);
 
     return NextResponse.json({
-      success: true,
-      like_count: likesCountRes.count ?? 0,
-      user_has_liked: Boolean(userLikeRes.data),
+      liked,
+      like_count: likeCount ?? 0,
+      user_has_liked: liked,
     });
   } catch (err) {
-    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
+    console.error('[echo/like] unexpected error:', err);
+    return NextResponse.json(
+      { error: err?.message || 'Unknown error' },
+      { status: 500 },
+    );
   }
 }

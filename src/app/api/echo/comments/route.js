@@ -1,164 +1,171 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getAuthUser } from '@/lib/auth-helpers';
 import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-function buildAuthorFromProfile(profile, userId) {
-  if (!profile) {
-    return {
-      id: userId,
-      name: 'User',
-      initials: 'U',
-      avatarUrl: null,
-    };
+function parseArticleId(bodyOrSearch, fromSearch = false) {
+  if (fromSearch) {
+    return String(bodyOrSearch.get('articleId') || bodyOrSearch.get('article_id') || '').trim();
   }
-  const settings = profile.user_settings && typeof profile.user_settings === 'object' ? profile.user_settings : {};
-  const fromSettings =
-    typeof settings.display_name === 'string' ? settings.display_name.trim() : '';
-  const name =
-    (profile.full_name && String(profile.full_name).trim()) ||
-    (profile.display_name && String(profile.display_name).trim()) ||
-    fromSettings ||
-    (profile.username && String(profile.username).trim()) ||
-    (profile.email && String(profile.email).split('@')[0]) ||
-    'User';
-  const parts = name.split(/\s+/).filter(Boolean);
-  const initials =
-    parts.length >= 2
-      ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      : name.slice(0, 2).toUpperCase();
-  return {
-    id: userId,
-    name,
-    initials: initials.slice(0, 2),
-    avatarUrl: profile.avatar_url || null,
-  };
+  return String(bodyOrSearch?.articleId ?? bodyOrSearch?.article_id ?? '').trim();
 }
 
 /**
- * GET /api/echo/comments?article_id=<slug>
- * Returns: { comments: Comment[] }
- *
- * Public endpoint — anyone can read non-deleted comments.
+ * GET /api/echo/comments?articleId=<slug>
+ * POST /api/echo/comments  { articleId, content }
  */
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const article_id = String(searchParams.get('article_id') || '').trim();
-    if (!article_id) {
-      return NextResponse.json({ error: 'article_id required' }, { status: 400 });
+    const articleId = parseArticleId(searchParams, true);
+    if (!articleId) {
+      return NextResponse.json({ error: 'articleId required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-
-    const { data: comments, error } = await supabase
+    const { data: comments, error: commentsErr } = await supabaseAdmin
       .from('echo_article_comments')
-      .select('id, user_id, content, created_at, updated_at')
-      .eq('article_id', article_id)
+      .select('id, user_id, content, created_at')
+      .eq('article_id', articleId)
       .is('deleted_at', null)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .limit(100);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (commentsErr) {
+      console.error('[echo/comments GET] read failed:', commentsErr);
+      return NextResponse.json({ error: 'Could not load comments' }, { status: 500 });
     }
 
-    const userIds = Array.from(new Set((comments || []).map((c) => c.user_id)));
-    let profiles = {};
+    const userIds = [...new Set((comments || []).map((c) => c.user_id))];
+    const authorsByUserId = {};
+
     if (userIds.length > 0) {
-      const { data: profileRows } = await supabaseAdmin
+      const { data: profiles } = await supabaseAdmin
         .from('profiles')
-        .select('id, email, full_name, display_name, username, avatar_url, user_settings')
+        .select('id, full_name, avatar_url, user_settings')
         .in('id', userIds);
-      profiles = Object.fromEntries((profileRows || []).map((p) => [p.id, p]));
+      for (const p of profiles || []) {
+        const name =
+          (p.full_name && String(p.full_name).trim()) ||
+          p.user_settings?.display_name ||
+          'Reader';
+        authorsByUserId[p.id] = {
+          id: p.id,
+          name,
+          avatar_url: p.avatar_url || null,
+          avatarUrl: p.avatar_url || null,
+          initials:
+            name
+              .trim()
+              .split(/\s+/)
+              .slice(0, 2)
+              .map((s) => s[0]?.toUpperCase())
+              .join('') || 'R',
+        };
+      }
     }
 
-    const hydrated = (comments || []).map((c) => {
-      const profile = profiles[c.user_id];
-      const author = buildAuthorFromProfile(profile, c.user_id);
-      return {
-        id: c.id,
-        userId: c.user_id,
-        author,
-        content: c.content,
-        createdAt: c.created_at,
-        updatedAt: c.updated_at,
-      };
-    });
+    const hydrated = (comments || []).map((c) => ({
+      id: c.id,
+      userId: c.user_id,
+      content: c.content,
+      createdAt: c.created_at,
+      author: authorsByUserId[c.user_id] || {
+        id: c.user_id,
+        name: 'Reader',
+        avatar_url: null,
+        avatarUrl: null,
+        initials: 'R',
+      },
+    }));
 
     return NextResponse.json({ comments: hydrated });
   } catch (err) {
-    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
+    console.error('[echo/comments GET] unexpected error:', err);
+    return NextResponse.json(
+      { error: err?.message || 'Unknown error' },
+      { status: 500 },
+    );
   }
 }
 
-/**
- * POST /api/echo/comments
- * Body: { article_id: string, content: string }
- * Returns: { comment: Comment }
- *
- * Authenticated. The new comment is returned with author info already hydrated
- * so the client can append it directly to the comment list.
- */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const article_id = String(body?.article_id || '').trim();
+    const user = await getAuthUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Sign in to comment.' }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const articleId = parseArticleId(body);
     const content = String(body?.content || '').trim();
 
-    if (!article_id) {
-      return NextResponse.json({ error: 'article_id required' }, { status: 400 });
+    if (!articleId) {
+      return NextResponse.json({ error: 'articleId required' }, { status: 400 });
     }
     if (!content) {
-      return NextResponse.json({ error: 'content required' }, { status: 400 });
+      return NextResponse.json({ error: 'Comment cannot be empty' }, { status: 400 });
     }
     if (content.length > 4000) {
       return NextResponse.json({ error: 'Comment too long (max 4000 chars)' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data: inserted, error } = await supabase
+    const { data: inserted, error: insertErr } = await supabaseAdmin
       .from('echo_article_comments')
-      .insert({ article_id, user_id: user.id, content })
-      .select('id, user_id, content, created_at, updated_at')
+      .insert({
+        user_id: user.id,
+        article_id: articleId,
+        content,
+      })
+      .select('id, user_id, content, created_at')
       .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (insertErr) {
+      console.error('[echo/comments POST] insert failed:', insertErr);
+      return NextResponse.json({ error: 'Could not post comment' }, { status: 500 });
     }
 
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('id, email, full_name, display_name, username, avatar_url, user_settings')
+      .select('full_name, avatar_url, user_settings')
       .eq('id', user.id)
       .maybeSingle();
 
-    const author = buildAuthorFromProfile(profile, user.id);
+    const name =
+      profile?.full_name ||
+      profile?.user_settings?.display_name ||
+      user.email?.split('@')[0] ||
+      'You';
+
+    const initials =
+      name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((s) => s[0]?.toUpperCase())
+        .join('') || 'Y';
 
     return NextResponse.json({
       comment: {
         id: inserted.id,
         userId: inserted.user_id,
-        author: {
-          id: inserted.user_id,
-          name: 'You',
-          initials: author.initials,
-          avatarUrl: author.avatarUrl,
-        },
         content: inserted.content,
         createdAt: inserted.created_at,
-        updatedAt: inserted.updated_at,
+        author: {
+          id: user.id,
+          name,
+          avatar_url: profile?.avatar_url || null,
+          avatarUrl: profile?.avatar_url || null,
+          initials,
+        },
       },
     });
   } catch (err) {
-    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
+    console.error('[echo/comments POST] unexpected error:', err);
+    return NextResponse.json(
+      { error: err?.message || 'Unknown error' },
+      { status: 500 },
+    );
   }
 }

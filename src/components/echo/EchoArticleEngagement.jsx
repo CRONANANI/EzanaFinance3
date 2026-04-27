@@ -155,7 +155,12 @@ export function EchoArticleEngagement({ articleId }) {
             {comments.map((c) => (
               <li key={c.id} className="echo-comment-item">
                 <div className="echo-comment-avatar" aria-hidden>
-                  {c.author?.avatarUrl ? <img src={c.author.avatarUrl} alt="" /> : c.author?.initials || 'U'}
+                  {c.author?.avatarUrl || c.author?.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.author.avatarUrl || c.author.avatar_url} alt="" />
+                  ) : (
+                    c.author?.initials || 'U'
+                  )}
                 </div>
                 <div className="echo-comment-body">
                   <div className="echo-comment-meta">
