@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
@@ -183,6 +183,109 @@ function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, cente
   );
 }
 
+/**
+ * Pie chart showing sector distribution by value. Hovering a segment
+ * shows a tooltip with the sector name and exact dollar value.
+ */
+function SectorPieChart({ sectors, size = 140 }) {
+  const [hoveredIdx, setHoveredIdx] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
+  const total = sectors.reduce((sum, s) => sum + s.value, 0);
+  if (total === 0) return null;
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2 - 2;
+
+  let currentAngle = -Math.PI / 2;
+  const wedges = sectors.map((s) => {
+    const valueFraction = s.value / total;
+    const angle = valueFraction * Math.PI * 2;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + angle;
+    currentAngle = endAngle;
+
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const largeArc = angle > Math.PI ? 1 : 0;
+
+    const path =
+      sectors.length === 1
+        ? `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`
+        : `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+
+    return { path, color: s.color, sector: s, fraction: valueFraction };
+  });
+
+  const handleMouseMove = (e, idx) => {
+    const wrap = e.currentTarget.closest?.('.db-sector-pie-wrap');
+    const rect = wrap?.getBoundingClientRect() ?? e.currentTarget.getBoundingClientRect();
+    setHoveredIdx(idx);
+    setTooltipPos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const hoveredSector = hoveredIdx !== null ? sectors[hoveredIdx] : null;
+
+  return (
+    <div className="db-sector-pie-wrap" style={{ width: size, height: size }}>
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="db-sector-pie-svg"
+        onMouseLeave={() => setHoveredIdx(null)}
+        role="img"
+        aria-label="Sector distribution by value"
+      >
+        {wedges.map((w, i) => (
+          <path
+            key={i}
+            d={w.path}
+            fill={w.color}
+            className={`db-sector-pie-wedge ${hoveredIdx === i ? 'is-hovered' : ''}`}
+            onMouseEnter={(e) => handleMouseMove(e, i)}
+            onMouseMove={(e) => handleMouseMove(e, i)}
+            onFocus={() => setHoveredIdx(i)}
+            onBlur={() => setHoveredIdx(null)}
+            tabIndex={0}
+            aria-label={`${w.sector.name}: $${w.sector.value.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })} (${w.sector.pct}%)`}
+          />
+        ))}
+      </svg>
+
+      {hoveredSector && (
+        <div
+          className="db-sector-pie-tooltip"
+          style={{
+            left: `${tooltipPos.x}px`,
+            top: `${tooltipPos.y - 8}px`,
+          }}
+          role="tooltip"
+        >
+          <div className="db-sector-pie-tooltip-name">
+            <span
+              className="db-sector-pie-tooltip-dot"
+              style={{ background: hoveredSector.color }}
+              aria-hidden
+            />
+            {hoveredSector.name}
+          </div>
+          <div className="db-sector-pie-tooltip-value">
+            ${hoveredSector.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </div>
+          <div className="db-sector-pie-tooltip-pct">{hoveredSector.pct}% of portfolio</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════
    MAIN DASHBOARD PAGE
    ═══════════════════════════════════════════════════════════ */
@@ -244,7 +347,6 @@ export default function HomeDashboardPage() {
 
   const { watchlists: userWatchlists } = useWatchlists();
   const [selectedHomeWatchlistId, setSelectedHomeWatchlistId] = useState(null);
-  const [expandedSector, setExpandedSector] = useState(null);
 
   useEffect(() => {
     if (userWatchlists.length > 0) {
@@ -819,16 +921,16 @@ export default function HomeDashboardPage() {
               {useMock ? (
                 <DonutChart
                   segments={profitDonutSegments}
-                  size={150}
-                  strokeWidth={20}
+                  size={110}
+                  strokeWidth={16}
                   centerValue={`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
                   centerLabel={`${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}% total`}
                 />
               ) : (
                 <DonutChart
                   segments={profitDonutSegments}
-                  size={150}
-                  strokeWidth={20}
+                  size={110}
+                  strokeWidth={16}
                   centerValue="$4,030"
                   centerLabel="-$150.20 from last month"
                 />
@@ -865,21 +967,23 @@ export default function HomeDashboardPage() {
           </div>
         </div>
 
-        {/* Sector / Industry Distribution */}
-        <div className="db-card db-sector-card">
+        {/* Sector / Industry Distribution — pie chart with hover tooltips */}
+        <div className="db-card db-sector-card" data-dashboard-card>
           <div className="db-card-header">
             <h3>{isTmtTeamMember ? 'Industry Distribution' : 'Sector Distribution'}</h3>
             {sectorRows.length > 0 && (
-              <div className="db-sector-bar-mini">
-                {sectorRows.map((s) => (
-                  <div key={s.name} className="db-sector-bar-seg" style={{ width: `${s.pct}%`, background: s.color }} />
-                ))}
-              </div>
+              <span className="db-sector-total" aria-hidden>
+                {sectorRows.length} {sectorRows.length === 1 ? 'sector' : 'sectors'}
+              </span>
             )}
           </div>
+
           {sectorRows.length === 0 ? (
             <div className="db-sector-empty">
-              <i className="bi bi-pie-chart" style={{ fontSize: '1.75rem', color: 'rgba(16,185,129,0.25)', marginBottom: '0.5rem' }} />
+              <i
+                className="bi bi-pie-chart"
+                style={{ fontSize: '1.75rem', color: 'rgba(16,185,129,0.25)', marginBottom: '0.5rem' }}
+              />
               <p style={{ color: '#6b7280', fontSize: '0.8125rem', textAlign: 'center', lineHeight: 1.5, margin: 0 }}>
                 No holdings yet.<br />
                 {useMock
@@ -888,86 +992,20 @@ export default function HomeDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="db-sector-list db-sector-list--compact">
-              {sectorRows.map((s) => {
-                const isExpanded = expandedSector === s.name;
-                const sectorPositions = (mock.enrichedPositions || []).filter(
-                  (p) => p.sector === s.name,
-                );
-                return (
-                  <Fragment key={s.name}>
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={`db-sector-item db-sector-item--clickable ${isExpanded ? 'is-expanded' : ''}`}
-                      onClick={() =>
-                        setExpandedSector((prev) => (prev === s.name ? null : s.name))
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          setExpandedSector((prev) => (prev === s.name ? null : s.name));
-                        }
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="db-sector-item-left">
-                        <span className="db-sector-dot" style={{ background: s.color }} />
-                        <div>
-                          <span className="db-sector-name">{s.name}</span>
-                          {s.detail && <span className="db-sector-detail">{s.detail}</span>}
-                          <span className="db-sector-pct">{s.pct}%</span>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="db-sector-value">
-                          ${s.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </span>
-                        <i
-                          className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`}
-                          style={{ fontSize: '0.75rem', color: '#6b7280' }}
-                          aria-hidden
-                        />
-                      </div>
-                    </div>
+            <div className="db-sector-body">
+              <div className="db-sector-pie-area">
+                <SectorPieChart sectors={sectorRows} size={140} />
+              </div>
 
-                    {isExpanded && (
-                      <div className="db-sector-drawer" style={{ borderLeftColor: s.color }}>
-                        {sectorPositions.length === 0 ? (
-                          <p className="db-sector-drawer-empty">
-                            No individual positions available for this sector.
-                          </p>
-                        ) : (
-                          sectorPositions.map((p) => (
-                            <div key={p.symbol} className="db-sector-drawer-item">
-                              <div className="db-sector-drawer-left">
-                                <span className="db-sector-drawer-ticker">{p.symbol}</span>
-                                <span className="db-sector-drawer-shares">
-                                  {p.qty < 1 ? p.qty.toFixed(4) : p.qty.toFixed(2)} shares
-                                </span>
-                              </div>
-                              <div className="db-sector-drawer-right">
-                                <span className="db-sector-drawer-value">
-                                  $
-                                  {p.posValue.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                  })}
-                                </span>
-                                <span
-                                  className={`db-sector-drawer-pnl ${p.pnl >= 0 ? 'positive' : 'negative'}`}
-                                >
-                                  {p.pnl >= 0 ? '+' : ''}
-                                  {(p.pnlPct ?? 0).toFixed(2)}%
-                                </span>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </Fragment>
-                );
-              })}
+              <ul className="db-sector-legend">
+                {sectorRows.map((s) => (
+                  <li key={s.name} className="db-sector-legend-item">
+                    <span className="db-sector-legend-dot" style={{ background: s.color }} aria-hidden />
+                    <span className="db-sector-legend-name">{s.name}</span>
+                    <span className="db-sector-legend-pct">{s.pct}%</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
