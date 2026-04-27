@@ -755,3 +755,91 @@ body.light-mode .t-holdings-table th {
 body.light-mode .t-risk-metric {
   background: var(--card, #ffffff);
 }
+
+/* Home terminal — initial load skeleton (no numeric placeholders) */
+.t-home-skel-marquee {
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+.t-home-skel-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .t-home-skel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.t-home-skel-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1.25rem;
+  min-height: 180px;
+}
+
+.t-home-skel-card--short {
+  min-height: 280px;
+}
+
+body.light-mode .t-home-skel-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.t-home-skel-bar {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(120, 120, 120, 0.06) 0%,
+    rgba(120, 120, 120, 0.12) 50%,
+    rgba(120, 120, 120, 0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: t-home-skel-shimmer 1.5s ease-in-out infinite;
+}
+
+body.light-mode .t-home-skel-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.t-home-skel-bar--sm {
+  height: 10px;
+}
+
+.t-home-skel-bar--md {
+  height: 14px;
+}
+
+.t-home-skel-bar--lg {
+  height: 22px;
+}
+
+.t-home-skel-bar--xl {
+  height: 36px;
+}
+
+.t-home-skel-bar--chart {
+  height: 80px;
+}
+
+@keyframes t-home-skel-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

@@ -1187,3 +1187,127 @@ body.light-mode .db-sector-legend-pct {
     gap: 0.65rem;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   DASHBOARD SKELETON — Shown during initial data load
+   Replaces placeholder/fallback fake data with neutral pulsing bars
+   so users never see incorrect numbers while real data loads.
+   ════════════════════════════════════════════════════════════ */
+
+.db-skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: 0.5rem;
+}
+
+.db-skeleton-greeting {
+  margin-bottom: 0.5rem;
+}
+
+.db-skel-row {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .db-skel-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.db-skel-card {
+  background: var(--card, rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 1.5rem;
+  min-height: 200px;
+}
+
+.db-skel-card--hero {
+  min-height: 200px;
+}
+
+.db-skel-card--short {
+  min-height: 392px;
+}
+
+body.light-mode .db-skel-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.db-skel-bar {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(120, 120, 120, 0.06) 0%,
+    rgba(120, 120, 120, 0.12) 50%,
+    rgba(120, 120, 120, 0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: db-skel-shimmer 1.5s ease-in-out infinite;
+}
+
+body.light-mode .db-skel-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.db-skel-bar--sm {
+  height: 10px;
+}
+
+.db-skel-bar--md {
+  height: 14px;
+}
+
+.db-skel-bar--lg {
+  height: 28px;
+}
+
+.db-skel-bar--xl {
+  height: 42px;
+}
+
+.db-skel-bar--chart {
+  height: 100px;
+}
+
+@keyframes db-skel-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.db-hero-value-placeholder,
+.db-hero-stat-muted {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--db-muted, #8b949e);
+  letter-spacing: 0.01em;
+}
+
+body.light-mode .db-hero-value-placeholder,
+body.light-mode .db-hero-stat-muted {
+  color: #64748b;
+}
+
+.db-hero-change.is-muted {
+  color: var(--db-muted, #8b949e);
+  font-weight: 600;
+}
+
+body.light-mode .db-hero-change.is-muted {
+  color: #64748b;
+}

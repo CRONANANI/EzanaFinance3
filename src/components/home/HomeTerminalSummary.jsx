@@ -21,7 +21,6 @@ import { useOrg } from '@/contexts/OrgContext';
 import { useProGate } from '@/components/upgrade/ProGateContext';
 import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
-import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 
@@ -45,9 +44,9 @@ function buildYtdChartPath(monthCount) {
   return parts.join(' ');
 }
 
-function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfolio, hero1d }) {
-  const baseValue = hasPortfolio && portfolioTotal > 0 ? portfolioTotal : hero1d.value;
-  const baseChange = hasPortfolio ? portfolioChange : hero1d.changeDollar;
+function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfolio }) {
+  const baseValue = hasPortfolio && portfolioTotal > 0 ? portfolioTotal : 0;
+  const baseChange = hasPortfolio ? portfolioChange : 0;
   const monthIdx = new Date().getMonth();
   const n = monthIdx + 1;
   const drift = [-0.004, 0.002, 0.003, -0.0015, 0.0025, -0.002, 0.0015, 0.002, -0.001, 0.0025, -0.0015, 0.002];
@@ -195,7 +194,7 @@ function MiniSparkline({ positive }) {
 }
 
 export function HomeTerminalSummary({
-  portfolioTotal = 0,
+  portfolioTotal = null,
   portfolioChange = 0,
   enrichedHoldings = [],
   loading = false,
@@ -319,29 +318,42 @@ export function HomeTerminalSummary({
 
   const isPlaidSource = plaidConnected && plaidSummary?.totalValue != null;
 
-  const hero1d = HERO_DATA['1D'];
+  const portfolioTotalNum = portfolioTotal != null && Number.isFinite(Number(portfolioTotal)) ? Number(portfolioTotal) : 0;
 
   const { rows: monthSnapshots, chartPath: ytdChartPath } = useMemo(
     () =>
       buildYtdMonthlySnapshots({
-        portfolioTotal: hasUser ? portfolioSnapshotNum : portfolioTotal,
+        portfolioTotal: hasUser ? portfolioSnapshotNum : portfolioTotalNum,
         portfolioChange,
         hasPortfolio,
-        hero1d,
       }),
-    [portfolioTotal, portfolioSnapshotNum, portfolioChange, hasPortfolio, hero1d, hasUser],
+    [portfolioTotalNum, portfolioSnapshotNum, portfolioChange, hasPortfolio, hasUser],
   );
 
   const sel = monthSnapshots[monthSnapshots.length - 1] ?? monthSnapshots[0];
   const displayPct = sel.pct;
   const displayChangeDollar = sel.changeDollar;
 
-  const currentValue = hasUser ? portfolioSnapshotNum : portfolioTotal;
+  const currentValue = hasUser ? portfolioSnapshotNum : portfolioTotalNum;
   const snapshotValueNum = sel.displayValue;
-  const displayValue = `$${portfolioSnapshotNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const changePctStr = `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%`;
-  const changeDollarStr = `${displayChangeDollar >= 0 ? '+' : '-'}$${Math.abs(displayChangeDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const showPortfolioHeadline =
+    hasUser &&
+    (hasPortfolio ||
+      (portfolioSnapshotNum > 0 && Number.isFinite(portfolioSnapshotNum)));
+
+  const displayValue = !hasUser
+    ? portfolioTotal != null && Number.isFinite(Number(portfolioTotal))
+      ? `$${Number(portfolioTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : 'Sign in for your portfolio'
+    : showPortfolioHeadline
+      ? `$${portfolioSnapshotNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : 'Connect a brokerage or try mock trading';
+
+  const changePctStr = showPortfolioHeadline ? `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%` : '';
+  const changeDollarStr = showPortfolioHeadline
+    ? `${displayChangeDollar >= 0 ? '+' : '-'}$${Math.abs(displayChangeDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : '';
 
   const userName =
     user?.user_metadata?.first_name ||
@@ -588,9 +600,21 @@ export function HomeTerminalSummary({
                 <p className="home-num-hero portfolio-value" style={{ margin: '0 0 0.15rem' }}>
                   {displayValue}
                 </p>
-                <p className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`} style={{ margin: '0 0 0.5rem' }}>
-                  {changePctStr} ({changeDollarStr})
-                </p>
+                {hasUser && !showPortfolioHeadline ? (
+                  <p
+                    className="home-num-change"
+                    style={{ margin: '0 0 0.5rem', color: 'var(--home-muted)', fontSize: '0.75rem' }}
+                  >
+                    Performance appears when you link an account or use mock trading.
+                  </p>
+                ) : (
+                  <p
+                    className={`home-num-change ${displayChangeDollar >= 0 ? 'positive' : 'negative'}`}
+                    style={{ margin: '0 0 0.5rem' }}
+                  >
+                    {hasUser && showPortfolioHeadline ? `${changePctStr} (${changeDollarStr})` : '\u00a0'}
+                  </p>
+                )}
 
                 <div
                   style={{ height: 80, minHeight: 80, maxHeight: 80, marginBottom: '0.75rem', overflow: 'hidden' }}

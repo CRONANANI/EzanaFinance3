@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthProvider';
 import { useOrg } from '@/contexts/OrgContext';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
-import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { supabase } from '@/lib/supabase';
@@ -41,90 +40,12 @@ function holdingColor(ticker) {
    value-series “last” (server / DB prices can differ from client live total).
    ═══════════════════════════════════════════════════════════ */
 
-const HOLDINGS_DATA = {
-  '1D': [
-    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 4.12, changeDollar: 52.40, qty: 7, color: '#4285F4' },
-    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 3.25, changeDollar: 35.40, qty: 10, color: '#00a4ef' },
-    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 2.10, changeDollar: 20.10, qty: 6, color: '#e50914' },
-    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 1.85, changeDollar: 13.80, qty: 5, color: '#cc0000' },
-    { ticker: 'META', name: 'Meta', price: 740.00, change: -1.45, changeDollar: -10.85, qty: 9, color: '#0082fb', worst: true },
-    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -2.30, changeDollar: -14.40, qty: 11, color: '#96bf48', worst: true },
-    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 2.50, changeDollar: 40.00, qty: 4, color: '#76b900' },
-    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 1.20, changeDollar: 24.00, qty: 5, color: '#999999' },
-    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 0.80, changeDollar: 16.00, qty: 3, color: '#ff9900' },
-  ],
-  '1M': [
-    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 8.70, changeDollar: 105.60, qty: 7, color: '#4285F4' },
-    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 6.40, changeDollar: 67.20, qty: 10, color: '#00a4ef' },
-    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 5.20, changeDollar: 37.50, qty: 5, color: '#cc0000' },
-    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 3.80, changeDollar: 35.90, qty: 6, color: '#e50914' },
-    { ticker: 'META', name: 'Meta', price: 740.00, change: -3.20, changeDollar: -24.50, qty: 9, color: '#0082fb', worst: true },
-    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -5.10, changeDollar: -32.80, qty: 11, color: '#96bf48', worst: true },
-    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 6.20, changeDollar: 35.00, qty: 4, color: '#76b900' },
-    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 4.10, changeDollar: 20.00, qty: 5, color: '#999999' },
-    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 3.20, changeDollar: 14.00, qty: 3, color: '#ff9900' },
-  ],
-  '6M': [
-    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 22.40, changeDollar: 241.60, qty: 7, color: '#4285F4' },
-    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 18.90, changeDollar: 178.20, qty: 10, color: '#00a4ef' },
-    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 14.50, changeDollar: 124.20, qty: 6, color: '#e50914' },
-    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 12.10, changeDollar: 82.00, qty: 5, color: '#cc0000' },
-    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -8.60, changeDollar: -57.60, qty: 11, color: '#96bf48', worst: true },
-    { ticker: 'META', name: 'Meta', price: 740.00, change: -4.30, changeDollar: -33.20, qty: 9, color: '#0082fb', worst: true },
-    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 18.00, changeDollar: 28.00, qty: 4, color: '#76b900' },
-    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 12.00, changeDollar: 18.00, qty: 5, color: '#999999' },
-    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 10.00, changeDollar: 12.00, qty: 3, color: '#ff9900' },
-  ],
-  '1Y': [
-    { ticker: 'GOOGL', name: 'Google', price: 1320.00, change: 38.50, changeDollar: 368.40, qty: 7, color: '#4285F4' },
-    { ticker: 'MSFT', name: 'Microsoft', price: 1120.00, change: 32.20, changeDollar: 273.60, qty: 10, color: '#00a4ef' },
-    { ticker: 'NFLX', name: 'Netflix', price: 980.00, change: 28.70, changeDollar: 218.40, qty: 6, color: '#e50914' },
-    { ticker: 'TSLA', name: 'Tesla', price: 760.00, change: 24.50, changeDollar: 142.80, qty: 5, color: '#cc0000' },
-    { ticker: 'META', name: 'Meta', price: 740.00, change: -12.40, changeDollar: -105.20, qty: 9, color: '#0082fb', worst: true },
-    { ticker: 'SHOP', name: 'Shopify', price: 610.00, change: -18.70, changeDollar: -133.60, qty: 11, color: '#96bf48', worst: true },
-    { ticker: 'NVDA', name: 'NVIDIA', price: 140.00, change: 42.00, changeDollar: 55.00, qty: 4, color: '#76b900' },
-    { ticker: 'AAPL', name: 'Apple', price: 195.00, change: 28.00, changeDollar: 32.00, qty: 5, color: '#999999' },
-    { ticker: 'AMZN', name: 'Amazon', price: 175.00, change: 22.00, changeDollar: 18.00, qty: 3, color: '#ff9900' },
-  ],
-};
-
-const WATCHLIST = [
-  { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 954.7, change: 3.12 },
-  { ticker: 'AAPL', name: 'Apple Inc.', price: 198.32, change: 1.27 },
-  { ticker: 'AMZN', name: 'Amazon.com Inc.', price: 174.66, change: 0.84 },
-  { ticker: 'UBER', name: 'Uber Technologies', price: 954.7, change: 3.12 },
-  { ticker: 'SONY', name: 'Sony Group Corp.', price: 954.7, change: 3.12 },
-];
-
-const SECTOR_DATA_DEFAULT = [
-  { name: 'Energy', pct: 45, value: 38096.0, color: '#10b981' },
-  { name: 'Technology', pct: 20, value: 18404.0, color: '#3b82f6' },
-  { name: 'Telecom', pct: 25, value: 30200.0, color: '#a78bfa' },
-  { name: 'Healthcare', pct: 10, value: 9202.0, color: '#fbbf24' },
-];
-
-/** Demo account: extra sector so the card reads full */
-const SECTOR_DATA_DEMO = [
-  { name: 'Energy', pct: 40, value: 33800.0, color: '#10b981' },
-  { name: 'Technology', pct: 20, value: 18404.0, color: '#3b82f6' },
-  { name: 'Telecom', pct: 18, value: 21744.0, color: '#a78bfa' },
-  { name: 'Healthcare', pct: 10, value: 9202.0, color: '#fbbf24' },
-  { name: 'Manufacturing', pct: 12, value: 10140.0, color: '#ec4899' },
-];
-
 /** TMT team: industry-level breakdown instead of broad sectors */
 const TMT_INDUSTRY_DATA = [
   { name: 'Software', detail: 'SaaS, AI', pct: 32, value: 63584.0, color: '#3b82f6' },
   { name: 'Hardware', detail: 'Devices, Semiconductors', pct: 38, value: 75506.0, color: '#10b981' },
   { name: 'Media', detail: 'Streaming, Advertising, Gaming', pct: 19, value: 37753.0, color: '#a78bfa' },
   { name: 'Telecommunications', detail: '5G, Internet Services', pct: 11, value: 21857.0, color: '#f59e0b' },
-];
-
-const PROFIT_BREAKDOWN = [
-  { label: 'Stocks', pct: 45, color: '#10b981' },
-  { label: 'Funds', pct: 20, color: '#3b82f6' },
-  { label: 'ETFs', pct: 25, color: '#a78bfa' },
-  { label: 'Crypto', pct: 10, color: '#fbbf24' },
 ];
 
 const RECENT_TRANSACTIONS = [
@@ -286,6 +207,49 @@ function SectorPieChart({ sectors, size = 140 }) {
   );
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="db-skeleton-wrap">
+      <div className="db-skeleton-greeting">
+        <div className="db-skel-bar db-skel-bar--lg" style={{ width: '320px' }} />
+        <div className="db-skel-bar db-skel-bar--sm" style={{ width: '440px', marginTop: '0.5rem' }} />
+      </div>
+
+      <div className="db-skel-card db-skel-card--hero">
+        <div className="db-skel-bar db-skel-bar--md" style={{ width: '120px' }} />
+        <div className="db-skel-bar db-skel-bar--xl" style={{ width: '320px', marginTop: '0.65rem' }} />
+        <div className="db-skel-bar db-skel-bar--sm" style={{ width: '180px', marginTop: '0.5rem' }} />
+        <div className="db-skel-bar db-skel-bar--chart" style={{ marginTop: '1.5rem' }} />
+      </div>
+
+      <div className="db-skel-row" style={{ gridTemplateColumns: '1fr 320px' }}>
+        <div className="db-skel-card">
+          <div className="db-skel-bar db-skel-bar--md" style={{ width: '120px' }} />
+          <div className="db-skel-bar db-skel-bar--md" style={{ width: '100%', marginTop: '1rem' }} />
+          <div className="db-skel-bar db-skel-bar--md" style={{ width: '90%', marginTop: '0.5rem' }} />
+          <div className="db-skel-bar db-skel-bar--md" style={{ width: '85%', marginTop: '0.5rem' }} />
+        </div>
+        <div className="db-skel-card">
+          <div className="db-skel-bar db-skel-bar--md" style={{ width: '80px' }} />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="db-skel-bar db-skel-bar--md" style={{ width: '100%', marginTop: '0.85rem' }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="db-skel-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="db-skel-card db-skel-card--short">
+            <div className="db-skel-bar db-skel-bar--md" style={{ width: '100px' }} />
+            <div className="db-skel-bar db-skel-bar--xl" style={{ width: '60%', marginTop: '1.25rem' }} />
+            <div className="db-skel-bar db-skel-bar--sm" style={{ width: '80%', marginTop: '0.5rem' }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════
    MAIN DASHBOARD PAGE
    ═══════════════════════════════════════════════════════════ */
@@ -300,10 +264,12 @@ export default function HomeDashboardPage() {
   const [liveQuotes, setLiveQuotes] = useState({});
   const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
-  const heroData = HERO_DATA[timeframe];
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
+
+  const isInitialLoading = plaidSummaryLoading || mock.isLoading || valueSeriesLoading;
+  const hasNoData = !isInitialLoading && !useMock && !plaidConnected;
 
   /**
    * Live total must match Home + Mock Trading: mock.totalValue (client + quotes) or
@@ -312,9 +278,9 @@ export default function HomeDashboardPage() {
    */
   const currentValue = useMock
     ? mock.totalValue
-    : !plaidSummaryLoading && plaidConnected
-      ? (plaidSummary?.totalValue ?? 0)
-      : heroData.value;
+    : plaidConnected
+      ? (plaidSummary?.totalValue ?? null)
+      : null;
 
   const valueWindowFromApi = useMemo(() => {
     const d = dataForCurrentRange;
@@ -372,7 +338,7 @@ export default function HomeDashboardPage() {
         change: s.changePct ?? s.change ?? 0,
       }));
     }
-    return WATCHLIST;
+    return [];
   }, [activeHomeWatchlist]);
 
   const useLiveHoldings =
@@ -434,29 +400,7 @@ export default function HomeDashboardPage() {
         })
         .sort((a, b) => b.positionValue - a.positionValue);
     }
-    const raw = HOLDINGS_DATA[timeframe];
-    return raw
-      .map((h) => {
-        const q = liveQuotes[h.ticker];
-        const price = q?.price ?? h.price;
-        const qty = h.qty;
-        const positionValue = price * qty;
-        const ch = q != null ? q.changePercent : h.change;
-        const changeDollar =
-          q != null && h.qty != null ? (q.change ?? 0) * h.qty : h.changeDollar;
-        return {
-          ticker: h.ticker,
-          name: h.name,
-          qty,
-          price,
-          positionValue,
-          change: ch,
-          changeDollar,
-          color: h.color,
-          worst: h.worst,
-        };
-      })
-      .sort((a, b) => b.positionValue - a.positionValue);
+    return [];
   }, [useMock, mock.enrichedPositions, useLiveHoldings, plaidHoldingsPayload, timeframe, liveQuotes]);
 
   const holdingsPageCount = Math.max(1, Math.ceil(normalizedHoldings.length / HOLDINGS_PAGE_SIZE));
@@ -521,7 +465,7 @@ export default function HomeDashboardPage() {
         ? mock.profitBreakdown
         : [{ label: 'No positions yet', pct: 100, color: '#2a2f3a' }];
     }
-    return PROFIT_BREAKDOWN;
+    return [{ label: 'No positions', pct: 100, color: '#2a2f3a', value: 0 }];
   }, [totalProfitsRows, profitDonutSegmentSum, useMock, mock.profitBreakdown]);
 
   const profitPositionWeights = useMemo(() => {
@@ -534,9 +478,7 @@ export default function HomeDashboardPage() {
 
   const displayTransactions = useMemo(() => {
     if (useMock) return mock.recentTransactions;
-    return [...RECENT_TRANSACTIONS].sort(
-      (a, b) => new Date(b.date) - new Date(a.date),
-    );
+    return [];
   }, [useMock, mock.recentTransactions]);
 
   useEffect(() => {
@@ -548,12 +490,8 @@ export default function HomeDashboardPage() {
     const fromMock = useMock ? Object.keys(mock.portfolio?.positions || {}) : [];
     const tickers = [
       ...new Set([
-        ...Object.values(HOLDINGS_DATA)
-          .flat()
-          .map((h) => h.ticker),
         ...fromPlaid,
         ...fromMock,
-        ...WATCHLIST.map((w) => w.ticker),
         ...userWatchlists.flatMap((w) => (w.stocks || []).map((s) => s.ticker).filter(Boolean)),
         ...RECENT_TRANSACTIONS.map((t) => t.ticker).filter(Boolean),
       ]),
@@ -588,20 +526,11 @@ export default function HomeDashboardPage() {
     (orgRole === 'analyst' || orgRole === 'portfolio_manager');
 
   const sectorRows = useMemo(() => {
-    // Mock portfolio with positions → use real sector breakdown
     if (useMock && mock.sectorData.length > 0) return mock.sectorData;
-    // Mock portfolio loaded but no positions → empty (don't show fake data)
-    if (useMock && mock.sectorData.length === 0) return [];
-    // Real brokerage connected with holdings → use live Plaid data
-    if (useLiveHoldings && mock.sectorData.length > 0) return mock.sectorData;
-    // Org TMT team member → show industry breakdown
+    if (plaidConnected && mock.sectorData.length > 0) return mock.sectorData;
     if (isTmtTeamMember) return TMT_INDUSTRY_DATA;
-    // Demo account
-    if (user?.email === 'axmabeto@gmail.com') return SECTOR_DATA_DEMO;
-    // No holdings at all (not mock, not Plaid connected) → empty
-    if (!useMock && !useLiveHoldings) return [];
-    return SECTOR_DATA_DEFAULT;
-  }, [useMock, useLiveHoldings, mock.sectorData, user?.email, isTmtTeamMember]);
+    return [];
+  }, [useMock, plaidConnected, mock.sectorData, isTmtTeamMember]);
 
   useEffect(() => {
     if (!user) {
@@ -626,8 +555,27 @@ export default function HomeDashboardPage() {
     };
   }, [user]);
 
+  const heroChangeToneClass =
+    valueWindowFromApi != null
+      ? valueWindowFromApi.changePct >= 0
+        ? 'positive'
+        : 'negative'
+      : useMock
+        ? mock.totalPnlPct >= 0
+          ? 'positive'
+          : 'negative'
+        : typeof plaidSummary?.totalGainLossPercent === 'number'
+          ? plaidSummary.totalGainLossPercent >= 0
+            ? 'positive'
+            : 'negative'
+          : 'is-muted';
+
   return (
     <div className="db-page dashboard-page-inset">
+      {isInitialLoading ? (
+        <DashboardSkeleton />
+      ) : (
+        <>
       {/* ═══ GREETING ═══ */}
       <div className="db-greeting-section">
         <div>
@@ -650,10 +598,30 @@ export default function HomeDashboardPage() {
                   <strong className="db-greeting-highlight">{mock.totalPnlPct.toFixed(2)}%</strong> — adjust your strategy!
                 </>
               )
-            ) : heroData.change >= 0 ? (
-              <>Today you amassed a <strong className="db-greeting-highlight">+{heroData.change}% increase</strong> in your portfolio holdings</>
+            ) : valueWindowFromApi && Math.abs(valueWindowFromApi.changePct) > 1e-6 ? (
+              valueWindowFromApi.changePct >= 0 ? (
+                <>
+                  Over your selected timeframe, portfolio value is up{' '}
+                  <strong className="db-greeting-highlight">+{valueWindowFromApi.changePct.toFixed(2)}%</strong>.
+                </>
+              ) : (
+                <>
+                  Over your selected timeframe, portfolio value is{' '}
+                  <strong className="db-greeting-highlight">{valueWindowFromApi.changePct.toFixed(2)}%</strong>.
+                </>
+              )
+            ) : typeof plaidSummary?.totalGainLossPercent === 'number' && plaidConnected ? (
+              <>
+                Overall vs cost basis:{' '}
+                <strong className="db-greeting-highlight">
+                  {plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}
+                  {plaidSummary.totalGainLossPercent.toFixed(2)}%
+                </strong>
+              </>
+            ) : hasNoData ? (
+              <>Connect a brokerage or try Mock Trading to see personalized portfolio insights.</>
             ) : (
-              <>Markets are down <strong className="db-greeting-highlight">{Math.abs(heroData.change)}%</strong> today — stay the course, long-term wins</>
+              <>Your portfolio summary updates as linked accounts sync.</>
             )}
           </p>
           <p className="db-greeting-date">{formatLongDate()}</p>
@@ -667,33 +635,45 @@ export default function HomeDashboardPage() {
             <div>
               <span className="db-hero-label">Current Value <i className="bi bi-arrow-up-right" /></span>
               <div className="db-hero-value">
-                ${currentValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {useMock || (plaidConnected && currentValue != null) ? (
+                  `$${Number(currentValue).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                ) : (
+                  <span className="db-hero-value-placeholder">Connect a brokerage</span>
+                )}
               </div>
-              <span
-                className={`db-hero-change ${
-                  (() => {
-                    if (valueWindowFromApi) return valueWindowFromApi.changePct >= 0;
-                    return (useMock ? mock.totalPnlPct : heroData.change) >= 0;
-                  })()
-                    ? 'positive'
-                    : 'negative'
-                }`}
-              >
-                {valueWindowFromApi
-                  ? `${valueWindowFromApi.changePct >= 0 ? '+' : ''}${valueWindowFromApi.changePct.toFixed(2)}%`
-                  : useMock
-                    ? `${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`
-                    : `${heroData.change >= 0 ? '+' : ''}${heroData.change}%`}
-                <span className="db-hero-change-amt">
-                  {valueWindowFromApi
-                    ? `${valueWindowFromApi.changeAbs >= 0 ? '+' : ''}$${valueWindowFromApi.changeAbs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                    : useMock
-                      ? `${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                      : `${heroData.changeDollar >= 0 ? '+' : ''}$${heroData.changeDollar.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-                </span>
-                {valueWindowFromApi && (
-                  <span className="db-hero-tf-pill" style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}>
-                    {timeframe}
+              <span className={`db-hero-change ${heroChangeToneClass}`}>
+                {valueWindowFromApi ? (
+                  <>
+                    {`${valueWindowFromApi.changePct >= 0 ? '+' : ''}${valueWindowFromApi.changePct.toFixed(2)}%`}
+                    <span className="db-hero-change-amt">
+                      {`${valueWindowFromApi.changeAbs >= 0 ? '+' : ''}$${valueWindowFromApi.changeAbs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    </span>
+                    <span className="db-hero-tf-pill" style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}>
+                      {timeframe}
+                    </span>
+                  </>
+                ) : useMock ? (
+                  <>
+                    {`${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}%`}
+                    <span className="db-hero-change-amt">
+                      {`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    </span>
+                  </>
+                ) : typeof plaidSummary?.totalGainLossPercent === 'number' && plaidConnected ? (
+                  <>
+                    {`${plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}${plaidSummary.totalGainLossPercent.toFixed(2)}%`}
+                    <span className="db-hero-change-amt">
+                      {typeof plaidSummary.totalGainLoss === 'number'
+                        ? `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : ''}
+                    </span>
+                    <span className="db-hero-tf-pill" style={{ fontSize: '0.65rem', marginLeft: 6, opacity: 0.75 }}>
+                      vs cost basis
+                    </span>
+                  </>
+                ) : (
+                  <span className="db-hero-change is-muted">
+                    Portfolio performance for this range appears when your account is linked.
                   </span>
                 )}
               </span>
@@ -716,29 +696,45 @@ export default function HomeDashboardPage() {
                 {useMock ? 'Open Positions' : 'Total Companies'} <i className="bi bi-arrow-up-right" />
               </span>
               <span className="db-hero-stat-value">
-                {useMock ? mock.enrichedPositions.length : heroData.companies}
+                {useMock ? (
+                  mock.enrichedPositions.length
+                ) : plaidConnected && typeof plaidSummary?.positionCount === 'number' ? (
+                  plaidSummary.positionCount
+                ) : normalizedHoldings.length > 0 ? (
+                  normalizedHoldings.length
+                ) : (
+                  <span className="db-hero-stat-muted">Link an account</span>
+                )}
               </span>
             </div>
             <div className="db-hero-stat">
               <span className="db-hero-stat-label">Cash Balance <i className="bi bi-arrow-up-right" /></span>
               <span className="db-hero-stat-value">
-                $
-                {useMock
-                  ? mock.cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                  : heroData.cash.toLocaleString()}
+                {useMock ? (
+                  <>
+                    $
+                    {mock.cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </>
+                ) : (
+                  <span className="db-hero-stat-muted">Held at your institution</span>
+                )}
               </span>
             </div>
             <div className="db-hero-stat">
               <span className="db-hero-stat-label">
-                {useMock ? 'Total P&L' : 'Committed Cash'} <i className="bi bi-arrow-up-right" />
+                {useMock ? 'Total P&L' : 'Total gain / loss'} <i className="bi bi-arrow-up-right" />
               </span>
               <span
                 className="db-hero-stat-value"
                 style={useMock ? { color: mock.totalPnl >= 0 ? '#10b981' : '#ef4444' } : {}}
               >
-                {useMock
-                  ? `${mock.totalPnl >= 0 ? '+' : ''}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                  : `$${heroData.committed.toLocaleString()}`}
+                {useMock ? (
+                  `${mock.totalPnl >= 0 ? '+' : ''}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                ) : typeof plaidSummary?.totalGainLoss === 'number' && plaidConnected ? (
+                  `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                ) : (
+                  <span className="db-hero-stat-muted">No cost basis yet</span>
+                )}
               </span>
             </div>
           </div>
@@ -746,8 +742,8 @@ export default function HomeDashboardPage() {
 
         {/* Chart area */}
         <HeroSparkline
-          portfolioValue={currentValue}
-          changePct={useMock ? mock.totalPnlPct : heroData.change}
+          portfolioValue={currentValue != null ? currentValue : undefined}
+          changePct={useMock ? mock.totalPnlPct : undefined}
           seriesPoints={sparklinePoints}
           range={timeframe}
           isLoading={valueSeriesLoading}
@@ -931,15 +927,25 @@ export default function HomeDashboardPage() {
                   segments={profitDonutSegments}
                   size={110}
                   strokeWidth={16}
-                  centerValue="$4,030"
-                  centerLabel="-$150.20 from last month"
+                  centerValue={
+                    typeof plaidSummary?.totalGainLoss === 'number' && plaidConnected
+                      ? `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                      : ''
+                  }
+                  centerLabel={
+                    typeof plaidSummary?.totalGainLossPercent === 'number' && plaidConnected
+                      ? `${plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}${plaidSummary.totalGainLossPercent.toFixed(2)}% vs cost basis`
+                      : totalProfitsRows.length === 0
+                        ? 'Add holdings to track P&L'
+                        : 'Day change by position'
+                  }
                 />
               )}
             </div>
             <div className="db-profits-legend-scroll">
               {totalProfitsRows.length === 0 ? (
                 <p className="db-profits-empty" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--db-muted)' }}>
-                  No positions to show. {useMock ? 'Add mock positions' : 'Link an account or use demo data'} to see P&amp;L by holding.
+                  No positions to show. {useMock ? 'Add mock positions' : 'Link an account'} to see P&amp;L by holding.
                 </p>
               ) : (
                 <ul className="db-profits-position-list">
@@ -1025,34 +1031,42 @@ export default function HomeDashboardPage() {
           </div>
           <div className="db-tx-scroll">
             <div className="db-tx-list">
-              {displayTransactions.map((tx) => {
-                const q = tx.ticker ? liveQuotes[tx.ticker] : null;
-                const rowKey = tx.id != null ? `tx-${tx.id}` : `tx-${tx.txId}`;
-                return (
-                  <div key={rowKey} className="db-tx-item">
-                    <div className="db-tx-company">
-                      <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
-                      <div>
-                        <span className="db-tx-name">{tx.company} ({tx.ticker})</span>
-                        <span className="db-tx-date">{tx.date}</span>
-                        {q && (
-                          <span className="db-tx-date" style={{ display: 'block', color: '#9ca3af' }}>
-                            Last: ${q.price.toFixed(2)}
-                          </span>
-                        )}
+              {displayTransactions.length === 0 ? (
+                <p className="db-profits-empty" style={{ margin: '1rem 0.5rem', fontSize: '0.8125rem', color: 'var(--db-muted)' }}>
+                  {useMock ? 'No mock trades yet.' : 'Linked account activity will appear here.'}
+                </p>
+              ) : (
+                displayTransactions.map((tx) => {
+                  const q = tx.ticker ? liveQuotes[tx.ticker] : null;
+                  const rowKey = tx.id != null ? `tx-${tx.id}` : `tx-${tx.txId}`;
+                  return (
+                    <div key={rowKey} className="db-tx-item">
+                      <div className="db-tx-company">
+                        <div className="db-tx-avatar"><span>{tx.company[0]}</span></div>
+                        <div>
+                          <span className="db-tx-name">{tx.company} ({tx.ticker})</span>
+                          <span className="db-tx-date">{tx.date}</span>
+                          {q && (
+                            <span className="db-tx-date" style={{ display: 'block', color: '#9ca3af' }}>
+                              Last: ${q.price.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
+                        {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
+                      </span>
+                      <span className="db-tx-id">{tx.txId}</span>
                     </div>
-                    <span className={`db-tx-amount ${tx.positive ? 'positive' : 'negative'}`}>
-                      {tx.positive ? '+' : '-'}${tx.amount.toLocaleString()}
-                    </span>
-                    <span className="db-tx-id">{tx.txId}</span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

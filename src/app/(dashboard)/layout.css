@@ -123,3 +123,20 @@ body .main-nav:not(.partner-nav) {
   -webkit-backdrop-filter: none !important;
   border-bottom: none !important;
 }
+
+/* ───────── Defensive light-mode override ─────────
+   Belt-and-suspenders fix for the page color seam.
+   Even if --app-bg fails to resolve to white in light mode,
+   these rules force white on the dashboard surfaces directly. */
+body.light-mode .dashboard-main,
+body.light-mode .dashboard-main-content {
+  background-color: #ffffff;
+}
+
+body.light-mode:has(.dashboard-main) {
+  background-color: #ffffff;
+}
+
+body.light-mode .main-nav:not(.partner-nav) {
+  background: #ffffff !important;
+}

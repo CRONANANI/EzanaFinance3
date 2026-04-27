@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useCallback, cloneElement } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
-import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { useAlpacaPortfolioSummary } from '@/hooks/useAlpacaPortfolioSummary';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
@@ -23,6 +22,35 @@ const INDEX_SYMBOLS = [
   { name: 'VIX', symbol: 'VIXY' },
   { name: 'EUR/USD', symbol: 'FXE' },
 ];
+
+function HomeTerminalSkeleton() {
+  return (
+    <div className="ezana-terminal ezana-terminal--skeleton" aria-hidden>
+      <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--top">
+        <div className="dashboard-page-inset ezana-terminal-bar-inner">
+          <div className="t-home-skel-marquee">
+            <div className="t-home-skel-bar t-home-skel-bar--lg" style={{ width: '100%' }} />
+          </div>
+        </div>
+      </div>
+      <div className="dashboard-page-inset" style={{ padding: '1.5rem 2rem' }}>
+        <div className="t-home-skel-grid">
+          <div className="t-home-skel-card">
+            <div className="t-home-skel-bar t-home-skel-bar--md" style={{ width: '45%' }} />
+            <div className="t-home-skel-bar t-home-skel-bar--xl" style={{ width: '72%', marginTop: '1rem' }} />
+            <div className="t-home-skel-bar t-home-skel-bar--chart" style={{ marginTop: '1.25rem' }} />
+          </div>
+          <div className="t-home-skel-card t-home-skel-card--short">
+            <div className="t-home-skel-bar t-home-skel-bar--md" style={{ width: '55%' }} />
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="t-home-skel-bar t-home-skel-bar--sm" style={{ width: '100%', marginTop: '0.65rem' }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 async function fetchBatchQuotes(symbols) {
   if (!symbols.length) return {};
@@ -208,31 +236,28 @@ export default function HomeTerminalPage() {
     [enrichedHoldings],
   );
 
-  /**
-   * Portfolio headline: real brokerage (Plaid) when connected; otherwise mock portfolio; else demo hero.
-   * Always a positive display number for logged-in users (never blank).
-   */
-  const portfolioTotalAligned = useMemo(() => {
-    if (!user) return HERO_DATA['1D'].value;
+  const isInitialLoading =
+    Boolean(user) && (loading || alpacaSummaryLoading || plaidSummaryLoading || mock.isLoading);
 
-    // Priority 1: Alpaca brokerage account opened inside Ezana (if present).
+  /** Real total only — never a demo placeholder (loading is gated by skeleton). */
+  const portfolioTotalAligned = useMemo(() => {
+    if (!user) return null;
+
     if (alpacaConnected) {
-      if (alpacaSummaryLoading) return HERO_DATA['1D'].value;
+      if (alpacaSummaryLoading) return null;
       if (alpacaSummary?.totalValue != null) return alpacaSummary.totalValue;
     }
 
-    // Priority 2: External brokerage connected via Plaid (if present).
     if (plaidConnected) {
-      if (plaidSummaryLoading) return HERO_DATA['1D'].value;
+      if (plaidSummaryLoading) return null;
       if (plaidSummary?.totalValue != null) return plaidSummary.totalValue;
-      return portfolioTotal > 0 ? portfolioTotal : HERO_DATA['1D'].value;
+      if (portfolioTotal > 0) return portfolioTotal;
+      return null;
     }
 
-    // Priority 3: Mock practice portfolio (the $100k default).
     if (mock.hasMockPortfolio) return mock.totalValue;
 
-    // Fallback: demo value.
-    return HERO_DATA['1D'].value;
+    return null;
   }, [
     user,
     alpacaConnected,
@@ -285,38 +310,26 @@ export default function HomeTerminalPage() {
       <span key="pv" className="t-news-item">
         <strong>PORTFOLIO</strong>{' '}
         {user ? (
-          <>
-            <strong>
-              $
-              {marqueePortfolioValue.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </strong>{' '}
-            <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
-              {portfolioChange >= 0 ? '+' : ''}
-              {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-              today
-            </span>
-          </>
+          marqueePortfolioValue != null && Number.isFinite(marqueePortfolioValue) ? (
+            <>
+              <strong>
+                $
+                {marqueePortfolioValue.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </strong>{' '}
+              <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
+                {portfolioChange >= 0 ? '+' : ''}
+                {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+                today
+              </span>
+            </>
+          ) : (
+            <span className="t-dim">Connect a brokerage or enable mock trading for a live headline.</span>
+          )
         ) : (
-          <>
-            <strong>
-              $
-              {marqueePortfolioValue.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </strong>{' '}
-            <span className={HERO_DATA['1D'].changeDollar >= 0 ? 't-green' : 't-red'}>
-              {HERO_DATA['1D'].changeDollar >= 0 ? '+' : ''}
-              {HERO_DATA['1D'].changeDollar.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{' '}
-              today
-            </span>
-          </>
+          <span className="t-dim">Sign in to track your portfolio on the tape.</span>
         )}
       </span>,
     );
@@ -417,6 +430,7 @@ export default function HomeTerminalPage() {
     }
     return blocks;
   }, [
+    user,
     loading,
     plaidSummaryLoading,
     marqueePortfolioValue,
@@ -440,36 +454,42 @@ export default function HomeTerminalPage() {
 
   return (
     <div className="ezana-terminal">
-      <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--top">
-        <div className="dashboard-page-inset ezana-terminal-bar-inner">
-          <div className="t-news-bar t-terminal-marquee-top">
-            <div className="t-news-label">
-              <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
-            </div>
-            <div className="t-news-scroll">
-              <div className="t-news-track">{marqueeTrack}</div>
+      {isInitialLoading ? (
+        <HomeTerminalSkeleton />
+      ) : (
+        <>
+          <div className="ezana-terminal-bar-strip ezana-terminal-bar-strip--top">
+            <div className="dashboard-page-inset ezana-terminal-bar-inner">
+              <div className="t-news-bar t-terminal-marquee-top">
+                <div className="t-news-label">
+                  <i className="bi bi-broadcast" style={{ marginRight: 4 }} /> LIVE
+                </div>
+                <div className="t-news-scroll">
+                  <div className="t-news-track">{marqueeTrack}</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <HomeTerminalSummary
-        portfolioTotal={portfolioTotalAligned}
-        portfolioChange={portfolioChange}
-        enrichedHoldings={
-          mock.hasMockPortfolio && mock.enrichedPositions?.length > 0
-            ? mock.enrichedPositions
-            : enrichedHoldings
-        }
-        loading={loading}
-        hasUser={!!user}
-        weekPlaidTransactions={weekPlaidTransactions}
-        weekTradeHistory={weekTradeHistory}
-        plaidConnected={plaidConnected}
-        plaidSummary={plaidSummary}
-        mockTotalValue={mock.totalValue}
-        mockHasMockPortfolio={mock.hasMockPortfolio}
-      />
+          <HomeTerminalSummary
+            portfolioTotal={portfolioTotalAligned}
+            portfolioChange={portfolioChange}
+            enrichedHoldings={
+              mock.hasMockPortfolio && mock.enrichedPositions?.length > 0
+                ? mock.enrichedPositions
+                : enrichedHoldings
+            }
+            loading={loading}
+            hasUser={!!user}
+            weekPlaidTransactions={weekPlaidTransactions}
+            weekTradeHistory={weekTradeHistory}
+            plaidConnected={plaidConnected}
+            plaidSummary={plaidSummary}
+            mockTotalValue={mock.totalValue}
+            mockHasMockPortfolio={mock.hasMockPortfolio}
+          />
+        </>
+      )}
     </div>
   );
 }
