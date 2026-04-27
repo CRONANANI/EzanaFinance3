@@ -153,33 +153,50 @@ function TrendingTopicsCard({ topics }) {
   const visibleTopics = topics.slice(startIdx, startIdx + PAGE_SIZE);
   const isLastPage = pageIndex >= totalPages - 1;
 
-  const goNext = () => setPageIndex((i) => Math.min(i + 1, totalPages - 1));
-  const goTop = () => setPageIndex(0);
+  const handlePagerClick = () => {
+    setPageIndex((i) => (isLastPage ? 0 : i + 1));
+  };
 
   return (
     <section
-      className="db-card comm-trending-card"
+      className="db-card comm-hero-card comm-trending-card comm-trending-card--paginated"
       data-community-card
       aria-label="Trending topics"
     >
-      <div className="comm-trending-card-head">
-        <div className="comm-trending-card-head-left">
-          <div className="comm-trending-card-icon" aria-hidden>
+      <div className="comm-hero-card-head">
+        <div className="comm-card-head-left">
+          <div className="comm-card-icon comm-card-icon--fire" aria-hidden>
             <i className="bi bi-fire" />
           </div>
-          <div className="comm-trending-card-head-meta">
+          <div className="comm-card-head-meta">
             <h3>Trending Topics</h3>
             <p>
               Showing {startIdx + 1}–{Math.min(startIdx + PAGE_SIZE, topics.length)} of {topics.length}
             </p>
           </div>
         </div>
-        <span className="comm-trending-page-indicator" aria-hidden>
-          {pageIndex + 1} / {totalPages}
-        </span>
+
+        <button
+          type="button"
+          className="comm-trending-pager-inline"
+          onClick={handlePagerClick}
+          aria-label={isLastPage ? 'Back to top of trending topics' : `Show next ${PAGE_SIZE} topics`}
+        >
+          <span className="comm-trending-pager-inline__count" aria-hidden>
+            {pageIndex + 1} / {totalPages}
+          </span>
+          <span className="comm-trending-pager-inline__sep" aria-hidden>·</span>
+          <span className="comm-trending-pager-inline__label">
+            {isLastPage ? 'Back to top' : `Next ${PAGE_SIZE}`}
+          </span>
+          <i
+            className={`bi ${isLastPage ? 'bi-chevron-up' : 'bi-chevron-down'} comm-trending-pager-inline__icon`}
+            aria-hidden
+          />
+        </button>
       </div>
 
-      <ul className="comm-trending-list" aria-label="Ranked trending topics">
+      <ul className="comm-trending-row-grid" aria-label="Ranked trending topics">
         {visibleTopics.map((topic, localIdx) => {
           const globalIdx = startIdx + localIdx;
           return (
@@ -208,43 +225,222 @@ function TrendingTopicsCard({ topics }) {
                     <span className="comm-trending-tile__hash">#</span>
                     {topic.tag}
                   </span>
-                  <span className="comm-trending-tile__meta">
-                    {topic.posts} posts
-                  </span>
-                  <span className="comm-trending-tile__category">
-                    {topic.category}
-                  </span>
+                  <span className="comm-trending-tile__meta">{topic.posts} posts</span>
+                  <span className="comm-trending-tile__category">{topic.category}</span>
                 </div>
               </button>
             </li>
           );
         })}
       </ul>
-
-      <div className="comm-trending-pager">
-        {!isLastPage ? (
-          <button
-            type="button"
-            className="comm-trending-pager-btn"
-            onClick={goNext}
-            aria-label={`Show next ${PAGE_SIZE} topics`}
-          >
-            <span>Show next {PAGE_SIZE}</span>
-            <i className="bi bi-chevron-down" aria-hidden />
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="comm-trending-pager-btn"
-            onClick={goTop}
-            aria-label="Back to top of trending topics"
-          >
-            <span>Back to top</span>
-            <i className="bi bi-chevron-up" aria-hidden />
-          </button>
-        )}
-      </div>
     </section>
+  );
+}
+
+function CommunityKpiModal({ kind, data, onClose }) {
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!kind) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [kind]);
+
+  if (!kind) return null;
+
+  return (
+    <div
+      className="comm-kpi-modal-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="comm-kpi-modal" role="document">
+        <button
+          type="button"
+          className="comm-kpi-modal__close"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <i className="bi bi-x-lg" aria-hidden />
+        </button>
+
+        {kind === 'top-performer' && <TopPerformerModalBody data={data} />}
+        {kind === 'sector-momentum' && <SectorMomentumModalBody data={data} />}
+        {kind === 'investors-to-follow' && <InvestorsToFollowModalBody data={data} />}
+      </div>
+    </div>
+  );
+}
+
+function TopPerformerModalBody({ data }) {
+  if (!data) return <p className="comm-kpi-modal__empty">No top performer data available right now.</p>;
+  return (
+    <>
+      <div className="comm-kpi-modal__hero">
+        <div className="comm-kpi-modal__avatar" aria-hidden>
+          {(data.name || '?').slice(0, 2).toUpperCase()}
+        </div>
+        <div>
+          <h2 className="comm-kpi-modal__title">{data.name}</h2>
+          <p className="comm-kpi-modal__subtitle">@{data.username || data.name?.split(' ')[0]?.toLowerCase()}</p>
+        </div>
+        <span className="comm-kpi-modal__badge comm-kpi-modal__badge--positive">
+          {data.return}
+        </span>
+      </div>
+
+      <div className="comm-kpi-modal__stats">
+        <div className="comm-kpi-modal__stat">
+          <span className="comm-kpi-modal__stat-label">Monthly return</span>
+          <span className="comm-kpi-modal__stat-value">{data.return}</span>
+        </div>
+        <div className="comm-kpi-modal__stat">
+          <span className="comm-kpi-modal__stat-label">Followers</span>
+          <span className="comm-kpi-modal__stat-value">{data.followers || '—'}</span>
+        </div>
+        <div className="comm-kpi-modal__stat">
+          <span className="comm-kpi-modal__stat-label">Win rate</span>
+          <span className="comm-kpi-modal__stat-value">{data.winRate || '68%'}</span>
+        </div>
+      </div>
+
+      <h3 className="comm-kpi-modal__section-title">Top holdings this month</h3>
+      <ul className="comm-kpi-modal__list">
+        {/* PLACEHOLDER: wire to real portfolio holdings when API/hook is available */}
+        {(data.holdings || [
+          { ticker: 'NVDA', return: '+12.4%', weight: '24%' },
+          { ticker: 'AAPL', return: '+5.2%', weight: '18%' },
+          { ticker: 'MSFT', return: '+7.8%', weight: '15%' },
+          { ticker: 'META', return: '+9.1%', weight: '12%' },
+        ]).map((h) => (
+          <li key={h.ticker} className="comm-kpi-modal__list-item">
+            <span className="comm-kpi-modal__list-ticker">{h.ticker}</span>
+            <span className="comm-kpi-modal__list-weight">{h.weight} of port.</span>
+            <span className="comm-kpi-modal__list-return positive">{h.return}</span>
+          </li>
+        ))}
+      </ul>
+
+      {data.id && (
+        <Link href={`/community/legendary/${data.id}`} className="comm-kpi-modal__cta">
+          View full portfolio <i className="bi bi-arrow-right" aria-hidden />
+        </Link>
+      )}
+    </>
+  );
+}
+
+function SectorMomentumModalBody({ data }) {
+  /* PLACEHOLDER: wire to real sector performance API when available */
+  const sectors = data?.sectors || [
+    { name: 'Technology', return: '+8.2%', trend: 'up', leaders: ['NVDA', 'MSFT', 'GOOGL'] },
+    { name: 'Energy', return: '+6.4%', trend: 'up', leaders: ['XOM', 'CVX', 'COP'] },
+    { name: 'Financials', return: '+3.1%', trend: 'up', leaders: ['JPM', 'BAC', 'WFC'] },
+    { name: 'Industrials', return: '+2.8%', trend: 'up', leaders: ['CAT', 'BA', 'HON'] },
+    { name: 'Healthcare', return: '-1.4%', trend: 'down', leaders: ['UNH', 'JNJ', 'PFE'] },
+    { name: 'Consumer Disc.', return: '-2.1%', trend: 'down', leaders: ['AMZN', 'TSLA', 'HD'] },
+  ];
+
+  return (
+    <>
+      <div className="comm-kpi-modal__hero">
+        <div className="comm-kpi-modal__icon-wrap" aria-hidden>
+          <i className="bi bi-graph-up-arrow" />
+        </div>
+        <div>
+          <h2 className="comm-kpi-modal__title">Sector momentum this week</h2>
+          <p className="comm-kpi-modal__subtitle">
+            How each sector is moving across the community&apos;s tracked positions.
+          </p>
+        </div>
+      </div>
+
+      <ul className="comm-kpi-modal__sector-list">
+        {sectors.map((s) => (
+          <li key={s.name} className="comm-kpi-modal__sector-row">
+            <div className="comm-kpi-modal__sector-meta">
+              <span className="comm-kpi-modal__sector-name">{s.name}</span>
+              <span className="comm-kpi-modal__sector-leaders">
+                {s.leaders.join(' · ')}
+              </span>
+            </div>
+            <span
+              className={`comm-kpi-modal__badge comm-kpi-modal__badge--${
+                s.trend === 'up' ? 'positive' : 'negative'
+              }`}
+            >
+              {s.return}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function InvestorsToFollowModalBody({ data }) {
+  const investors = data?.investors || [];
+
+  return (
+    <>
+      <div className="comm-kpi-modal__hero">
+        <div className="comm-kpi-modal__icon-wrap" aria-hidden>
+          <i className="bi bi-person-plus" />
+        </div>
+        <div>
+          <h2 className="comm-kpi-modal__title">Investors with similar sectors</h2>
+          <p className="comm-kpi-modal__subtitle">
+            Sorted by performance — these investors hold positions in sectors that overlap with yours.
+          </p>
+        </div>
+      </div>
+
+      {investors.length === 0 ? (
+        <p className="comm-kpi-modal__empty">
+          No matching investors found yet. Add a few holdings to your watchlist or portfolio so we can find good matches.
+        </p>
+      ) : (
+        <ul className="comm-kpi-modal__investor-list">
+          {investors.map((inv) => (
+            <li key={inv.id} className="comm-kpi-modal__investor-row">
+              <div className="comm-kpi-modal__investor-avatar" aria-hidden>
+                {(inv.name || '?').slice(0, 2).toUpperCase()}
+              </div>
+              <div className="comm-kpi-modal__investor-meta">
+                <span className="comm-kpi-modal__investor-name">{inv.name}</span>
+                <span className="comm-kpi-modal__investor-tags">
+                  {(inv.sectors || []).slice(0, 3).join(' · ')}
+                </span>
+              </div>
+              <span className="comm-kpi-modal__badge comm-kpi-modal__badge--positive">
+                {inv.return}
+              </span>
+              {inv.id && (
+                <Link
+                  href={`/community/legendary/${inv.id}`}
+                  className="comm-kpi-modal__investor-cta"
+                  aria-label={`View ${inv.name}'s profile`}
+                >
+                  <i className="bi bi-arrow-right" aria-hidden />
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }
 
@@ -279,6 +475,8 @@ export default function CommunityPageClient() {
   const [suggestedLoading, setSuggestedLoading] = useState(true);
   const [suggestedError, setSuggestedError] = useState(false);
   const [followBusy, setFollowBusy] = useState({});
+  const [activeModal, setActiveModal] = useState(null);
+  const [initialPostCount, setInitialPostCount] = useState(null);
 
   const firstName = useMemo(() => {
     const raw =
@@ -479,6 +677,44 @@ export default function CommunityPageClient() {
     loadSuggested();
   }, [loadSuggested]);
 
+  useEffect(() => {
+    if (initialPostCount === null && feedPosts.length > 0) {
+      setInitialPostCount(feedPosts.length);
+    }
+  }, [feedPosts.length, initialPostCount]);
+
+  const newPostCount = Math.max(0, feedPosts.length - (initialPostCount ?? feedPosts.length));
+
+  const scrollToFeed = useCallback(() => {
+    const feedElement = document.querySelector('.comm-feed-nav');
+    if (feedElement) {
+      feedElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  const sectorMomentum = useMemo(
+    () => ({ name: 'Technology', return: '+8.2%', trend: 'up' }),
+    [],
+  );
+
+  const closeKpiModal = useCallback(() => setActiveModal(null), []);
+
+  const kpiModalData = useMemo(() => {
+    if (!activeModal) return null;
+    if (activeModal === 'top-performer') return suggestedUsers[0] ?? null;
+    if (activeModal === 'sector-momentum') return null;
+    const tags = ['Technology', 'Financials', 'Healthcare', 'Energy', 'Consumer Disc.'];
+    return {
+      /* PLACEHOLDER sector tags until profile/watchlist overlap API exists */
+      investors: suggestedUsers.map((inv, i) => ({
+        ...inv,
+        sectors:
+          inv.sectors ??
+          [tags[i % tags.length], tags[(i + 2) % tags.length]],
+      })),
+    };
+  }, [activeModal, suggestedUsers]);
+
   /** Dev-only contrast audit — runs once the page has had a chance to paint. */
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return undefined;
@@ -568,13 +804,6 @@ export default function CommunityPageClient() {
 
   // ─── Derived KPI values for the stats strip ──────────────────────
   const topSuggestedReturn = suggestedUsers[0]?.return ?? null;
-  const hottestTopic = TRENDING_TOPICS[0] || null;
-  const totalTrendingPosts = TRENDING_TOPICS.reduce((sum, topic) => {
-    const numeric = String(topic.posts).replace(/[^0-9.]/g, '');
-    const asNumber = Number(numeric) || 0;
-    const multiplier = /K/i.test(topic.posts) ? 1000 : 1;
-    return sum + asNumber * multiplier;
-  }, 0);
 
   return (
     <div
@@ -616,21 +845,47 @@ export default function CommunityPageClient() {
       </div>
 
       {/* ═══ Trending Topics — full-width card below greeting/tabs ═══ */}
-      <TrendingTopicsCard topics={TRENDING_TOPICS} />
+      <div className="comm-hero-cards">
+        <TrendingTopicsCard topics={TRENDING_TOPICS} />
+      </div>
 
       {/* ═══ KPI strip — community-wide snapshot ═══ */}
       <section className="comm-kpi-row" aria-label="Community at a glance">
-        <div className="db-card comm-kpi-card" data-community-card>
+        <button
+          type="button"
+          className="db-card comm-kpi-card comm-kpi-card--actionable"
+          data-community-card
+          onClick={scrollToFeed}
+          aria-label={
+            newPostCount > 0
+              ? `${newPostCount} new posts in feed — click to scroll to feed`
+              : `${feedPosts.length} posts in feed — click to scroll to feed`
+          }
+        >
           <div className="comm-kpi-icon" aria-hidden>
             <i className="bi bi-chat-square-text" />
           </div>
           <div className="comm-kpi-body">
-            <span className="comm-kpi-label">Posts in feed</span>
-            <span className="comm-kpi-value">{feedPosts.length}</span>
-            <span className="comm-kpi-sub">Live from the community</span>
+            <span className="comm-kpi-label">
+              {newPostCount > 0 ? 'New posts' : 'Posts in feed'}
+            </span>
+            <span className="comm-kpi-value">
+              {newPostCount > 0 ? `+${newPostCount}` : feedPosts.length}
+            </span>
+            <span className="comm-kpi-sub">
+              {newPostCount > 0 ? 'Tap to scroll to feed' : 'Live from the community'}
+            </span>
           </div>
-        </div>
-        <div className="db-card comm-kpi-card" data-community-card>
+          <i className="bi bi-arrow-down comm-kpi-card__chevron" aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          className="db-card comm-kpi-card comm-kpi-card--actionable"
+          data-community-card
+          onClick={() => setActiveModal('top-performer')}
+          aria-label="View top performer's portfolio"
+        >
           <div className="comm-kpi-icon" aria-hidden>
             <i className="bi bi-graph-up-arrow" />
           </div>
@@ -646,32 +901,51 @@ export default function CommunityPageClient() {
                 : 'Weekly leader'}
             </span>
           </div>
-        </div>
-        <div className="db-card comm-kpi-card" data-community-card>
+          <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          className="db-card comm-kpi-card comm-kpi-card--actionable"
+          data-community-card
+          onClick={() => setActiveModal('sector-momentum')}
+          aria-label="View sector momentum breakdown"
+        >
           <div className="comm-kpi-icon" aria-hidden>
-            <i className="bi bi-fire" />
+            <i className="bi bi-bar-chart-line" />
           </div>
           <div className="comm-kpi-body">
-            <span className="comm-kpi-label">Hottest topic</span>
-            <span className="comm-kpi-value">
-              #{hottestTopic?.tag || '—'}
-            </span>
-            <span className="comm-kpi-sub">
-              {totalTrendingPosts.toLocaleString()} posts trending
+            <span className="comm-kpi-label">Sector momentum</span>
+            <span className="comm-kpi-value">{sectorMomentum?.name || '—'}</span>
+            <span className="comm-kpi-sub positive">
+              Leading at {sectorMomentum?.return || '—'} this week
             </span>
           </div>
-        </div>
-        <div className="db-card comm-kpi-card" data-community-card>
+          <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          className="db-card comm-kpi-card comm-kpi-card--actionable"
+          data-community-card
+          onClick={() => setActiveModal('investors-to-follow')}
+          aria-label="View investors with similar holdings"
+        >
           <div className="comm-kpi-icon" aria-hidden>
             <i className="bi bi-person-plus" />
           </div>
           <div className="comm-kpi-body">
             <span className="comm-kpi-label">Investors to follow</span>
             <span className="comm-kpi-value">{suggestedUsers.length}</span>
-            <span className="comm-kpi-sub">Suggested for you</span>
+            <span className="comm-kpi-sub">Similar to your sectors</span>
           </div>
-        </div>
+          <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
+        </button>
       </section>
+
+      {activeModal && (
+        <CommunityKpiModal kind={activeModal} data={kpiModalData} onClose={closeKpiModal} />
+      )}
 
       {/* ═══ Find investors — user search wrapped in the shared card shell ═══ */}
       <section
