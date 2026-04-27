@@ -23,8 +23,15 @@ import { generateUserMockData } from '@/lib/userMockData';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
+import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Safe money formatting — avoids `.toLocaleString` on undefined/NaN. */
+function fmtMoney(n, opts = { minimumFractionDigits: 2, maximumFractionDigits: 2 }) {
+  const v = typeof n === 'number' && Number.isFinite(n) ? n : 0;
+  return v.toLocaleString('en-US', opts);
+}
 
 /** YTD sparkline path: one segment per month Jan → current month */
 function buildYtdChartPath(monthCount) {
@@ -65,7 +72,7 @@ function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfoli
         ? baseChange
         : baseChange * (0.35 + t * 0.55) + baseValue * d * 0.04;
     const pct = v > 0 ? (ch / v) * 100 : 0;
-    const trades = Math.max(0, Math.round((hero1d.companies ?? 8) * (0.45 + t * 0.4)));
+    const trades = Math.max(0, Math.round((HERO_DATA['1D']?.companies ?? 8) * (0.45 + t * 0.4)));
     rows.push({
       label: MONTH_SHORT[i],
       displayValue: v,
@@ -344,15 +351,15 @@ export function HomeTerminalSummary({
 
   const displayValue = !hasUser
     ? portfolioTotal != null && Number.isFinite(Number(portfolioTotal))
-      ? `$${Number(portfolioTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      ? `$${fmtMoney(Number(portfolioTotal))}`
       : 'Sign in for your portfolio'
     : showPortfolioHeadline
-      ? `$${portfolioSnapshotNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      ? `$${fmtMoney(portfolioSnapshotNum)}`
       : 'Connect a brokerage or try mock trading';
 
   const changePctStr = showPortfolioHeadline ? `${displayPct >= 0 ? '+' : ''}${displayPct.toFixed(2)}%` : '';
   const changeDollarStr = showPortfolioHeadline
-    ? `${displayChangeDollar >= 0 ? '+' : '-'}$${Math.abs(displayChangeDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    ? `${displayChangeDollar >= 0 ? '+' : '-'}$${fmtMoney(Math.abs(displayChangeDollar))}`
     : '';
 
   const userName =
@@ -683,9 +690,9 @@ export function HomeTerminalSummary({
                           </span>
                           <span style={{ fontSize: '0.5625rem', color: 'var(--home-muted)', flexShrink: 0, minWidth: 44, textAlign: 'right' }}>
                             $
-                            {posValue >= 1000
+                            {posValue >= 1000 && Number.isFinite(posValue)
                               ? `${(posValue / 1000).toFixed(1)}K`
-                              : posValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              : fmtMoney(posValue, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
                         </div>
                       );

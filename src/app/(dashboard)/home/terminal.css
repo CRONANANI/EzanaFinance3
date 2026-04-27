@@ -843,3 +843,55 @@ body.light-mode .t-home-skel-bar {
     background-position: -200% 0;
   }
 }
+
+/* Spec alias: t-skel-* (shared shimmer with t-home-skel-*) */
+.t-skel-bar {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(120, 120, 120, 0.06) 0%,
+    rgba(120, 120, 120, 0.14) 50%,
+    rgba(120, 120, 120, 0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: t-skel-shimmer 1.5s ease-in-out infinite;
+}
+
+.t-skel-bar--lg {
+  height: 32px;
+}
+
+.t-skel-bar--md {
+  height: 18px;
+}
+
+.t-skel-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+body.light-mode .t-skel-bar {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+}
+
+body.light-mode .t-skel-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+@keyframes t-skel-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

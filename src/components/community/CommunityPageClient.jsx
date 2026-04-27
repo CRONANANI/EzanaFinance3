@@ -144,6 +144,105 @@ function FeedSkeleton({ rows = 3 }) {
   );
 }
 
+function TrendingTopicsCard({ topics }) {
+  const PAGE_SIZE = 5;
+  const [pageIndex, setPageIndex] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(topics.length / PAGE_SIZE));
+  const startIdx = pageIndex * PAGE_SIZE;
+  const visibleTopics = topics.slice(startIdx, startIdx + PAGE_SIZE);
+  const isLastPage = pageIndex >= totalPages - 1;
+
+  const goNext = () => setPageIndex((i) => Math.min(i + 1, totalPages - 1));
+  const goTop = () => setPageIndex(0);
+
+  return (
+    <section
+      className="db-card comm-trending-card"
+      data-community-card
+      aria-label="Trending topics"
+    >
+      <div className="comm-trending-card-head">
+        <div className="comm-trending-card-head-left">
+          <div className="comm-trending-card-icon" aria-hidden>
+            <i className="bi bi-fire" />
+          </div>
+          <div className="comm-trending-card-head-meta">
+            <h3>Trending Topics</h3>
+            <p>
+              Showing {startIdx + 1}–{Math.min(startIdx + PAGE_SIZE, topics.length)} of {topics.length}
+            </p>
+          </div>
+        </div>
+        <span className="comm-trending-page-indicator" aria-hidden>
+          {pageIndex + 1} / {totalPages}
+        </span>
+      </div>
+
+      <ul className="comm-trending-list" aria-label="Ranked trending topics">
+        {visibleTopics.map((topic, localIdx) => {
+          const globalIdx = startIdx + localIdx;
+          return (
+            <li key={topic.tag}>
+              <button type="button" className="comm-trending-row">
+                <span className="comm-trending-row__rank" aria-hidden>
+                  {String(globalIdx + 1).padStart(2, '0')}
+                </span>
+                <span className="comm-trending-row__body">
+                  <span className="comm-trending-row__tag">
+                    <span className="comm-trending-row__hash">#</span>
+                    {topic.tag}
+                  </span>
+                  <span className="comm-trending-row__meta">
+                    {topic.posts} posts · {topic.category}
+                  </span>
+                </span>
+                <span
+                  className={`comm-trending-row__trend comm-trending-row__trend--${topic.trend}`}
+                  aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
+                >
+                  <i
+                    className={
+                      topic.trend === 'up'
+                        ? 'bi bi-arrow-up-right'
+                        : 'bi bi-arrow-down-right'
+                    }
+                    aria-hidden
+                  />
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="comm-trending-pager">
+        {!isLastPage ? (
+          <button
+            type="button"
+            className="comm-trending-pager-btn"
+            onClick={goNext}
+            aria-label={`Show next ${PAGE_SIZE} topics`}
+          >
+            <span>Show next {PAGE_SIZE}</span>
+            <i className="bi bi-chevron-down" aria-hidden />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="comm-trending-pager-btn"
+            onClick={goTop}
+            aria-label="Back to top of trending topics"
+          >
+            <span>Back to top</span>
+            <i className="bi bi-chevron-up" aria-hidden />
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function CommunityPageClient() {
   const router = useRouter();
   const { user } = useAuth();
@@ -477,77 +576,42 @@ export default function CommunityPageClient() {
       className="dashboard-page-inset db-page community-root"
       style={{ paddingTop: 0, paddingBottom: '2rem' }}
     >
-      {/* ═══ Greeting — full width, on its own row ═══ */}
-      <div className="comm-greeting-section">
-        <h1 className="db-greeting">
-          <span>
-            {getGreeting()}, {firstName}
-          </span>
-          <span className="db-greeting-waving" aria-hidden>👋</span>
-        </h1>
-        <p className="db-greeting-sub">
-          Connect, share, and grow with the investing community
-        </p>
-        <p className="db-greeting-date">{formatDateLine()}</p>
-      </div>
-
-      {/* ═══ TRENDING TOPICS — full width below greeting ═══ */}
-      <section
-        className="db-card comm-trending-card"
-        data-community-card
-        aria-label="Trending topics"
-      >
-        <div className="comm-trending-card-head">
-          <div className="comm-trending-card-head-left">
-            <div className="comm-trending-card-icon" aria-hidden>
-              <i className="bi bi-fire" />
-            </div>
-            <div className="comm-trending-card-head-meta">
-              <h3>Trending Topics</h3>
-              <p>What&apos;s hot in the community right now</p>
-            </div>
-          </div>
-          <Link href="/community" className="comm-trending-card-link">
-            View All <i className="bi bi-arrow-right" aria-hidden />
-          </Link>
+      {/* ═══ Top row: greeting on left, page tabs on right ═══ */}
+      <div className="comm-greeting-row">
+        <div className="comm-greeting-section">
+          <h1 className="db-greeting">
+            <span>
+              {getGreeting()}, {firstName}
+            </span>
+            <span className="db-greeting-waving" aria-hidden>👋</span>
+          </h1>
+          <p className="db-greeting-sub">
+            Connect, share, and grow with the investing community
+          </p>
+          <p className="db-greeting-date">{formatDateLine()}</p>
         </div>
 
-        <div className="comm-trending-grid">
-          {TRENDING_TOPICS.map((topic, idx) => (
+        <div className="comm-page-tabs comm-page-tabs--top" role="tablist">
+          {PAGE_TABS.map((t) => (
             <button
-              key={topic.tag}
+              key={t}
               type="button"
-              className="comm-trending-tile"
+              role="tab"
+              aria-selected={t === 'Community'}
+              onClick={() => onPageTab(t)}
+              className={`comm-page-tab ${t === 'Community' ? 'is-active' : ''}`}
             >
-              <span className="comm-trending-tile__rank" aria-hidden>
-                {String(idx + 1).padStart(2, '0')}
-              </span>
-              <div className="comm-trending-tile__body">
-                <span className="comm-trending-tile__tag">
-                  <span className="comm-trending-tile__hash">#</span>
-                  {topic.tag}
-                </span>
-                <span className="comm-trending-tile__meta">
-                  {topic.posts} posts · {topic.category}
-                </span>
-              </div>
-              <span
-                className={`comm-trending-tile__trend comm-trending-tile__trend--${topic.trend}`}
-                aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
-              >
-                <i
-                  className={
-                    topic.trend === 'up'
-                      ? 'bi bi-arrow-up-right'
-                      : 'bi bi-arrow-down-right'
-                  }
-                  aria-hidden
-                />
-              </span>
+              {t === 'Community' && <i className="bi bi-people" aria-hidden />}
+              {t === 'My Profile' && <i className="bi bi-person-circle" aria-hidden />}
+              {t === 'Messages' && <i className="bi bi-chat-dots" aria-hidden />}
+              {t}
             </button>
           ))}
         </div>
-      </section>
+      </div>
+
+      {/* ═══ Trending Topics — full-width card below greeting/tabs ═══ */}
+      <TrendingTopicsCard topics={TRENDING_TOPICS} />
 
       {/* ═══ KPI strip — community-wide snapshot ═══ */}
       <section className="comm-kpi-row" aria-label="Community at a glance">
@@ -603,25 +667,6 @@ export default function CommunityPageClient() {
           </div>
         </div>
       </section>
-
-      {/* ═══ Page-level tabs ═══ */}
-      <div className="comm-page-tabs" role="tablist">
-        {PAGE_TABS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            role="tab"
-            aria-selected={t === 'Community'}
-            onClick={() => onPageTab(t)}
-            className={`comm-page-tab ${t === 'Community' ? 'is-active' : ''}`}
-          >
-            {t === 'Community' && <i className="bi bi-people" aria-hidden />}
-            {t === 'My Profile' && <i className="bi bi-person-circle" aria-hidden />}
-            {t === 'Messages' && <i className="bi bi-chat-dots" aria-hidden />}
-            {t}
-          </button>
-        ))}
-      </div>
 
       {/* ═══ Find investors — user search wrapped in the shared card shell ═══ */}
       <section

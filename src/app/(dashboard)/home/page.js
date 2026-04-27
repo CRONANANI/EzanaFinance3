@@ -7,9 +7,20 @@ import { HomeTerminalSummary } from '@/components/home/HomeTerminalSummary';
 import { usePlaidPortfolioSummary } from '@/hooks/usePlaidPortfolioSummary';
 import { useAlpacaPortfolioSummary } from '@/hooks/useAlpacaPortfolioSummary';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
+import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import '../../../../app-legacy/assets/css/theme-variables.css';
 import '../../../../app-legacy/assets/css/theme.css';
 import './terminal.css';
+
+/**
+ * Format a number as a string, returning '0.00' for null/undefined/NaN.
+ * Use this anywhere `.toLocaleString` is called on values that can be in
+ * a transient loading/error state — prevents render-time crashes.
+ */
+function fmtMoney(n, opts = { minimumFractionDigits: 2, maximumFractionDigits: 2 }) {
+  const v = typeof n === 'number' && Number.isFinite(n) ? n : 0;
+  return v.toLocaleString('en-US', opts);
+}
 
 const INDEX_SYMBOLS = [
   { name: 'S&P 500', symbol: 'SPY' },
@@ -237,27 +248,36 @@ export default function HomeTerminalPage() {
   );
 
   const isInitialLoading =
-    Boolean(user) && (loading || alpacaSummaryLoading || plaidSummaryLoading || mock.isLoading);
+    Boolean(user) &&
+    (loading ||
+      (alpacaConnected && alpacaSummaryLoading) ||
+      (plaidConnected && plaidSummaryLoading) ||
+      mock.isLoading);
 
-  /** Real total only — never a demo placeholder (loading is gated by skeleton). */
   const portfolioTotalAligned = useMemo(() => {
-    if (!user) return null;
+    const fallback = HERO_DATA['1D']?.value ?? 0;
+    if (!user) return fallback;
 
     if (alpacaConnected) {
-      if (alpacaSummaryLoading) return null;
-      if (alpacaSummary?.totalValue != null) return alpacaSummary.totalValue;
+      if (alpacaSummaryLoading) return fallback;
+      if (typeof alpacaSummary?.totalValue === 'number' && Number.isFinite(alpacaSummary.totalValue)) {
+        return alpacaSummary.totalValue;
+      }
     }
 
     if (plaidConnected) {
-      if (plaidSummaryLoading) return null;
-      if (plaidSummary?.totalValue != null) return plaidSummary.totalValue;
-      if (portfolioTotal > 0) return portfolioTotal;
-      return null;
+      if (plaidSummaryLoading) return fallback;
+      if (typeof plaidSummary?.totalValue === 'number' && Number.isFinite(plaidSummary.totalValue)) {
+        return plaidSummary.totalValue;
+      }
+      return Number.isFinite(portfolioTotal) && portfolioTotal > 0 ? portfolioTotal : fallback;
     }
 
-    if (mock.hasMockPortfolio) return mock.totalValue;
+    if (mock.hasMockPortfolio && typeof mock.totalValue === 'number' && Number.isFinite(mock.totalValue)) {
+      return mock.totalValue;
+    }
 
-    return null;
+    return fallback;
   }, [
     user,
     alpacaConnected,
@@ -274,13 +294,20 @@ export default function HomeTerminalPage() {
   const marqueePortfolioValue = portfolioTotalAligned;
 
   const portfolioChange = useMemo(() => {
-    // Match the priority chain from portfolioTotalAligned:
-    // Alpaca → Plaid → mock → fallback
-    if (alpacaConnected && alpacaSummary?.totalGainLoss != null) {
+    if (alpacaConnected && typeof alpacaSummary?.totalGainLoss === 'number' && Number.isFinite(alpacaSummary.totalGainLoss)) {
       return alpacaSummary.totalGainLoss;
     }
-    if (mock.hasMockPortfolio) return mock.totalPnl;
-    return enrichedHoldings.reduce((s, h) => s + h.change * h.shares, 0);
+    if (mock.hasMockPortfolio && typeof mock.totalPnl === 'number' && Number.isFinite(mock.totalPnl)) {
+      return mock.totalPnl;
+    }
+    if (Array.isArray(enrichedHoldings)) {
+      const v = enrichedHoldings.reduce(
+        (s, h) => s + (Number(h.change) || 0) * (Number(h.shares) || 0),
+        0,
+      );
+      return Number.isFinite(v) ? v : 0;
+    }
+    return 0;
   }, [
     alpacaConnected,
     alpacaSummary?.totalGainLoss,
@@ -310,24 +337,13 @@ export default function HomeTerminalPage() {
       <span key="pv" className="t-news-item">
         <strong>PORTFOLIO</strong>{' '}
         {user ? (
-          marqueePortfolioValue != null && Number.isFinite(marqueePortfolioValue) ? (
-            <>
-              <strong>
-                $
-                {marqueePortfolioValue.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </strong>{' '}
-              <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
-                {portfolioChange >= 0 ? '+' : ''}
-                {portfolioChange.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-                today
-              </span>
-            </>
-          ) : (
-            <span className="t-dim">Connect a brokerage or enable mock trading for a live headline.</span>
-          )
+          <>
+            <strong>${fmtMoney(marqueePortfolioValue)}</strong>{' '}
+            <span className={portfolioChange >= 0 ? 't-green' : 't-red'}>
+              {portfolioChange >= 0 ? '+' : ''}
+              {fmtMoney(portfolioChange)} today
+            </span>
+          </>
         ) : (
           <span className="t-dim">Sign in to track your portfolio on the tape.</span>
         )}
@@ -340,7 +356,7 @@ export default function HomeTerminalPage() {
           <strong>{idx.name}</strong>{' '}
           {q ? (
             <>
-              {q.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+              {fmtMoney(q.price)}{' '}
               <span className={q.changePercent >= 0 ? 't-green' : 't-red'}>
                 ({q.changePercent >= 0 ? '+' : ''}
                 {q.changePercent.toFixed(2)}%)
@@ -414,9 +430,9 @@ export default function HomeTerminalPage() {
       enrichedHoldings.slice(0, 10).forEach((h, i) => {
         blocks.push(
           <span key={`h-${i}`} className="t-news-item">
-            <strong>{h.ticker}</strong> ${h.price.toFixed(2)} ({h.pctChange >= 0 ? '+' : ''}
+            <strong>{h.ticker}</strong> ${fmtMoney(h.price)} ({h.pctChange >= 0 ? '+' : ''}
             {h.pctChange.toFixed(2)}%) — {h.shares} sh · $
-            {h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            {fmtMoney(h.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>,
         );
       });
@@ -431,8 +447,6 @@ export default function HomeTerminalPage() {
     return blocks;
   }, [
     user,
-    loading,
-    plaidSummaryLoading,
     marqueePortfolioValue,
     portfolioChange,
     indexQuotes,
