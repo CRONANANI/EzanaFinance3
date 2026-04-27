@@ -19,13 +19,20 @@ const ThisWeekOnEzana = dynamic(
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { useOrg } from '@/contexts/OrgContext';
 import { useProGate } from '@/components/upgrade/ProGateContext';
-import { generateUserMockData } from '@/lib/userMockData';
+import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** YYYY-MM-DD in UTC, `daysAgo` calendar days before today UTC. */
+function utcLoginDateKey(daysAgo) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - daysAgo);
+  return d.toISOString().split('T')[0];
+}
 
 /** Safe money formatting — avoids `.toLocaleString` on undefined/NaN. */
 function fmtMoney(n, opts = { minimumFractionDigits: 2, maximumFractionDigits: 2 }) {
@@ -214,7 +221,7 @@ export function HomeTerminalSummary({
   mockHasMockPortfolio = false,
 }) {
   const { user } = useAuth();
-  const [mockData, setMockData] = useState(null);
+  const { loginDates, streakDays } = useLoginHistory(30);
   const relevance = useUserRelevanceSet();
   const {
     events: liveEvents,
@@ -229,12 +236,6 @@ export function HomeTerminalSummary({
   const [portfolioValueTf, setPortfolioValueTf] = useState('1D');
   const { isOrgUser } = useOrg();
   const { openProGate } = useProGate();
-
-  useEffect(() => {
-    if (user?.id) {
-      setMockData(generateUserMockData(user.id));
-    }
-  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -369,9 +370,6 @@ export function HomeTerminalSummary({
     'Investor';
 
   const greeting = getGreeting();
-  const streakDays = mockData?.streak ?? 0;
-
-  const ezanaScore = mockData?.activityScore != null ? Math.min(99, Math.round(mockData.activityScore / 4.5)) : 22;
 
   const upcomingCalendar = useMemo(() => {
     const now = new Date();
@@ -993,100 +991,43 @@ export function HomeTerminalSummary({
 
             <div className="home-terminal-right-col">
               <div className="home-streak-ezana-pair home-rail-streak-ezana">
-                <div
-                  className="db-card home-streak-ezana-merged streak-card component-card"
-                  style={{
-                    padding: '16px 20px',
-                    flex: 1,
-                    minWidth: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem',
-                    background: 'var(--card-bg, #fff)',
-                    border: '1px solid var(--card-border, rgba(16, 185, 129, 0.12))',
-                    borderRadius: '12px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '1 1 auto', minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: '32px',
-                          lineHeight: 1,
-                          filter: 'drop-shadow(0 0 8px rgba(251, 146, 60, 0.6))',
-                        }}
-                        aria-hidden
-                      >
-                        🔥
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '22px', fontWeight: 700, color: '#f97316', lineHeight: 1 }}>{streakDays}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-secondary, var(--home-muted-soft))', marginTop: '2px' }}>
-                          Day Streak
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginLeft: 'auto', flexShrink: 0 }}>
-                        {Array.from({ length: 7 }).map((_, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              width: '6px',
-                              height: '24px',
-                              borderRadius: '3px',
-                              background: i < streakDays ? '#f97316' : 'var(--card-border, rgba(16, 185, 129, 0.15))',
-                              opacity: 0.4 + (i / 7) * 0.6,
-                            }}
-                          />
-                        ))}
-                      </div>
+                <div className="db-card streak-card streak-card--bars component-card">
+                  <div className="streak-card__header">
+                    <div className="streak-card__count">
+                      <span className="streak-card__count-value">{streakDays}</span>
+                      <span className="streak-card__count-unit">/ 30</span>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div
-                        style={{
-                          fontSize: '0.65rem',
-                          color: 'var(--home-muted-soft)',
-                          fontWeight: 600,
-                          letterSpacing: '0.05em',
-                          textTransform: 'uppercase',
-                          marginBottom: '0.2rem',
-                        }}
-                      >
-                        Ezana Score
-                      </div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1 }}>
-                        {ezanaScore}
-                        <span style={{ fontSize: '0.75rem', color: 'var(--home-muted)', fontWeight: 400 }}>/100</span>
-                      </div>
-                      <div
-                        style={{
-                          width: '80px',
-                          height: '4px',
-                          background: 'rgba(255, 255, 255, 0.08)',
-                          borderRadius: '2px',
-                          marginTop: '0.4rem',
-                          marginLeft: 'auto',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${ezanaScore}%`,
-                            height: '100%',
-                            borderRadius: '2px',
-                            background: 'linear-gradient(90deg, #D4AF37, #f0c040)',
-                          }}
-                        />
-                      </div>
+                    <div className="streak-card__meta">
+                      <span className="streak-card__title">Day Streak</span>
+                      <span className="streak-card__subtitle">
+                        {streakDays >= 30
+                          ? "30 days strong — you've made it 🎉"
+                          : `${30 - streakDays} day${30 - streakDays === 1 ? '' : 's'} to go`}
+                      </span>
                     </div>
                   </div>
+
                   <div
-                    style={{
-                      paddingTop: '0.75rem',
-                      borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                      fontSize: '0.65rem',
-                      color: 'var(--home-muted-soft)',
-                      fontWeight: 500,
-                    }}
+                    className="streak-card__bars"
+                    role="img"
+                    aria-label={`${streakDays} of 30 days logged in`}
                   >
+                    {Array.from({ length: 30 }).map((_, i) => {
+                      const dayOffset = 29 - i;
+                      const key = utcLoginDateKey(dayOffset);
+                      const isLoggedIn = loginDates.has(key);
+                      const isToday = dayOffset === 0;
+                      return (
+                        <div
+                          key={key}
+                          className={`streak-card__bar ${isLoggedIn ? 'is-active' : ''} ${isToday ? 'is-today' : ''}`}
+                          title={`${key}${isLoggedIn ? ' — logged in' : ' — missed'}`}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <div className="streak-card__footer">
                     Active investor · Keep your streak going
                   </div>
                 </div>

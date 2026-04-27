@@ -145,7 +145,7 @@
 
 /* ═══ CHART PANEL ═══ */
 .wl-chart-panel {
-  display: flex; flex-direction: column; gap: .75rem;
+  display: flex; flex-direction: column; gap: .4rem;
   background: var(--card, rgba(22,27,34,.6));
   border: 1px solid var(--card-border, rgba(16,185,129,.1));
   border-radius: 1rem;
@@ -196,9 +196,11 @@
 }
 .wl-holder-bubbles {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 28px));
+  /* 5 columns × 2 rows (or fewer rows if < 6 items). */
+  grid-template-columns: repeat(5, minmax(0, 28px));
+  grid-auto-flow: row;
   gap: 5px;
-  max-width: 72px;
+  max-width: 165px;
   align-content: start;
 }
 .wl-holder-chip {
