@@ -58,13 +58,39 @@ export function MyDetailsPanel({ onSave, settings, updateSetting }) {
       const ext = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
       const path = `${authUser.id}/avatar.${ext}`;
 
-      const { error: uploadErr } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true, contentType: file.type });
+      const tryUpload = async () => {
+        const { error: err } = await supabase.storage
+          .from('avatars')
+          .upload(path, file, { upsert: true, contentType: file.type });
+        return err;
+      };
+
+      let uploadErr = await tryUpload();
+
+      if (uploadErr && /bucket\s*not\s*found/i.test(uploadErr.message || '')) {
+        console.warn('[avatar upload] avatars bucket missing, attempting to provision');
+        try {
+          const provisionRes = await fetch('/api/admin/ensure-avatars-bucket', {
+            method: 'POST',
+          });
+          const provisionData = await provisionRes.json();
+          if (provisionRes.ok && provisionData.success) {
+            console.log('[avatar upload] bucket provisioned, retrying upload', provisionData);
+            uploadErr = await tryUpload();
+          } else {
+            console.error('[avatar upload] bucket provisioning failed:', provisionData);
+          }
+        } catch (provisionErr) {
+          console.error('[avatar upload] bucket provisioning request failed:', provisionErr);
+        }
+      }
 
       if (uploadErr) {
         console.error('[avatar upload] storage error:', uploadErr);
-        alert(`Failed to upload photo: ${uploadErr.message || 'unknown error'}`);
+        const friendly = /bucket\s*not\s*found/i.test(uploadErr.message || '')
+          ? "Avatar storage isn't configured on this server. Please contact support."
+          : `Failed to upload photo: ${uploadErr.message || 'unknown error'}`;
+        alert(friendly);
         URL.revokeObjectURL(localUrl);
         setAvatarPreview(settings?.avatar_url || null);
         return;
