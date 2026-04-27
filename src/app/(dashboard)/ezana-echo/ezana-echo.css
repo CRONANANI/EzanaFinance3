@@ -509,7 +509,7 @@
 
 /* ════════════════════════════════════════════════════════════
    ECHO ARTICLE PAGE — Editorial layout
-   Reading column for prose, breakouts for visuals.
+   Unified 920px column: header, body, footer, related.
    Centered header, refined typography, accessible tickers.
    ════════════════════════════════════════════════════════════ */
 
@@ -526,7 +526,7 @@
 
 /* Outer page padding — generous gutter on desktop, tighter on mobile */
 .echo-article-page .echo-article-page-inset {
-  max-width: 1080px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 1.25rem 2rem 4rem;
   box-sizing: border-box;
@@ -568,7 +568,7 @@ body.light-mode .echo-article-page .echo-back {
 
 /* ── HEADER ── centered, magazine-style */
 .echo-article-page .echo-article-header {
-  max-width: 760px;
+  max-width: 920px;
   margin: 0 auto 3rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -702,9 +702,9 @@ body.light-mode .echo-article-page .echo-ticker:hover {
   border-color: rgba(5, 150, 105, 0.4);
 }
 
-/* ── BODY ── reading column for prose */
+/* ── BODY ── unified column width */
 .echo-article-page .echo-article-body {
-  max-width: 720px;
+  max-width: 920px;
   margin: 0 auto;
   font-size: 1rem;
   line-height: 1.75;
@@ -734,25 +734,14 @@ body.light-mode .echo-article-page .echo-article-body > p:first-child::first-let
   color: #059669;
 }
 
-/* Visual blocks break out wider than reading column */
+/* Visual blocks match body width — no breakouts */
 .echo-article-page .echo-article-body .echo-chart,
 .echo-article-page .echo-article-body .echo-stat-grid,
 .echo-article-page .echo-article-body .echo-callout,
 .echo-article-page .echo-article-body .echo-pullquote {
-  max-width: 920px;
-  margin-left: calc((720px - 920px) / 2);
-  margin-right: calc((720px - 920px) / 2);
-}
-
-@media (max-width: 1080px) {
-  .echo-article-page .echo-article-body .echo-chart,
-  .echo-article-page .echo-article-body .echo-stat-grid,
-  .echo-article-page .echo-article-body .echo-callout,
-  .echo-article-page .echo-article-body .echo-pullquote {
-    max-width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* Section headings — visual weight inside reading column */
@@ -789,7 +778,7 @@ body.light-mode .echo-article-page .echo-article-body .echo-article-h3 {
 
 /* ── FOOTER ── engagement */
 .echo-article-page .echo-article-footer {
-  max-width: 720px;
+  max-width: 920px;
   margin: 3rem auto 0;
   padding-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -824,7 +813,7 @@ body.light-mode .echo-article-page .echo-article-stats i {
 
 /* ── RELATED ── */
 .echo-article-page .echo-article-related {
-  max-width: 1080px;
+  max-width: 920px;
   margin: 4rem auto 0;
   padding-top: 2.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -964,6 +953,15 @@ body.light-mode .echo-article-page .echo-related-excerpt {
 
 .echo-article-page .echo-article-divider {
   display: none;
+}
+
+@media (max-width: 1000px) {
+  .echo-article-page .echo-article-header,
+  .echo-article-page .echo-article-body,
+  .echo-article-page .echo-article-footer,
+  .echo-article-page .echo-article-related {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1344,4 +1342,80 @@ body.light-mode .echo-article-page .echo-pullquote p {
 
 body.light-mode .echo-article-page .echo-pullquote cite {
   color: #64748b;
+}
+
+/* ── Override community comment-thread styling inside articles ──
+   Article pages should be uniformly white (light) or dark (dark mode)
+   end-to-end. The community.css gray background is intentional in feed
+   posts, but inappropriate inside long-form articles. */
+
+.echo-article-page .comm-comment-thread {
+  background: transparent !important;
+  padding: 1rem 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0;
+}
+
+body.light-mode .echo-article-page .comm-comment-thread {
+  background: transparent !important;
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.echo-article-page .comm-comment-thread-head {
+  margin-bottom: 1rem;
+}
+
+.echo-article-page .comm-comment-compose {
+  background: transparent;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+body.light-mode .echo-article-page .comm-comment-compose {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.echo-article-page .comm-comment-compose textarea,
+.echo-article-page .comm-comment-compose .comm-compose-input {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #f0f6fc);
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 150ms ease;
+  box-sizing: border-box;
+}
+
+.echo-article-page .comm-comment-compose .comm-compose-input {
+  min-height: 2.75rem;
+  resize: none;
+}
+
+.echo-article-page .comm-comment-compose textarea:focus,
+.echo-article-page .comm-comment-compose .comm-compose-input:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+body.light-mode .echo-article-page .comm-comment-compose textarea,
+body.light-mode .echo-article-page .comm-comment-compose .comm-compose-input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+
+body.light-mode .echo-article-page .comm-comment-compose textarea:focus,
+body.light-mode .echo-article-page .comm-comment-compose .comm-compose-input:focus {
+  border-color: rgba(5, 150, 105, 0.4);
+}
+
+body.light-mode .echo-article-page .comm-comment-text {
+  color: #1e293b;
+}
+
+body.light-mode .echo-article-page .comm-comment-meta {
+  color: #475569;
 }

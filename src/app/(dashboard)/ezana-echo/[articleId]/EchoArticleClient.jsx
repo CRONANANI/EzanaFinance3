@@ -401,11 +401,7 @@ export default function EchoArticleClient({ article }) {
                 <i className="bi bi-chat-fill" aria-hidden /> {article.comments} comments
               </span>
             </div>
-            <EchoArticleEngagement
-              articleId={article.id}
-              initialLikes={article.likes}
-              seedComments={seedComments}
-            />
+            <EchoArticleEngagement articleId={article.id} seedComments={seedComments} />
           </div>
 
           <section className="echo-article-related">

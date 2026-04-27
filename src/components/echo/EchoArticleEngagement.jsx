@@ -17,21 +17,12 @@ function formatRelativeTime(iso) {
 /**
  * Mirrors community post comment UI (comm-* classes) — wire to API later.
  */
-export function EchoArticleEngagement({ articleId, initialLikes, seedComments = [] }) {
+export function EchoArticleEngagement({ articleId, seedComments = [] }) {
   const { user } = useAuth();
-  const [likes, setLikes] = useState(initialLikes);
-  const [liked, setLiked] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(true);
   const [comments, setComments] = useState(seedComments);
   const [draft, setDraft] = useState('');
   const [posting, setPosting] = useState(false);
-
-  const onLike = () => {
-    setLiked((v) => {
-      setLikes((n) => (v ? n - 1 : n + 1));
-      return !v;
-    });
-  };
 
   const submitComment = (e) => {
     e.preventDefault();
@@ -54,15 +45,6 @@ export function EchoArticleEngagement({ articleId, initialLikes, seedComments = 
 
   return (
     <div className="echo-engage-block">
-      <div className="comm-engage" style={{ marginBottom: '0.75rem' }}>
-        <button type="button" className="comm-engage-btn" aria-label="Like" onClick={onLike}>
-          <span aria-hidden>❤️</span> {likes}
-        </button>
-        <button type="button" className="comm-engage-btn" aria-label="Comments" onClick={() => setCommentsOpen((o) => !o)}>
-          <span aria-hidden>💬</span> {comments.length}
-        </button>
-      </div>
-
       {commentsOpen && (
         <div className="comm-comment-thread" role="region" aria-label="Comments">
           <div className="comm-comment-thread-head">
