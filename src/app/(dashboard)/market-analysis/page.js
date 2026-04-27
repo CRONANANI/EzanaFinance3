@@ -1391,6 +1391,51 @@ export default function MarketAnalysisPage() {
 
   return (
     <div className={`ma-fullscreen force-dark-theme ${view === 'map' ? 'ma-view-map' : ''} ${view === 'chain' ? 'ma-view-chain' : ''}`}>
+      {/* Portrait orientation block — prompts users to rotate on phones */}
+      <div
+        className="ma-rotate-prompt"
+        aria-hidden={false}
+        role="alertdialog"
+        aria-labelledby="ma-rotate-title"
+      >
+        <div className="ma-rotate-prompt__inner">
+          <div className="ma-rotate-prompt__icon" aria-hidden>
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden>
+              <rect x="20" y="8" width="24" height="40" rx="3" stroke="#10b981" strokeWidth="2.5" />
+              <line x1="28" y1="42" x2="36" y2="42" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
+              <path
+                d="M50 28 Q56 32 50 36"
+                stroke="#10b981"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                d="M52 26 L50 28 L52 30"
+                stroke="#10b981"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </svg>
+          </div>
+          <h2 id="ma-rotate-title" className="ma-rotate-prompt__title">
+            Rotate your device
+          </h2>
+          <p className="ma-rotate-prompt__subtitle">
+            The Global Market Analysis terminal is designed for landscape orientation. Turn your phone sideways to view
+            the full geospatial dashboard.
+          </p>
+          <div className="ma-rotate-prompt__hint">
+            <i className="bi bi-phone-flip" aria-hidden /> Rotate to landscape
+          </div>
+          <Link href="/home-dashboard" className="ma-rotate-prompt__back">
+            <i className="bi bi-arrow-left" aria-hidden /> Back to dashboard
+          </Link>
+        </div>
+      </div>
+
       {view === 'map' && (
         <div className="ma-ticker-bar">
           <span className="ma-ticker-live"><span className="ma-ticker-dot" /> LIVE</span>

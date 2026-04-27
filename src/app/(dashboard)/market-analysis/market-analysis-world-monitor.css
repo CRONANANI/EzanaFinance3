@@ -2115,3 +2115,166 @@ body.light-mode .sentinel-related-markets-toggle:hover {
     top: 76px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   ROTATE-DEVICE PROMPT — Mobile portrait orientation block
+   Only visible on phones (≤900px) held in portrait.
+   Tablets, desktops, and landscape phones see the full page.
+   ════════════════════════════════════════════════════════════ */
+
+.ma-rotate-prompt {
+  display: none;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .ma-rotate-prompt {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0a0e13;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    animation: ma-rotate-prompt-fade-in 200ms ease;
+  }
+
+  .ma-fullscreen > *:not(.ma-rotate-prompt) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body:has(.ma-fullscreen) {
+    overflow: hidden;
+  }
+}
+
+@keyframes ma-rotate-prompt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ma-rotate-prompt__inner {
+  max-width: 360px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ma-rotate-prompt__icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+  animation: ma-rotate-icon-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes ma-rotate-icon-pulse {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45% {
+    transform: rotate(-90deg);
+  }
+  55% {
+    transform: rotate(-90deg);
+  }
+}
+
+.ma-rotate-prompt__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f0f6fc;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.ma-rotate-prompt__subtitle {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.ma-rotate-prompt__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 999px;
+  color: #10b981;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.ma-rotate-prompt__hint i {
+  font-size: 1rem;
+}
+
+.ma-rotate-prompt__back {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 150ms ease;
+}
+
+.ma-rotate-prompt__back:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.ma-rotate-prompt__back i {
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .ma-fullscreen .ma-top-bar {
+    padding: 0.35rem;
+  }
+
+  .ma-fullscreen.ma-view-map .ma-map-area {
+    height: 100%;
+  }
+}
+
+/* iPads / large tablets in portrait — enough width; don’t block the terminal */
+@media (min-width: 768px) and (max-width: 900px) and (orientation: portrait) {
+  .ma-rotate-prompt {
+    display: none !important;
+  }
+
+  .ma-fullscreen > *:not(.ma-rotate-prompt) {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  body:has(.ma-fullscreen) {
+    overflow: auto;
+  }
+}
