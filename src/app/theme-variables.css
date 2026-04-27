@@ -201,14 +201,17 @@ body.light-mode {
   --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.08);
 
   /* ── Navbar ── */
-  --nav-bg: #ffffff;
+  --nav-bg: rgba(255, 255, 255, 0.92);
   --nav-bg-solid: #ffffff;
   --nav-border: rgba(0, 0, 0, 0.06);
 
-  /* ── Unified app background — explicit white in light mode ──
-     Must be redeclared here (not just relying on var(--nav-bg-solid))
-     because CSS variable indirection through :root's --app-bg does not
-     reliably propagate the light-mode --nav-bg-solid override. */
+  /* ── Unified app background ──
+     CRITICAL: Must be explicitly redeclared here as a literal value, NOT
+     as `var(--nav-bg-solid)`. The :root declaration `--app-bg: var(--nav-bg-solid)`
+     resolves at :root scope where --nav-bg-solid is dark. Without this redeclaration,
+     consuming elements like `.dashboard-main` and `body.main-nav` resolve --app-bg
+     to the dark color even in light mode, producing a visible seam between the
+     white navbar and dark page surface. */
   --app-bg: #ffffff;
 
   /* ── Scrollbar ── */

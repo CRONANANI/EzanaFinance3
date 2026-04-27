@@ -124,10 +124,14 @@ body .main-nav:not(.partner-nav) {
   border-bottom: none !important;
 }
 
-/* ───────── Defensive light-mode override ─────────
-   Belt-and-suspenders fix for the page color seam.
-   Even if --app-bg fails to resolve to white in light mode,
-   these rules force white on the dashboard surfaces directly. */
+/* ════════════════════════════════════════════════════════════
+   DEFENSIVE OVERRIDE — Page color seam protection
+   The canonical fix is in theme-variables.css (--app-bg redeclared
+   as #ffffff inside body.light-mode). This override targets the
+   dashboard surface elements directly with literal #ffffff so the
+   fix lands even if --app-bg fails to resolve correctly for any
+   reason (caching, ordering, future regression).
+   ════════════════════════════════════════════════════════════ */
 body.light-mode .dashboard-main,
 body.light-mode .dashboard-main-content {
   background-color: #ffffff;
