@@ -1,21 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DCF_ASSUMPTIONS, DEFAULT_ASSUMPTIONS, formatAssumption } from './dcf-assumptions';
 import DCFInfoModal from './DCFInfoModal';
 import PriceComparisonChart from './PriceComparisonChart';
-import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import './dcf-interactive.css';
-
-/** Rough WACC for strip display: weighted cost of equity & debt. */
-function approximateWaccForStrip(a) {
-  const re = a?.costOfEquity ?? 0;
-  const rd = a?.costOfDebt ?? 0;
-  const t = a?.taxRate ?? 0.21;
-  const we = 0.65;
-  const wd = 0.35;
-  return we * re + wd * rd * (1 - t);
-}
 
 export default function DCFInteractiveModel({ symbol, onClose }) {
   const [assumptions, setAssumptions] = useState(DEFAULT_ASSUMPTIONS);
@@ -196,79 +185,95 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
     return acc;
   }, {});
 
-  const dcfStripVariables = useMemo(() => {
-    const a = assumptions;
-    const wacc = approximateWaccForStrip(a);
-    return [
-      { label: 'Risk-free rate', value: a.riskFreeRate, format: 'percent' },
-      { label: 'Equity risk premium', value: a.marketRiskPremium, format: 'percent' },
-      { label: 'Beta', value: a.beta, format: 'number' },
-      { label: 'WACC (approx.)', value: wacc, format: 'percent' },
-      { label: 'Terminal growth', value: a.longTermGrowthRate, format: 'percent' },
-      { label: 'Projection years', value: String(Math.round(a.forecastYears ?? 10)), format: undefined },
-    ];
-  }, [assumptions]);
-
   return (
     <div className="dcf-interactive-root">
       <div className="dcf-interactive-header">
         <h3>DCF Valuation Model · {symbol}</h3>
-        <button type="button" className="dcf-close-btn" onClick={onClose} aria-label="Close">
-          <i className="bi bi-x-lg" /> Close
-        </button>
+        <div className="dcf-header-actions">
+          <label className="dcf-peer-toggle">
+            <input
+              type="checkbox"
+              checked={applyToPeers}
+              onChange={(e) => setApplyToPeers(e.target.checked)}
+            />
+            <span>Apply to peers</span>
+          </label>
+          <button
+            type="button"
+            className="dcf-recalc-btn dcf-recalc-btn--inline"
+            onClick={handleRecalculate}
+            disabled={loadingSelected}
+          >
+            {loadingSelected ? 'Calculating…' : 'Recalculate'}
+          </button>
+          <button type="button" className="dcf-close-btn" onClick={onClose} aria-label="Close">
+            <i className="bi bi-x-lg" /> Close
+          </button>
+        </div>
       </div>
 
-      <div className="dcf-variable-strip-outer px-3 pt-2 sm:px-4">
-        <ModelVariableStrip variables={dcfStripVariables} className="mb-0" />
-      </div>
-
-      <div className="dcf-interactive-body">
-        <div className="dcf-assumptions-col">
-          {Object.entries(grouped).map(([section, items]) => (
-            <div key={section} className="dcf-assumption-section">
-              <h4 className="dcf-section-title">{section}</h4>
+      <div className="dcf-assumptions-toolbar" role="toolbar" aria-label="DCF assumptions">
+        {Object.entries(grouped).map(([section, items]) => (
+          <div key={section} className="dcf-toolbar-section">
+            <div className="dcf-toolbar-section-label">{section}</div>
+            <div className="dcf-toolbar-chips">
               {items.map((a) => {
                 const value = assumptions[a.id];
                 const isExpanded = expandedId === a.id;
                 return (
-                  <div key={a.id} className={`dcf-assumption-row ${isExpanded ? 'expanded' : ''}`}>
-                    <div className="dcf-assumption-row-top">
-                      <button
-                        type="button"
-                        className="dcf-info-icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setInfoAssumption(a);
-                        }}
-                        aria-label={`About ${a.label}`}
-                      >
-                        <i className="bi bi-info-circle" />
-                      </button>
-                    </div>
+                  <div key={a.id} className={`dcf-chip-wrap ${isExpanded ? 'expanded' : ''}`}>
                     <button
                       type="button"
-                      className="dcf-assumption-label-btn"
+                      className={`dcf-chip ${isExpanded ? 'dcf-chip--active' : ''}`}
                       onClick={() => setExpandedId(isExpanded ? null : a.id)}
+                      aria-expanded={isExpanded}
+                      aria-controls={`dcf-chip-popover-${a.id}`}
                     >
-                      <span className="dcf-assumption-label">{a.label}</span>
-                      <span className="dcf-assumption-value">
-                        [ {formatAssumption(value, a.unit)} ]
-                      </span>
+                      <span className="dcf-chip-label">{a.label}</span>
+                      <span className="dcf-chip-value">{formatAssumption(value, a.unit)}</span>
+                      <i
+                        className={`bi ${isExpanded ? 'bi-chevron-up' : 'bi-chevron-down'} dcf-chip-caret`}
+                        aria-hidden
+                      />
                     </button>
+
                     {isExpanded && (
-                      <div className="dcf-slider-wrap">
-                        <input
-                          type="range"
-                          min={a.min}
-                          max={a.max}
-                          step={a.step}
-                          value={value}
-                          onChange={(e) => updateAssumption(a.id, Number(e.target.value))}
-                          className="dcf-slider"
-                        />
-                        <div className="dcf-slider-bounds">
-                          <span>{formatAssumption(a.min, a.unit)}</span>
-                          <span>{formatAssumption(a.max, a.unit)}</span>
+                      <div
+                        id={`dcf-chip-popover-${a.id}`}
+                        className="dcf-chip-popover"
+                        role="dialog"
+                        aria-label={`${a.label} slider`}
+                      >
+                        <div className="dcf-chip-popover-header">
+                          <span className="dcf-chip-popover-title">{a.label}</span>
+                          <button
+                            type="button"
+                            className="dcf-info-icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInfoAssumption(a);
+                            }}
+                            aria-label={`About ${a.label}`}
+                          >
+                            <i className="bi bi-info-circle" />
+                          </button>
+                        </div>
+                        <div className="dcf-slider-wrap">
+                          <input
+                            type="range"
+                            min={a.min}
+                            max={a.max}
+                            step={a.step}
+                            value={value}
+                            onChange={(e) => updateAssumption(a.id, Number(e.target.value))}
+                            className="dcf-slider"
+                            aria-label={a.label}
+                          />
+                          <div className="dcf-slider-bounds">
+                            <span>{formatAssumption(a.min, a.unit)}</span>
+                            <span className="dcf-slider-current">{formatAssumption(value, a.unit)}</span>
+                            <span>{formatAssumption(a.max, a.unit)}</span>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -276,36 +281,17 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
                 );
               })}
             </div>
-          ))}
-
-          <div className="dcf-recalc-area">
-            <label className="dcf-peer-toggle">
-              <input
-                type="checkbox"
-                checked={applyToPeers}
-                onChange={(e) => setApplyToPeers(e.target.checked)}
-              />
-              <span>Apply to peers</span>
-            </label>
-            <button
-              type="button"
-              className="dcf-recalc-btn"
-              onClick={handleRecalculate}
-              disabled={loadingSelected}
-            >
-              {loadingSelected ? 'Calculating…' : 'Recalculate'}
-            </button>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="dcf-chart-col">
-          <PriceComparisonChart
-            stocks={stocks}
-            loadingSelected={loadingSelected}
-            errorSelected={errorSelected}
-            peerLoadComplete={peerLoadComplete}
-          />
-        </div>
+      <div className="dcf-chart-area">
+        <PriceComparisonChart
+          stocks={stocks}
+          loadingSelected={loadingSelected}
+          errorSelected={errorSelected}
+          peerLoadComplete={peerLoadComplete}
+        />
       </div>
 
       {infoAssumption && (
