@@ -1327,3 +1327,19 @@ body.light-mode .landing-page .hero-waitlist .waitlist-input::placeholder {
     height: 2.1rem;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   GLOBAL DARK-MODE FIX FOR NATIVE <option> ELEMENTS
+   Catch-all so dropdown options are readable outside Settings.
+   More specific rules (e.g. settings.css) override via cascade.
+   ════════════════════════════════════════════════════════════ */
+
+select option {
+  background-color: #0d1117;
+  color: #f0f6fc;
+}
+
+body.light-mode select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}

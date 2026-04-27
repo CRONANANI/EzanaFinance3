@@ -111,6 +111,9 @@
   /* ── Typography (Dashboard + app-wide) ── */
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Native form control chrome (dropdowns, date inputs, scrollbars) */
+  color-scheme: dark;
 }
 
 
@@ -132,6 +135,8 @@
 
 html.light-mode,
 body.light-mode {
+  color-scheme: light;
+
   /* ── Core Backgrounds ── */
   --bg-primary: #ffffff;
   --bg-secondary: #ffffff;

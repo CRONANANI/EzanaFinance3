@@ -427,6 +427,41 @@ select.settings-input {
   padding-right: 2rem;
 }
 
+/* Dropdown option items — explicit dark-mode styling */
+select.settings-input option,
+.settings-input option {
+  background-color: #0d1117;
+  color: #f0f6fc;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+select.settings-input option:hover,
+select.settings-input option:focus,
+select.settings-input option:checked,
+.settings-input option:hover,
+.settings-input option:focus,
+.settings-input option:checked {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #ffffff;
+}
+
+body.light-mode select.settings-input option,
+body.light-mode .settings-input option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+body.light-mode select.settings-input option:hover,
+body.light-mode select.settings-input option:focus,
+body.light-mode select.settings-input option:checked,
+body.light-mode .settings-input option:hover,
+body.light-mode .settings-input option:focus,
+body.light-mode .settings-input option:checked {
+  background-color: rgba(5, 150, 105, 0.12);
+  color: #064e3b;
+}
+
 /* Toggle switch */
 .settings-toggle-row {
   display: flex;
