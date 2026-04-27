@@ -211,6 +211,7 @@ export function MobileAuthNavDrawer({ open, onClose, isOrgUser = false, variant 
       />
       <nav
         className={cn(
+          'mobile-auth-drawer',
           'absolute right-0 top-0 flex h-full w-[min(100%,20rem)] max-w-sm flex-col',
           'border-l border-border bg-card text-foreground shadow-xl'
         )}

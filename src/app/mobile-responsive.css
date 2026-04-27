@@ -337,6 +337,88 @@ body.light-mode .mobile-drawer-logout:hover {
   border-color: rgba(239, 68, 68, 0.3);
 }
 
+/* ════════════════════════════════════════════════════════════
+   MOBILE AUTH DRAWER — light-mode contrast fix
+   Semi-transparent bg-card washes out over white page; force
+   opaque dark drawer + high-contrast text. Dark mode unchanged.
+   ════════════════════════════════════════════════════════════ */
+
+body.light-mode .mobile-auth-drawer {
+  background-color: #0d1117 !important;
+  color: #e2e8f0 !important;
+  border-left-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.light-mode .mobile-auth-drawer header {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.light-mode .mobile-auth-drawer header span {
+  color: #f0f6fc !important;
+}
+
+body.light-mode .mobile-auth-drawer header button {
+  color: #d1d5db !important;
+}
+
+body.light-mode .mobile-auth-drawer header button:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+body.light-mode .mobile-auth-drawer h3 {
+  color: #94a3b8 !important;
+}
+
+body.light-mode .mobile-auth-drawer a {
+  color: #e2e8f0 !important;
+  border-left-color: transparent !important;
+}
+
+body.light-mode .mobile-auth-drawer a div + div,
+body.light-mode .mobile-auth-drawer a .text-muted-foreground {
+  color: #94a3b8 !important;
+}
+
+body.light-mode .mobile-auth-drawer a.text-primary,
+body.light-mode .mobile-auth-drawer a[class*='border-primary'],
+body.light-mode .mobile-auth-drawer a[class*='bg-primary'] {
+  color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-left-color: #10b981 !important;
+}
+
+body.light-mode .mobile-auth-drawer a:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.light-mode .mobile-auth-drawer a svg {
+  color: #94a3b8 !important;
+}
+
+body.light-mode .mobile-auth-drawer a.text-primary svg,
+body.light-mode .mobile-auth-drawer a[class*='text-primary'] svg {
+  color: #10b981 !important;
+}
+
+body.light-mode .mobile-auth-drawer a svg:last-child {
+  color: #6b7280 !important;
+}
+
+body.light-mode .mobile-auth-drawer .mobile-drawer-footer {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.light-mode .mobile-auth-drawer .mobile-drawer-logout {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
+body.light-mode .mobile-auth-drawer .mobile-drawer-logout:hover {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.45) !important;
+}
+
 /* ============================================
    NOTIFICATIONS SIDEBAR - fullscreen overlay on mobile
    ============================================ */

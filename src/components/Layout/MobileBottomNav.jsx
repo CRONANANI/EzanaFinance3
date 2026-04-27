@@ -2,23 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 import { usePartner } from '@/contexts/PartnerContext';
 import { matchesPartnerRouteList, PARTNER_SHARED_APP_ROUTES } from '@/lib/partner-chrome';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const { isPartner, isLoading } = usePartner();
   const isPartnerRoute = pathname?.startsWith('/partner-');
   const isSharedPartner =
     !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
   const isPartnerExperience = isPartnerRoute || isSharedPartner;
 
+  const profileHandle =
+    user?.user_metadata?.username ||
+    user?.user_metadata?.profile_username ||
+    user?.id ||
+    '';
+  const profileHref = profileHandle ? `/profile/${profileHandle}` : '/community';
+
   const userNavItems = [
     { href: '/home-dashboard', icon: 'bi-house', label: 'Home' },
     { href: '/home-dashboard', icon: 'bi-speedometer2', label: 'Dashboard' },
     { href: '/trading', icon: 'bi-lightning-charge', label: 'Trade', center: true },
     { href: '/community', icon: 'bi-people', label: 'Community' },
-    { href: '#more', icon: 'bi-grid', label: 'More' },
+    { href: profileHref, icon: 'bi-person-circle', label: 'Profile' },
   ];
 
   const partnerNavItems = [
@@ -26,7 +35,7 @@ export function MobileBottomNav() {
     { href: '/partner-dashboard', icon: 'bi-speedometer2', label: 'Dashboard' },
     { href: '/partner-community', icon: 'bi-people', label: 'Community', center: true },
     { href: '/partner-learning', icon: 'bi-mortarboard', label: 'Creator' },
-    { href: '#more', icon: 'bi-grid', label: 'More' },
+    { href: profileHref, icon: 'bi-person-circle', label: 'Profile' },
   ];
 
   const items = isPartnerExperience ? partnerNavItems : userNavItems;
@@ -39,7 +48,10 @@ export function MobileBottomNav() {
     >
       {items.map((item) => {
         const isCenter = item.center;
-        const isActive = pathname === item.href || (item.href !== '#more' && pathname?.startsWith(item.href));
+        const isActive =
+          item.label === 'Profile'
+            ? pathname?.startsWith('/profile/')
+            : pathname === item.href || pathname?.startsWith(item.href);
         return (
           <Link
             key={item.label}
