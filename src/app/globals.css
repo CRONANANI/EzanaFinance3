@@ -284,10 +284,12 @@ body.light-mode {
   }
 }
 
+/* Full hero column width — align-self: center on .hero-content > * would otherwise shrink this to content width */
 .landing-page .hero-waitlist {
   display: flex;
   flex-direction: column;
   align-items: center;
+  align-self: stretch !important;
   max-width: 100%;
   width: 100%;
   margin: 1rem auto 0.75rem;
