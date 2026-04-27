@@ -1406,3 +1406,101 @@ body.light-mode .db-hero-stat-muted {
 body.light-mode .db-hero-change.is-muted {
   color: #64748b;
 }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE ONLY (≤768px) — Dashboard timeframe pills + holdings arrows
+   ════════════════════════════════════════════════════════════
+   1. Compact timeframe pills (~60% lighter visual chrome) on both the
+      Current Value card and the My Holdings card
+   2. Left-align the My Holdings timeframe pills (move from the
+      space-between right side into the header-left flex group)
+   3. Emerald circle backgrounds around the My Holdings chevron arrows
+   Desktop styling is untouched — these only apply on phones. */
+
+@media (max-width: 768px) {
+  /* ── 1. Compact timeframe pills ── */
+  .db-tf-btn,
+  .db-tf-btn-sm {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.5625rem;
+    line-height: 1.2;
+    border-radius: 5px;
+    border-width: 1px;
+    min-height: 0;
+  }
+
+  .db-tf-group-sm {
+    gap: 1px;
+  }
+
+  .db-hero-timeframes {
+    gap: 1px;
+  }
+
+  /* ── 2. Left-align timeframe pills inside My Holdings card ── */
+  .db-portfolios-card .db-card-header {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.4rem 0.5rem;
+  }
+
+  .db-portfolios-card .db-card-header .db-card-header-right {
+    margin-left: 0;
+    margin-right: auto;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .db-portfolios-card .db-card-header .db-tf-group-sm {
+    justify-content: flex-start;
+  }
+
+  /* ── 3. Emerald circle backgrounds on My Holdings chevron arrows ── */
+  .db-holdings-nav-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .db-holdings-nav-btn:not(:disabled):hover,
+  .db-holdings-nav-btn:not(:disabled):active {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.4);
+    transform: scale(1.06);
+  }
+
+  .db-holdings-nav-btn:disabled {
+    background: rgba(16, 185, 129, 0.04);
+    border-color: rgba(16, 185, 129, 0.1);
+  }
+
+  .db-holdings-nav-btn .bi-chevron-left,
+  .db-holdings-nav-btn .bi-chevron-right {
+    font-size: 0.75rem !important;
+    line-height: 1;
+  }
+
+  body.light-mode .db-holdings-nav-btn {
+    background: rgba(5, 150, 105, 0.1);
+    border-color: rgba(5, 150, 105, 0.3);
+  }
+
+  body.light-mode .db-holdings-nav-btn:not(:disabled):hover,
+  body.light-mode .db-holdings-nav-btn:not(:disabled):active {
+    background: rgba(5, 150, 105, 0.16);
+    border-color: rgba(5, 150, 105, 0.45);
+  }
+
+  body.light-mode .db-holdings-nav-btn:disabled {
+    background: rgba(5, 150, 105, 0.04);
+    border-color: rgba(5, 150, 105, 0.12);
+  }
+
+  .db-portfolios-card .db-holdings-header-left {
+    gap: 0.5rem;
+  }
+}
