@@ -1371,78 +1371,381 @@ body.light-mode .echo-article-page .echo-pullquote cite {
   color: #64748b;
 }
 
-/* ── Override community comment-thread styling inside articles ──
-   Article pages should be uniformly white (light) or dark (dark mode)
-   end-to-end. The community.css gray background is intentional in feed
-   posts, but inappropriate inside long-form articles. */
+/* ════════════════════════════════════════════════════════════
+   ECHO ENGAGEMENT — Like buttons + comments (real backend)
+   ════════════════════════════════════════════════════════════ */
 
-.echo-article-page .comm-comment-thread {
-  background: transparent !important;
-  padding: 1rem 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin: 0;
+.echo-article-page .echo-engage-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
 }
 
-body.light-mode .echo-article-page .comm-comment-thread {
-  background: transparent !important;
-  border-top-color: rgba(0, 0, 0, 0.08);
-}
-
-.echo-article-page .comm-comment-thread-head {
-  margin-bottom: 1rem;
-}
-
-.echo-article-page .comm-comment-compose {
+.echo-article-page .echo-engage-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
   background: transparent;
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: var(--text-secondary, #9ca3af);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 200ms ease;
 }
 
-body.light-mode .echo-article-page .comm-comment-compose {
+.echo-article-page .echo-engage-btn:hover:not(:disabled) {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+  transform: translateY(-1px);
+}
+
+.echo-article-page .echo-engage-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.echo-article-page .echo-engage-btn i {
+  font-size: 1rem;
+  transition: transform 200ms ease;
+}
+
+.echo-article-page .echo-engage-btn:hover:not(:disabled) i {
+  transform: scale(1.1);
+}
+
+.echo-article-page .echo-engage-btn--liked {
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.echo-article-page .echo-engage-btn--liked i {
+  color: #10b981;
+}
+
+.echo-article-page .echo-engage-btn-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+body.light-mode .echo-article-page .echo-engage-btn {
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #475569;
+}
+
+body.light-mode .echo-article-page .echo-engage-btn:hover:not(:disabled) {
+  border-color: rgba(5, 150, 105, 0.4);
+  color: #059669;
+}
+
+body.light-mode .echo-article-page .echo-engage-btn--liked {
+  border-color: rgba(5, 150, 105, 0.5);
+  color: #059669;
+  background: rgba(5, 150, 105, 0.06);
+}
+
+body.light-mode .echo-article-page .echo-engage-btn--liked i {
+  color: #059669;
+}
+
+.echo-article-page .echo-engage-message {
+  margin: 0.5rem 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+}
+
+.echo-article-page .echo-engage-message--auth {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.echo-article-page .echo-engage-message--error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.echo-article-page .echo-engage-message a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+body.light-mode .echo-article-page .echo-engage-message--auth {
+  background: rgba(5, 150, 105, 0.06);
+  border-color: rgba(5, 150, 105, 0.2);
+  color: #059669;
+}
+
+body.light-mode .echo-article-page .echo-engage-message--error {
+  color: #dc2626;
+}
+
+.echo-article-page .echo-comments {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.light-mode .echo-article-page .echo-comments {
   border-top-color: rgba(0, 0, 0, 0.08);
 }
 
-.echo-article-page .comm-comment-compose textarea,
-.echo-article-page .comm-comment-compose .comm-compose-input {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.echo-article-page .echo-comments-title {
+  font-size: 1.25rem;
+  font-weight: 800;
   color: var(--text-primary, #f0f6fc);
-  border-radius: 8px;
-  padding: 0.75rem;
-  font-size: 0.875rem;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+body.light-mode .echo-article-page .echo-comments-title {
+  color: #0f172a;
+}
+
+.echo-article-page .echo-comment-form {
+  display: flex;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+  background: transparent;
+}
+
+.echo-article-page .echo-comment-form-avatar,
+.echo-article-page .echo-comment-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+}
+
+.echo-article-page .echo-comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.echo-article-page .echo-comment-form-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.echo-article-page .echo-comment-textarea {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
   font-family: inherit;
+  line-height: 1.5;
+  color: var(--text-primary, #f0f6fc);
   resize: vertical;
-  min-height: 80px;
+  min-height: 88px;
   transition: border-color 150ms ease;
   box-sizing: border-box;
 }
 
-.echo-article-page .comm-comment-compose .comm-compose-input {
-  min-height: 2.75rem;
-  resize: none;
+.echo-article-page .echo-comment-textarea::placeholder {
+  color: var(--text-faint, #6b7280);
 }
 
-.echo-article-page .comm-comment-compose textarea:focus,
-.echo-article-page .comm-comment-compose .comm-compose-input:focus {
+.echo-article-page .echo-comment-textarea:focus {
   outline: none;
   border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
 }
 
-body.light-mode .echo-article-page .comm-comment-compose textarea,
-body.light-mode .echo-article-page .comm-comment-compose .comm-compose-input {
+body.light-mode .echo-article-page .echo-comment-textarea {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.12);
   color: #0f172a;
 }
 
-body.light-mode .echo-article-page .comm-comment-compose textarea:focus,
-body.light-mode .echo-article-page .comm-comment-compose .comm-compose-input:focus {
+body.light-mode .echo-article-page .echo-comment-textarea:focus {
   border-color: rgba(5, 150, 105, 0.4);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08);
 }
 
-body.light-mode .echo-article-page .comm-comment-text {
+.echo-article-page .echo-comment-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.65rem;
+  gap: 0.75rem;
+}
+
+.echo-article-page .echo-comment-form-counter {
+  font-size: 0.75rem;
+  color: var(--text-faint, #6b7280);
+}
+
+.echo-article-page .echo-comment-submit {
+  padding: 0.5rem 1.25rem;
+  background: #10b981;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.echo-article-page .echo-comment-submit:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.echo-article-page .echo-comment-submit:disabled {
+  background: rgba(16, 185, 129, 0.3);
+  cursor: not-allowed;
+  transform: none;
+}
+
+body.light-mode .echo-article-page .echo-comment-submit {
+  background: #059669;
+}
+
+body.light-mode .echo-article-page .echo-comment-submit:hover:not(:disabled) {
+  background: #047857;
+}
+
+.echo-article-page .echo-comment-signin {
+  margin: 0 0 2rem;
+  padding: 1rem 1.25rem;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.echo-article-page .echo-comment-signin a {
+  color: #10b981;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.echo-article-page .echo-comment-signin a:hover {
+  text-decoration: underline;
+}
+
+body.light-mode .echo-article-page .echo-comment-signin {
+  background: rgba(5, 150, 105, 0.04);
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+body.light-mode .echo-article-page .echo-comment-signin a {
+  color: #059669;
+}
+
+.echo-article-page .echo-comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.echo-article-page .echo-comment-item {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.echo-article-page .echo-comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.echo-article-page .echo-comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.echo-article-page .echo-comment-author {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+}
+
+body.light-mode .echo-article-page .echo-comment-author {
+  color: #0f172a;
+}
+
+.echo-article-page .echo-comment-time {
+  font-size: 0.75rem;
+  color: var(--text-faint, #6b7280);
+}
+
+.echo-article-page .echo-comment-delete {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-faint, #6b7280);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 150ms ease;
+  font-size: 0.875rem;
+}
+
+.echo-article-page .echo-comment-delete:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.echo-article-page .echo-comment-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #d1d5db);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+body.light-mode .echo-article-page .echo-comment-text {
   color: #1e293b;
 }
 
-body.light-mode .echo-article-page .comm-comment-meta {
-  color: #475569;
+@media (max-width: 768px) {
+  .echo-article-page .echo-engage-btn-label {
+    display: none;
+  }
+
+  .echo-article-page .echo-comment-form-avatar,
+  .echo-article-page .echo-comment-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  .echo-article-page .echo-comment-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .echo-article-page .echo-comment-submit {
+    width: 100%;
+  }
 }

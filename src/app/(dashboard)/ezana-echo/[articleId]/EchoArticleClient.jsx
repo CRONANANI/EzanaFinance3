@@ -2,12 +2,7 @@
 
 import Link from 'next/link';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
-import {
-  ECHO_MOCK_COMMENTS_BY_ARTICLE,
-  formatPublishedDate,
-  getAllArticles,
-  getRelatedArticles,
-} from '@/lib/ezana-echo-mock';
+import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -331,7 +326,6 @@ export default function EchoArticleClient({ article }) {
           .slice(0, 3 - related.length)
       : [];
   const relatedCards = [...related, ...fallback].slice(0, 3);
-  const seedComments = ECHO_MOCK_COMMENTS_BY_ARTICLE[article.id] ?? [];
   const tickers = article.tickers ?? [];
   const blocks = article.contentBlocks;
   const paragraphs = article.contentParagraphs ?? [];
@@ -390,18 +384,7 @@ export default function EchoArticleClient({ article }) {
           </div>
 
           <div className="echo-article-footer">
-            <div className="echo-article-stats">
-              <span>
-                <i className="bi bi-heart-fill" aria-hidden /> {article.likes} likes
-              </span>
-              <span className="echo-article-stats-divider" aria-hidden>
-                ·
-              </span>
-              <span>
-                <i className="bi bi-chat-fill" aria-hidden /> {article.comments} comments
-              </span>
-            </div>
-            <EchoArticleEngagement articleId={article.id} seedComments={seedComments} />
+            <EchoArticleEngagement articleId={article.id} />
           </div>
 
           <section className="echo-article-related">
