@@ -183,33 +183,38 @@ function TrendingTopicsCard({ topics }) {
         {visibleTopics.map((topic, localIdx) => {
           const globalIdx = startIdx + localIdx;
           return (
-            <li key={topic.tag}>
-              <button type="button" className="comm-trending-row">
-                <span className="comm-trending-row__rank" aria-hidden>
-                  {String(globalIdx + 1).padStart(2, '0')}
-                </span>
-                <span className="comm-trending-row__body">
-                  <span className="comm-trending-row__tag">
-                    <span className="comm-trending-row__hash">#</span>
+            <li key={topic.tag} className="comm-trending-tile-wrap">
+              <button type="button" className="comm-trending-tile">
+                <div className="comm-trending-tile__head">
+                  <span className="comm-trending-tile__rank" aria-hidden>
+                    {String(globalIdx + 1).padStart(2, '0')}
+                  </span>
+                  <span
+                    className={`comm-trending-tile__trend comm-trending-tile__trend--${topic.trend}`}
+                    aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
+                  >
+                    <i
+                      className={
+                        topic.trend === 'up'
+                          ? 'bi bi-arrow-up-right'
+                          : 'bi bi-arrow-down-right'
+                      }
+                      aria-hidden
+                    />
+                  </span>
+                </div>
+                <div className="comm-trending-tile__body">
+                  <span className="comm-trending-tile__tag">
+                    <span className="comm-trending-tile__hash">#</span>
                     {topic.tag}
                   </span>
-                  <span className="comm-trending-row__meta">
-                    {topic.posts} posts · {topic.category}
+                  <span className="comm-trending-tile__meta">
+                    {topic.posts} posts
                   </span>
-                </span>
-                <span
-                  className={`comm-trending-row__trend comm-trending-row__trend--${topic.trend}`}
-                  aria-label={topic.trend === 'up' ? 'Trending up' : 'Trending down'}
-                >
-                  <i
-                    className={
-                      topic.trend === 'up'
-                        ? 'bi bi-arrow-up-right'
-                        : 'bi bi-arrow-down-right'
-                    }
-                    aria-hidden
-                  />
-                </span>
+                  <span className="comm-trending-tile__category">
+                    {topic.category}
+                  </span>
+                </div>
               </button>
             </li>
           );

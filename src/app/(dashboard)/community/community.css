@@ -3631,7 +3631,7 @@ body.light-mode .community-root .comm-kpi-sub.positive {
 }
 
 /* ════════════════════════════════════════════════════════════
-   TRENDING TOPICS — paginated list + single pager button
+   TRENDING TOPICS — page indicator + horizontal 1×5 tiles + pager
    ════════════════════════════════════════════════════════════ */
 
 .comm-trending-page-indicator {
@@ -3650,21 +3650,27 @@ body.light-mode .comm-trending-page-indicator {
   color: #64748b;
 }
 
+/* Horizontal 1×5 row of compact tiles (pagination unchanged). */
 .comm-trending-list {
   list-style: none;
   margin: 0 0 0.85rem;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
 }
 
-.comm-trending-row {
+.comm-trending-tile-wrap {
+  min-width: 0;
+}
+
+.comm-trending-tile {
   display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  flex-direction: column;
+  gap: 0.55rem;
   width: 100%;
-  padding: 0.6rem 0.85rem;
+  height: 100%;
+  padding: 0.65rem 0.75rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
@@ -3674,118 +3680,169 @@ body.light-mode .comm-trending-page-indicator {
   transition: all 180ms ease;
 }
 
-.comm-trending-row:hover {
+.comm-trending-tile:hover,
+.comm-trending-tile:focus-visible {
   border-color: rgba(16, 185, 129, 0.3);
   background: rgba(16, 185, 129, 0.04);
-  transform: translateX(2px);
+  transform: translateY(-2px);
+  outline: none;
 }
 
-body.light-mode .comm-trending-row {
+body.light-mode .comm-trending-tile {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.06);
 }
 
-body.light-mode .comm-trending-row:hover {
+body.light-mode .comm-trending-tile:hover,
+body.light-mode .comm-trending-tile:focus-visible {
   border-color: rgba(5, 150, 105, 0.3);
   background: rgba(5, 150, 105, 0.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.comm-trending-row__rank {
+.comm-trending-tile__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.comm-trending-tile__rank {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.15);
   border-radius: 50%;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 700;
   color: #10b981;
   font-variant-numeric: tabular-nums;
 }
 
-body.light-mode .comm-trending-row__rank {
+body.light-mode .comm-trending-tile__rank {
   background: rgba(5, 150, 105, 0.08);
   border-color: rgba(5, 150, 105, 0.18);
   color: #059669;
 }
 
-.comm-trending-row__body {
-  flex: 1;
-  min-width: 0;
+.comm-trending-tile__trend {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.7rem;
+}
+
+.comm-trending-tile__trend--up {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.comm-trending-tile__trend--down {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+body.light-mode .comm-trending-tile__trend--up {
+  background: rgba(5, 150, 105, 0.08);
+  color: #059669;
+}
+
+body.light-mode .comm-trending-tile__trend--down {
+  background: rgba(220, 38, 38, 0.06);
+  color: #dc2626;
+}
+
+.comm-trending-tile__body {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 
-.comm-trending-row__tag {
-  display: inline-flex;
-  align-items: baseline;
-  font-size: 0.875rem;
+.comm-trending-tile__tag {
+  display: block;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--text-primary, #f0f6fc);
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-body.light-mode .comm-trending-row__tag {
+body.light-mode .comm-trending-tile__tag {
   color: #0f172a;
 }
 
-.comm-trending-row__hash {
+.comm-trending-tile__hash {
   color: #10b981;
   margin-right: 1px;
 }
 
-body.light-mode .comm-trending-row__hash {
+body.light-mode .comm-trending-tile__hash {
   color: #059669;
 }
 
-.comm-trending-row__meta {
+.comm-trending-tile__meta {
   font-size: 0.6875rem;
   color: var(--text-secondary, #9ca3af);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
 }
 
-body.light-mode .comm-trending-row__meta {
+body.light-mode .comm-trending-tile__meta {
   color: #64748b;
 }
 
-.comm-trending-row__trend {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 0.8rem;
+.comm-trending-tile__category {
+  font-size: 0.625rem;
+  color: var(--text-faint, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.comm-trending-row__trend--up {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+body.light-mode .comm-trending-tile__category {
+  color: #94a3b8;
 }
 
-.comm-trending-row__trend--down {
-  background: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
+@media (max-width: 1024px) {
+  .comm-trending-list {
+    grid-template-columns: repeat(5, minmax(160px, 1fr));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
+  }
+
+  .comm-trending-tile-wrap {
+    scroll-snap-align: start;
+  }
 }
 
-body.light-mode .comm-trending-row__trend--up {
-  background: rgba(5, 150, 105, 0.08);
-  color: #059669;
-}
+@media (max-width: 640px) {
+  .comm-trending-list {
+    grid-template-columns: repeat(5, minmax(140px, 1fr));
+    gap: 0.5rem;
+  }
 
-body.light-mode .comm-trending-row__trend--down {
-  background: rgba(220, 38, 38, 0.06);
-  color: #dc2626;
+  .comm-trending-tile {
+    padding: 0.55rem 0.65rem;
+  }
 }
 
 .comm-trending-pager {
