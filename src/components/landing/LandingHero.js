@@ -23,8 +23,14 @@ function useHeroGlobeSize() {
   useEffect(() => {
     const compute = () => {
       const w = window.innerWidth;
+      // Mobile (<640px): scale to ~70% of viewport so the globe sits as a contained visual
+      // element rather than dominating the screen. Desktop unchanged.
+      if (w < 640) {
+        setSize(Math.min(280, Math.max(220, w * 0.7)));
+        return;
+      }
       const horizontalPad = 48;
-      // Same composition as desktop: full sphere, scaled to viewport; never larger than 460
+      // Tablet+desktop: full sphere, scaled to viewport; never larger than 460
       setSize(Math.min(460, Math.max(280, w - horizontalPad)));
     };
     compute();

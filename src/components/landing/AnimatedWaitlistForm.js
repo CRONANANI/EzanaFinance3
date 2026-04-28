@@ -108,7 +108,11 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
             className="waitlist-input"
           />
 
-          {/* Submit button (right) */}
+          {/* Decorative spinning ring — sized/centered with submit (h-7 w-7, top-1/2 right-2 -translate-y-1/2) */}
+          <div
+            className="waitlist-submit-ring pointer-events-none absolute h-7 w-7 top-1/2 right-2 z-[1] -translate-y-1/2 overflow-hidden rounded-full"
+            aria-hidden
+          />
           <button
             type="submit"
             disabled={isDisabled}
@@ -119,7 +123,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
                   ? 'Submitted'
                   : 'Submit email for early access'
             }
-            className="waitlist-submit"
+            className="waitlist-submit absolute top-1/2 right-2 z-[2] flex h-7 w-7 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border border-emerald-900/50 bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] transition-all hover:border-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {status === 'loading' ? (
               <svg

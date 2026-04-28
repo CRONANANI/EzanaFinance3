@@ -111,6 +111,19 @@
     font-size: clamp(1.25rem, 5vw, 2rem) !important;
   }
 
+  /* ── Globe: scale down on phones to feel proportionate in the hero composition ── */
+  .landing-page .globe-container {
+    max-width: 280px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  /* Wrap the globe vertically centered with reasonable spacing on phones */
+  .landing-page .globe-with-cards-wrapper {
+    align-items: center;
+    gap: 1rem;
+  }
+
   /* ── Pricing grid: single column ── */
   .pricing-grid {
     grid-template-columns: 1fr !important;
