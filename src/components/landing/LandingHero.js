@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
 import { FallingPattern } from '@/components/ui/falling-pattern';
+import GhostCursor from '@/components/ui/GhostCursor';
 import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
 
 /**
@@ -66,6 +67,7 @@ function useHeroGlobeSize() {
 }
 
 export function LandingHero() {
+  const heroRootRef = useRef(null);
   const [ctaPhaseDone, setCtaPhaseDone] = useState(false);
   const [globeReady, setGlobeReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -123,8 +125,34 @@ export function LandingHero() {
     return () => timeouts.forEach(clearTimeout);
   }, [reduceMotion]);
 
+  useEffect(() => {
+    const root = heroRootRef.current;
+    if (!root) return;
+
+    const handleMove = (e) => {
+      const rect = root.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
+      const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
+      root.style.setProperty('--spotlight-x', `${x}%`);
+      root.style.setProperty('--spotlight-y', `${y}%`);
+      root.style.setProperty('--spotlight-active', '1');
+    };
+
+    const handleLeave = () => {
+      root.style.setProperty('--spotlight-active', '0');
+    };
+
+    root.addEventListener('pointermove', handleMove, { passive: true });
+    root.addEventListener('pointerleave', handleLeave, { passive: true });
+
+    return () => {
+      root.removeEventListener('pointermove', handleMove);
+      root.removeEventListener('pointerleave', handleLeave);
+    };
+  }, []);
+
   return (
-    <div className="hero-cybercore-root">
+    <div className="hero-cybercore-root" data-hero-dark ref={heroRootRef}>
       {mountHeroBg && (
         <div
           className={`hero-aurora-bg ${showHeroVisual ? 'hero-aurora-bg--visible' : ''}`}
@@ -134,7 +162,7 @@ export function LandingHero() {
             color="#059669"
             streakColor="rgba(5, 150, 105, 0.49)"
             sparkleColor="rgba(5, 150, 105, 0.7)"
-            backgroundColor="#ffffff"
+            backgroundColor="#0a0e13"
             duration={120}
             blurIntensity="0em"
             density={1.25}
@@ -172,6 +200,23 @@ export function LandingHero() {
           <div className="globe-aurora-glow" aria-hidden="true" />
           <GlobeWithNotificationCards size={globeSize} onGlobeReady={onGlobeReady} />
         </div>
+
+        {/* Dark cloud — covers globe/cards; cursor reveals via mask (CSS vars on root) */}
+        <div className="hero-cloud-overlay" aria-hidden="true" />
+        <GhostCursor
+          color="#10b981"
+          brightness={1.2}
+          trailLength={40}
+          inertia={0.55}
+          grainIntensity={0.04}
+          bloomStrength={0.15}
+          bloomRadius={1.0}
+          bloomThreshold={0.025}
+          fadeDelayMs={800}
+          fadeDurationMs={1200}
+          zIndex={30}
+          mixBlendMode="screen"
+        />
       </div>
     </div>
   );

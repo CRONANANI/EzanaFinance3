@@ -1551,3 +1551,118 @@ body.light-mode select option {
     line-height: 1.4;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   HERO SECTION — DARK THEME (LANDING ONLY)
+   Scoped via [data-hero-dark] so the rest of the landing page
+   remains light. Variables here override the page-level light theme.
+   ════════════════════════════════════════════════════════════ */
+.landing-page .main-content.hero-section:has(.hero-cybercore-root[data-hero-dark]) {
+  background-color: #0a0e13;
+}
+
+.landing-page .hero-cybercore-root[data-hero-dark] {
+  background-color: #0a0e13;
+  color: #f0f6fc;
+  --spotlight-x: 50%;
+  --spotlight-y: 50%;
+  --spotlight-active: 0;
+  --spotlight-radius: 280px;
+  --cloud-opacity: 0.85;
+}
+
+.landing-page .hero-cybercore-root[data-hero-dark] .hero-tagline {
+  color: #f0f6fc;
+  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle {
+  color: #94a3b8;
+}
+
+.landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle--secondary {
+  color: #6b7280;
+}
+
+.landing-page .hero-cybercore-root[data-hero-dark] .legacy-subtext,
+.landing-page .hero-cybercore-root[data-hero-dark] [class*='no-spam'] {
+  color: #6b7280;
+}
+
+/* Text column above cloud + ghost trails */
+.landing-page .hero-cybercore-root[data-hero-dark] .hero-content-column {
+  position: relative;
+  z-index: 35;
+}
+
+/* ════════════════════════════════════════════════════════════
+   HERO CLOUD OVERLAY — Spotlight reveal effect
+   ════════════════════════════════════════════════════════════ */
+.landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  background: rgba(10, 14, 19, var(--cloud-opacity));
+
+  -webkit-mask-image: radial-gradient(
+    circle var(--spotlight-radius) at var(--spotlight-x) var(--spotlight-y),
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    black 75%
+  );
+  mask-image: radial-gradient(
+    circle var(--spotlight-radius) at var(--spotlight-x) var(--spotlight-y),
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    black 75%
+  );
+
+  transition: opacity 350ms ease, filter 350ms ease;
+  filter: blur(calc((1 - var(--spotlight-active)) * 8px));
+  opacity: calc(0.7 + (var(--spotlight-active) * 0.3));
+}
+
+.landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(20, 30, 45, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(15, 25, 35, 0.3) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 30% at 40% 80%, rgba(25, 35, 50, 0.35) 0%, transparent 55%);
+  animation: hero-cloud-drift 28s ease-in-out infinite;
+}
+
+@keyframes hero-cloud-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-3%, 2%) scale(1.04);
+  }
+  66% {
+    transform: translate(2%, -2%) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay::before {
+    animation: none;
+  }
+
+  .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay {
+    transition: none;
+  }
+}
+
+@media (hover: none) {
+  .landing-page .hero-cybercore-root[data-hero-dark] {
+    --spotlight-active: 1;
+    --spotlight-radius: 350px;
+  }
+}

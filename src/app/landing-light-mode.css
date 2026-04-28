@@ -644,3 +644,32 @@ html:has(.privacy-policy-page) .nav-logo-img {
     ) !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Hero stays dark even when body is light-mode (rest of landing is light)
+   ═══════════════════════════════════════════════════════════ */
+body.light-mode .landing-page .main-content.hero-section:has(.hero-cybercore-root[data-hero-dark]) {
+  background-color: #0a0e13 !important;
+}
+
+body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] {
+  background-color: #0a0e13 !important;
+}
+
+body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle,
+body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle--secondary {
+  color: #94a3b8 !important;
+}
+
+body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] .hero-tagline {
+  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] .legacy-subtext,
+body.light-mode .landing-page .hero-cybercore-root[data-hero-dark] [class*='no-spam'] {
+  color: #6b7280 !important;
+}
