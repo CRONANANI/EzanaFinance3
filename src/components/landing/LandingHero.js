@@ -6,6 +6,7 @@ import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotifi
 import { AnimatedWords } from '@/components/ui/animated-words';
 import { FallingPattern } from '@/components/ui/falling-pattern';
 import GhostCursor from '@/components/ui/GhostCursor';
+import HeroLightning from '@/components/ui/HeroLightning';
 import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
 
 /**
@@ -133,13 +134,16 @@ export function LandingHero() {
       const rect = root.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
       const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
-      root.style.setProperty('--spotlight-x', `${x}%`);
-      root.style.setProperty('--spotlight-y', `${y}%`);
-      root.style.setProperty('--spotlight-active', '1');
+
+      const dx = x - 50;
+      const dy = y - 60;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const reveal = Math.max(0, Math.min(1, 1 - distance / 35));
+      root.style.setProperty('--globe-reveal', String(reveal));
     };
 
     const handleLeave = () => {
-      root.style.setProperty('--spotlight-active', '0');
+      root.style.setProperty('--globe-reveal', '0');
     };
 
     root.addEventListener('pointermove', handleMove, { passive: true });
@@ -201,8 +205,16 @@ export function LandingHero() {
           <GlobeWithNotificationCards size={globeSize} onGlobeReady={onGlobeReady} />
         </div>
 
-        {/* Dark cloud — covers globe/cards; cursor reveals via mask (CSS vars on root) */}
-        <div className="hero-cloud-overlay" aria-hidden="true" />
+        <div className="hero-cloud-field" aria-hidden="true">
+          <div className="hero-cloud hero-cloud--1" />
+          <div className="hero-cloud hero-cloud--2" />
+          <div className="hero-cloud hero-cloud--3" />
+          <div className="hero-cloud hero-cloud--4" />
+          <div className="hero-cloud hero-cloud--5" />
+          <div className="hero-cloud hero-cloud--6" />
+          <div className="hero-cloud hero-cloud--7" />
+        </div>
+        <HeroLightning intervalMs={6000} />
         <GhostCursor
           color="#10b981"
           brightness={1.2}
