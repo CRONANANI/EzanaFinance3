@@ -214,7 +214,7 @@ export function LandingHero() {
           <div className="hero-cloud hero-cloud--6" />
           <div className="hero-cloud hero-cloud--7" />
         </div>
-        <HeroLightning intervalMs={6000} />
+        <HeroLightning intervalMs={3000} />
         <GhostCursor
           color="#10b981"
           brightness={1.2}

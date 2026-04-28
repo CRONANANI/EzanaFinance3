@@ -55,8 +55,8 @@ body.light-mode {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 2rem 0;
-  background-color: var(--nav-bg-solid);
+  padding: 0;
+  background-color: transparent;
   overflow: visible;
   text-align: center;
 }
@@ -229,7 +229,7 @@ body.light-mode {
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 2rem 2rem;
+  padding: 60px 2rem 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -243,25 +243,25 @@ body.light-mode {
 
 @media (max-width: 1023px) {
   .landing-page .content-container.hero-container {
-    padding: 0 1.5rem 1.5rem;
+    padding: 60px 1.5rem 1.5rem;
   }
 }
 
 @media (max-width: 767px) {
   .landing-page .content-container.hero-container {
-    padding: 0 1.25rem 1.5rem;
+    padding: 48px 1.25rem 1.5rem;
   }
 }
 
 @media (max-width: 479px) {
   .landing-page .content-container.hero-container {
-    padding: 0 1rem 1.5rem;
+    padding: 40px 1rem 1.5rem;
   }
 }
 
 @media (max-width: 359px) {
   .landing-page .content-container.hero-container {
-    padding: 0 0.75rem 1.25rem;
+    padding: 36px 0.75rem 1.25rem;
   }
 }
 
@@ -562,12 +562,12 @@ body.light-mode .nav-logo-img {
   }
 }
 
-/* Landing (dark only): force solid nav bg on html/body to prevent bleed-through */
+/* Landing (dark only): match body lock #0a0e13 — no var() seam vs marketing theme */
 html:has(.landing-page):not(:has(body.light-mode)) {
-  background-color: var(--nav-bg-solid) !important;
+  background-color: #0a0e13 !important;
 }
 html:has(.landing-page) body:not(.light-mode) {
-  background-color: var(--nav-bg-solid) !important;
+  background-color: #0a0e13 !important;
 }
 
 /* Below-fold sections: skip rendering work until near viewport (keeps hero fast) */
@@ -1555,11 +1555,8 @@ body.light-mode select option {
 
 /* ════════════════════════════════════════════════════════════
    HERO SECTION — BRAND-LOCKED DARK (LANDING)
-   Marketing routes skip body.light-mode; hero matches full-page #0a0e13.
+   Marketing routes skip body.light-mode.
    ════════════════════════════════════════════════════════════ */
-.landing-page .main-content.hero-section:has(.hero-cybercore-root[data-hero-dark]) {
-  background-color: #0a0e13;
-}
 
 .landing-page .hero-cybercore-root[data-hero-dark] {
   color: #f0f6fc;
@@ -1792,7 +1789,7 @@ body.light-mode select option {
 }
 
 /* ════════════════════════════════════════════════════════════
-   LIGHTNING BOLT — Emerald SVG strike (globe uses --lightning-flash from JS)
+   LIGHTNING — React Bits WebGL shader; mounted only during strike window.
    ════════════════════════════════════════════════════════════ */
 
 .landing-page .hero-lightning-strike {
@@ -1800,27 +1797,22 @@ body.light-mode select option {
   inset: 0;
   z-index: 27;
   pointer-events: none;
-  display: flex;
-  justify-content: center;
 }
 
-.landing-page .hero-lightning-svg {
-  width: 30%;
-  height: 60%;
-  margin-top: 5%;
-  transform: translateX(calc(var(--lightning-offset, 0) * 1px));
+.landing-page .hero-lightning-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  animation: lightning-canvas-fade 400ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 
-.landing-page .hero-lightning-path,
-.landing-page .hero-lightning-path-secondary {
-  animation: lightning-strike 300ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
-}
-
-@keyframes lightning-strike {
+@keyframes lightning-canvas-fade {
   0% {
     opacity: 0;
   }
-  25% {
+  20% {
     opacity: 1;
   }
   60% {
@@ -1832,10 +1824,14 @@ body.light-mode select option {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-page .hero-lightning-path,
-  .landing-page .hero-lightning-path-secondary {
-    animation: none;
-    opacity: 0;
+  .landing-page .hero-lightning-canvas {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-page .hero-lightning-canvas {
+    animation-duration: 300ms;
   }
 }
 
@@ -1846,7 +1842,8 @@ body.light-mode select option {
    stray light tokens from legacy landing CSS when specificity ties.
    ════════════════════════════════════════════════════════════ */
 
-html:has(.landing-page) body {
+html:has(.landing-page) body,
+body:has(.landing-page) {
   background-color: #0a0e13 !important;
   color: #f0f6fc;
 }
@@ -1992,8 +1989,4 @@ html:has(.landing-page) .navbar .logo,
   pointer-events: none;
   mix-blend-mode: multiply;
   z-index: 21;
-}
-
-.landing-page .main-content.hero-section {
-  background-color: #0a0e13 !important;
 }

@@ -1,93 +1,68 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Lightning from './Lightning';
 
 /**
- * Emerald lightning bolt that flashes across the hero every `intervalMs`.
- * Drives `--lightning-flash` on `.hero-cybercore-root` so the globe can
- * react to the strike.
+ * Periodic lightning using React Bits' Lightning shader.
+ * Strike: every `intervalMs`, ~400ms window with Lightning mounted; drives
+ * `--lightning-flash` on `.hero-cybercore-root` for globe opacity.
  */
-export default function HeroLightning({ intervalMs = 6000 }) {
+export default function HeroLightning({ intervalMs = 3000 }) {
   const containerRef = useRef(null);
-  const [strikeCount, setStrikeCount] = useState(0);
-  const filterId = useId().replace(/:/g, '');
+  const [strikeActive, setStrikeActive] = useState(false);
+  const [strikeKey, setStrikeKey] = useState(0);
+  const flashTimeoutsRef = useRef([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStrikeCount((n) => n + 1);
-    }, intervalMs);
-    return () => clearInterval(interval);
-  }, [intervalMs]);
+    const clearFlashTimeouts = () => {
+      flashTimeoutsRef.current.forEach(clearTimeout);
+      flashTimeoutsRef.current = [];
+    };
 
-  useEffect(() => {
-    if (strikeCount === 0) return;
-    const root = containerRef.current?.closest('.hero-cybercore-root');
-    if (!root) return;
+    const triggerStrike = () => {
+      clearFlashTimeouts();
+      setStrikeActive(true);
+      setStrikeKey((k) => k + 1);
+      const root = containerRef.current?.closest('.hero-cybercore-root');
+      const t1 = setTimeout(() => {
+        if (root) root.style.setProperty('--lightning-flash', '1');
+      }, 80);
+      const t2 = setTimeout(() => {
+        if (root) root.style.setProperty('--lightning-flash', '0.4');
+      }, 240);
+      const t3 = setTimeout(() => {
+        if (root) root.style.setProperty('--lightning-flash', '0');
+        setStrikeActive(false);
+      }, 400);
+      flashTimeoutsRef.current.push(t1, t2, t3);
+    };
 
-    const peak = setTimeout(() => {
-      root.style.setProperty('--lightning-flash', '1');
-    }, 80);
-    const fade = setTimeout(() => {
-      root.style.setProperty('--lightning-flash', '0.4');
-    }, 180);
-    const end = setTimeout(() => {
-      root.style.setProperty('--lightning-flash', '0');
-    }, 300);
+    const mountedTimer = setTimeout(triggerStrike, 800);
+    const interval = setInterval(triggerStrike, intervalMs);
 
     return () => {
-      clearTimeout(peak);
-      clearTimeout(fade);
-      clearTimeout(end);
+      clearTimeout(mountedTimer);
+      clearInterval(interval);
+      clearFlashTimeouts();
+      const root = containerRef.current?.closest('.hero-cybercore-root');
+      if (root) root.style.setProperty('--lightning-flash', '0');
     };
-  }, [strikeCount]);
-
-  const seed = strikeCount % 5;
-  const boltPaths = [
-    'M 50,5 L 45,30 L 55,32 L 40,55 L 50,58 L 38,85 L 48,88 L 35,100',
-    'M 55,5 L 48,28 L 58,30 L 42,52 L 53,55 L 40,78 L 50,82 L 42,100',
-    'M 48,5 L 52,25 L 42,28 L 55,50 L 45,53 L 58,75 L 46,80 L 50,100',
-    'M 52,5 L 46,32 L 55,35 L 44,58 L 52,62 L 42,82 L 51,86 L 48,100',
-    'M 50,5 L 55,28 L 45,30 L 58,52 L 47,56 L 52,80 L 42,84 L 50,100',
-  ];
+  }, [intervalMs]);
 
   return (
     <div ref={containerRef} className="hero-lightning-strike" aria-hidden="true">
-      {strikeCount > 0 ? (
-        <svg
-          key={strikeCount}
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          className="hero-lightning-svg"
-        >
-          <defs>
-            <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="0.8" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <path
-            d={boltPaths[seed]}
-            stroke="#10b981"
-            strokeWidth="0.4"
-            fill="none"
-            filter={`url(#${filterId})`}
-            className="hero-lightning-path"
+      {strikeActive && (
+        <div key={strikeKey} className="hero-lightning-canvas">
+          <Lightning
+            hue={150}
+            xOffset={-0.3}
+            speed={0.8}
+            intensity={1.2}
+            size={0.7}
           />
-          <path
-            d={boltPaths[(seed + 1) % 5]}
-            stroke="#34d399"
-            strokeWidth="0.2"
-            fill="none"
-            opacity="0.6"
-            filter={`url(#${filterId})`}
-            className="hero-lightning-path-secondary"
-          />
-        </svg>
-      ) : null}
+        </div>
+      )}
     </div>
   );
 }
