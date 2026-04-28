@@ -1,6 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+function useAdaptivePlaceholder() {
+  const [placeholder, setPlaceholder] = useState('Enter your email for early access...');
+  useEffect(() => {
+    const compute = () => {
+      const w = window.innerWidth;
+      if (w < 360) {
+        setPlaceholder('Enter email...');
+      } else if (w < 480) {
+        setPlaceholder('Email for early access');
+      } else {
+        setPlaceholder('Enter your email for early access...');
+      }
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+  return placeholder;
+}
 
 /**
  * Email waitlist form for the landing page hero.
@@ -12,6 +32,7 @@ import { useState } from 'react';
  * Behavior unchanged: posts to /api/waitlist with referralSource='landing_page'.
  */
 export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
+  const placeholder = useAdaptivePlaceholder();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
@@ -77,7 +98,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
         {/* The actual input shell */}
         <div className="relative">
           {/* Email icon (left) */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="18"
@@ -101,16 +122,16 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email for early access..."
+            placeholder={placeholder}
             autoComplete="email"
             aria-label="Email address for early access"
             disabled={isDisabled}
-            className="waitlist-input text-center"
+            className="waitlist-input text-center w-full min-w-0 max-w-full pl-10 pr-12 sm:pl-12 sm:pr-14"
           />
 
           {/* Decorative spinning ring — sized/centered with submit (h-7 w-7, top-1/2 right-2 -translate-y-1/2) */}
           <div
-            className="waitlist-submit-ring pointer-events-none absolute h-7 w-7 top-1/2 right-2 z-[1] -translate-y-1/2 overflow-hidden rounded-full"
+            className="waitlist-submit-ring pointer-events-none absolute h-7 w-7 top-1/2 right-1.5 sm:right-2 z-[1] -translate-y-1/2 overflow-hidden rounded-full"
             aria-hidden
           />
           <button
@@ -123,7 +144,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
                   ? 'Submitted'
                   : 'Submit email for early access'
             }
-            className="waitlist-submit absolute top-1/2 right-2 z-[2] flex h-7 w-7 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border border-emerald-900/50 bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] transition-all hover:border-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="waitlist-submit absolute top-1/2 right-1.5 sm:right-2 z-[2] flex h-7 w-7 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border border-emerald-900/50 bg-gradient-to-b from-[#0a2f1f] via-[#0a0f0a] to-[#0d3325] transition-all hover:border-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {status === 'loading' ? (
               <svg

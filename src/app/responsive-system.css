@@ -102,18 +102,15 @@
     max-height: 220px !important;
   }
 
-  /* ── Landing hero: stack vertically ── */
-  .landing-page .content-container.hero-container {
-    padding: 0 var(--ez-page-gutter) 1rem !important;
-  }
+  /* ── Landing hero: stack vertically — padding from globals .hero-container tiers ── */
 
   .landing-page .hero-tagline {
     font-size: clamp(1.25rem, 5vw, 2rem) !important;
   }
 
-  /* ── Globe: scale down on phones to feel proportionate in the hero composition ── */
+  /* ── Globe: max width tracks hero globe tiers (JS sizes the canvas) ── */
   .landing-page .globe-container {
-    max-width: 280px;
+    max-width: 320px;
     height: auto;
     margin: 0 auto;
   }
@@ -142,6 +139,24 @@
   body {
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+@media (max-width: 639px) {
+  .landing-page .globe-container {
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 479px) {
+  .landing-page .globe-container {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 359px) {
+  .landing-page .globe-container {
+    max-width: 180px;
   }
 }
 
@@ -272,7 +287,6 @@
   }
 
   .landing-page .globe-notification-cards {
-    width: 100% !important;
     max-width: 320px;
   }
 }

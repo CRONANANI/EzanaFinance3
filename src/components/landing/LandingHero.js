@@ -23,14 +23,39 @@ function useHeroGlobeSize() {
   useEffect(() => {
     const compute = () => {
       const w = window.innerWidth;
-      // Mobile (<640px): scale to ~70% of viewport so the globe sits as a contained visual
-      // element rather than dominating the screen. Desktop unchanged.
-      if (w < 640) {
-        setSize(Math.min(280, Math.max(220, w * 0.7)));
+
+      // Tiny phones (<360px): JioPhone, Lumia 520, very small Androids
+      if (w < 360) {
+        setSize(180);
         return;
       }
+
+      // Small phones (360-479px): most common Android phones
+      if (w < 480) {
+        setSize(220);
+        return;
+      }
+
+      // Phablets / large phones (480-639px)
+      if (w < 640) {
+        setSize(260);
+        return;
+      }
+
+      // Small tablets / phablets in landscape (640-767px)
+      if (w < 768) {
+        setSize(320);
+        return;
+      }
+
+      // Tablets portrait / Surface near-min (768-1023px)
+      if (w < 1024) {
+        setSize(380);
+        return;
+      }
+
+      // Desktops + Surface Pro landscape (1024px+) — existing logic
       const horizontalPad = 48;
-      // Tablet+desktop: full sphere, scaled to viewport; never larger than 460
       setSize(Math.min(460, Math.max(280, w - horizontalPad)));
     };
     compute();
