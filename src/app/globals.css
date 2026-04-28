@@ -158,9 +158,8 @@ body.light-mode {
   transition: opacity 320ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-/* Notification cards — with lightning / card pulse */
-.landing-page .card-preview.globe-preview .globe-notification-cards,
-.landing-page .card-preview.globe-preview .globe-notification-alert {
+/* Notification cards — with lightning / card pulse (wrapper only; avoids opacity multiply on nested alert) */
+.landing-page .card-preview.globe-preview .globe-notification-cards {
   opacity: var(--card-pulse);
   transition: opacity 240ms cubic-bezier(0.4, 0, 0.6, 1);
 }
