@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const ThemeContext = createContext(null);
 
@@ -62,17 +63,36 @@ function persistToServer(theme) {
  *                      from other devices. Used by the Settings → Appearance
  *                      Save flow.
  *   - persist: false → visual-only. Used by temporary route overrides
- *                      (landing page forces light, market-analysis forces dark).
- *                      These must NOT overwrite the user's saved preference.
+ *                      (market-analysis forces dark). These must NOT overwrite
+ *                      the user's saved preference.
+ *
+ * Marketing surfaces (`/`, `/pricing`, `/help-center`) are brand-locked dark at
+ * the DOM level: we always apply the dark HTML/body treatment there while
+ * leaving React `theme` state unchanged so dashboard pages still reflect the
+ * user's preference after navigation. `/auth/*` is excluded so login/signup
+ * keep the user's chosen theme.
  */
+function isMarketingBrandLockedDarkPath(pathname) {
+  if (!pathname) return false;
+  if (pathname === '/') return true;
+  if (pathname.startsWith('/pricing')) return true;
+  if (pathname.startsWith('/help-center')) return true;
+  return false;
+}
+
 export function ThemeProvider({ initialTheme = 'light', children }) {
+  const pathname = usePathname();
   const safeInitial = initialTheme === 'dark' ? 'dark' : 'light';
   const [theme, setThemeState] = useState(safeInitial);
 
-  // Keep <html>/<body> in sync whenever the theme changes at runtime.
+  // Keep <html>/<body> in sync whenever the theme or route changes.
   useEffect(() => {
+    if (isMarketingBrandLockedDarkPath(pathname)) {
+      applyTheme('dark');
+      return;
+    }
     applyTheme(theme);
-  }, [theme]);
+  }, [theme, pathname]);
 
   /* Sync the ezana.theme cookie to the server-resolved theme on every
      hydration. This eliminates the "stale cookie" trap that caused the

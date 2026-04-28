@@ -1553,9 +1553,8 @@ body.light-mode select option {
 }
 
 /* ════════════════════════════════════════════════════════════
-   HERO SECTION — DARK THEME (LANDING ONLY)
-   Scoped via [data-hero-dark] so the rest of the landing page
-   remains light. Variables here override the page-level light theme.
+   HERO SECTION — BRAND-LOCKED DARK (LANDING)
+   Marketing routes skip body.light-mode; hero matches full-page #0a0e13.
    ════════════════════════════════════════════════════════════ */
 .landing-page .main-content.hero-section:has(.hero-cybercore-root[data-hero-dark]) {
   background-color: #0a0e13;
@@ -1568,62 +1567,69 @@ body.light-mode select option {
   --spotlight-y: 50%;
   --spotlight-active: 0;
   --spotlight-radius: 280px;
-  --cloud-opacity: 0.85;
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-tagline {
-  color: #f0f6fc;
-  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: transparent !important;
+  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle {
-  color: #94a3b8;
+  color: #cbd5e1 !important;
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle--secondary {
-  color: #6b7280;
+  color: #94a3b8 !important;
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .legacy-subtext,
 .landing-page .hero-cybercore-root[data-hero-dark] [class*='no-spam'] {
-  color: #6b7280;
+  color: #6b7280 !important;
 }
 
-/* Text column above cloud + ghost trails */
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-content-column {
   position: relative;
   z-index: 35;
 }
 
+/* Registered so keyframes can interpolate --lightning-opacity (Chrome / Safari / recent Firefox). */
+@property --lightning-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.92;
+}
+
 /* ════════════════════════════════════════════════════════════
-   HERO CLOUD OVERLAY — Spotlight reveal effect
+   HERO CLOUD + SPOTLIGHT + LIGHTNING
    ════════════════════════════════════════════════════════════ */
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay {
   position: absolute;
   inset: 0;
   z-index: 25;
   pointer-events: none;
-  background: rgba(10, 14, 19, var(--cloud-opacity));
+
+  --lightning-opacity: 0.92;
+  background: rgba(10, 14, 19, var(--lightning-opacity));
 
   -webkit-mask-image: radial-gradient(
     circle var(--spotlight-radius) at var(--spotlight-x) var(--spotlight-y),
     transparent 0%,
-    rgba(0, 0, 0, 0.3) 40%,
-    black 75%
+    rgba(0, 0, 0, 0.4) 35%,
+    black 70%
   );
   mask-image: radial-gradient(
     circle var(--spotlight-radius) at var(--spotlight-x) var(--spotlight-y),
     transparent 0%,
-    rgba(0, 0, 0, 0.3) 40%,
-    black 75%
+    rgba(0, 0, 0, 0.4) 35%,
+    black 70%
   );
 
-  transition: opacity 350ms ease, filter 350ms ease;
-  filter: blur(calc((1 - var(--spotlight-active)) * 8px));
-  opacity: calc(0.7 + (var(--spotlight-active) * 0.3));
+  transition: filter 350ms ease;
+  filter: blur(calc((1 - var(--spotlight-active)) * 6px));
+  animation: hero-lightning 6s ease-in-out infinite;
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay::before {
@@ -1631,10 +1637,12 @@ body.light-mode select option {
   position: absolute;
   inset: -10%;
   background-image:
-    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(20, 30, 45, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(15, 25, 35, 0.3) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 30% at 40% 80%, rgba(25, 35, 50, 0.35) 0%, transparent 55%);
+    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(20, 30, 45, 0.5) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(15, 25, 35, 0.4) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 30% at 40% 80%, rgba(25, 35, 50, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 60% at 80% 30%, rgba(20, 28, 40, 0.4) 0%, transparent 60%);
   animation: hero-cloud-drift 28s ease-in-out infinite;
+  mix-blend-mode: screen;
 }
 
 @keyframes hero-cloud-drift {
@@ -1650,13 +1658,30 @@ body.light-mode select option {
   }
 }
 
+@keyframes hero-lightning {
+  0%,
+  2.5% {
+    --lightning-opacity: 0.92;
+  }
+  2.8% {
+    --lightning-opacity: 0.15;
+  }
+  3.0% {
+    --lightning-opacity: 0.3;
+  }
+  3.3%,
+  100% {
+    --lightning-opacity: 0.92;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay::before {
+  .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay {
     animation: none;
   }
 
-  .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay {
-    transition: none;
+  .landing-page .hero-cybercore-root[data-hero-dark] .hero-cloud-overlay::before {
+    animation: none;
   }
 }
 
@@ -1665,4 +1690,168 @@ body.light-mode select option {
     --spotlight-active: 1;
     --spotlight-radius: 350px;
   }
+}
+
+/* ════════════════════════════════════════════════════════════
+   LANDING PAGE — FULL DARK MODE (Brand-Locked)
+   body.light-mode is not applied on marketing routes; these rules align
+   every section with #0a0e13 and emerald accents. !important wins any
+   stray light tokens from legacy landing CSS when specificity ties.
+   ════════════════════════════════════════════════════════════ */
+
+html:has(.landing-page) body {
+  background-color: #0a0e13 !important;
+  color: #f0f6fc;
+}
+
+.landing-page {
+  background-color: #0a0e13 !important;
+  color: #f0f6fc;
+}
+
+html:has(.landing-page) .navbar,
+html:has(.landing-page) .navbar.navbar-sticky,
+.landing-page .navbar,
+.landing-page .navbar.navbar-sticky {
+  background-color: #0a0e13 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+html:has(.landing-page) .navbar .nav-link,
+.landing-page .navbar .nav-link {
+  color: #d1d5db !important;
+}
+
+html:has(.landing-page) .navbar .nav-link:hover,
+.landing-page .navbar .nav-link:hover {
+  color: #10b981 !important;
+}
+
+html:has(.landing-page) .navbar .logo,
+.landing-page .navbar .logo {
+  filter: none;
+}
+
+.landing-page .features-section {
+  background: #0a0e13 !important;
+}
+
+.landing-page .features-section .features-grid-header h2 {
+  color: #f0f6fc !important;
+  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-page .features-section .features-grid-header .section-subtitle {
+  color: #9ca3af !important;
+}
+
+.landing-page .feature-card {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.landing-page .feature-card:hover {
+  background: rgba(16, 185, 129, 0.04) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+.landing-page .feature-card-title {
+  color: #f0f6fc !important;
+}
+
+.landing-page .feature-card-description {
+  color: #9ca3af !important;
+}
+
+.landing-page .feature-card-link {
+  color: #10b981 !important;
+}
+
+.landing-page .visual-container {
+  background: rgba(17, 24, 39, 0.6) !important;
+  border-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.landing-page .resources-section {
+  background: #0a0e13 !important;
+}
+
+.landing-page .landing-faq-section {
+  background: #0a0e13 !important;
+}
+
+.landing-page .faq-section-wrapper {
+  background: #0a0e13 !important;
+}
+
+.landing-page .trusted-section,
+.landing-page [class*='trusted-section'] {
+  background: #0a0e13 !important;
+}
+
+.landing-page footer {
+  background: #0a0e13 !important;
+  border-top-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.landing-page .hero-cybercore-root {
+  background-color: #0a0e13;
+  color: #f0f6fc;
+}
+
+.landing-page .hero-tagline {
+  color: transparent !important;
+  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.landing-page .hero-subtitle {
+  color: #cbd5e1 !important;
+}
+
+.landing-page .hero-subtitle--secondary {
+  color: #94a3b8 !important;
+}
+
+.landing-page .legacy-subtext,
+.landing-page [class*='no-spam'] {
+  color: #6b7280 !important;
+}
+
+/* FallingPattern layer kept in JSX — hidden for storm hero */
+.landing-page .hero-aurora-bg {
+  display: none !important;
+}
+
+/* Globe sphere reads black; emerald dots stay visible via multiply */
+.landing-page .globe-with-cards-wrapper .globe-container {
+  position: relative;
+}
+
+.landing-page .globe-with-cards-wrapper .globe-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    #0a0e13 0%,
+    #0a0e13 44%,
+    transparent 49%
+  );
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  z-index: 21;
+}
+
+.landing-page .main-content.hero-section {
+  background-color: #0a0e13 !important;
+}
+
+.landing-page .hero-cybercore-root {
+  background-color: #0a0e13 !important;
 }

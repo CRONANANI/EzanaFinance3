@@ -3,9 +3,11 @@
 /* ============================================================================
  *  PRICING PAGE — Design tokens inherited from the landing page (`/`)
  *  ----------------------------------------------------------------------------
- *  The landing route force-mounts light mode via ThemeProvider, so this page
- *  does the same to stay visually consistent. Tokens (see theme-variables.css
- *  and landing-light-mode.css) used here:
+ *  Marketing routes are brand-locked dark via ThemeProvider (see pathname
+ *  logic there). Tokens for this standalone layout live in pricing-standalone.css.
+ *  Historical reference (light marketing): theme-variables.css +
+ *  landing-light-mode.css once targeted light landing; those still apply only
+ *  when body.light-mode is set (dashboard).
  *
  *    Background:      var(--bg-primary)        → #ffffff (page), #f8fafb (nav)
  *    Surface:         var(--surface-card)      → #ffffff
@@ -217,22 +219,6 @@ export default function PricingPage() {
   const [billing, setBilling] = useState('yearly'); // Annual default for higher conversion
   const [pendingPlan, setPendingPlan] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
-  const { theme, setTheme } = useTheme();
-  const prevThemeRef = useRef(null);
-
-  /* Force light mode on this route to match the landing page's presentation.
-     Uses persist:false so the user's saved preference is NOT overwritten
-     by a visit to pricing. Theme is restored on unmount. */
-  useEffect(() => {
-    prevThemeRef.current = theme;
-    if (theme !== 'light') setTheme('light', { persist: false });
-    return () => {
-      if (prevThemeRef.current && prevThemeRef.current !== 'light') {
-        setTheme(prevThemeRef.current, { persist: false });
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   /* Auto-dismiss a transient error banner so it doesn't linger. */
   useEffect(() => {
