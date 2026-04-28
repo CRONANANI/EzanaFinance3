@@ -272,7 +272,8 @@
   }
 
   .landing-page .globe-notification-cards {
-    width: 320px !important;
+    width: 100% !important;
+    max-width: 320px;
   }
 }
 

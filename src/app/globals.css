@@ -372,6 +372,10 @@ body.light-mode {
 }
 
 @media (max-width: 768px) {
+  .landing-page .content-container.hero-container {
+    padding: 0 1rem 1.5rem;
+  }
+
   .landing-page .card-preview.globe-preview {
     min-height: 0;
     margin-top: 1.25rem;
@@ -379,9 +383,32 @@ body.light-mode {
     padding-bottom: 0.25rem;
   }
 
+  /* Edge-to-edge green sheet behind the globe.
+     Parent .hero-container has lateral padding; 100vw sizes to the viewport
+     so the glow spans full screen width while translate(-50%,-50%) keeps it centered. */
   .landing-page .globe-aurora-glow {
-    width: min(96vw, 420px);
-    height: min(96vw, 420px);
+    width: 100vw;
+    height: 100vw;
+    max-width: 540px;
+    max-height: 540px;
+    left: 50%;
+    top: 50%;
+  }
+
+  /* Notification cards must never overflow the viewport on mobile */
+  .landing-page .globe-notification-cards {
+    max-width: calc(100vw - 2rem);
+    width: 100% !important;
+  }
+
+  .landing-page .globe-notification-alert {
+    max-width: 100%;
+  }
+
+  .landing-page .globe-alert-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
