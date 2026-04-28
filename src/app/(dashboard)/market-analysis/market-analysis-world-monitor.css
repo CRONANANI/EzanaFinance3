@@ -172,23 +172,23 @@
 /* SVG country borders (power map) */
 .world-map-svg .power-map-border-base {
   fill: none;
-  stroke: #15803d;
-  stroke-width: 0.32;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 0.28;
   stroke-linejoin: round;
   stroke-linecap: round;
-  opacity: 0.75;
+  opacity: 0.85;
   pointer-events: none;
 }
 
 .world-map-svg .power-map-border-pulse {
   fill: none;
-  stroke: #4ade80;
-  stroke-width: 0.42;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 0.35;
   stroke-linejoin: round;
   stroke-linecap: round;
   stroke-dasharray: 0.35 0.55;
   animation: ma-power-map-border-dash 1.1s linear infinite;
-  opacity: 0.92;
+  opacity: 0.75;
   pointer-events: none;
 }
 

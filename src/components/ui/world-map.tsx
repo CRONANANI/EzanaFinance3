@@ -138,17 +138,54 @@ type DottedMapInternals = {
   proj4String: string;
 };
 
+/**
+ * Lava-style heatmap color palette inspired by NASA Black Marble visualizations.
+ * Highest-scored countries glow white-yellow; lowest-scored fade to deep red.
+ *
+ * Score range: 0-100
+ *   90-100: white-yellow (overexposed core, brightest)
+ *   80-89:  bright gold
+ *   70-79:  yellow-orange
+ *   60-69:  warm orange
+ *   50-59:  orange
+ *   40-49:  orange-red
+ *   30-39:  red
+ *   20-29:  deep red
+ *   10-19:  dark red
+ *   0-9:    burgundy / near-black red
+ */
 export function scoreToColor(score: number): string {
-  if (score >= 92) return "#FFD700";   // Gold      — rank 1 tier (elite)
-  if (score >= 82) return "#00E5FF";   // Cyan      — rank 2 tier
-  if (score >= 72) return "#00FF88";   // Lime green — rank 3 tier
-  if (score >= 62) return "#39FF14";   // Neon green — rank 4 tier
-  if (score >= 52) return "#ADFF2F";   // Yellow-green — rank 5 tier
-  if (score >= 42) return "#FFE066";   // Pale gold  — rank 6 tier
-  if (score >= 32) return "#FF9F1C";   // Orange     — rank 7 tier
-  if (score >= 22) return "#FF5733";   // Red-orange — rank 8 tier
-  if (score >= 12) return "#FF2D55";   // Red-pink   — rank 9 tier
-  return "#BF0000";                    // Dark red   — rank 10 tier (weakest)
+  if (score >= 90) return "#FFF59D"; // White-yellow (top elite — overexposed)
+  if (score >= 80) return "#FFEB3B"; // Bright gold
+  if (score >= 70) return "#FFC107"; // Amber
+  if (score >= 60) return "#FF9800"; // Orange
+  if (score >= 50) return "#FF6F00"; // Deep orange
+  if (score >= 40) return "#FF5722"; // Orange-red
+  if (score >= 30) return "#E53935"; // Bright red
+  if (score >= 20) return "#C62828"; // Strong red
+  if (score >= 10) return "#8B0000"; // Dark red
+  return "#5C0000"; // Burgundy / near-black red
+}
+
+/**
+ * Opacity scaling — brightest scores render at full opacity, lowest scores
+ * fade out to ~50%, mimicking the way light dissipates in the reference image.
+ */
+export function scoreToOpacity(score: number): number {
+  if (score >= 90) return 1.0;
+  if (score >= 70) return 0.95;
+  if (score >= 50) return 0.85;
+  if (score >= 30) return 0.75;
+  if (score >= 10) return 0.65;
+  return 0.55;
+}
+
+/**
+ * Top-tier countries (score ≥ 80) get a glow filter applied so they appear
+ * to bloom outward, mimicking the bright cluster centers in the reference.
+ */
+export function scoreNeedsGlow(score: number): boolean {
+  return score >= 80;
 }
 
 export const FINANCIAL_CENTERS = [
@@ -331,9 +368,17 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
 
   const isPowerMapActive = powerCountryScores.length > 0;
   const scoreByIso = useMemo(() => {
-    const o: Record<string, string> = {};
+    const o: Record<
+      string,
+      { color: string; opacity: number; glow: boolean; score: number }
+    > = {};
     powerCountryScores.forEach((c) => {
-      o[c.iso] = scoreToColor(c.score);
+      o[c.iso] = {
+        color: scoreToColor(c.score),
+        opacity: scoreToOpacity(c.score),
+        glow: scoreNeedsGlow(c.score),
+        score: c.score,
+      };
     });
     return o;
   }, [powerCountryScores]);
@@ -686,7 +731,16 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
           transition: isDragging ? "none" : "transform 0.15s ease-out",
         }}
       >
-        <div className="world-map-wrapper" style={{ position: "relative", width: "100%", height: "100%" }}>
+        <div
+          className="world-map-wrapper"
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            backgroundColor: isPowerMapActive ? "#2a2a2a" : "transparent",
+            transition: "background-color 250ms ease",
+          }}
+        >
           {!(isPowerMapActive && dotIsos) && (
             <Image
               src={dataUrl}
@@ -711,24 +765,68 @@ export const WorldMap = forwardRef<WorldMapHandle, WorldMapProps>(function World
               height: "100%",
             }}
           >
-          {isPowerMapActive && dotIsos
-            ? baseDots.map((d, i) => {
-                const iso = dotIsos[i];
-                const hasScore = Boolean(iso && scoreByIso[iso]);
-                return (
-                  <circle
-                    key={`pd-${d.idx}`}
-                    cx={d.x}
-                    cy={d.y}
-                    r={0.22}
-                    fill={hasScore ? scoreByIso[iso as string] : "#10b981"}
-                    fillOpacity={0.7}
-                    pointerEvents="none"
-                  />
-                );
-              })
-            : null}
-          {isPowerMapActive && borderFeatures.length > 0 && (
+            <defs>
+              {/* Lava heatmap glow — top-tier (score ≥ 90): white-hot bloom */}
+              <filter id="lava-glow-strong" x="-200%" y="-200%" width="500%" height="500%">
+                <feGaussianBlur stdDeviation="0.8" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="lava-glow-medium" x="-150%" y="-150%" width="400%" height="400%">
+                <feGaussianBlur stdDeviation="0.4" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            {isPowerMapActive && dotIsos
+              ? baseDots.map((d, i) => {
+                  const iso = dotIsos[i];
+                  const data = iso ? scoreByIso[iso] : undefined;
+
+                  if (!data) {
+                    return (
+                      <circle
+                        key={`pd-${d.idx}`}
+                        cx={d.x}
+                        cy={d.y}
+                        r={0.18}
+                        fill="#1a1a1a"
+                        fillOpacity={0.55}
+                        pointerEvents="none"
+                      />
+                    );
+                  }
+
+                  const filterId =
+                    data.score >= 90
+                      ? "url(#lava-glow-strong)"
+                      : data.glow
+                        ? "url(#lava-glow-medium)"
+                        : undefined;
+
+                  const radius =
+                    data.score >= 90 ? 0.32 : data.score >= 70 ? 0.26 : 0.22;
+
+                  return (
+                    <circle
+                      key={`pd-${d.idx}`}
+                      cx={d.x}
+                      cy={d.y}
+                      r={radius}
+                      fill={data.color}
+                      fillOpacity={data.opacity}
+                      filter={filterId}
+                      pointerEvents="none"
+                    />
+                  );
+                })
+              : null}
+            {isPowerMapActive && borderFeatures.length > 0 && (
             <g pointerEvents="auto">
               {borderFeatures.map((feat) => (
                 <g key={`hit-${feat.iso}`}>
