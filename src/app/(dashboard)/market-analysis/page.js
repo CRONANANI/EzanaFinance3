@@ -3,12 +3,12 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
 import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
-import { useProGate } from '@/components/upgrade/ProGateContext';
 import { useAuth } from '@/components/AuthProvider';
 
 /* WorldMap itself stays eagerly imported because it's the LCP element on
@@ -753,7 +753,7 @@ function chainPanelDomId(event) {
 }
 
 function ChainView() {
-  const { openProGate } = useProGate();
+  const router = useRouter();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [analyzeEvent, setAnalyzeEvent] = useState(null);
@@ -940,7 +940,7 @@ function ChainView() {
                 </button>
                 <button
                   type="button"
-                  onClick={openProGate}
+                  onClick={() => router.push('/centaur-intelligence')}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

@@ -18,7 +18,6 @@ const ThisWeekOnEzana = dynamic(
 );
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { useOrg } from '@/contexts/OrgContext';
-import { useProGate } from '@/components/upgrade/ProGateContext';
 import { useLoginHistory } from '@/hooks/useLoginHistory';
 import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
@@ -235,7 +234,6 @@ export function HomeTerminalSummary({
   const [congressLoading, setCongressLoading] = useState(true);
   const [portfolioValueTf, setPortfolioValueTf] = useState('1D');
   const { isOrgUser } = useOrg();
-  const { openProGate } = useProGate();
 
   useEffect(() => {
     let cancelled = false;
@@ -468,17 +466,10 @@ export function HomeTerminalSummary({
 
   return (
     <div className="home-terminal-body dashboard-page-inset">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={openProGate}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openProGate();
-          }
-        }}
-        style={{ cursor: 'pointer', textDecoration: 'none', display: 'block' }}
+      <Link
+        href="/centaur-intelligence"
+        className="centaur-home-promo-link"
+        style={{ textDecoration: 'none', display: 'block' }}
       >
         <div
           style={{
@@ -527,7 +518,7 @@ export function HomeTerminalSummary({
             <i className="bi bi-chevron-right" style={{ color: '#D4AF37', fontSize: '0.7rem' }} />
           </div>
         </div>
-      </div>
+      </Link>
 
       <OrgHomeCards />
 

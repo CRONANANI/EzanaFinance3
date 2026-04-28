@@ -150,6 +150,7 @@ function buildPartnerNavGroups() {
     {
       label: 'Research',
       items: [
+        { label: 'Centaur Intelligence', href: '/centaur-intelligence', icon: Sparkles, description: 'AI assistant' },
         { label: 'Kairos Signal', href: '/kairos-signal', icon: CloudSun, description: 'Weather & macro' },
         { label: 'Inside the Capitol', href: '/inside-the-capitol', icon: Landmark, description: 'Congressional trades' },
         { label: 'Company & portfolio research', href: '/company-research', icon: BarChart3, description: 'Analysis' },

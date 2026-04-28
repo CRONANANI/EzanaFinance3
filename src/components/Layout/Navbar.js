@@ -10,7 +10,6 @@ import { supabase } from '@/lib/supabase';
 import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
-import { useProGate } from '@/components/upgrade/ProGateContext';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
 import '@/components/ui/animated-nav.css';
 
@@ -19,7 +18,6 @@ export function Navbar() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { isOrgUser } = useOrg();
-  const { openProGate } = useProGate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const landingNavRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');
@@ -63,9 +61,10 @@ export function Navbar() {
         { id: 23, title: 'Global Market Analysis', description: 'Worldwide sector trends', url: '/market-analysis', icon: 'bi-graph-up-arrow' },
         { id: 26, title: 'Ezana Echo', description: 'Articles & insights', url: '/ezana-echo', icon: 'bi-newspaper' },
         { id: 27, title: 'Alternative Markets', description: 'Crypto & commodities', url: '/alternative-markets', icon: 'bi-globe2' },
-        { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold', proGated: true },
-        { id: 25, title: 'Betting Markets', description: 'Odds, predictions & EV models', url: '/betting-markets', icon: 'bi-bullseye', variant: 'gold', proGated: true },
-        { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator', variant: 'gold', proGated: true },
+        { id: 28, title: 'Centaur Intelligence', description: 'AI research assistant', url: '/centaur-intelligence', icon: 'bi-stars' },
+        { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill' },
+        { id: 25, title: 'Betting Markets', description: 'Odds, predictions & EV models', url: '/betting-markets', icon: 'bi-bullseye' },
+        { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator' },
       ],
     },
     {
@@ -272,7 +271,7 @@ export function Navbar() {
           </div>
         </div>
 
-        <AnimatedNav items={userNavItems} accentColor="#10b981" onProGateClick={openProGate} />
+        <AnimatedNav items={userNavItems} accentColor="#10b981" />
 
         {/* ── RIGHT ZONE: gear + logout (desktop) | hamburger (mobile) ── */}
         <div className="nav-actions">
