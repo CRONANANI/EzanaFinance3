@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { WorldMap, scoreToColor } from '@/components/ui/world-map';
 import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
-import { buildArticleQuery } from '@/lib/powerMapArticleQueries';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
 import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
 import { useAuth } from '@/components/AuthProvider';
@@ -519,8 +518,11 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
   useEffect(() => {
     if (powerCountry) {
       setLoadingNews(true);
-      const q = buildArticleQuery(powerCountry.name, selectedLayers);
-      fetch(`/api/market-data/power-map-news?q=${encodeURIComponent(q)}`)
+      const params = new URLSearchParams({
+        country: powerCountry.name,
+        layers: selectedLayers.join(','),
+      });
+      fetch(`/api/market-data/power-map-news?${params.toString()}`)
         .then((res) => res.json())
         .then((data) => {
           setNews(data.news || []);
@@ -628,8 +630,28 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                 Fetching latest news…
               </div>
             ) : news.length === 0 ? (
-              <div style={{ padding: '1rem', textAlign: 'center', color: '#4b5563', fontSize: '0.625rem', fontFamily: 'var(--font-mono, monospace)' }}>
-                No recent headlines for this query.
+              <div
+                style={{
+                  padding: '1.5rem',
+                  textAlign: 'center',
+                  color: '#6b7280',
+                  fontSize: '0.8rem',
+                  fontStyle: 'italic',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '8px',
+                }}
+              >
+                {selectedLayers.length > 0 ? (
+                  <>
+                    No recent news matching the selected layers for {powerCountry.name}. Try selecting different power layers
+                    or fewer layers to broaden the search.
+                  </>
+                ) : (
+                  <>
+                    No recent headlines mentioning {powerCountry.name} in the current Finnhub feed (general + forex categories).
+                  </>
+                )}
               </div>
             ) : (
               news.map((item) => (
