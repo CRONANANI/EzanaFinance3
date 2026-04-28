@@ -144,3 +144,14 @@ body.light-mode:has(.dashboard-main) {
 body.light-mode .main-nav:not(.partner-nav) {
   background: #ffffff !important;
 }
+
+/* html can peek through during layout; keep it white when the dashboard shell is present */
+html.light-mode:has(.dashboard-main) {
+  background-color: #ffffff;
+}
+
+/* Catch-all: nested wrappers inherit the main shell white, not a separate off-white token */
+body.light-mode .dashboard-main > .dashboard-container,
+body.light-mode .dashboard-container > .dashboard-page-inset {
+  background-color: transparent;
+}

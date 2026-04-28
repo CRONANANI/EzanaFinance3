@@ -137,7 +137,8 @@
    shows up as a black frame around the light content. */
 html.light-mode,
 body.light-mode {
-  --background: #f8f9fb;
+  /* Match canonical dashboard white — #f8f9fb read as “cream” vs #fff nav (seam). */
+  --background: #ffffff;
   --foreground: #111827;
   --card: #ffffff;
   --card-foreground: #111827;
@@ -168,9 +169,12 @@ body.light-mode {
   --nav-bg-solid: #ffffff;
   --nav-border: #e2e8f0;
 
+  /* Aligns with src/app/theme-variables.css — legacy import runs after and must not leave --app-bg unresolved. */
+  --app-bg: #ffffff;
+
   --color-primary: #059669;
   --color-primary-dark: #047857;
-  --bg-primary: #f8f9fb;
+  --bg-primary: #ffffff;
   --bg-secondary: #f1f5f9;
   --bg-card: #ffffff;
   --bg-card-hover: #f8fafc;
