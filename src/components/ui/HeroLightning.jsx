@@ -5,7 +5,7 @@ import Lightning from './Lightning';
 
 /**
  * Periodic lightning. Randomized bolt; shader ~400ms. Drives `--lightning-flash`
- * and `--globe-pulse` (1.3s reveal window for globe + cards).
+ * `--card-pulse` (with bolt), `--globe-pulse` (~200ms later), both to 0 at 1.3s.
  */
 
 function randomBetween(min, max) {
@@ -38,36 +38,47 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
 
     const triggerStrike = () => {
       clearFlashTimeouts();
-      const side = Math.random() < 0.5 ? 'left' : 'right';
-      onStrike?.(side);
-
       setStrikeParams(nextStrikeParams());
       setStrikeActive(true);
       setStrikeKey((k) => k + 1);
 
-      const root = containerRef.current?.closest('.hero-cybercore-root');
+      if (onStrike) {
+        onStrike(Math.random() < 0.5 ? 'left' : 'right');
+      }
 
-      const t1 = setTimeout(() => {
-        if (root) {
-          root.style.setProperty('--lightning-flash', '1');
-          root.style.setProperty('--globe-pulse', '1');
-        }
+      const root = containerRef.current?.closest('.hero-cybercore-root');
+      if (!root) return;
+
+      const flashOnTimer = setTimeout(() => {
+        root.style.setProperty('--lightning-flash', '1');
+        root.style.setProperty('--card-pulse', '1');
       }, 80);
 
-      const t2 = setTimeout(() => {
-        if (root) root.style.setProperty('--lightning-flash', '0.4');
+      const flashOffTimer = setTimeout(() => {
+        root.style.setProperty('--lightning-flash', '0.4');
       }, 240);
 
-      const t3 = setTimeout(() => {
-        if (root) root.style.setProperty('--lightning-flash', '0');
+      const globeRevealTimer = setTimeout(() => {
+        root.style.setProperty('--globe-pulse', '1');
+      }, 280);
+
+      const unmountTimer = setTimeout(() => {
+        root.style.setProperty('--lightning-flash', '0');
         setStrikeActive(false);
       }, 400);
 
       const pulseEndTimer = setTimeout(() => {
-        if (root) root.style.setProperty('--globe-pulse', '0');
+        root.style.setProperty('--card-pulse', '0');
+        root.style.setProperty('--globe-pulse', '0');
       }, 1300);
 
-      flashTimeoutsRef.current.push(t1, t2, t3, pulseEndTimer);
+      flashTimeoutsRef.current.push(
+        flashOnTimer,
+        flashOffTimer,
+        globeRevealTimer,
+        unmountTimer,
+        pulseEndTimer,
+      );
     };
 
     const mountedTimer = setTimeout(triggerStrike, 800);
@@ -80,6 +91,7 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       const root = containerRef.current?.closest('.hero-cybercore-root');
       if (root) {
         root.style.setProperty('--lightning-flash', '0');
+        root.style.setProperty('--card-pulse', '0');
         root.style.setProperty('--globe-pulse', '0');
       }
     };
