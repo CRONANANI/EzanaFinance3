@@ -598,3 +598,313 @@
     border-color: rgba(16, 185, 129, 0.3) !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   LANDING SECTIONS — COMPREHENSIVE TIER SYSTEM
+   Tier-based scaling for Trusted Logos, Features, Resources, FAQ, Footer.
+   Supplements hero; does not edit legacy features-section.css.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── TIER 1: TINY (<360px) ── */
+@media (max-width: 359px) {
+  .landing-page .features-section,
+  .landing-page .resources-section,
+  .landing-page .faq-section-wrapper,
+  .landing-page .trusted-section,
+  .landing-page .tl-section {
+    padding: 32px 12px;
+  }
+
+  .landing-page .features-container,
+  .landing-page .resources-container,
+  .landing-page .landing-faq-container {
+    padding: 0;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .landing-page .feature-card {
+    height: auto;
+    min-height: 180px;
+    padding: 0.85rem;
+  }
+
+  .landing-page .feature-card-title {
+    font-size: 0.95rem;
+  }
+
+  .landing-page .feature-card-description {
+    font-size: 0.78125rem;
+    line-height: 1.45;
+  }
+
+  .landing-page .features-section .features-grid-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .landing-page .features-section .features-grid-header .section-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .landing-page .feature-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .landing-page .feature-block {
+    margin-bottom: 50px;
+  }
+
+  .landing-page .visual-container {
+    padding: 1rem;
+  }
+
+  .landing-page .resources-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .landing-page .resource-card {
+    padding: 1rem;
+  }
+
+  .landing-page .landing-faq-heading {
+    font-size: 1.5rem;
+  }
+
+  .landing-page .landing-faq-question {
+    font-size: 0.875rem;
+    padding: 0.85rem 2.75rem 0.85rem 0.75rem;
+  }
+
+  .landing-page .landing-faq-answer {
+    font-size: 0.8125rem;
+  }
+
+  .landing-page footer .container {
+    padding: 2rem 1rem;
+  }
+
+  .landing-page footer h2 {
+    font-size: 1.5rem;
+  }
+
+  .landing-page footer .grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+}
+
+/* ── TIER 2: SMALL PHONES (360-479px) ── */
+@media (min-width: 360px) and (max-width: 479px) {
+  .landing-page .features-section,
+  .landing-page .resources-section,
+  .landing-page .faq-section-wrapper,
+  .landing-page .trusted-section,
+  .landing-page .tl-section {
+    padding: 40px 16px;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .landing-page .feature-card {
+    height: auto;
+    min-height: 200px;
+    padding: 1rem;
+  }
+
+  .landing-page .features-section .features-grid-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .landing-page .feature-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .landing-page .feature-block {
+    margin-bottom: 64px;
+  }
+
+  .landing-page .visual-container {
+    padding: 1.25rem;
+  }
+
+  .landing-page .resources-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .landing-page .landing-faq-heading {
+    font-size: 1.75rem;
+  }
+}
+
+/* ── TIER 3: PHABLET (480-639px) ── */
+@media (min-width: 480px) and (max-width: 639px) {
+  .landing-page .features-section,
+  .landing-page .resources-section,
+  .landing-page .faq-section-wrapper,
+  .landing-page .trusted-section,
+  .landing-page .tl-section {
+    padding: 48px 20px;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .landing-page .feature-card {
+    height: auto;
+    min-height: 220px;
+    padding: 1.15rem;
+  }
+
+  .landing-page .features-section .features-grid-header h2 {
+    font-size: 2rem;
+  }
+
+  .landing-page .feature-content {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .landing-page .feature-block {
+    margin-bottom: 80px;
+  }
+
+  .landing-page .resources-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+/* ── TIER 4: SMALL TABLETS (640-767px) ── */
+@media (min-width: 640px) and (max-width: 767px) {
+  .landing-page .features-section,
+  .landing-page .resources-section,
+  .landing-page .faq-section-wrapper,
+  .landing-page .trusted-section,
+  .landing-page .tl-section {
+    padding: 56px 24px;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 4rem;
+  }
+
+  .landing-page .feature-card {
+    height: auto;
+    min-height: 220px;
+  }
+
+  .landing-page .features-section .features-grid-header h2 {
+    font-size: 2.25rem;
+  }
+
+  .landing-page .feature-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .landing-page .feature-block {
+    margin-bottom: 100px;
+  }
+
+  .landing-page .resources-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+}
+
+/* ── TIER 5: TABLET PORTRAIT (768-1023px) ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .landing-page .features-section,
+  .landing-page .resources-section,
+  .landing-page .faq-section-wrapper,
+  .landing-page .trusted-section,
+  .landing-page .tl-section {
+    padding: 64px 28px;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 4.5rem;
+  }
+
+  .landing-page .feature-card {
+    height: auto;
+    min-height: 220px;
+    padding: 1.25rem;
+  }
+
+  .landing-page .feature-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: stretch;
+  }
+
+  .landing-page .feature-block {
+    margin-bottom: 120px;
+  }
+
+  .landing-page .visual-container {
+    padding: 1.5rem;
+  }
+
+  .landing-page .resources-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* ── TIER 6: TABLET LANDSCAPE / FOLDABLE (1024-1279px) ── */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .landing-page .features-section,
+  .landing-page .resources-section,
+  .landing-page .faq-section-wrapper,
+  .landing-page .trusted-section,
+  .landing-page .tl-section {
+    padding: 70px 32px;
+  }
+
+  .landing-page .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 5rem;
+  }
+
+  .landing-page .feature-card {
+    height: auto;
+    min-height: 220px;
+  }
+
+  .landing-page .feature-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+
+  .landing-page .feature-block {
+    margin-bottom: 140px;
+  }
+
+  .landing-page .resources-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* ── TIER 7: DESKTOP (≥1280px) — existing features-section.css defaults ── */
