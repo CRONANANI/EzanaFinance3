@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Lightning from './Lightning';
 
 /**
- * Periodic lightning. Each strike randomizes position, hue, intensity,
- * size, speed, and canvas rotation. Mounts shader only during ~400ms window.
+ * Periodic lightning. Randomized bolt; shader ~400ms. Drives `--lightning-flash`
+ * and `--globe-pulse` (1.3s reveal window for globe + cards).
  */
 
 function randomBetween(min, max) {
@@ -23,7 +23,7 @@ function nextStrikeParams() {
   };
 }
 
-export default function HeroLightning({ intervalMs = 3000 }) {
+export default function HeroLightning({ intervalMs = 3000, onStrike }) {
   const containerRef = useRef(null);
   const [strikeActive, setStrikeActive] = useState(false);
   const [strikeKey, setStrikeKey] = useState(0);
@@ -38,22 +38,36 @@ export default function HeroLightning({ intervalMs = 3000 }) {
 
     const triggerStrike = () => {
       clearFlashTimeouts();
+      const side = Math.random() < 0.5 ? 'left' : 'right';
+      onStrike?.(side);
+
       setStrikeParams(nextStrikeParams());
       setStrikeActive(true);
       setStrikeKey((k) => k + 1);
 
       const root = containerRef.current?.closest('.hero-cybercore-root');
+
       const t1 = setTimeout(() => {
-        if (root) root.style.setProperty('--lightning-flash', '1');
+        if (root) {
+          root.style.setProperty('--lightning-flash', '1');
+          root.style.setProperty('--globe-pulse', '1');
+        }
       }, 80);
+
       const t2 = setTimeout(() => {
         if (root) root.style.setProperty('--lightning-flash', '0.4');
       }, 240);
+
       const t3 = setTimeout(() => {
         if (root) root.style.setProperty('--lightning-flash', '0');
         setStrikeActive(false);
       }, 400);
-      flashTimeoutsRef.current.push(t1, t2, t3);
+
+      const pulseEndTimer = setTimeout(() => {
+        if (root) root.style.setProperty('--globe-pulse', '0');
+      }, 1300);
+
+      flashTimeoutsRef.current.push(t1, t2, t3, pulseEndTimer);
     };
 
     const mountedTimer = setTimeout(triggerStrike, 800);
@@ -64,9 +78,12 @@ export default function HeroLightning({ intervalMs = 3000 }) {
       clearInterval(interval);
       clearFlashTimeouts();
       const root = containerRef.current?.closest('.hero-cybercore-root');
-      if (root) root.style.setProperty('--lightning-flash', '0');
+      if (root) {
+        root.style.setProperty('--lightning-flash', '0');
+        root.style.setProperty('--globe-pulse', '0');
+      }
     };
-  }, [intervalMs]);
+  }, [intervalMs, onStrike]);
 
   return (
     <div ref={containerRef} className="hero-lightning-strike" aria-hidden="true">

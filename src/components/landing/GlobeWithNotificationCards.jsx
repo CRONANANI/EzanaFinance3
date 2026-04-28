@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { InteractiveGlobe } from "@/components/ui/interactive-globe";
-import { useTheme } from "@/components/ThemeProvider";
 
 const HERO_NOTIFICATIONS = [
   { id: "n1", type: "inside-the-capitol", title: "Congressional Trade Alert", content: "Nancy Pelosi disclosed new NVIDIA purchases worth $1.2M", badge: "Inside the Capitol", icon: "bi-bank" },
@@ -17,37 +16,21 @@ const HERO_NOTIFICATIONS = [
 
 const TIME_AGOS = ["2m ago", "8m ago", "1h ago", "2h ago", "4h ago", "6h ago", "1d ago"];
 
-const SIDES = ["left", "right"];
-const VERTICAL_POSITIONS = [0, 1, 2];
-
-function pickRandomPosition(prevSide, prevVPos) {
-  const candidates = [];
-  for (const s of SIDES) {
-    for (const v of VERTICAL_POSITIONS) {
-      if (s !== prevSide || v !== prevVPos) {
-        candidates.push({ side: s, vPos: v });
-      }
-    }
-  }
-  return candidates[Math.floor(Math.random() * candidates.length)];
-}
-
-export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+export function GlobeWithNotificationCards({
+  size = 460,
+  onGlobeReady,
+  triggerSide,
+  triggerNonce = 0,
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [position, setPosition] = useState(() => pickRandomPosition(null, null));
+  const [position, setPosition] = useState({ side: null, vPos: 0 });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % HERO_NOTIFICATIONS.length);
-      setPosition((prev) => {
-        const next = pickRandomPosition(prev.side, prev.vPos);
-        return next;
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!triggerSide || triggerNonce < 1) return;
+    setActiveIndex((i) => (i + 1) % HERO_NOTIFICATIONS.length);
+    const vPos = Math.floor(Math.random() * 3);
+    setPosition({ side: triggerSide, vPos });
+  }, [triggerNonce, triggerSide]);
 
   const item = HERO_NOTIFICATIONS[activeIndex];
   const timeAgo = TIME_AGOS[activeIndex % TIME_AGOS.length];
@@ -90,14 +73,13 @@ export function GlobeWithNotificationCards({ size = 460, onGlobeReady }) {
       </div>
 
       <div className="globe-container">
-        {/* Light-mode: cool grey ocean + emerald land dots (original hero look) */}
         <InteractiveGlobe
           size={size}
           showConnections={false}
           showMarkers={false}
           onReady={onGlobeReady}
-          oceanFill={isLight ? "#dce3ea" : "#020403"}
-          dotColor={isLight ? "rgba(16, 185, 129, ALPHA)" : "rgba(52, 211, 153, ALPHA)"}
+          oceanFill="#0a0e13"
+          dotColor="rgba(52, 211, 153, ALPHA)"
         />
       </div>
 

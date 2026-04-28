@@ -198,25 +198,30 @@ export function InteractiveGlobe({
 
     ctx.clearRect(0, 0, w, h);
 
-    // Subtle glow behind the sphere
-    const glowGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.4);
-    glowGrad.addColorStop(0, "rgba(16, 185, 129, 0.02)");
-    glowGrad.addColorStop(1, "rgba(16, 185, 129, 0)");
-    ctx.fillStyle = glowGrad;
-    ctx.fillRect(0, 0, w, h);
+    const oceanNorm = (oceanFill || "").trim().toLowerCase();
+    const blendWithPage = oceanNorm === "#0a0e13";
 
-    // Ocean — solid disk darker than page background, under land dots
+    if (!blendWithPage) {
+      const glowGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.4);
+      glowGrad.addColorStop(0, "rgba(16, 185, 129, 0.02)");
+      glowGrad.addColorStop(1, "rgba(16, 185, 129, 0)");
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // Ocean — solid disk; on landing hero matches page bg so only dots + CSS ring read
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.fillStyle = oceanFill;
     ctx.fill();
 
-    // Globe outline
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(16, 185, 129, 0.08)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    if (!blendWithPage) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
 
     // Draw continent dots (same visual style — emerald, depth-based alpha)
     const dots = dotsRef.current;
@@ -246,7 +251,8 @@ export function InteractiveGlobe({
       const [sx, sy] = project(x, y, z, cx, cy, fov);
       // Imprinted look: circular dots (no foreshortening), tight alpha range,
       // smaller radius so they read as surface texture not floating particles
-      const depthAlpha = Math.min(1.0, Math.max(0.35, 0.4 + cos * 0.6));
+      const rawAlpha = 0.4 + cos * 0.6;
+      const depthAlpha = Math.min(0.95, Math.max(0.5, Math.min(1, rawAlpha * 1.15)));
       const dotR = Math.max(0.55, 0.7 * Math.max(0.5, cos));
 
       ctx.save();

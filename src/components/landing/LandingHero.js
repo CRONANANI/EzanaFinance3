@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm';
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
@@ -25,37 +25,31 @@ function useHeroGlobeSize() {
     const compute = () => {
       const w = window.innerWidth;
 
-      // Tiny phones (<360px): JioPhone, Lumia 520, very small Androids
       if (w < 360) {
         setSize(180);
         return;
       }
 
-      // Small phones (360-479px): most common Android phones
       if (w < 480) {
         setSize(220);
         return;
       }
 
-      // Phablets / large phones (480-639px)
       if (w < 640) {
         setSize(260);
         return;
       }
 
-      // Small tablets / phablets in landscape (640-767px)
       if (w < 768) {
         setSize(320);
         return;
       }
 
-      // Tablets portrait / Surface near-min (768-1023px)
       if (w < 1024) {
         setSize(380);
         return;
       }
 
-      // Desktops + Surface Pro landscape (1024px+) — existing logic
       const horizontalPad = 48;
       setSize(Math.min(460, Math.max(280, w - horizontalPad)));
     };
@@ -67,14 +61,18 @@ function useHeroGlobeSize() {
 }
 
 export function LandingHero() {
-  const heroRootRef = useRef(null);
   const [ctaPhaseDone, setCtaPhaseDone] = useState(false);
   const [globeReady, setGlobeReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [cardTrigger, setCardTrigger] = useState({ side: null, nonce: 0 });
   const globeSize = useHeroGlobeSize();
 
   const onGlobeReady = useCallback(() => {
     setGlobeReady(true);
+  }, []);
+
+  const onLightningStrike = useCallback((side) => {
+    setCardTrigger((prev) => ({ side, nonce: prev.nonce + 1 }));
   }, []);
 
   useEffect(() => {
@@ -125,40 +123,8 @@ export function LandingHero() {
     return () => timeouts.forEach(clearTimeout);
   }, [reduceMotion]);
 
-  useEffect(() => {
-    const root = heroRootRef.current;
-    if (!root) return;
-
-    const handleMove = (e) => {
-      const rect = root.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
-      const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
-
-      const dx = x - 50;
-      const dy = y - 60;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const reveal = Math.max(0, Math.min(1, 1 - distance / 28));
-
-      root.style.setProperty('--cursor-x', `${x}%`);
-      root.style.setProperty('--cursor-y', `${y}%`);
-      root.style.setProperty('--globe-reveal', String(reveal));
-    };
-
-    const handleLeave = () => {
-      root.style.setProperty('--globe-reveal', '0');
-    };
-
-    root.addEventListener('pointermove', handleMove, { passive: true });
-    root.addEventListener('pointerleave', handleLeave, { passive: true });
-
-    return () => {
-      root.removeEventListener('pointermove', handleMove);
-      root.removeEventListener('pointerleave', handleLeave);
-    };
-  }, []);
-
   return (
-    <div className="hero-cybercore-root" data-hero-dark ref={heroRootRef}>
+    <div className="hero-cybercore-root" data-hero-dark>
       {mountHeroBg && (
         <div
           className={`hero-aurora-bg ${showHeroVisual ? 'hero-aurora-bg--visible' : ''}`}
@@ -203,20 +169,15 @@ export function LandingHero() {
           </div>
         </div>
         <div className={`card-preview globe-preview ${showHeroVisual ? 'globe-preview--visible' : ''}`}>
-          <div className="globe-aurora-glow" aria-hidden="true" />
-          <GlobeWithNotificationCards size={globeSize} onGlobeReady={onGlobeReady} />
+          <GlobeWithNotificationCards
+            size={globeSize}
+            onGlobeReady={onGlobeReady}
+            triggerSide={cardTrigger.side}
+            triggerNonce={cardTrigger.nonce}
+          />
         </div>
 
-        <div className="hero-cloud-field" aria-hidden="true">
-          <div className="hero-cloud hero-cloud--1" />
-          <div className="hero-cloud hero-cloud--2" />
-          <div className="hero-cloud hero-cloud--3" />
-          <div className="hero-cloud hero-cloud--4" />
-          <div className="hero-cloud hero-cloud--5" />
-          <div className="hero-cloud hero-cloud--6" />
-          <div className="hero-cloud hero-cloud--7" />
-        </div>
-        <HeroLightning intervalMs={3000} />
+        <HeroLightning intervalMs={3000} onStrike={onLightningStrike} />
       </div>
     </div>
   );
