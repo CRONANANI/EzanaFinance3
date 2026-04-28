@@ -74,6 +74,8 @@ body.light-mode {
   overflow: hidden;
   --globe-reveal: 0;
   --lightning-flash: 0;
+  --cursor-x: 50%;
+  --cursor-y: 60%;
 }
 
 /* Aurora background layer — full hero width, beams fade before top */
@@ -291,10 +293,11 @@ body.light-mode {
   margin: 0 auto 1.5rem;
   padding: 0;
   text-align: center;
-  color: #10b981 !important;
-  -webkit-text-fill-color: #10b981 !important;
+  color: #34d399 !important;
+  -webkit-text-fill-color: #34d399 !important;
   background: none !important;
   background-clip: unset !important;
+  text-shadow: 0 0 24px rgba(16, 185, 129, 0.3);
   white-space: normal;
   display: block;
 }
@@ -1563,11 +1566,11 @@ body.light-mode select option {
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-tagline {
-  color: transparent !important;
-  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
+  color: #34d399 !important;
+  -webkit-text-fill-color: #34d399 !important;
+  background: none !important;
+  background-clip: unset !important;
+  text-shadow: 0 0 24px rgba(16, 185, 129, 0.35);
 }
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-subtitle {
@@ -1585,7 +1588,7 @@ body.light-mode select option {
 
 .landing-page .hero-cybercore-root[data-hero-dark] .hero-content-column {
   position: relative;
-  z-index: 35;
+  z-index: 30;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1598,6 +1601,19 @@ body.light-mode select option {
   z-index: 25;
   pointer-events: none;
   overflow: hidden;
+  -webkit-mask-image: radial-gradient(
+    circle 220px at var(--cursor-x, 50%) var(--cursor-y, 60%),
+    rgba(0, 0, 0, calc(1 - var(--globe-reveal, 0) * 0.85)) 0%,
+    rgba(0, 0, 0, calc(1 - var(--globe-reveal, 0) * 0.5)) 40%,
+    black 75%
+  );
+  mask-image: radial-gradient(
+    circle 220px at var(--cursor-x, 50%) var(--cursor-y, 60%),
+    rgba(0, 0, 0, calc(1 - var(--globe-reveal, 0) * 0.85)) 0%,
+    rgba(0, 0, 0, calc(1 - var(--globe-reveal, 0) * 0.5)) 40%,
+    black 75%
+  );
+  transition: -webkit-mask-image 200ms ease, mask-image 200ms ease;
 }
 
 .landing-page .hero-cloud {
@@ -1805,6 +1821,7 @@ body.light-mode select option {
   width: 100%;
   height: 100%;
   mix-blend-mode: screen;
+  transform-origin: center center;
   animation: lightning-canvas-fade 400ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 
@@ -1946,11 +1963,11 @@ html:has(.landing-page) .navbar .logo,
 }
 
 .landing-page .hero-tagline {
-  color: transparent !important;
-  background: linear-gradient(135deg, #ffffff 0%, #10b981 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
+  color: #34d399 !important;
+  -webkit-text-fill-color: #34d399 !important;
+  background: none !important;
+  background-clip: unset !important;
+  text-shadow: 0 0 24px rgba(16, 185, 129, 0.3);
 }
 
 .landing-page .hero-subtitle {
@@ -1989,4 +2006,60 @@ html:has(.landing-page) .navbar .logo,
   pointer-events: none;
   mix-blend-mode: multiply;
   z-index: 21;
+}
+
+/* ════════════════════════════════════════════════════════════
+   LANDING PAGE BACKGROUND LOCK — Hard-coded #0a0e13 (bypasses theme vars)
+   ════════════════════════════════════════════════════════════ */
+
+html:has(.landing-page),
+html:has(.landing-page) body,
+body:has(.landing-page) {
+  background-color: #0a0e13 !important;
+}
+
+.landing-page,
+.landing-page .main-content,
+.landing-page .main-content.hero-section,
+.landing-page #heroSection,
+.landing-page .hero-cybercore-root,
+.landing-page #features-section-container,
+.landing-page .features-section,
+.landing-page .resources-section,
+.landing-page .landing-faq-section,
+.landing-page .faq-section-wrapper,
+.landing-page .trusted-section,
+.landing-page footer {
+  background-color: #0a0e13 !important;
+}
+
+html:has(.landing-page) .navbar,
+html:has(.landing-page) .navbar.navbar-sticky,
+.landing-page .navbar,
+.landing-page .navbar-sticky {
+  background-color: #0a0e13 !important;
+}
+
+.landing-page {
+  --nav-bg-solid: #0a0e13;
+  --app-bg: #0a0e13;
+  --nav-bg: rgba(10, 14, 19, 0.92);
+}
+
+/* ════════════════════════════════════════════════════════════
+   HERO TEXT STACKING — Above cloud field (25) and lightning (27)
+   ════════════════════════════════════════════════════════════ */
+
+.landing-page .hero-cybercore-root .hero-content-column,
+.landing-page .hero-cybercore-root .hero-content,
+.landing-page .hero-cybercore-root .hero-tagline,
+.landing-page .hero-cybercore-root .hero-subtitle,
+.landing-page .hero-cybercore-root .hero-waitlist {
+  position: relative;
+  z-index: 30;
+}
+
+.landing-page .hero-cybercore-root .content-container.hero-container {
+  position: relative;
+  z-index: 30;
 }

@@ -5,7 +5,6 @@ import { AnimatedWaitlistForm } from '@/components/landing/AnimatedWaitlistForm'
 import { GlobeWithNotificationCards } from '@/components/landing/GlobeWithNotificationCards';
 import { AnimatedWords } from '@/components/ui/animated-words';
 import { FallingPattern } from '@/components/ui/falling-pattern';
-import GhostCursor from '@/components/ui/GhostCursor';
 import HeroLightning from '@/components/ui/HeroLightning';
 import { LAND_GEOJSON_URL } from '@/components/ui/interactive-globe';
 
@@ -138,7 +137,10 @@ export function LandingHero() {
       const dx = x - 50;
       const dy = y - 60;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const reveal = Math.max(0, Math.min(1, 1 - distance / 35));
+      const reveal = Math.max(0, Math.min(1, 1 - distance / 28));
+
+      root.style.setProperty('--cursor-x', `${x}%`);
+      root.style.setProperty('--cursor-y', `${y}%`);
       root.style.setProperty('--globe-reveal', String(reveal));
     };
 
@@ -215,20 +217,6 @@ export function LandingHero() {
           <div className="hero-cloud hero-cloud--7" />
         </div>
         <HeroLightning intervalMs={3000} />
-        <GhostCursor
-          color="#10b981"
-          brightness={1.2}
-          trailLength={40}
-          inertia={0.55}
-          grainIntensity={0.04}
-          bloomStrength={0.15}
-          bloomRadius={1.0}
-          bloomThreshold={0.025}
-          fadeDelayMs={800}
-          fadeDurationMs={1200}
-          zIndex={30}
-          mixBlendMode="screen"
-        />
       </div>
     </div>
   );

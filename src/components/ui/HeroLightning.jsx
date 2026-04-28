@@ -4,14 +4,30 @@ import { useEffect, useRef, useState } from 'react';
 import Lightning from './Lightning';
 
 /**
- * Periodic lightning using React Bits' Lightning shader.
- * Strike: every `intervalMs`, ~400ms window with Lightning mounted; drives
- * `--lightning-flash` on `.hero-cybercore-root` for globe opacity.
+ * Periodic lightning. Each strike randomizes position, hue, intensity,
+ * size, speed, and canvas rotation. Mounts shader only during ~400ms window.
  */
+
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function nextStrikeParams() {
+  return {
+    xOffset: randomBetween(-0.6, 0.6),
+    hue: randomBetween(140, 170),
+    intensity: randomBetween(1.0, 1.6),
+    size: randomBetween(0.6, 0.9),
+    rotation: randomBetween(-15, 15),
+    speed: randomBetween(0.7, 1.0),
+  };
+}
+
 export default function HeroLightning({ intervalMs = 3000 }) {
   const containerRef = useRef(null);
   const [strikeActive, setStrikeActive] = useState(false);
   const [strikeKey, setStrikeKey] = useState(0);
+  const [strikeParams, setStrikeParams] = useState(nextStrikeParams);
   const flashTimeoutsRef = useRef([]);
 
   useEffect(() => {
@@ -22,8 +38,10 @@ export default function HeroLightning({ intervalMs = 3000 }) {
 
     const triggerStrike = () => {
       clearFlashTimeouts();
+      setStrikeParams(nextStrikeParams());
       setStrikeActive(true);
       setStrikeKey((k) => k + 1);
+
       const root = containerRef.current?.closest('.hero-cybercore-root');
       const t1 = setTimeout(() => {
         if (root) root.style.setProperty('--lightning-flash', '1');
@@ -53,13 +71,19 @@ export default function HeroLightning({ intervalMs = 3000 }) {
   return (
     <div ref={containerRef} className="hero-lightning-strike" aria-hidden="true">
       {strikeActive && (
-        <div key={strikeKey} className="hero-lightning-canvas">
+        <div
+          key={strikeKey}
+          className="hero-lightning-canvas"
+          style={{
+            transform: `rotate(${strikeParams.rotation}deg)`,
+          }}
+        >
           <Lightning
-            hue={150}
-            xOffset={-0.3}
-            speed={0.8}
-            intensity={1.2}
-            size={0.7}
+            hue={strikeParams.hue}
+            xOffset={strikeParams.xOffset}
+            speed={strikeParams.speed}
+            intensity={strikeParams.intensity}
+            size={strikeParams.size}
           />
         </div>
       )}
