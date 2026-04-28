@@ -70,7 +70,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
             Becomes visible only on focus-within, so it's a quiet decorative touch
             rather than constant motion. */}
         <div
-          className="waitlist-glow pointer-events-none absolute -inset-1 rounded-2xl opacity-0 blur-md transition-opacity duration-500 group-focus-within:opacity-100"
+          className="waitlist-glow pointer-events-none absolute -inset-2 rounded-[1.25rem] opacity-0 blur-2xl transition-opacity duration-500 group-focus-within:opacity-[0.55]"
           aria-hidden
         />
 
@@ -105,7 +105,7 @@ export function AnimatedWaitlistForm({ className = '', alignLeft = false }) {
             autoComplete="email"
             aria-label="Email address for early access"
             disabled={isDisabled}
-            className="waitlist-input"
+            className="waitlist-input text-center"
           />
 
           {/* Decorative spinning ring — sized/centered with submit (h-7 w-7, top-1/2 right-2 -translate-y-1/2) */}

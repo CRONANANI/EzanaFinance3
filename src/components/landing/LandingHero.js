@@ -109,7 +109,7 @@ export function LandingHero() {
             color="#059669"
             streakColor="rgba(5, 150, 105, 0.49)"
             sparkleColor="rgba(5, 150, 105, 0.7)"
-            backgroundColor="#f8fafb"
+            backgroundColor="#ffffff"
             duration={120}
             blurIntensity="0em"
             density={1.25}
