@@ -1553,6 +1553,29 @@ body.light-mode select option {
   mix-blend-mode: screen;
   transform-origin: center center;
   animation: lightning-canvas-fade 400ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+
+  /* Vertical fade mask — bolt is fully opaque in the middle 80%, fades
+     to fully transparent at the top 10% and bottom 10%.
+     Eliminates the hard horizontal clipping line where the bolt meets
+     the canvas boundary. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 5%,
+    black 10%,
+    black 90%,
+    rgba(0, 0, 0, 0.5) 95%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 5%,
+    black 10%,
+    black 90%,
+    rgba(0, 0, 0, 0.5) 95%,
+    transparent 100%
+  );
 }
 
 @keyframes lightning-canvas-fade {
