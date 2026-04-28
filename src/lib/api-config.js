@@ -5,7 +5,10 @@
 
 export const API_CONFIG = Object.freeze({
   alphaVantage: {
+    // Public key for client-side consumers (existing behavior preserved)
     key: process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY || '',
+    // Server-only key for the news sentiment endpoint (new)
+    serverKey: process.env.ALPHA_VANTAGE_API_KEY || '',
     base: 'https://www.alphavantage.co/query',
   },
   fmp: {

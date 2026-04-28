@@ -1,27 +1,33 @@
 import { NextResponse } from 'next/server';
-import { countryKeywords, layerKeywords } from '@/lib/powerMapArticleQueries';
+import {
+  countryKeywords,
+  layerKeywords,
+  alphaVantageTopicForLayers,
+  alphaVantageTickerForCountry,
+} from '@/lib/powerMapArticleQueries';
 
 export const dynamic = 'force-dynamic';
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
-const BASE = 'https://finnhub.io/api/v1';
+const FINNHUB_BASE = 'https://finnhub.io/api/v1';
+
+const ALPHA_VANTAGE_KEY =
+  process.env.ALPHA_VANTAGE_API_KEY || process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY;
+const ALPHA_VANTAGE_BASE = 'https://www.alphavantage.co/query';
 
 /**
  * GET /api/market-data/power-map-news
  *
  * Query params:
- *   country  — country name (e.g. "Russia", "United States")
+ *   country  — country name (e.g. "Russia")
  *   layers   — comma-separated power layer slugs (e.g. "military,economic")
  *
- * Returns articles that:
- *   1. MENTION the selected country (or any of its aliases) — HARD REQUIREMENT
- *   2. RELATE to at least one selected layer (boosts ranking) — SOFT SCORING
+ * Fetches news from TWO sources in parallel:
+ *   1. Finnhub (general + forex categories) — broad market coverage
+ *   2. AlphaVantage NEWS_SENTIMENT — topic + ticker filtered, sentiment scored
  *
- * If no layers are selected, articles must still mention the country
- * but no topical filtering is applied.
- *
- * If no country-relevant articles exist in the news feed, returns an
- * empty array. We do NOT fall back to unrelated news.
+ * Articles are deduplicated by URL, then unified through the same
+ * country-required + layer-scoring pipeline.
  */
 export async function GET(request) {
   try {
@@ -32,15 +38,18 @@ export async function GET(request) {
       ? layersParam.split(',').map((s) => s.trim()).filter(Boolean)
       : [];
 
-    // Backward-compat: support old `q=` queries where the first word was country
+    // Backward-compat: support old `q=` queries
     if (!country) {
       const q = (searchParams.get('q') || '').trim();
       if (!q) {
         return NextResponse.json({ error: 'country param required' }, { status: 400 });
       }
-      if (!FINNHUB_KEY) {
+      if (!FINNHUB_KEY && !ALPHA_VANTAGE_KEY) {
         return NextResponse.json(
-          { news: [], error: 'FINNHUB_API_KEY not configured' },
+          {
+            news: [],
+            error: 'No news API keys configured (FINNHUB_API_KEY or ALPHA_VANTAGE_API_KEY)',
+          },
           { status: 503 }
         );
       }
@@ -48,9 +57,9 @@ export async function GET(request) {
       return fetchAndFilter(tokens[0], []);
     }
 
-    if (!FINNHUB_KEY) {
+    if (!FINNHUB_KEY && !ALPHA_VANTAGE_KEY) {
       return NextResponse.json(
-        { news: [], error: 'FINNHUB_API_KEY not configured' },
+        { news: [], error: 'No news API keys configured (FINNHUB_API_KEY or ALPHA_VANTAGE_API_KEY)' },
         { status: 503 }
       );
     }
@@ -62,45 +71,130 @@ export async function GET(request) {
   }
 }
 
-async function fetchAndFilter(country, layers) {
-  // Pull both general news and forex news for broader country coverage
-  // (Finnhub `general` is mostly US markets; `forex` has global geopolitics)
-  const newsResponses = await Promise.all([
-    fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`).then((r) =>
-      r.ok ? r.json() : []
-    ),
-    fetch(`${BASE}/news?category=forex&token=${FINNHUB_KEY}`).then((r) =>
-      r.ok ? r.json() : []
-    ),
-  ]);
+// ─── Source 1: Finnhub general + forex ─────────────────────────────────────
+async function fetchFinnhubNews() {
+  if (!FINNHUB_KEY) return [];
+  try {
+    const responses = await Promise.all([
+      fetch(`${FINNHUB_BASE}/news?category=general&token=${FINNHUB_KEY}`).then((r) =>
+        r.ok ? r.json() : []
+      ),
+      fetch(`${FINNHUB_BASE}/news?category=forex&token=${FINNHUB_KEY}`).then((r) =>
+        r.ok ? r.json() : []
+      ),
+    ]);
 
-  const allNews = newsResponses.flat().filter(Boolean);
+    return responses.flat().filter(Boolean).map((n) => ({
+      _source: 'finnhub',
+      id: n.id || n.headline?.slice(0, 24),
+      url: n.url || '#',
+      headline: n.headline || '',
+      summary: n.summary || '',
+      related: n.related || '',
+      datetime: n.datetime || 0, // Unix seconds
+      image: n.image,
+      source: n.source || 'Finnhub',
+      category: (n.category || 'MARKETS').toUpperCase(),
+    }));
+  } catch (err) {
+    console.error('[power-map-news] finnhub fetch failed:', err);
+    return [];
+  }
+}
 
-  // Dedupe by headline
-  const seen = new Set();
-  const unique = [];
-  for (const n of allNews) {
-    const key = n.headline || n.id;
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    unique.push(n);
+// ─── Source 2: AlphaVantage NEWS_SENTIMENT ─────────────────────────────────
+async function fetchAlphaVantageNews(country, layers) {
+  if (!ALPHA_VANTAGE_KEY) return [];
+
+  const params = new URLSearchParams({
+    function: 'NEWS_SENTIMENT',
+    apikey: ALPHA_VANTAGE_KEY,
+    sort: 'LATEST',
+    limit: '50',
+  });
+
+  const ticker = alphaVantageTickerForCountry(country);
+  if (ticker) params.set('tickers', ticker);
+
+  const topic = alphaVantageTopicForLayers(layers);
+  if (topic) params.set('topics', topic);
+
+  // If neither ticker nor topic is available, skip the call to save quota.
+  if (!ticker && !topic) {
+    return [];
   }
 
-  // STEP 1: HARD COUNTRY FILTER
-  // The article must mention the selected country (by name or any alias).
+  try {
+    const url = `${ALPHA_VANTAGE_BASE}?${params.toString()}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'EzanaFinance/1.0' } });
+    if (!res.ok) {
+      console.warn('[power-map-news] alphavantage non-OK status:', res.status);
+      return [];
+    }
+    const data = await res.json();
+
+    if (data?.Information || data?.Note) {
+      console.warn('[power-map-news] alphavantage rate-limited or info:', data.Information || data.Note);
+      return [];
+    }
+
+    const feed = Array.isArray(data?.feed) ? data.feed : [];
+    return feed.map((a) => ({
+      _source: 'alphavantage',
+      id: a.url || a.title?.slice(0, 24),
+      url: a.url || '#',
+      headline: a.title || '',
+      summary: a.summary || '',
+      related: [
+        ...(a.topics || []).map((t) => t.topic),
+        ...(a.ticker_sentiment || []).map((t) => t.ticker),
+      ].join(' '),
+      datetime: avTimeToUnix(a.time_published),
+      image: a.banner_image,
+      source: a.source || 'AlphaVantage',
+      category: 'MARKETS',
+      sentimentScore:
+        typeof a.overall_sentiment_score === 'number' ? a.overall_sentiment_score : null,
+      sentimentLabel: a.overall_sentiment_label || null,
+    }));
+  } catch (err) {
+    console.error('[power-map-news] alphavantage fetch failed:', err);
+    return [];
+  }
+}
+
+/** Convert AlphaVantage YYYYMMDDTHHMMSS string to Unix seconds. */
+function avTimeToUnix(avTime) {
+  if (!avTime || typeof avTime !== 'string' || avTime.length < 13) return 0;
+  const iso = `${avTime.slice(0, 4)}-${avTime.slice(4, 6)}-${avTime.slice(6, 8)}T${avTime.slice(9, 11)}:${avTime.slice(11, 13)}:${avTime.slice(13, 15) || '00'}Z`;
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? Math.floor(ms / 1000) : 0;
+}
+
+// ─── Main pipeline ─────────────────────────────────────────────────────────
+async function fetchAndFilter(country, layers) {
+  const [finnhubArticles, alphaArticles] = await Promise.all([
+    fetchFinnhubNews(),
+    fetchAlphaVantageNews(country, layers),
+  ]);
+
+  const seen = new Set();
+  const merged = [];
+  for (const article of [...alphaArticles, ...finnhubArticles]) {
+    const key = article.url && article.url !== '#' ? article.url : article.headline;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(article);
+  }
+
   const countryTerms = countryKeywords(country);
-  const countryRelevant = unique.filter((article) => {
-    const haystack = `${article.headline || ''} ${article.summary || ''} ${article.related || ''}`.toLowerCase();
+  const countryRelevant = merged.filter((article) => {
+    const haystack = `${article.headline} ${article.summary} ${article.related}`.toLowerCase();
     return countryTerms.some((term) => haystack.includes(term));
   });
 
-  // STEP 2: SOFT LAYER SCORING
-  // Articles matching layer keywords get a relevance boost. If no layers
-  // are selected, every country-relevant article scores equally.
   const lyrTerms =
-    layers.length > 0
-      ? [...new Set(layerKeywords(layers))]
-      : [];
+    layers.length > 0 ? [...new Set(layerKeywords(layers))] : [];
 
   const scored = countryRelevant
     .map((article) => {
@@ -108,32 +202,27 @@ async function fetchAndFilter(country, layers) {
       const summary = (article.summary || '').toLowerCase();
       const related = (article.related || '').toLowerCase();
 
-      let score = 1; // Baseline for country-relevant articles
-      const matchedLayers = new Set();
+      let score = 1;
+      const matchedTerms = new Set();
 
       if (lyrTerms.length > 0) {
-        // Layer scoring: stronger for headline match, weaker for summary, weakest for related
         for (const term of lyrTerms) {
           if (headline.includes(term)) {
             score += 4;
-            matchedLayers.add(term);
+            matchedTerms.add(term);
           } else if (summary.includes(term)) {
             score += 2;
-            matchedLayers.add(term);
+            matchedTerms.add(term);
           } else if (related.includes(term)) {
             score += 1;
-            matchedLayers.add(term);
+            matchedTerms.add(term);
           }
         }
-
-        // If layers were selected but the article matched zero layer terms,
-        // it's about the country but off-topic — drop it.
-        if (matchedLayers.size === 0) {
-          return null;
-        }
+        if (matchedTerms.size === 0) return null;
       }
 
-      // Boost recent articles (within 24h get extra weight)
+      if (article._source === 'alphavantage') score += 1;
+
       const ageMs = Date.now() - (article.datetime || 0) * 1000;
       if (ageMs < 86400000) score += 2;
       else if (ageMs < 604800000) score += 1;
@@ -146,15 +235,18 @@ async function fetchAndFilter(country, layers) {
 
   const formatted = scored.slice(0, 15).map((n) => ({
     id: n.id || n.headline?.slice(0, 24),
-    category: (n.category || 'MARKETS').toUpperCase(),
+    category: n.category,
     title: n.headline || 'Market Update',
     summary: n.summary,
-    source: n.source || 'Finnhub',
-    url: n.url || '#',
+    source: n.source,
+    url: n.url,
     image: n.image,
     time: n.datetime,
     related: n.related,
     relevanceScore: n.relevanceScore,
+    sentimentScore: n.sentimentScore ?? null,
+    sentimentLabel: n.sentimentLabel || null,
+    sourceProvider: n._source,
   }));
 
   return NextResponse.json(
@@ -162,10 +254,17 @@ async function fetchAndFilter(country, layers) {
       news: formatted,
       country,
       layers,
-      totalScanned: unique.length,
+      sources: {
+        finnhub: finnhubArticles.length,
+        alphavantage: alphaArticles.length,
+      },
       countryRelevant: countryRelevant.length,
       finalMatches: formatted.length,
     },
-    { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+    {
+      headers: {
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
+      },
+    }
   );
 }

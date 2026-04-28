@@ -649,7 +649,7 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                   </>
                 ) : (
                   <>
-                    No recent headlines mentioning {powerCountry.name} in the current Finnhub feed (general + forex categories).
+                    No recent headlines mentioning {powerCountry.name} in the current news feed (Finnhub and AlphaVantage when configured).
                   </>
                 )}
               </div>
@@ -661,7 +661,28 @@ function CityNewsPanel({ panelId, powerCountry, selectedLayers, countryScores, o
                     <span className="ma-city-news-time">{timeAgo(item.time)}</span>
                   </div>
                   <p className="ma-city-news-title">{item.title}</p>
-                  <span className="ma-city-news-source">{item.source || 'Finnhub'} →</span>
+                  <span className="ma-city-news-source">
+                    {item.source || 'Finnhub'} →
+                    {item.sourceProvider === 'alphavantage' && (
+                      <span
+                        style={{
+                          fontSize: '0.55rem',
+                          padding: '0.1rem 0.35rem',
+                          borderRadius: '4px',
+                          background: 'rgba(168, 85, 247, 0.12)',
+                          color: '#c4b5fd',
+                          border: '1px solid rgba(168, 85, 247, 0.2)',
+                          marginLeft: '0.4rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          fontWeight: 600,
+                        }}
+                        title="Sourced via AlphaVantage NEWS_SENTIMENT — topic-filtered for the selected layer"
+                      >
+                        AV
+                      </span>
+                    )}
+                  </span>
                 </a>
               ))
             )}
