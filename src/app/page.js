@@ -34,7 +34,6 @@ export default function HomePage() {
 
   useEffect(() => {
     document.body.classList.remove('light-mode');
-    document.documentElement.classList.remove('light-mode');
   }, []);
 
   return (
