@@ -1245,6 +1245,21 @@ html:has(body.route-regular-dashboard.route-market-analysis) {
 }
 
 /* ════════════════════════════════════════════════════════════
+   Stock Price Chart — axis tick labels (Recharts XAxis/YAxis)
+   The tick className renders on SVG <text>; fill accepts CSS custom
+   properties in stylesheets but not reliably as inline SVG attributes
+   (broken hsl(var(--foreground)) when --foreground is undefined).
+   ════════════════════════════════════════════════════════════ */
+.spc-axis-tick {
+  fill: var(--text-secondary, #e2e8f0);
+  opacity: 0.85;
+}
+
+body.light-mode .spc-axis-tick {
+  fill: var(--text-secondary, #1e293b);
+}
+
+/* ════════════════════════════════════════════════════════════
    LANDING WAITLIST FORM — Redesigned email signup
    Replaces the previous 5-layer-glow + spin-backdrop design
    with a clean shadcn/21st.dev-style input + subtle focus glow.

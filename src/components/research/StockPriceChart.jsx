@@ -228,21 +228,20 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
               <XAxis
                 dataKey="label"
                 tick={{
-                  /* Theme vars are raw HSL triples — must use hsl() for valid SVG fill (fixes dark mode). */
-                  fill: 'hsl(var(--foreground))',
+                  /* fill via .spc-axis-tick in globals.css — hsl(var(--foreground)) failed
+                     because --foreground isn’t a theme triple here; class-based fill resolves var(). */
+                  className: 'spc-axis-tick',
                   fontSize: 10,
                   fontFamily: 'var(--font-mono, monospace)',
-                  opacity: 0.85,
                 }}
                 axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={50}
               />
               <YAxis
                 domain={[minPrice, maxPrice]}
                 tick={{
-                  fill: 'hsl(var(--foreground))',
+                  className: 'spc-axis-tick',
                   fontSize: 10,
                   fontFamily: 'var(--font-mono, monospace)',
-                  opacity: 0.85,
                 }}
                 axisLine={false} tickLine={false} width={40}
                 tickFormatter={(v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
