@@ -73,7 +73,8 @@ body.light-mode {
   /* No background-color — unified page background avoids seam with body */
   overflow: hidden;
   --card-pulse: 0;
-  --globe-pulse: 0;
+  /* Globe minimum visibility between strikes; HeroLightning drives 0.4 ↔ 1.0 */
+  --globe-pulse: 0.4;
   --lightning-flash: 0;
 }
 
@@ -133,7 +134,8 @@ body.light-mode {
 }
 
 /* ════════════════════════════════════════════════════════════
-   SEQUENCED REVEAL — Card with bolt; globe 200ms later; both end at 1.3s
+   LIGHTNING GLOBE — Card with bolt at 80ms; globe 40% baseline, peaks at 1;
+   ramp-up/down durations overridden inline from HeroLightning
    ════════════════════════════════════════════════════════════ */
 
 /* The outer globe-preview stays fully opaque; children use --card-pulse / --globe-pulse */
@@ -150,12 +152,12 @@ body.light-mode {
   z-index: 20;
 }
 
-/* Globe canvas + container — delayed reveal */
+/* Globe canvas + container — opacity from --globe-pulse; default 300ms = ramp-up */
 .landing-page .card-preview.globe-preview .globe-container {
   position: relative;
   z-index: 20;
   opacity: var(--globe-pulse);
-  transition: opacity 320ms cubic-bezier(0.4, 0, 0.6, 1);
+  transition: opacity 300ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 /* Notification cards — with lightning / card pulse (wrapper only; avoids opacity multiply on nested alert) */

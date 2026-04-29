@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import Lightning from './Lightning';
 
 /**
- * Periodic lightning. Randomized bolt; shader ~400ms. Drives `--lightning-flash`
- * `--card-pulse` (with bolt), `--globe-pulse` (~200ms later), both to 0 at 1.3s.
+ * Periodic lightning. Drives `--lightning-flash`, `--card-pulse`, and `--globe-pulse`.
+ * Globe: 40% baseline → ramp to 100% over 300ms (strike start), hold at peak through
+ * lightning (400ms total), then ramp down to 40% over intervalMs/2 (e.g. 1500ms).
  */
 
 function randomBetween(min, max) {
@@ -28,16 +29,26 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
   const [strikeActive, setStrikeActive] = useState(false);
   const [strikeKey, setStrikeKey] = useState(0);
   const [strikeParams, setStrikeParams] = useState(nextStrikeParams);
-  const flashTimeoutsRef = useRef([]);
 
   useEffect(() => {
-    const clearFlashTimeouts = () => {
-      flashTimeoutsRef.current.forEach(clearTimeout);
-      flashTimeoutsRef.current = [];
+    let mountedTimer;
+    let interval;
+    let flashOnTimer;
+    let flashOffTimer;
+    let globeRampUpTimer;
+    let unmountTimer;
+    let globeRampDownTimer;
+
+    const clearStrikeTimers = () => {
+      clearTimeout(flashOnTimer);
+      clearTimeout(flashOffTimer);
+      clearTimeout(globeRampUpTimer);
+      clearTimeout(unmountTimer);
+      clearTimeout(globeRampDownTimer);
     };
 
     const triggerStrike = () => {
-      clearFlashTimeouts();
+      clearStrikeTimers();
       setStrikeParams(nextStrikeParams());
       setStrikeActive(true);
       setStrikeKey((k) => k + 1);
@@ -49,50 +60,59 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       const root = containerRef.current?.closest('.hero-cybercore-root');
       if (!root) return;
 
-      const flashOnTimer = setTimeout(() => {
+      const globeContainer = root.querySelector('.card-preview.globe-preview .globe-container');
+
+      flashOnTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '1');
         root.style.setProperty('--card-pulse', '1');
       }, 80);
 
-      const flashOffTimer = setTimeout(() => {
+      flashOffTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '0.4');
       }, 240);
 
-      const globeRevealTimer = setTimeout(() => {
+      globeRampUpTimer = setTimeout(() => {
+        if (globeContainer) {
+          globeContainer.style.transitionDuration = '300ms';
+        }
         root.style.setProperty('--globe-pulse', '1');
-      }, 280);
+      }, 0);
 
-      const unmountTimer = setTimeout(() => {
+      unmountTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '0');
         setStrikeActive(false);
       }, 400);
 
-      const pulseEndTimer = setTimeout(() => {
+      const rampDownMs = `${intervalMs / 2}ms`;
+      globeRampDownTimer = setTimeout(() => {
+        if (globeContainer) {
+          globeContainer.style.transitionDuration = rampDownMs;
+        }
+        root.style.setProperty('--globe-pulse', '0.4');
         root.style.setProperty('--card-pulse', '0');
-        root.style.setProperty('--globe-pulse', '0');
-      }, 1300);
-
-      flashTimeoutsRef.current.push(
-        flashOnTimer,
-        flashOffTimer,
-        globeRevealTimer,
-        unmountTimer,
-        pulseEndTimer,
-      );
+      }, 700);
     };
 
-    const mountedTimer = setTimeout(triggerStrike, 800);
-    const interval = setInterval(triggerStrike, intervalMs);
+    mountedTimer = setTimeout(triggerStrike, 800);
+    interval = setInterval(triggerStrike, intervalMs);
 
     return () => {
       clearTimeout(mountedTimer);
       clearInterval(interval);
-      clearFlashTimeouts();
+      clearTimeout(flashOnTimer);
+      clearTimeout(flashOffTimer);
+      clearTimeout(globeRampUpTimer);
+      clearTimeout(unmountTimer);
+      clearTimeout(globeRampDownTimer);
       const root = containerRef.current?.closest('.hero-cybercore-root');
+      const globeContainer = root?.querySelector('.card-preview.globe-preview .globe-container');
+      if (globeContainer) {
+        globeContainer.style.removeProperty('transition-duration');
+      }
       if (root) {
         root.style.setProperty('--lightning-flash', '0');
         root.style.setProperty('--card-pulse', '0');
-        root.style.setProperty('--globe-pulse', '0');
+        root.style.setProperty('--globe-pulse', '0.4');
       }
     };
   }, [intervalMs, onStrike]);
