@@ -6,9 +6,8 @@ import Lightning from './Lightning';
 const CARD_TRANSITION_SELECTOR = '.card-preview.globe-preview .globe-notification-cards';
 
 /**
- * Periodic lightning. Drives `--lightning-flash` and `--globe-pulse` (globe + cards).
- * Globe/cards: 40% baseline → ramp to 100% over 300ms, hold through lightning (~400ms),
- * then ramp down to 40% over intervalMs/2.
+ * Periodic lightning. Drives `--lightning-flash`, `--globe-pulse` (globe only),
+ * and `--card-pulse` (notification columns — independent timing: fade with bolt, linger, fade out).
  */
 
 function randomBetween(min, max) {
@@ -40,6 +39,7 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
     let globeRampUpTimer;
     let unmountTimer;
     let globeRampDownTimer;
+    let cardFadeOutTimer;
 
     const clearStrikeTimers = () => {
       clearTimeout(flashOnTimer);
@@ -47,6 +47,7 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       clearTimeout(globeRampUpTimer);
       clearTimeout(unmountTimer);
       clearTimeout(globeRampDownTimer);
+      clearTimeout(cardFadeOutTimer);
     };
 
     const triggerStrike = () => {
@@ -64,25 +65,27 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       if (!root) return;
 
       const globeContainer = root.querySelector('.card-preview.globe-preview .globe-container');
+      const cardElements = root.querySelectorAll(CARD_TRANSITION_SELECTOR);
 
+      // t=0 — globe ramps up 40% → 100% over 300ms
+      globeRampUpTimer = setTimeout(() => {
+        if (globeContainer) globeContainer.style.transitionDuration = '300ms';
+        root.style.setProperty('--globe-pulse', '1');
+      }, 0);
+
+      // t=80ms — bolt on; card fades in over 300ms (synced with globe ramp-up end ~380ms)
       flashOnTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '1');
+        cardElements.forEach((el) => {
+          el.style.transitionDuration = '300ms';
+          el.style.removeProperty('transition-timing-function');
+        });
+        root.style.setProperty('--card-pulse', '1');
       }, 80);
 
       flashOffTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '0.4');
       }, 240);
-
-      globeRampUpTimer = setTimeout(() => {
-        const cardElements = root.querySelectorAll('.card-preview.globe-preview .globe-notification-cards');
-        if (globeContainer) {
-          globeContainer.style.transitionDuration = '300ms';
-        }
-        cardElements.forEach((el) => {
-          el.style.transitionDuration = '300ms';
-        });
-        root.style.setProperty('--globe-pulse', '1');
-      }, 0);
 
       unmountTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '0');
@@ -91,15 +94,18 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
 
       const rampDownMs = `${intervalMs / 2}ms`;
       globeRampDownTimer = setTimeout(() => {
-        const cardElements = root.querySelectorAll('.card-preview.globe-preview .globe-notification-cards');
-        if (globeContainer) {
-          globeContainer.style.transitionDuration = rampDownMs;
-        }
-        cardElements.forEach((el) => {
-          el.style.transitionDuration = rampDownMs;
-        });
+        if (globeContainer) globeContainer.style.transitionDuration = rampDownMs;
         root.style.setProperty('--globe-pulse', '0.4');
       }, 700);
+
+      // t=1500ms — card lingers at 100%, then fades out over 500ms (gone by ~2000ms)
+      cardFadeOutTimer = setTimeout(() => {
+        cardElements.forEach((el) => {
+          el.style.transitionDuration = '500ms';
+          el.style.transitionTimingFunction = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        });
+        root.style.setProperty('--card-pulse', '0');
+      }, 1500);
     };
 
     mountedTimer = setTimeout(triggerStrike, 800);
@@ -113,17 +119,20 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       clearTimeout(globeRampUpTimer);
       clearTimeout(unmountTimer);
       clearTimeout(globeRampDownTimer);
+      clearTimeout(cardFadeOutTimer);
       const root = containerRef.current?.closest('.hero-cybercore-root');
       const globeContainer = root?.querySelector('.card-preview.globe-preview .globe-container');
       if (globeContainer) {
         globeContainer.style.removeProperty('transition-duration');
       }
       if (root) {
-        root
-          .querySelectorAll(CARD_TRANSITION_SELECTOR)
-          .forEach((el) => el.style.removeProperty('transition-duration'));
+        root.querySelectorAll(CARD_TRANSITION_SELECTOR).forEach((el) => {
+          el.style.removeProperty('transition-duration');
+          el.style.removeProperty('transition-timing-function');
+        });
         root.style.setProperty('--lightning-flash', '0');
         root.style.setProperty('--globe-pulse', '0.4');
+        root.style.setProperty('--card-pulse', '0');
       }
     };
   }, [intervalMs, onStrike]);

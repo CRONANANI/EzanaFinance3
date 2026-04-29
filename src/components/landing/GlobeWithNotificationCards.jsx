@@ -29,8 +29,8 @@ export function GlobeWithNotificationCards({
   const isLight = theme === "light";
   const [activeIndex, setActiveIndex] = useState(0);
   const [position, setPosition] = useState(() => ({
-    side: Math.random() < 0.5 ? "left" : "right",
-    vPos: Math.floor(Math.random() * 3),
+    side: null,
+    vPos: 0,
   }));
 
   useEffect(() => {

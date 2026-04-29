@@ -71,8 +71,10 @@ body.light-mode {
   flex-direction: column;
   align-items: stretch;
   /* No background-color — unified page background avoids seam with body */
-  /* Globe + notification cards share --globe-pulse (40% baseline ↔ 100% peak). */
+  /* Globe uses --globe-pulse (40% baseline ↔ 100% peak). Cards use --card-pulse (independent). */
   --globe-pulse: 0.4;
+  /* Card hidden at rest — visible only during strike + linger window */
+  --card-pulse: 0;
   --lightning-flash: 0;
 }
 
@@ -132,11 +134,11 @@ body.light-mode {
 }
 
 /* ════════════════════════════════════════════════════════════
-   LIGHTNING GLOBE — Globe + cards use --globe-pulse; transition-duration
-   overridden inline from HeroLightning for ramp-up vs ramp-down
+   LIGHTNING GLOBE — Globe uses --globe-pulse; notification columns use
+   --card-pulse. Transition-duration overridden inline from HeroLightning.
    ════════════════════════════════════════════════════════════ */
 
-/* The outer globe-preview stays fully opaque; children use --globe-pulse */
+/* The outer globe-preview stays fully opaque; globe container uses --globe-pulse; card columns use --card-pulse */
 .landing-page .hero-cybercore-root .card-preview.globe-preview,
 .landing-page .hero-cybercore-root .card-preview.globe-preview.globe-preview--visible {
   position: relative;
@@ -158,11 +160,11 @@ body.light-mode {
   transition: opacity 300ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-/* Notification cards column — same opacity curve as globe (--globe-pulse).
-   Inline transition-duration set alongside .globe-container in HeroLightning. */
+/* Notification cards — opacity on column wrappers only (avoid compounding with children).
+   --card-pulse: fades in with bolt, lingers, then out. Durations set in HeroLightning. */
 .landing-page .card-preview.globe-preview .globe-notification-cards {
-  opacity: var(--globe-pulse);
-  transition: opacity 300ms cubic-bezier(0.4, 0, 0.6, 1);
+  opacity: var(--card-pulse);
+  transition: opacity 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .landing-page .content-container.hero-container {
@@ -356,14 +358,49 @@ body.light-mode {
 }
 
 .landing-page .globe-alert-icon {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
+  border-radius: 50%;
+  /* Default fallback — emerald (overridden per type below) */
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.08) 100%);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* ────────── Per-type color theming ────────── */
+
+/* Inside the Capitol — gold (legislative theme) */
+.landing-page .globe-alert-icon.inside-the-capitol {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(184, 134, 11, 0.1) 100%);
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
+/* Market News — emerald */
+.landing-page .globe-alert-icon.market_news {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.1) 100%);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+/* Portfolio Alerts — sky blue */
+.landing-page .globe-alert-icon.portfolio_alerts {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(14, 165, 233, 0.1) 100%);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+/* Community — purple */
+.landing-page .globe-alert-icon.community {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(147, 51, 234, 0.1) 100%);
+  color: #a855f7;
+  border-color: rgba(168, 85, 247, 0.35);
 }
 
 .landing-page .card-preview.globe-preview {
