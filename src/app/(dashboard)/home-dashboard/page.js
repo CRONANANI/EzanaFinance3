@@ -630,6 +630,14 @@ export default function HomeDashboardPage() {
 
       {/* ═══ HERO: Portfolio Value Card ═══ */}
       <div className="db-hero-card">
+        <div className="db-hero-card-header">
+          <Link href="/trading/mock" className="db-hero-card-title-link">
+            <h3 className="db-hero-card-title">
+              Portfolio Snapshot <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
+            </h3>
+          </Link>
+        </div>
+        <div className="db-hero-body">
         <div className="db-hero-left">
           <div className="db-hero-top">
             <div>
@@ -749,6 +757,7 @@ export default function HomeDashboardPage() {
           isLoading={valueSeriesLoading}
           loadError={valueSeriesError}
         />
+        </div>
       </div>
 
       {/* ═══ ROW 2: Portfolios + Watchlist ═══ */}
@@ -796,7 +805,7 @@ export default function HomeDashboardPage() {
                 return (
                   <Link
                     key={h.ticker}
-                    href={`/company-research?ticker=${h.ticker}`}
+                    href={`/trading/mock?symbol=${encodeURIComponent(h.ticker)}`}
                     className={`db-holding-card db-holding-card-link ${chSafe >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}
                   >
                     <div className="db-holding-top">

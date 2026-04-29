@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo, Fragment } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo, Fragment, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useCompanySearchFinnhub } from '@/hooks/useFinnhub';
@@ -113,8 +114,9 @@ const MOCK_QUOTE_CHUNK = 45;
 /* ──────────────────────────────────────────
    MAIN PAGE
 ────────────────────────────────────────── */
-export default function MockTradingPage() {
+function MockTradingPageInner() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   /* Portfolio state — backed by Supabase via useMockPortfolio */
   const { portfolio: portfolioFromHook, setPortfolio, syncing } = useMockPortfolio();
   const [dbTrades, setDbTrades] = useState([]);
@@ -303,6 +305,13 @@ export default function MockTradingPage() {
     const sym = q.toUpperCase();
     selectAsset(sym, sym, 'Stock', { userInitiated: true });
   }, [searchQuery, selectAsset]);
+
+  useLayoutEffect(() => {
+    const raw = searchParams.get('symbol');
+    if (!raw?.trim()) return;
+    const sym = raw.trim().toUpperCase();
+    selectAsset(sym, sym, 'Stock', { userInitiated: true });
+  }, [searchParams, selectAsset]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -1241,5 +1250,19 @@ export default function MockTradingPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MockTradingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mock-page dashboard-page-inset" style={{ padding: '2rem', color: '#94a3b8' }}>
+          Loading…
+        </div>
+      }
+    >
+      <MockTradingPageInner />
+    </Suspense>
   );
 }
