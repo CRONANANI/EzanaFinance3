@@ -51,16 +51,11 @@ export function GlobeWithNotificationCards({
   const Alert = ({ cardItem, cardTimeAgo, cardSide, vPos }) => (
     <motion.div
       className={`globe-notification-alert globe-card-v-${vPos}`}
-      initial={{
-        x: cardSide === "left" ? 24 : -24,
-      }}
+      /* Framer handles only horizontal slide — opacity comes from CSS (--card-pulse). */
+      initial={{ x: cardSide === "left" ? 24 : -24 }}
       animate={{
         x: 0,
-        transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
-      }}
-      exit={{
-        x: cardSide === "left" ? 24 : -24,
-        transition: { duration: 0.35, ease: [0.55, 0.09, 0.68, 0.53] },
+        transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
       }}
     >
       <div className={`globe-alert-icon ${cardItem.type}`}>

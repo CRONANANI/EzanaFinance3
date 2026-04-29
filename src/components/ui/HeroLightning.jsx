@@ -7,7 +7,7 @@ const CARD_TRANSITION_SELECTOR = '.card-preview.globe-preview .globe-notificatio
 
 /**
  * Periodic lightning. Drives `--lightning-flash`, `--globe-pulse` (globe only),
- * and `--card-pulse` (notification columns — independent timing: fade with bolt, linger, fade out).
+ * and `--card-pulse` (columns: fade in with bolt ~300ms, fade out 1400ms from bolt end).
  */
 
 function randomBetween(min, max) {
@@ -78,7 +78,7 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
         root.style.setProperty('--lightning-flash', '1');
         cardElements.forEach((el) => {
           el.style.transitionDuration = '300ms';
-          el.style.removeProperty('transition-timing-function');
+          el.style.transitionTimingFunction = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         });
         root.style.setProperty('--card-pulse', '1');
       }, 80);
@@ -98,14 +98,14 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
         root.style.setProperty('--globe-pulse', '0.4');
       }, 700);
 
-      // t=1500ms — card lingers at 100%, then fades out over 500ms (gone by ~2000ms)
+      // t=400ms — bolt gone; fade card out over 1400ms (invisible by t=1800ms, 1.2s gap to next strike)
       cardFadeOutTimer = setTimeout(() => {
         cardElements.forEach((el) => {
-          el.style.transitionDuration = '500ms';
+          el.style.transitionDuration = '1400ms';
           el.style.transitionTimingFunction = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         });
         root.style.setProperty('--card-pulse', '0');
-      }, 1500);
+      }, 400);
     };
 
     mountedTimer = setTimeout(triggerStrike, 800);
