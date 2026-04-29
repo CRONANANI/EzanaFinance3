@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useSectorPerformance } from '@/hooks/useSectorPerformance';
+import { resolveSectorQuery } from '@/lib/fmp/sector-performance';
+import { SectorDetailModal } from './SectorDetailModal';
 
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
@@ -47,12 +49,61 @@ function describeRange(range, asOf) {
 
 export function SectorHeatmap() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const targetSectorName = searchParams.get('sector');
   const tileRefs = useRef({});
   const [highlightedSector, setHighlightedSector] = useState(null);
 
   const [range, setRange] = useState('1D');
   const { sectors, asOf, degraded, error, isLoading } = useSectorPerformance(range);
+
+  const [modalSector, setModalSector] = useState(null);
+  const [modalTitle, setModalTitle] = useState(null);
+
+  useEffect(() => {
+    const raw = targetSectorName?.trim();
+    if (!raw) {
+      setModalSector(null);
+      setModalTitle(null);
+      return;
+    }
+    const { canonical, display } = resolveSectorQuery(raw);
+    if (canonical) {
+      setModalSector(canonical);
+      setModalTitle(display);
+    }
+  }, [targetSectorName]);
+
+  const modalRow = useMemo(
+    () => (modalSector ? sorted.find((s) => s.sector === modalSector) : null),
+    [sorted, modalSector],
+  );
+
+  const modalHeader = useMemo(() => {
+    if (!modalSector) return null;
+    if (modalRow && Number.isFinite(modalRow.changePct)) {
+      return { changePct: modalRow.changePct, range };
+    }
+    return { range };
+  }, [modalSector, modalRow, range]);
+
+  const handleTileClick = (row) => {
+    setModalSector(row.sector);
+    setModalTitle(row.name);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sector', row.sector);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleModalClose = () => {
+    setModalSector(null);
+    setModalTitle(null);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('sector');
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
 
   useEffect(() => {
     const raw = targetSectorName?.trim();
@@ -61,7 +112,9 @@ export function SectorHeatmap() {
     let highlightClearTimer;
 
     const scrollTimer = setTimeout(() => {
-      const normalized = raw.toLowerCase();
+      const { display } = resolveSectorQuery(raw);
+      const label = display || raw;
+      const normalized = label.toLowerCase();
       const node = tileRefs.current[normalized];
       if (node) {
         node.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -124,75 +177,89 @@ export function SectorHeatmap() {
   );
 
   return (
-    <ModelCardShell
-      icon="bi-grid-3x3-gap"
-      title="Sector performance"
-      description={describeRange(range, asOf)}
-      actions={rangeControl}
-    >
-      <ModelVariableStrip variables={stripVariables} className="mb-1" />
-      {error && !isLoading && (
-        <div className="shm-error" role="alert">
-          <i className="bi bi-exclamation-triangle" />
-          <div className="shm-error-body">
-            <div className="shm-error-message">{error.message}</div>
-            {error.detail && <div className="shm-error-detail">{error.detail}</div>}
+    <>
+      <ModelCardShell
+        icon="bi-grid-3x3-gap"
+        title="Sector performance"
+        description={describeRange(range, asOf)}
+        actions={rangeControl}
+      >
+        <ModelVariableStrip variables={stripVariables} className="mb-1" />
+        {error && !isLoading && (
+          <div className="shm-error" role="alert">
+            <i className="bi bi-exclamation-triangle" />
+            <div className="shm-error-body">
+              <div className="shm-error-message">{error.message}</div>
+              {error.detail && <div className="shm-error-detail">{error.detail}</div>}
+            </div>
           </div>
+        )}
+
+        {degraded && !error && !isLoading && (
+          <div className="shm-warning">
+            <i className="bi bi-info-circle" />
+            <span>{degraded.reason}</span>
+          </div>
+        )}
+
+        <div className="shm-grid" aria-live="polite">
+          {isLoading
+            ? Array.from({ length: 11 }).map((_, i) => (
+                <div key={i} className="shm-skeleton-tile" aria-label="Loading sector" />
+              ))
+            : sorted.map((s) => {
+                const label = s.name || s.sector || '';
+                const sectorKey = label.toLowerCase();
+                const isHighlighted = highlightedSector === sectorKey;
+                return (
+                  <button
+                    type="button"
+                    ref={(node) => {
+                      if (node) tileRefs.current[sectorKey] = node;
+                    }}
+                    key={s.sector || s.name}
+                    className={`shm-tile shm-tile--clickable ${isHighlighted ? 'shm-tile--highlighted' : ''}`}
+                    style={{ backgroundColor: tintFor(s.changePct, range) }}
+                    title={`Click to see ${s.name} details`}
+                    onClick={() => handleTileClick(s)}
+                    aria-label={`Open ${s.name} sector details`}
+                  >
+                    <div className="shm-tile-name">{s.name}</div>
+                    <div className="shm-tile-value">{formatChange(s.changePct)}</div>
+                  </button>
+                );
+              })}
         </div>
-      )}
 
-      {degraded && !error && !isLoading && (
-        <div className="shm-warning">
-          <i className="bi bi-info-circle" />
-          <span>{degraded.reason}</span>
-        </div>
-      )}
-
-      <div className="shm-grid" aria-live="polite">
-        {isLoading
-          ? Array.from({ length: 11 }).map((_, i) => (
-              <div key={i} className="shm-skeleton-tile" aria-label="Loading sector" />
-            ))
-          : sorted.map((s) => {
-              const label = s.name || s.sector || '';
-              const sectorKey = label.toLowerCase();
-              const isHighlighted = highlightedSector === sectorKey;
-              return (
-                <div
-                  ref={(node) => {
-                    if (node) tileRefs.current[sectorKey] = node;
-                  }}
-                  key={s.sector || s.name}
-                  className={`shm-tile ${isHighlighted ? 'shm-tile--highlighted' : ''}`}
-                  style={{ backgroundColor: tintFor(s.changePct, range) }}
-                  title={s.name}
-                >
-                  <div className="shm-tile-name">{s.name}</div>
-                  <div className="shm-tile-value">{formatChange(s.changePct)}</div>
-                </div>
-              );
-            })}
-      </div>
-
-      {!isLoading && !error && best && worst && best !== worst && (
-        <div className="shm-summary">
-          <span className="shm-summary-item">
-            <span className="shm-summary-label">Top</span>
-            <span className="shm-summary-name shm-summary-name--up">{best.name}</span>
-            <span className="shm-summary-value shm-summary-value--up">
-              {formatChange(best.changePct)}
+        {!isLoading && !error && best && worst && best !== worst && (
+          <div className="shm-summary">
+            <span className="shm-summary-item">
+              <span className="shm-summary-label">Top</span>
+              <span className="shm-summary-name shm-summary-name--up">{best.name}</span>
+              <span className="shm-summary-value shm-summary-value--up">
+                {formatChange(best.changePct)}
+              </span>
             </span>
-          </span>
-          <span className="shm-summary-item">
-            <span className="shm-summary-label">Bottom</span>
-            <span className="shm-summary-name shm-summary-name--down">{worst.name}</span>
-            <span className="shm-summary-value shm-summary-value--down">
-              {formatChange(worst.changePct)}
+            <span className="shm-summary-item">
+              <span className="shm-summary-label">Bottom</span>
+              <span className="shm-summary-name shm-summary-name--down">{worst.name}</span>
+              <span className="shm-summary-value shm-summary-value--down">
+                {formatChange(worst.changePct)}
+              </span>
             </span>
-          </span>
-        </div>
-      )}
-    </ModelCardShell>
+          </div>
+        )}
+      </ModelCardShell>
+
+      <SectorDetailModal
+        sector={modalSector}
+        displayName={modalTitle}
+        changePct={modalHeader?.changePct}
+        rangeLabel={modalHeader?.range}
+        isOpen={Boolean(modalSector)}
+        onClose={handleModalClose}
+      />
+    </>
   );
 }
 

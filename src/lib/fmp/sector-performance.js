@@ -45,7 +45,7 @@ export const CANONICAL_SECTORS = [
 ];
 
 // Canonical (FMP) → display label used elsewhere in the app (GICS-style).
-const CANONICAL_TO_DISPLAY = {
+export const CANONICAL_TO_DISPLAY = {
   'Basic Materials': 'Materials',
   'Communication Services': 'Communication Services',
   'Consumer Cyclical': 'Consumer Discretionary',
@@ -58,6 +58,21 @@ const CANONICAL_TO_DISPLAY = {
   'Technology': 'Technology',
   'Utilities': 'Utilities',
 };
+
+/**
+ * Resolve a URL or UI sector label to FMP canonical sector + display name
+ * (e.g. "Health Care" → Healthcare, "Materials" → Basic Materials).
+ */
+export function resolveSectorQuery(input) {
+  const t = typeof input === 'string' ? input.trim() : '';
+  if (!t) return { canonical: '', display: '' };
+  if (CANONICAL_SECTORS.includes(t)) {
+    return { canonical: t, display: CANONICAL_TO_DISPLAY[t] || t };
+  }
+  const entry = Object.entries(CANONICAL_TO_DISPLAY).find(([, display]) => display === t);
+  if (entry) return { canonical: entry[0], display: entry[1] };
+  return { canonical: t, display: t };
+}
 
 /**
  * Structured error surfaced to the route so it can classify 401/402/403/410/429.

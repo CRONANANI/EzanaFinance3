@@ -261,6 +261,41 @@ body.light-mode .shm-error-detail  { color: rgba(153, 27, 27, 0.75); }
   transform: translateY(-1px);
 }
 
+/* Clickable heatmap tiles (button) — pointer, hover lift, focus ring */
+.shm-tile--clickable {
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  appearance: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  margin: 0;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.shm-tile--clickable.shm-tile--clickable:hover {
+  border-color: rgba(16, 185, 129, 0.45);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(16, 185, 129, 0.15);
+}
+
+.shm-tile--clickable:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+body.light-mode .shm-tile--clickable.shm-tile--clickable:hover {
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(5, 150, 105, 0.2);
+}
+
 /* Deep-link highlight (?sector=X) from Market Pulse card */
 .shm-tile--highlighted {
   position: relative;
