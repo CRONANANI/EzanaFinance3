@@ -1047,10 +1047,13 @@ export function HomeTerminalSummary({
                       const key = utcLoginDateKey(dayOffset);
                       const isLoggedIn = loginDates.has(key);
                       const isToday = dayOffset === 0;
+                      /* Leftmost bar brightest; ramps down toward today (right) so the streak reads as built left-to-right. */
+                      const opacity = 1 - (i / 29) * 0.55;
                       return (
                         <div
                           key={key}
                           className={`streak-card__bar ${isLoggedIn ? 'is-active' : ''} ${isToday ? 'is-today' : ''}`}
+                          style={{ opacity }}
                           title={`${key}${isLoggedIn ? ' — logged in' : ' — missed'}`}
                         />
                       );
