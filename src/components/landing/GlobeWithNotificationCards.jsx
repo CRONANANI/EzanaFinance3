@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useTheme } from "@/components/ThemeProvider";
 import { InteractiveGlobe } from "@/components/ui/interactive-globe";
 
 const HERO_NOTIFICATIONS = [
@@ -17,16 +16,12 @@ const HERO_NOTIFICATIONS = [
 
 const TIME_AGOS = ["2m ago", "8m ago", "1h ago", "2h ago", "4h ago", "6h ago", "1d ago"];
 
-const OCEAN_DARK = "#020403";
-
 export function GlobeWithNotificationCards({
   size = 460,
   onGlobeReady,
   triggerSide,
   triggerNonce = 0,
 }) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
   const [activeIndex, setActiveIndex] = useState(0);
   const [position, setPosition] = useState(() => ({
     side: null,
@@ -83,8 +78,9 @@ export function GlobeWithNotificationCards({
           showConnections={false}
           showMarkers={false}
           onReady={onGlobeReady}
-          oceanFill={isLight ? "#dce3ea" : OCEAN_DARK}
-          dotColor={isLight ? "rgba(16, 185, 129, ALPHA)" : "rgba(52, 211, 153, ALPHA)"}
+          /* Globe is brand-locked to dark on the landing page regardless of app theme. */
+          oceanFill="#020403"
+          dotColor="rgba(52, 211, 153, ALPHA)"
         />
       </div>
 
