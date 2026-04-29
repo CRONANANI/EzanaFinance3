@@ -98,14 +98,14 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
         root.style.setProperty('--globe-pulse', '0.4');
       }, 700);
 
-      // t=400ms — bolt gone; fade card out over 1400ms (invisible by t=1800ms, 1.2s gap to next strike)
+      // t=700ms — 300ms linger at peak after bolt gone; fade card out over 1400ms (gone by t=2100ms; 1.2s gap to next strike)
       cardFadeOutTimer = setTimeout(() => {
         cardElements.forEach((el) => {
           el.style.transitionDuration = '1400ms';
           el.style.transitionTimingFunction = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         });
         root.style.setProperty('--card-pulse', '0');
-      }, 400);
+      }, 700); // was 400ms — card holds longer at peak before fading
     };
 
     mountedTimer = setTimeout(triggerStrike, 800);

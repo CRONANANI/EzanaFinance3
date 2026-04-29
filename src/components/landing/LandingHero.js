@@ -177,7 +177,7 @@ export function LandingHero() {
           />
         </div>
 
-        <HeroLightning intervalMs={3000} onStrike={onLightningStrike} />
+        <HeroLightning intervalMs={3300} onStrike={onLightningStrike} />
       </div>
     </div>
   );
