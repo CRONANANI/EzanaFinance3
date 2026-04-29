@@ -261,6 +261,26 @@ body.light-mode .shm-error-detail  { color: rgba(153, 27, 27, 0.75); }
   transform: translateY(-1px);
 }
 
+/* Deep-link highlight (?sector=X) from Market Pulse card */
+.shm-tile--highlighted {
+  position: relative;
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15), 0 6px 20px rgba(16, 185, 129, 0.25);
+  animation: shm-tile-pulse 1.5s ease-out infinite;
+  z-index: 2;
+}
+
+@keyframes shm-tile-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15), 0 6px 20px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.3), 0 8px 28px rgba(16, 185, 129, 0.4);
+  }
+}
+
 .shm-tile-name {
   font-size: 0.75rem;
   font-weight: 700;

@@ -1572,3 +1572,32 @@ body.light-mode .db-hero-card-title {
 body.light-mode .db-hero-card-header {
   border-bottom-color: rgba(5, 150, 105, 0.1);
 }
+
+/* ════════════════════════════════════════════════════════════
+   Market Pulse — clickable heading + sector rows (home / terminal)
+   ════════════════════════════════════════════════════════════ */
+
+.market-pulse-title-link {
+  cursor: pointer;
+}
+
+.market-pulse-title-link:hover h3 {
+  color: #10b981 !important;
+}
+
+.market-pulse-title-link:hover .bi-arrow-up-right {
+  opacity: 1 !important;
+  transform: translate(2px, -2px) !important;
+}
+
+.market-pulse-sector-row {
+  cursor: pointer;
+}
+
+.market-pulse-sector-row:hover {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+body.light-mode .market-pulse-sector-row:hover {
+  background-color: rgba(5, 150, 105, 0.06) !important;
+}

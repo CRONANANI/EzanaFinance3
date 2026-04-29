@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { SectorHeatmap } from './SectorHeatmap';
 import { StressTestCard } from './StressTestCard';
 import { MPTCard } from './MPTCard';
@@ -15,7 +16,9 @@ import './market-portfolio.css';
 export function MarketPortfolioView() {
   return (
     <div className="mpv-root">
-      <SectorHeatmap />
+      <Suspense fallback={<div className="shm-skeleton-tile" style={{ height: 200 }} aria-hidden />}>
+        <SectorHeatmap />
+      </Suspense>
       <div className="mpv-grid">
         <StressTestCard />
         <MPTCard />

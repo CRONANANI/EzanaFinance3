@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ModelCardShell } from '@/components/research/ModelCardShell';
 import { ModelVariableStrip } from '@/components/research/models/ModelVariableStrip';
 import { useSectorPerformance } from '@/hooks/useSectorPerformance';
@@ -45,8 +46,35 @@ function describeRange(range, asOf) {
 }
 
 export function SectorHeatmap() {
+  const searchParams = useSearchParams();
+  const targetSectorName = searchParams.get('sector');
+  const tileRefs = useRef({});
+  const [highlightedSector, setHighlightedSector] = useState(null);
+
   const [range, setRange] = useState('1D');
   const { sectors, asOf, degraded, error, isLoading } = useSectorPerformance(range);
+
+  useEffect(() => {
+    const raw = targetSectorName?.trim();
+    if (!raw) return undefined;
+
+    let highlightClearTimer;
+
+    const scrollTimer = setTimeout(() => {
+      const normalized = raw.toLowerCase();
+      const node = tileRefs.current[normalized];
+      if (node) {
+        node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedSector(normalized);
+        highlightClearTimer = setTimeout(() => setHighlightedSector(null), 4000);
+      }
+    }, 600);
+
+    return () => {
+      clearTimeout(scrollTimer);
+      clearTimeout(highlightClearTimer);
+    };
+  }, [targetSectorName, sectors?.length]);
 
   const sorted = useMemo(() => {
     const rows = (sectors || []).map((s) => ({ ...s, changePct: Number(s.changePct) }));
@@ -125,17 +153,25 @@ export function SectorHeatmap() {
           ? Array.from({ length: 11 }).map((_, i) => (
               <div key={i} className="shm-skeleton-tile" aria-label="Loading sector" />
             ))
-          : sorted.map((s) => (
-              <div
-                key={s.sector || s.name}
-                className="shm-tile"
-                style={{ backgroundColor: tintFor(s.changePct, range) }}
-                title={s.name}
-              >
-                <div className="shm-tile-name">{s.name}</div>
-                <div className="shm-tile-value">{formatChange(s.changePct)}</div>
-              </div>
-            ))}
+          : sorted.map((s) => {
+              const label = s.name || s.sector || '';
+              const sectorKey = label.toLowerCase();
+              const isHighlighted = highlightedSector === sectorKey;
+              return (
+                <div
+                  ref={(node) => {
+                    if (node) tileRefs.current[sectorKey] = node;
+                  }}
+                  key={s.sector || s.name}
+                  className={`shm-tile ${isHighlighted ? 'shm-tile--highlighted' : ''}`}
+                  style={{ backgroundColor: tintFor(s.changePct, range) }}
+                  title={s.name}
+                >
+                  <div className="shm-tile-name">{s.name}</div>
+                  <div className="shm-tile-value">{formatChange(s.changePct)}</div>
+                </div>
+              );
+            })}
       </div>
 
       {!isLoading && !error && best && worst && best !== worst && (

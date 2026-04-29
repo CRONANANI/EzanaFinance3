@@ -914,8 +914,12 @@ export function HomeTerminalSummary({
 
                 <div className="db-card home-pulse-compact home-pulse-rail-wide">
                   <div className="db-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1.25rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <h3 style={{ margin: 0 }}>Market Pulse</h3>
+                    <Link
+                      href="/company-research?view=market"
+                      className="market-pulse-title-link"
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
+                    >
+                      <h3 style={{ margin: 0, color: 'inherit', transition: 'color 180ms ease' }}>Market Pulse</h3>
                       <span
                         style={{
                           width: 6,
@@ -925,7 +929,16 @@ export function HomeTerminalSummary({
                           boxShadow: '0 0 8px rgba(16,185,129,0.6)',
                         }}
                       />
-                    </div>
+                      <i
+                        className="bi bi-arrow-up-right"
+                        style={{
+                          fontSize: '0.7rem',
+                          color: '#10b981',
+                          opacity: 0.7,
+                          transition: 'opacity 180ms ease, transform 180ms ease',
+                        }}
+                      />
+                    </Link>
                     <Link href="/ezana-echo" style={{ fontSize: '0.75rem', fontWeight: 700, color: '#10b981', textDecoration: 'none' }}>
                       View All
                     </Link>
@@ -945,19 +958,25 @@ export function HomeTerminalSummary({
                         Top 3
                       </p>
                       {TOP_SECTORS.map((s) => (
-                        <div
+                        <Link
                           key={s.name}
+                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name)}`}
+                          className="market-pulse-sector-row"
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            padding: '0.35rem 0',
+                            padding: '0.35rem 0.5rem',
+                            margin: '0 -0.5rem',
+                            borderRadius: '4px',
                             fontSize: '0.75rem',
                             color: 'var(--home-row-text)',
+                            textDecoration: 'none',
+                            transition: 'background-color 150ms ease, color 150ms ease',
                           }}
                         >
                           <span>{s.name}</span>
                           <span style={{ color: '#10b981', fontWeight: 700 }}>{s.change}</span>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                     <div>
@@ -974,19 +993,25 @@ export function HomeTerminalSummary({
                         Worst 5
                       </p>
                       {WORST_SECTORS.map((s) => (
-                        <div
+                        <Link
                           key={s.name}
+                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name)}`}
+                          className="market-pulse-sector-row"
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            padding: '0.35rem 0',
+                            padding: '0.35rem 0.5rem',
+                            margin: '0 -0.5rem',
+                            borderRadius: '4px',
                             fontSize: '0.75rem',
                             color: 'var(--home-row-text)',
+                            textDecoration: 'none',
+                            transition: 'background-color 150ms ease, color 150ms ease',
                           }}
                         >
                           <span>{s.name}</span>
                           <span style={{ color: '#ef4444', fontWeight: 700 }}>{s.change}</span>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
