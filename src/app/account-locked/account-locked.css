@@ -1,0 +1,208 @@
+/* ════════════════════════════════════════════════════════════
+   Account Locked Page — minimal, branded, full-screen
+   ════════════════════════════════════════════════════════════ */
+
+.account-locked-shell {
+  min-height: 100vh;
+  background-color: #0a0e13;
+  color: #f0f6fc;
+  font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+}
+
+.acl-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(239, 68, 68, 0.08) 0%, transparent 70%),
+    #0a0e13;
+}
+
+.acl-card {
+  background: rgba(15, 20, 25, 0.85);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(239, 68, 68, 0.06),
+    0 0 0 1px rgba(239, 68, 68, 0.04);
+  backdrop-filter: blur(8px);
+}
+
+.acl-card-loading {
+  padding: 4rem 2rem;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.acl-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #10b981;
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: acl-spin 800ms linear infinite;
+}
+
+@keyframes acl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.acl-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(220, 38, 38, 0.08) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  margin-bottom: 1.5rem;
+}
+
+.acl-icon {
+  font-size: 1.75rem;
+  color: #ef4444;
+}
+
+.acl-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.acl-subtitle {
+  margin: 0 0 1.75rem;
+  font-size: 0.95rem;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.acl-reason {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.acl-reason-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ef4444;
+  margin-bottom: 0.35rem;
+}
+
+.acl-reason-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #f0f6fc;
+  line-height: 1.5;
+}
+
+.acl-meta {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.acl-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.acl-meta-label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.acl-meta-value {
+  color: #f0f6fc;
+  font-weight: 600;
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+}
+
+.acl-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.acl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 100ms ease;
+}
+
+.acl-btn:active {
+  transform: scale(0.98);
+}
+
+.acl-btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+}
+
+.acl-btn-primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.acl-btn-secondary {
+  background: transparent;
+  color: #9ca3af;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.acl-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f0f6fc;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.acl-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.acl-footer-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.5;
+}

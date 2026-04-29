@@ -63,6 +63,21 @@ export async function middleware(request) {
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 200, headers: response.headers });
     }
+
+    if (user && !pathname.startsWith('/api/auth/')) {
+      const { data: apiProfile } = await supabase
+        .from('profiles')
+        .select('is_disabled')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (apiProfile?.is_disabled === true) {
+        return NextResponse.json(
+          { error: 'Account locked', code: 'ACCOUNT_DISABLED' },
+          { status: 403, headers: response.headers }
+        );
+      }
+    }
+
     return response;
   }
 
@@ -78,6 +93,18 @@ export async function middleware(request) {
 
   /** Trading landing + paper trading — public (no sign-in required to view CTA / mock) */
   const isTradingPublicPath = pathname === '/trading' || pathname === '/trading/mock';
+
+  /** /account-locked is the destination for disabled users — must be reachable
+   *  even though the user is authenticated and would otherwise be sent to email
+   *  verification. Bypass all other middleware gates for this route. */
+  if (pathname === '/account-locked') {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/signin';
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
 
   /** Marketing pricing + Stripe checkout — public */
   if (
@@ -103,47 +130,56 @@ export async function middleware(request) {
     return NextResponse.redirect(url);
   }
 
-  /** Only enforce email verification when accessing dashboard/partner areas — not on marketing pages like / */
-  if (user && (onPartnerProtectedRoute || onUserProtectedRoute) && !isTradingPublicPath) {
+  /** Dashboard / partner / trading (under USER_DASHBOARD_ROUTES): account lock, then verification + deletion */
+  if (user && (onPartnerProtectedRoute || onUserProtectedRoute)) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email_verified, deleted_at, deletion_scheduled_for')
+      .select('email_verified, deleted_at, deletion_scheduled_for, is_disabled')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (profile?.email_verified !== true) {
+    if (profile?.is_disabled === true) {
       const url = request.nextUrl.clone();
-      url.pathname = '/auth/verify-email';
+      url.pathname = '/account-locked';
       url.search = '';
       return NextResponse.redirect(url);
     }
 
-    if (profile?.deleted_at && profile?.deletion_scheduled_for) {
-      const scheduledFor = new Date(profile.deletion_scheduled_for);
-      if (scheduledFor < new Date()) {
+    if (!isTradingPublicPath) {
+      if (profile?.email_verified !== true) {
         const url = request.nextUrl.clone();
-        url.pathname = '/auth/signin';
+        url.pathname = '/auth/verify-email';
         url.search = '';
-        url.searchParams.set('reason', 'account_deleted');
-        const redirectResponse = NextResponse.redirect(url);
-        const supabaseSignOut = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          {
-            cookies: {
-              getAll() {
-                return request.cookies.getAll();
-              },
-              setAll(cookiesToSet) {
-                cookiesToSet.forEach(({ name, value, options }) => {
-                  redirectResponse.cookies.set(name, value, options);
-                });
+        return NextResponse.redirect(url);
+      }
+
+      if (profile?.deleted_at && profile?.deletion_scheduled_for) {
+        const scheduledFor = new Date(profile.deletion_scheduled_for);
+        if (scheduledFor < new Date()) {
+          const url = request.nextUrl.clone();
+          url.pathname = '/auth/signin';
+          url.search = '';
+          url.searchParams.set('reason', 'account_deleted');
+          const redirectResponse = NextResponse.redirect(url);
+          const supabaseSignOut = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            {
+              cookies: {
+                getAll() {
+                  return request.cookies.getAll();
+                },
+                setAll(cookiesToSet) {
+                  cookiesToSet.forEach(({ name, value, options }) => {
+                    redirectResponse.cookies.set(name, value, options);
+                  });
+                },
               },
             },
-          },
-        );
-        await supabaseSignOut.auth.signOut();
-        return redirectResponse;
+          );
+          await supabaseSignOut.auth.signOut();
+          return redirectResponse;
+        }
       }
     }
   }

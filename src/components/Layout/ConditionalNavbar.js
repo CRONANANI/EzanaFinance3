@@ -13,6 +13,11 @@ import { matchesPartnerRouteList, PARTNER_SHARED_APP_ROUTES } from '@/lib/partne
 export function ConditionalNavbar() {
   const pathname = usePathname();
   const { isPartner, isLoading } = usePartner();
+
+  if (pathname === '/account-locked') {
+    return null;
+  }
+
   const isPartnerRoute = pathname?.startsWith('/partner-');
   const isSharedPartner =
     !isLoading && isPartner && matchesPartnerRouteList(pathname ?? '', PARTNER_SHARED_APP_ROUTES);
