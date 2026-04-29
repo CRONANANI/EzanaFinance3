@@ -75,6 +75,18 @@ export function SectorHeatmap() {
     }
   }, [targetSectorName]);
 
+  const sorted = useMemo(() => {
+    const rows = (sectors || []).map((s) => ({ ...s, changePct: Number(s.changePct) }));
+    return rows.sort((a, b) => {
+      const aNum = Number.isFinite(a.changePct);
+      const bNum = Number.isFinite(b.changePct);
+      if (!aNum && !bNum) return 0;
+      if (!aNum) return 1;
+      if (!bNum) return -1;
+      return b.changePct - a.changePct;
+    });
+  }, [sectors]);
+
   const modalRow = useMemo(
     () => (modalSector ? sorted.find((s) => s.sector === modalSector) : null),
     [sorted, modalSector],
@@ -128,18 +140,6 @@ export function SectorHeatmap() {
       clearTimeout(highlightClearTimer);
     };
   }, [targetSectorName, sectors?.length]);
-
-  const sorted = useMemo(() => {
-    const rows = (sectors || []).map((s) => ({ ...s, changePct: Number(s.changePct) }));
-    return rows.sort((a, b) => {
-      const aNum = Number.isFinite(a.changePct);
-      const bNum = Number.isFinite(b.changePct);
-      if (!aNum && !bNum) return 0;
-      if (!aNum) return 1;
-      if (!bNum) return -1;
-      return b.changePct - a.changePct;
-    });
-  }, [sectors]);
 
   const { best, worst } = useMemo(() => {
     const rows = sorted.filter((s) => Number.isFinite(s.changePct));
