@@ -44,7 +44,7 @@ function simulate({ current, monthlyContrib, years, meanAnnual, volAnnual, goal,
 }
 
 export function MonteCarloCard() {
-  const { isProUser, openProGate } = useProGate();
+  const { openProGate } = useProGate();
 
   const [current, setCurrent] = useState(50000);
   const [monthlyContrib, setMonthly] = useState(1000);
@@ -85,9 +85,11 @@ export function MonteCarloCard() {
     [years, result],
   );
 
-  // Even for non-Pro users we render the ModelCardShell; the body shows a
-  // locked preview instead of the simulation UI.
-  if (!isProUser) {
+  /* Monte Carlo paywall is currently disabled for development. The locked-
+     preview branch below is preserved for easy re-enable when the Pro gate
+     should resume. To restore: use the Pro-membership check instead of false. */
+  // eslint-disable-next-line no-constant-condition -- dev toggle
+  if (false) {
     return (
       <ModelCardShell
         icon="bi-activity"

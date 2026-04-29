@@ -27,7 +27,7 @@
 .wl-top-strip::-webkit-scrollbar { display: none; }
 
 .wl-strip-card {
-  flex: 0 0 195px;
+  flex: 0 0 150px;
   padding: .7rem .875rem .6rem;
   background: var(--card, rgba(22,27,34,.6));
   border: 1px solid var(--card-border, rgba(16,185,129,.08));

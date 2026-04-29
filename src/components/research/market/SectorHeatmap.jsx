@@ -11,17 +11,38 @@ import { SectorDetailModal } from './SectorDetailModal';
 const RANGES = ['1D', '1W', '1M', 'YTD'];
 
 /**
- * Range-aware tint: a +2% day is impressive; a +2% YTD is unremarkable.
- * Scale the ceiling with the window so the green↔red gradient stays
- * meaningful instead of collapsing into washed-out pastel on longer ranges.
+ * Heatmap palette matching the company-side StockHeatmap's 11-tier gradient.
+ * Sector moves are smaller magnitude than individual-stock moves (a stock
+ * easily moves ±20% in a quarter; a sector rarely exceeds ±15%), so we
+ * scale the threshold magnitudes down for sectors:
+ *
+ *   1D:  thresholds at fractions of a percent (sector daily moves are tiny)
+ *   1W:  fractions of a percent
+ *   1M:  full single-percentage thresholds
+ *   YTD: scaled-up thresholds (long-period accumulated returns)
+ *
+ * Result: the visual saturation maps to "this sector outperformed for this
+ * period" comparable to "this stock outperformed for this period" on the
+ * company side, even though the absolute numbers differ.
  */
 function tintFor(changePct, range) {
-  const v = Number.isFinite(changePct) ? changePct : 0;
-  const ceiling = range === '1D' ? 3 : range === '1W' ? 6 : range === '1M' ? 12 : 25;
-  const clamped = Math.max(-ceiling, Math.min(ceiling, v));
-  const intensity = Math.abs(clamped) / ceiling;
-  if (clamped >= 0) return `rgba(16, 185, 129, ${0.12 + intensity * 0.5})`;
-  return `rgba(239, 68, 68, ${0.12 + intensity * 0.5})`;
+  // Scale factor — multiplies the StockHeatmap thresholds to sector-appropriate values.
+  // 1D and 1W use 0.2× (sectors move ~5x less than stocks at short scales).
+  // 1M uses 0.5× (sector monthly moves approach stock weekly moves).
+  // YTD uses 1× (sector full-year returns approach stock returns at this scale).
+  const scale = range === '1D' ? 0.2 : range === '1W' ? 0.2 : range === '1M' ? 0.5 : 1;
+  const c = Number.isFinite(changePct) ? changePct : 0;
+  if (c > 50 * scale) return 'linear-gradient(135deg, #059669, #047857)';
+  if (c > 20 * scale) return 'linear-gradient(135deg, #10b981, #059669)';
+  if (c > 10 * scale) return 'linear-gradient(135deg, #34d399, #10b981)';
+  if (c > 5 * scale) return 'linear-gradient(135deg, #4ade80, #22c55e)';
+  if (c > 2 * scale) return 'linear-gradient(135deg, #6ee7b7, #34d399)';
+  if (c > 0) return 'linear-gradient(135deg, #86efac, #4ade80)';
+  if (c > -2 * scale) return 'linear-gradient(135deg, #fca5a5, #f87171)';
+  if (c > -5 * scale) return 'linear-gradient(135deg, #f87171, #ef4444)';
+  if (c > -10 * scale) return 'linear-gradient(135deg, #ef4444, #dc2626)';
+  if (c > -20 * scale) return 'linear-gradient(135deg, #dc2626, #b91c1c)';
+  return 'linear-gradient(135deg, #b91c1c, #991b1b)';
 }
 
 function formatChange(value) {
@@ -219,7 +240,7 @@ export function SectorHeatmap() {
                     }}
                     key={s.sector || s.name}
                     className={`shm-tile shm-tile--clickable ${isHighlighted ? 'shm-tile--highlighted' : ''}`}
-                    style={{ backgroundColor: tintFor(s.changePct, range) }}
+                    style={{ background: tintFor(s.changePct, range) }}
                     title={`Click to see ${s.name} details`}
                     onClick={() => handleTileClick(s)}
                     aria-label={`Open ${s.name} sector details`}

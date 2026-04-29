@@ -196,12 +196,12 @@ function TrendingTopicsCard({ topics }) {
         </button>
       </div>
 
-      <ul className="comm-trending-row-grid" aria-label="Ranked trending topics">
+      <ul className="comm-trending-row-grid comm-trending-list" aria-label="Ranked trending topics">
         {visibleTopics.map((topic, localIdx) => {
           const globalIdx = startIdx + localIdx;
           return (
             <li key={topic.tag} className="comm-trending-tile-wrap">
-              <button type="button" className="comm-trending-tile">
+              <button type="button" className="comm-trending-tile comm-trending-row">
                 <div className="comm-trending-tile__head">
                   <span className="comm-trending-tile__rank" aria-hidden>
                     {String(globalIdx + 1).padStart(2, '0')}
