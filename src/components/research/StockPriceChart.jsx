@@ -228,8 +228,8 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
               <XAxis
                 dataKey="label"
                 tick={{
-                  /* fill via .spc-axis-tick in globals.css — hsl(var(--foreground)) failed
-                     because --foreground isn’t a theme triple here; class-based fill resolves var(). */
+                  /* fill via .spc-axis-tick in globals.css (--foreground isn’t in theme; inline SVG
+                     fill with theme vars fails; stylesheet rules resolve var() on SVG <text>). */
                   className: 'spc-axis-tick',
                   fontSize: 10,
                   fontFamily: 'var(--font-mono, monospace)',
