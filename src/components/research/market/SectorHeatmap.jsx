@@ -255,7 +255,7 @@ export function SectorHeatmap() {
         sector={modalSector}
         displayName={modalTitle}
         changePct={modalHeader?.changePct}
-        rangeLabel={modalHeader?.range}
+        range={range}
         isOpen={Boolean(modalSector)}
         onClose={handleModalClose}
       />

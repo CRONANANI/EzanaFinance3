@@ -26,18 +26,29 @@ const formatPrice = (n) => {
   return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
-export function SectorDetailModal({ sector, displayName, changePct, rangeLabel, isOpen, onClose }) {
+export function SectorDetailModal({ sector, displayName, changePct, range = '1D', isOpen, onClose }) {
   const [data, setData] = useState({ topPerformers: [], news: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const headerLabel = displayName || sector;
+
+  const performersMeta =
+    range === '1D'
+      ? 'By daily return'
+      : range === '1W'
+        ? 'By 1-week return'
+        : range === '1M'
+          ? 'By 1-month return'
+          : 'By YTD return';
 
   useEffect(() => {
     if (!isOpen || !sector) return undefined;
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch(`/api/market-data/sector-detail?sector=${encodeURIComponent(sector)}`)
+    fetch(
+      `/api/market-data/sector-detail?sector=${encodeURIComponent(sector)}&range=${encodeURIComponent(range)}`,
+    )
       .then(async (r) => {
         const d = await r.json().catch(() => ({}));
         if (cancelled) return;
@@ -60,7 +71,7 @@ export function SectorDetailModal({ sector, displayName, changePct, rangeLabel, 
     return () => {
       cancelled = true;
     };
-  }, [sector, isOpen]);
+  }, [sector, range, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -93,16 +104,14 @@ export function SectorDetailModal({ sector, displayName, changePct, rangeLabel, 
       <div className="sdm-panel" onClick={(e) => e.stopPropagation()}>
         <header className="sdm-header">
           <div>
-            <span className="sdm-eyebrow">Sector</span>
+            <span className="sdm-eyebrow">Sector · {range}</span>
             <h2 className="sdm-title">{headerLabel}</h2>
-            {(Number.isFinite(changePct) || rangeLabel) && (
+            {Number.isFinite(changePct) && (
               <div className="sdm-heading-meta">
-                {Number.isFinite(changePct) && (
-                  <span className={`sdm-heading-change ${changePct >= 0 ? 'is-up' : 'is-down'}`}>
-                    {formatChange(changePct)}
-                  </span>
-                )}
-                {rangeLabel ? <span className="sdm-range-pill">{rangeLabel}</span> : null}
+                <span className={`sdm-heading-change ${changePct >= 0 ? 'is-up' : 'is-down'}`}>
+                  {formatChange(changePct)}
+                </span>
+                <span className="sdm-sector-index-label">Sector avg.</span>
               </div>
             )}
           </div>
@@ -130,10 +139,10 @@ export function SectorDetailModal({ sector, displayName, changePct, rangeLabel, 
             <section className="sdm-section">
               <header className="sdm-section-header">
                 <h3>Top Performers</h3>
-                <span className="sdm-section-meta">By daily % change</span>
+                <span className="sdm-section-meta">{performersMeta}</span>
               </header>
               {data.topPerformers.length === 0 ? (
-                <div className="sdm-empty">No performer data available right now.</div>
+                <div className="sdm-empty">No data available for this sector and time period.</div>
               ) : (
                 <ul className="sdm-performer-list">
                   {data.topPerformers.map((p) => (

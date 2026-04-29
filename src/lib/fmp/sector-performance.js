@@ -59,6 +59,11 @@ export const CANONICAL_TO_DISPLAY = {
   'Utilities': 'Utilities',
 };
 
+/** Display label (heatmap tile) → FMP canonical sector for screener/API. */
+export const DISPLAY_TO_CANONICAL = Object.fromEntries(
+  Object.entries(CANONICAL_TO_DISPLAY).map(([canonical, display]) => [display, canonical]),
+);
+
 /**
  * Resolve a URL or UI sector label to FMP canonical sector + display name
  * (e.g. "Health Care" → Healthcare, "Materials" → Basic Materials).

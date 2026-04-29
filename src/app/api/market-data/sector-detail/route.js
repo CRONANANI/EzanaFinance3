@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { resolveSectorQuery } from '@/lib/fmp/sector-performance';
+import { DISPLAY_TO_CANONICAL, resolveSectorQuery, CANONICAL_SECTORS } from '@/lib/fmp/sector-performance';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,14 +9,13 @@ const FMP_KEY = process.env.FMP_API_KEY;
 const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
-/**
- * Sector → keyword list for news filtering.
- */
+const VALID_RANGES = new Set(['1D', '1W', '1M', 'YTD']);
+
 const SECTOR_KEYWORDS = {
   Technology: ['technology', 'tech', 'software', 'semiconductor', 'cloud', 'ai', 'apple', 'microsoft', 'nvidia', 'meta', 'alphabet', 'google'],
   'Financial Services': ['bank', 'banking', 'financial', 'jpmorgan', 'wells fargo', 'citigroup', 'goldman', 'morgan stanley', 'visa', 'mastercard', 'fintech'],
   Healthcare: ['healthcare', 'pharma', 'pharmaceutical', 'biotech', 'medical', 'drug', 'fda', 'pfizer', 'merck', 'johnson', 'unitedhealth'],
-  'Consumer Cyclical': ['retail', 'consumer', 'amazon', 'tesla', 'home depot', 'mcdonalds', 'starbucks', 'nike', 'auto'],
+  'Consumer Cyclical': ['retail', 'consumer cyclical', 'consumer', 'amazon', 'tesla', 'home depot', 'mcdonalds', 'starbucks', 'nike', 'auto'],
   'Consumer Defensive': ['walmart', 'costco', 'procter', 'pepsico', 'coca-cola', 'consumer staples', 'grocery'],
   Energy: ['oil', 'gas', 'energy', 'opec', 'exxon', 'chevron', 'petroleum', 'crude', 'lng', 'renewable'],
   Industrials: ['manufacturing', 'industrial', 'boeing', 'caterpillar', 'general electric', 'ge ', 'lockheed', 'logistics'],
@@ -31,63 +30,189 @@ function getSectorKeywords(sectorName) {
   return SECTOR_KEYWORDS[sectorName] || [sectorName.toLowerCase()];
 }
 
-async function fetchTopPerformers(sectorName) {
-  if (!FMP_KEY) return [];
+/** Merge keyword lists for news (canonical + display + raw param). */
+function keywordsForNews(rawParam, canonicalSector) {
+  const { display } = resolveSectorQuery(rawParam);
+  const sets = [
+    getSectorKeywords(canonicalSector),
+    rawParam !== canonicalSector ? getSectorKeywords(rawParam) : [],
+    display && display !== rawParam && display !== canonicalSector ? getSectorKeywords(display) : [],
+  ];
+  const out = [];
+  const seen = new Set();
+  for (const list of sets) {
+    for (const k of list) {
+      const low = k.toLowerCase();
+      if (!seen.has(low)) {
+        seen.add(low);
+        out.push(low);
+      }
+    }
+  }
+  return out;
+}
+
+function tradingDaysFor(range) {
+  switch (range) {
+    case '1W':
+      return 5;
+    case '1M':
+      return 21;
+    case 'YTD': {
+      const now = new Date();
+      const jan1 = new Date(now.getFullYear(), 0, 1);
+      const calendarDays = Math.floor((now - jan1) / (1000 * 60 * 60 * 24));
+      return Math.max(5, Math.floor((calendarDays * 252) / 365));
+    }
+    default:
+      return 0;
+  }
+}
+
+function toCanonicalSector(sectorParam) {
+  if (CANONICAL_SECTORS.includes(sectorParam)) return sectorParam;
+  return DISPLAY_TO_CANONICAL[sectorParam] || sectorParam;
+}
+
+function barClose(bar) {
+  if (!bar || typeof bar !== 'object') return null;
+  const n = Number(bar.adjClose ?? bar.close ?? bar.price);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Newest-first array of OHLC rows (by date string). */
+function normalizeSeriesDesc(series) {
+  if (!Array.isArray(series) || series.length === 0) return [];
+  const withDate = series.filter((r) => r && r.date);
+  return [...withDate].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+}
+
+async function fetchSectorCandidates(canonicalSector) {
+  if (!FMP_KEY) {
+    console.warn('[sector-detail] FMP_API_KEY missing — screener skipped');
+    return [];
+  }
   try {
     const params = new URLSearchParams({
-      sector: sectorName,
+      sector: canonicalSector,
       isActivelyTrading: 'true',
       isEtf: 'false',
       isFund: 'false',
-      limit: '100',
+      limit: '200',
       apikey: FMP_KEY,
     });
     const url = `${FMP_BASE}/company-screener?${params.toString()}`;
-    const res = await fetch(url, { next: { revalidate: 300 } });
+    const res = await fetch(url, { next: { revalidate: 600 } });
     if (!res.ok) {
-      console.warn('[sector-detail] FMP screener non-OK:', res.status);
+      console.warn(`[sector-detail] screener HTTP ${res.status} for sector="${canonicalSector}"`);
       return [];
     }
     const data = await res.json();
-    if (!Array.isArray(data)) return [];
-
-    const sorted = [...data].sort((a, b) => (Number(b.marketCap) || 0) - (Number(a.marketCap) || 0));
-    const symbols = sorted
-      .slice(0, 20)
-      .map((c) => c.symbol)
-      .filter(Boolean);
-    if (symbols.length === 0) return [];
-
-    const quotesUrl = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbols.join(','))}&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const quotesRes = await fetch(quotesUrl, { next: { revalidate: 60 } });
-    if (!quotesRes.ok) return [];
-    const quotes = await quotesRes.json();
-    if (!Array.isArray(quotes)) return [];
-
-    const nameBySymbol = new Map(sorted.slice(0, 20).map((c) => [c.symbol, c.companyName || c.name || c.symbol]));
-
-    return quotes
-      .filter((q) => Number.isFinite(Number(q.changesPercentage)))
-      .map((q) => ({
-        symbol: q.symbol,
-        name: q.name || nameBySymbol.get(q.symbol) || q.symbol,
-        price: Number(q.price),
-        change: Number(q.change),
-        changePct: Number(q.changesPercentage),
-        marketCap: q.marketCap != null ? Number(q.marketCap) : null,
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn(`[sector-detail] screener returned 0 rows for sector="${canonicalSector}"`);
+      return [];
+    }
+    console.log(`[sector-detail] screener ${data.length} rows for sector="${canonicalSector}"`);
+    return data
+      .map((c) => ({
+        symbol: c.symbol,
+        name: c.companyName || c.name,
+        marketCap: Number(c.marketCap) || 0,
       }))
-      .sort((a, b) => b.changePct - a.changePct)
-      .slice(0, 5);
+      .filter((c) => c.symbol)
+      .sort((a, b) => b.marketCap - a.marketCap);
   } catch (err) {
-    console.error('[sector-detail] top performers fetch failed:', err);
+    console.error('[sector-detail] screener fetch failed:', err);
     return [];
   }
 }
 
-async function fetchSectorNews(sectorName) {
-  if (!FINNHUB_KEY) return [];
+async function fetch1DPerformance(candidates) {
+  if (candidates.length === 0 || !FMP_KEY) return [];
+  const top60 = candidates.slice(0, 60);
+  const symbolList = top60.map((c) => c.symbol).join(',');
+  const url = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
-    const keywords = getSectorKeywords(sectorName).map((k) => k.toLowerCase());
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (!res.ok) {
+      console.warn(`[sector-detail] quote HTTP ${res.status}`);
+      return [];
+    }
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data
+      .filter((q) => Number.isFinite(Number(q.changesPercentage)))
+      .map((q) => ({
+        symbol: q.symbol,
+        name: q.name || top60.find((c) => c.symbol === q.symbol)?.name || q.symbol,
+        price: Number(q.price),
+        changePct: Number(q.changesPercentage),
+        marketCap: top60.find((c) => c.symbol === q.symbol)?.marketCap ?? null,
+      }));
+  } catch (err) {
+    console.error('[sector-detail] 1D quote fetch failed:', err);
+    return [];
+  }
+}
+
+async function fetchHistoricalPerformance(candidates, range) {
+  if (candidates.length === 0 || !FMP_KEY) return [];
+  const days = tradingDaysFor(range);
+  if (days < 1) return [];
+  const top60 = candidates.slice(0, 60);
+
+  const results = await Promise.all(
+    top60.map(async (c) => {
+      try {
+        const url = `${FMP_BASE}/historical-price-eod/light?symbol=${encodeURIComponent(c.symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
+        const res = await fetch(url, { next: { revalidate: 600 } });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const seriesRaw = Array.isArray(data) ? data : data?.historical;
+        const desc = normalizeSeriesDesc(seriesRaw);
+        if (desc.length < days + 1) return null;
+        const latest = desc[0];
+        const earlier = desc[Math.min(days, desc.length - 1)];
+        const pLatest = barClose(latest);
+        const pEarlier = barClose(earlier);
+        if (pLatest == null || pEarlier == null || pEarlier === 0) return null;
+        const changePct = ((pLatest - pEarlier) / pEarlier) * 100;
+        return {
+          symbol: c.symbol,
+          name: c.name,
+          price: pLatest,
+          changePct,
+          marketCap: c.marketCap,
+        };
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  return results.filter(Boolean);
+}
+
+async function fetchTopPerformers(canonicalSector, range) {
+  const candidates = await fetchSectorCandidates(canonicalSector);
+  if (candidates.length === 0) return [];
+
+  const performance =
+    range === '1D' ? await fetch1DPerformance(candidates) : await fetchHistoricalPerformance(candidates, range);
+
+  return performance
+    .filter((p) => Number.isFinite(p.changePct))
+    .sort((a, b) => b.changePct - a.changePct)
+    .slice(0, 50);
+}
+
+async function fetchSectorNews(rawSectorParam, canonicalSector) {
+  if (!FINNHUB_KEY) {
+    console.warn('[sector-detail] FINNHUB_API_KEY missing — news skipped');
+    return [];
+  }
+  try {
+    const keywords = keywordsForNews(rawSectorParam, canonicalSector);
     const responses = await Promise.all([
       fetch(`${FINNHUB_BASE}/news?category=general&token=${encodeURIComponent(FINNHUB_KEY)}`, {
         next: { revalidate: 300 },
@@ -120,7 +245,6 @@ async function fetchSectorNews(sectorName) {
       summary: n.summary || '',
       source: n.source || 'Finnhub',
       url: n.url || '#',
-      image: n.image,
       time: n.datetime,
     }));
   } catch (err) {
@@ -132,20 +256,32 @@ async function fetchSectorNews(sectorName) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const raw = (searchParams.get('sector') || '').trim();
-    if (!raw) {
+    const sectorParam = (searchParams.get('sector') || '').trim();
+    const rangeParam = (searchParams.get('range') || '1D').trim().toUpperCase();
+
+    if (!sectorParam) {
       return NextResponse.json({ error: 'sector param required' }, { status: 400 });
     }
 
-    const { canonical, display } = resolveSectorQuery(raw);
-    const sector = canonical || raw;
+    const range = VALID_RANGES.has(rangeParam) ? rangeParam : '1D';
+    const canonicalSector = toCanonicalSector(sectorParam);
+    const { display: sectorDisplay } = resolveSectorQuery(sectorParam);
 
-    const [topPerformers, news] = await Promise.all([fetchTopPerformers(sector), fetchSectorNews(sector)]);
+    console.log(
+      `[sector-detail] sector="${sectorParam}" → canonical="${canonicalSector}" range="${range}"`,
+    );
+
+    const [topPerformers, news] = await Promise.all([
+      fetchTopPerformers(canonicalSector, range),
+      fetchSectorNews(sectorParam, canonicalSector),
+    ]);
 
     return NextResponse.json(
       {
-        sector,
-        sectorDisplay: display || sector,
+        sector: sectorParam,
+        canonicalSector,
+        sectorDisplay: sectorDisplay || sectorParam,
+        range,
         topPerformers,
         news,
         diagnostics: {
@@ -153,6 +289,7 @@ export async function GET(request) {
           newsCount: news.length,
           fmpAvailable: Boolean(FMP_KEY),
           finnhubAvailable: Boolean(FINNHUB_KEY),
+          sectorMappedFrom: sectorParam !== canonicalSector ? sectorParam : null,
         },
       },
       {
