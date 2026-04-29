@@ -544,9 +544,19 @@ export function HomeTerminalSummary({
               <div className="db-card home-portfolio-snapshot-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
-                    <h3 style={{ fontSize: '0.9375rem', fontWeight: 800, color: 'var(--home-heading)', margin: 0 }}>
-                      Portfolio Snapshot
-                    </h3>
+                    <Link href="/trading/mock" className="db-hero-card-title-link">
+                      <h3
+                        className="db-hero-card-title"
+                        style={{
+                          fontSize: '0.9375rem',
+                          fontWeight: 800,
+                          color: 'var(--home-heading)',
+                          margin: 0,
+                        }}
+                      >
+                        Portfolio Snapshot <i className="bi bi-arrow-up-right db-hero-card-title-icon" />
+                      </h3>
+                    </Link>
                     <span
                       className="portfolio-source-label"
                       style={{ fontSize: '11px', opacity: 0.6, color: 'var(--home-muted-soft)', display: 'block', marginTop: 2 }}
@@ -648,8 +658,9 @@ export function HomeTerminalSummary({
                       const isPos = pnlPct >= 0;
                       const dotColor = h.color || tickerColor(symbol);
                       return (
-                        <div
+                        <Link
                           key={symbol}
+                          href={`/trading/mock?symbol=${encodeURIComponent(symbol)}`}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -658,6 +669,9 @@ export function HomeTerminalSummary({
                             borderRadius: '6px',
                             background: isPos ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)',
                             borderLeft: `3px solid ${isPos ? '#10b981' : '#ef4444'}`,
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            cursor: 'pointer',
                           }}
                         >
                           <span style={{ width: 7, height: 7, borderRadius: '2px', background: dotColor, flexShrink: 0 }} />
@@ -683,7 +697,7 @@ export function HomeTerminalSummary({
                               ? `${(posValue / 1000).toFixed(1)}K`
                               : fmtMoney(posValue, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
