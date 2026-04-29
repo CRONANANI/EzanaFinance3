@@ -12,7 +12,9 @@ import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import './home-dashboard.css';
 
-const HOLDINGS_PAGE_SIZE = 6;
+/** 9 holdings per page = 3 columns × 3 rows. Was 6 (3×2); tighter per-card
+    sizing in home-dashboard.css keeps total height similar to before. */
+const HOLDINGS_PAGE_SIZE = 9;
 
 const HOLDING_PALETTE = [
   '#4285F4',
