@@ -28,13 +28,20 @@ export function GlobeWithNotificationCards({
   const { theme } = useTheme();
   const isLight = theme === "light";
   const [activeIndex, setActiveIndex] = useState(0);
-  const [position, setPosition] = useState({ side: null, vPos: 0 });
+  const [position, setPosition] = useState(() => ({
+    side: Math.random() < 0.5 ? "left" : "right",
+    vPos: Math.floor(Math.random() * 3),
+  }));
 
   useEffect(() => {
-    if (!triggerSide || triggerNonce < 1) return;
-    setActiveIndex((i) => (i + 1) % HERO_NOTIFICATIONS.length);
+    if (!triggerNonce) return;
+    setActiveIndex((prev) => {
+      const candidates = HERO_NOTIFICATIONS.map((_, idx) => idx).filter((idx) => idx !== prev);
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    });
+    const side = triggerSide || (Math.random() < 0.5 ? "left" : "right");
     const vPos = Math.floor(Math.random() * 3);
-    setPosition({ side: triggerSide, vPos });
+    setPosition({ side, vPos });
   }, [triggerNonce, triggerSide]);
 
   const item = HERO_NOTIFICATIONS[activeIndex];
@@ -45,17 +52,15 @@ export function GlobeWithNotificationCards({
     <motion.div
       className={`globe-notification-alert globe-card-v-${vPos}`}
       initial={{
-        opacity: 0,
         x: cardSide === "left" ? 24 : -24,
       }}
       animate={{
-        opacity: 1,
         x: 0,
         transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] },
       }}
       exit={{
-        opacity: 0,
-        transition: { duration: 0.8, ease: [0.55, 0.09, 0.68, 0.53] },
+        x: cardSide === "left" ? 24 : -24,
+        transition: { duration: 0.35, ease: [0.55, 0.09, 0.68, 0.53] },
       }}
     >
       <div className={`globe-alert-icon ${cardItem.type}`}>

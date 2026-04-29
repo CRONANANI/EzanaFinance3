@@ -71,9 +71,7 @@ body.light-mode {
   flex-direction: column;
   align-items: stretch;
   /* No background-color — unified page background avoids seam with body */
-  overflow: hidden;
-  --card-pulse: 0;
-  /* Globe minimum visibility between strikes; HeroLightning drives 0.4 ↔ 1.0 */
+  /* Globe + notification cards share --globe-pulse (40% baseline ↔ 100% peak). */
   --globe-pulse: 0.4;
   --lightning-flash: 0;
 }
@@ -134,11 +132,11 @@ body.light-mode {
 }
 
 /* ════════════════════════════════════════════════════════════
-   LIGHTNING GLOBE — Card with bolt at 80ms; globe 40% baseline, peaks at 1;
-   ramp-up/down durations overridden inline from HeroLightning
+   LIGHTNING GLOBE — Globe + cards use --globe-pulse; transition-duration
+   overridden inline from HeroLightning for ramp-up vs ramp-down
    ════════════════════════════════════════════════════════════ */
 
-/* The outer globe-preview stays fully opaque; children use --card-pulse / --globe-pulse */
+/* The outer globe-preview stays fully opaque; children use --globe-pulse */
 .landing-page .hero-cybercore-root .card-preview.globe-preview,
 .landing-page .hero-cybercore-root .card-preview.globe-preview.globe-preview--visible {
   position: relative;
@@ -160,10 +158,11 @@ body.light-mode {
   transition: opacity 300ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-/* Notification cards — with lightning / card pulse (wrapper only; avoids opacity multiply on nested alert) */
+/* Notification cards column — same opacity curve as globe (--globe-pulse).
+   Inline transition-duration set alongside .globe-container in HeroLightning. */
 .landing-page .card-preview.globe-preview .globe-notification-cards {
-  opacity: var(--card-pulse);
-  transition: opacity 240ms cubic-bezier(0.4, 0, 0.6, 1);
+  opacity: var(--globe-pulse);
+  transition: opacity 300ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .landing-page .content-container.hero-container {

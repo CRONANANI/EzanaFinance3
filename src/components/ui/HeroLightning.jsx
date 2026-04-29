@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Lightning from './Lightning';
 
+const CARD_TRANSITION_SELECTOR = '.card-preview.globe-preview .globe-notification-cards';
+
 /**
- * Periodic lightning. Drives `--lightning-flash`, `--card-pulse`, and `--globe-pulse`.
- * Globe: 40% baseline → ramp to 100% over 300ms (strike start), hold at peak through
- * lightning (400ms total), then ramp down to 40% over intervalMs/2 (e.g. 1500ms).
+ * Periodic lightning. Drives `--lightning-flash` and `--globe-pulse` (globe + cards).
+ * Globe/cards: 40% baseline → ramp to 100% over 300ms, hold through lightning (~400ms),
+ * then ramp down to 40% over intervalMs/2.
  */
 
 function randomBetween(min, max) {
@@ -53,8 +55,9 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       setStrikeActive(true);
       setStrikeKey((k) => k + 1);
 
+      const strikeSide = Math.random() < 0.5 ? 'left' : 'right';
       if (onStrike) {
-        onStrike(Math.random() < 0.5 ? 'left' : 'right');
+        onStrike(strikeSide);
       }
 
       const root = containerRef.current?.closest('.hero-cybercore-root');
@@ -64,7 +67,6 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
 
       flashOnTimer = setTimeout(() => {
         root.style.setProperty('--lightning-flash', '1');
-        root.style.setProperty('--card-pulse', '1');
       }, 80);
 
       flashOffTimer = setTimeout(() => {
@@ -72,9 +74,13 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
       }, 240);
 
       globeRampUpTimer = setTimeout(() => {
+        const cardElements = root.querySelectorAll('.card-preview.globe-preview .globe-notification-cards');
         if (globeContainer) {
           globeContainer.style.transitionDuration = '300ms';
         }
+        cardElements.forEach((el) => {
+          el.style.transitionDuration = '300ms';
+        });
         root.style.setProperty('--globe-pulse', '1');
       }, 0);
 
@@ -85,11 +91,14 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
 
       const rampDownMs = `${intervalMs / 2}ms`;
       globeRampDownTimer = setTimeout(() => {
+        const cardElements = root.querySelectorAll('.card-preview.globe-preview .globe-notification-cards');
         if (globeContainer) {
           globeContainer.style.transitionDuration = rampDownMs;
         }
+        cardElements.forEach((el) => {
+          el.style.transitionDuration = rampDownMs;
+        });
         root.style.setProperty('--globe-pulse', '0.4');
-        root.style.setProperty('--card-pulse', '0');
       }, 700);
     };
 
@@ -110,8 +119,10 @@ export default function HeroLightning({ intervalMs = 3000, onStrike }) {
         globeContainer.style.removeProperty('transition-duration');
       }
       if (root) {
+        root
+          .querySelectorAll(CARD_TRANSITION_SELECTOR)
+          .forEach((el) => el.style.removeProperty('transition-duration'));
         root.style.setProperty('--lightning-flash', '0');
-        root.style.setProperty('--card-pulse', '0');
         root.style.setProperty('--globe-pulse', '0.4');
       }
     };
