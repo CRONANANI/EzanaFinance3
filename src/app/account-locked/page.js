@@ -11,6 +11,7 @@ export default function AccountLockedPage() {
   const [lockedAt, setLockedAt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +22,8 @@ export default function AccountLockedPage() {
       if (cancelled) return;
 
       if (!user) {
-        router.replace('/auth/signin');
+        setSessionEnded(true);
+        setLoading(false);
         return;
       }
 
@@ -59,6 +61,35 @@ export default function AccountLockedPage() {
       <div className="acl-container">
         <div className="acl-card acl-card-loading">
           <div className="acl-spinner" />
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionEnded) {
+    return (
+      <div className="acl-container">
+        <div className="acl-card">
+          <div className="acl-icon-wrap">
+            <i className="bi bi-shield-lock-fill acl-icon" />
+          </div>
+          <h1 className="acl-title">Account Locked</h1>
+          <p className="acl-subtitle">
+            Your browsing session was ended because this account no longer has access. Sign in again to see
+            account-specific details, or contact support.
+          </p>
+          <div className="acl-actions">
+            <a href="mailto:support@ezana.world" className="acl-btn acl-btn-primary">
+              <i className="bi bi-envelope" />
+              Contact Support
+            </a>
+            <a href="/auth/signin" className="acl-btn acl-btn-secondary">
+              Sign In
+            </a>
+          </div>
+          <p className="acl-footer-note">
+            If you believe this is an error, email support and include the address you use to log in.
+          </p>
         </div>
       </div>
     );

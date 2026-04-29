@@ -71,10 +71,28 @@ export async function middleware(request) {
         .eq('id', user.id)
         .maybeSingle();
       if (apiProfile?.is_disabled === true) {
-        return NextResponse.json(
+        const apiResponse = NextResponse.json(
           { error: 'Account locked', code: 'ACCOUNT_DISABLED' },
           { status: 403, headers: response.headers }
         );
+        const supabase = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          {
+            cookies: {
+              getAll() {
+                return request.cookies.getAll();
+              },
+              setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) => {
+                  apiResponse.cookies.set(name, value, options);
+                });
+              },
+            },
+          },
+        );
+        await supabase.auth.signOut();
+        return apiResponse;
       }
     }
 
@@ -94,15 +112,8 @@ export async function middleware(request) {
   /** Trading landing + paper trading — public (no sign-in required to view CTA / mock) */
   const isTradingPublicPath = pathname === '/trading' || pathname === '/trading/mock';
 
-  /** /account-locked is the destination for disabled users — must be reachable
-   *  even though the user is authenticated and would otherwise be sent to email
-   *  verification. Bypass all other middleware gates for this route. */
+  /** Disabled users land here; may arrive logged out after middleware sign-out + redirect. */
   if (pathname === '/account-locked') {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/signin';
-      return NextResponse.redirect(url);
-    }
     return response;
   }
 
@@ -142,7 +153,25 @@ export async function middleware(request) {
       const url = request.nextUrl.clone();
       url.pathname = '/account-locked';
       url.search = '';
-      return NextResponse.redirect(url);
+      const redirectResponse = NextResponse.redirect(url);
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                redirectResponse.cookies.set(name, value, options);
+              });
+            },
+          },
+        },
+      );
+      await supabase.auth.signOut();
+      return redirectResponse;
     }
 
     if (!isTradingPublicPath) {
