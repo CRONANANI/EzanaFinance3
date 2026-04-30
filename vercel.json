@@ -20,6 +20,14 @@
     {
       "path": "/api/cron/hard-delete-accounts",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/portfolio-snapshot",
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/monthly-elo",
+      "schedule": "0 2 1 * *"
     }
   ]
 }
