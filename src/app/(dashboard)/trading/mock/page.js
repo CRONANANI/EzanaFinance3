@@ -16,6 +16,10 @@ const StockPriceChart = dynamic(
   () => import('@/components/research/StockPriceChart'),
   { ssr: false, loading: () => <div style={{ height: 360 }} aria-hidden /> }
 );
+const MockPortfolioChart = dynamic(
+  () => import('@/components/trading/MockPortfolioChart'),
+  { ssr: false, loading: () => <div style={{ height: 320 }} aria-hidden /> }
+);
 const ResetPortfolioModal = dynamic(
   () => import('@/components/trading/ResetPortfolioModal'),
   { ssr: false, loading: () => null }
@@ -173,7 +177,7 @@ function MockTradingPageInner() {
   } = useCompanySearchFinnhub();
 
   const searchRef = useRef(null);
-  /** When true, chart ticker follows user search/table picks; when false, chart defaults to largest position (or AAPL). */
+  /** When true, user picked a ticker via search/table/URL; keeps flows that respect explicit picks consistent. */
   const userExplicitChartPickRef = useRef(false);
 
   const [selectedSymbol, setSelectedSymbol] = useState(null);
@@ -554,21 +558,10 @@ function MockTradingPageInner() {
     return [...set].sort().join(',');
   }, [portfolio.positions]);
 
-  useLayoutEffect(() => {
-    if (userExplicitChartPickRef.current) return;
-    const best = getLargestPositionByValue(portfolio.positions, livePrices);
-    if (best) {
-      const sym = String(best.symbol).toUpperCase();
-      setSelectedSymbol(sym);
-      setSelectedName(best.name || sym);
-      setSelectedType(normalizeAssetType(best.type));
-    } else {
-      setSelectedSymbol(null);
-      setSelectedName('');
-      setSelectedType('Stock');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync default chart ticker when positions/prices change; skip when user picked explicitly
-  }, [openPositionSymbolsKey, livePrices, portfolio.positions]);
+  // REMOVED: auto-default-to-largest-position effect.
+  // The chart now defaults to MockPortfolioChart (portfolio-value time series).
+  // selectedSymbol stays null until the user explicitly searches or clicks a position.
+  // Clicking a position sets userExplicitChartPickRef=true via selectAsset(...).
   const totalPositionValue = positionsList.reduce((s, p) => {
     const sym = String(p.symbol || '').trim().toUpperCase();
     const livePx = resolveLivePrice(livePrices[sym]);
@@ -808,27 +801,37 @@ function MockTradingPageInner() {
         <div className="mock-left-col">
           <div className="mock-card">
             <div className="mock-card-body" style={{ paddingTop: '1.125rem' }}>
-              {!selectedSymbol && (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '300px',
-                    color: 'var(--text-secondary, #9ca3af)',
-                    textAlign: 'center',
-                    gap: '0.75rem',
-                  }}
-                >
-                  <i className="bi bi-graph-up" style={{ fontSize: '2.5rem', opacity: 0.25, color: '#10b981' }} />
-                  <p style={{ fontSize: '0.875rem', margin: 0, maxWidth: 300 }}>
-                    Type a company or ticker in the search bar to view a chart
-                  </p>
-                </div>
-              )}
+              {/* Default view: portfolio performance chart. Single-ticker chart only when
+                  user explicitly searches/picks a position. */}
+              {!selectedSymbol && <MockPortfolioChart />}
+
               {selectedSymbol && (
-                <StockPriceChart symbol={selectedSymbol} livePrice={currentPrice || null} />
+                <>
+                  <div className="mock-chart-back-row">
+                    <button
+                      type="button"
+                      className="mock-chart-back-btn"
+                      onClick={() => {
+                        userExplicitChartPickRef.current = false;
+                        setSelectedSymbol(null);
+                        setSelectedName('');
+                        setSelectedType('Stock');
+                        setQuoteData(null);
+                        setSearchQuery('');
+                        clearSuggestions();
+                      }}
+                    >
+                      <i className="bi bi-arrow-left" /> Back to Portfolio
+                    </button>
+                    <div className="mock-chart-symbol-label">
+                      <span className="mock-chart-symbol-ticker">{selectedSymbol}</span>
+                      {selectedName && selectedName !== selectedSymbol && (
+                        <span className="mock-chart-symbol-name">{selectedName}</span>
+                      )}
+                    </div>
+                  </div>
+                  <StockPriceChart symbol={selectedSymbol} livePrice={currentPrice || null} />
+                </>
               )}
             </div>
           </div>
