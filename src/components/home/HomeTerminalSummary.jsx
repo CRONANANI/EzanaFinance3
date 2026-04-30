@@ -23,6 +23,7 @@ import { HeroSparkline } from '@/components/dashboard/HeroSparkline';
 import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
+import EloWidget from './EloWidget';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -1064,6 +1065,8 @@ export function HomeTerminalSummary({
                     Active investor · Keep your streak going
                   </div>
                 </div>
+
+                <EloWidget />
               </div>
 
               <div className="home-rail-congress">

@@ -2,6 +2,31 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { awardELO } from '@/lib/elo';
+
+async function grantEmailVerifiedElo(supabaseAdmin, userId) {
+  try {
+    const { data: existingActivity } = await supabaseAdmin
+      .from('elo_transactions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('category', 'activity')
+      .eq('reason', 'Email verified + onboarding completed')
+      .maybeSingle();
+
+    if (!existingActivity) {
+      await awardELO(
+        userId,
+        25,
+        'Email verified + onboarding completed',
+        'activity',
+        { event: 'email_verified' }
+      );
+    }
+  } catch (eloErr) {
+    console.error('[verify-code] awardELO failed (non-fatal):', eloErr);
+  }
+}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -144,21 +169,25 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
     }
 
-    if (!updatedRows?.length) {
-      const { error: insertError } = await supabaseAdmin.from('profiles').insert({
-        id: user.id,
-        email,
-        email_verified: true,
-        onboarding_completed: true,
-        updated_at: now,
-      });
-
-      if (insertError) {
-        console.error('Failed to insert profile (verify-code):', insertError);
-        return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
-      }
+    if (updatedRows?.length) {
+      await grantEmailVerifiedElo(supabaseAdmin, user.id);
+      return NextResponse.json({ success: true });
     }
 
+    const { error: insertError } = await supabaseAdmin.from('profiles').insert({
+      id: user.id,
+      email,
+      email_verified: true,
+      onboarding_completed: true,
+      updated_at: now,
+    });
+
+    if (insertError) {
+      console.error('Failed to insert profile (verify-code):', insertError);
+      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+    }
+
+    await grantEmailVerifiedElo(supabaseAdmin, user.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Verify code error:', error);

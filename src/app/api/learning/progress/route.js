@@ -2,6 +2,28 @@ import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
+import { awardELO } from '@/lib/elo';
+
+/**
+ * ELO award per course completion, mapped from the course's level.
+ * Totals across all 120 courses: 32×15 + 32×20 + 32×25 + 24×25 = 2,520.
+ *
+ * Levels in learning-curriculum.js: basic, intermediate, advanced, expert.
+ *   basic → bronze, intermediate → silver, advanced → gold, expert → platinum
+ */
+const ELO_PER_COURSE_LEVEL = {
+  basic: 15,
+  intermediate: 20,
+  advanced: 25,
+  expert: 25,
+};
+
+const LEVEL_TO_TIER_NAME = {
+  basic: 'bronze',
+  intermediate: 'silver',
+  advanced: 'gold',
+  expert: 'platinum',
+};
 import { getCourseContent } from '@/lib/learning-content';
 import {
   buildProgressMap,
@@ -251,6 +273,16 @@ export async function POST(request) {
         try {
           if (!existing?.quiz_passed) {
             await awardXP(user.id, 50, `Completed course quiz: ${course.title}`, 'learning');
+
+            const eloDelta = ELO_PER_COURSE_LEVEL[course.level] || 15;
+            const tierName = LEVEL_TO_TIER_NAME[course.level] || 'bronze';
+            await awardELO(
+              user.id,
+              eloDelta,
+              `Completed ${tierName} course: ${course.title}`,
+              'learning',
+              { course_id: courseId, level: course.level, tier: tierName }
+            );
           }
           for (const b of badges) {
             if (b.key && /_level_/.test(b.key)) {
@@ -258,7 +290,7 @@ export async function POST(request) {
             }
           }
         } catch (e) {
-          console.error('learning progress: awardXP', e);
+          console.error('learning progress: awardXP/awardELO', e);
         }
       }
 

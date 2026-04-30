@@ -1294,6 +1294,12 @@ body.light-mode .hts-week-standing-row {
   gap: 0.85rem;
 }
 
+.home-rail-streak-ezana.home-streak-ezana-pair > .streak-card,
+.home-rail-streak-ezana.home-streak-ezana-pair > .elo-widget {
+  flex: 1;
+  min-width: 0;
+}
+
 .home-rail-streak-ezana.home-streak-ezana-pair > .home-streak-ezana-merged {
   flex: 1;
   min-width: 0;

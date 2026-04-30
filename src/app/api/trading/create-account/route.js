@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { alpaca } from '@/lib/alpaca';
 import { supabaseAdmin } from '@/lib/plaid';
+import { awardELO } from '@/lib/elo';
 
 export const dynamic = 'force-dynamic';
 
@@ -130,6 +131,25 @@ export async function POST(request) {
     if (insertErr) {
       console.error('brokerage_accounts insert:', insertErr);
       return NextResponse.json({ error: insertErr.message }, { status: 500 });
+    }
+
+    try {
+      const { data: existing } = await supabaseAdmin
+        .from('elo_transactions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('category', 'activity')
+        .eq('reason', 'Linked real brokerage account')
+        .maybeSingle();
+
+      if (!existing) {
+        await awardELO(user.id, 75, 'Linked real brokerage account', 'activity', {
+          event: 'alpaca_account_linked',
+          provider: 'alpaca',
+        });
+      }
+    } catch (eloErr) {
+      console.error('[trading/create-account] awardELO failed (non-fatal):', eloErr);
     }
 
     return NextResponse.json({
