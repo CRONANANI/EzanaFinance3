@@ -538,11 +538,14 @@ export default function HomeDashboardPage() {
 
   /**
    * Group enriched positions by sector for the expandable legend rows.
-   * Map: { 'Technology': [{symbol, name, qty, posValue, pnlPct}, ...], ... }
+   * Map shape: { 'Technology': [{symbol, qty, posValue, pnl, pnlPct, currentPrice}, ...], ... }
+   *
+   * Each sector's array is sorted by posValue descending so the largest
+   * holdings show first when expanded.
    *
    * For the TMT industry case, this map is empty — TMT_INDUSTRY_DATA is
-   * hardcoded aggregate data without per-position breakdown. Expanded rows
-   * for TMT show a "no per-holding data available" message.
+   * hardcoded aggregate data without per-position breakdown. Industry rows
+   * surface as non-expandable.
    */
   const holdingsBySector = useMemo(() => {
     const map = {};
@@ -552,7 +555,6 @@ export default function HomeDashboardPage() {
       if (!map[sectorName]) map[sectorName] = [];
       map[sectorName].push({
         symbol: pos.symbol,
-        name: pos.name || pos.symbol,
         qty: pos.qty,
         posValue: pos.posValue,
         pnl: pos.pnl,
@@ -560,15 +562,14 @@ export default function HomeDashboardPage() {
         currentPrice: pos.currentPrice,
       });
     }
-    // Sort each sector's holdings by market value (largest first)
     for (const k of Object.keys(map)) {
       map[k].sort((a, b) => b.posValue - a.posValue);
     }
     return map;
   }, [mock.enrichedPositions]);
 
-  // If the currently-expanded sector disappears from the list (e.g., user closed
-  // all positions in it), collapse automatically.
+  // If the currently-expanded sector disappears (e.g., user closed all positions
+  // in it), auto-collapse so we don't keep stale state.
   useEffect(() => {
     if (expandedSector && !sectorRows.some((s) => s.name === expandedSector)) {
       setExpandedSector(null);
@@ -1097,7 +1098,7 @@ export default function HomeDashboardPage() {
                                 {h.qty} {h.qty === 1 ? 'share' : 'shares'}
                               </span>
                               <span className="db-sector-holding-value">
-                                ${Number(h.posValue || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                                ${h.posValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                               </span>
                               <span
                                 className={`db-sector-holding-pnl ${h.pnlPct >= 0 ? 'is-up' : 'is-down'}`}
