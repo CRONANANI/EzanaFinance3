@@ -8,6 +8,8 @@ import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { supabase } from '@/lib/supabase';
 import { TradeCard } from './TradeCard';
 import { ProfilePerformancePanel } from './ProfilePerformancePanel';
+import CopyRequestButton from './CopyRequestButton';
+import './copy-request-button.css';
 
 function badgePills(stats, isPartner) {
   const pills = [];
@@ -452,13 +454,16 @@ export function ProfilePageClient({ username }) {
                 ))}
               </div>
               {!isOwn && user?.id && (
-                <button
-                  type="button"
-                  onClick={toggleFollow}
-                  className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20"
-                >
-                  {following ? 'Unfollow' : 'Follow'}
-                </button>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleFollow}
+                    className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20"
+                  >
+                    {following ? 'Unfollow' : 'Follow'}
+                  </button>
+                  <CopyRequestButton targetUserId={profile.id} />
+                </div>
               )}
             </div>
           </div>

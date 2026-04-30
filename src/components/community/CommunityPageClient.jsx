@@ -24,6 +24,7 @@ const CommunityFeedPost = dynamic(
 );
 import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
+import CopyRequestInbox from '@/components/community/CopyRequestInbox';
 import { UserSearch } from '@/components/community/UserSearch';
 import { FeedComposer } from '@/components/community/FeedComposer';
 import {
@@ -975,6 +976,8 @@ export default function CommunityPageClient() {
       <div className="comm-3col">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
+
+          <CopyRequestInbox />
 
           <section
             className="db-card suggested-for-you-card"
