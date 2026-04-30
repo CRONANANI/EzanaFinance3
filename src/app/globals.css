@@ -1849,3 +1849,23 @@ html:has(.landing-page) .navbar.navbar-sticky,
   position: relative;
   z-index: 30;
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Sign-in pages — locked to dark mode regardless of user's theme preference
+   The .signin-dark-lock class is on the wrapper of /auth/signin,
+   /auth/signin/backtest, and /auth/partner/signin.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.signin-dark-lock {
+  color-scheme: dark;
+}
+
+/* Autofill: avoid light cream on dark inputs (Chrome/Safari). */
+.signin-dark-lock input:-webkit-autofill,
+.signin-dark-lock input:-webkit-autofill:hover,
+.signin-dark-lock input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9;
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset;
+  caret-color: #f1f5f9;
+  transition: background-color 5000s ease-in-out 0s;
+}
