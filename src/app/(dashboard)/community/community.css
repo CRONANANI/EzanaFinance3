@@ -1704,6 +1704,20 @@ body.light-mode .comm-greeting-section .db-greeting-date {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
+/* Explicit chrome: matches .db-card / KPI strip so load-order or other sheets
+   cannot leave the trending card looking like a different system. */
+.community-root .comm-trending-card.db-card {
+  background: rgba(16, 185, 129, 0.02);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+  border-radius: 16px;
+}
+
+body.light-mode .community-root .comm-trending-card.db-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
 /* Light mode override — only set what differs from the inherited .db-card baseline.
    .db-card light-mode rules already handle background + border. We add a subtle
    shadow for visual depth (sibling cards have this too via their own light-mode rules). */
@@ -2492,18 +2506,20 @@ body.light-mode .comm-skeleton-line {
   background: rgba(100, 116, 139, 0.18);
 }
 
-/* Feed navigation bar (tab pills + sort + new post) */
+/* Feed navigation bar (tab pills + sort + new post)
+   Source order in JSX: sort first, tabs second → tabs sit on the RIGHT without
+   flex-direction: row-reverse (more reliable across browsers). */
 .comm-feed-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  /* Reverse direction so the tabs (.comm-feed-nav__tabs) sit on the RIGHT,
-     vertically aligning with the page tabs above (.comm-page-tabs--top is
-     also right-aligned via comm-greeting-row's justify-content: space-between).
-     The sort dropdown moves to the LEFT — still functional, just repositioned. */
-  flex-direction: row-reverse;
+}
+
+/* When tabs are long, keep the pill group hugging the right edge of the column. */
+.comm-feed-nav__tabs {
+  margin-left: auto;
 }
 
 .comm-feed-nav__tabs {

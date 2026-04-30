@@ -1,7 +1,6 @@
 'use client';
 
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
-import '@/app/(dashboard)/community/community.css';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -1089,6 +1088,16 @@ export default function CommunityPageClient() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div className="comm-feed-nav">
+            <select
+              value={feedSort}
+              onChange={(e) => setFeedSort(e.target.value)}
+              className="comm-feed-nav__sort"
+              aria-label="Sort feed"
+            >
+              <option>Latest</option>
+              <option>Popular</option>
+              <option>Following</option>
+            </select>
             <div className="comm-feed-nav__tabs">
               {FEED_TABS.map((t) => (
                 <button
@@ -1115,16 +1124,6 @@ export default function CommunityPageClient() {
                 <i className="bi bi-pencil-square" aria-hidden /> New Post
               </button>
             </div>
-            <select
-                value={feedSort}
-                onChange={(e) => setFeedSort(e.target.value)}
-                className="comm-feed-nav__sort"
-                aria-label="Sort feed"
-              >
-                <option>Latest</option>
-                <option>Popular</option>
-                <option>Following</option>
-              </select>
           </div>
 
           <>
