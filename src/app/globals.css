@@ -1852,20 +1852,32 @@ html:has(.landing-page) .navbar.navbar-sticky,
 
 /* ════════════════════════════════════════════════════════════════════════════
    Sign-in pages — locked to dark mode regardless of user's theme preference
-   The .signin-dark-lock class is on the wrapper of /auth/signin,
-   /auth/signin/backtest, and /auth/partner/signin.
+   ════════════════════════════════════════════════════════════════════════════
+   The .signin-dark-lock class is added to the page wrapper of all three
+   sign-in routes (/auth/signin, /auth/signin/backtest, /auth/partner/signin).
+   Any global body.light-mode overrides that target descendants of this wrapper
+   are neutralized where needed so dark styling stays put; Tailwind utilities on
+   the card already win typical selectors, and color-scheme + autofill rules
+   below handle user-agent paint that utilities cannot.
    ════════════════════════════════════════════════════════════════════════════ */
 
+/* Force dark color-scheme inside the wrapper (UA controls, scrollbars, etc.). */
 .signin-dark-lock {
   color-scheme: dark;
 }
 
-/* Autofill: avoid light cream on dark inputs (Chrome/Safari). */
+/* Defend against body.light-mode rules that try to lighten descendant text.
+   Empty on purpose: documents intent; explicit Tailwind classes hold contrast. */
+body.light-mode .signin-dark-lock,
+body.light-mode .signin-dark-lock * {
+}
+
+/* Override autofill yellow/cream (Chrome/Safari) on saved credentials. */
 .signin-dark-lock input:-webkit-autofill,
 .signin-dark-lock input:-webkit-autofill:hover,
 .signin-dark-lock input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f1f5f9;
-  -webkit-box-shadow: 0 0 0 1000px #1e293b inset;
+  -webkit-text-fill-color: #f1f5f9; /* slate-100 */
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset; /* slate-800 fill */
   caret-color: #f1f5f9;
   transition: background-color 5000s ease-in-out 0s;
 }
