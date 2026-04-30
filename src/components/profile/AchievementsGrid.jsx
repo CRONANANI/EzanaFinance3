@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { createPortal } from 'react-dom';
-import { Trophy, Lock, X } from 'lucide-react';
+import { Trophy, Lock, X, ArrowRight } from 'lucide-react';
 import { useAchievements } from '@/hooks/useAchievements';
 import './achievements-grid.css';
 
@@ -154,6 +155,12 @@ export function AchievementsGrid({ positions = [], totalReturnPct = 0 }) {
       )}
 
       {selected && <AchievementModal achievement={selected} onClose={() => setSelectedId(null)} />}
+
+      <div className="ag-footer">
+        <Link href="/badges" className="ag-view-all-link">
+          View all achievements <ArrowRight size={12} />
+        </Link>
+      </div>
     </div>
   );
 }

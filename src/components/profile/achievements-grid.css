@@ -323,3 +323,36 @@ body.light-mode .ag-modal {
   font-size: 0.75rem;
   color: var(--text-muted, #8b949e);
 }
+
+/* ════════════════════════════════════════════════════════════
+   "View all" footer link — opens /badges page with full grid
+   ════════════════════════════════════════════════════════════ */
+.ag-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ag-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #10b981;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.ag-view-all-link:hover {
+  background: rgba(16, 185, 129, 0.08);
+  transform: translateX(2px);
+}
+
+body.light-mode .ag-footer {
+  border-top-color: rgba(0, 0, 0, 0.05);
+}

@@ -22,7 +22,6 @@ const CommunityFeedPost = dynamic(
   () => import('@/components/community/CommunityFeedPost').then((m) => ({ default: m.CommunityFeedPost })),
   { ssr: false, loading: () => <div className="community-feed-post-skeleton" style={{ minHeight: 180 }} aria-hidden /> }
 );
-import { LearningCommunityBadgesPanel } from '@/components/community/LearningCommunityBadgesPanel';
 import { CommunitySocialConnectCard } from '@/components/community/CommunitySocialConnectCard';
 import CopyRequestInbox from '@/components/community/CopyRequestInbox';
 import { UserSearch } from '@/components/community/UserSearch';
@@ -81,7 +80,6 @@ const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
 const PAGE_TABS = ['Community', 'My Profile', 'Messages'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
-  if (feedTab === 'Badges') return 'recent';
   if (feedTab === 'Following' || feedTab === 'Friends') return 'following';
   if (feedTab === 'Discussions') {
     return feedSort === 'Popular' ? 'trending' : 'recent';
@@ -490,12 +488,6 @@ export default function CommunityPageClient() {
   }, [userProfile, user]);
 
   const fetchFeed = useCallback(async () => {
-    if (feedTab === 'Badges') {
-      setFeedLoading(false);
-      setFeedMessage('');
-      setFeedError(false);
-      return;
-    }
     setFeedLoading(true);
     setFeedMessage('');
     setFeedError(false);
@@ -1102,7 +1094,13 @@ export default function CommunityPageClient() {
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setFeedTab(t)}
+                  onClick={() => {
+                    if (t === 'Badges') {
+                      router.push('/badges');
+                      return;
+                    }
+                    setFeedTab(t);
+                  }}
                   className={`comm-feed-nav__tab ${feedTab === t ? 'is-active' : ''}`}
                 >
                   {t === 'Badges' && <i className="bi bi-award" aria-hidden />}
@@ -1117,8 +1115,7 @@ export default function CommunityPageClient() {
                 <i className="bi bi-pencil-square" aria-hidden /> New Post
               </button>
             </div>
-            {feedTab !== 'Badges' && (
-              <select
+            <select
                 value={feedSort}
                 onChange={(e) => setFeedSort(e.target.value)}
                 className="comm-feed-nav__sort"
@@ -1128,13 +1125,9 @@ export default function CommunityPageClient() {
                 <option>Popular</option>
                 <option>Following</option>
               </select>
-            )}
           </div>
 
-          {feedTab === 'Badges' ? (
-            <LearningCommunityBadgesPanel />
-          ) : (
-            <>
+          <>
               <FeedComposer
                 user={user}
                 userProfile={userProfile}
@@ -1228,7 +1221,6 @@ export default function CommunityPageClient() {
                 )}
               </div>
             </>
-          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
