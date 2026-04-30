@@ -1689,7 +1689,11 @@ body.light-mode .comm-greeting-section .db-greeting-date {
   color: #94a3b8;
 }
 
-/* ─── TRENDING TOPICS CARD ─── full width, polished card chrome */
+/* ─── TRENDING TOPICS CARD ─── full width.
+   Background, border, and border-radius are inherited from the .db-card
+   class (see home-dashboard.css line 83) so the trending card visually
+   matches all other sibling cards on the community page. We only set
+   layout-specific properties here (width, margin, padding, flex). */
 .comm-trending-card {
   width: 100%;
   margin-bottom: 1.25rem;
@@ -1697,17 +1701,13 @@ body.light-mode .comm-greeting-section .db-greeting-date {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* Explicit background to guarantee colour parity with sibling KPI / db-cards.
-     Trending used a green-tinted --card token; align to --bg-secondary instead. */
-  background: var(--bg-secondary, #0d1117);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  border-radius: 14px;
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
+/* Light mode override — only set what differs from the inherited .db-card baseline.
+   .db-card light-mode rules already handle background + border. We add a subtle
+   shadow for visual depth (sibling cards have this too via their own light-mode rules). */
 body.light-mode .comm-trending-card {
-  background: var(--bg-secondary, #ffffff);
-  border-color: rgba(0, 0, 0, 0.06);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -2499,6 +2499,11 @@ body.light-mode .comm-skeleton-line {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
+  /* Reverse direction so the tabs (.comm-feed-nav__tabs) sit on the RIGHT,
+     vertically aligning with the page tabs above (.comm-page-tabs--top is
+     also right-aligned via comm-greeting-row's justify-content: space-between).
+     The sort dropdown moves to the LEFT — still functional, just repositioned. */
+  flex-direction: row-reverse;
 }
 
 .comm-feed-nav__tabs {
@@ -4452,3 +4457,11 @@ body.light-mode .comm-kpi-modal__investor-cta:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* When debugging alignment — uncomment to visualize right-edge alignment.
+   Both tab strips should land on the same vertical pixel line.
+.comm-page-tabs--top,
+.comm-feed-nav__tabs {
+  outline: 1px dashed magenta;
+}
+*/
