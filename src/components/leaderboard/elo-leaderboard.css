@@ -1,0 +1,314 @@
+.elo-lb-container {
+  padding: 1rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.elo-lb-header {
+  margin-bottom: 1.25rem;
+}
+
+.elo-lb-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.elo-lb-subtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.elo-lb-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.elo-lb-tier-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.elo-lb-tier-pill {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: var(--text-muted, #8b949e);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.elo-lb-tier-pill:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--text-primary, #f0f6fc);
+}
+
+.elo-lb-tier-pill.is-active {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #10b981;
+}
+
+.elo-lb-search {
+  flex: 0 1 280px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary, #f0f6fc);
+}
+
+.elo-lb-search:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.elo-lb-table-wrap {
+  overflow-x: auto;
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+}
+
+.elo-lb-loading,
+.elo-lb-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted, #8b949e);
+  font-size: 0.875rem;
+}
+
+.elo-lb-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.elo-lb-table thead th {
+  padding: 0.75rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #8b949e);
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.elo-lb-th-rank {
+  width: 60px;
+  text-align: center;
+}
+.elo-lb-th-tier {
+  width: 130px;
+}
+.elo-lb-th-num {
+  width: 100px;
+  text-align: right;
+}
+.elo-lb-th-status {
+  width: 160px;
+}
+
+.elo-lb-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 100ms ease;
+}
+
+.elo-lb-row:hover {
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.elo-lb-row td {
+  padding: 0.65rem 1rem;
+  font-size: 0.8125rem;
+  vertical-align: middle;
+}
+
+.elo-lb-rank {
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+.elo-lb-medal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #0a0e13;
+}
+.elo-lb-medal-1 {
+  background: linear-gradient(135deg, #ffd700, #daa520);
+}
+.elo-lb-medal-2 {
+  background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+}
+.elo-lb-medal-3 {
+  background: linear-gradient(135deg, #cd7f32, #b8732a);
+}
+
+.elo-lb-user-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.elo-lb-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.elo-lb-avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.elo-lb-user-name {
+  font-weight: 600;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.elo-lb-user-link:hover .elo-lb-user-name {
+  color: #10b981;
+}
+
+.elo-lb-user-handle {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8b949e);
+  margin-left: 0.4rem;
+}
+
+.elo-lb-tier-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.elo-lb-rating {
+  text-align: right;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.elo-lb-peak {
+  text-align: right;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+.elo-lb-flag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: 4px;
+  margin-right: 0.3rem;
+}
+
+.elo-lb-flag-partner {
+  background: rgba(212, 175, 55, 0.12);
+  color: #d4af37;
+}
+
+.elo-lb-flag-inactive {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+}
+
+.elo-lb-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0 0.5rem;
+}
+
+.elo-lb-page-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.05);
+  color: #10b981;
+  cursor: pointer;
+  transition: background 100ms ease;
+}
+
+.elo-lb-page-btn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.elo-lb-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.elo-lb-page-info {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+body.light-mode .elo-lb-table-wrap {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-mode .elo-lb-table thead th {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+  color: #64748b;
+}
+body.light-mode .elo-lb-row {
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+body.light-mode .elo-lb-row:hover {
+  background: rgba(16, 185, 129, 0.03);
+}
+body.light-mode .elo-lb-search {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1e293b;
+}
+body.light-mode .elo-lb-tier-pill {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.light-mode .elo-lb-user-name {
+  color: #1e293b;
+}
+body.light-mode .elo-lb-rank {
+  color: #64748b;
+}
