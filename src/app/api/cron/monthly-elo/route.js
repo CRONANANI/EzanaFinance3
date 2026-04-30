@@ -1,3 +1,25 @@
+/**
+ * Fetches SPY benchmark, scores portfolio snapshots → monthly_portfolio_perf + ELO.
+ *
+ * Monthly ELO Cron — runs on the 1st of each month at 02:00 UTC.
+ *
+ * Two phases run in sequence:
+ *
+ *   Phase 1 — Pillar B (Portfolio Performance):
+ *     For every user with snapshots in the prior month, computes return,
+ *     Sharpe, alpha vs SPY, applies real/mock weights, applies the lifetime
+ *     cap, awards ELO, records monthly_portfolio_perf row.
+ *
+ *   Phase 2 — Pillar C Ongoing (Being Copied):
+ *     Scans active_copies for relationships that overlapped the prior month.
+ *     For each target user, awards +20 per active copier (base) plus
+ *     profitability bonus/penalty (+10 if score > 0, -5 if score < -2).
+ *     Annual cap +500 on positive Pillar-C-ongoing awards. Updates
+ *     active_copies.performance_pct so copiers see how the strategy did.
+ *
+ * Phase 2 reads from monthly_portfolio_perf — that's why it runs SECOND
+ * after Phase 1 inserts those rows.
+ */
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
 import { awardELO } from '@/lib/elo';
@@ -9,6 +31,8 @@ import {
   applyRealMockWeight,
   applyLifetimeCap,
   fetchDailyReturnsForRange,
+  activeCopyDeltaForTarget,
+  applyPillarCOngoingCap,
 } from '@/lib/elo-portfolio-perf';
 
 export const dynamic = 'force-dynamic';
@@ -60,53 +84,154 @@ async function fetchSpyReturn(fromIso, toIso) {
 }
 
 /**
- * After monthly perf rows exist, stamp each active copy with the target's return % for that month
- * (prefer real brokerage row, else mock).
+ * Phase 2: active-copy awards + performance_pct on copy rows.
+ *
+ * @param {import('@supabase/supabase-js').SupabaseClient} supabase
+ * @param {{ year: number; month: number; startIso: string; endIso: string }} dateRange
  */
-async function refreshActiveCopiesPerformance(supabase, year, month) {
-  const { data: actives } = await supabase
+async function processActiveCopiesPhase(supabase, dateRange) {
+  const result = {
+    activeCopiesScanned: 0,
+    targetsAwarded: 0,
+    totalEloAwarded: 0,
+    skippedNoTargetPerf: 0,
+    skippedAtCap: 0,
+    performancePctsUpdated: 0,
+    errors: [],
+  };
+
+  const orFilter = `is_active.eq.true,stopped_at.gte.${dateRange.startIso}`;
+  const { data: copies, error: copiesErr } = await supabase
     .from('active_copies')
-    .select('id, target_user_id')
-    .eq('is_active', true);
+    .select('id, copier_id, target_user_id, started_at, stopped_at, is_active')
+    .or(orFilter);
 
-  if (!actives?.length) return { activeCopiesUpdated: 0 };
+  if (copiesErr) {
+    result.errors.push({ phase: 'fetch active_copies', error: copiesErr.message });
+    return result;
+  }
 
-  const targetIds = [...new Set(actives.map((a) => a.target_user_id))];
-  const { data: perfRows } = await supabase
-    .from('monthly_portfolio_perf')
-    .select('user_id, is_real_brokerage, return_pct')
-    .eq('year', year)
-    .eq('month', month)
-    .in('user_id', targetIds);
+  result.activeCopiesScanned = copies?.length || 0;
+  if (!copies || copies.length === 0) return result;
 
-  /** @type {Map<string, { real?: number; mock?: number }>} */
-  const perfMap = new Map();
-  for (const p of perfRows || []) {
-    let e = perfMap.get(p.user_id);
-    if (!e) {
-      e = {};
-      perfMap.set(p.user_id, e);
+  const monthStart = new Date(`${dateRange.startIso}T00:00:00.000Z`);
+  const monthEnd = new Date(`${dateRange.endIso}T23:59:59.999Z`);
+
+  const overlappedCopies = copies.filter((c) => {
+    const startedDate = new Date(c.started_at);
+    const stoppedDate = c.stopped_at ? new Date(c.stopped_at) : null;
+    if (startedDate > monthEnd) return false;
+    if (stoppedDate && stoppedDate < monthStart) return false;
+    return true;
+  });
+
+  const copiesByTarget = new Map();
+  for (const c of overlappedCopies) {
+    if (!copiesByTarget.has(c.target_user_id)) {
+      copiesByTarget.set(c.target_user_id, []);
     }
-    const r = Number(p.return_pct);
-    if (p.is_real_brokerage) e.real = r;
-    else e.mock = r;
+    copiesByTarget.get(c.target_user_id).push(c);
   }
 
-  const now = new Date().toISOString();
-  let updated = 0;
-  for (const row of actives) {
-    const e = perfMap.get(row.target_user_id);
-    const perfPct = Number.isFinite(e?.real) ? e.real : Number.isFinite(e?.mock) ? e.mock : null;
-    if (perfPct == null) continue;
+  const yearStart = new Date(dateRange.year, 0, 1).toISOString();
+  const ymPrefix = `${dateRange.year}-${String(dateRange.month).padStart(2, '0')}`;
 
-    const { error } = await supabase
-      .from('active_copies')
-      .update({ performance_pct: perfPct, performance_updated_at: now })
-      .eq('id', row.id);
-    if (!error) updated++;
+  for (const [targetUserId, targetCopies] of copiesByTarget.entries()) {
+    try {
+      const copierCount = targetCopies.length;
+
+      const { data: perfRows } = await supabase
+        .from('monthly_portfolio_perf')
+        .select('is_real_brokerage, monthly_score, return_pct')
+        .eq('user_id', targetUserId)
+        .eq('year', dateRange.year)
+        .eq('month', dateRange.month);
+
+      if (!perfRows || perfRows.length === 0) {
+        result.skippedNoTargetPerf++;
+        const nowIso = new Date().toISOString();
+        for (const copy of targetCopies) {
+          const { error } = await supabase
+            .from('active_copies')
+            .update({ performance_pct: null, performance_updated_at: nowIso })
+            .eq('id', copy.id);
+          if (!error) result.performancePctsUpdated++;
+        }
+        continue;
+      }
+
+      const realRow = perfRows.find((r) => r.is_real_brokerage === true);
+      const canonicalRow = realRow || perfRows[0];
+
+      const monthlyScore = Number(canonicalRow.monthly_score);
+      const monthlyReturnPct = Number(canonicalRow.return_pct);
+      const scoreForDelta = Number.isFinite(monthlyScore) ? monthlyScore : 0;
+
+      const { baseDelta, profitabilityDelta, totalDelta } = activeCopyDeltaForTarget(
+        copierCount,
+        scoreForDelta
+      );
+
+      const { data: ytdAwards } = await supabase
+        .from('elo_transactions')
+        .select('delta')
+        .eq('user_id', targetUserId)
+        .eq('category', 'social')
+        .like('reason', 'Active copiers%')
+        .gte('created_at', yearStart);
+
+      const ytdPositive = (ytdAwards || [])
+        .filter((t) => t.delta > 0)
+        .reduce((sum, t) => sum + (t.delta || 0), 0);
+
+      const { effectiveDelta } = applyPillarCOngoingCap(totalDelta, ytdPositive);
+
+      if (effectiveDelta !== 0) {
+        const reasonStr = `Active copiers ${ymPrefix}: ${copierCount} copier${copierCount > 1 ? 's' : ''}`;
+        const awardResult = await awardELO(targetUserId, effectiveDelta, reasonStr, 'social', {
+          year: dateRange.year,
+          month: dateRange.month,
+          copier_count: copierCount,
+          target_monthly_score: Number(scoreForDelta.toFixed(4)),
+          base_delta: baseDelta,
+          profitability_delta: profitabilityDelta,
+          total_delta_raw: totalDelta,
+          effective_delta: effectiveDelta,
+          capped: totalDelta > 0 && effectiveDelta < totalDelta,
+        });
+        if (awardResult) {
+          result.targetsAwarded++;
+          result.totalEloAwarded += effectiveDelta;
+        } else {
+          result.errors.push({
+            targetUserId,
+            phase: 'awardELO',
+            reason: reasonStr,
+          });
+        }
+      } else if (totalDelta > 0) {
+        result.skippedAtCap++;
+      }
+
+      const nowIso = new Date().toISOString();
+      for (const copy of targetCopies) {
+        const payload =
+          Number.isFinite(monthlyReturnPct) ?
+            { performance_pct: monthlyReturnPct, performance_updated_at: nowIso }
+          : { performance_pct: null, performance_updated_at: nowIso };
+
+        const { error } = await supabase.from('active_copies').update(payload).eq('id', copy.id);
+        if (!error) result.performancePctsUpdated++;
+      }
+    } catch (e) {
+      result.errors.push({
+        targetUserId,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
   }
 
-  return { activeCopiesUpdated: updated };
+  return result;
 }
 
 /**
@@ -299,18 +424,28 @@ async function run(request) {
     }
   }
 
-  const copies = await refreshActiveCopiesPerformance(supabase, dateRange.year, dateRange.month);
+  const phase2 = await processActiveCopiesPhase(supabase, dateRange);
 
   return NextResponse.json({
     success: true,
     dateRange,
     spyReturn: Number(spyReturn.toFixed(4)),
-    processedUsers: processed,
-    realPortfoliosScored: realComputed,
-    mockPortfoliosScored: mockComputed,
-    totalEloAwarded,
-    activeCopiesUpdated: copies.activeCopiesUpdated,
-    errors: errors.slice(0, 10),
+    phase1: {
+      processed,
+      realPortfoliosScored: realComputed,
+      mockPortfoliosScored: mockComputed,
+      totalEloAwarded,
+      errors: errors.slice(0, 10),
+    },
+    phase2: {
+      activeCopiesScanned: phase2.activeCopiesScanned,
+      targetsAwarded: phase2.targetsAwarded,
+      totalEloAwarded: phase2.totalEloAwarded,
+      skippedNoTargetPerf: phase2.skippedNoTargetPerf,
+      skippedAtCap: phase2.skippedAtCap,
+      performancePctsUpdated: phase2.performancePctsUpdated,
+      errors: phase2.errors.slice(0, 10),
+    },
   });
 }
 

@@ -120,3 +120,66 @@ export async function fetchDailyReturnsForRange(supabase, userId, fromDateIso, t
   }
   return returns;
 }
+
+// ════════════════════════════════════════════════════════════════════════
+// Active-copy performance awards (Sprint 4b, Pillar C ongoing)
+// ════════════════════════════════════════════════════════════════════════
+
+/** Annual cap on positive Pillar C-ongoing awards (separate from request-receipt cap). */
+export const PILLAR_C_ONGOING_ANNUAL_CAP = 500;
+
+/** ELO award per active copier in a given month. */
+export const ELO_PER_ACTIVE_COPIER = 20;
+
+/** Bonus ELO per copier when target's monthly_score > 0. */
+export const ELO_PROFITABLE_COPIER_BONUS = 10;
+
+/** Penalty ELO per copier when target's monthly_score < LOSING_COPIER_SCORE_THRESHOLD. */
+export const ELO_LOSING_COPIER_PENALTY = -5;
+
+/** Threshold below which target's perf is considered "hurting copiers". */
+export const LOSING_COPIER_SCORE_THRESHOLD = -2;
+
+/**
+ * @param {number} copierCount
+ * @param {number} monthlyScore
+ * @returns {{ baseDelta: number, profitabilityDelta: number, totalDelta: number }}
+ */
+export function activeCopyDeltaForTarget(copierCount, monthlyScore) {
+  if (!Number.isFinite(copierCount) || copierCount <= 0) {
+    return { baseDelta: 0, profitabilityDelta: 0, totalDelta: 0 };
+  }
+  const baseDelta = ELO_PER_ACTIVE_COPIER * copierCount;
+  let profitabilityDelta = 0;
+  if (monthlyScore > 0) {
+    profitabilityDelta = ELO_PROFITABLE_COPIER_BONUS * copierCount;
+  } else if (monthlyScore < LOSING_COPIER_SCORE_THRESHOLD) {
+    profitabilityDelta = ELO_LOSING_COPIER_PENALTY * copierCount;
+  }
+  return {
+    baseDelta,
+    profitabilityDelta,
+    totalDelta: baseDelta + profitabilityDelta,
+  };
+}
+
+/**
+ * @param {number} totalDelta
+ * @param {number} ytdPositivePillarCOngoing
+ * @returns {{ effectiveDelta: number, newYtdPositive: number }}
+ */
+export function applyPillarCOngoingCap(totalDelta, ytdPositivePillarCOngoing) {
+  if (totalDelta <= 0) {
+    return { effectiveDelta: totalDelta, newYtdPositive: ytdPositivePillarCOngoing };
+  }
+  const remaining = PILLAR_C_ONGOING_ANNUAL_CAP - ytdPositivePillarCOngoing;
+  if (remaining <= 0) {
+    return { effectiveDelta: 0, newYtdPositive: ytdPositivePillarCOngoing };
+  }
+  const allowed = Math.min(totalDelta, remaining);
+  return {
+    effectiveDelta: allowed,
+    newYtdPositive: ytdPositivePillarCOngoing + allowed,
+  };
+}
+
