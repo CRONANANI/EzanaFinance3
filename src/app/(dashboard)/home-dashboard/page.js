@@ -266,6 +266,8 @@ export default function HomeDashboardPage() {
   const [liveQuotes, setLiveQuotes] = useState({});
   const [plaidHoldingsPayload, setPlaidHoldingsPayload] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
+  /** Currently expanded sector name in the Sector Distribution card. null = none expanded. */
+  const [expandedSector, setExpandedSector] = useState(null);
 
   const mock = useMockPortfolio();
   const useMock = mock.hasMockPortfolio;
@@ -533,6 +535,45 @@ export default function HomeDashboardPage() {
     if (isTmtTeamMember) return TMT_INDUSTRY_DATA;
     return [];
   }, [useMock, plaidConnected, mock.sectorData, isTmtTeamMember]);
+
+  /**
+   * Group enriched positions by sector for the expandable legend rows.
+   * Map: { 'Technology': [{symbol, name, qty, posValue, pnlPct}, ...], ... }
+   *
+   * For the TMT industry case, this map is empty — TMT_INDUSTRY_DATA is
+   * hardcoded aggregate data without per-position breakdown. Expanded rows
+   * for TMT show a "no per-holding data available" message.
+   */
+  const holdingsBySector = useMemo(() => {
+    const map = {};
+    if (!mock.enrichedPositions) return map;
+    for (const pos of mock.enrichedPositions) {
+      const sectorName = pos.sector || 'Other';
+      if (!map[sectorName]) map[sectorName] = [];
+      map[sectorName].push({
+        symbol: pos.symbol,
+        name: pos.name || pos.symbol,
+        qty: pos.qty,
+        posValue: pos.posValue,
+        pnl: pos.pnl,
+        pnlPct: pos.pnlPct,
+        currentPrice: pos.currentPrice,
+      });
+    }
+    // Sort each sector's holdings by market value (largest first)
+    for (const k of Object.keys(map)) {
+      map[k].sort((a, b) => b.posValue - a.posValue);
+    }
+    return map;
+  }, [mock.enrichedPositions]);
+
+  // If the currently-expanded sector disappears from the list (e.g., user closed
+  // all positions in it), collapse automatically.
+  useEffect(() => {
+    if (expandedSector && !sectorRows.some((s) => s.name === expandedSector)) {
+      setExpandedSector(null);
+    }
+  }, [sectorRows, expandedSector]);
 
   useEffect(() => {
     if (!user) {
@@ -1015,13 +1056,61 @@ export default function HomeDashboardPage() {
               </div>
 
               <ul className="db-sector-legend">
-                {sectorRows.map((s) => (
-                  <li key={s.name} className="db-sector-legend-item">
-                    <span className="db-sector-legend-dot" style={{ background: s.color }} aria-hidden />
-                    <span className="db-sector-legend-name">{s.name}</span>
-                    <span className="db-sector-legend-pct">{s.pct}%</span>
-                  </li>
-                ))}
+                {sectorRows.map((s) => {
+                  const isExpanded = expandedSector === s.name;
+                  const sectorHoldings = holdingsBySector[s.name] || [];
+                  const canExpand = sectorHoldings.length > 0; // TMT aggregate data has no per-position data
+
+                  return (
+                    <li key={s.name} className="db-sector-legend-row">
+                      <button
+                        type="button"
+                        className={`db-sector-legend-item db-sector-legend-item-btn ${isExpanded ? 'is-expanded' : ''}`}
+                        onClick={() => {
+                          if (!canExpand) return;
+                          setExpandedSector(isExpanded ? null : s.name);
+                        }}
+                        disabled={!canExpand}
+                        aria-expanded={canExpand ? isExpanded : undefined}
+                        aria-controls={canExpand ? `db-sector-holdings-${s.name.replace(/\s+/g, '-')}` : undefined}
+                      >
+                        <span className="db-sector-legend-dot" style={{ background: s.color }} aria-hidden />
+                        <span className="db-sector-legend-name">{s.name}</span>
+                        <span className="db-sector-legend-pct">{s.pct}%</span>
+                        {canExpand && (
+                          <i
+                            className={`bi bi-chevron-${isExpanded ? 'up' : 'down'} db-sector-legend-chevron`}
+                            aria-hidden
+                          />
+                        )}
+                      </button>
+
+                      {isExpanded && canExpand && (
+                        <ul
+                          id={`db-sector-holdings-${s.name.replace(/\s+/g, '-')}`}
+                          className="db-sector-holdings-list"
+                        >
+                          {sectorHoldings.map((h) => (
+                            <li key={h.symbol} className="db-sector-holding-row">
+                              <span className="db-sector-holding-symbol">{h.symbol}</span>
+                              <span className="db-sector-holding-qty">
+                                {h.qty} {h.qty === 1 ? 'share' : 'shares'}
+                              </span>
+                              <span className="db-sector-holding-value">
+                                ${Number(h.posValue || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                              </span>
+                              <span
+                                className={`db-sector-holding-pnl ${h.pnlPct >= 0 ? 'is-up' : 'is-down'}`}
+                              >
+                                {h.pnlPct >= 0 ? '+' : ''}{h.pnlPct.toFixed(2)}%
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
