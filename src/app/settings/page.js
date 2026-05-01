@@ -15,7 +15,6 @@ import {
   NotificationsPanel,
   IntegrationsPanel,
   PlatformChangelogPanel,
-  KairosEventsPanel,
   ApiPanel,
   OrgSettingsPanel,
   DataRequestPanel,
@@ -38,7 +37,6 @@ const SETTINGS_TABS = [
   { key: 'notifications', label: 'Notifications', icon: 'bi-bell', desc: 'Alert & push settings' },
   { key: 'integrations', label: 'Integrations', icon: 'bi-plug', desc: 'Connected services' },
   { key: 'platform-changelog', label: 'Platform changelog', icon: 'bi-clock-history', desc: 'Updates & improvements log' },
-  { key: 'kairos-events', label: 'Kairos events', icon: 'bi-globe', desc: 'Geopolitical scenarios (admin)' },
   { key: 'api', label: 'API', icon: 'bi-code-slash', desc: 'API keys & access' },
   { key: 'privacy-data', label: 'Privacy & data', icon: 'bi-shield-lock', desc: 'Data export, mock portfolio archives' },
 ];
@@ -55,7 +53,6 @@ const PANEL_MAP = {
   notifications: NotificationsPanel,
   integrations: IntegrationsPanel,
   'platform-changelog': PlatformChangelogPanel,
-  'kairos-events': KairosEventsPanel,
   api: ApiPanel,
   organization: OrgSettingsPanel,
   'privacy-data': DataRequestPanel,

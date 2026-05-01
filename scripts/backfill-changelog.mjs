@@ -28,11 +28,96 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(root, '.env') });
 dotenv.config({ path: path.join(root, '.env.local'), override: true });
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false },
-});
-
 async function main() {
+  // ─────────────────────────────────────────────────────────────────
+  // Env check
+  // ─────────────────────────────────────────────────────────────────
+  const REQUIRED_ENV = [
+    'GITHUB_TOKEN',
+    'GITHUB_REPO',
+    'ANTHROPIC_API_KEY',
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'SUPABASE_SERVICE_ROLE_KEY',
+  ];
+
+  const missing = REQUIRED_ENV.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    console.error('❌ Missing required env vars:');
+    missing.forEach((k) => console.error(`   - ${k}`));
+    console.error('');
+    console.error(`Loading from: ${path.join(root, '.env.local')}`);
+    process.exit(1);
+  }
+
+  console.log('✓ Env loaded');
+  console.log(`  GITHUB_REPO=${process.env.GITHUB_REPO}`);
+  console.log(`  GITHUB_TOKEN=${process.env.GITHUB_TOKEN.slice(0, 7)}…`);
+  console.log(`  ANTHROPIC_API_KEY=${process.env.ANTHROPIC_API_KEY.slice(0, 10)}…`);
+
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+
+  // ─────────────────────────────────────────────────────────────────
+  // Supabase probe
+  // ─────────────────────────────────────────────────────────────────
+  {
+    const { error } = await supabase.from('platform_changelog_entries').select('id', { head: true });
+    if (error) {
+      console.error('❌ Supabase probe failed:', error.message);
+      console.error('   Verify SUPABASE_SERVICE_ROLE_KEY is correct and migration ran.');
+      process.exit(1);
+    }
+    console.log('✓ Supabase reachable');
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // GitHub API probe
+  // ─────────────────────────────────────────────────────────────────
+  {
+    const probeUrl = `https://api.github.com/repos/${process.env.GITHUB_REPO}`;
+    const res = await fetch(probeUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`❌ GitHub API probe failed: ${res.status} ${res.statusText}`);
+      console.error('   Response:', text.slice(0, 500));
+      console.error('   Verify GITHUB_TOKEN is a valid PAT with read access to the repo.');
+      process.exit(1);
+    }
+    const repoInfo = await res.json();
+    console.log(`✓ GitHub reachable (${repoInfo.full_name}, default branch: ${repoInfo.default_branch})`);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Anthropic API probe (cheap test call)
+  // ─────────────────────────────────────────────────────────────────
+  try {
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const probe = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 10,
+      messages: [{ role: 'user', content: 'Say "ok"' }],
+    });
+    const text = probe.content?.[0]?.text || '';
+    if (!text) throw new Error('Empty response from Claude');
+    console.log(`✓ Anthropic reachable (probe response: "${text.trim()}")`);
+  } catch (e) {
+    console.error('❌ Anthropic API probe failed:', e.message);
+    console.error('   Verify ANTHROPIC_API_KEY is valid.');
+    process.exit(1);
+  }
+
+  console.log('');
+  console.log('All probes passed. Starting backfill…');
+  console.log('');
+
   const now = new Date();
   const ninetyDaysAgo = new Date(now);
   ninetyDaysAgo.setUTCDate(ninetyDaysAgo.getUTCDate() - 90);
@@ -70,19 +155,23 @@ async function main() {
         continue;
       }
 
+      console.log(`  ${w.weekKey}: fetching commits…`);
       const commits = await fetchCommits(w.start.toISOString(), w.end.toISOString());
+      console.log(`    → ${commits.length} commits returned`);
       if (commits.length === 0) {
-        console.log(`  ${w.weekKey}: SKIP (no commits)`);
+        console.log(`  ${w.weekKey}: SKIP (no commits in window)`);
         skipped++;
         continue;
       }
 
+      console.log(`  ${w.weekKey}: summarizing with Claude…`);
       const summary = await summarizeCommits(commits, { start: w.start.toISOString(), end: w.end.toISOString() });
       if (!summary) {
-        console.log(`  ${w.weekKey}: SKIP (no meaningful commits, ${commits.length} total)`);
+        console.log(`  ${w.weekKey}: SKIP (Claude returned no meaningful summary, ${commits.length} commits)`);
         skipped++;
         continue;
       }
+      console.log(`    → "${summary.title}" (${summary.category})`);
 
       const releasedAt = new Date(w.start);
       releasedAt.setUTCDate(releasedAt.getUTCDate() + 6);

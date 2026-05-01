@@ -14,6 +14,5 @@ export {
 
 export { OrgSettingsPanel } from './OrgSettingsPanel';
 export { DataRequestPanel } from './DataRequestPanel';
-export { KairosEventsPanel } from './KairosEventsPanel';
 export { PlatformChangelogPanel } from './PlatformChangelogPanel';
 

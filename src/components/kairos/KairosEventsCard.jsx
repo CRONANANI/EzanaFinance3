@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { KairosEventsAdmin } from './KairosEventsAdmin';
 import './kairos-events-card.css';
 
 const SCENARIO_META = {
@@ -133,9 +134,10 @@ export function KairosEventsCard({ regionId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const loadEvents = useCallback(() => {
     let cancelled = false;
     setLoading(true);
+    setError(null);
     fetch('/api/kairos/events')
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => {
@@ -151,6 +153,10 @@ export function KairosEventsCard({ regionId }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    return loadEvents();
+  }, [loadEvents]);
 
   const filteredEvents = useMemo(() => {
     let list = events;
@@ -182,6 +188,8 @@ export function KairosEventsCard({ regionId }) {
           Scenarios that aren&apos;t predictable by weather or markets alone. Probabilities are expert-estimated;
           impact ranges are <strong>conditional on the scenario realizing</strong>.
         </p>
+
+        <KairosEventsAdmin events={events} onChange={loadEvents} />
 
         <div className="kev-filters">
           {FILTER_TABS.map((t) => (

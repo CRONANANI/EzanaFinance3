@@ -1,0 +1,197 @@
+/* ════════════════════════════════════════════════════════════
+   Admin controls inline on the Kairos events card
+   Visible only to admins (via OPTIONS auth check).
+   ════════════════════════════════════════════════════════════ */
+
+.kea-wrap {
+  margin-bottom: 0.85rem;
+  padding: 0.75rem;
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px dashed rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+}
+
+.kea-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kea-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #10b981;
+}
+
+.kea-quickactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.kea-quickactions-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-muted, #8b949e);
+  margin-right: 0.2rem;
+}
+
+.kea-quickaction-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.4rem 0.25rem 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+  font-size: 0.6875rem;
+}
+
+.kea-chip-title {
+  color: var(--text-secondary, #e2e8f0);
+  font-weight: 600;
+}
+
+.kea-chip-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  color: var(--text-muted, #8b949e);
+  cursor: pointer;
+  font-size: 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kea-chip-btn:hover { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.kea-chip-btn-danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+.kea-quickactions-more {
+  font-size: 0.625rem;
+  color: var(--text-muted, #8b949e);
+  font-style: italic;
+}
+
+/* Form */
+.kea-form { display: flex; flex-direction: column; gap: 0.65rem; }
+
+.kea-form-head { display: flex; justify-content: space-between; align-items: center; }
+.kea-form-head h4 { margin: 0; font-size: 0.875rem; font-weight: 700; color: var(--text-primary, #f0f6fc); }
+.kea-form-close {
+  width: 24px; height: 24px;
+  border: none; background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%; color: var(--text-muted, #8b949e);
+  cursor: pointer; font-size: 0.875rem;
+}
+.kea-form-close:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary, #f0f6fc); }
+
+.kea-field { display: flex; flex-direction: column; gap: 0.25rem; }
+.kea-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.kea-field span { font-size: 0.6875rem; font-weight: 700; color: var(--text-secondary, #e2e8f0); }
+
+.kea-field input, .kea-field select, .kea-field textarea {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary, #f0f6fc);
+  font-family: inherit;
+}
+
+.kea-impacts { display: flex; flex-direction: column; gap: 0.4rem; }
+.kea-impacts-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.6875rem; font-weight: 700; color: var(--text-secondary, #e2e8f0);
+}
+
+.kea-impact-add {
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10b981;
+  padding: 0.2rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.625rem;
+  cursor: pointer;
+}
+
+.kea-impact-row {
+  display: grid;
+  grid-template-columns: 80px 70px 70px 70px 1fr 26px;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.kea-impact-row input, .kea-impact-row select {
+  padding: 0.3rem 0.4rem;
+  font-size: 0.625rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary, #f0f6fc);
+}
+
+.kea-impact-remove {
+  background: transparent; border: none;
+  color: #ef4444; font-size: 0.875rem;
+  cursor: pointer; font-weight: 800;
+}
+
+.kea-error {
+  padding: 0.4rem 0.6rem;
+  background: rgba(239, 68, 68, 0.12);
+  border-radius: 5px;
+  color: #fca5a5;
+  font-size: 0.6875rem;
+}
+
+.kea-actions { display: flex; justify-content: flex-end; gap: 0.4rem; }
+
+.kea-btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.kea-btn-small { padding: 0.3rem 0.65rem; font-size: 0.6875rem; }
+.kea-btn-secondary { background: transparent; border-color: rgba(255, 255, 255, 0.1); color: var(--text-muted, #8b949e); }
+.kea-btn-secondary:hover { color: var(--text-primary, #f0f6fc); border-color: rgba(255, 255, 255, 0.25); }
+.kea-btn-primary { background: #10b981; border-color: #10b981; color: #0a0e13; }
+.kea-btn-primary:hover:not(:disabled) { background: #34d399; border-color: #34d399; }
+.kea-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Light mode */
+body.light-mode .kea-wrap { background: rgba(16, 185, 129, 0.04); }
+body.light-mode .kea-form-head h4 { color: #0f172a; }
+body.light-mode .kea-quickaction-chip { background: rgba(0, 0, 0, 0.04); }
+body.light-mode .kea-chip-title { color: #1e293b; }
+body.light-mode .kea-field input,
+body.light-mode .kea-field select,
+body.light-mode .kea-field textarea {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+body.light-mode .kea-impact-row input,
+body.light-mode .kea-impact-row select {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
