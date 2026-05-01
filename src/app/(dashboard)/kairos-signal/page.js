@@ -24,6 +24,8 @@ import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import './kairos-signal.css';
+import { KairosCorrelationsCard } from '@/components/kairos/KairosCorrelationsCard';
+import { KairosEventsCard } from '@/components/kairos/KairosEventsCard';
 
 /* ── Region config ─────────────────────────────────────────── */
 const REGIONS = [
@@ -1204,22 +1206,25 @@ export default function KairosSignalPage() {
         <TimeframePicker value={timeframe} onChange={setTimeframe} />
       </div>
 
-      {loading && <LoadingPulse />}
-
-      {!loading && trimmedData && (
-        <div className="kairos-grid">
-          <SignalDashboardCard weatherData={trimmedData} region={region} />
-          <TemperatureAnomalyCard weatherData={trimmedData} region={region} />
-          <PrecipitationCard weatherData={trimmedData} region={region} />
-          <GrowingDegreeDaysCard weatherData={trimmedData} />
-          <WindSolarCard weatherData={trimmedData} />
-          <CommoditySensitivityCard />
-          <CriticalWindowsCard />
-          <WeatherMarketImpactCard weatherData={trimmedData} region={region} />
-          <BehaviouralSignalsCard />
-          <ForecastOutlookCard weatherData={trimmedData} region={region} />
-        </div>
-      )}
+      <div className="kairos-grid">
+        <KairosEventsCard regionId={region.id} />
+        {loading && <LoadingPulse />}
+        {!loading && trimmedData && (
+          <>
+            <SignalDashboardCard weatherData={trimmedData} region={region} />
+            <TemperatureAnomalyCard weatherData={trimmedData} region={region} />
+            <PrecipitationCard weatherData={trimmedData} region={region} />
+            <GrowingDegreeDaysCard weatherData={trimmedData} />
+            <WindSolarCard weatherData={trimmedData} />
+            <CommoditySensitivityCard />
+            <CriticalWindowsCard />
+            <KairosCorrelationsCard regionId={region.id} />
+            <WeatherMarketImpactCard weatherData={trimmedData} region={region} />
+            <BehaviouralSignalsCard />
+            <ForecastOutlookCard weatherData={trimmedData} region={region} />
+          </>
+        )}
+      </div>
 
       {!loading && !trimmedData && (
         <div className="kairos-empty">

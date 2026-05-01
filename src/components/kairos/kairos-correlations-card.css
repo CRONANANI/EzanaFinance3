@@ -1,0 +1,228 @@
+.kcc-card .kairos-card-title {
+  margin: 0;
+}
+
+.kcc-card .kairos-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.kcc-header-meta {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.kcc-state {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted, #8b949e);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.kcc-state-error {
+  color: #ef4444;
+}
+
+.kcc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kcc-row {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  transition: border-color 150ms ease;
+}
+
+.kcc-row:hover {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+.kcc-row.is-expanded {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.kcc-row-head {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kcc-row-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.kcc-arrow {
+  color: var(--text-muted, #8b949e);
+  font-size: 0.75rem;
+}
+
+.kcc-row-meta {
+  margin-top: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+.kcc-r-display {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.kcc-r-bar {
+  margin-top: 0.6rem;
+}
+
+.kcc-r-bar-track {
+  position: relative;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.kcc-r-bar-zero {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.kcc-r-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  transition:
+    width 400ms ease,
+    left 400ms ease;
+}
+
+.kcc-r-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.2rem;
+  font-size: 0.5625rem;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+.kcc-row-detail {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(16, 185, 129, 0.08);
+  animation: kcc-slide-in 200ms ease-out;
+}
+
+@keyframes kcc-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kcc-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.kcc-detail-cell {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+}
+
+.kcc-detail-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #8b949e);
+  margin-bottom: 0.25rem;
+}
+
+.kcc-detail-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.kcc-detail-sub {
+  margin-top: 0.2rem;
+  font-size: 0.625rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.kcc-detail-interpretation {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #e2e8f0);
+  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  background: rgba(16, 185, 129, 0.04);
+  border-radius: 6px;
+  border-left: 2px solid rgba(16, 185, 129, 0.4);
+}
+
+.kcc-disclaimer {
+  font-size: 0.625rem;
+  color: var(--text-muted, #8b949e);
+  text-align: center;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+  font-style: italic;
+}
+
+body.light-mode .kcc-row {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .kcc-row-title {
+  color: #0f172a;
+}
+body.light-mode .kcc-r-bar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+body.light-mode .kcc-detail-cell {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .kcc-detail-interpretation {
+  color: #1e293b;
+}
