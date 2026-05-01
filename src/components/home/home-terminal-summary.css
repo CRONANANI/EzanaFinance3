@@ -1265,12 +1265,19 @@ body.light-mode .hts-week-standing-row {
   gap: 1.25rem;
 }
 
-/* Portfolio ~40% narrower than an even split → ~30% of row; This Week ~70% */
+/* Top row: portfolio snapshot only; This Week on Ezana is full-width below */
 .home-terminal-top-row {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   align-items: stretch;
+}
+
+/* Full-width This Week on Ezana card in /home main column */
+.home-week-full-width {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 1.25rem;
 }
 
 .home-terminal-left-below {
@@ -2001,17 +2008,9 @@ body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
   .home-terminal-main-grid {
     grid-template-columns: 1fr;
   }
-
-  .home-terminal-top-row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
 }
 
 @media (max-width: 768px) {
-  .home-terminal-top-row {
-    grid-template-columns: 1fr;
-  }
-
   .home-rail-streak-ezana.home-streak-ezana-pair {
     flex-direction: column;
   }

@@ -531,7 +531,7 @@ export function HomeTerminalSummary({
       <OrgHomeCards />
 
       {isOrgUser && (
-        <div className="dashboard-page-inset home-week-col" style={{ marginBottom: '1.25rem' }}>
+        <div className="dashboard-page-inset home-week-full-width home-week-col" style={{ marginBottom: '1.25rem' }}>
           <div className="db-card hts-card hts-week-card hts-week-card--compact">
             <ThisWeekOnEzana compact marketChartOnly />
           </div>
@@ -720,11 +720,12 @@ export function HomeTerminalSummary({
                 )}
               </div>
             </div>
-            <div className="home-week-col">
-              <div className="db-card hts-card hts-week-card hts-week-card--compact">
-                <ThisWeekOnEzana compact marketChartOnly />
               </div>
-            </div>
+
+              <div className="home-week-full-width home-week-col">
+                <div className="db-card hts-card hts-week-card hts-week-card--compact">
+                  <ThisWeekOnEzana compact marketChartOnly />
+                </div>
               </div>
 
               <div className="home-terminal-left-below">
