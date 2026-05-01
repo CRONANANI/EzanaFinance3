@@ -14,6 +14,16 @@ import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
 import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
 import { ChevronDown, Check } from 'lucide-react';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -221,63 +231,129 @@ function SparkPortfolio({ seed, returnYtd, w = 64, h = 22 }) {
   return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="wl-spark"><polyline points={d} fill="none" stroke={up ? '#10b981' : '#ef4444'} strokeWidth="1.5" /></svg>;
 }
 
+/**
+ * Tooltip — same idea as StockPriceChart CustomTooltip: compact label + value.
+ */
+function WlChartTooltip({ active, payload, isPortfolio }) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="wl-chart-tooltip">
+      <div className="wl-chart-tooltip-label">{p.label}</div>
+      <div className="wl-chart-tooltip-value">
+        {isPortfolio
+          ? `${p.value >= 0 ? '+' : ''}${p.value.toFixed(2)}%`
+          : `${p.value.toFixed(2)}`}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main chart component ── */
 function Chart({ item, timeRange }) {
-  const seed = useMemo(() => (item ? item.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42), [item]);
+  const seed = useMemo(
+    () => (item ? item.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 42),
+    [item],
+  );
   const isPortfolio = item?.type === 'politician' || item?.type === 'institution';
 
-  const chartGeom = useMemo(() => {
-    const W = 900;
-    const H = 340;
+  const { data, lineColour, gradientId, startValue } = useMemo(() => {
     if (!item) {
-      return { area: '', line: '', col: '#10b981', dotY: H / 2, gradientId: 'cg-empty' };
+      return { data: [], lineColour: '#10b981', gradientId: 'wl-cg-empty', startValue: null };
     }
     if (isPortfolio) {
       const ytd = item.returnYtd ?? 0;
       const end = rangeEndReturnPct(ytd, timeRange);
       const pts = genReturnPctPts(seed, 140, end);
-      const minV = Math.min(0, ...pts);
-      const maxV = Math.max(...pts, minV + 0.01);
-      const norm = (v) => H - ((v - minV) / (maxV - minV)) * H;
-      const step = W / (pts.length - 1);
-      const linePath = pts.map((v, i) => `${i === 0 ? 'M' : 'L'}${i * step},${norm(v)}`).join(' ');
-      const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
-      const col = end >= 0 ? '#10b981' : '#ef4444';
-      const dotY = norm(pts[pts.length - 1]);
-      return { area: areaPath, line: linePath, col, dotY, gradientId: `cg-${seed}-pf` };
+      const arr = pts.map((v, i) => ({
+        label: `Pt ${i + 1}`,
+        value: v,
+      }));
+      return {
+        data: arr,
+        lineColour: end >= 0 ? '#10b981' : '#ef4444',
+        gradientId: `wl-cg-${seed}-pf`,
+        startValue: pts[0],
+      };
     }
     const up = item.change >= 0;
     const pts = genPts(seed, 140, up);
-    const step = W / (pts.length - 1);
-    const linePath = pts.map((y, i) => `${i === 0 ? 'M' : 'L'}${i * step},${H - (y / 100) * H}`).join(' ');
-    const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
-    const col = up ? '#10b981' : '#ef4444';
-    const dotY = H - (pts[pts.length - 1] / 100) * H;
-    return { area: areaPath, line: linePath, col, dotY, gradientId: `cg-${seed}` };
+    const arr = pts.map((v, i) => ({
+      label: `Pt ${i + 1}`,
+      value: v,
+    }));
+    return {
+      data: arr,
+      lineColour: up ? '#10b981' : '#ef4444',
+      gradientId: `wl-cg-${seed}`,
+      startValue: pts[0],
+    };
   }, [item, seed, timeRange, isPortfolio]);
-
-  const W = 900;
-  const H = 340;
 
   return (
     <div className="wl-chart-box">
       {isPortfolio && (
         <div className="wl-chart-y-label" aria-hidden>Return %</div>
       )}
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="wl-chart-svg">
-        <defs>
-          <linearGradient id={chartGeom.gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={chartGeom.col} stopOpacity="0.18" />
-            <stop offset="100%" stopColor={chartGeom.col} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[0.2, 0.4, 0.6, 0.8].map((f) => (
-          <line key={f} x1="0" y1={H * f} x2={W} y2={H * f} stroke="rgba(16,185,129,.05)" strokeWidth="1" />
-        ))}
-        <path d={chartGeom.area} fill={`url(#${chartGeom.gradientId})`} />
-        <path d={chartGeom.line} fill="none" stroke={chartGeom.col} strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-        <circle cx={W} cy={chartGeom.dotY} r="5" fill={chartGeom.col} stroke="#0d1117" strokeWidth="2" />
-      </svg>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={lineColour} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={lineColour} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="2 4" stroke="rgba(128,128,128,0.12)" vertical={false} />
+          <XAxis
+            dataKey="label"
+            tick={{
+              className: 'wl-chart-axis-tick',
+              fontSize: 10,
+              fontFamily: 'var(--font-mono, monospace)',
+            }}
+            axisLine={false}
+            tickLine={false}
+            interval="preserveStartEnd"
+            minTickGap={50}
+          />
+          <YAxis
+            domain={['auto', 'auto']}
+            tick={{
+              className: 'wl-chart-axis-tick',
+              fontSize: 10,
+              fontFamily: 'var(--font-mono, monospace)',
+            }}
+            axisLine={false}
+            tickLine={false}
+            width={40}
+            tickFormatter={(v) =>
+              isPortfolio
+                ? `${v >= 0 ? '+' : ''}${Number(v).toFixed(1)}%`
+                : `${Number(v).toFixed(1)}`
+            }
+          />
+          <Tooltip
+            content={(tooltipProps) => <WlChartTooltip {...tooltipProps} isPortfolio={isPortfolio} />}
+            cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }}
+          />
+          {data.length > 0 && startValue != null && Number.isFinite(startValue) && (
+            <ReferenceLine
+              y={startValue}
+              stroke="rgba(128,128,128,0.2)"
+              strokeDasharray="3 4"
+            />
+          )}
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={lineColour}
+            strokeWidth={1.5}
+            fill={`url(#${gradientId})`}
+            dot={false}
+            activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
