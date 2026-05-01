@@ -763,3 +763,156 @@ body.dark-mode .dcf-delta-row-track,
   border-radius: 6px;
   margin-top: 0.5rem;
 }
+
+/* ════════════════════════════════════════════════════════════
+   DCF Mode Switcher — toggle between Forward and Reverse modes
+   ════════════════════════════════════════════════════════════ */
+.dcf-mode-switcher {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dcf-mode-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  color: var(--text-muted, #8b949e);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.dcf-mode-btn:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--text-secondary, #e2e8f0);
+}
+
+.dcf-mode-btn.is-active {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #60a5fa;
+}
+
+.dcf-mode-btn i {
+  font-size: 0.875rem;
+}
+
+.dcf-mode-sub {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #8b949e);
+  margin-top: 0.1rem;
+}
+
+.dcf-mode-btn.is-active .dcf-mode-sub {
+  color: rgba(96, 165, 250, 0.8);
+}
+
+/* ════════════════════════════════════════════════════════════
+   Reverse DCF Placeholder
+   ════════════════════════════════════════════════════════════ */
+.dcf-reverse-placeholder {
+  padding: 3rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.dcf-reverse-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;
+  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.dcf-reverse-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+  letter-spacing: -0.02em;
+}
+
+.dcf-reverse-sub {
+  margin: 0 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #60a5fa;
+}
+
+.dcf-reverse-desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #e2e8f0);
+}
+
+.dcf-reverse-current {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.dcf-reverse-current strong {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.dcf-reverse-coming-soon {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 999px;
+  color: #f59e0b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Light mode overrides */
+body.light-mode .dcf-mode-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .dcf-mode-btn.is-active {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1e40af;
+}
+
+body.light-mode .dcf-reverse-title {
+  color: #0f172a;
+}
+
+body.light-mode .dcf-reverse-desc {
+  color: #1e293b;
+}

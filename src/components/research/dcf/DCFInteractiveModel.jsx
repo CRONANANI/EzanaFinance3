@@ -16,6 +16,7 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
   const [errorSelected, setErrorSelected] = useState(null);
   const [applyToPeers, setApplyToPeers] = useState(false);
   const [peerLoadComplete, setPeerLoadComplete] = useState(false);
+  const [dcfMode, setDcfMode] = useState('forward'); // 'forward' | 'reverse'
 
   const baselineLoadedRef = useRef(false);
 
@@ -212,7 +213,34 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
         </div>
       </div>
 
-      <div className="dcf-assumptions-toolbar" role="toolbar" aria-label="DCF assumptions">
+      <div className="dcf-mode-switcher" role="tablist" aria-label="DCF mode">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={dcfMode === 'forward'}
+          className={`dcf-mode-btn ${dcfMode === 'forward' ? 'is-active' : ''}`}
+          onClick={() => setDcfMode('forward')}
+        >
+          <i className="bi bi-graph-up-arrow" /> Forward DCF
+          <span className="dcf-mode-sub">Compute fair value</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={dcfMode === 'reverse'}
+          className={`dcf-mode-btn ${dcfMode === 'reverse' ? 'is-active' : ''}`}
+          onClick={() => setDcfMode('reverse')}
+        >
+          <i className="bi bi-arrow-left-right" /> Reverse DCF
+          <span className="dcf-mode-sub">Implied growth</span>
+        </button>
+      </div>
+
+      {dcfMode === 'reverse' ? (
+        <ReverseDCFPlaceholder symbol={symbol} />
+      ) : (
+        <>
+          <div className="dcf-assumptions-toolbar" role="toolbar" aria-label="DCF assumptions">
         {Object.entries(grouped).map(([section, items]) => (
           <div key={section} className="dcf-toolbar-section">
             <div className="dcf-toolbar-section-label">{section}</div>
@@ -283,20 +311,58 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
             </div>
           </div>
         ))}
-      </div>
+          </div>
 
-      <div className="dcf-chart-area">
-        <PriceComparisonChart
-          stocks={stocks}
-          loadingSelected={loadingSelected}
-          errorSelected={errorSelected}
-          peerLoadComplete={peerLoadComplete}
-        />
-      </div>
+          <div className="dcf-chart-area">
+            <PriceComparisonChart
+              stocks={stocks}
+              loadingSelected={loadingSelected}
+              errorSelected={errorSelected}
+              peerLoadComplete={peerLoadComplete}
+            />
+          </div>
 
-      {infoAssumption && (
-        <DCFInfoModal assumption={infoAssumption} onClose={() => setInfoAssumption(null)} />
+          {infoAssumption && (
+            <DCFInfoModal assumption={infoAssumption} onClose={() => setInfoAssumption(null)} />
+          )}
+        </>
       )}
+    </div>
+  );
+}
+
+/**
+ * Reverse DCF Mode — placeholder.
+ * Forward DCF: assume growth/margin/WACC inputs → output fair value
+ * Reverse DCF: assume current market price is "fair" → output implied growth + margin
+ *
+ * Full implementation deferred to a future sprint. This placeholder shows
+ * the model's intent so users know what's coming.
+ */
+function ReverseDCFPlaceholder({ symbol }) {
+  return (
+    <div className="dcf-reverse-placeholder">
+      <div className="dcf-reverse-icon">
+        <i className="bi bi-arrow-left-right" />
+      </div>
+      <h3 className="dcf-reverse-title">Reverse DCF Model</h3>
+      <p className="dcf-reverse-sub">Market Expectations · Reverse-engineering</p>
+      <p className="dcf-reverse-desc">
+        Use this model to calculate what growth rate, margin, and free cash flow a company must
+        deliver to justify its current market value.
+      </p>
+      <p className="dcf-reverse-desc">
+        Best for equity research, hedge funds, and stock pitching, because it turns valuation into
+        numbers: revenue CAGR, FCF margin, WACC, terminal growth, and implied upside/downside.
+      </p>
+      {symbol && (
+        <p className="dcf-reverse-current">
+          Currently viewing: <strong>{symbol}</strong>
+        </p>
+      )}
+      <div className="dcf-reverse-coming-soon">
+        <i className="bi bi-clock-history" /> Full reverse-DCF analysis arriving in a future update
+      </div>
     </div>
   );
 }

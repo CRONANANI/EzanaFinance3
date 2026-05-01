@@ -49,13 +49,7 @@ import '@/components/research/model-card-shell.css';
 import '@/components/research/market/market-portfolio.css';
 import './company-research-theme.css';
 
-/* ── Carousel model configs from the prompts library ──
- * The "risk" model's stress-test capability now lives on the
- * Market/Portfolio view as a dedicated Stress Test card, so it is filtered
- * out of the Company-side carousel to avoid duplication. The underlying
- * prompt stays in the library for future use.
- */
-const CAROUSEL_MODELS = getCarouselModels().filter((m) => m.id !== 'risk');
+const CAROUSEL_MODELS = getCarouselModels();
 
 function ResearchPageHeader({ view, setView }) {
   return (
@@ -242,9 +236,9 @@ function CompanyResearchPageInner() {
     setActiveModel(null);
   }, []);
 
-  /** DCF, Earnings, Technical, Dividend — gold accent on tiles (see company-research-theme.css). */
+  /** DCF & Earnings (custom interactive) — gold accent on tiles (see company-research-theme.css). */
   const PREMIUM_MODEL_IDS = useMemo(
-    () => new Set(['dcf', 'earnings', 'technical', 'dividend']),
+    () => new Set(['dcf', 'earnings']),
     [],
   );
 

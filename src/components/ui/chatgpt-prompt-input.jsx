@@ -119,10 +119,13 @@ const MicIcon = (props) => (
 export const EZANA_RESEARCH_TOOLS = [
   { id: 'grpv', name: 'GRPV analysis', shortName: 'GRPV', href: '/company-research#modelDetailSection' },
   { id: 'dcf', name: 'DCF valuation', shortName: 'DCF', href: '/company-research#modelDetailSection' },
-  { id: 'risk', name: 'Risk analysis', shortName: 'Risk', href: '/company-research#modelDetailSection' },
   { id: 'earnings', name: 'Earnings analysis', shortName: 'Earnings', href: '/company-research#earnings-card' },
-  { id: 'technical', name: 'Technical analysis', shortName: 'Technical', href: '/company-research#marketChartSection' },
-  { id: 'dividend', name: 'Dividend strategy', shortName: 'Dividend', href: '/company-research' },
+  { id: 'comps', name: 'Comparable companies', shortName: 'Comps', href: '/company-research#modelDetailSection' },
+  { id: 'threestatement', name: '3-statement model', shortName: '3-Stmt', href: '/company-research#modelDetailSection' },
+  { id: 'lbo', name: 'LBO model', shortName: 'LBO', href: '/company-research#modelDetailSection' },
+  { id: 'ma', name: 'M&A accretion/dilution', shortName: 'M&A', href: '/company-research#modelDetailSection' },
+  { id: 'risk', name: 'Portfolio risk model', shortName: 'Risk', href: '/company-research#modelDetailSection' },
+  { id: 'montecarlo', name: 'Monte Carlo simulation', shortName: 'Monte Carlo', href: '/company-research#modelDetailSection' },
 ];
 
 export function CentaurPromptBox({

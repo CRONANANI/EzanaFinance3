@@ -31,12 +31,12 @@ export function getModelStripVariables(modelId, ctx = {}) {
       ];
     case 'risk':
       return [
-        c('Scenario', 'Base', undefined),
-        c('Shock mag.', '—', 'percent'),
-        c('Correlation', '—', undefined),
-        c('Horizon', '12m', undefined),
-        c('Liquidity', '—', undefined),
-        c('Recovery', '—', undefined),
+        c('Volatility (ann.)', '—', 'percent'),
+        c('Beta (vs SPY)', '—', 'number'),
+        c('Sharpe', '—', 'number'),
+        c('Max drawdown', '—', 'percent'),
+        c('VaR (95%)', '—', 'percent'),
+        c('Sortino', '—', 'number'),
       ];
     case 'earnings':
       return [
@@ -47,23 +47,50 @@ export function getModelStripVariables(modelId, ctx = {}) {
         c('Surprise %', '—', 'percent'),
         c('Guidance', '—', undefined),
       ];
-    case 'technical':
+    case 'comps':
       return [
-        c('RSI (14)', '—', 'number'),
-        c('MACD', '—', undefined),
-        c('50-day MA', '—', 'currency'),
-        c('200-day MA', '—', 'currency'),
-        c('Bollinger %b', '—', 'number'),
-        c('Vol. vs avg', '—', undefined),
+        c('Peer median P/E', '—', 'multiple'),
+        c('EV / EBITDA', '—', 'multiple'),
+        c('EV / Rev', '—', 'multiple'),
+        c('FCF yield', '—', 'percent'),
+        c('vs peer band', '—', undefined),
+        c('Implied fair range', '—', undefined),
       ];
-    case 'dividend':
+    case 'threestatement':
       return [
-        c('Dividend yield', '—', 'percent'),
-        c('Payout ratio', '—', 'percent'),
-        c('5Y growth', '—', 'percent'),
-        c('Yrs increases', '—', 'number'),
-        c('Forward yield', '—', 'percent'),
-        c('Ex-div. date', '—', undefined),
+        c('Rev. growth Y1–5', '—', 'percent'),
+        c('EBITDA margin', '—', 'percent'),
+        c('FCF margin', '—', 'percent'),
+        c('Capex / rev', '—', 'percent'),
+        c('Net debt / EBITDA', '—', 'multiple'),
+        c('Balance check', '—', undefined),
+      ];
+    case 'lbo':
+      return [
+        c('Entry EV/EBITDA', '—', 'multiple'),
+        c('Net leverage', '—', 'multiple'),
+        c('IRR (base)', '—', 'percent'),
+        c('MOIC', '—', 'multiple'),
+        c('Exit year', 'Y5', undefined),
+        c('Debt paydown', '—', undefined),
+      ];
+    case 'ma':
+      return [
+        c('Offer premium', '—', 'percent'),
+        c('Cash / stock / debt', '—', undefined),
+        c('Y1 EPS impact', '—', 'percent'),
+        c('Accretive?', '—', undefined),
+        c('Synergies', '—', undefined),
+        c('Breakeven yr', '—', undefined),
+      ];
+    case 'montecarlo':
+      return [
+        c('Paths', '10,000', 'number'),
+        c('P5 / P50 / P95', '—', undefined),
+        c('P(profit)', '—', 'percent'),
+        c('E[value]', '—', 'currency'),
+        c('Vol input', '—', 'percent'),
+        c('Horizon', '1Y', undefined),
       ];
     default:
       return [

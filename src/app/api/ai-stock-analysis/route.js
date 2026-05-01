@@ -30,7 +30,10 @@ export async function POST(request) {
 
     if (!modelId) {
       return NextResponse.json(
-        { error: 'model is required (grpv, dcf, risk, earnings, technical, dividend)' },
+        {
+          error:
+            'model is required (grpv, dcf, earnings, comps, threestatement, lbo, ma, risk, montecarlo)',
+        },
         { status: 400 }
       );
     }
