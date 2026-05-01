@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import {
   CartesianGrid,
@@ -20,21 +20,12 @@ const TABS = [
 ];
 
 /**
- * Fixed Y-axis ticks for the Market Performance chart.
- * Clamped to ±2.5% with gridlines every 0.25%. This is intentionally narrow
- * — most platform-aggregate weekly returns fall well within ±2.5%, and a
- * fixed scale makes WoW comparisons visually stable. Outliers beyond the
- * domain get clipped (Recharts hides points whose y exceeds the domain);
- * accept that as a known trade-off for visual consistency.
- *
- * 21 ticks is dense; Recharts will collide labels and skip some. That's
- * fine — the GRIDLINES still render; only some text labels are dropped.
+ * Fixed Y-axis for Market Performance: domain ±2.5% with ticks every 1 percentage
+ * point (less crowded than 0.25% steps). Chart height is derived from width so
+ * vertical distance between ticks ≈ 70% of horizontal distance between weekday
+ * ticks: (innerH / 5) = 0.7 * (innerW / 4) → innerH = 0.875 * innerW.
  */
-const Y_AXIS_TICKS = [
-  -2.5, -2.25, -2.0, -1.75, -1.5, -1.25, -1.0, -0.75, -0.5, -0.25,
-  0,
-  0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5,
-];
+const Y_AXIS_TICKS = [-2, -1, 0, 1, 2];
 const Y_AXIS_DOMAIN = [-2.5, 2.5];
 
 function addDaysYmd(ymd, delta) {
@@ -101,10 +92,37 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     });
   }, [indexPayload]);
 
-  // Y-axis is fixed at ±2.5% with 0.25% gridlines (see Y_AXIS_DOMAIN / Y_AXIS_TICKS).
+  // Y-axis: 1% ticks; chart height scales with width so vertical tick spacing ≈ 70% of weekday spacing.
+  const chartMargin = useMemo(
+    () => ({ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 52 : 40 }),
+    [compact, chartOnly]
+  );
 
-  /* Shorter on small phones, scale up with breakpoint via CSS where possible */
-  const chartH = chartOnly ? (compact ? 220 : 240) : compact ? 160 : 200;
+  const chartWrapRef = useRef(null);
+  const [chartH, setChartH] = useState(() => (chartOnly ? (compact ? 220 : 240) : compact ? 190 : 230));
+
+  const chartReady = !loading && !failed;
+
+  useLayoutEffect(() => {
+    if (!chartReady) return;
+    const el = chartWrapRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const w = el.offsetWidth;
+      const axisReserve = compact ? 50 : 58;
+      const innerW = Math.max(100, w - axisReserve);
+      const innerH = Math.round(0.875 * innerW);
+      const nextH = innerH + chartMargin.top + chartMargin.bottom;
+      const clamped = Math.min(420, Math.max(compact ? 175 : 195, nextH));
+      setChartH(clamped);
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [chartReady, compact, chartOnly, chartMargin.top, chartMargin.bottom]);
 
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
@@ -124,6 +142,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
       {!loading && !failed && (
         <div
+          ref={chartWrapRef}
           className="w-full min-w-0 overflow-hidden"
           style={{
             height: chartH,
@@ -138,7 +157,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                   ? chartData
                   : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]
               }
-              margin={{ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 52 : 40 }}
+              margin={chartMargin}
             >
               <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} strokeDasharray="2 4" />
               <XAxis
@@ -153,15 +172,11 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
               <YAxis
                 domain={Y_AXIS_DOMAIN}
                 ticks={Y_AXIS_TICKS}
-                tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`}
+                tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`}
                 tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
                 width={compact ? 38 : 44}
-                /* Pass `interval={0}` so Recharts doesn't auto-skip ticks; we want all 21
-                   gridlines drawn even if labels collide. The grid stays informative; some
-                   labels will be visually dropped on narrow viewports — that's expected. */
-                interval={0}
               />
               <ReferenceLine y={0} stroke="rgba(107,114,128,0.3)" strokeDasharray="3 3" />
               <Tooltip
