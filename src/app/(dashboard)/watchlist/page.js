@@ -602,7 +602,9 @@ export default function WatchlistPage() {
     }
     const tk = selected.ticker;
     let cancelled = false;
-    fetch(`/api/watchlist/holders?ticker=${encodeURIComponent(tk)}&limit=10`)
+    fetch(`/api/watchlist/holders?ticker=${encodeURIComponent(tk)}&limit=10`, {
+      credentials: 'same-origin',
+    })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => {
         if (!cancelled) setHolderList(d.holders || []);

@@ -112,7 +112,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/portfolio/week-series')
+    fetch('/api/portfolio/week-series', { credentials: 'same-origin' })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => { if (!cancelled) setPortfolioPayload(d); })
       .catch(() => { if (!cancelled) setPortfolioPayload({ ok: false, series: [] }); });
@@ -509,7 +509,7 @@ export function ThisWeekOnEzana({ compact = false, marketChartOnly = false }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/market/index-week')
+    fetch('/api/market/index-week', { credentials: 'same-origin' })
       .then(async (r) => {
         let data = {};
         try {

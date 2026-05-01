@@ -189,6 +189,14 @@
   justify-content: flex-end;
   gap: .65rem .75rem;
 }
+/* Holders + alert: own row so bubbles are not clipped or squeezed beside price */
+.wl-price-right-cluster .wl-holders-block {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  justify-content: flex-end;
+}
 .wl-price-num-block {
   display: flex;
   flex-direction: column;

@@ -15,12 +15,25 @@
   --db-muted: #6b7280;
   --db-muted-soft: #8b949e;
   --db-muted-ink: #4b5563;
+  /* Used by This Week on Ezana (home-terminal-summary.css) when embedded here */
+  --home-muted: #6b7280;
+  --home-muted-soft: #8b949e;
+  --home-muted-ink: #4b5563;
+  --home-heading: #f0f6fc;
+  --home-body-secondary: #cbd5e1;
+  --home-row-text: #e2e8f0;
 }
 
 body.light-mode .db-page {
   --db-muted: #64748b;
   --db-muted-soft: #64748b;
   --db-muted-ink: #475569;
+  --home-muted: #64748b;
+  --home-muted-soft: #64748b;
+  --home-muted-ink: #475569;
+  --home-heading: #111827;
+  --home-body-secondary: #475569;
+  --home-row-text: #1f2937;
 }
 
 /* ══════════════════════════════

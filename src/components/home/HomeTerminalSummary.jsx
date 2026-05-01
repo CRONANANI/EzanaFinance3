@@ -14,7 +14,14 @@ import dynamic from 'next/dynamic';
    HTML simple and delays the Recharts chunk until the browser is idle. */
 const ThisWeekOnEzana = dynamic(
   () => import('./ThisWeekOnEzana').then((m) => ({ default: m.ThisWeekOnEzana })),
-  { ssr: false, loading: () => null }
+  {
+    ssr: false,
+    loading: () => (
+      <p className="hts-week-loading" style={{ textAlign: 'center', margin: '1rem 0', color: 'var(--home-muted)' }}>
+        Loading This Week on Ezana…
+      </p>
+    ),
+  }
 );
 import { OrgHomeCards } from '@/components/org/OrgHomeCards';
 import { useOrg } from '@/contexts/OrgContext';
@@ -522,6 +529,14 @@ export function HomeTerminalSummary({
       </Link>
 
       <OrgHomeCards />
+
+      {isOrgUser && (
+        <div className="dashboard-page-inset home-week-col" style={{ marginBottom: '1.25rem' }}>
+          <div className="db-card hts-card hts-week-card hts-week-card--compact">
+            <ThisWeekOnEzana compact marketChartOnly />
+          </div>
+        </div>
+      )}
 
       {!isOrgUser && (
         <>
