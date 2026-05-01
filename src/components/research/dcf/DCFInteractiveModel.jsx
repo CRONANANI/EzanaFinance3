@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { DCF_ASSUMPTIONS, DEFAULT_ASSUMPTIONS, formatAssumption } from './dcf-assumptions';
 import DCFInfoModal from './DCFInfoModal';
 import PriceComparisonChart from './PriceComparisonChart';
+import ReverseDCFPanel from './ReverseDCFPanel';
 import './dcf-interactive.css';
 
 export default function DCFInteractiveModel({ symbol, onClose }) {
@@ -186,6 +187,8 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
     return acc;
   }, {});
 
+  const primaryStock = stocks.find((s) => s.isPrimary) || null;
+
   return (
     <div className="dcf-interactive-root">
       <div className="dcf-interactive-header">
@@ -237,7 +240,11 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
       </div>
 
       {dcfMode === 'reverse' ? (
-        <ReverseDCFPlaceholder symbol={symbol} />
+        <ReverseDCFPanel
+          symbol={symbol}
+          baseAssumptions={assumptions}
+          livePrice={primaryStock?.livePrice ?? null}
+        />
       ) : (
         <>
           <div className="dcf-assumptions-toolbar" role="toolbar" aria-label="DCF assumptions">
@@ -327,42 +334,6 @@ export default function DCFInteractiveModel({ symbol, onClose }) {
           )}
         </>
       )}
-    </div>
-  );
-}
-
-/**
- * Reverse DCF Mode — placeholder.
- * Forward DCF: assume growth/margin/WACC inputs → output fair value
- * Reverse DCF: assume current market price is "fair" → output implied growth + margin
- *
- * Full implementation deferred to a future sprint. This placeholder shows
- * the model's intent so users know what's coming.
- */
-function ReverseDCFPlaceholder({ symbol }) {
-  return (
-    <div className="dcf-reverse-placeholder">
-      <div className="dcf-reverse-icon">
-        <i className="bi bi-arrow-left-right" />
-      </div>
-      <h3 className="dcf-reverse-title">Reverse DCF Model</h3>
-      <p className="dcf-reverse-sub">Market Expectations · Reverse-engineering</p>
-      <p className="dcf-reverse-desc">
-        Use this model to calculate what growth rate, margin, and free cash flow a company must
-        deliver to justify its current market value.
-      </p>
-      <p className="dcf-reverse-desc">
-        Best for equity research, hedge funds, and stock pitching, because it turns valuation into
-        numbers: revenue CAGR, FCF margin, WACC, terminal growth, and implied upside/downside.
-      </p>
-      {symbol && (
-        <p className="dcf-reverse-current">
-          Currently viewing: <strong>{symbol}</strong>
-        </p>
-      )}
-      <div className="dcf-reverse-coming-soon">
-        <i className="bi bi-clock-history" /> Full reverse-DCF analysis arriving in a future update
-      </div>
     </div>
   );
 }
