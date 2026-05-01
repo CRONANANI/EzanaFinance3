@@ -69,43 +69,6 @@ function formatLongDate() {
   return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
-/* ═══════════════════════════════════════════════════════════
-   DONUT CHART COMPONENT
-   ═══════════════════════════════════════════════════════════ */
-function DonutChart({ segments, size = 160, strokeWidth = 22, centerValue, centerLabel }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  let offset = 0;
-
-  return (
-    <div className="db-donut-wrap" style={{ width: size, height: size }}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="db-donut-svg">
-        {segments.map((seg, i) => {
-          const dash = (seg.pct / 100) * circumference;
-          const currentOffset = offset;
-          offset += dash;
-          return (
-            <circle
-              key={i}
-              cx={size / 2} cy={size / 2} r={radius}
-              fill="none" stroke={seg.color} strokeWidth={strokeWidth}
-              strokeDasharray={`${dash} ${circumference - dash}`}
-              strokeDashoffset={-currentOffset}
-              transform={`rotate(-90 ${size / 2} ${size / 2})`}
-              strokeLinecap="round"
-              style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-            />
-          );
-        })}
-      </svg>
-      <div className="db-donut-center">
-        <span className="db-donut-value">{centerValue}</span>
-        {centerLabel && <span className="db-donut-label">{centerLabel}</span>}
-      </div>
-    </div>
-  );
-}
-
 /**
  * Pie chart showing sector distribution by value. Hovering a segment
  * shows a tooltip with the sector name and exact dollar value.
@@ -446,31 +409,6 @@ export default function HomeDashboardPage() {
     }
     return [];
   }, [useMock, mock.enrichedPositions, normalizedHoldings]);
-
-  const profitDonutSegmentSum = useMemo(
-    () => totalProfitsRows.reduce((s, r) => s + (r.posValue || 0), 0) || 1,
-    [totalProfitsRows],
-  );
-
-  const profitDonutSegments = useMemo(() => {
-    if (totalProfitsRows.length > 0) {
-      return totalProfitsRows.map((r) => {
-        const pv = r.posValue || 0;
-        return {
-          label: r.symbol,
-          pct: (pv / profitDonutSegmentSum) * 100,
-          color: r.color,
-          value: typeof r.pnl === 'number' && r.pnl > 0 ? r.pnl : 0,
-        };
-      });
-    }
-    if (useMock) {
-      return mock.profitBreakdown.length
-        ? mock.profitBreakdown
-        : [{ label: 'No positions yet', pct: 100, color: '#2a2f3a' }];
-    }
-    return [{ label: 'No positions', pct: 100, color: '#2a2f3a', value: 0 }];
-  }, [totalProfitsRows, profitDonutSegmentSum, useMock, mock.profitBreakdown]);
 
   const profitPositionWeights = useMemo(() => {
     const sum = totalProfitsRows.reduce((s, r) => s + (r.posValue || 0), 0) || 1;
@@ -967,33 +905,86 @@ export default function HomeDashboardPage() {
           </div>
           <div className="db-profits-body">
             <div className="db-profits-chart-wrap">
-              {useMock ? (
-                <DonutChart
-                  segments={profitDonutSegments}
-                  size={110}
-                  strokeWidth={16}
-                  centerValue={`${mock.totalPnl >= 0 ? '+' : '-'}$${Math.abs(mock.totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
-                  centerLabel={`${mock.totalPnlPct >= 0 ? '+' : ''}${mock.totalPnlPct.toFixed(2)}% total`}
-                />
-              ) : (
-                <DonutChart
-                  segments={profitDonutSegments}
-                  size={110}
-                  strokeWidth={16}
-                  centerValue={
-                    typeof plaidSummary?.totalGainLoss === 'number' && plaidConnected
-                      ? `${plaidSummary.totalGainLoss >= 0 ? '+' : '-'}$${Math.abs(plaidSummary.totalGainLoss).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-                      : ''
-                  }
-                  centerLabel={
-                    typeof plaidSummary?.totalGainLossPercent === 'number' && plaidConnected
-                      ? `${plaidSummary.totalGainLossPercent >= 0 ? '+' : ''}${plaidSummary.totalGainLossPercent.toFixed(2)}% vs cost basis`
-                      : totalProfitsRows.length === 0
-                        ? 'Add holdings to track P&L'
-                        : 'Day change by position'
-                  }
-                />
-              )}
+              <div className="db-profits-summary">
+                <div className="db-profits-summary-value">
+                  {(() => {
+                    const total = useMock
+                      ? mock.totalPnl
+                      : typeof plaidSummary?.totalGainLoss === 'number'
+                        ? plaidSummary.totalGainLoss
+                        : null;
+                    if (total === null) return '—';
+                    return `${total >= 0 ? '+' : '-'}$${Math.abs(total).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+                  })()}
+                </div>
+                <div className="db-profits-summary-label">
+                  {(() => {
+                    const pct = useMock
+                      ? mock.totalPnlPct
+                      : typeof plaidSummary?.totalGainLossPercent === 'number'
+                        ? plaidSummary.totalGainLossPercent
+                        : null;
+                    if (pct === null) {
+                      return totalProfitsRows.length === 0 ? 'No positions' : 'Total P&L';
+                    }
+                    return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% total`;
+                  })()}
+                </div>
+              </div>
+
+              {profitPositionWeights.length > 0 &&
+                (() => {
+                  const rows = profitPositionWeights
+                    .map((p) => {
+                      const magnitude =
+                        typeof p.pnl === 'number' ? Math.abs(p.pnl) : p.weightPct || 0;
+                      const isPositive = typeof p.pnl === 'number' ? p.pnl >= 0 : true;
+                      return { ...p, magnitude, isPositive };
+                    })
+                    .filter((r) => r.magnitude > 0)
+                    .sort((a, b) => b.magnitude - a.magnitude)
+                    .slice(0, 6);
+
+                  if (rows.length === 0) return null;
+
+                  const maxMagnitude = rows.reduce((m, r) => Math.max(m, r.magnitude), 0) || 1;
+
+                  return (
+                    <div className="db-profits-bars" role="list" aria-label="Profit by company">
+                      {rows.map((r) => {
+                        const widthPct = (r.magnitude / maxMagnitude) * 100;
+                        const barColor =
+                          typeof r.pnl === 'number'
+                            ? r.isPositive
+                              ? '#10b981'
+                              : '#ef4444'
+                            : r.color || '#6b7280';
+                        const valueLabel =
+                          typeof r.pnl === 'number'
+                            ? `${r.isPositive ? '+' : '-'}$${Math.abs(r.pnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+                            : `${(r.weightPct || 0).toFixed(0)}%`;
+
+                        return (
+                          <div key={r.symbol} role="listitem" className="db-profits-bar-row">
+                            <span className="db-profits-bar-symbol">{r.symbol}</span>
+                            <div className="db-profits-bar-track">
+                              <div
+                                className="db-profits-bar-fill"
+                                style={{ width: `${widthPct}%`, background: barColor }}
+                              />
+                            </div>
+                            <span
+                              className="db-profits-bar-value"
+                              style={{ color: typeof r.pnl === 'number' ? barColor : undefined }}
+                            >
+                              {valueLabel}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
             </div>
             <div className="db-profits-legend-scroll">
               {totalProfitsRows.length === 0 ? (
