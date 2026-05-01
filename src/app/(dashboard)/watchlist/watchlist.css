@@ -532,9 +532,13 @@ body.light-mode .wl-side-search input { background: #f3f4f6; color: #111827; bor
   top: calc(100% + 4px);
   z-index: 40;
   border-radius: 8px;
-  border: 1px solid rgba(16,185,129,.15);
-  background: var(--card, rgba(22,27,34,.98));
-  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  /* `--bg-secondary` resolves to #0d1117 in dark mode, #ffffff in light mode.
+     The previous `--card` token was never declared, so the dropdown was
+     painting at 98% opacity in both themes — text was hard to read because
+     content behind the panel bled through. Now fully opaque and theme-aware. */
+  background: var(--bg-secondary, #0d1117);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
   overflow: hidden;
 }
 .wl-wl-opt {
@@ -546,7 +550,7 @@ body.light-mode .wl-side-search input { background: #f3f4f6; color: #111827; bor
   padding: 0.5rem 0.65rem;
   font-size: 0.6875rem;
   text-align: left;
-  color: var(--foreground,#e2e8f0);
+  color: var(--text-secondary, #e2e8f0);
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(16,185,129,.06);
@@ -556,7 +560,7 @@ body.light-mode .wl-side-search input { background: #f3f4f6; color: #111827; bor
 .wl-wl-opt:last-child { border-bottom: none; }
 .wl-wl-opt:hover { background: rgba(16,185,129,.06); }
 .wl-wl-opt.on { color: #10b981; background: rgba(16,185,129,.08); }
-.wl-wl-meta { font-size: 0.5625rem; color: var(--muted-foreground,#6b7280); }
+.wl-wl-meta { font-size: 0.5625rem; color: var(--text-muted, #8b949e); }
 
 /* Watchlist search (suggestions) */
 .wl-search-wrap { position: relative; width: 100%; }
@@ -899,4 +903,17 @@ body.light-mode .wl-strip-badge.crypto {
     width: 100%;
     min-width: 0;
   }
+}
+
+/* Light-mode watchlist dropdown — stronger emerald tint for visibility on white */
+body.light-mode .wl-wl-opt:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+body.light-mode .wl-wl-opt.on {
+  background: rgba(16, 185, 129, 0.12);
+}
+
+body.light-mode .wl-wl-opt {
+  border-bottom-color: rgba(0, 0, 0, 0.04);
 }
