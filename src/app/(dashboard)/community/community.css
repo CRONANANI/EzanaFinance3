@@ -2053,6 +2053,11 @@ body.light-mode .comm-card-head-meta > p {
 
 .comm-usersearch-card .us-wrap {
   margin: 0;
+  /* Remove the 640px cap from UserSearch's default styling so the pill spans
+     the full card width. The cap is appropriate for narrow contexts (sidebars,
+     modals) but the community find-investors card wants edge-to-edge search. */
+  max-width: none;
+  width: 100%;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
