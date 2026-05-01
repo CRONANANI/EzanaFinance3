@@ -1,0 +1,115 @@
+#!/usr/bin/env node
+/**
+ * One-shot backfill: scan the last 90 days of GitHub commits, group by ISO week,
+ * generate a Claude summary per week, and insert into platform_changelog_entries.
+ *
+ * Usage:
+ *   node scripts/backfill-changelog.mjs
+ *
+ * Required env vars:
+ *   GITHUB_TOKEN
+ *   GITHUB_REPO
+ *   ANTHROPIC_API_KEY
+ *   NEXT_PUBLIC_SUPABASE_URL
+ *   SUPABASE_SERVICE_ROLE_KEY
+ *
+ * Idempotent: re-runs skip weeks that already have an entry.
+ */
+
+import 'dotenv/config';
+import { createClient } from '@supabase/supabase-js';
+import { fetchCommits, summarizeCommits, getIsoWeekRange } from '../src/lib/changelog/git-summarizer.js';
+
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
+
+async function main() {
+  const now = new Date();
+  const ninetyDaysAgo = new Date(now);
+  ninetyDaysAgo.setUTCDate(ninetyDaysAgo.getUTCDate() - 90);
+
+  // Build a list of ISO weeks to backfill (chronological, oldest first)
+  const weeks = [];
+  let cursor = new Date(ninetyDaysAgo);
+  while (cursor < now) {
+    const { start, end, weekKey } = getIsoWeekRange(cursor);
+    if (!weeks.find((w) => w.weekKey === weekKey)) {
+      weeks.push({ start, end, weekKey });
+    }
+    cursor = new Date(cursor);
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
+  }
+
+  console.log(`Backfilling ${weeks.length} weeks: ${weeks[0]?.weekKey} → ${weeks[weeks.length - 1]?.weekKey}`);
+
+  let inserted = 0;
+  let skipped = 0;
+  let errored = 0;
+
+  for (const w of weeks) {
+    try {
+      // Idempotency check
+      const { data: existing } = await supabase
+        .from('platform_changelog_entries')
+        .select('id')
+        .ilike('body', `%Week ${w.weekKey}%`)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        console.log(`  ${w.weekKey}: SKIP (already exists)`);
+        skipped++;
+        continue;
+      }
+
+      const commits = await fetchCommits(w.start.toISOString(), w.end.toISOString());
+      if (commits.length === 0) {
+        console.log(`  ${w.weekKey}: SKIP (no commits)`);
+        skipped++;
+        continue;
+      }
+
+      const summary = await summarizeCommits(commits, { start: w.start.toISOString(), end: w.end.toISOString() });
+      if (!summary) {
+        console.log(`  ${w.weekKey}: SKIP (no meaningful commits, ${commits.length} total)`);
+        skipped++;
+        continue;
+      }
+
+      const releasedAt = new Date(w.start);
+      releasedAt.setUTCDate(releasedAt.getUTCDate() + 6);
+      releasedAt.setUTCHours(12, 0, 0, 0);
+
+      const { error } = await supabase.from('platform_changelog_entries').insert({
+        title: summary.title,
+        body: `${summary.body}\n\n_Week ${w.weekKey} · ${commits.length} commits_`,
+        category: summary.category,
+        is_pinned: false,
+        is_published: true,
+        author_email: 'changelog-bot@ezana.world',
+        released_at: releasedAt.toISOString(),
+      });
+
+      if (error) {
+        console.error(`  ${w.weekKey}: ERROR ${error.message}`);
+        errored++;
+      } else {
+        console.log(`  ${w.weekKey}: INSERTED — "${summary.title}" (${commits.length} commits)`);
+        inserted++;
+      }
+
+      // Be polite to GitHub + Anthropic — 2s between weeks
+      await new Promise((r) => setTimeout(r, 2000));
+    } catch (e) {
+      console.error(`  ${w.weekKey}: ERROR ${e.message}`);
+      errored++;
+    }
+  }
+
+  console.log(`\nDone. Inserted: ${inserted}, Skipped: ${skipped}, Errored: ${errored}`);
+}
+
+main().catch((e) => {
+  console.error('Fatal:', e);
+  process.exit(1);
+});

@@ -307,3 +307,52 @@ body.light-mode .pcl-empty {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.06);
 }
+
+/* Week grouping */
+.pcl-week-group {
+  margin-bottom: 1.5rem;
+}
+
+.pcl-week-group:last-child {
+  margin-bottom: 0;
+}
+
+.pcl-week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0 0.6rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary, #0a0e13);
+  z-index: 1;
+}
+
+.pcl-week-range {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #10b981;
+}
+
+.pcl-week-count {
+  font-size: 0.6875rem;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+.pcl-week-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+body.light-mode .pcl-week-header {
+  background: var(--bg-primary, #f4f7f5);
+  border-bottom-color: rgba(16, 185, 129, 0.2);
+}
