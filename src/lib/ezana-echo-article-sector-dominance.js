@@ -156,7 +156,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "What made railroads different from the banks and canals that preceded them was scale. The capital required to build a transcontinental rail line dwarfed anything previously raised in American markets. The Union Pacific and Central Pacific, racing to meet at Promontory Summit in 1869, together consumed more than $100 million in public and private capital — a sum that would have been unimaginable two decades earlier. The federal government provided massive land grants and bond guarantees, but the operating capital came from public stock and bond issuance. The exchanges existed, in many ways, to serve the railroads.",
+      text: "What made railroads different from the banks and canals that preceded them was scale. The capital required to build a transcontinental rail line dwarfed anything previously raised in American [[kw:market-indices]]markets[[/kw]]. The Union Pacific and Central Pacific, racing to meet at Promontory Summit in 1869, together consumed more than $100 million in public and private capital — a sum that would have been unimaginable two decades earlier. The federal government provided massive land grants and bond guarantees, but the operating capital came from public stock and bond issuance. The exchanges existed, in many ways, to serve the railroads.",
     },
     {
       type: 'paragraph',
@@ -172,7 +172,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "Decline was gradual but unmistakable. The Sherman Antitrust Act of 1890 and subsequent rulings broke up the largest combinations. The rise of the automobile after 1900 began to siphon investment toward a new transportation paradigm. The Hepburn Act of 1906 imposed federal rate regulation that capped railroad profitability. By 1910, transport had fallen to about forty-two percent of the market — still the largest sector, but no longer dominant. Standard Oil, US Steel, and a new generation of industrial giants were rising fast. The next regime had already begun.",
+      text: "Decline was gradual but unmistakable. The [[kw:antitrust]]Sherman Antitrust Act of 1890[[/kw]] and subsequent rulings broke up the largest combinations. The rise of the automobile after 1900 began to siphon investment toward a new transportation paradigm. The Hepburn Act of 1906 imposed federal rate regulation that capped railroad profitability. By 1910, transport had fallen to about forty-two percent of the market — still the largest sector, but no longer dominant. Standard Oil, US Steel, and a new generation of industrial giants were rising fast. The next regime had already begun.",
     },
 
     /* ─── ERA 3: ENERGY & MATERIALS (≈750 words) ─── */
@@ -191,7 +191,7 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "The third stage was the post-war boom. Between 1945 and 1970, American manufacturing operated nearly without international competition. European and Japanese industrial bases had been destroyed during the war and would take decades to rebuild. American oil majors developed reserves across the Middle East, North Africa, and Latin America. American steel producers supplied the Marshall Plan rebuilding of Europe, the Korean War mobilization, the interstate highway construction, and the suburban housing boom. Profits were enormous, dividends were generous, and energy and materials stocks were considered the bedrock of any institutional portfolio.",
+      text: "The third stage was the post-war boom. Between 1945 and 1970, American manufacturing operated nearly without international competition. European and Japanese industrial bases had been destroyed during the war and would take decades to rebuild. American oil majors developed reserves across the Middle East, North Africa, and Latin America. American steel producers supplied the Marshall Plan rebuilding of Europe, the Korean War mobilization, the interstate highway construction, and the suburban housing boom. Profits were enormous, [[kw:dividends]]dividends[[/kw]] were generous, and energy and materials stocks were considered the bedrock of any institutional portfolio.",
     },
     {
       type: 'paragraph',
@@ -210,11 +210,11 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "The era can be subdivided into roughly four phases. The first was the personal computer phase, beginning in the early 1980s and accelerating through the 1990s. IBM, Microsoft, Intel, and a wave of hardware and software companies created a new category of equity that did not fit the industrial framework of the previous era. These companies had high gross margins, low capital requirements, and the ability to grow revenues at rates that would have been unthinkable for a steel manufacturer or an oil major. The market gradually learned to value them differently — using metrics like growth rates, recurring revenue, and software multiples that had no clear precedent.",
+      text: "The era can be subdivided into roughly four phases. The first was the personal computer phase, beginning in the early 1980s and accelerating through the 1990s. IBM, Microsoft, Intel, and a wave of hardware and software companies created a new category of equity that did not fit the industrial framework of the previous era. These companies had high gross margins, low capital requirements, and the ability to grow revenues at rates that would have been unthinkable for a steel manufacturer or an oil major. The market gradually learned to value them differently — using metrics like growth rates, recurring revenue, and software [[kw:pe-ratio]]multiples[[/kw]] that had no clear precedent.",
     },
     {
       type: 'paragraph',
-      text: "The second phase was the internet boom of the late 1990s. The dot-com bubble produced extraordinary excess — Pets.com, Webvan, eToys, and hundreds of similarly capitalized companies that lost billions before failing — but it also produced enduring infrastructure. Cisco, Oracle, and EMC built the plumbing of the early internet. Amazon, eBay, and Yahoo demonstrated that purely digital businesses could reach mass scale. When the bubble burst in 2000-2002, technology's share of the market temporarily collapsed from over thirty percent back down to the high teens, and many investors concluded that the era was already over.",
+      text: "The second phase was the internet boom of the late 1990s. The dot-com bubble produced extraordinary excess — Pets.com, Webvan, eToys, and hundreds of similarly capitalized companies that lost billions before failing — but it also produced enduring infrastructure. Cisco, Oracle, and EMC built the plumbing of the early internet. Amazon, eBay, and Yahoo demonstrated that purely digital businesses could reach mass scale. When the [[kw:growth-vs-value]]bubble[[/kw]] burst in 2000-2002, technology's share of the market temporarily collapsed from over thirty percent back down to the high teens, and many investors concluded that the era was already over.",
     },
     {
       type: 'paragraph',
@@ -226,14 +226,14 @@ export const sectorDominanceArticle = {
     },
     {
       type: 'paragraph',
-      text: "What's striking about the current era, viewed in long historical context, is that technology's dominance — at roughly forty-five percent of the market — is real but not as overwhelming as the regimes that came before. Finance hit ninety percent in 1800. Transport hit sixty-two percent in 1880. Energy and materials peaked at thirty-eight percent in 1940. Today's technology concentration, while significant, is below the high-water marks of every previous era. The sectors of yore were more dominant. Whether that means technology has further to run, or whether market structure simply prevents any single sector from reaching the heights it once could, is a question only the next chart — drawn fifty or one hundred years from now — will be able to answer.",
+      text: "What's striking about the current era, viewed in long historical context, is that technology's dominance — at roughly forty-five percent of the [[kw:market-capitalization]]market[[/kw]] — is real but not as overwhelming as the regimes that came before. Finance hit ninety percent in 1800. Transport hit sixty-two percent in 1880. Energy and materials peaked at thirty-eight percent in 1940. Today's technology concentration, while significant, is below the high-water marks of every previous era. The sectors of yore were more dominant. Whether that means technology has further to run, or whether market structure simply prevents any single sector from reaching the heights it once could, is a question only the next chart — drawn fifty or one hundred years from now — will be able to answer.",
     },
 
     /* ─── CLOSING ─── */
     { type: 'heading', text: 'What The Pattern Reveals', level: 2 },
     {
       type: 'paragraph',
-      text: "Two hundred and twenty-five years of US equity history compressed into a single image makes one fact unmissable: market leadership rotates. Each era's dominant sector was, in its time, considered the unassailable bedrock of any serious portfolio. Banks in 1820. Railroads in 1870. Standard Oil and US Steel in 1920. The conglomerates of the Nifty Fifty in 1965. Each was eventually displaced — not because investors stopped believing in them, but because the underlying economy moved on to something else. The current technology regime will, in its turn, share that fate. The question for today's investor is not whether the rotation will happen, but what comes next — and what 2050's version of this chart will look like when it is finally drawn.",
+      text: "Two hundred and twenty-five years of US equity history compressed into a single image makes one fact unmissable: [[kw:sector-rotation]]market leadership rotates[[/kw]]. Each era's dominant sector was, in its time, considered the unassailable bedrock of any serious portfolio. Banks in 1820. Railroads in 1870. Standard Oil and US Steel in 1920. The conglomerates of the Nifty Fifty in 1965. Each was eventually displaced — not because investors stopped believing in them, but because the underlying economy moved on to something else. The current technology regime will, in its turn, share that fate. The question for today's investor is not whether the rotation will happen, but what comes next — and what 2050's version of this chart will look like when it is finally drawn.",
     },
   ],
   author: 'Ezana Finance Editorial',

@@ -12,7 +12,11 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
+import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
+import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
+import { parseKeywords } from '@/components/echo/parseKeywords';
 import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
+import { getKeywordById } from '@/lib/echo-keywords';
 import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
 
 import '../../../../../app-legacy/assets/css/theme.css';
@@ -28,10 +32,37 @@ function getEraForYear(year) {
   );
 }
 
+function ParagraphWithKeywords({ text }) {
+  const tokens = parseKeywords(text);
+  const { activeKeywordId, openKeyword } = useKeywordPopup();
+
+  return (
+    <p>
+      {tokens.map((token, i) => {
+        if (token.type === 'text') return <span key={i}>{token.content}</span>;
+        const keyword = getKeywordById(token.keywordId);
+        if (!keyword) return <span key={i}>{token.display}</span>;
+        const isActive = activeKeywordId === token.keywordId;
+        return (
+          <button
+            key={i}
+            type="button"
+            className={`ekp-keyword-span ${isActive ? 'is-active' : ''}`}
+            onClick={(e) => openKeyword(token.keywordId, e.currentTarget)}
+            data-keyword-id={token.keywordId}
+          >
+            {token.display}
+          </button>
+        );
+      })}
+    </p>
+  );
+}
+
 function ArticleBlock({ block }) {
   switch (block.type) {
     case 'paragraph':
-      return <p>{block.text}</p>;
+      return <ParagraphWithKeywords text={block.text} />;
 
     case 'heading':
       return block.level === 3 ? (
@@ -502,82 +533,85 @@ export default function EchoArticleClient({ article }) {
   const paragraphs = article.contentParagraphs ?? [];
 
   return (
-    <div className="echo-article-page">
-      <div className="echo-article-page-inset">
-        <Link href="/ezana-echo" className="echo-back">
-          <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
-        </Link>
+    <EchoKeywordProvider>
+      <div className="echo-article-page">
+        <div className="echo-article-page-inset">
+          <Link href="/ezana-echo" className="echo-back">
+            <i className="bi bi-arrow-left" aria-hidden /> Back to Ezana Echo
+          </Link>
 
-        <article className="echo-article-shell">
-          <header className="echo-article-header">
-            <div className="echo-article-kicker">
-              <span className="echo-article-kicker-dot" aria-hidden />
-              {(article.category || 'markets').toUpperCase()}
+          <article className="echo-article-shell">
+            <header className="echo-article-header">
+              <div className="echo-article-kicker">
+                <span className="echo-article-kicker-dot" aria-hidden />
+                {(article.category || 'markets').toUpperCase()}
+              </div>
+              <h1 className="echo-article-h1">{article.title}</h1>
+              {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
+              <div className="echo-article-byline">
+                <span className="echo-article-byline-author">
+                  By <strong>{article.author}</strong>
+                </span>
+                <span className="echo-article-byline-divider" aria-hidden>
+                  ·
+                </span>
+                <span>{formatPublishedDate(article.publishedAt)}</span>
+                <span className="echo-article-byline-divider" aria-hidden>
+                  ·
+                </span>
+                <span>{article.readTime} min read</span>
+              </div>
+              {tickers.length > 0 && (
+                <div className="echo-ticker-row" role="list" aria-label="Related tickers">
+                  {tickers.map((t) => (
+                    <Link
+                      key={t}
+                      href={`/company-research?q=${encodeURIComponent(t)}`}
+                      className="echo-ticker"
+                      role="listitem"
+                    >
+                      <i className="bi bi-graph-up" aria-hidden />
+                      <span>{t}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </header>
+
+            <div className="echo-article-body">
+              {Array.isArray(blocks) && blocks.length > 0
+                ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
+                : paragraphs.map((p, i) => (
+                    <ParagraphWithKeywords key={i} text={p} />
+                  ))}
             </div>
-            <h1 className="echo-article-h1">{article.title}</h1>
-            {article.excerpt && <p className="echo-article-deck">{article.excerpt}</p>}
-            <div className="echo-article-byline">
-              <span className="echo-article-byline-author">
-                By <strong>{article.author}</strong>
-              </span>
-              <span className="echo-article-byline-divider" aria-hidden>
-                ·
-              </span>
-              <span>{formatPublishedDate(article.publishedAt)}</span>
-              <span className="echo-article-byline-divider" aria-hidden>
-                ·
-              </span>
-              <span>{article.readTime} min read</span>
+
+            <div className="echo-article-footer">
+              <EchoArticleEngagement articleId={article.id} />
             </div>
-            {tickers.length > 0 && (
-              <div className="echo-ticker-row" role="list" aria-label="Related tickers">
-                {tickers.map((t) => (
-                  <Link
-                    key={t}
-                    href={`/company-research?q=${encodeURIComponent(t)}`}
-                    className="echo-ticker"
-                    role="listitem"
-                  >
-                    <i className="bi bi-graph-up" aria-hidden />
-                    <span>{t}</span>
+
+            <section className="echo-article-related">
+              <div className="echo-article-related-header">
+                <h2 className="echo-section-title">Related Articles</h2>
+                <Link href="/ezana-echo" className="echo-article-related-link">
+                  View all <i className="bi bi-arrow-right" aria-hidden />
+                </Link>
+              </div>
+              <div className="echo-related-grid">
+                {relatedCards.map((a) => (
+                  <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-related-card">
+                    <span className="echo-related-card-kicker">{(a.category || 'markets').toUpperCase()}</span>
+                    <p className="echo-related-title">{a.title}</p>
+                    {a.excerpt && <p className="echo-related-excerpt">{a.excerpt}</p>}
+                    <span className="echo-related-card-meta">{a.readTime} min read</span>
                   </Link>
                 ))}
               </div>
-            )}
-          </header>
-
-          <div className="echo-article-body">
-            {Array.isArray(blocks) && blocks.length > 0
-              ? blocks.map((block, i) => <ArticleBlock key={i} block={block} />)
-              : paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-          </div>
-
-          <div className="echo-article-footer">
-            <EchoArticleEngagement articleId={article.id} />
-          </div>
-
-          <section className="echo-article-related">
-            <div className="echo-article-related-header">
-              <h2 className="echo-section-title">Related Articles</h2>
-              <Link href="/ezana-echo" className="echo-article-related-link">
-                View all <i className="bi bi-arrow-right" aria-hidden />
-              </Link>
-            </div>
-            <div className="echo-related-grid">
-              {relatedCards.map((a) => (
-                <Link key={a.id} href={`/ezana-echo/${a.id}`} className="echo-related-card">
-                  <span className="echo-related-card-kicker">{(a.category || 'markets').toUpperCase()}</span>
-                  <p className="echo-related-title">{a.title}</p>
-                  {a.excerpt && <p className="echo-related-excerpt">{a.excerpt}</p>}
-                  <span className="echo-related-card-meta">{a.readTime} min read</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </article>
+            </section>
+          </article>
+        </div>
       </div>
-    </div>
+      <EchoKeywordPopup />
+    </EchoKeywordProvider>
   );
 }
