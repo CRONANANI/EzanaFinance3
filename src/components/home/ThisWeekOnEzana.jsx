@@ -1,10 +1,9 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ReferenceLine,
@@ -57,75 +56,157 @@ function weekRangeLabel() {
   return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
 }
 
-const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji'];
+const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'portfolio'];
+const MARKET_KEYS = ['spx', 'ixic', 'rut', 'dji'];
+const PORTFOLIO_KEY = 'portfolio';
 
 const SERIES_COLORS = {
-  spx:  '#ef4444',
-  ixic: '#10b981',
-  rut:  '#8b5cf6',
-  dji:  '#f59e0b',
+  spx:       '#ef4444',
+  ixic:      '#10b981',
+  rut:       '#8b5cf6',
+  dji:       '#f59e0b',
+  portfolio: '#06b6d4',
 };
 
 const SERIES_NAMES = {
-  spx:  'S&P 500',
-  ixic: 'NASDAQ',
-  rut:  'Russell 2K',
-  dji:  'Dow Jones',
+  spx:       'S&P 500',
+  ixic:      'NASDAQ',
+  rut:       'Russell 2K',
+  dji:       'Dow Jones',
+  portfolio: 'My Portfolio',
 };
+
+/**
+ * Pearson correlation between two equal-length numeric arrays.
+ * Returns null if arrays mismatch, are too short, or have zero variance.
+ */
+function pearson(xs, ys) {
+  if (!Array.isArray(xs) || !Array.isArray(ys)) return null;
+  const filtered = [];
+  for (let i = 0; i < Math.min(xs.length, ys.length); i++) {
+    if (typeof xs[i] === 'number' && typeof ys[i] === 'number' &&
+        Number.isFinite(xs[i]) && Number.isFinite(ys[i])) {
+      filtered.push([xs[i], ys[i]]);
+    }
+  }
+  if (filtered.length < 3) return null;
+
+  const n = filtered.length;
+  let sumX = 0; let sumY = 0; let sumXY = 0; let sumX2 = 0; let sumY2 = 0;
+  for (const [x, y] of filtered) {
+    sumX += x; sumY += y;
+    sumXY += x * y;
+    sumX2 += x * x; sumY2 += y * y;
+  }
+  const num = n * sumXY - sumX * sumY;
+  const den = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  if (den === 0) return null;
+  return num / den;
+}
 
 function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false }) {
   const loading = indexPayload === null;
   const failed = !loading && (!indexPayload?.ok || !indexPayload?.indices);
 
+  const [portfolioPayload, setPortfolioPayload] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/portfolio/week-series')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d) => { if (!cancelled) setPortfolioPayload(d); })
+      .catch(() => { if (!cancelled) setPortfolioPayload({ ok: false, series: [] }); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const [visibleSeries, setVisibleSeries] = useState({
+    spx: true, ixic: true, rut: true, dji: true, portfolio: true,
+  });
+
+  const toggleSeries = (key) => {
+    setVisibleSeries((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      const visibleMarkets = MARKET_KEYS.filter((k) => next[k]);
+      if (visibleMarkets.length === 0) {
+        return prev;
+      }
+      return next;
+    });
+  };
+
   const chartData = useMemo(() => {
     const idx = indexPayload?.indices;
     if (!idx) return [];
-    const first = CHART_KEYS.map((k) => idx[k]?.series).find((s) => Array.isArray(s) && s.length > 0);
-    if (!first) return [];
-    return first.map((row, i) => {
+    const marketSeries = MARKET_KEYS.map((k) => idx[k]?.series).find((s) => Array.isArray(s) && s.length > 0);
+    if (!marketSeries) return [];
+
+    const portfolioSeries = portfolioPayload?.series || [];
+
+    return marketSeries.map((row, i) => {
       const out = { day: row.day };
-      CHART_KEYS.forEach((k) => {
+      MARKET_KEYS.forEach((k) => {
         const pt = idx[k]?.series?.[i];
         out[k] = pt?.pct ?? null;
       });
+      out.portfolio = portfolioSeries[i]?.pct ?? null;
       return out;
     });
-  }, [indexPayload]);
+  }, [indexPayload, portfolioPayload]);
 
-  // Y-axis: 1% ticks; chart height scales with width so vertical tick spacing ≈ 70% of weekday spacing.
-  const chartMargin = useMemo(
-    () => ({ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 52 : 40 }),
-    [compact, chartOnly]
-  );
+  const correlation = useMemo(() => {
+    if (!visibleSeries.portfolio) return null;
+    if (chartData.length < 3) return null;
 
-  const chartWrapRef = useRef(null);
-  const [chartH, setChartH] = useState(() => (chartOnly ? (compact ? 220 : 240) : compact ? 190 : 230));
+    const selectedMarkets = MARKET_KEYS.filter((k) => visibleSeries[k]);
+    if (selectedMarkets.length === 0) return null;
 
-  const chartReady = !loading && !failed;
+    const portfolioVals = [];
+    const blendedVals = [];
+    for (const row of chartData) {
+      const pct = row.portfolio;
+      if (pct == null) continue;
+      const marketPcts = selectedMarkets.map((k) => row[k]).filter((v) => typeof v === 'number');
+      if (marketPcts.length === 0) continue;
+      const avg = marketPcts.reduce((s, v) => s + v, 0) / marketPcts.length;
+      portfolioVals.push(pct);
+      blendedVals.push(avg);
+    }
 
-  useLayoutEffect(() => {
-    if (!chartReady) return;
-    const el = chartWrapRef.current;
-    if (!el) return;
+    return pearson(portfolioVals, blendedVals);
+  }, [chartData, visibleSeries]);
 
-    const update = () => {
-      const w = el.offsetWidth;
-      const axisReserve = compact ? 50 : 58;
-      const innerW = Math.max(100, w - axisReserve);
-      const innerH = Math.round(0.875 * innerW);
-      const nextH = innerH + chartMargin.top + chartMargin.bottom;
-      const clamped = Math.min(420, Math.max(compact ? 175 : 195, nextH));
-      setChartH(clamped);
-    };
+  const correlationDisplay = useMemo(() => {
+    if (correlation == null) return null;
+    const sign = correlation >= 0 ? '+' : '';
+    return `${sign}${correlation.toFixed(2)}`;
+  }, [correlation]);
 
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [chartReady, compact, chartOnly, chartMargin.top, chartMargin.bottom]);
+  const correlationColor = useMemo(() => {
+    if (correlation == null) return 'var(--home-muted)';
+    const abs = Math.abs(correlation);
+    if (correlation > 0) {
+      if (abs >= 0.5) return '#10b981';
+      if (abs >= 0.2) return '#34d399';
+      return 'var(--home-muted-soft)';
+    }
+    if (abs >= 0.5) return '#ef4444';
+    if (abs >= 0.2) return '#fca5a5';
+    return 'var(--home-muted-soft)';
+  }, [correlation]);
+
+  const chartH = chartOnly ? (compact ? 220 : 240) : compact ? 160 : 200;
 
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
+
+      {correlationDisplay !== null && (
+        <div className="hts-week-corr-badge" aria-label={`Portfolio correlation: ${correlationDisplay}`}>
+          <span className="hts-week-corr-label">Portfolio correlation</span>
+          <span className="hts-week-corr-value" style={{ color: correlationColor }}>
+            {correlationDisplay}
+          </span>
+        </div>
+      )}
 
       {loading && (
         <p className="hts-week-loading" style={{ textAlign: 'center', margin: '0.5rem 0' }}>
@@ -141,89 +222,102 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
       )}
 
       {!loading && !failed && (
-        <div
-          ref={chartWrapRef}
-          className="w-full min-w-0 overflow-hidden"
-          style={{
-            height: chartH,
-            minHeight: chartH,
-            position: 'relative',
-          }}
-        >
-          <ResponsiveContainer width="100%" height={chartH}>
-            <LineChart
-              data={
-                chartData.length
-                  ? chartData
-                  : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]
-              }
-              margin={chartMargin}
-            >
-              <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} strokeDasharray="2 4" />
-              <XAxis
-                dataKey="day"
-                interval="preserveStartEnd"
-                minTickGap={12}
-                padding={{ left: 12, right: 8 }}
-                tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                domain={Y_AXIS_DOMAIN}
-                ticks={Y_AXIS_TICKS}
-                tickFormatter={(v) => `${v > 0 ? '+' : ''}${v}%`}
-                tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
-                axisLine={false}
-                tickLine={false}
-                width={compact ? 38 : 44}
-              />
-              <ReferenceLine y={0} stroke="rgba(107,114,128,0.3)" strokeDasharray="3 3" />
-              <Tooltip
-                formatter={(value, name) => {
-                  if (typeof value !== 'number') return ['—', name];
-                  const sign = value >= 0 ? '+' : '';
-                  return [`${sign}${value.toFixed(2)}%`, name];
-                }}
-                contentStyle={{
-                  background: '#161b22',
-                  border: '1px solid rgba(16,185,129,0.15)',
-                  borderRadius: '8px',
-                  fontSize: '0.7rem',
-                  color: 'var(--text-secondary, #e2e8f0)',
-                }}
-                labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
-              />
-              <Legend
-                iconType="plainline"
-                iconSize={14}
-                wrapperStyle={{
-                  fontSize: compact ? '0.875rem' : '1rem',
-                  color: 'var(--home-muted-soft)',
-                  paddingTop: 6,
-                  lineHeight: 1.25,
-                }}
-                formatter={(value) => (
-                  <span style={{ color: 'var(--home-row-text)' }}>{value}</span>
-                )}
-              />
-              {CHART_KEYS.map((k) => (
-                <Line
-                  key={k}
-                  type="monotone"
-                  dataKey={k}
-                  stroke={SERIES_COLORS[k]}
-                  strokeWidth={1.8}
-                  dot={{ r: 2.5, fill: SERIES_COLORS[k], strokeWidth: 0 }}
-                  activeDot={{ r: 4, strokeWidth: 1.5, stroke: '#161b22' }}
-                  connectNulls
-                  name={SERIES_NAMES[k]}
-                  isAnimationActive={false}
+        <>
+          <div
+            className="w-full min-w-0 overflow-hidden"
+            style={{ height: chartH, minHeight: chartH, position: 'relative' }}
+          >
+            <ResponsiveContainer width="100%" height={chartH}>
+              <LineChart
+                data={chartData.length ? chartData : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]}
+                margin={{ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 4 : 8 }}
+              >
+                <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} strokeDasharray="2 4" />
+                <XAxis
+                  dataKey="day"
+                  interval="preserveStartEnd"
+                  minTickGap={12}
+                  padding={{ left: 12, right: 8 }}
+                  tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
+                  axisLine={false}
+                  tickLine={false}
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+                <YAxis
+                  domain={Y_AXIS_DOMAIN}
+                  ticks={Y_AXIS_TICKS}
+                  tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`}
+                  tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={compact ? 38 : 44}
+                  interval={0}
+                />
+                <ReferenceLine y={0} stroke="rgba(107,114,128,0.3)" strokeDasharray="3 3" />
+                <Tooltip
+                  formatter={(value, name) => {
+                    if (typeof value !== 'number') return ['—', name];
+                    const sign = value >= 0 ? '+' : '';
+                    return [`${sign}${value.toFixed(2)}%`, name];
+                  }}
+                  contentStyle={{
+                    background: '#161b22',
+                    border: '1px solid rgba(16,185,129,0.15)',
+                    borderRadius: '8px',
+                    fontSize: '0.7rem',
+                    color: 'var(--text-secondary, #e2e8f0)',
+                  }}
+                  labelStyle={{ color: 'var(--home-muted-soft)', fontWeight: 600, marginBottom: 4 }}
+                />
+                {CHART_KEYS.map((k) => (
+                  visibleSeries[k] ? (
+                    <Line
+                      key={k}
+                      type="monotone"
+                      dataKey={k}
+                      stroke={SERIES_COLORS[k]}
+                      strokeWidth={k === PORTFOLIO_KEY ? 2.4 : 1.8}
+                      dot={{ r: 2.5, fill: SERIES_COLORS[k], strokeWidth: 0 }}
+                      activeDot={{ r: 4, strokeWidth: 1.5, stroke: '#161b22' }}
+                      connectNulls
+                      name={SERIES_NAMES[k]}
+                      isAnimationActive={false}
+                    />
+                  ) : null
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="hts-week-legend" role="group" aria-label="Toggle chart series">
+            {CHART_KEYS.map((k) => {
+              const isVisible = visibleSeries[k];
+              const isMarket = MARKET_KEYS.includes(k);
+              const visibleMarketCount = MARKET_KEYS.filter((mk) => visibleSeries[mk]).length;
+              const isLastMarket = isMarket && isVisible && visibleMarketCount === 1;
+
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  className={`hts-week-legend-item ${isVisible ? 'is-on' : 'is-off'} ${isLastMarket ? 'is-locked' : ''}`}
+                  onClick={() => toggleSeries(k)}
+                  disabled={isLastMarket}
+                  title={isLastMarket ? 'At least one market must remain selected' : `Toggle ${SERIES_NAMES[k]}`}
+                  aria-pressed={isVisible}
+                >
+                  <span
+                    className="hts-week-legend-swatch"
+                    style={{
+                      background: isVisible ? SERIES_COLORS[k] : 'transparent',
+                      borderColor: SERIES_COLORS[k],
+                    }}
+                  />
+                  <span className="hts-week-legend-label">{SERIES_NAMES[k]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

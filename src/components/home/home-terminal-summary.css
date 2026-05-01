@@ -636,6 +636,7 @@ body.light-mode .hts-week-index-legend-btn.is-active {
 }
 
 .hts-week-tab-inner {
+  position: relative;
   height: 100%;
   box-sizing: border-box;
   padding: 0 2px;
@@ -1874,6 +1875,120 @@ body.light-mode .hts-events-warn {
 
 .hts-week-market-v3 .recharts-legend-item-text {
   padding-left: 4px !important;
+}
+
+/* Correlation badge — top-right of the market chart area */
+.hts-week-corr-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 8px;
+  font-size: 0.6875rem;
+  z-index: 2;
+}
+
+.hts-week-corr-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: var(--home-muted, #8b949e);
+}
+
+.hts-week-corr-value {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  letter-spacing: -0.02em;
+}
+
+/* Custom legend — replaces Recharts <Legend> */
+.hts-week-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 0.75rem;
+  padding: 0.6rem 0 0.2rem;
+}
+
+.hts-week-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.55rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--home-row-text, #e2e8f0);
+  transition: all 150ms ease;
+}
+
+.hts-week-legend-item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.hts-week-legend-item.is-off {
+  opacity: 0.45;
+}
+
+.hts-week-legend-item.is-off .hts-week-legend-label {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+.hts-week-legend-item.is-locked {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.hts-week-legend-item.is-locked:hover {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.hts-week-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid;
+  flex-shrink: 0;
+  transition: background 150ms ease;
+}
+
+.hts-week-legend-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+body.light-mode .hts-week-corr-badge {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+body.light-mode .hts-week-legend-item:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .hts-week-legend-item.is-off .hts-week-legend-label {
+  text-decoration-color: rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 480px) {
+  .hts-week-corr-badge {
+    position: static;
+    margin-bottom: 0.35rem;
+    align-self: flex-end;
+  }
 }
 
 @media (max-width: 1200px) {
