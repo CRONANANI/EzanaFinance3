@@ -1215,8 +1215,28 @@ body.light-mode .settings-title { color: #111827; }
 body.light-mode .settings-panel-title { color: #111827; }
 body.light-mode .settings-section-title { color: #1f2937; }
 body.light-mode .settings-nav-item.active { background: rgba(16, 185, 129, 0.06); }
-body.light-mode .settings-nav-label { color: #6b7280; }
+
+/* Resting label: bump from #6b7280 → #1f2937 for proper contrast on cream bg */
+body.light-mode .settings-nav-label { color: #1f2937; }
+
+/* Active label: stays the deepest contrast */
 body.light-mode .settings-nav-item.active .settings-nav-label { color: #111827; }
+
+/* Hover label: explicitly override the dark-mode #e2e8f0 rule.
+   Dark mode hover lightens text (white-on-dark); light mode hover should
+   DARKEN text + add emerald tint to signal interactivity. */
+body.light-mode .settings-nav-item:hover .settings-nav-label { color: #047857; }
+
+/* Description text under labels — also bumped from #4b5563 for readability */
+body.light-mode .settings-nav-desc { color: #4b5563; }
+body.light-mode .settings-nav-item:hover .settings-nav-desc { color: #6b7280; }
+
+/* Icon hover: dark mode keeps the emerald tint already; light mode needs the
+   same explicit emerald (icon color is #6b7280 by default). */
+body.light-mode .settings-nav-icon { color: #6b7280; }
+body.light-mode .settings-nav-item:hover .settings-nav-icon { color: #10b981; }
+body.light-mode .settings-nav-item.active .settings-nav-icon { color: #10b981; }
+
 body.light-mode .settings-input {
   background: rgba(0, 0, 0, 0.02);
   border-color: rgba(0, 0, 0, 0.1);
