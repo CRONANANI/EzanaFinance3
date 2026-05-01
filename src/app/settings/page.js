@@ -18,6 +18,7 @@ import {
   ApiPanel,
   OrgSettingsPanel,
   DataRequestPanel,
+  PartnerManagementPanel,
 } from '@/components/settings';
 import { usePartner } from '@/contexts/PartnerContext';
 import { useUserSettings } from '@/contexts/SettingsContext';
@@ -62,6 +63,7 @@ function SettingsInner() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('my-details');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [partnersTabAllowed, setPartnersTabAllowed] = useState(false);
   const router = useRouter();
   const { isPartner } = usePartner();
   const { isOrgUser, orgRole } = useOrg();
@@ -77,15 +79,27 @@ function SettingsInner() {
     saveSettings,
   } = useUserSettings();
 
+  useEffect(() => {
+    fetch('/api/admin/users/list', { method: 'OPTIONS' })
+      .then((r) => setPartnersTabAllowed(r.ok))
+      .catch(() => setPartnersTabAllowed(false));
+  }, []);
+
   const tabs = useMemo(() => {
+    const partnersTab = partnersTabAllowed
+      ? [{ key: 'partners', label: 'Partners', icon: 'bi-shield-check', desc: 'Manage partner accounts (admin)' }]
+      : [];
+    const withPartners = SETTINGS_TABS.flatMap((tab) =>
+      tab.key === 'integrations' ? [tab, ...partnersTab] : [tab],
+    );
     if (isOrgUser && orgRole === 'executive') {
       return [
-        ...SETTINGS_TABS,
+        ...withPartners,
         { key: 'organization', label: 'Organization', icon: 'bi-building', desc: 'Manage members & permissions' },
       ];
     }
-    return SETTINGS_TABS;
-  }, [isOrgUser, orgRole]);
+    return withPartners;
+  }, [isOrgUser, orgRole, partnersTabAllowed]);
 
   useEffect(() => {
     if (!tabs.some((t) => t.key === activeTab)) {

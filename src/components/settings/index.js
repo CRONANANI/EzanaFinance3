@@ -15,4 +15,5 @@ export {
 export { OrgSettingsPanel } from './OrgSettingsPanel';
 export { DataRequestPanel } from './DataRequestPanel';
 export { PlatformChangelogPanel } from './PlatformChangelogPanel';
+export { PartnerManagementPanel } from './PartnerManagementPanel';
 

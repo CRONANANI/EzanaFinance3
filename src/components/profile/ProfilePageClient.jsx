@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { TradeCard } from './TradeCard';
 import { ProfilePerformancePanel } from './ProfilePerformancePanel';
 import { ProfileEloCard } from './ProfileEloCard';
+import { ProfileTradeNotes } from './ProfileTradeNotes';
 import CopyRequestButton from './CopyRequestButton';
 import './copy-request-button.css';
 
@@ -663,7 +664,12 @@ export function ProfilePageClient({ username }) {
         </section>
 
         <aside className="xl:sticky xl:top-4 xl:self-start">
-          {profile?.id && <ProfileEloCard userId={profile.id} isOwn={isOwn} />}
+          {profile?.id && (
+            <>
+              <ProfileEloCard userId={profile.id} isOwn={isOwn} />
+              <ProfileTradeNotes userId={profile.id} isOwn={isOwn} />
+            </>
+          )}
           <ProfilePerformancePanel
             trades={effectiveTrades}
             ownProfile={isOwn}

@@ -13,6 +13,7 @@ import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
 import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
+import { HolderPopup } from '@/components/watchlist/HolderPopup';
 import { getAssetIcon } from '@/components/watchlist/asset-icons';
 import { ChevronDown, Check } from 'lucide-react';
 import {
@@ -174,32 +175,34 @@ const ASSET_CLASSES = [
   { id: 'Crypto', label: 'Crypto', icon: 'bi-currency-bitcoin', data: CRYPTO },
 ];
 
-/** Legendary investors & friends holding this ticker — demo (chart initials) */
+/**
+ * Fallback when /api/watchlist/holders is unavailable. Shape matches API response.
+ */
 const HOLDERS_BY_TICKER = {
   AAPL: [
-    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson' },
-    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim' },
-    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park' },
-    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen' },
-    { initials: 'WB', name: 'Warren Buffett', userId: 'demo-warren-buffett' },
-    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio' },
-    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood' },
-    { initials: 'PB', name: 'Peter Lynch', userId: 'demo-peter-lynch' },
-    { initials: 'JM', name: 'Joel Greenblatt', userId: 'demo-joel-greenblatt' },
-    { initials: 'CM', name: 'Charlie Munger', userId: 'demo-charlie-munger' },
+    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson', partner: false, shares: 18, avgCost: 142.3, portfolioPct: 3.2, daysHeld: 287 },
+    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim', partner: false, shares: 42, avgCost: 168.5, portfolioPct: 7.8, daysHeld: 412 },
+    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park', partner: false, shares: 9, avgCost: 175.2, portfolioPct: 1.5, daysHeld: 95 },
+    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen', partner: false, shares: 25, avgCost: 155.8, portfolioPct: 4.1, daysHeld: 365 },
+    { initials: 'WB', name: 'Warren Buffett', userId: 'demo-warren-buffett', partner: true, shares: 915000, avgCost: 132.0, portfolioPct: 21.4, daysHeld: 1820 },
+    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio', partner: true, shares: 220, avgCost: 158.4, portfolioPct: 2.8, daysHeld: 540 },
+    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood', partner: true, shares: 180, avgCost: 171.9, portfolioPct: 4.2, daysHeld: 198 },
+    { initials: 'PB', name: 'Peter Lynch', userId: 'demo-peter-lynch', partner: false, shares: 65, avgCost: 145.6, portfolioPct: 5.0, daysHeld: 720 },
+    { initials: 'JM', name: 'Joel Greenblatt', userId: 'demo-joel-greenblatt', partner: false, shares: 38, avgCost: 162.8, portfolioPct: 3.5, daysHeld: 240 },
+    { initials: 'CM', name: 'Charlie Munger', userId: 'demo-charlie-munger', partner: true, shares: 480000, avgCost: 128.5, portfolioPct: 18.2, daysHeld: 1650 },
   ],
   NVDA: [
-    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson' },
-    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim' },
-    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen' },
-    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood' },
-    { initials: 'JM', name: 'Jensen Huang', userId: 'demo-jensen-huang' },
+    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson', partner: false, shares: 12, avgCost: 410.2, portfolioPct: 6.8, daysHeld: 180 },
+    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim', partner: false, shares: 30, avgCost: 385.5, portfolioPct: 11.2, daysHeld: 245 },
+    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen', partner: false, shares: 18, avgCost: 425.8, portfolioPct: 7.4, daysHeld: 150 },
+    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood', partner: true, shares: 320, avgCost: 380.4, portfolioPct: 8.6, daysHeld: 290 },
+    { initials: 'JH', name: 'Jensen Huang', userId: 'demo-jensen-huang', partner: true, shares: 86000000, avgCost: 12.5, portfolioPct: 95.0, daysHeld: 5840 },
   ],
   MSFT: [
-    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson' },
-    { initials: 'WB', name: 'Bill Gates', userId: 'demo-bill-gates' },
-    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio' },
-    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park' },
+    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson', partner: false, shares: 22, avgCost: 312.4, portfolioPct: 5.4, daysHeld: 365 },
+    { initials: 'BG', name: 'Bill Gates', userId: 'demo-bill-gates', partner: true, shares: 38500000, avgCost: 28.0, portfolioPct: 28.5, daysHeld: 6200 },
+    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio', partner: true, shares: 165, avgCost: 295.6, portfolioPct: 3.9, daysHeld: 480 },
+    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park', partner: false, shares: 14, avgCost: 348.2, portfolioPct: 3.1, daysHeld: 120 },
   ],
 };
 
@@ -402,6 +405,8 @@ export default function WatchlistPage() {
   }, [watchlistsLoading, mockWatchlists, selectedWatchlistId]);
   const [wlDropdownOpen, setWlDropdownOpen] = useState(false);
   const wlDropdownRef = useRef(null);
+  const [activeHolder, setActiveHolder] = useState(null);
+  const [holderList, setHolderList] = useState([]);
 
   const orgTeamId = useMemo(() => {
     if (!isOrgUser) return null;
@@ -586,10 +591,29 @@ export default function WatchlistPage() {
   const isUp =
     portfolioReturn != null ? portfolioReturn >= 0 : (selectedMerged?.change ?? 0) >= 0;
 
-  const holderList = useMemo(() => {
-    if (selected?.type !== 'stock' || !selected.ticker) return [];
-    return (HOLDERS_BY_TICKER[selected.ticker] || []).slice(0, 10);
-  }, [selected]);
+  useEffect(() => {
+    setActiveHolder(null);
+  }, [selected?.id, selected?.ticker]);
+
+  useEffect(() => {
+    if (selected?.type !== 'stock' || !selected.ticker) {
+      setHolderList([]);
+      return;
+    }
+    const tk = selected.ticker;
+    let cancelled = false;
+    fetch(`/api/watchlist/holders?ticker=${encodeURIComponent(tk)}&limit=10`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((d) => {
+        if (!cancelled) setHolderList(d.holders || []);
+      })
+      .catch(() => {
+        if (!cancelled) setHolderList((HOLDERS_BY_TICKER[tk] || []).slice(0, 10));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selected?.type, selected?.id, selected?.ticker]);
 
   const watchlistCourses = useMemo(() => getCoursesForWatchlistPreview(4), []);
 
@@ -605,6 +629,14 @@ export default function WatchlistPage() {
 
   return (
     <div className="wl-page dashboard-page-inset">
+      {activeHolder && selected?.type === 'stock' && (
+        <HolderPopup
+          holder={activeHolder}
+          ticker={selected.ticker}
+          currentPrice={selectedMerged?.price ?? 0}
+          onClose={() => setActiveHolder(null)}
+        />
+      )}
 
       {/* ═══ ROW 1 with ASSET CLASS SWITCHER on the left ═══ */}
       <div className="wl-row-1">
@@ -779,20 +811,32 @@ export default function WatchlistPage() {
                 <div className="wl-portfolio-hint">Based on disclosed positions</div>
               )}
               {selected.type === 'stock' && holderList.length > 0 && (
-                <div className="wl-holder-bubbles" aria-label="Investors and friends holding this stock">
-                  {holderList.map((h) => (
-                    <Link
-                      key={h.userId + h.initials}
-                      href={`/community/profile/${h.userId}`}
-                      className="wl-holder-chip"
-                      title={h.name}
-                    >
-                      {h.initials}
-                    </Link>
-                  ))}
+                <div className="wl-holders-block">
+                  <div className="wl-holder-bubbles" aria-label="Investors holding this stock">
+                    {holderList.map((h) => (
+                      <button
+                        key={h.userId + h.initials}
+                        type="button"
+                        onClick={() => setActiveHolder(h)}
+                        className={`wl-holder-chip ${h.partner ? 'wl-holder-chip--partner' : ''}`}
+                        title={`${h.name}${h.partner ? ' · Partner' : ''}`}
+                        aria-label={`View ${h.name}'s position`}
+                      >
+                        {h.initials}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="wl-bc-link wl-price-alert-btn"
+                    onClick={() => completeTask('watchlist_3')}
+                    data-task-target="watchlist-price-alert"
+                  >
+                    <i className="bi bi-bell" /> Set price alert
+                  </button>
                 </div>
               )}
-              {selected.type === 'stock' && (
+              {selected.type === 'stock' && holderList.length === 0 && (
                 <button
                   type="button"
                   className="wl-bc-link wl-price-alert-btn"

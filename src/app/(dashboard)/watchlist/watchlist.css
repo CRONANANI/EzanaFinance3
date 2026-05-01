@@ -204,6 +204,31 @@
   max-width: 165px;
   align-content: start;
 }
+
+.wl-holders-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.wl-holder-chip--partner {
+  box-shadow:
+    0 0 0 2px #d4af37,
+    0 0 8px rgba(212, 175, 55, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.wl-holder-chip--partner:hover {
+  box-shadow:
+    0 0 0 2px #d4af37,
+    0 0 14px rgba(212, 175, 55, 0.55),
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
 .wl-holder-chip {
   width: 28px;
   height: 28px;
@@ -218,6 +243,8 @@
   background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
   box-shadow: 0 2px 6px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.08);
   border: none;
+  cursor: pointer;
+  font-family: inherit;
   transition: transform .15s, box-shadow .15s;
 }
 .wl-holder-chip:hover {
@@ -225,8 +252,8 @@
   box-shadow: 0 4px 10px rgba(16,185,129,.25);
 }
 .wl-price-alert-btn {
-  align-self: center;
-  padding: 4px 10px;
+  align-self: flex-end;
+  padding: 5px 12px;
   font-size: 12px;
 }
 
