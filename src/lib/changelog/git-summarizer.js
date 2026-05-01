@@ -28,7 +28,9 @@ export async function fetchCommits(sinceIso, untilIso) {
     const url = `${GITHUB_API}/repos/${repo}/commits?since=${sinceIso}&until=${untilIso}&per_page=100&page=${page}`;
     const res = await fetch(url, { headers });
     if (!res.ok) {
-      throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
+      const body = await res.text();
+      console.error(`[fetchCommits] GitHub API ${res.status} for ${url}: ${body.slice(0, 300)}`);
+      throw new Error(`GitHub API ${res.status}: ${body.slice(0, 300)}`);
     }
     const batch = await res.json();
     if (!Array.isArray(batch) || batch.length === 0) break;
@@ -120,7 +122,9 @@ Output ONLY the JSON object. No markdown fencing, no preamble, no explanation.`;
   try {
     parsed = JSON.parse(cleaned);
   } catch (e) {
-    console.error('[git-summarizer] Failed to parse Claude response:', cleaned.slice(0, 200));
+    console.error('[git-summarizer] Failed to parse Claude response. Raw:', text.slice(0, 500));
+    console.error('[git-summarizer] Cleaned:', cleaned.slice(0, 500));
+    console.error('[git-summarizer] Parse error:', e.message);
     return null;
   }
 
