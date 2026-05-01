@@ -10,8 +10,6 @@ import { usePortfolioValueSeries } from '@/hooks/usePortfolioValueSeries';
 import { supabase } from '@/lib/supabase';
 import { useMockPortfolio } from '@/hooks/useMockPortfolio';
 import { useWatchlists } from '@/hooks/useWatchlists';
-import { ThisWeekOnEzana } from '@/components/home/ThisWeekOnEzana';
-import '@/components/home/home-terminal-summary.css';
 import './home-dashboard.css';
 
 /** 9 holdings per page = 3 columns × 3 rows. Was 6 (3×2); tighter per-card
@@ -741,12 +739,6 @@ export default function HomeDashboardPage() {
           isLoading={valueSeriesLoading}
           loadError={valueSeriesError}
         />
-        </div>
-      </div>
-
-      <div className="home-week-col db-this-week-on-ezana" style={{ marginBottom: '1.25rem' }}>
-        <div className="db-card hts-card hts-week-card hts-week-card--compact">
-          <ThisWeekOnEzana compact marketChartOnly />
         </div>
       </div>
 
