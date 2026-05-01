@@ -3,20 +3,39 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import {
+  CartesianGrid,
+  Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  ReferenceLine,
-  Legend,
 } from 'recharts';
 
 const TABS = [
   { key: 'market', label: 'Market Performance' },
   { key: 'activity', label: 'Platform Activity' },
 ];
+
+/**
+ * Fixed Y-axis ticks for the Market Performance chart.
+ * Clamped to ±2.5% with gridlines every 0.25%. This is intentionally narrow
+ * — most platform-aggregate weekly returns fall well within ±2.5%, and a
+ * fixed scale makes WoW comparisons visually stable. Outliers beyond the
+ * domain get clipped (Recharts hides points whose y exceeds the domain);
+ * accept that as a known trade-off for visual consistency.
+ *
+ * 21 ticks is dense; Recharts will collide labels and skip some. That's
+ * fine — the GRIDLINES still render; only some text labels are dropped.
+ */
+const Y_AXIS_TICKS = [
+  -2.5, -2.25, -2.0, -1.75, -1.5, -1.25, -1.0, -0.75, -0.5, -0.25,
+  0,
+  0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5,
+];
+const Y_AXIS_DOMAIN = [-2.5, 2.5];
 
 function addDaysYmd(ymd, delta) {
   const [Y, M, D] = ymd.split('-').map(Number);
@@ -82,23 +101,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     });
   }, [indexPayload]);
 
-  const yDomain = useMemo(() => {
-    const vals = [];
-    chartData.forEach((r) => {
-      CHART_KEYS.forEach((k) => {
-        const v = r[k];
-        if (typeof v === 'number' && Number.isFinite(v)) vals.push(v);
-      });
-    });
-    if (!vals.length) return [-1, 1];
-    const mn = Math.min(...vals);
-    const mx = Math.max(...vals);
-    const pad = Math.max(Math.abs(mx - mn) * 0.35, 0.3);
-    return [
-      Math.floor((mn - pad) * 10) / 10,
-      Math.ceil((mx + pad) * 10) / 10,
-    ];
-  }, [chartData]);
+  // Y-axis is fixed at ±2.5% with 0.25% gridlines (see Y_AXIS_DOMAIN / Y_AXIS_TICKS).
 
   /* Shorter on small phones, scale up with breakpoint via CSS where possible */
   const chartH = chartOnly ? (compact ? 220 : 240) : compact ? 160 : 200;
@@ -135,8 +138,9 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                   ? chartData
                   : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]
               }
-              margin={{ top: 8, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 52 : 40 }}
+              margin={{ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 52 : 40 }}
             >
+              <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} strokeDasharray="2 4" />
               <XAxis
                 dataKey="day"
                 interval="preserveStartEnd"
@@ -147,13 +151,17 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                 tickLine={false}
               />
               <YAxis
-                domain={yDomain}
-                tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`}
+                domain={Y_AXIS_DOMAIN}
+                ticks={Y_AXIS_TICKS}
+                tickFormatter={(v) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`}
                 tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
                 width={compact ? 38 : 44}
-                tickCount={5}
+                /* Pass `interval={0}` so Recharts doesn't auto-skip ticks; we want all 21
+                   gridlines drawn even if labels collide. The grid stays informative; some
+                   labels will be visually dropped on narrow viewports — that's expected. */
+                interval={0}
               />
               <ReferenceLine y={0} stroke="rgba(107,114,128,0.3)" strokeDasharray="3 3" />
               <Tooltip

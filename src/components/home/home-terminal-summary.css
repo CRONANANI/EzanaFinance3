@@ -534,7 +534,7 @@ body.light-mode .home-terminal-body {
   justify-content: center;
   gap: 4px;
   width: 100%;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .hts-week-loading {
