@@ -13,6 +13,7 @@ import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
 import { NewWatchlistDialog } from '@/components/watchlist/NewWatchlistDialog';
+import { getAssetIcon } from '@/components/watchlist/asset-icons';
 import { ChevronDown, Check } from 'lucide-react';
 import {
   Area,
@@ -360,13 +361,14 @@ function Chart({ item, timeRange }) {
 
 /* ── Type badge helper ── */
 function TypeIcon({ item }) {
-  if (item.type === 'index') return <span className="wl-strip-badge idx"><i className="bi bi-bar-chart-line"/></span>;
-  if (item.type === 'politician') return <span className={`wl-strip-badge pol ${item.party?.toLowerCase()}`}>{item.name.split(' ').map(w=>w[0]).join('')}</span>;
-  if (item.type === 'institution') return <span className="wl-strip-badge inst"><i className="bi bi-building"/></span>;
-  if (item.type === 'bond') return <span className="wl-strip-badge bond"><i className="bi bi-bank"/></span>;
-  if (item.type === 'commodity') return <span className="wl-strip-badge comm"><i className="bi bi-droplet-half"/></span>;
-  if (item.type === 'crypto') return <span className="wl-strip-badge crypto"><i className="bi bi-currency-bitcoin"/></span>;
-  return <span className="wl-strip-badge stk">{item.ticker?.slice(0,3)}</span>;
+  if (item.type === 'institution') {
+    return (
+      <span className="wl-strip-badge inst">
+        <i className="bi bi-building" />
+      </span>
+    );
+  }
+  return <span className="wl-strip-badge has-svg-icon">{getAssetIcon(item)}</span>;
 }
 
 export default function WatchlistPage() {

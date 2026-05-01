@@ -1,0 +1,18 @@
+/* ════════════════════════════════════════════════════════════
+   Asset icon styles — sized for 28x28 .wl-strip-badge slot
+   The icons render as inline SVG inside .wl-strip-badge, which already
+   has display: flex + center alignment. SVGs scale to fit.
+   ════════════════════════════════════════════════════════════ */
+
+.wl-strip-badge svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Override any badge-type-specific padding that competes with the SVG sizing */
+.wl-strip-badge.has-svg-icon {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
