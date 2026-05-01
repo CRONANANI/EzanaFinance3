@@ -7,7 +7,7 @@
 .wl-page { display: flex; flex-direction: column; gap: 0; }
 
 /* ═══════════════════════════════════════
-   TOP STRIP — horizontal scroll of cards
+   TOP STRIP — grid: cards grow to fill row width (aligns with sidebar below)
    Mix of indices, politicians, institutions
    ═══════════════════════════════════════ */
 .wl-row-1 .wl-top-strip {
@@ -17,17 +17,18 @@
 }
 
 .wl-top-strip {
-  display: flex;
-  gap: .5rem;
-  padding: 0 0 .75rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  /* CSS Grid auto-fill: as many ~150px columns as fit, last column grows to
+     absorb the remaining width. Keeps the row flush with the sidebar's right
+     edge below it instead of leaving whitespace where flex cards stopped. */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  padding: 0 0 0.75rem;
 }
-.wl-top-strip::-webkit-scrollbar { display: none; }
 
 .wl-strip-card {
-  flex: 0 0 150px;
+  width: 100%;
+  min-width: 0;
   padding: .7rem .875rem .6rem;
   background: var(--card, rgba(22,27,34,.6));
   border: 1px solid var(--card-border, rgba(16,185,129,.08));
@@ -437,21 +438,19 @@
 /* ═══ RESPONSIVE ═══ */
 @media (max-width:1024px) {
   .wl-main { grid-template-columns: 1fr 280px; }
-  .wl-strip-card { flex: 0 0 170px; }
 }
 @media (max-width:768px) {
   .wl-main { grid-template-columns: 1fr; }
   .wl-side { position: static; max-height: 380px; order: -1; }
   .wl-chart-box { height: 230px; }
   .wl-big-price { font-size: 1.5rem; }
-  .wl-strip-card { flex: 0 0 155px; }
   .wl-cmp-hdr, .wl-cmp-row { grid-template-columns: 28px 1.2fr 1fr .7fr; }
   .wl-cmp-hdr span:nth-child(5), .wl-cmp-hdr span:nth-child(6),
   .wl-cmp-row .wl-cmp-type, .wl-cmp-row .wl-spark { display: none; }
 }
 @media (max-width:480px) {
-  .wl-top-strip { gap: .35rem; }
-  .wl-strip-card { flex: 0 0 140px; padding: .5rem .65rem .45rem; }
+  .wl-top-strip { gap: .35rem; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .wl-strip-card { padding: .5rem .65rem .45rem; }
   .wl-strip-price { font-size: .8125rem; }
   .wl-strip-assets { display: none; }
 }
