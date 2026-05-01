@@ -362,7 +362,11 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.id}
-                className={`plan-card ${plan.highlight ? 'plan-card--highlight' : ''}`}
+                className={[
+                  'plan-card',
+                  plan.highlight && 'plan-card--highlight',
+                  billing === 'yearly' && 'plan-card--yearly',
+                ].filter(Boolean).join(' ')}
               >
                 {plan.badge ? <span className="plan-badge">{plan.badge}</span> : null}
 
@@ -396,7 +400,7 @@ export default function PricingPage() {
                   {price === null
                     ? 'Tailored to your organization'
                     : billing === 'yearly'
-                      ? `$${price * 12}/year billed annually`
+                      ? `Annual invoice of $${price * 12}`
                       : 'Billed monthly · cancel anytime'}
                 </p>
 

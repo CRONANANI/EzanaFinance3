@@ -199,6 +199,10 @@
 }
 
 .plan-trial-row { margin: 0 0 1.1rem; }
+/* When billing is yearly, center the trial pill within the card */
+.plan-card--yearly .plan-trial-row {
+  text-align: center;
+}
 .plan-trial-chip {
   display: inline-flex;
   align-items: center;
@@ -240,6 +244,10 @@
   margin: 0 0 1.15rem;
   font-size: 0.75rem;
   color: var(--text-faint, #94a3b8);
+}
+/* When billing is yearly, center the annual-note line */
+.plan-card--yearly .plan-annual-note {
+  text-align: center;
 }
 
 /* ── Plan CTA ───────────────────────────────────────────────────────────── */
