@@ -1749,3 +1749,159 @@ body.light-mode .echo-article-page .echo-comment-text {
     width: 100%;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   Interactive sector-dominance chart (Recharts)
+   ════════════════════════════════════════════════════════════ */
+.echo-article-page .echo-sector-chart-block {
+  margin: 2rem 0;
+}
+
+.echo-article-page .echo-sector-chart-wrap {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.echo-article-page .echo-sector-tooltip {
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.75rem;
+  min-width: 240px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-sans);
+}
+
+.echo-article-page .echo-sector-tooltip-year {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #8b949e);
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.echo-article-page .echo-sector-tooltip-era {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  margin-bottom: 0.15rem;
+  letter-spacing: -0.01em;
+}
+
+.echo-article-page .echo-sector-tooltip-share {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #e2e8f0);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.echo-article-page .echo-sector-tooltip-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+
+.echo-article-page .echo-sector-tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.echo-article-page .echo-sector-tooltip-label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  font-size: 0.625rem;
+  color: var(--text-muted, #8b949e);
+}
+
+.echo-article-page .echo-sector-tooltip-row > span:last-child {
+  color: var(--text-secondary, #e2e8f0);
+}
+
+.echo-article-page .echo-sector-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.6rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.echo-article-page .echo-sector-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  transition: all 200ms ease;
+}
+
+.echo-article-page .echo-sector-legend-item.is-active {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.echo-article-page .echo-sector-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.echo-article-page .echo-sector-legend-text {
+  min-width: 0;
+}
+
+.echo-article-page .echo-sector-legend-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+  margin-bottom: 0.1rem;
+}
+
+.echo-article-page .echo-sector-legend-range {
+  font-size: 0.625rem;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+body.light-mode .echo-article-page .echo-sector-chart-wrap {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .echo-article-page .echo-sector-tooltip {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  color: #0f172a;
+}
+
+body.light-mode .echo-article-page .echo-sector-legend-item {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .echo-article-page .echo-sector-legend-name {
+  color: #0f172a;
+}
+
+body.light-mode .echo-article-page .echo-sector-tooltip-share,
+body.light-mode .echo-article-page .echo-sector-tooltip-row > span:last-child {
+  color: #1e293b;
+}
+
+body.light-mode .echo-article-page .echo-sector-tooltip-era {
+  color: inherit;
+}

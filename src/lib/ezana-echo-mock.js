@@ -22,8 +22,10 @@
  */
 
 import { iranWarCommoditiesArticle2026 } from './ezana-echo-article-iran-commodities-2026.js';
+import { sectorDominanceArticle } from './ezana-echo-article-sector-dominance.js';
 
 const ARTICLES = [
+  sectorDominanceArticle,
   iranWarCommoditiesArticle2026,
   {
     id: 'the-45-day-loophole-congressional-trade-disclosure',

@@ -1,8 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
 import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
+import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -10,6 +21,12 @@ import '../../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../../app-legacy/pages/home-dashboard.css';
 import '../ezana-echo.css';
+
+function getEraForYear(year) {
+  return (
+    SECTOR_ERAS.find((e) => year >= e.yearStart && year <= e.yearEnd) ?? SECTOR_ERAS[SECTOR_ERAS.length - 1]
+  );
+}
 
 function ArticleBlock({ block }) {
   switch (block.type) {
@@ -68,6 +85,9 @@ function ArticleChart({ variant = 'line', title, caption, data, series = [], ann
   const innerW = W - PADDING.left - PADDING.right;
   const innerH = H - PADDING.top - PADDING.bottom;
 
+  if (variant === 'interactive-stacked-area') {
+    return <SectorDominanceChart title={title} caption={caption} yLabel={yLabel} />;
+  }
   if (variant === 'line') {
     return renderLineChart({
       data,
@@ -313,6 +333,157 @@ function renderBarChart({ data, title, caption, W, H, PADDING, innerW, innerH })
           );
         })}
       </svg>
+    </figure>
+  );
+}
+
+/**
+ * Interactive stacked-area chart showing sector dominance 1800–2025.
+ * Hover any point on the timeline to see era-specific stats.
+ */
+function SectorDominanceTooltip({ active, payload, label, setHoverYear }) {
+  useEffect(() => {
+    if (active && label != null) setHoverYear(Number(label));
+  }, [active, label, setHoverYear]);
+
+  if (!active || !payload?.length) return null;
+  const year = Number(label);
+  const era = getEraForYear(year);
+  const row = payload[0].payload;
+  const dominantPct = row[era.sector];
+
+  return (
+    <div className="echo-sector-tooltip" role="status">
+      <div className="echo-sector-tooltip-year">{year}</div>
+      <div className="echo-sector-tooltip-era" style={{ color: era.color }}>
+        {era.sectorLabel}
+      </div>
+      <div className="echo-sector-tooltip-share">{dominantPct}% of market</div>
+      <div className="echo-sector-tooltip-row">
+        <span className="echo-sector-tooltip-label">Era peak</span>
+        <span>{era.peakShare}</span>
+      </div>
+      <div className="echo-sector-tooltip-row">
+        <span className="echo-sector-tooltip-label">Driver</span>
+        <span>{era.driver}</span>
+      </div>
+      <div className="echo-sector-tooltip-row">
+        <span className="echo-sector-tooltip-label">Notable</span>
+        <span>{era.notable}</span>
+      </div>
+    </div>
+  );
+}
+
+function SectorDominanceChart({ title, caption, yLabel }) {
+  const [hoverYear, setHoverYear] = useState(null);
+  const activeEra = hoverYear != null ? getEraForYear(hoverYear) : null;
+
+  return (
+    <figure className="echo-chart echo-sector-chart-block" aria-label={yLabel ? `${title}. ${yLabel}` : title || 'Sector dominance chart'}>
+      {title && <div className="echo-chart-title">{title}</div>}
+
+      <div className="echo-sector-chart-wrap">
+        <ResponsiveContainer width="100%" height={400}>
+          <AreaChart
+            data={SECTOR_DOMINANCE_DATA}
+            margin={{ top: 20, right: 30, left: 10, bottom: 50 }}
+            onMouseLeave={() => setHoverYear(null)}
+          >
+            <defs>
+              {SECTOR_ERAS.map((era) => (
+                <linearGradient key={era.sector} id={`echo-grad-${era.sector}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={era.color} stopOpacity={0.85} />
+                  <stop offset="100%" stopColor={era.color} stopOpacity={0.45} />
+                </linearGradient>
+              ))}
+            </defs>
+
+            <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} strokeDasharray="2 4" />
+            <XAxis
+              dataKey="year"
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              ticks={[1800, 1825, 1850, 1875, 1900, 1925, 1950, 1975, 2000, 2025]}
+              type="number"
+              domain={[1800, 2025]}
+            />
+            <YAxis
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(v) => `${v}%`}
+              domain={[0, 100]}
+              width={42}
+            />
+            <Tooltip
+              content={(tooltipProps) => <SectorDominanceTooltip {...tooltipProps} setHoverYear={setHoverYear} />}
+              cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }}
+            />
+
+            <Area
+              type="monotone"
+              dataKey="finance"
+              stackId="dominance"
+              stroke={SECTOR_ERAS[0].color}
+              fill="url(#echo-grad-finance)"
+              strokeWidth={1.5}
+              isAnimationActive={false}
+              name="Finance & Real Estate"
+            />
+            <Area
+              type="monotone"
+              dataKey="transport"
+              stackId="dominance"
+              stroke={SECTOR_ERAS[1].color}
+              fill="url(#echo-grad-transport)"
+              strokeWidth={1.5}
+              isAnimationActive={false}
+              name="Transport"
+            />
+            <Area
+              type="monotone"
+              dataKey="energy"
+              stackId="dominance"
+              stroke={SECTOR_ERAS[2].color}
+              fill="url(#echo-grad-energy)"
+              strokeWidth={1.5}
+              isAnimationActive={false}
+              name="Energy & Materials"
+            />
+            <Area
+              type="monotone"
+              dataKey="tech"
+              stackId="dominance"
+              stroke={SECTOR_ERAS[3].color}
+              fill="url(#echo-grad-tech)"
+              strokeWidth={1.5}
+              isAnimationActive={false}
+              name="Information Technology & Communications"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="echo-sector-legend">
+        {SECTOR_ERAS.map((era) => (
+          <div
+            key={era.sector}
+            className={`echo-sector-legend-item ${activeEra?.sector === era.sector ? 'is-active' : ''}`}
+          >
+            <span className="echo-sector-legend-swatch" style={{ background: era.color }} />
+            <div className="echo-sector-legend-text">
+              <div className="echo-sector-legend-name">{era.sectorLabel}</div>
+              <div className="echo-sector-legend-range">
+                {era.yearStart}–{era.yearEnd}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {caption && <figcaption className="echo-chart-caption">{caption}</figcaption>}
     </figure>
   );
 }
