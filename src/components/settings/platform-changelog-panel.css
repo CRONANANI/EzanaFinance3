@@ -1,0 +1,309 @@
+.pcl-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 760px;
+}
+
+.pcl-header {
+  margin-bottom: 0.5rem;
+}
+
+.pcl-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+  letter-spacing: -0.02em;
+}
+
+.pcl-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted, #8b949e);
+}
+
+/* Admin form */
+.pcl-admin-section {
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px dashed rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.pcl-admin-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.pcl-admin-open-btn:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.pcl-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pcl-admin-form-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.pcl-admin-form-head h4 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.pcl-admin-cancel {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted, #8b949e);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.pcl-admin-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #f0f6fc);
+}
+
+.pcl-admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pcl-admin-field span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary, #e2e8f0);
+}
+
+.pcl-admin-field input,
+.pcl-admin-field select,
+.pcl-admin-field textarea {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary, #f0f6fc);
+  font-family: inherit;
+}
+
+.pcl-admin-field input:focus,
+.pcl-admin-field select:focus,
+.pcl-admin-field textarea:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.pcl-admin-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.pcl-admin-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary, #e2e8f0);
+  cursor: pointer;
+}
+
+.pcl-admin-error {
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #fca5a5;
+}
+
+.pcl-admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.pcl-btn {
+  padding: 0.5rem 0.95rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 150ms ease;
+}
+
+.pcl-btn-secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted, #8b949e);
+}
+.pcl-btn-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text-primary, #f0f6fc);
+}
+
+.pcl-btn-primary {
+  background: #10b981;
+  border-color: #10b981;
+  color: #0a0e13;
+}
+.pcl-btn-primary:hover:not(:disabled) {
+  background: #34d399;
+  border-color: #34d399;
+}
+.pcl-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Entry list */
+.pcl-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pcl-entry {
+  background: var(--bg-secondary, #0d1117);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.pcl-entry.is-pinned {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.pcl-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pcl-entry-head-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pcl-entry-category {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 1px solid;
+  border-radius: 999px;
+}
+
+.pcl-entry-pinned {
+  font-size: 0.75rem;
+  color: #10b981;
+}
+
+.pcl-entry-date {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8b949e);
+  font-variant-numeric: tabular-nums;
+}
+
+.pcl-entry-title {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary, #f0f6fc);
+}
+
+.pcl-entry-body {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #e2e8f0);
+  line-height: 1.55;
+}
+
+.pcl-entry-paragraph {
+  margin: 0 0 0.5rem;
+}
+.pcl-entry-paragraph:last-child {
+  margin-bottom: 0;
+}
+.pcl-entry-paragraph code {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono, monospace);
+  color: #10b981;
+}
+
+.pcl-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted, #8b949e);
+  font-size: 0.875rem;
+  background: var(--bg-secondary, #0d1117);
+  border: 1px dashed rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.pcl-empty-error {
+  color: #ef4444;
+}
+
+/* Light mode */
+body.light-mode .pcl-title {
+  color: #0f172a;
+}
+body.light-mode .pcl-entry {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+body.light-mode .pcl-entry-title {
+  color: #0f172a;
+}
+body.light-mode .pcl-entry-body {
+  color: #1e293b;
+}
+body.light-mode .pcl-admin-field input,
+body.light-mode .pcl-admin-field select,
+body.light-mode .pcl-admin-field textarea {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #0f172a;
+}
+body.light-mode .pcl-admin-section {
+  background: rgba(16, 185, 129, 0.03);
+}
+body.light-mode .pcl-empty {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}

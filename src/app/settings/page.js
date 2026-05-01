@@ -14,6 +14,7 @@ import {
   EmailPanel,
   NotificationsPanel,
   IntegrationsPanel,
+  PlatformChangelogPanel,
   ApiPanel,
   OrgSettingsPanel,
   DataRequestPanel,
@@ -35,6 +36,7 @@ const SETTINGS_TABS = [
   { key: 'email', label: 'Email', icon: 'bi-envelope', desc: 'Email preferences' },
   { key: 'notifications', label: 'Notifications', icon: 'bi-bell', desc: 'Alert & push settings' },
   { key: 'integrations', label: 'Integrations', icon: 'bi-plug', desc: 'Connected services' },
+  { key: 'platform-changelog', label: 'Platform changelog', icon: 'bi-clock-history', desc: 'Updates & improvements log' },
   { key: 'api', label: 'API', icon: 'bi-code-slash', desc: 'API keys & access' },
   { key: 'privacy-data', label: 'Privacy & data', icon: 'bi-shield-lock', desc: 'Data export, mock portfolio archives' },
 ];
@@ -50,6 +52,7 @@ const PANEL_MAP = {
   email: EmailPanel,
   notifications: NotificationsPanel,
   integrations: IntegrationsPanel,
+  'platform-changelog': PlatformChangelogPanel,
   api: ApiPanel,
   organization: OrgSettingsPanel,
   'privacy-data': DataRequestPanel,
