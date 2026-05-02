@@ -39,15 +39,25 @@ export async function GET(request) {
       resolvedWallet = profile.proxyWallet;
     }
 
-    const [positionsRes, tradesRes, activityRes] = await Promise.all([
+    const [positionsRes, tradesRes, activityRes, valueRes, tradedRes] = await Promise.all([
       fetch(`https://data-api.polymarket.com/positions?user=${resolvedWallet}&sizeThreshold=0.1`, { next: { revalidate: 30 } }),
       fetch(`https://data-api.polymarket.com/trades?user=${resolvedWallet}&limit=100`, { next: { revalidate: 30 } }),
       fetch(`https://data-api.polymarket.com/activity?user=${resolvedWallet}&limit=50`, { next: { revalidate: 30 } }),
+      fetch(`https://data-api.polymarket.com/value?user=${resolvedWallet}`, { next: { revalidate: 60 } }),
+      fetch(`https://data-api.polymarket.com/traded?user=${resolvedWallet}`, { next: { revalidate: 300 } }),
     ]);
 
     const positions = positionsRes.ok ? await positionsRes.json() : [];
     const trades = tradesRes.ok ? await tradesRes.json() : [];
     const activity = activityRes.ok ? await activityRes.json() : [];
+    const valueData = valueRes.ok ? await valueRes.json() : [];
+    const tradedData = tradedRes.ok ? await tradedRes.json() : null;
+
+    const totalPortfolioValue = Array.isArray(valueData) && valueData[0]?.value
+      ? Number(valueData[0].value)
+      : 0;
+
+    const totalMarketsTraded = tradedData?.traded != null ? Number(tradedData.traded) : 0;
 
     const positionsArr = Array.isArray(positions) ? positions : [];
     const tradesArr = Array.isArray(trades) ? trades : [];
@@ -107,6 +117,8 @@ export async function GET(request) {
       activity: activityArr,
       stats: {
         totalPositionsValue,
+        totalPortfolioValue,
+        totalMarketsTraded,
         openPositions: positionsArr.length,
         totalTrades: tradesArr.length,
         totalPnl,

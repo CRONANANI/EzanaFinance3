@@ -14,6 +14,7 @@ import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/pages/home-dashboard.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './betting-markets.css';
+import TraderProfileModal from '@/components/polymarket/TraderProfileModal';
 
 const STAT_CARDS = [
   {
@@ -349,20 +350,72 @@ function parseYesProb(m) {
   return null;
 }
 
+function chipStyle(isActive) {
+  return {
+    padding: '0.25rem 0.6rem',
+    fontSize: '0.65rem',
+    fontWeight: 700,
+    borderRadius: 5,
+    border: isActive ? '1px solid #6366f1' : '1px solid rgba(0,0,0,0.08)',
+    background: isActive ? 'rgba(99,102,241,0.1)' : 'transparent',
+    color: isActive ? '#6366f1' : '#6b7280',
+    cursor: 'pointer',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    fontFamily: 'var(--font-sans)',
+  };
+}
+
+function formatVolumeShort(n) {
+  const v = Number(n) || 0;
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
+  return v.toFixed(0);
+}
+
+const PM_TOP_MARKET_TAG_SLUGS = new Set([
+  'politics',
+  'crypto',
+  'sports',
+  'economics',
+  'economy',
+  'geopolitics',
+  'international-affairs',
+  'tech',
+  'science',
+]);
+
 function PolymarketSection() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [markets, setMarkets] = useState([]);
   const [marketsLoading, setMarketsLoading] = useState(true);
+  const [selectedTrader, setSelectedTrader] = useState(null);
+  const [tags, setTags] = useState([]);
+  const [activeTag, setActiveTag] = useState(null);
 
   useEffect(() => {
-    fetch('/api/polymarket/markets?limit=6')
+    fetch('/api/polymarket/tags')
+      .then((r) => (r.ok ? r.json() : { tags: [] }))
+      .then((d) => {
+        const curated = (d.tags || []).filter((t) => PM_TOP_MARKET_TAG_SLUGS.has(String(t.slug || '').toLowerCase()));
+        setTags(curated);
+      })
+      .catch(() => setTags([]));
+  }, []);
+
+  useEffect(() => {
+    setMarketsLoading(true);
+    const url = activeTag
+      ? `/api/polymarket/markets?limit=6&tag=${encodeURIComponent(activeTag.slug)}`
+      : '/api/polymarket/markets?limit=6';
+    fetch(url)
       .then((r) => (r.ok ? r.json() : []))
       .then((d) => setMarkets(Array.isArray(d) ? d : d.markets || []))
       .catch(() => setMarkets([]))
       .finally(() => setMarketsLoading(false));
-  }, []);
+  }, [activeTag]);
 
   const handleSearch = useCallback(async (q) => {
     setSearchQuery(q);
@@ -399,6 +452,30 @@ function PolymarketSection() {
           </a>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
+          {tags.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                gap: 6,
+                flexWrap: 'wrap',
+                padding: '0 0 0.75rem',
+              }}
+            >
+              <button type="button" onClick={() => setActiveTag(null)} style={chipStyle(!activeTag)}>
+                All
+              </button>
+              {tags.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => setActiveTag(tag)}
+                  style={chipStyle(activeTag?.id === tag.id)}
+                >
+                  {tag.label}
+                </button>
+              ))}
+            </div>
+          )}
           {marketsLoading && (
             <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Loading markets…</p>
           )}
@@ -581,7 +658,11 @@ function PolymarketSection() {
                   fontFamily: 'var(--font-sans)',
                 }}
                 onClick={() =>
-                  window.open(`https://polymarket.com/profile/${u.proxyWallet || u.address}`, '_blank')
+                  setSelectedTrader({
+                    wallet: u.proxyWallet || u.address,
+                    name: u.name || u.username,
+                    image: u.profileImage,
+                  })
                 }
               >
                 View
@@ -590,6 +671,15 @@ function PolymarketSection() {
           ))}
         </div>
       </div>
+
+      {selectedTrader && (
+        <TraderProfileModal
+          wallet={selectedTrader.wallet}
+          displayName={selectedTrader.name}
+          profileImage={selectedTrader.image}
+          onClose={() => setSelectedTrader(null)}
+        />
+      )}
     </>
   );
 }
@@ -789,15 +879,44 @@ export default function BettingMarketsPage() {
   const [sport, setSport] = useState('NBA');
   const [lbTab, setLbTab] = useState('All');
   const [evOpen, setEvOpen] = useState(null);
+  const [polymarketLeaderboard, setPolymarketLeaderboard] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState('WEEK');
 
   const closeModal = useCallback(() => setEvOpen(null), []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLeaderboardLoading(true);
+    fetch(`/api/polymarket/builder-leaderboard?timePeriod=${leaderboardPeriod}&limit=15`)
+      .then((r) => (r.ok ? r.json() : { entries: [] }))
+      .then((d) => {
+        if (cancelled) return;
+        setPolymarketLeaderboard(d.entries || []);
+      })
+      .catch(() => !cancelled && setPolymarketLeaderboard([]))
+      .finally(() => !cancelled && setLeaderboardLoading(false));
+    return () => { cancelled = true; };
+  }, [leaderboardPeriod]);
+
   const leaderboardRows = useMemo(() => {
+    if (lbTab === 'All') {
+      return polymarketLeaderboard.map((e) => ({
+        rank: e.rank,
+        name: e.builder,
+        slug: e.builder.toLowerCase().replace(/\s+/g, '-'),
+        pnl: `$${formatVolumeShort(e.volume)}`,
+        win: `${e.activeUsers} users`,
+        tag: e.verified ? '✓' : '',
+        partner: false,
+        isReal: true,
+      }));
+    }
     let rows = LEADER_ALL;
     if (lbTab === 'Friends') rows = LEADER_FRIENDS;
     if (lbTab === 'Partners') rows = LEADER_PARTNERS;
     return rows.map((r, i) => ({ ...r, rank: i + 1 }));
-  }, [lbTab]);
+  }, [lbTab, polymarketLeaderboard]);
 
   // NOTE: Commented out - getCoursesByTrack not available
   // const bettingCourses = useMemo(() => getCoursesByTrack('betting').slice(0, 4), []);
@@ -973,13 +1092,54 @@ export default function BettingMarketsPage() {
                 ))}
               </div>
             </div>
+
+            {lbTab === 'All' && (
+              <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                {['DAY', 'WEEK', 'MONTH', 'ALL'].map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setLeaderboardPeriod(p)}
+                    style={{
+                      padding: '3px 9px',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      borderRadius: 5,
+                      border: leaderboardPeriod === p ? '1px solid #6366f1' : '1px solid rgba(0,0,0,0.08)',
+                      background: leaderboardPeriod === p ? 'rgba(99,102,241,0.1)' : 'transparent',
+                      color: leaderboardPeriod === p ? '#6366f1' : '#6b7280',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    {p === 'ALL' ? 'All Time' : p}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="bm-leader-list">
+              {leaderboardLoading && lbTab === 'All' && (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.75rem' }}>
+                  Loading leaderboard…
+                </div>
+              )}
+              {!leaderboardLoading && leaderboardRows.length === 0 && lbTab === 'All' && (
+                <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.75rem' }}>
+                  No leaderboard data available.
+                </div>
+              )}
               {leaderboardRows.map((r) => (
-                <div key={r.name} className="bm-lb-row">
+                <div key={`${r.isReal ? 'pm' : 'ez'}-${r.rank}-${r.name}`} className="bm-lb-row">
                   <span className="bm-lb-rank">{r.rank}.</span>
-                  <Link href={`/community/profile/${r.slug}`} className="bm-lb-name">
-                    {r.name}
-                  </Link>
+                  {r.isReal ? (
+                    <span className="bm-lb-name" style={{ cursor: 'default' }}>{r.name}</span>
+                  ) : (
+                    <Link href={`/community/profile/${r.slug}`} className="bm-lb-name">
+                      {r.name}
+                    </Link>
+                  )}
                   <span className="bm-lb-pnl">{r.pnl}</span>
                   <span className="bm-lb-meta">
                     {r.win} {r.tag}
