@@ -131,7 +131,7 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-[#f0f6fc]">Organizational Login</h1>
-            <p className="text-sm text-[#8b949e]">University Investment Council</p>
+            <p className="text-sm text-[#a7b1bb]">University Investment Council</p>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
               required
               className="h-11 w-full rounded-lg border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 text-[#f0f6fc] placeholder-[#6b7280] transition-all focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             />
-            <p className="mt-1 text-xs text-[#8b949e]">Use your recognized university email address</p>
+            <p className="mt-1 text-xs text-[#a7b1bb]">Use your recognized university email address</p>
           </div>
 
           <div>
@@ -172,7 +172,7 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#6b7280] hover:text-[#c9d1d9]"
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#9ca3af] hover:text-[#c9d1d9]"
                 onClick={() => setIsPasswordVisible(!isPasswordVisible)}
               >
                 {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -201,7 +201,7 @@ const OrgSignInCard = ({ redirectTo = '/home' }) => {
           </Link>
         </div>
 
-        <div className="mt-4 text-center text-xs text-[#8b949e]">
+        <div className="mt-4 text-center text-xs text-[#a7b1bb]">
           Not a member? Contact your university investment council executive team or email{' '}
           <a href="mailto:orgsupport@ezana.world" className="font-medium text-indigo-300 hover:text-indigo-200">
             orgsupport@ezana.world

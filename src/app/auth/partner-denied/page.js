@@ -23,7 +23,7 @@ export default function PartnerDeniedPage() {
       <h2 style={{ color: '#f0f6fc', fontSize: '1.25rem', margin: '0 0 0.75rem' }}>Access Denied</h2>
       <p
         style={{
-          color: '#6b7280',
+          color: '#9ca3af',
           fontSize: '0.875rem',
           maxWidth: '400px',
           lineHeight: 1.6,

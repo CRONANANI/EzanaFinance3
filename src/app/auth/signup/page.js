@@ -126,7 +126,7 @@ export default function SignUpPage() {
           </div>
 
           <h1 className="text-2xl font-bold mb-1 text-white text-center">Create your account</h1>
-          <p className="text-gray-500 mb-8 text-center">Join thousands of informed investors</p>
+          <p className="text-gray-400 mb-8 text-center">Join thousands of informed investors</p>
 
           {error && (
             <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
@@ -178,7 +178,7 @@ export default function SignUpPage() {
                 required
                 className="w-full h-11 rounded-lg border border-gray-700 bg-[#161b22] px-4 text-white placeholder-gray-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
               />
-              <p className="text-gray-600 text-xs mt-1">Letters, numbers, and underscores only</p>
+              <p className="text-gray-400 text-xs mt-1">Letters, numbers, and underscores only</p>
             </div>
 
             <div>
@@ -230,7 +230,7 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-gray-500">
+          <div className="mt-8 text-center text-sm text-gray-400">
             Already have an account?{" "}
             <Link href="/auth/signin" className="text-emerald-500 hover:text-emerald-400 font-medium">
               Sign in

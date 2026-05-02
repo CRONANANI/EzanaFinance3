@@ -156,7 +156,7 @@ export default function VerifyEmailPage() {
         }}
       >
         <h1 style={{ color: '#f0f6fc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Verify your email</h1>
-        <p style={{ color: '#8b949e', fontSize: '0.9rem', marginBottom: '2rem' }}>
+        <p style={{ color: '#a7b1bb', fontSize: '0.9rem', marginBottom: '2rem' }}>
           {maskedEmail
             ? `We sent a 6-digit code to ${maskedEmail}`
             : 'Sending verification code...'}
@@ -252,7 +252,7 @@ export default function VerifyEmailPage() {
           {loading ? 'Verifying...' : 'Verify Email'}
         </button>
 
-        <p style={{ color: '#8b949e', fontSize: '0.85rem' }}>
+        <p style={{ color: '#a7b1bb', fontSize: '0.85rem' }}>
           Didn&apos;t receive the code?{' '}
           <button
             type="button"

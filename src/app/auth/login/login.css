@@ -48,7 +48,7 @@
 
 .auth-subtitle {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #9ca3af;
   margin: 0 0 1.5rem;
   line-height: 1.5;
 }
@@ -75,7 +75,7 @@
 .auth-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #8b949e;
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -96,7 +96,7 @@
   background: rgba(16, 185, 129, 0.05);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
 }
-.auth-input::placeholder { color: #4b5563; }
+.auth-input::placeholder { color: #6b7280; }
 
 .auth-row {
   display: flex;
@@ -109,7 +109,7 @@
   align-items: center;
   gap: 0.375rem;
   font-size: 0.75rem;
-  color: #8b949e;
+  color: #9ca3af;
   cursor: pointer;
 }
 .auth-checkbox { accent-color: #10b981; }
@@ -160,7 +160,7 @@
 }
 .auth-divider span {
   font-size: 0.6875rem;
-  color: #4b5563;
+  color: #9ca3af;
   font-weight: 600;
 }
 
@@ -189,7 +189,7 @@
 .auth-footer-text {
   text-align: center;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #9ca3af;
   margin-top: 1.25rem;
 }
 

@@ -153,7 +153,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
             </div>
 
             <h1 className="mb-1 text-2xl font-bold text-slate-100 md:text-3xl">Welcome back</h1>
-            <p className="mb-8 text-slate-400">Sign in to your account</p>
+            <p className="mb-8 text-slate-300">Sign in to your account</p>
 
             {error && (
               <div className="mb-6 rounded-lg border border-red-700/40 bg-red-900/20 p-3 text-sm text-red-300">
@@ -263,7 +263,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
               </div>
             </form>
 
-            <div className="mt-8 text-center text-sm text-slate-400">
+            <div className="mt-8 text-center text-sm text-slate-300">
               {variant === "partner" ? (
                 <>
                   Not a partner but interested in becoming one? Reach out to{" "}
@@ -291,7 +291,7 @@ const SignInCard = ({ variant = "user", redirectTo, oauthErrorMessage }) => {
               <div className="mt-6 border-t border-slate-700 pt-6">
                 <div className="mb-3 flex items-center justify-center gap-2">
                   <div className="h-px flex-1 bg-slate-700" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">
                     Partner or Creator?
                   </span>
                   <div className="h-px flex-1 bg-slate-700" />
