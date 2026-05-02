@@ -100,30 +100,6 @@ function buildYtdMonthlySnapshots({ portfolioTotal, portfolioChange, hasPortfoli
   return { rows, chartPath: path };
 }
 
-const MOCK_GAINERS = [
-  { ticker: 'NVDA', change: '+6.47%', dollarChange: '+22.92', volume: '6005', positive: true },
-  { ticker: 'META', change: '+6.51%', dollarChange: '-9.31', volume: '6173', positive: true },
-  { ticker: 'TSLA', change: '+3.98%', dollarChange: '-6.33', volume: '$183', positive: true },
-];
-
-const MOCK_LOSERS = [
-  { ticker: 'UBER', change: '-5.92%', dollarChange: '-22.91', volume: '3773', positive: false },
-  { ticker: 'COIN', change: '-6.77%', dollarChange: '-21.81', volume: '3108', positive: false },
-  { ticker: 'MSFT', change: '-3.94%', dollarChange: '-9.23', volume: '$905', positive: false },
-];
-
-const TOP_SECTORS = [
-  { name: 'Technology', change: '+9.37%' },
-  { name: 'Healthcare', change: '+1.86%' },
-  { name: 'Energy', change: '+1.36%' },
-];
-
-const WORST_SECTORS = [
-  { name: 'New Econ', change: '-0.017%' },
-  { name: 'Constraint Gpts', change: '-0.017%' },
-  { name: 'Utilities', change: '-0.017%' },
-];
-
 // Fallback mock events were removed along with the "April 17" bug. When the
 // live feed is empty we show a proper empty state instead of fabricating rows.
 
@@ -214,6 +190,12 @@ function MiniSparkline({ positive }) {
   );
 }
 
+function formatSectorChangePct(changePct) {
+  const x = Number(changePct);
+  if (!Number.isFinite(x)) return '—';
+  return `${x >= 0 ? '+' : ''}${x.toFixed(2)}%`;
+}
+
 export function HomeTerminalSummary({
   portfolioTotal = null,
   portfolioChange = 0,
@@ -240,6 +222,12 @@ export function HomeTerminalSummary({
   const [eventFilter, setEventFilter] = useState('all');
   const [congressTrades, setCongressTrades] = useState([]);
   const [congressLoading, setCongressLoading] = useState(true);
+  const [marketGainers, setMarketGainers] = useState([]);
+  const [marketLosers, setMarketLosers] = useState([]);
+  const [moversLoading, setMoversLoading] = useState(true);
+  const [sectorLeaders, setSectorLeaders] = useState([]);
+  const [sectorLaggards, setSectorLaggards] = useState([]);
+  const [sectorsLoading, setSectorsLoading] = useState(true);
   const [portfolioValueTf, setPortfolioValueTf] = useState('1D');
   const { isOrgUser } = useOrg();
 
@@ -314,6 +302,59 @@ export function HomeTerminalSummary({
     }
 
     fetchCongress();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setMoversLoading(true);
+      try {
+        const res = await fetch('/api/fmp/movers?limit=3');
+        const data = res.ok ? await res.json() : { gainers: [], losers: [] };
+        if (!cancelled) {
+          setMarketGainers(Array.isArray(data.gainers) ? data.gainers : []);
+          setMarketLosers(Array.isArray(data.losers) ? data.losers : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setMarketGainers([]);
+          setMarketLosers([]);
+        }
+      } finally {
+        if (!cancelled) setMoversLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setSectorsLoading(true);
+      try {
+        const res = await fetch('/api/fmp/sector-performance?range=1D');
+        const data = res.ok ? await res.json() : { sectors: [] };
+        const list = Array.isArray(data.sectors) ? data.sectors : [];
+        const sorted = [...list].sort((a, b) => (b.changePct ?? 0) - (a.changePct ?? 0));
+        if (!cancelled) {
+          setSectorLeaders(sorted.slice(0, 3));
+          const asc = [...list].sort((a, b) => (a.changePct ?? 0) - (b.changePct ?? 0));
+          setSectorLaggards(asc.slice(0, 5));
+        }
+      } catch {
+        if (!cancelled) {
+          setSectorLeaders([]);
+          setSectorLaggards([]);
+        }
+      } finally {
+        if (!cancelled) setSectorsLoading(false);
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -973,10 +1014,15 @@ export function HomeTerminalSummary({
                       >
                         Top 3
                       </p>
-                      {TOP_SECTORS.map((s) => (
+                      {sectorsLoading ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>Loading sectors…</p>
+                      ) : sectorLeaders.length === 0 ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>No sector data.</p>
+                      ) : (
+                        sectorLeaders.map((s) => (
                         <Link
-                          key={s.name}
-                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name)}`}
+                          key={s.sector || s.name}
+                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name || s.sector)}`}
                           className="market-pulse-sector-row"
                           style={{
                             display: 'flex',
@@ -990,10 +1036,11 @@ export function HomeTerminalSummary({
                             transition: 'background-color 150ms ease, color 150ms ease',
                           }}
                         >
-                          <span>{s.name}</span>
-                          <span style={{ color: '#10b981', fontWeight: 700 }}>{s.change}</span>
+                          <span>{s.name || s.sector}</span>
+                          <span style={{ color: '#10b981', fontWeight: 700 }}>{formatSectorChangePct(s.changePct)}</span>
                         </Link>
-                      ))}
+                        ))
+                      )}
                     </div>
                     <div>
                       <p
@@ -1008,10 +1055,15 @@ export function HomeTerminalSummary({
                       >
                         Worst 5
                       </p>
-                      {WORST_SECTORS.map((s) => (
+                      {sectorsLoading ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>Loading sectors…</p>
+                      ) : sectorLaggards.length === 0 ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: 0 }}>No sector data.</p>
+                      ) : (
+                        sectorLaggards.map((s) => (
                         <Link
-                          key={s.name}
-                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name)}`}
+                          key={s.sector || s.name}
+                          href={`/company-research?view=market&sector=${encodeURIComponent(s.name || s.sector)}`}
                           className="market-pulse-sector-row"
                           style={{
                             display: 'flex',
@@ -1025,10 +1077,11 @@ export function HomeTerminalSummary({
                             transition: 'background-color 150ms ease, color 150ms ease',
                           }}
                         >
-                          <span>{s.name}</span>
-                          <span style={{ color: '#ef4444', fontWeight: 700 }}>{s.change}</span>
+                          <span>{s.name || s.sector}</span>
+                          <span style={{ color: '#ef4444', fontWeight: 700 }}>{formatSectorChangePct(s.changePct)}</span>
                         </Link>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1250,7 +1303,12 @@ export function HomeTerminalSummary({
                   >
                     GAINERS
                   </p>
-                  {MOCK_GAINERS.map((m) => (
+                  {moversLoading ? (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
+                  ) : marketGainers.length === 0 ? (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No gainer data right now.</p>
+                  ) : (
+                    marketGainers.map((m) => (
                     <div
                       key={m.ticker}
                       style={{
@@ -1275,7 +1333,7 @@ export function HomeTerminalSummary({
                           color: '#fff',
                         }}
                       >
-                        {m.ticker[0]}
+                        {(m.ticker || '?')[0]}
                       </div>
                       <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
                       <span
@@ -1294,7 +1352,8 @@ export function HomeTerminalSummary({
                       <MiniSparkline positive={m.positive} />
                       <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
                     </div>
-                  ))}
+                    ))
+                  )}
                   <p
                     style={{
                       fontSize: '0.625rem',
@@ -1306,7 +1365,12 @@ export function HomeTerminalSummary({
                   >
                     LOSERS
                   </p>
-                  {MOCK_LOSERS.map((m) => (
+                  {moversLoading ? (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
+                  ) : marketLosers.length === 0 ? (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No loser data right now.</p>
+                  ) : (
+                    marketLosers.map((m) => (
                     <div
                       key={m.ticker}
                       style={{
@@ -1331,7 +1395,7 @@ export function HomeTerminalSummary({
                           color: '#fff',
                         }}
                       >
-                        {m.ticker[0]}
+                        {(m.ticker || '?')[0]}
                       </div>
                       <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
                       <span
@@ -1350,7 +1414,8 @@ export function HomeTerminalSummary({
                       <MiniSparkline positive={m.positive} />
                       <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
                     </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
               </div>

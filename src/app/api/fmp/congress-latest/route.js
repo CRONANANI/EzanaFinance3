@@ -38,15 +38,71 @@ function fmtAmount(low, high) {
   return lo || hi || null;
 }
 
-export async function GET() {
+function mapTradeForUi(t) {
+  const name = t.firstName
+    ? `${t.firstName} ${t.lastName}`
+    : t.representative || t.senator || 'Unknown';
+  const isBuy =
+    String(t.type || t.transactionType || '')
+      .toLowerCase()
+      .includes('purchase') ||
+    String(t.type || t.transactionType || '')
+      .toLowerCase()
+      .includes('buy');
+  const amount = fmtAmount(t.amountLow ?? t.amount, t.amountHigh);
+  const chamber = t.senator ? 'Senate' : 'House';
+  return {
+    name,
+    chamber,
+    symbol: t.symbol,
+    action: isBuy ? 'Bought' : 'Sold',
+    positive: isBuy,
+    amount: amount ? (isBuy ? `+${amount}` : `-${amount}`) : (isBuy ? 'Buy' : 'Sell'),
+    disclosureDate: t.disclosureDate || t.transactionDate || null,
+  };
+}
+
+/** Raw row for aggregation endpoints (party, ranges, dates). */
+function mapTradeRaw(t) {
+  const name = t.firstName
+    ? `${t.firstName} ${t.lastName}`
+    : t.representative || t.senator || '';
+  const partyRaw = String(t.politicalParty || t.party || '').toLowerCase();
+  let party = '';
+  if (partyRaw.includes('dem')) party = 'democrat';
+  else if (partyRaw.includes('rep')) party = 'republican';
+  else party = partyRaw;
+
+  const amountStr = fmtAmount(t.amountLow ?? t.amount, t.amountHigh) || '';
+
+  return {
+    ticker: (t.symbol || '').toUpperCase(),
+    symbol: t.symbol,
+    assetDescription: String(t.asset || t.companyName || t.assetDescription || '').trim(),
+    representative: name,
+    name,
+    party,
+    transactionDate: t.transactionDate || t.disclosureDate,
+    disclosureDate: t.disclosureDate || t.transactionDate,
+    type: t.type || t.transactionType,
+    amount: amountStr,
+    amountLow: t.amountLow ?? t.amount,
+    amountHigh: t.amountHigh,
+  };
+}
+
+export async function GET(request) {
   if (!FMP_KEY) {
     return NextResponse.json({ trades: [] });
   }
 
-  const [house, senate] = await Promise.all([
-    fetchLatest('house'),
-    fetchLatest('senate'),
-  ]);
+  const url = request ? new URL(request.url) : null;
+  const raw = url?.searchParams.get('raw') === '1';
+  const rawLimit = raw
+    ? Math.min(500, Math.max(50, Number.parseInt(url.searchParams.get('limit') || '400', 10)))
+    : 8;
+
+  const [house, senate] = await Promise.all([fetchLatest('house'), fetchLatest('senate')]);
 
   const merged = [...house, ...senate]
     .filter((t) => t.symbol && (t.firstName || t.representative || t.senator))
@@ -67,29 +123,11 @@ export async function GET() {
     return true;
   });
 
-  const trades = deduped.slice(0, 8).map((t) => {
-    const name = t.firstName
-      ? `${t.firstName} ${t.lastName}`
-      : t.representative || t.senator || 'Unknown';
-    const isBuy =
-      String(t.type || t.transactionType || '')
-        .toLowerCase()
-        .includes('purchase') ||
-      String(t.type || t.transactionType || '')
-        .toLowerCase()
-        .includes('buy');
-    const amount = fmtAmount(t.amountLow ?? t.amount, t.amountHigh);
-    const chamber = t.senator ? 'Senate' : 'House';
-    return {
-      name,
-      chamber,
-      symbol: t.symbol,
-      action: isBuy ? 'Bought' : 'Sold',
-      positive: isBuy,
-      amount: amount ? (isBuy ? `+${amount}` : `-${amount}`) : (isBuy ? 'Buy' : 'Sell'),
-      disclosureDate: t.disclosureDate || t.transactionDate || null,
-    };
-  });
+  if (raw) {
+    const trades = deduped.slice(0, rawLimit).map(mapTradeRaw);
+    return NextResponse.json({ trades });
+  }
 
+  const trades = deduped.slice(0, 8).map(mapTradeForUi);
   return NextResponse.json({ trades });
 }

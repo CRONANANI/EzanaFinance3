@@ -35,7 +35,12 @@ import './watchlist.css';
 
 /* ── Helpers ── */
 function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
-function fmtPrice(n) { if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(2)}M`; return `$${n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`; }
+function fmtPrice(n) {
+  if (n == null || !Number.isFinite(Number(n))) return '—';
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+  return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 function fmtSmall(n) { return n >= 1000 ? n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : n.toFixed(2); }
 function fmtChg(n) { return `${n>=0?'+':''}${n.toFixed(2)}`; }
 function fmtPct(n) {
@@ -87,46 +92,30 @@ function genReturnPctPts(seed, n, endPct) {
   return pts;
 }
 
-/* ── Commodities & futures (legacy combined list; COMMODITIES_ONLY + CRYPTO used in UI) ── */
-const COMMODITIES = [
-  { id: 'cmd-gold', type: 'commodity', name: 'Gold', ticker: 'GC=F', price: 2648.5, change: 18.25, pct: 0.69, topAssets: ['Mining','Central Banks','ETFs','Jewelry'] },
-  { id: 'cmd-silver', type: 'commodity', name: 'Silver', ticker: 'SI=F', price: 31.24, change: 0.82, pct: 2.7, topAssets: ['Industrial','Solar','ETFs','Jewelry'] },
-  { id: 'cmd-platinum', type: 'commodity', name: 'Platinum', ticker: 'PL=F', price: 1024.3, change: 12.4, pct: 1.23, topAssets: ['Auto','Industrial','Jewelry','Investment'] },
-  { id: 'cmd-palladium', type: 'commodity', name: 'Palladium', ticker: 'PA=F', price: 1088.0, change: -9.2, pct: -0.84, topAssets: ['Auto Catalysts','Electronics','Chemical','Dental'] },
-  { id: 'cmd-copper', type: 'commodity', name: 'Copper', ticker: 'HG=F', price: 4.38, change: -0.05, pct: -1.13, topAssets: ['Construction','Electronics','Transport','Industrial'] },
-  { id: 'cmd-oil', type: 'commodity', name: 'Oil (WTI)', ticker: 'CL=F', price: 78.91, change: 1.24, pct: 1.6, topAssets: ['Transport','Plastics','Heating','Chemical'] },
-  { id: 'cmd-natgas', type: 'commodity', name: 'Nat Gas', ticker: 'NG=F', price: 3.42, change: -0.08, pct: -2.28, topAssets: ['Heating','Power Gen','Chemical','LNG'] },
-  { id: 'cry-btc', type: 'crypto', name: 'Bitcoin', ticker: 'BTC-USD', price: 98240.0, change: 1240.0, pct: 1.28, topAssets: ['Store of Value','DeFi','Mining','Payments'] },
-  { id: 'cry-eth', type: 'crypto', name: 'Ethereum', ticker: 'ETH-USD', price: 3456.0, change: 42.3, pct: 1.24, topAssets: ['DeFi','NFTs','Layer 2','Staking'] },
-  { id: 'cry-sol', type: 'crypto', name: 'Solana', ticker: 'SOL-USD', price: 188.4, change: 3.12, pct: 1.68, topAssets: ['DeFi','NFTs','Payments','Gaming'] },
-  { id: 'cmd-wheat', type: 'commodity', name: 'Wheat', ticker: 'ZW=F', price: 548.25, change: -4.5, pct: -0.81, topAssets: ['Food','Feed','Ethanol','Export'] },
-  { id: 'cmd-corn', type: 'commodity', name: 'Corn', ticker: 'ZC=F', price: 442.5, change: 2.25, pct: 0.51, topAssets: ['Feed','Ethanol','Food','Export'] },
-];
-
-/* ── Stocks (popular stocks for the watchlist strip) ── */
+/* ── Stocks (quotes loaded via /api/market/batch-quotes) ── */
 const STOCKS = [
-  { id: 'stk-aapl', type: 'stock', name: 'Apple Inc.', ticker: 'AAPL', quoteSymbol: 'AAPL', price: 232.40, change: 1.42, pct: 0.61, topAssets: ['iPhone', 'Services', 'Mac', 'Wearables'] },
-  { id: 'stk-msft', type: 'stock', name: 'Microsoft', ticker: 'MSFT', quoteSymbol: 'MSFT', price: 425.18, change: 3.21, pct: 0.76, topAssets: ['Azure', 'Office', 'LinkedIn', 'Gaming'] },
-  { id: 'stk-nvda', type: 'stock', name: 'NVIDIA', ticker: 'NVDA', quoteSymbol: 'NVDA', price: 138.07, change: 2.84, pct: 2.10, topAssets: ['Data Center', 'Gaming', 'Auto', 'Pro Vis'] },
-  { id: 'stk-googl', type: 'stock', name: 'Alphabet', ticker: 'GOOGL', quoteSymbol: 'GOOGL', price: 192.45, change: -0.83, pct: -0.43, topAssets: ['Search', 'YouTube', 'Cloud', 'Android'] },
-  { id: 'stk-amzn', type: 'stock', name: 'Amazon', ticker: 'AMZN', quoteSymbol: 'AMZN', price: 226.13, change: 1.07, pct: 0.48, topAssets: ['AWS', 'Retail', 'Prime', 'Ads'] },
-  { id: 'stk-meta', type: 'stock', name: 'Meta', ticker: 'META', quoteSymbol: 'META', price: 614.80, change: 4.20, pct: 0.69, topAssets: ['Ads', 'Reality Labs', 'WhatsApp', 'Instagram'] },
-  { id: 'stk-tsla', type: 'stock', name: 'Tesla', ticker: 'TSLA', quoteSymbol: 'TSLA', price: 376.30, change: 5.42, pct: 1.46, topAssets: ['EVs', 'Energy', 'Autopilot', 'Robotaxi'] },
-  { id: 'stk-jpm', type: 'stock', name: 'JPMorgan', ticker: 'JPM', quoteSymbol: 'JPM', price: 252.18, change: 1.08, pct: 0.43, topAssets: ['IB', 'Consumer', 'Asset Mgmt', 'Treasury'] },
-  { id: 'stk-xom', type: 'stock', name: 'Exxon Mobil', ticker: 'XOM', quoteSymbol: 'XOM', price: 116.40, change: 1.12, pct: 0.97, topAssets: ['Upstream', 'Downstream', 'Chemicals', 'LNG'] },
-  { id: 'stk-brk-b', type: 'stock', name: 'Berkshire B', ticker: 'BRK.B', quoteSymbol: 'BRK.B', price: 462.34, change: 2.05, pct: 0.45, topAssets: ['Insurance', 'Railway', 'Energy', 'Equity Holdings'] },
+  { id: 'stk-aapl', type: 'stock', name: 'Apple Inc.', ticker: 'AAPL', quoteSymbol: 'AAPL', topAssets: ['iPhone', 'Services', 'Mac', 'Wearables'] },
+  { id: 'stk-msft', type: 'stock', name: 'Microsoft', ticker: 'MSFT', quoteSymbol: 'MSFT', topAssets: ['Azure', 'Office', 'LinkedIn', 'Gaming'] },
+  { id: 'stk-nvda', type: 'stock', name: 'NVIDIA', ticker: 'NVDA', quoteSymbol: 'NVDA', topAssets: ['Data Center', 'Gaming', 'Auto', 'Pro Vis'] },
+  { id: 'stk-googl', type: 'stock', name: 'Alphabet', ticker: 'GOOGL', quoteSymbol: 'GOOGL', topAssets: ['Search', 'YouTube', 'Cloud', 'Android'] },
+  { id: 'stk-amzn', type: 'stock', name: 'Amazon', ticker: 'AMZN', quoteSymbol: 'AMZN', topAssets: ['AWS', 'Retail', 'Prime', 'Ads'] },
+  { id: 'stk-meta', type: 'stock', name: 'Meta', ticker: 'META', quoteSymbol: 'META', topAssets: ['Ads', 'Reality Labs', 'WhatsApp', 'Instagram'] },
+  { id: 'stk-tsla', type: 'stock', name: 'Tesla', ticker: 'TSLA', quoteSymbol: 'TSLA', topAssets: ['EVs', 'Energy', 'Autopilot', 'Robotaxi'] },
+  { id: 'stk-jpm', type: 'stock', name: 'JPMorgan', ticker: 'JPM', quoteSymbol: 'JPM', topAssets: ['IB', 'Consumer', 'Asset Mgmt', 'Treasury'] },
+  { id: 'stk-xom', type: 'stock', name: 'Exxon Mobil', ticker: 'XOM', quoteSymbol: 'XOM', topAssets: ['Upstream', 'Downstream', 'Chemicals', 'LNG'] },
+  { id: 'stk-brk-b', type: 'stock', name: 'Berkshire B', ticker: 'BRK.B', quoteSymbol: 'BRK.B', topAssets: ['Insurance', 'Railway', 'Energy', 'Equity Holdings'] },
 ];
 
 /* ── Bonds (treasuries and bond ETFs) ── */
 const BONDS = [
-  { id: 'bnd-tlt', type: 'bond', name: '20+ Year Treasury', ticker: 'TLT', quoteSymbol: 'TLT', price: 87.52, change: -0.42, pct: -0.48, topAssets: ['Long Duration', 'Treasury', 'Rate Sensitive', 'Hedge'] },
-  { id: 'bnd-ief', type: 'bond', name: '7-10 Year Treasury', ticker: 'IEF', quoteSymbol: 'IEF', price: 93.18, change: -0.18, pct: -0.19, topAssets: ['Mid Duration', 'Treasury', 'Income', 'Defensive'] },
-  { id: 'bnd-shy', type: 'bond', name: '1-3 Year Treasury', ticker: 'SHY', quoteSymbol: 'SHY', price: 82.43, change: 0.02, pct: 0.02, topAssets: ['Short Duration', 'Cash Alt', 'Treasury', 'Stable'] },
-  { id: 'bnd-agg', type: 'bond', name: 'Aggregate Bond', ticker: 'AGG', quoteSymbol: 'AGG', price: 98.71, change: -0.21, pct: -0.21, topAssets: ['Diversified', 'Investment Grade', 'Income', 'Core'] },
-  { id: 'bnd-lqd', type: 'bond', name: 'Investment Grade Corp', ticker: 'LQD', quoteSymbol: 'LQD', price: 109.65, change: -0.30, pct: -0.27, topAssets: ['Corporate', 'IG Credit', 'Income', 'Spread'] },
-  { id: 'bnd-hyg', type: 'bond', name: 'High Yield Corp', ticker: 'HYG', quoteSymbol: 'HYG', price: 78.92, change: 0.14, pct: 0.18, topAssets: ['HY Credit', 'Risk-On', 'Income', 'Spread'] },
-  { id: 'bnd-tip', type: 'bond', name: 'TIPS', ticker: 'TIP', quoteSymbol: 'TIP', price: 108.45, change: -0.08, pct: -0.07, topAssets: ['Inflation', 'Treasury', 'Real Yield', 'Defensive'] },
-  { id: 'bnd-emb', type: 'bond', name: 'Emerging Markets', ticker: 'EMB', quoteSymbol: 'EMB', price: 89.13, change: 0.22, pct: 0.25, topAssets: ['EM Credit', 'USD-Denom', 'Spread', 'Diversification'] },
+  { id: 'bnd-tlt', type: 'bond', name: '20+ Year Treasury', ticker: 'TLT', quoteSymbol: 'TLT', topAssets: ['Long Duration', 'Treasury', 'Rate Sensitive', 'Hedge'] },
+  { id: 'bnd-ief', type: 'bond', name: '7-10 Year Treasury', ticker: 'IEF', quoteSymbol: 'IEF', topAssets: ['Mid Duration', 'Treasury', 'Income', 'Defensive'] },
+  { id: 'bnd-shy', type: 'bond', name: '1-3 Year Treasury', ticker: 'SHY', quoteSymbol: 'SHY', topAssets: ['Short Duration', 'Cash Alt', 'Treasury', 'Stable'] },
+  { id: 'bnd-agg', type: 'bond', name: 'Aggregate Bond', ticker: 'AGG', quoteSymbol: 'AGG', topAssets: ['Diversified', 'Investment Grade', 'Income', 'Core'] },
+  { id: 'bnd-lqd', type: 'bond', name: 'Investment Grade Corp', ticker: 'LQD', quoteSymbol: 'LQD', topAssets: ['Corporate', 'IG Credit', 'Income', 'Spread'] },
+  { id: 'bnd-hyg', type: 'bond', name: 'High Yield Corp', ticker: 'HYG', quoteSymbol: 'HYG', topAssets: ['HY Credit', 'Risk-On', 'Income', 'Spread'] },
+  { id: 'bnd-tip', type: 'bond', name: 'TIPS', ticker: 'TIP', quoteSymbol: 'TIP', topAssets: ['Inflation', 'Treasury', 'Real Yield', 'Defensive'] },
+  { id: 'bnd-emb', type: 'bond', name: 'Emerging Markets', ticker: 'EMB', quoteSymbol: 'EMB', topAssets: ['EM Credit', 'USD-Denom', 'Spread', 'Diversification'] },
 ];
 
 /* ── Politicians ── */
@@ -143,27 +132,27 @@ const POLITICIANS_LIST = [
 
 /* ── Commodities (no crypto) ── */
 const COMMODITIES_ONLY = [
-  { id: 'cmd-gold', type: 'commodity', name: 'Gold', ticker: 'GC=F', quoteSymbol: 'GC=F', price: 2648.5, change: 18.25, pct: 0.69, topAssets: ['Mining', 'Central Banks', 'ETFs', 'Jewelry'] },
-  { id: 'cmd-silver', type: 'commodity', name: 'Silver', ticker: 'SI=F', quoteSymbol: 'SI=F', price: 31.24, change: 0.82, pct: 2.7, topAssets: ['Industrial', 'Solar', 'ETFs', 'Jewelry'] },
-  { id: 'cmd-platinum', type: 'commodity', name: 'Platinum', ticker: 'PL=F', quoteSymbol: 'PL=F', price: 1024.3, change: 12.4, pct: 1.23, topAssets: ['Auto', 'Industrial', 'Jewelry', 'Investment'] },
-  { id: 'cmd-palladium', type: 'commodity', name: 'Palladium', ticker: 'PA=F', quoteSymbol: 'PA=F', price: 1088.0, change: -9.2, pct: -0.84, topAssets: ['Auto Catalysts', 'Electronics', 'Chemical', 'Dental'] },
-  { id: 'cmd-copper', type: 'commodity', name: 'Copper', ticker: 'HG=F', quoteSymbol: 'HG=F', price: 4.38, change: -0.05, pct: -1.13, topAssets: ['Construction', 'Electronics', 'Transport', 'Industrial'] },
-  { id: 'cmd-oil', type: 'commodity', name: 'Oil (WTI)', ticker: 'CL=F', quoteSymbol: 'CL=F', price: 78.91, change: 1.24, pct: 1.6, topAssets: ['Transport', 'Plastics', 'Heating', 'Chemical'] },
-  { id: 'cmd-natgas', type: 'commodity', name: 'Nat Gas', ticker: 'NG=F', quoteSymbol: 'NG=F', price: 3.42, change: -0.08, pct: -2.28, topAssets: ['Heating', 'Power Gen', 'Chemical', 'LNG'] },
-  { id: 'cmd-wheat', type: 'commodity', name: 'Wheat', ticker: 'ZW=F', quoteSymbol: 'ZW=F', price: 548.25, change: -4.5, pct: -0.81, topAssets: ['Food', 'Feed', 'Ethanol', 'Export'] },
-  { id: 'cmd-corn', type: 'commodity', name: 'Corn', ticker: 'ZC=F', quoteSymbol: 'ZC=F', price: 442.5, change: 2.25, pct: 0.51, topAssets: ['Feed', 'Ethanol', 'Food', 'Export'] },
+  { id: 'cmd-gold', type: 'commodity', name: 'Gold', ticker: 'GC=F', quoteSymbol: 'GC=F', topAssets: ['Mining', 'Central Banks', 'ETFs', 'Jewelry'] },
+  { id: 'cmd-silver', type: 'commodity', name: 'Silver', ticker: 'SI=F', quoteSymbol: 'SI=F', topAssets: ['Industrial', 'Solar', 'ETFs', 'Jewelry'] },
+  { id: 'cmd-platinum', type: 'commodity', name: 'Platinum', ticker: 'PL=F', quoteSymbol: 'PL=F', topAssets: ['Auto', 'Industrial', 'Jewelry', 'Investment'] },
+  { id: 'cmd-palladium', type: 'commodity', name: 'Palladium', ticker: 'PA=F', quoteSymbol: 'PA=F', topAssets: ['Auto Catalysts', 'Electronics', 'Chemical', 'Dental'] },
+  { id: 'cmd-copper', type: 'commodity', name: 'Copper', ticker: 'HG=F', quoteSymbol: 'HG=F', topAssets: ['Construction', 'Electronics', 'Transport', 'Industrial'] },
+  { id: 'cmd-oil', type: 'commodity', name: 'Oil (WTI)', ticker: 'CL=F', quoteSymbol: 'CL=F', topAssets: ['Transport', 'Plastics', 'Heating', 'Chemical'] },
+  { id: 'cmd-natgas', type: 'commodity', name: 'Nat Gas', ticker: 'NG=F', quoteSymbol: 'NG=F', topAssets: ['Heating', 'Power Gen', 'Chemical', 'LNG'] },
+  { id: 'cmd-wheat', type: 'commodity', name: 'Wheat', ticker: 'ZW=F', quoteSymbol: 'ZW=F', topAssets: ['Food', 'Feed', 'Ethanol', 'Export'] },
+  { id: 'cmd-corn', type: 'commodity', name: 'Corn', ticker: 'ZC=F', quoteSymbol: 'ZC=F', topAssets: ['Feed', 'Ethanol', 'Food', 'Export'] },
 ];
 
 /* ── Crypto ── */
 const CRYPTO = [
-  { id: 'cry-btc', type: 'crypto', name: 'Bitcoin', ticker: 'BTC-USD', quoteSymbol: 'BTC-USD', price: 98240.0, change: 1240.0, pct: 1.28, topAssets: ['Store of Value', 'DeFi', 'Mining', 'Payments'] },
-  { id: 'cry-eth', type: 'crypto', name: 'Ethereum', ticker: 'ETH-USD', quoteSymbol: 'ETH-USD', price: 3456.0, change: 42.3, pct: 1.24, topAssets: ['DeFi', 'NFTs', 'Layer 2', 'Staking'] },
-  { id: 'cry-sol', type: 'crypto', name: 'Solana', ticker: 'SOL-USD', quoteSymbol: 'SOL-USD', price: 188.4, change: 3.12, pct: 1.68, topAssets: ['DeFi', 'NFTs', 'Payments', 'Gaming'] },
-  { id: 'cry-bnb', type: 'crypto', name: 'BNB', ticker: 'BNB-USD', quoteSymbol: 'BNB-USD', price: 642.5, change: 8.2, pct: 1.29, topAssets: ['Exchange', 'BSC', 'DeFi', 'Staking'] },
-  { id: 'cry-xrp', type: 'crypto', name: 'XRP', ticker: 'XRP-USD', quoteSymbol: 'XRP-USD', price: 2.18, change: 0.04, pct: 1.86, topAssets: ['Cross-Border', 'Payments', 'Banking', 'Liquidity'] },
-  { id: 'cry-ada', type: 'crypto', name: 'Cardano', ticker: 'ADA-USD', quoteSymbol: 'ADA-USD', price: 0.92, change: 0.018, pct: 1.99, topAssets: ['PoS', 'Smart Contracts', 'Identity', 'DeFi'] },
-  { id: 'cry-dot', type: 'crypto', name: 'Polkadot', ticker: 'DOT-USD', quoteSymbol: 'DOT-USD', price: 7.42, change: 0.13, pct: 1.78, topAssets: ['Parachains', 'Interop', 'Governance', 'Staking'] },
-  { id: 'cry-link', type: 'crypto', name: 'Chainlink', ticker: 'LINK-USD', quoteSymbol: 'LINK-USD', price: 22.84, change: 0.41, pct: 1.83, topAssets: ['Oracles', 'CCIP', 'DeFi', 'Real World Assets'] },
+  { id: 'cry-btc', type: 'crypto', name: 'Bitcoin', ticker: 'BTC-USD', quoteSymbol: 'BTC-USD', topAssets: ['Store of Value', 'DeFi', 'Mining', 'Payments'] },
+  { id: 'cry-eth', type: 'crypto', name: 'Ethereum', ticker: 'ETH-USD', quoteSymbol: 'ETH-USD', topAssets: ['DeFi', 'NFTs', 'Layer 2', 'Staking'] },
+  { id: 'cry-sol', type: 'crypto', name: 'Solana', ticker: 'SOL-USD', quoteSymbol: 'SOL-USD', topAssets: ['DeFi', 'NFTs', 'Payments', 'Gaming'] },
+  { id: 'cry-bnb', type: 'crypto', name: 'BNB', ticker: 'BNB-USD', quoteSymbol: 'BNB-USD', topAssets: ['Exchange', 'BSC', 'DeFi', 'Staking'] },
+  { id: 'cry-xrp', type: 'crypto', name: 'XRP', ticker: 'XRP-USD', quoteSymbol: 'XRP-USD', topAssets: ['Cross-Border', 'Payments', 'Banking', 'Liquidity'] },
+  { id: 'cry-ada', type: 'crypto', name: 'Cardano', ticker: 'ADA-USD', quoteSymbol: 'ADA-USD', topAssets: ['PoS', 'Smart Contracts', 'Identity', 'DeFi'] },
+  { id: 'cry-dot', type: 'crypto', name: 'Polkadot', ticker: 'DOT-USD', quoteSymbol: 'DOT-USD', topAssets: ['Parachains', 'Interop', 'Governance', 'Staking'] },
+  { id: 'cry-link', type: 'crypto', name: 'Chainlink', ticker: 'LINK-USD', quoteSymbol: 'LINK-USD', topAssets: ['Oracles', 'CCIP', 'DeFi', 'Real World Assets'] },
 ];
 
 /* ── Asset class catalog ── */
@@ -174,37 +163,6 @@ const ASSET_CLASSES = [
   { id: 'Politicians', label: 'Politicians', icon: 'bi-person-badge', data: POLITICIANS_LIST },
   { id: 'Crypto', label: 'Crypto', icon: 'bi-currency-bitcoin', data: CRYPTO },
 ];
-
-/**
- * Fallback when /api/watchlist/holders is unavailable. Shape matches API response.
- */
-const HOLDERS_BY_TICKER = {
-  AAPL: [
-    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson', partner: false, shares: 18, avgCost: 142.3, portfolioPct: 3.2, daysHeld: 287 },
-    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim', partner: false, shares: 42, avgCost: 168.5, portfolioPct: 7.8, daysHeld: 412 },
-    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park', partner: false, shares: 9, avgCost: 175.2, portfolioPct: 1.5, daysHeld: 95 },
-    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen', partner: false, shares: 25, avgCost: 155.8, portfolioPct: 4.1, daysHeld: 365 },
-    { initials: 'WB', name: 'Warren Buffett', userId: 'demo-warren-buffett', partner: true, shares: 915000, avgCost: 132.0, portfolioPct: 21.4, daysHeld: 1820 },
-    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio', partner: true, shares: 220, avgCost: 158.4, portfolioPct: 2.8, daysHeld: 540 },
-    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood', partner: true, shares: 180, avgCost: 171.9, portfolioPct: 4.2, daysHeld: 198 },
-    { initials: 'PB', name: 'Peter Lynch', userId: 'demo-peter-lynch', partner: false, shares: 65, avgCost: 145.6, portfolioPct: 5.0, daysHeld: 720 },
-    { initials: 'JM', name: 'Joel Greenblatt', userId: 'demo-joel-greenblatt', partner: false, shares: 38, avgCost: 162.8, portfolioPct: 3.5, daysHeld: 240 },
-    { initials: 'CM', name: 'Charlie Munger', userId: 'demo-charlie-munger', partner: true, shares: 480000, avgCost: 128.5, portfolioPct: 18.2, daysHeld: 1650 },
-  ],
-  NVDA: [
-    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson', partner: false, shares: 12, avgCost: 410.2, portfolioPct: 6.8, daysHeld: 180 },
-    { initials: 'DK', name: 'David Kim', userId: 'demo-david-kim', partner: false, shares: 30, avgCost: 385.5, portfolioPct: 11.2, daysHeld: 245 },
-    { initials: 'AC', name: 'Alex Chen', userId: 'demo-alex-chen', partner: false, shares: 18, avgCost: 425.8, portfolioPct: 7.4, daysHeld: 150 },
-    { initials: 'CK', name: 'Cathie Wood', userId: 'demo-cathie-wood', partner: true, shares: 320, avgCost: 380.4, portfolioPct: 8.6, daysHeld: 290 },
-    { initials: 'JH', name: 'Jensen Huang', userId: 'demo-jensen-huang', partner: true, shares: 86000000, avgCost: 12.5, portfolioPct: 95.0, daysHeld: 5840 },
-  ],
-  MSFT: [
-    { initials: 'EW', name: 'Emma Wilson', userId: 'demo-emma-wilson', partner: false, shares: 22, avgCost: 312.4, portfolioPct: 5.4, daysHeld: 365 },
-    { initials: 'BG', name: 'Bill Gates', userId: 'demo-bill-gates', partner: true, shares: 38500000, avgCost: 28.0, portfolioPct: 28.5, daysHeld: 6200 },
-    { initials: 'RD', name: 'Ray Dalio', userId: 'demo-ray-dalio', partner: true, shares: 165, avgCost: 295.6, portfolioPct: 3.9, daysHeld: 480 },
-    { initials: 'LP', name: 'Lisa Park', userId: 'demo-lisa-park', partner: false, shares: 14, avgCost: 348.2, portfolioPct: 3.1, daysHeld: 120 },
-  ],
-};
 
 const TIME_RANGES = ['1D','5D','1M','YTD','6M','1Y','5Y','MAX'];
 
@@ -280,7 +238,7 @@ function Chart({ item, timeRange }) {
         startValue: pts[0],
       };
     }
-    const up = item.change >= 0;
+    const up = (item.change ?? 0) >= 0;
     const pts = genPts(seed, 140, up);
     const arr = pts.map((v, i) => ({
       label: `Pt ${i + 1}`,
@@ -456,9 +414,6 @@ export default function WatchlistPage() {
         name: tk,
         ticker: tk,
         quoteSymbol: tk,
-        price: 0,
-        change: 0,
-        pct: 0,
         topAssets: [],
       }));
     }
@@ -610,7 +565,7 @@ export default function WatchlistPage() {
         if (!cancelled) setHolderList(d.holders || []);
       })
       .catch(() => {
-        if (!cancelled) setHolderList((HOLDERS_BY_TICKER[tk] || []).slice(0, 10));
+        if (!cancelled) setHolderList([]);
       });
     return () => {
       cancelled = true;
@@ -691,7 +646,7 @@ export default function WatchlistPage() {
               const item = mergeFinnhubQuote(raw, quoteMap);
               const active = selected?.id === item.id;
               const isPF = item.type === 'politician' || item.type === 'institution';
-              const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
+              const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
               return (
                 <button
                   key={item.id}
@@ -890,7 +845,7 @@ export default function WatchlistPage() {
             {stripItems.filter((i) => i.id !== selected.id).slice(0, 5).map((raw) => {
               const item = mergeFinnhubQuote(raw, quoteMap);
               const isPF = item.type === 'politician' || item.type === 'institution';
-              const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
+              const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
               return (
               <button key={item.id} type="button" className="wl-cmp-row" onClick={() => selectAny(raw)}>
                 <TypeIcon item={item}/>
@@ -1046,7 +1001,7 @@ export default function WatchlistPage() {
               const item = mergeFinnhubQuote(raw, quoteMap);
               const act = selected.id === item.id;
               const isPF = item.type === 'politician' || item.type === 'institution';
-              const up = isPF ? (item.returnYtd ?? 0) >= 0 : item.change >= 0;
+              const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
               return (
                 <button key={item.id} type="button" className={`wl-si ${act?'act':''} ${item.type}`} onClick={() => selectAny(raw)}>
                   <div className="wl-si-left">

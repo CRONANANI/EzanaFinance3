@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
-import { useOrg } from '@/contexts/OrgContext';
 import { usePartner } from '@/contexts/PartnerContext';
 
 /* CommunityFeedPost pulls in Recharts (for the ticker embed charts some
@@ -32,42 +31,7 @@ import {
   normalizeTickerEmbed,
 } from '@/lib/community-utils';
 import { supabase } from '@/lib/supabase';
-import { MOCK_DISCUSSIONS } from '@/lib/orgMockData';
 import { auditContrast } from '@/lib/a11y/audit-contrast';
-
-const TRENDING_TOPICS = [
-  { tag: 'EarningsSeason', posts: '1.2K', category: 'Macro', trend: 'up' },
-  { tag: 'AIStocks', posts: '892', category: 'Tech', trend: 'up' },
-  { tag: 'LongTermGrowth', posts: '745', category: 'Strategy', trend: 'up' },
-  { tag: 'Crypto', posts: '612', category: 'Digital Assets', trend: 'down' },
-  { tag: 'DividendInvesting', posts: '523', category: 'Income', trend: 'up' },
-  { tag: 'FedWatch', posts: '489', category: 'Macro', trend: 'up' },
-  { tag: 'Semiconductors', posts: '445', category: 'Tech', trend: 'up' },
-  { tag: 'RenewableEnergy', posts: '412', category: 'ESG', trend: 'down' },
-  { tag: 'EmergingMarkets', posts: '389', category: 'Global', trend: 'up' },
-  { tag: 'IPOWatch', posts: '367', category: 'New Listings', trend: 'up' },
-  { tag: 'OptionsFlow', posts: '321', category: 'Derivatives', trend: 'down' },
-  { tag: 'ValueInvesting', posts: '298', category: 'Strategy', trend: 'up' },
-  { tag: 'RealEstate', posts: '276', category: 'Alternative', trend: 'down' },
-  { tag: 'Commodities', posts: '255', category: 'Macro', trend: 'up' },
-  { tag: 'RiskManagement', posts: '234', category: 'Strategy', trend: 'up' },
-];
-
-const FRIENDS_ACTIVITY_MOCK = [
-  { name: 'Emily Chen', username: 'emilyc', action: 'Bought $AAPL', ret: '+2.35%', direction: 'pos', time: '2h' },
-  { name: 'Michael Torres', username: 'miketorres', action: 'Sold $TSLA', ret: '-1.23%', direction: 'neg', time: '3h' },
-  { name: 'Alex Morgan', username: 'alexm', action: 'Commented on a post', ret: null, direction: null, time: '4h' },
-  { name: 'Sarah Lee', username: 'sarahlee', action: 'Created a new post', ret: null, direction: null, time: '5h' },
-  { name: 'David Park', username: 'dpark', action: 'Liked a post', ret: null, direction: null, time: '6h' },
-];
-
-const TRENDING_DISCUSSIONS = [
-  { title: 'The Future of AI in Investing', author: '@tech_investor', comments: 124, tone: 'emerald' },
-  { title: 'Best Long-Term Stocks for 2026', author: '@value_hunter', comments: 98, tone: 'emerald' },
-  { title: 'Crypto Market Outlook', author: '@crypto_king', comments: 87, tone: 'emerald' },
-  { title: 'FED Rate Decision Impact', author: '@macro_mind', comments: 65, tone: 'amber' },
-  { title: 'Green Energy Stocks', author: '@green_future', comments: 43, tone: 'indigo' },
-];
 
 const DISCUSSION_TONE_TO_CSS = {
   emerald: { background: 'rgba(16,185,129,0.12)', color: '#10b981' },
@@ -194,6 +158,11 @@ function TrendingTopicsCard({ topics }) {
         </button>
       </div>
 
+      {topics.length === 0 ? (
+        <p className="comm-trending-empty" style={{ margin: '0 1.25rem 1.25rem', color: 'var(--db-muted, #8b949e)', fontSize: '0.875rem' }}>
+          No trending hashtags in the last week yet.
+        </p>
+      ) : null}
       <ul className="comm-trending-row-grid comm-trending-list" aria-label="Ranked trending topics">
         {visibleTopics.map((topic, localIdx) => {
           const globalIdx = startIdx + localIdx;
@@ -445,8 +414,11 @@ function InvestorsToFollowModalBody({ data }) {
 export default function CommunityPageClient() {
   const router = useRouter();
   const { user } = useAuth();
-  const { isOrgUser } = useOrg();
   const { isPartner } = usePartner();
+
+  const [trendingTopics, setTrendingTopics] = useState([]);
+  const [friendsActivity, setFriendsActivity] = useState([]);
+  const [trendingDiscussions, setTrendingDiscussions] = useState([]);
 
   const [userProfile, setUserProfile] = useState(null);
   const [feedTab, setFeedTab] = useState('Feed');
@@ -491,34 +463,6 @@ export default function CommunityPageClient() {
     setFeedMessage('');
     setFeedError(false);
     try {
-      if (isOrgUser) {
-        let orgRows = MOCK_DISCUSSIONS;
-        if (feedTab === 'Discussions') {
-          orgRows = orgRows.filter((d) => /#[A-Za-z][A-Za-z0-9_]*/.test(d.content || ''));
-        }
-        const rows = orgRows.slice(0, 20).map((d) => ({
-          id: d.id,
-          text: d.content,
-          userId: null,
-          username: '',
-          name: d.author_name,
-          initials: getInitials(d.author_name),
-          time: d.time,
-          badge: d.type === 'announcement' ? 'Announcement' : null,
-          tickerSym: extractTickerFromContent(d.content),
-          likes: 0,
-          comments: d.replies ?? 0,
-          reposts: 0,
-          liked_by_me: false,
-          saved_by_me: false,
-          returnBadge: hashReturnPct(d.id),
-          isPartner: false,
-        }));
-        setFeedPosts(rows);
-        setFeedLoading(false);
-        return;
-      }
-
       const apiTab = tabToApiParam(feedTab, feedSort, !!user?.id);
       const res = await fetch(`/api/community/posts?tab=${encodeURIComponent(apiTab)}`);
       const data = await res.json();
@@ -582,7 +526,7 @@ export default function CommunityPageClient() {
     } finally {
       setFeedLoading(false);
     }
-  }, [feedTab, feedSort, user?.id, isOrgUser]);
+  }, [feedTab, feedSort, user?.id]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -606,6 +550,36 @@ export default function CommunityPageClient() {
   useEffect(() => {
     fetchFeed();
   }, [fetchFeed]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [tRes, fRes, dRes] = await Promise.all([
+          fetch('/api/community/trending-topics'),
+          fetch('/api/community/friends-activity'),
+          fetch('/api/community/trending-discussions'),
+        ]);
+        const tJson = tRes.ok ? await tRes.json() : { topics: [] };
+        const fJson = fRes.ok ? await fRes.json() : { activity: [] };
+        const dJson = dRes.ok ? await dRes.json() : { discussions: [] };
+        if (!cancelled) {
+          setTrendingTopics(Array.isArray(tJson.topics) ? tJson.topics : []);
+          setFriendsActivity(Array.isArray(fJson.activity) ? fJson.activity : []);
+          setTrendingDiscussions(Array.isArray(dJson.discussions) ? dJson.discussions : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setTrendingTopics([]);
+          setFriendsActivity([]);
+          setTrendingDiscussions([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const syms = [...new Set(feedPosts.map((p) => p.tickerSym).filter(Boolean))];
@@ -838,7 +812,7 @@ export default function CommunityPageClient() {
 
       {/* ═══ Trending Topics — full-width card below greeting/tabs ═══ */}
       <div className="comm-hero-cards">
-        <TrendingTopicsCard topics={TRENDING_TOPICS} />
+        <TrendingTopicsCard topics={trendingTopics} />
       </div>
 
       {/* ═══ KPI strip — community-wide snapshot ═══ */}
@@ -1244,8 +1218,13 @@ export default function CommunityPageClient() {
             </div>
 
             <div className="comm-leaderboard-body">
-              {FRIENDS_ACTIVITY_MOCK.map((f) => (
-                <div key={f.username} className="comm-list-row">
+              {friendsActivity.length === 0 ? (
+                <p className="comm-state-card__desc" style={{ margin: '0.75rem 1rem', color: 'var(--db-muted, #8b949e)' }}>
+                  No recent activity from people you follow. Follow investors to see updates here.
+                </p>
+              ) : (
+                friendsActivity.map((f) => (
+                <div key={`${f.username}-${f.time}-${f.name}`} className="comm-list-row">
                   <div className="comm-list-row__avatar" aria-hidden>
                     {getInitials(f.name)}
                   </div>
@@ -1269,7 +1248,8 @@ export default function CommunityPageClient() {
                     )}
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </section>
 
@@ -1294,12 +1274,17 @@ export default function CommunityPageClient() {
             </div>
 
             <div className="comm-leaderboard-body">
-              {TRENDING_DISCUSSIONS.map((d) => {
+              {trendingDiscussions.length === 0 ? (
+                <p className="comm-state-card__desc" style={{ margin: '0.75rem 1rem', color: 'var(--db-muted, #8b949e)' }}>
+                  No discussion threads with activity this week yet.
+                </p>
+              ) : (
+                trendingDiscussions.map((d, di) => {
                 const tone = DISCUSSION_TONE_TO_CSS[d.tone] ||
                   DISCUSSION_TONE_TO_CSS.emerald;
                 return (
                   <div
-                    key={d.title}
+                    key={`${d.title}-${di}`}
                     className="comm-list-row comm-list-row--interactive"
                     role="button"
                     tabIndex={0}
@@ -1328,7 +1313,8 @@ export default function CommunityPageClient() {
                     </div>
                   </div>
                 );
-              })}
+                })
+              )}
             </div>
           </section>
         </div>
