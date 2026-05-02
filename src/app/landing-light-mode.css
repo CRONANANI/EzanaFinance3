@@ -584,12 +584,26 @@ html:has(.privacy-policy-page) .navbar.navbar-sticky.scrolled {
 html:has(.privacy-policy-page) .navbar .nav-link,
 html:has(.privacy-policy-page) .navbar .nav-link-text {
   color: #64748b !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  text-decoration: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  transition: color 0.12s ease !important;
 }
 
 html:has(.privacy-policy-page) .navbar .nav-link:hover,
 html:has(.privacy-policy-page) .navbar .nav-link-text:hover {
   color: #059669 !important;
-  background: rgba(16, 185, 129, 0.06) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  text-decoration: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
 
 html:has(.privacy-policy-page) .navbar .mobile-hamburger {

@@ -1684,14 +1684,66 @@ html:has(.landing-page) .navbar.navbar-sticky,
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
+/* ════════════════════════════════════════════════════════════
+   LANDING NAVBAR — hover effect locked to color-only.
+   Applies on /, /pricing, /help-center, /privacy-policy.
+   The hover changes ONLY the text color; every other property
+   that might be added by other rules (background, transform,
+   underline, glow, opacity) is explicitly reset.
+   ════════════════════════════════════════════════════════════ */
+
 html:has(.landing-page) .navbar .nav-link,
-.landing-page .navbar .nav-link {
+.landing-page .navbar .nav-link,
+html:has(.privacy-policy-page) .navbar .nav-link,
+html:has(.help-center-page) .navbar .nav-link,
+html:has(.pricing-page) .navbar .nav-link {
   color: #d1d5db !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  text-decoration: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  transition: color 0.12s ease !important;
 }
 
 html:has(.landing-page) .navbar .nav-link:hover,
-.landing-page .navbar .nav-link:hover {
+.landing-page .navbar .nav-link:hover,
+html:has(.privacy-policy-page) .navbar .nav-link:hover,
+html:has(.help-center-page) .navbar .nav-link:hover,
+html:has(.pricing-page) .navbar .nav-link:hover,
+html:has(.landing-page) .navbar .nav-link:focus-visible,
+.landing-page .navbar .nav-link:focus-visible {
   color: #10b981 !important;
+  /* Explicitly reset every other hover effect that might be added elsewhere */
+  background: transparent !important;
+  background-color: transparent !important;
+  text-decoration: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Defeat any pseudo-element underline or accent line some component
+   stylesheet might attach to anchor hover. */
+html:has(.landing-page) .navbar .nav-link::before,
+html:has(.landing-page) .navbar .nav-link::after,
+.landing-page .navbar .nav-link::before,
+.landing-page .navbar .nav-link::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Adjacent items must not visually react when a sibling is hovered.
+   This rule is a no-op today (no `:has()` parent rule exists), but
+   prevents future regressions. */
+html:has(.landing-page) .navbar .nav-menu:hover .nav-link:not(:hover),
+.landing-page .navbar .nav-menu:hover .nav-link:not(:hover) {
+  color: #d1d5db !important;
+  background: transparent !important;
+  opacity: 1 !important;
 }
 
 html:has(.landing-page) .navbar .logo,
