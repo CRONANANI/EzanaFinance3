@@ -20,6 +20,7 @@ import {
   SkillDevelopmentCard,
 } from '@/components/org/AnalystCards';
 import { getTasksByRole, getMemberByEmail, MOCK_MEMBERS, MOCK_TEAMS, MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
+import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 
@@ -68,18 +69,123 @@ function AvatarCircle({ name, role, size = 22 }) {
   );
 }
 
-/* ── Mock files (with team_id + tag) ──────────────────────── */
+/* ── Mock files (with team_id + tag + optional demo preview URLs) ──────────────────────── */
+const DEMO_PDF_URL = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
+const DEMO_VIDEO_URL = 'https://www.w3schools.com/html/mov_bbb.mp4';
+
 const MOCK_FILES = [
-  { id: 'f1', name: 'Q2 TMT Stock Pitch.pptx', size: 4200000, uploadedBy: 'm3', sharedWith: ['m1', 'm2', 'm10'], uploadedAt: '2026-04-02', team_id: 't7', tag: null, contentType: 'valuations' },
+  {
+    id: 'f1',
+    name: 'Q2 TMT Stock Pitch.pptx',
+    size: 4200000,
+    uploadedBy: 'm3',
+    sharedWith: ['m1', 'm2', 'm10'],
+    uploadedAt: '2026-04-02',
+    team_id: 't7',
+    tag: null,
+    contentType: 'valuations',
+    slideUrls: [
+      'https://placehold.co/1280x720/0d1117/6366f1?text=Slide+1+%E2%80%94+Q2+TMT+Stock+Pitch',
+      'https://placehold.co/1280x720/0d1117/10b981?text=Slide+2+%E2%80%94+NVDA+Thesis',
+      'https://placehold.co/1280x720/0d1117/f59e0b?text=Slide+3+%E2%80%94+AAPL+DCF',
+      'https://placehold.co/1280x720/0d1117/ef4444?text=Slide+4+%E2%80%94+Risk+Factors',
+      'https://placehold.co/1280x720/0d1117/a78bfa?text=Slide+5+%E2%80%94+Recommendation',
+    ],
+  },
   { id: 'f2', name: 'AAPL Valuation Model.xlsx', size: 890000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-01', team_id: 't7', tag: null, contentType: 'models_dcf' },
-  { id: 'f3', name: 'Healthcare Sector Primer.pdf', size: 2100000, uploadedBy: 'm4', sharedWith: ['m1', 'm13', 'm14'], uploadedAt: '2026-03-30', team_id: 't1', tag: null, contentType: 'primer' },
-  { id: 'f4', name: 'Weekly Investment Committee Recording 04/04/2026.mp4', size: 156000000, uploadedBy: 'm1', sharedWith: ['m2', 'm3', 'm4', 'm5', 'm6'], uploadedAt: '2026-04-04', team_id: null, tag: 'administrative', contentType: null },
+  {
+    id: 'f3',
+    name: 'Healthcare Sector Primer.pdf',
+    size: 2100000,
+    uploadedBy: 'm4',
+    sharedWith: ['m1', 'm13', 'm14'],
+    uploadedAt: '2026-03-30',
+    team_id: 't1',
+    tag: null,
+    contentType: 'primer',
+    previewUrl: DEMO_PDF_URL,
+  },
+  {
+    id: 'f4',
+    name: 'Weekly Investment Committee Recording 04/04/2026.mp4',
+    size: 156000000,
+    uploadedBy: 'm1',
+    sharedWith: ['m2', 'm3', 'm4', 'm5', 'm6'],
+    uploadedAt: '2026-04-04',
+    team_id: null,
+    tag: 'administrative',
+    contentType: null,
+    previewUrl: DEMO_VIDEO_URL,
+  },
   { id: 'f5', name: 'Comparable Company Analysis - Semis.xlsx', size: 1200000, uploadedBy: 'm22', sharedWith: ['m3', 'm10'], uploadedAt: '2026-03-27', team_id: 't7', tag: null, contentType: 'models_comparable_companies' },
-  { id: 'f6', name: 'Energy Sector Update Q1.pdf', size: 3400000, uploadedBy: 'm5', sharedWith: ['m1', 'm2', 'm15'], uploadedAt: '2026-03-25', team_id: 't3', tag: null, contentType: 'annual_report' },
-  { id: 'f7', name: '2026 New Analyst Onboarding.pdf', size: 780000, uploadedBy: 'm2', sharedWith: ['m12', 'm23', 'm18'], uploadedAt: '2026-03-20', team_id: null, tag: 'administrative', contentType: null },
-  { id: 'f8', name: 'Portfolio Risk Review - March.pptx', size: 5600000, uploadedBy: 'm6', sharedWith: ['m1', 'm2'], uploadedAt: '2026-03-18', team_id: 't4', tag: null, contentType: 'valuations' },
-  { id: 'f9', name: 'Metals & Mining Deep Dive.pdf', size: 2800000, uploadedBy: 'm9', sharedWith: ['m1', 'm19'], uploadedAt: '2026-03-15', team_id: 't6', tag: null, contentType: 'primer' },
-  { id: 'f10', name: 'Consumer Staples Earnings Preview.pptx', size: 3100000, uploadedBy: 'm7', sharedWith: ['m1', 'm17'], uploadedAt: '2026-03-12', team_id: 't2', tag: null, contentType: 'valuations' },
+  {
+    id: 'f6',
+    name: 'Energy Sector Update Q1.pdf',
+    size: 3400000,
+    uploadedBy: 'm5',
+    sharedWith: ['m1', 'm2', 'm15'],
+    uploadedAt: '2026-03-25',
+    team_id: 't3',
+    tag: null,
+    contentType: 'annual_report',
+    previewUrl: DEMO_PDF_URL,
+  },
+  {
+    id: 'f7',
+    name: '2026 New Analyst Onboarding.pdf',
+    size: 780000,
+    uploadedBy: 'm2',
+    sharedWith: ['m12', 'm23', 'm18'],
+    uploadedAt: '2026-03-20',
+    team_id: null,
+    tag: 'administrative',
+    contentType: null,
+    previewUrl: DEMO_PDF_URL,
+  },
+  {
+    id: 'f8',
+    name: 'Portfolio Risk Review - March.pptx',
+    size: 5600000,
+    uploadedBy: 'm6',
+    sharedWith: ['m1', 'm2'],
+    uploadedAt: '2026-03-18',
+    team_id: 't4',
+    tag: null,
+    contentType: 'valuations',
+    slideUrls: [
+      'https://placehold.co/1280x720/1e293b/f87171?text=Risk+Review+Slide+1',
+      'https://placehold.co/1280x720/1e293b/34d399?text=Risk+Review+Slide+2',
+      'https://placehold.co/1280x720/1e293b/60a5fa?text=Risk+Review+Slide+3',
+    ],
+  },
+  {
+    id: 'f9',
+    name: 'Metals & Mining Deep Dive.pdf',
+    size: 2800000,
+    uploadedBy: 'm9',
+    sharedWith: ['m1', 'm19'],
+    uploadedAt: '2026-03-15',
+    team_id: 't6',
+    tag: null,
+    contentType: 'primer',
+    previewUrl: DEMO_PDF_URL,
+  },
+  {
+    id: 'f10',
+    name: 'Consumer Staples Earnings Preview.pptx',
+    size: 3100000,
+    uploadedBy: 'm7',
+    sharedWith: ['m1', 'm17'],
+    uploadedAt: '2026-03-12',
+    team_id: 't2',
+    tag: null,
+    contentType: 'valuations',
+    slideUrls: [
+      'https://placehold.co/1280x720/312e81/fbbf24?text=Staples+Preview+1',
+      'https://placehold.co/1280x720/312e81/a78bfa?text=Staples+Preview+2',
+      'https://placehold.co/1280x720/312e81/2dd4bf?text=Staples+Preview+3',
+    ],
+  },
   { id: 'f11', name: 'Industrials Capex Model.xlsx', size: 1500000, uploadedBy: 'm8', sharedWith: ['m1', 'm18'], uploadedAt: '2026-03-10', team_id: 't5', tag: null, contentType: 'models_capex' },
   { id: 'f12', name: 'Utilities Dividend Discount Model.xlsx', size: 920000, uploadedBy: 'm10', sharedWith: ['m3', 'm11'], uploadedAt: '2026-04-03', team_id: 't7', tag: null, contentType: 'models_ddm' },
 ];
@@ -460,6 +566,7 @@ function TypeFilterDropdown({ value, onChange }) {
 function FilePortalCard({ members }) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [sendFile, setSendFile] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
   const [search, setSearch] = useState('');
   const [formatFilter, setFormatFilter] = useState('');
   const [teamFilters, setTeamFilters] = useState([]);
@@ -506,6 +613,8 @@ function FilePortalCard({ members }) {
           </div>
         </div>
       )}
+
+      {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
 
       <div className="th-card-header">
         <div className="th-card-header-left">
@@ -560,7 +669,20 @@ function FilePortalCard({ members }) {
             const shared = file.sharedWith.map((sid) => members.find((mm) => mm.id === sid)).filter(Boolean);
             const team = file.team_id ? MOCK_TEAMS.find((t) => t.id === file.team_id) : null;
             return (
-              <div key={file.id} className="th-file-row">
+              <div
+                key={file.id}
+                className="th-file-row"
+                onClick={() => setPreviewFile(file)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setPreviewFile(file);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className={`th-file-icon ${info.type}`}>
                   <i className={`bi ${info.icon}`} />
                 </div>
@@ -573,7 +695,7 @@ function FilePortalCard({ members }) {
                     {file.tag === 'administrative' ? ' · Admin' : ''}
                   </p>
                 </div>
-                <div className="th-file-shared-to">
+                <div className="th-file-shared-to" onClick={(e) => e.stopPropagation()}>
                   {shared.slice(0, 3).map((mem) => (
                     <AvatarCircle key={mem.id} name={mem.name} role={mem.role} size={22} />
                   ))}
@@ -581,7 +703,7 @@ function FilePortalCard({ members }) {
                     <span style={{ fontSize: '0.55rem', color: '#6b7280', marginLeft: 4 }}>+{shared.length - 3}</span>
                   )}
                 </div>
-                <div className="th-file-actions">
+                <div className="th-file-actions" onClick={(e) => e.stopPropagation()}>
                   <button type="button" className="th-icon-btn" title="Send to…" onClick={() => setSendFile(file)}>
                     <i className="bi bi-send" />
                   </button>
