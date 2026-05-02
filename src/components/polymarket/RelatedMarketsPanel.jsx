@@ -20,7 +20,7 @@ export function RelatedMarketsPanel({
   variant = 'inline',
   onClose,
 }) {
-  const { markets, isLoading, error } = useRelatedPolymarketMarkets(event, {
+  const { markets, noHighConfidence, isLoading, error } = useRelatedPolymarketMarkets(event, {
     enabled,
     limit,
   });
@@ -67,7 +67,14 @@ export function RelatedMarketsPanel({
         </div>
       )}
 
-      {!isLoading && !error && markets.length === 0 && (
+      {!isLoading && !error && markets.length === 0 && noHighConfidence && (
+        <div className="pm-related__empty">
+          No high-confidence prediction markets match this article. We searched Polymarket with this
+          event&apos;s keywords and symbols, but nothing passed the relevance bar right now.
+        </div>
+      )}
+
+      {!isLoading && !error && markets.length === 0 && !noHighConfidence && (
         <div className="pm-related__empty">
           No related markets found on Polymarket. The keywords from this event didn&apos;t match
           any active markets right now — that&apos;s normal for niche or breaking news.
