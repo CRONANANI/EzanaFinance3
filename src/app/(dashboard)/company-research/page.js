@@ -371,8 +371,8 @@ function CompanyResearchPageInner() {
         />
       </div>
 
-      {/* Valuation / AI model shortcuts — only when a stock is selected (above chart, not below courses) */}
-      {selectedStock && viewMode === 'stock' && (
+      {/* Stock analysis models — horizontal strip, above heatmap (heatmap view) or above stock chart (stock view) */}
+      {((selectedStock && viewMode === 'stock') || viewMode === 'heatmap') && (
         <section
           className="models-carousel-section compact cr-models-above-chart"
           aria-label="Stock analysis models"
@@ -386,8 +386,11 @@ function CompanyResearchPageInner() {
             <i className="bi bi-chevron-left" />
           </button>
           <div className="models-carousel-container" ref={modelsCarouselScrollRef}>
-            <div className="models-carousel-track" id="modelsCarouselTrackStock">
-              {renderModelCards('st')}
+            <div
+              className="models-carousel-track"
+              id={viewMode === 'stock' ? 'modelsCarouselTrackStock' : 'modelsCarouselTrack'}
+            >
+              {renderModelCards(viewMode === 'stock' ? 'st' : 'hm')}
             </div>
           </div>
           <button
@@ -404,7 +407,7 @@ function CompanyResearchPageInner() {
       <section className="cr-market-chart-root" id="marketChartSection">
         <div
           id="heatmapView"
-          className="cr-heatmap-layout"
+          className="cr-heatmap-layout cr-heatmap-layout--full"
           style={{ display: viewMode === 'heatmap' ? undefined : 'none' }}
         >
           <div className="cr-heatmap-main">
@@ -422,16 +425,6 @@ function CompanyResearchPageInner() {
               </div>
             </PinnableCard>
           </div>
-          <aside className="cr-heatmap-sidebar cr-scrollbar" aria-label="Financial model shortcuts">
-            <p className="cr-sidebar-heading">Stock analysis models</p>
-            <div className="models-carousel-section compact cr-models-vertical">
-              <div className="models-carousel-container cr-models-vertical-inner">
-                <div className="models-carousel-track" id="modelsCarouselTrack">
-                  {renderModelCards('hm')}
-                </div>
-              </div>
-            </div>
-          </aside>
         </div>
 
         <div id="stockChartView" style={{ display: viewMode === 'stock' ? '' : 'none' }}>

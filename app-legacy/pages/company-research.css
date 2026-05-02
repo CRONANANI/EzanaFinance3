@@ -1357,6 +1357,26 @@ body.light-mode .model-metric-card:hover {
   min-height: 480px;
 }
 
+/*
+ * Heatmap full-width variant — used when the model carousel is rendered
+ * ABOVE the heatmap instead of in a side rail. The heatmap card spans
+ * the full content area; outer page padding (`.dashboard-page-inset`)
+ * provides the gutter so we never spill past the page margins.
+ */
+.cr-heatmap-layout--full {
+  grid-template-columns: 1fr;
+}
+
+.cr-heatmap-layout--full .cr-heatmap-main {
+  width: 100%;
+  min-width: 0;
+}
+
+.cr-heatmap-layout--full .cr-heatmap-main .heatmap-container {
+  /* Slightly taller now that the layout has more horizontal real estate. */
+  min-height: 520px;
+}
+
 .cr-heatmap-main {
   min-width: 0;
   display: flex;
@@ -1574,13 +1594,18 @@ body.light-mode .model-metric-card:hover {
 }
 
 @media (max-width: 1024px) {
-  .cr-heatmap-layout {
+  .cr-heatmap-layout,
+  .cr-heatmap-layout--full {
     grid-template-columns: 1fr;
     min-height: 0;
   }
 
   .cr-heatmap-sidebar {
     max-height: 50vh;
+  }
+
+  .cr-heatmap-layout--full .cr-heatmap-main .heatmap-container {
+    min-height: 380px;
   }
 }
 
