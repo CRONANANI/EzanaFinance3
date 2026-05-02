@@ -23,6 +23,7 @@ import { MOCK_WATCHLISTS } from '@/lib/mockWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { MarketPortfolioView } from '@/components/research/market/MarketPortfolioView';
 import { EzanaNavLogo } from '@/components/brand/EzanaNavLogo';
+import { useOrg } from '@/contexts/OrgContext';
 
 /* StockPriceChart imports Recharts. Before this change Recharts was in the
    initial bundle of /company-research (~342 kB First Load). The chart renders
@@ -36,6 +37,10 @@ const StockPriceChart = dynamic(
     loading: () => <div style={{ height: 216 }} aria-hidden />,
   }
 );
+const OrgSendToTeamModal = dynamic(
+  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false, loading: () => null }
+);
 
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -48,6 +53,7 @@ import '@/components/research/ai-analysis-panel.css';
 import '@/components/research/model-card-shell.css';
 import '@/components/research/market/market-portfolio.css';
 import './company-research-theme.css';
+import '../org-trading/org-trading.css';
 
 const CAROUSEL_MODELS = getCarouselModels();
 
@@ -97,6 +103,8 @@ function CompanyResearchPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { isOrgUser, hasPermission } = useOrg();
+  const [sendChartTicker, setSendChartTicker] = useState(null);
   const view = searchParams.get('view') === 'market' ? 'market' : 'company';
   const setView = useCallback(
     (next) => {
@@ -439,32 +447,44 @@ function CompanyResearchPageInner() {
                         {selectedStock}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setWlAddedMap({});
-                        setWlModalOpen(true);
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        padding: '0.35rem 0.85rem',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        background: 'rgba(16, 185, 129, 0.08)',
-                        color: '#10b981',
-                        fontSize: '0.8125rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        fontFamily: 'var(--font-sans)',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <i className="bi bi-plus-lg" style={{ fontSize: '0.875rem' }} />
-                      Add to Watchlist
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginLeft: 'auto' }}>
+                      {isOrgUser && hasPermission('send_to_team') && (
+                        <button
+                          type="button"
+                          className="ot-position-flag-btn"
+                          onClick={() => setSendChartTicker(selectedStock)}
+                          style={{ whiteSpace: 'nowrap' }}
+                        >
+                          <i className="bi bi-send" /> Send Chart
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWlAddedMap({});
+                          setWlModalOpen(true);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.35rem 0.85rem',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          background: 'rgba(16, 185, 129, 0.08)',
+                          color: '#10b981',
+                          fontSize: '0.8125rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          fontFamily: 'var(--font-sans)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <i className="bi bi-plus-lg" style={{ fontSize: '0.875rem' }} />
+                        Add to Watchlist
+                      </button>
+                    </div>
                   </div>
                   <p className="cr-merged-meta-line">{companyMetaLine}</p>
                 </div>
@@ -707,6 +727,18 @@ function CompanyResearchPageInner() {
             </p>
           </div>
         </>
+      )}
+
+      {sendChartTicker && (
+        <OrgSendToTeamModal
+          onClose={() => setSendChartTicker(null)}
+          attachment={{
+            kind: 'chart',
+            ref: JSON.stringify({ ticker: sendChartTicker, range: '1Y' }),
+            label: `${sendChartTicker} Price Chart`,
+            meta: { page: 'company-research' },
+          }}
+        />
       )}
     </div>
   );

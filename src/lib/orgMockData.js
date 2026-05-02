@@ -446,6 +446,8 @@ export const PERMISSION_TIERS = {
       'manage_org_settings',
       'flag_positions',
       'grant_permissions',
+      'send_to_team',
+      'manage_subordinate_notifications',
     ],
   },
   portfolio_manager: {
@@ -461,6 +463,8 @@ export const PERMISSION_TIERS = {
         'approve_deliverables',
         'flag_positions',
         'grant_permissions',
+        'send_to_team',
+        'manage_subordinate_notifications',
       ],
       PM: [
         'manage_team_tasks',
@@ -469,8 +473,16 @@ export const PERMISSION_TIERS = {
         'manage_analysts',
         'flag_positions',
         'grant_permissions',
+        'send_to_team',
+        'manage_subordinate_notifications',
       ],
-      'Junior PM': ['manage_team_tasks', 'upload_deliverables', 'view_team_analytics', 'flag_positions'],
+      'Junior PM': [
+        'manage_team_tasks',
+        'upload_deliverables',
+        'view_team_analytics',
+        'flag_positions',
+        'send_to_team',
+      ],
     },
   },
   analyst: {
@@ -483,10 +495,17 @@ export const PERMISSION_TIERS = {
         'create_posts',
         'mentor_juniors',
         'flag_positions',
+        'send_to_team',
       ],
-      Analyst: ['upload_deliverables', 'view_team_analytics', 'create_posts'],
+      Analyst: ['upload_deliverables', 'view_team_analytics', 'create_posts', 'send_to_team'],
       'Junior Analyst': ['upload_deliverables', 'create_posts'],
-      'Quantitative Analyst': ['upload_deliverables', 'view_team_analytics', 'create_posts', 'run_models'],
+      'Quantitative Analyst': [
+        'upload_deliverables',
+        'view_team_analytics',
+        'create_posts',
+        'run_models',
+        'send_to_team',
+      ],
     },
   },
 };
@@ -516,6 +535,41 @@ export function getTotalPortfolioValue() {
 /**
  * Effective permissions: PERMISSION_TIERS defaults plus optional DB overrides (org_member_permissions).
  */
+/**
+ * Mock hierarchy: who a supervisor can manage notification prefs for (UI / demos).
+ * For live DB rows use {@link getManageableOrgPeers}.
+ */
+export function getManageableMembers(supervisor) {
+  if (!supervisor) return [];
+  if (supervisor.role === 'executive') {
+    return MOCK_MEMBERS.filter((m) => m.role === 'portfolio_manager');
+  }
+  if (supervisor.role === 'portfolio_manager') {
+    return MOCK_MEMBERS.filter(
+      (m) => m.role === 'analyst' && m.team_id === supervisor.team_id
+    );
+  }
+  return [];
+}
+
+/**
+ * Same rules as {@link getManageableMembers}, using real `org_members` rows (UUID ids).
+ * @param {{ id: string, role: string, team_id: string | null } | null} supervisor
+ * @param {Array<{ id: string, role: string, team_id: string | null }>} orgPeers
+ */
+export function getManageableOrgPeers(supervisor, orgPeers) {
+  if (!supervisor || !orgPeers?.length) return [];
+  if (supervisor.role === 'executive') {
+    return orgPeers.filter((m) => m.role === 'portfolio_manager' && m.id !== supervisor.id);
+  }
+  if (supervisor.role === 'portfolio_manager') {
+    return orgPeers.filter(
+      (m) => m.role === 'analyst' && m.team_id === supervisor.team_id && m.id !== supervisor.id
+    );
+  }
+  return [];
+}
+
 export function getMemberPermissions(member, overridePerms = []) {
   if (!member) return [];
   const tier = PERMISSION_TIERS[member.role];

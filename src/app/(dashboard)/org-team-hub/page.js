@@ -3,6 +3,7 @@
 import { useOrg } from '@/contexts/OrgContext';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { OrgHierarchyCard } from '@/components/org/OrgHierarchyCard';
+import { OrgNotificationManager } from '@/components/org/OrgNotificationManager';
 import { PerformanceMetricsCard } from '@/components/org/PerformanceMetricsCard';
 import { UpcomingDeadlinesCard } from '@/components/org/UpcomingDeadlinesCard';
 import {
@@ -23,6 +24,7 @@ import { getTasksByRole, getMemberByEmail, MOCK_MEMBERS, MOCK_TEAMS, MOCK_TEAM_P
 import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
+import '../org-trading/org-trading.css';
 
 /* ── Helpers ───────────────────────────────────────────────── */
 function getFileTypeInfo(filename) {
@@ -829,6 +831,8 @@ export default function OrgTeamHubPage() {
           <OrgHierarchyCard />
         </div>
       </div>
+
+      <OrgNotificationManager />
 
       <div className="th-grid-main">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

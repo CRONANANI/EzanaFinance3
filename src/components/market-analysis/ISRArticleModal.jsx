@@ -7,8 +7,15 @@
  * when the event was matched to an active market.
  */
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
+import { useOrg } from '@/contexts/OrgContext';
+
+const OrgSendToTeamModal = dynamic(
+  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false }
+);
 
 function formatLong(iso) {
   try {
@@ -26,6 +33,8 @@ function formatLong(iso) {
 
 export function ISRArticleModal({ event, polymarket, onClose }) {
   const [showRelated, setShowRelated] = useState(false);
+  const { isOrgUser, hasPermission } = useOrg();
+  const [showSendModal, setShowSendModal] = useState(false);
 
   useEffect(() => {
     if (!event) return undefined;
@@ -174,8 +183,39 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
               </p>
             </div>
           </div>
+
+          {isOrgUser && hasPermission('send_to_team') && (
+            <div className="sentinel-report-section">
+              <button
+                type="button"
+                className="ot-btn-primary"
+                style={{
+                  width: '100%',
+                  justifyContent: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+                onClick={() => setShowSendModal(true)}
+              >
+                <i className="bi bi-send" /> Send to Team Member
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {showSendModal && (
+        <OrgSendToTeamModal
+          onClose={() => setShowSendModal(false)}
+          attachment={{
+            kind: 'isr_event',
+            ref: JSON.stringify({ id: event.id, headline: event.headline, url: event.url }),
+            label: event.headline,
+            meta: { source: event.source, severity: event.severity, country: event.country },
+          }}
+        />
+      )}
     </div>
   );
 }

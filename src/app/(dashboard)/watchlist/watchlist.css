@@ -410,6 +410,14 @@
 .wl-side-list::-webkit-scrollbar { width: 3px; }
 .wl-side-list::-webkit-scrollbar-thumb { background: rgba(16,185,129,.1); border-radius: 2px; }
 
+.wl-si-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+
 .wl-si {
   display: flex; align-items: center; justify-content: space-between;
   padding: .5rem .6rem; border-radius: 8px; cursor: pointer;

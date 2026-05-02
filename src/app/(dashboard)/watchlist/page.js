@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { PinnableCard } from '@/components/ui/PinnableCard';
 import { CoursePreviewSection } from '@/components/learning/CoursePreviewSection';
@@ -32,6 +33,12 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './watchlist.css';
+import '../org-trading/org-trading.css';
+
+const OrgSendToTeamModal = dynamic(
+  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false, loading: () => null }
+);
 
 /* ── Helpers ── */
 function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
@@ -334,7 +341,7 @@ function TypeIcon({ item }) {
 
 export default function WatchlistPage() {
   const { completeTask } = useChecklist();
-  const { isOrgUser, orgRole, orgData } = useOrg();
+  const { isOrgUser, orgRole, orgData, hasPermission } = useOrg();
   const addedStockRef = useRef(false);
   /** User-picked row; effective selection is derived so first paint always has a valid `selected`. */
   const [manualSelected, setManualSelected] = useState(null);
@@ -365,6 +372,7 @@ export default function WatchlistPage() {
   const wlDropdownRef = useRef(null);
   const [activeHolder, setActiveHolder] = useState(null);
   const [holderList, setHolderList] = useState([]);
+  const [sendWatchlistTicker, setSendWatchlistTicker] = useState(null);
 
   const orgTeamId = useMemo(() => {
     if (!isOrgUser) return null;
@@ -997,31 +1005,61 @@ export default function WatchlistPage() {
           )}
 
           <div className="wl-side-list">
-            {sideItems.map(raw => {
+            {sideItems.map((raw) => {
               const item = mergeFinnhubQuote(raw, quoteMap);
               const act = selected.id === item.id;
               const isPF = item.type === 'politician' || item.type === 'institution';
               const up = isPF ? (item.returnYtd ?? 0) >= 0 : (item.change ?? 0) >= 0;
+              const sym = item.quoteSymbol || item.ticker;
               return (
-                <button key={item.id} type="button" className={`wl-si ${act?'act':''} ${item.type}`} onClick={() => selectAny(raw)}>
-                  <div className="wl-si-left">
-                    {item.type === 'stock' && <span className="wl-si-tk">{item.ticker}</span>}
-                    {item.type === 'politician' && <span className={`wl-si-av ${item.party?.toLowerCase()}`}>{item.name.split(' ').map(w=>w[0]).join('')}</span>}
-                    {item.type === 'institution' && <span className="wl-si-inst"><i className="bi bi-building"/></span>}
-                    <div className="wl-si-info">
-                      <span className="wl-si-name">{item.name}</span>
-                      <span className="wl-si-sub">
-                        {item.type === 'stock' && item.ticker}
-                        {item.type === 'politician' && `${item.party} · Portfolio`}
-                        {item.type === 'institution' && `${item.revenue || '13F'} · Portfolio`}
-                      </span>
+                <div key={item.id} className="wl-si-wrap">
+                  <button
+                    type="button"
+                    className={`wl-si ${act ? 'act' : ''} ${item.type}`}
+                    style={{ flex: 1, minWidth: 0 }}
+                    onClick={() => selectAny(raw)}
+                  >
+                    <div className="wl-si-left">
+                      {item.type === 'stock' && <span className="wl-si-tk">{item.ticker}</span>}
+                      {item.type === 'politician' && (
+                        <span className={`wl-si-av ${item.party?.toLowerCase()}`}>
+                          {item.name.split(' ').map((w) => w[0]).join('')}
+                        </span>
+                      )}
+                      {item.type === 'institution' && (
+                        <span className="wl-si-inst">
+                          <i className="bi bi-building" />
+                        </span>
+                      )}
+                      <div className="wl-si-info">
+                        <span className="wl-si-name">{item.name}</span>
+                        <span className="wl-si-sub">
+                          {item.type === 'stock' && item.ticker}
+                          {item.type === 'politician' && `${item.party} · Portfolio`}
+                          {item.type === 'institution' && `${item.revenue || '13F'} · Portfolio`}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="wl-si-right">
-                    <span className="wl-si-price">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
-                    <span className={`wl-si-chg ${up ? 'up' : 'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
-                  </div>
-                </button>
+                    <div className="wl-si-right">
+                      <span className="wl-si-price">{isPF ? fmtPct(item.returnYtd) : fmtPrice(item.price)}</span>
+                      <span className={`wl-si-chg ${up ? 'up' : 'dn'}`}>{isPF ? 'YTD' : fmtPct(item.pct)}</span>
+                    </div>
+                  </button>
+                  {isOrgUser && hasPermission('send_to_team') && item.type === 'stock' && sym && (
+                    <button
+                      type="button"
+                      className="ot-position-flag-btn"
+                      style={{ alignSelf: 'center', flexShrink: 0, padding: '6px 8px' }}
+                      title="Send to team"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSendWatchlistTicker(sym);
+                      }}
+                    >
+                      <i className="bi bi-send" />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -1033,6 +1071,18 @@ export default function WatchlistPage() {
           )}
         </aside>
       </div>
+
+      {sendWatchlistTicker && (
+        <OrgSendToTeamModal
+          onClose={() => setSendWatchlistTicker(null)}
+          attachment={{
+            kind: 'watchlist_ticker',
+            ref: JSON.stringify({ ticker: sendWatchlistTicker }),
+            label: `${sendWatchlistTicker} (watchlist)`,
+            meta: { page: 'watchlist' },
+          }}
+        />
+      )}
 
       <CoursePreviewSection
         title="Recommended Courses"

@@ -9,6 +9,7 @@ import { useGlobalPowerMap } from '@/hooks/useGlobalPowerMap';
 import { ShowMeDataButton } from '@/components/market-analysis/ShowMeDataButton';
 import { RelatedMarketsPanel } from '@/components/polymarket/RelatedMarketsPanel';
 import { useAuth } from '@/components/AuthProvider';
+import { useOrg } from '@/contexts/OrgContext';
 
 /* WorldMap itself stays eagerly imported because it's the LCP element on
    this route (the dotted world map is the first meaningful paint). Lazy-
@@ -29,6 +30,10 @@ const ISRFeedCard = dynamic(
 );
 const ISRArticleModal = dynamic(
   () => import('@/components/market-analysis/ISRArticleModal').then((m) => ({ default: m.ISRArticleModal })),
+  { ssr: false, loading: () => null }
+);
+const OrgSendToTeamModal = dynamic(
+  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
   { ssr: false, loading: () => null }
 );
 import {
@@ -52,6 +57,7 @@ import '../../../../app-legacy/assets/css/pages-common.css';
 import '../../../../app-legacy/assets/css/light-mode-fixes.css';
 import './market-analysis-world-monitor.css';
 import '../centaur-intelligence/centaur-intelligence.css';
+import '../org-trading/org-trading.css';
 
 // Layer configuration mapping
 const LAYER_CONFIG = {
@@ -795,7 +801,7 @@ function chainPanelDomId(event) {
   return `pm-chain-${chainEventKey(event).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 }
 
-function ChainView({ events: externalEvents, loading: externalLoading }) {
+function ChainView({ events: externalEvents, loading: externalLoading, showSendToTeam, onRequestSendToTeam }) {
   const router = useRouter();
   const events = externalEvents || [];
   const loading = externalLoading ?? false;
@@ -1064,6 +1070,16 @@ function ChainView({ events: externalEvents, loading: externalLoading }) {
                   <i className="bi bi-plus-lg" style={{ fontSize: '0.7rem' }} aria-hidden />
                   Add to Debrief
                 </button>
+                {showSendToTeam && (
+                  <button
+                    type="button"
+                    className="ot-btn-primary"
+                    style={{ fontSize: '0.6rem', padding: '6px 12px' }}
+                    onClick={() => onRequestSendToTeam?.(analyzeEvent)}
+                  >
+                    <i className="bi bi-send" /> Send to Team
+                  </button>
+                )}
                 <button
                   type="button"
                   className="sentinel-modal-close"
@@ -1241,6 +1257,7 @@ function tutorialKeyFor(userId) {
 
 export default function MarketAnalysisPage() {
   const { user } = useAuth() || {};
+  const { isOrgUser, hasPermission } = useOrg();
   const [view, setView] = useState('map');
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeTab, setActiveTab] = useState(null);
@@ -1255,6 +1272,7 @@ export default function MarketAnalysisPage() {
   const [selectedIsrEvent, setSelectedIsrEvent] = useState(null);
   const [chainEvents, setChainEvents] = useState([]);
   const [chainEventsLoading, setChainEventsLoading] = useState(true);
+  const [sendToTeamChainEvent, setSendToTeamChainEvent] = useState(null);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const mapRef = useRef(null);
   const gpmButtonRef = useRef(null);
@@ -1868,7 +1886,12 @@ export default function MarketAnalysisPage() {
           )}
         </>
       ) : (
-        <ChainView events={chainEvents} loading={chainEventsLoading} />
+        <ChainView
+          events={chainEvents}
+          loading={chainEventsLoading}
+          showSendToTeam={isOrgUser && hasPermission('send_to_team')}
+          onRequestSendToTeam={setSendToTeamChainEvent}
+        />
       )}
 
       {selectedIsrEvent && (
@@ -1876,6 +1899,26 @@ export default function MarketAnalysisPage() {
           event={selectedIsrEvent.event}
           polymarket={selectedIsrEvent.match}
           onClose={() => setSelectedIsrEvent(null)}
+        />
+      )}
+
+      {sendToTeamChainEvent && (
+        <OrgSendToTeamModal
+          onClose={() => setSendToTeamChainEvent(null)}
+          attachment={{
+            kind: 'news_event',
+            ref: JSON.stringify({
+              id: sendToTeamChainEvent.id,
+              title: sendToTeamChainEvent.title,
+              url: sendToTeamChainEvent.url,
+            }),
+            label: sendToTeamChainEvent.title,
+            meta: {
+              source: sendToTeamChainEvent.source,
+              impact: sendToTeamChainEvent.impact,
+              country: sendToTeamChainEvent.country,
+            },
+          }}
         />
       )}
 
