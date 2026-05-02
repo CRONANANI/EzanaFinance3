@@ -1916,6 +1916,17 @@ html:has(.landing-page) .navbar.navbar-sticky,
 /* Force dark color-scheme inside the wrapper (UA controls, scrollbars, etc.). */
 .signin-dark-lock {
   color-scheme: dark;
+  background-color: #0a0e13;
+}
+
+body:has(.signin-dark-lock) {
+  background-color: #0a0e13 !important;
+}
+
+.signin-dark-lock input,
+.signin-dark-lock textarea,
+.signin-dark-lock select {
+  color-scheme: dark;
 }
 
 /* Defend against body.light-mode rules that try to lighten descendant text.

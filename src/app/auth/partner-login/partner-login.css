@@ -23,8 +23,8 @@
 
 .partner-auth-card {
   border-color: rgba(212, 168, 83, 0.25);
-  background: #fff;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  background: #0d1117;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   position: relative;
   z-index: 1;
 }
@@ -44,21 +44,21 @@
 }
 .pauth-badge i { font-size: 0.875rem; }
 
-.pauth-title { color: #111827; }
+.pauth-title { color: #f0f6fc; }
 
 .pauth-input {
-  background: #fff;
-  border-color: rgba(0, 0, 0, 0.1);
-  color: #111827;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f0f6fc;
 }
 .pauth-input:focus {
   border-color: rgba(212, 168, 83, 0.45);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
 }
 
 .pauth-link { color: #d4a853; }
-.pauth-link:hover { color: #b8922f; }
+.pauth-link:hover { color: #e8c06e; }
 
 .pauth-btn-primary {
   background: linear-gradient(135deg, #d4a853, #b8922f);
@@ -69,57 +69,58 @@
 }
 
 .pauth-btn-google {
-  border-color: rgba(212, 168, 83, 0.12);
-  background: rgba(212, 168, 83, 0.03);
+  border-color: rgba(212, 168, 83, 0.2);
+  background: rgba(212, 168, 83, 0.06);
 }
 .pauth-btn-google:hover {
-  border-color: rgba(212, 168, 83, 0.25);
-  background: rgba(212, 168, 83, 0.06);
+  border-color: rgba(212, 168, 83, 0.35);
+  background: rgba(212, 168, 83, 0.1);
 }
 
 .pauth-error {
-  border-color: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.35);
 }
 
-/* Partner login page shell — light theme aligned with main landing */
+/* Partner login page shell — dark theme aligned with other auth routes */
 .partner-auth-page.auth-page {
-  background: #f4f7f5;
+  background: #0a0e13;
 }
 
 .partner-auth-page .auth-subtitle {
-  color: #4b5563 !important;
+  color: #8b949e !important;
 }
 
 .partner-auth-page .auth-label {
-  color: #374151 !important;
+  color: #c9d1d9 !important;
 }
 
 .partner-auth-page .auth-footer-text {
-  color: #6b7280 !important;
+  color: #8b949e !important;
 }
 
 .partner-auth-page .auth-checkbox-wrap {
-  color: #4b5563 !important;
+  color: #c9d1d9 !important;
 }
 
 .partner-auth-page .auth-error,
 .partner-auth-page .pauth-error {
-  color: #b91c1c !important;
-  background: #fef2f2 !important;
-  border-color: #fecaca !important;
+  color: #f87171 !important;
+  background: rgba(127, 29, 29, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
 }
 
 body.light-mode .partner-auth-card {
-  background: #fff;
-  border-color: rgba(212, 168, 83, 0.15);
+  background: #0d1117;
+  border-color: rgba(212, 168, 83, 0.25);
 }
 body.light-mode .pauth-input {
-  background: rgba(212, 168, 83, 0.02);
-  border-color: rgba(212, 168, 83, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f0f6fc;
 }
 body.light-mode .pauth-input:focus {
-  border-color: rgba(212, 168, 83, 0.4);
-  background: #fff;
+  border-color: rgba(212, 168, 83, 0.45);
+  background: rgba(255, 255, 255, 0.06);
 }
 body.light-mode .pauth-btn-primary {
   color: #0a0e13;

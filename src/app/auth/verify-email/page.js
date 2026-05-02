@@ -141,13 +141,13 @@ export default function VerifyEmailPage() {
         minHeight: '100vh',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0a0a0a',
+        background: '#0a0e13',
         padding: '1rem',
       }}
     >
       <div
         style={{
-          background: '#111',
+          background: '#0d1117',
           borderRadius: '16px',
           padding: '2.5rem',
           maxWidth: '420px',
@@ -155,8 +155,8 @@ export default function VerifyEmailPage() {
           textAlign: 'center',
         }}
       >
-        <h1 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Verify your email</h1>
-        <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '2rem' }}>
+        <h1 style={{ color: '#f0f6fc', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Verify your email</h1>
+        <p style={{ color: '#8b949e', fontSize: '0.9rem', marginBottom: '2rem' }}>
           {maskedEmail
             ? `We sent a 6-digit code to ${maskedEmail}`
             : 'Sending verification code...'}
@@ -215,17 +215,17 @@ export default function VerifyEmailPage() {
                 textAlign: 'center',
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                background: '#1a1a1a',
-                border: '2px solid #333',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '2px solid rgba(255, 255, 255, 0.12)',
                 borderRadius: '10px',
-                color: '#fff',
+                color: '#f0f6fc',
                 outline: 'none',
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#10b981';
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = '#333';
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.12)';
               }}
             />
           ))}
@@ -240,8 +240,8 @@ export default function VerifyEmailPage() {
             padding: '14px',
             borderRadius: '10px',
             border: 'none',
-            background: code.every((d) => d !== '') ? '#10b981' : '#333',
-            color: '#fff',
+            background: code.every((d) => d !== '') ? '#10b981' : 'rgba(255, 255, 255, 0.12)',
+            color: '#f0f6fc',
             fontSize: '1rem',
             fontWeight: '600',
             cursor: 'pointer',
@@ -252,7 +252,7 @@ export default function VerifyEmailPage() {
           {loading ? 'Verifying...' : 'Verify Email'}
         </button>
 
-        <p style={{ color: '#888', fontSize: '0.85rem' }}>
+        <p style={{ color: '#8b949e', fontSize: '0.85rem' }}>
           Didn&apos;t receive the code?{' '}
           <button
             type="button"
@@ -261,7 +261,7 @@ export default function VerifyEmailPage() {
             style={{
               background: 'none',
               border: 'none',
-              color: cooldown > 0 ? '#555' : '#10b981',
+              color: cooldown > 0 ? '#6b7280' : '#10b981',
               cursor: cooldown > 0 ? 'default' : 'pointer',
               textDecoration: 'underline',
               fontSize: '0.85rem',

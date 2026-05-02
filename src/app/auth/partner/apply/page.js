@@ -5,7 +5,7 @@ import './partner-apply.css';
 
 export default function PartnerApplyPage() {
   return (
-    <div className="partner-apply-page">
+    <div className="signin-dark-lock partner-apply-page">
       <div className="partner-apply-container">
         <Link href="/" className="partner-apply-back"><i className="bi bi-arrow-left" /> Back to Home</Link>
 

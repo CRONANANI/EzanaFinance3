@@ -46,7 +46,7 @@ export default function PartnerApplicationForm() {
   };
 
   return (
-    <div className="partner-form-page">
+    <div className="signin-dark-lock partner-form-page">
       <div className="partner-form-container">
         <Link href="/auth/partner/apply" className="partner-apply-back">
           <i className="bi bi-arrow-left" /> Back
