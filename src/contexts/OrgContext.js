@@ -1,8 +1,16 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
+import { getMemberPermissions } from '@/lib/orgMockData';
 
 const OrgContext = createContext(null);
 
@@ -11,6 +19,7 @@ export function OrgProvider({ children }) {
   const [isOrgUser, setIsOrgUser] = useState(false);
   const [orgRole, setOrgRole] = useState(null);
   const [orgData, setOrgData] = useState(null);
+  const [permissionOverrides, setPermissionOverrides] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkOrgStatus = useCallback(async () => {
@@ -18,6 +27,7 @@ export function OrgProvider({ children }) {
       setIsOrgUser(false);
       setOrgRole(null);
       setOrgData(null);
+      setPermissionOverrides([]);
       setIsLoading(false);
       return;
     }
@@ -39,6 +49,7 @@ export function OrgProvider({ children }) {
         setIsOrgUser(false);
         setOrgRole(null);
         setOrgData(null);
+        setPermissionOverrides([]);
         return;
       }
 
@@ -67,11 +78,22 @@ export function OrgProvider({ children }) {
         team,
         teams: teams || [],
       });
+
+      const { data: permRows, error: permErr } = await supabase
+        .from('org_member_permissions')
+        .select('permission_key')
+        .eq('org_member_id', member.id);
+      if (permErr) {
+        setPermissionOverrides([]);
+      } else {
+        setPermissionOverrides((permRows || []).map((p) => p.permission_key));
+      }
     } catch (err) {
       console.error('[Org] Status check error:', err);
       setIsOrgUser(false);
       setOrgRole(null);
       setOrgData(null);
+      setPermissionOverrides([]);
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +102,21 @@ export function OrgProvider({ children }) {
   useEffect(() => {
     checkOrgStatus();
   }, [checkOrgStatus]);
+
+  const effectivePermissions = useMemo(() => {
+    if (!orgData?.member) return getMemberPermissions(null, []);
+    return getMemberPermissions(orgData.member, permissionOverrides);
+  }, [orgData?.member, permissionOverrides]);
+
+  const hasPermission = useCallback(
+    (key) => effectivePermissions.includes(key),
+    [effectivePermissions]
+  );
+
+  const canFlagPositionsBool = useMemo(
+    () => effectivePermissions.includes('flag_positions'),
+    [effectivePermissions]
+  );
 
   const value = {
     isOrgUser,
@@ -90,6 +127,9 @@ export function OrgProvider({ children }) {
     isPortfolioManager: orgRole === 'portfolio_manager',
     isAnalyst: orgRole === 'analyst',
     canManage: orgRole === 'executive' || orgRole === 'portfolio_manager',
+    permissions: effectivePermissions,
+    hasPermission,
+    canFlagPositions: canFlagPositionsBool,
     refreshOrg: checkOrgStatus,
   };
 

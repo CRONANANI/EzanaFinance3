@@ -67,6 +67,16 @@ function buildNavGroups(isOrgUser) {
       { label: 'Brokerage & trading', href: '/trading', icon: LineChart, description: 'Live account' },
       { label: 'Trading dashboard', href: '/trading/dashboard', icon: BarChart3, description: 'Orders & activity' },
       { label: 'Mock portfolio', href: '/trading/mock', icon: Gamepad2, description: 'Paper $100K' },
+      ...(isOrgUser
+        ? [
+            {
+              label: 'Council trading',
+              href: '/org-trading',
+              icon: Landmark,
+              description: 'Org portfolios & flags',
+            },
+          ]
+        : []),
       { label: 'Open account', href: '/trading/open-account', icon: Banknote, description: 'Start brokerage' },
     ],
   };
@@ -108,6 +118,7 @@ function buildNavGroups(isOrgUser) {
         label: 'Organization',
         items: [
           { label: 'Team hub', href: '/org-team-hub', icon: Building2, description: 'Council workspace' },
+          { label: 'Council trading', href: '/org-trading', icon: LineChart, description: 'Mock books & flags' },
           { label: 'Hierarchy', href: '/org-team-hub/hierarchy', icon: Network, description: 'Structure' },
         ],
       };

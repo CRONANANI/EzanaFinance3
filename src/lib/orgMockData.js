@@ -434,22 +434,56 @@ export const PERMISSION_TIERS = {
   executive: {
     label: 'Executive',
     sub_roles: ['President', 'VP of Research', 'VP of Operations', 'Treasurer', 'Secretary'],
-    permissions: ['manage_members', 'manage_events', 'manage_permissions', 'view_all_teams', 'create_events', 'upload_deliverables', 'manage_tasks', 'view_analytics', 'manage_org_settings'],
+    permissions: [
+      'manage_members',
+      'manage_events',
+      'manage_permissions',
+      'view_all_teams',
+      'create_events',
+      'upload_deliverables',
+      'manage_tasks',
+      'view_analytics',
+      'manage_org_settings',
+      'flag_positions',
+      'grant_permissions',
+    ],
   },
   portfolio_manager: {
     label: 'Portfolio Manager',
     sub_roles: ['Senior PM', 'PM', 'Junior PM'],
     permissions: {
-      'Senior PM': ['manage_team_tasks', 'upload_deliverables', 'create_events', 'view_team_analytics', 'manage_analysts', 'approve_deliverables'],
-      PM: ['manage_team_tasks', 'upload_deliverables', 'view_team_analytics', 'manage_analysts'],
-      'Junior PM': ['manage_team_tasks', 'upload_deliverables', 'view_team_analytics'],
+      'Senior PM': [
+        'manage_team_tasks',
+        'upload_deliverables',
+        'create_events',
+        'view_team_analytics',
+        'manage_analysts',
+        'approve_deliverables',
+        'flag_positions',
+        'grant_permissions',
+      ],
+      PM: [
+        'manage_team_tasks',
+        'upload_deliverables',
+        'view_team_analytics',
+        'manage_analysts',
+        'flag_positions',
+        'grant_permissions',
+      ],
+      'Junior PM': ['manage_team_tasks', 'upload_deliverables', 'view_team_analytics', 'flag_positions'],
     },
   },
   analyst: {
     label: 'Analyst',
     sub_roles: ['Senior Analyst', 'Analyst', 'Junior Analyst', 'Quantitative Analyst'],
     permissions: {
-      'Senior Analyst': ['upload_deliverables', 'view_team_analytics', 'create_posts', 'mentor_juniors'],
+      'Senior Analyst': [
+        'upload_deliverables',
+        'view_team_analytics',
+        'create_posts',
+        'mentor_juniors',
+        'flag_positions',
+      ],
       Analyst: ['upload_deliverables', 'view_team_analytics', 'create_posts'],
       'Junior Analyst': ['upload_deliverables', 'create_posts'],
       'Quantitative Analyst': ['upload_deliverables', 'view_team_analytics', 'create_posts', 'run_models'],
@@ -479,10 +513,84 @@ export function getTotalPortfolioValue() {
   return MOCK_TEAM_PERFORMANCE.reduce((sum, t) => sum + t.value, 0);
 }
 
+/**
+ * Effective permissions: PERMISSION_TIERS defaults plus optional DB overrides (org_member_permissions).
+ */
+export function getMemberPermissions(member, overridePerms = []) {
+  if (!member) return [];
+  const tier = PERMISSION_TIERS[member.role];
+  if (!tier) return [];
+
+  let basePerms = [];
+  if (Array.isArray(tier.permissions)) {
+    basePerms = [...tier.permissions];
+  } else if (tier.permissions && member.sub_role) {
+    basePerms = [...(tier.permissions[member.sub_role] || [])];
+  }
+
+  const all = new Set([...basePerms, ...overridePerms]);
+  return [...all];
+}
+
+export function canFlagPositions(member, overridePerms = []) {
+  return getMemberPermissions(member, overridePerms).includes('flag_positions');
+}
+
+/**
+ * Routing: exec → team PM; PM → covering analyst (same team) or first team analyst; analyst → PM.
+ * @param {string|null} mockTeamId — MOCK_TEAMS id (t1…t7) for the portfolio being flagged.
+ */
+export function resolveFlagRecipient(raiser, ticker, mockTeamId) {
+  if (!raiser) return null;
+
+  if (raiser.role === 'executive') {
+    const team = MOCK_TEAM_PERFORMANCE.find((t) => t.team_id === mockTeamId);
+    if (!team) return null;
+    const pm = MOCK_MEMBERS.find(
+      (m) => m.role === 'portfolio_manager' && m.team_id === team.team_id
+    );
+    return pm?.id || null;
+  }
+
+  if (raiser.role === 'portfolio_manager') {
+    const coverage = MOCK_TMT_RESEARCH_PIPELINE.find((r) => r.ticker === ticker);
+    if (coverage) {
+      const analyst = MOCK_MEMBERS.find((m) => m.id === coverage.analyst_id);
+      if (analyst && analyst.team_id === raiser.team_id) return coverage.analyst_id;
+    }
+    const teamAnalyst = MOCK_MEMBERS.find(
+      (m) => m.role === 'analyst' && m.team_id === raiser.team_id
+    );
+    return teamAnalyst?.id || null;
+  }
+
+  if (raiser.role === 'analyst') {
+    const pm = MOCK_MEMBERS.find(
+      (m) => m.role === 'portfolio_manager' && m.team_id === raiser.team_id
+    );
+    return pm?.id || null;
+  }
+
+  return null;
+}
+
 // NEW: look up mock member by their real email
 export function getMemberByEmail(email) {
   if (!email) return null;
   return MOCK_MEMBERS.find((m) => m.email.toLowerCase() === email.toLowerCase()) || null;
+}
+
+/** Map DB org_teams row (by UUID) to mock team id t1…t7 via slug. */
+export function mockTeamIdFromDbTeams(orgTeams, teamUuid) {
+  if (!teamUuid || !orgTeams?.length) return null;
+  const row = orgTeams.find((t) => t.id === teamUuid);
+  return MOCK_TEAMS.find((m) => m.slug === row?.slug)?.id ?? null;
+}
+
+export function dbTeamIdFromMockTeamId(orgTeams, mockTeamId) {
+  const slug = MOCK_TEAMS.find((t) => t.id === mockTeamId)?.slug;
+  if (!slug || !orgTeams?.length) return null;
+  return orgTeams.find((t) => t.slug === slug)?.id ?? null;
 }
 
 /** Mock top colleague interactions (member id → colleague member ids) — used by hierarchy UI */

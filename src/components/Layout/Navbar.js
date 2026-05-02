@@ -39,7 +39,7 @@ export function Navbar() {
     pathname?.includes('/centaur-intelligence') ||
     pathname?.includes('/kairos-signal');
 
-  const isTradingActive = pathname?.includes('/trading');
+  const isTradingActive = pathname?.includes('/trading') || pathname?.includes('/org-trading');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -77,12 +77,40 @@ export function Navbar() {
       items: [
         { id: 31, title: 'Brokerage Account', description: 'Real-money trading account', url: '/trading', icon: 'bi-bank' },
         { id: 32, title: 'Mock Portfolio', description: '$100K paper trading account', url: '/trading/mock', icon: 'bi-controller' },
+        ...(isOrgUser
+          ? [{ id: 33, title: 'Council Trading', description: 'Org mock portfolios & flags', url: '/org-trading', icon: 'bi-bank2' }]
+          : []),
       ],
     },
     { id: 4, title: 'Watchlist', url: '/watchlist', icon: 'bi-bookmark', isActive: pathname?.includes('/watchlist') },
-    isOrgUser
-      ? { id: 5, title: 'Team Hub', url: '/org-team-hub', icon: 'bi-building', isActive: pathname?.includes('/org-team-hub'), variant: 'purple' }
-      : { id: 5, title: 'Community', url: '/community', icon: 'bi-people', isActive: pathname?.includes('/community') },
+    ...(isOrgUser
+      ? [
+          {
+            id: 5,
+            title: 'Team Hub',
+            url: '/org-team-hub',
+            icon: 'bi-building',
+            isActive: pathname?.includes('/org-team-hub'),
+            variant: 'purple',
+          },
+          {
+            id: 52,
+            title: 'Council Trading',
+            url: '/org-trading',
+            icon: 'bi-bank2',
+            isActive: pathname?.includes('/org-trading'),
+            variant: 'purple',
+          },
+        ]
+      : [
+          {
+            id: 5,
+            title: 'Community',
+            url: '/community',
+            icon: 'bi-people',
+            isActive: pathname?.includes('/community'),
+          },
+        ]),
     { id: 6, title: 'Learning Center', url: '/learning-center', icon: 'bi-mortarboard', isActive: pathname?.includes('/learning-center') },
   ];
 
