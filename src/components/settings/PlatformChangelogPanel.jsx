@@ -21,35 +21,30 @@ function formatReleaseDate(iso) {
 }
 
 /**
- * Group entries into ISO week buckets (Monday–Sunday in UTC).
- * Weeks ordered newest first. Within each week entries keep their pinned/date sort.
+ * Group entries by UTC day. Within each day, entries keep their pinned/date sort.
+ * Days are returned newest first.
  */
-function groupEntriesByWeek(entries) {
+function groupEntriesByDay(entries) {
   const buckets = new Map();
 
   for (const entry of entries) {
     const date = new Date(entry.released_at);
     const d = new Date(date);
     d.setUTCHours(0, 0, 0, 0);
-    const day = d.getUTCDay() || 7;
-    if (day !== 1) d.setUTCDate(d.getUTCDate() - (day - 1));
 
-    const start = new Date(d);
-    const end = new Date(d);
-    end.setUTCDate(end.getUTCDate() + 6);
+    const dayKey = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    const dayLabel = d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
 
-    const yearStart = new Date(Date.UTC(start.getUTCFullYear(), 0, 1));
-    const weekNum = Math.ceil((((start - yearStart) / 86400000) + yearStart.getUTCDay() + 1) / 7);
-    const weekKey = `${start.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
-
-    const startLabel = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const endLabel = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const weekLabel = `${startLabel} – ${endLabel}`;
-
-    if (!buckets.has(weekKey)) {
-      buckets.set(weekKey, { weekKey, weekLabel, sortDate: start.getTime(), entries: [] });
+    if (!buckets.has(dayKey)) {
+      buckets.set(dayKey, { dayKey, dayLabel, sortDate: d.getTime(), entries: [] });
     }
-    buckets.get(weekKey).entries.push(entry);
+    buckets.get(dayKey).entries.push(entry);
   }
 
   return Array.from(buckets.values()).sort((a, b) => b.sortDate - a.sortDate);
@@ -288,15 +283,15 @@ export function PlatformChangelogPanel() {
 
       {!loading && !error && entries.length > 0 && (
         <div className="pcl-entries">
-          {groupEntriesByWeek(entries).map((group) => (
-            <div key={group.weekKey} className="pcl-week-group">
-              <div className="pcl-week-header">
-                <h3 className="pcl-week-range">{group.weekLabel}</h3>
-                <span className="pcl-week-count">
+          {groupEntriesByDay(entries).map((group) => (
+            <div key={group.dayKey} className="pcl-day-group">
+              <div className="pcl-day-header">
+                <h3 className="pcl-day-range">{group.dayLabel}</h3>
+                <span className="pcl-day-count">
                   {group.entries.length} update{group.entries.length === 1 ? '' : 's'}
                 </span>
               </div>
-              <div className="pcl-week-entries">
+              <div className="pcl-day-entries">
                 {group.entries.map((e) => (
                   <ChangelogEntryCard key={e.id} entry={e} />
                 ))}

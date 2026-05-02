@@ -89,21 +89,26 @@ export async function summarizeCommits(commits, weekRange) {
     .map((c) => `- [${c.sha}] ${c.message.split('\n')[0]}`) // First line of each commit message
     .join('\n');
 
-  const weekStart = new Date(weekRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const weekEnd = new Date(weekRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const rangeStart = new Date(weekRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const rangeEnd = new Date(weekRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const ms = new Date(weekRange.end).getTime() - new Date(weekRange.start).getTime();
+  const isSingleDay = ms <= 24 * 3600 * 1000 + 1000;
+  const rangeLabel = isSingleDay ? rangeStart : `${rangeStart}–${rangeEnd}`;
+  const themeScope = isSingleDay ? "day's" : "period's";
+  const periodWord = isSingleDay ? 'day' : 'period';
 
-  const prompt = `You are summarizing one week of git commits from a personal finance SaaS product (Ezana Finance) into a user-facing changelog entry.
+  const prompt = `You are summarizing ${isSingleDay ? 'one day' : 'a span'} of git commits from a personal finance SaaS product (Ezana Finance) into a user-facing changelog entry.
 
-Week: ${weekStart}–${weekEnd}
+Date${isSingleDay ? '' : ' range'}: ${rangeLabel}
 Total commits: ${meaningful.length}
 
 Commits:
 ${commitList}
 
 Write a JSON object with these exact keys:
-- "title": Short headline (under 60 chars) capturing the WEEK'S theme. Avoid commit-message language. Examples of good titles: "Mock trading and portfolio defaults", "Watchlist polish + new asset icons", "Sign-in dark mode and trending card refresh".
+- "title": Short headline (under 60 chars) capturing the ${themeScope} theme. Avoid commit-message language. Examples of good titles: "Mock trading and portfolio defaults", "Watchlist polish + new asset icons", "Sign-in dark mode and trending card refresh".
 - "body": 2-4 sentences in plain English describing what users will notice or benefit from. Group related commits into themes. NO commit hashes, NO file paths, NO developer jargon. Write FOR users, not for engineers.
-- "category": One of "feature" | "improvement" | "fix" | "announcement" | "breaking". Pick based on the dominant theme of the week. Use "improvement" as the default when the week is mixed.
+- "category": One of "feature" | "improvement" | "fix" | "announcement" | "breaking". Pick based on the dominant theme of the ${periodWord}. Use "improvement" as the default when the ${periodWord} is mixed.
 
 Output ONLY the JSON object. No markdown fencing, no preamble, no explanation.`;
 
@@ -165,4 +170,26 @@ export function getIsoWeekRange(date) {
   const weekKey = `${start.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 
   return { start, end, weekKey };
+}
+
+/**
+ * Compute a UTC day range for a given date.
+ *
+ * @param {Date} date
+ * @returns {{ start: Date, end: Date, dayKey: string }}
+ *   start: that date at 00:00:00 UTC
+ *   end: next day at 00:00:00 UTC (exclusive)
+ *   dayKey: 'YYYY-MM-DD' format e.g. '2026-04-30'
+ */
+export function getDayRange(date) {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+
+  const start = new Date(d);
+  const end = new Date(d);
+  end.setUTCDate(end.getUTCDate() + 1);
+
+  const dayKey = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+
+  return { start, end, dayKey };
 }

@@ -1,37 +1,33 @@
 #!/usr/bin/env node
 /**
- * One-shot backfill: scan the last 90 days of GitHub commits, group by ISO week,
- * generate a Claude summary per week, and insert into platform_changelog_entries.
+ * One-shot backfill: scan the last 90 days of GitHub commits and insert one
+ * changelog entry per day (or per week with `weekly` arg).
  *
  * Usage:
- *   node scripts/backfill-changelog.mjs
+ *   node scripts/backfill-changelog.mjs           # daily (default)
+ *   node scripts/backfill-changelog.mjs daily
+ *   node scripts/backfill-changelog.mjs weekly    # legacy weekly mode
  *
- * Required env vars:
- *   GITHUB_TOKEN
- *   GITHUB_REPO
- *   ANTHROPIC_API_KEY
- *   NEXT_PUBLIC_SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY
+ * Required env vars: GITHUB_TOKEN, GITHUB_REPO, ANTHROPIC_API_KEY,
+ *   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *
- * Loads `.env` then `.env.local` from the project root (local overrides).
- *
- * Idempotent: re-runs skip weeks that already have an entry.
+ * Idempotent. Re-runs skip days that already have an entry.
  */
 
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
-import { fetchCommits, summarizeCommits, getIsoWeekRange } from '../src/lib/changelog/git-summarizer.js';
+import { fetchCommits, summarizeCommits, getIsoWeekRange, getDayRange } from '../src/lib/changelog/git-summarizer.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 dotenv.config({ path: path.join(root, '.env') });
 dotenv.config({ path: path.join(root, '.env.local'), override: true });
 
+const rawMode = (process.argv[2] || 'daily').toLowerCase();
+const MODE = rawMode === 'weekly' ? 'weekly' : 'daily';
+
 async function main() {
-  // ─────────────────────────────────────────────────────────────────
-  // Env check
-  // ─────────────────────────────────────────────────────────────────
   const REQUIRED_ENV = [
     'GITHUB_TOKEN',
     'GITHUB_REPO',
@@ -58,9 +54,6 @@ async function main() {
     auth: { persistSession: false },
   });
 
-  // ─────────────────────────────────────────────────────────────────
-  // Supabase probe
-  // ─────────────────────────────────────────────────────────────────
   {
     const { error } = await supabase.from('platform_changelog_entries').select('id', { head: true });
     if (error) {
@@ -71,9 +64,6 @@ async function main() {
     console.log('✓ Supabase reachable');
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // GitHub API probe
-  // ─────────────────────────────────────────────────────────────────
   {
     const probeUrl = `https://api.github.com/repos/${process.env.GITHUB_REPO}`;
     const res = await fetch(probeUrl, {
@@ -94,9 +84,6 @@ async function main() {
     console.log(`✓ GitHub reachable (${repoInfo.full_name}, default branch: ${repoInfo.default_branch})`);
   }
 
-  // ─────────────────────────────────────────────────────────────────
-  // Anthropic API probe (cheap test call)
-  // ─────────────────────────────────────────────────────────────────
   try {
     const Anthropic = (await import('@anthropic-ai/sdk')).default;
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -122,64 +109,77 @@ async function main() {
   const ninetyDaysAgo = new Date(now);
   ninetyDaysAgo.setUTCDate(ninetyDaysAgo.getUTCDate() - 90);
 
-  // Build a list of ISO weeks to backfill (chronological, oldest first)
-  const weeks = [];
-  let cursor = new Date(ninetyDaysAgo);
-  while (cursor < now) {
-    const { start, end, weekKey } = getIsoWeekRange(cursor);
-    if (!weeks.find((w) => w.weekKey === weekKey)) {
-      weeks.push({ start, end, weekKey });
+  const ranges = [];
+  if (MODE === 'weekly') {
+    let cursor = new Date(ninetyDaysAgo);
+    while (cursor < now) {
+      const r = getIsoWeekRange(cursor);
+      if (!ranges.find((x) => x.key === r.weekKey)) {
+        ranges.push({ start: r.start, end: r.end, key: r.weekKey, label: 'Week' });
+      }
+      cursor = new Date(cursor);
+      cursor.setUTCDate(cursor.getUTCDate() + 7);
     }
-    cursor = new Date(cursor);
-    cursor.setUTCDate(cursor.getUTCDate() + 7);
+  } else {
+    let cursor = new Date(ninetyDaysAgo);
+    cursor.setUTCHours(0, 0, 0, 0);
+    while (cursor < now) {
+      const r = getDayRange(cursor);
+      ranges.push({ start: r.start, end: r.end, key: r.dayKey, label: 'Day' });
+      cursor = new Date(cursor);
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
   }
 
-  console.log(`Backfilling ${weeks.length} weeks: ${weeks[0]?.weekKey} → ${weeks[weeks.length - 1]?.weekKey}`);
+  console.log(`Mode: ${MODE} — backfilling ${ranges.length} ${MODE === 'weekly' ? 'weeks' : 'days'}`);
+  console.log(`Range: ${ranges[0]?.key} → ${ranges[ranges.length - 1]?.key}`);
 
   let inserted = 0;
   let skipped = 0;
   let errored = 0;
 
-  for (const w of weeks) {
+  for (const r of ranges) {
     try {
-      // Idempotency check
       const { data: existing } = await supabase
         .from('platform_changelog_entries')
         .select('id')
-        .ilike('body', `%Week ${w.weekKey}%`)
+        .ilike('body', `%${r.label} ${r.key}%`)
         .limit(1);
 
       if (existing && existing.length > 0) {
-        console.log(`  ${w.weekKey}: SKIP (already exists)`);
+        console.log(`  ${r.key}: SKIP (already exists)`);
         skipped++;
         continue;
       }
 
-      console.log(`  ${w.weekKey}: fetching commits…`);
-      const commits = await fetchCommits(w.start.toISOString(), w.end.toISOString());
+      console.log(`  ${r.key}: fetching commits…`);
+      const commits = await fetchCommits(r.start.toISOString(), r.end.toISOString());
       console.log(`    → ${commits.length} commits returned`);
       if (commits.length === 0) {
-        console.log(`  ${w.weekKey}: SKIP (no commits in window)`);
+        console.log(`  ${r.key}: SKIP (no commits in window)`);
         skipped++;
         continue;
       }
 
-      console.log(`  ${w.weekKey}: summarizing with Claude…`);
-      const summary = await summarizeCommits(commits, { start: w.start.toISOString(), end: w.end.toISOString() });
+      console.log(`  ${r.key}: summarizing with Claude…`);
+      const summary = await summarizeCommits(commits, {
+        start: r.start.toISOString(),
+        end: r.end.toISOString(),
+      });
       if (!summary) {
-        console.log(`  ${w.weekKey}: SKIP (Claude returned no meaningful summary, ${commits.length} commits)`);
+        console.log(`  ${r.key}: SKIP (no meaningful summary, ${commits.length} commits)`);
         skipped++;
         continue;
       }
       console.log(`    → "${summary.title}" (${summary.category})`);
 
-      const releasedAt = new Date(w.start);
-      releasedAt.setUTCDate(releasedAt.getUTCDate() + 6);
+      const releasedAt = new Date(r.start);
+      if (r.label === 'Week') releasedAt.setUTCDate(releasedAt.getUTCDate() + 6);
       releasedAt.setUTCHours(12, 0, 0, 0);
 
       const { error } = await supabase.from('platform_changelog_entries').insert({
         title: summary.title,
-        body: `${summary.body}\n\n_Week ${w.weekKey} · ${commits.length} commits_`,
+        body: `${summary.body}\n\n_${r.label} ${r.key} · ${commits.length} commits_`,
         category: summary.category,
         is_pinned: false,
         is_published: true,
@@ -188,17 +188,16 @@ async function main() {
       });
 
       if (error) {
-        console.error(`  ${w.weekKey}: ERROR ${error.message}`);
+        console.error(`  ${r.key}: ERROR ${error.message}`);
         errored++;
       } else {
-        console.log(`  ${w.weekKey}: INSERTED — "${summary.title}" (${commits.length} commits)`);
+        console.log(`  ${r.key}: INSERTED — "${summary.title}" (${commits.length} commits)`);
         inserted++;
       }
 
-      // Be polite to GitHub + Anthropic — 2s between weeks
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((res) => setTimeout(res, MODE === 'daily' ? 800 : 2000));
     } catch (e) {
-      console.error(`  ${w.weekKey}: ERROR ${e.message}`);
+      console.error(`  ${r.key}: ERROR ${e.message}`);
       errored++;
     }
   }

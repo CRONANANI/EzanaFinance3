@@ -308,16 +308,16 @@ body.light-mode .pcl-empty {
   border-color: rgba(0, 0, 0, 0.06);
 }
 
-/* Week grouping */
-.pcl-week-group {
+/* Day grouping */
+.pcl-day-group {
   margin-bottom: 1.5rem;
 }
 
-.pcl-week-group:last-child {
+.pcl-day-group:last-child {
   margin-bottom: 0;
 }
 
-.pcl-week-header {
+.pcl-day-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -331,7 +331,7 @@ body.light-mode .pcl-empty {
   z-index: 1;
 }
 
-.pcl-week-range {
+.pcl-day-range {
   margin: 0;
   font-size: 0.75rem;
   font-weight: 800;
@@ -340,19 +340,19 @@ body.light-mode .pcl-empty {
   color: #10b981;
 }
 
-.pcl-week-count {
+.pcl-day-count {
   font-size: 0.6875rem;
   color: var(--text-muted, #8b949e);
   font-variant-numeric: tabular-nums;
 }
 
-.pcl-week-entries {
+.pcl-day-entries {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
 }
 
-body.light-mode .pcl-week-header {
+body.light-mode .pcl-day-header {
   background: var(--bg-primary, #f4f7f5);
   border-bottom-color: rgba(16, 185, 129, 0.2);
 }
