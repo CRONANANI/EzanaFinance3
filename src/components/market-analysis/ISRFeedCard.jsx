@@ -187,6 +187,14 @@ export function ISRFeedCard({ onSelectEvent, onClose, onEventsChange }) {
                       <span className="isr-feed-source">{e.source}</span>
                       <span className="isr-feed-dot">·</span>
                       <span className="isr-feed-time">{timeAgo(e.publishedAt)}</span>
+                      {e.isSeed && (
+                        <span
+                          className="isr-feed-demo-pill"
+                          title="Demo entry while the news cache is empty"
+                        >
+                          DEMO
+                        </span>
+                      )}
                     </div>
                     <div className="isr-feed-row">
                       <p className="isr-feed-headline">{e.headline}</p>

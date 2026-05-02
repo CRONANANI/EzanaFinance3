@@ -47,7 +47,9 @@ function cacheRowToEvent(row) {
 
 /**
  * ISR feed — reads from news_articles_cache (populated by /api/news/massive/poll).
- * Falls back to seed events if cache is empty (first-load case before any polls).
+ * Falls back to seed events only when the cache has zero rows (pre-poll / empty DB).
+ * If the cache has rows but filters exclude all of them, returns an empty list
+ * with source `cache-empty-filtered` (no seed substitution).
  */
 export async function GET(req) {
   try {
@@ -91,12 +93,24 @@ export async function GET(req) {
       events = events.filter((e) => set.has((e.countryCode || '').toUpperCase()));
     }
 
-    if (events.length === 0) {
-      events = getSeedIsrEvents({ countries, topic, minSeverity, window });
+    const cacheIsEmpty = !cacheRows || cacheRows.length === 0;
+    if (events.length === 0 && cacheIsEmpty) {
+      const seeds = getSeedIsrEvents({ countries, topic, minSeverity, window });
+      return NextResponse.json(
+        { events: seeds, source: 'seed' },
+        { headers: { 'Cache-Control': 'public, max-age=30, s-maxage=30' } }
+      );
     }
 
+    const source =
+      events.length === 0 && !cacheIsEmpty
+        ? 'cache-empty-filtered'
+        : cacheRows && cacheRows.length > 0
+          ? 'cache'
+          : 'empty';
+
     return NextResponse.json(
-      { events, source: cacheRows && cacheRows.length > 0 ? 'cache' : 'seed' },
+      { events, source },
       { headers: { 'Cache-Control': 'public, max-age=30, s-maxage=30' } }
     );
   } catch (err) {

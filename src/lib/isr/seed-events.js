@@ -28,7 +28,8 @@ const SEVERITY_ORDER = { Low: 0, Medium: 1, High: 2, Critical: 3 };
  * @property {string} headline
  * @property {string} [summary]
  * @property {string} source
- * @property {string} [url]
+ * @property {string} [url]           // Seeds: publisher homepage/section; cache: real article URL.
+ * @property {boolean} [isSeed]       // True for demo/fallback entries (no reliable article URL).
  * @property {string} publishedAt  ISO timestamp
  * @property {string} [city]
  * @property {string} country
@@ -41,8 +42,8 @@ const SEVERITY_ORDER = { Low: 0, Medium: 1, High: 2, Critical: 3 };
  * @property {string[]} [impactedKeywords]
  */
 
-// Curated events — all source links point to reputable public outlets so the
-// "Read article" flow has somewhere real to go. Coordinates are the city center.
+// Curated demo events when the news cache is empty. `url` values are publisher sections,
+// not specific articles — consumers must check `isSeed` and avoid misleading "open article" UX.
 // Timestamps are computed dynamically (relative to "now") so the feed always
 // reads as recent regardless of when the seed list is served.
 function minutesAgo(mins) {
@@ -58,6 +59,7 @@ const SEED_EVENTS = [
       'Federal Reserve meeting minutes describe a cautious posture with participants split on the timing of the next rate move. Core PCE trends modestly lower but services inflation remains sticky.',
     source: 'Reuters',
     url: 'https://www.reuters.com/markets/',
+    isSeed: true,
     publishedAt: minutesAgo(12),
     city: 'Washington',
     country: 'United States',
@@ -76,6 +78,7 @@ const SEED_EVENTS = [
       'Several Governing Council members argue for an accelerated easing cycle as German industrial production prints a fifth consecutive decline.',
     source: 'Financial Times',
     url: 'https://www.ft.com/',
+    isSeed: true,
     publishedAt: minutesAgo(28),
     city: 'Frankfurt',
     country: 'Germany',
@@ -94,6 +97,7 @@ const SEED_EVENTS = [
       'People familiar with discussions say the group is leaning toward rolling forward the 2.2mbpd voluntary cuts through the next quarter, citing weaker-than-expected demand signals.',
     source: 'Bloomberg',
     url: 'https://www.bloomberg.com/energy',
+    isSeed: true,
     publishedAt: minutesAgo(41),
     city: 'Vienna',
     country: 'Austria',
@@ -112,6 +116,7 @@ const SEED_EVENTS = [
       'Taiwanese MND tracked a combined arms exercise including J-16 fighters and naval vessels crossing the Taiwan Strait median line for the third time this week.',
     source: 'Reuters',
     url: 'https://www.reuters.com/world/asia-pacific/',
+    isSeed: true,
     publishedAt: minutesAgo(55),
     city: 'Taipei',
     country: 'Taiwan',
@@ -130,6 +135,7 @@ const SEED_EVENTS = [
       'Maritime security firms confirm a missile strike on a Panamanian-flagged container vessel; traffic via the Bab el-Mandeb strait slows as insurers re-price war risk.',
     source: 'AP News',
     url: 'https://apnews.com/',
+    isSeed: true,
     publishedAt: minutesAgo(72),
     city: "Sana'a",
     country: 'Yemen',
@@ -148,6 +154,7 @@ const SEED_EVENTS = [
       'Comments from a BoJ board member suggest the bank could tighten further if wage growth sustains above 3%, reversing years of ultra-loose policy.',
     source: 'Nikkei',
     url: 'https://asia.nikkei.com/',
+    isSeed: true,
     publishedAt: minutesAgo(90),
     city: 'Tokyo',
     country: 'Japan',
@@ -166,6 +173,7 @@ const SEED_EVENTS = [
       'The Competition and Markets Authority approved the deal subject to behavioral remedies covering egress fees and interoperability.',
     source: 'The Guardian',
     url: 'https://www.theguardian.com/business',
+    isSeed: true,
     publishedAt: minutesAgo(105),
     city: 'London',
     country: 'United Kingdom',
@@ -184,6 +192,7 @@ const SEED_EVENTS = [
       'State planners announce an expanded fund targeting mature-node fabrication and domestic EDA tools, aiming to blunt the impact of export controls.',
     source: 'SCMP',
     url: 'https://www.scmp.com/business',
+    isSeed: true,
     publishedAt: minutesAgo(130),
     city: 'Beijing',
     country: 'China',
@@ -202,6 +211,7 @@ const SEED_EVENTS = [
       'A surveillance bulletin reports a cluster of severe respiratory illness under investigation; sequencing is underway and no travel advisories have been issued.',
     source: 'WHO',
     url: 'https://www.who.int/',
+    isSeed: true,
     publishedAt: minutesAgo(160),
     city: 'Hanoi',
     country: 'Vietnam',
@@ -220,6 +230,7 @@ const SEED_EVENTS = [
       'The economy ministry details a sequenced removal of capital controls alongside a new IMF staff-level agreement on macro anchors.',
     source: 'Bloomberg',
     url: 'https://www.bloomberg.com/latin-america',
+    isSeed: true,
     publishedAt: minutesAgo(185),
     city: 'Buenos Aires',
     country: 'Argentina',
@@ -238,6 +249,7 @@ const SEED_EVENTS = [
       'Coalition partners disagree on the scale of a supplementary defense and infrastructure package; debt brake reform is back on the table.',
     source: 'Deutsche Welle',
     url: 'https://www.dw.com/en/',
+    isSeed: true,
     publishedAt: minutesAgo(210),
     city: 'Berlin',
     country: 'Germany',
@@ -256,6 +268,7 @@ const SEED_EVENTS = [
       'Health officials in Brazil activate an emergency response framework as dengue cases exceed the prior full-year record; vector-control programs expand.',
     source: 'Reuters',
     url: 'https://www.reuters.com/world/americas/',
+    isSeed: true,
     publishedAt: minutesAgo(240),
     city: 'São Paulo',
     country: 'Brazil',
@@ -274,6 +287,7 @@ const SEED_EVENTS = [
       'Aramco guidance highlights a lower medium-term capex envelope, with management flagging buybacks and sustained dividend payouts.',
     source: 'Bloomberg',
     url: 'https://www.bloomberg.com/energy',
+    isSeed: true,
     publishedAt: minutesAgo(275),
     city: 'Riyadh',
     country: 'Saudi Arabia',
@@ -292,6 +306,7 @@ const SEED_EVENTS = [
       'RBI keeps the repo rate unchanged but signals a calibrated shift toward neutral stance; dollar-rupee pair edges lower on the announcement.',
     source: 'Livemint',
     url: 'https://www.livemint.com/',
+    isSeed: true,
     publishedAt: minutesAgo(310),
     city: 'Mumbai',
     country: 'India',
@@ -310,6 +325,7 @@ const SEED_EVENTS = [
       'Ukrainian authorities describe overnight drone strikes on Black Sea grain export infrastructure; wheat futures climb in early European trade.',
     source: 'Reuters',
     url: 'https://www.reuters.com/world/europe/',
+    isSeed: true,
     publishedAt: minutesAgo(345),
     city: 'Kyiv',
     country: 'Ukraine',
@@ -328,6 +344,7 @@ const SEED_EVENTS = [
       'A draft bill raises royalties on lithium and rare earths, amid a push to bring more of the battery supply chain onshore.',
     source: 'Reuters',
     url: 'https://www.reuters.com/world/americas/',
+    isSeed: true,
     publishedAt: minutesAgo(380),
     city: 'Mexico City',
     country: 'Mexico',
@@ -346,6 +363,7 @@ const SEED_EVENTS = [
       'Updated guidelines restrict incentives for retail participation and mandate enhanced disclosures; large exchanges accept the new bar.',
     source: 'Channel News Asia',
     url: 'https://www.channelnewsasia.com/business',
+    isSeed: true,
     publishedAt: minutesAgo(420),
     city: 'Singapore',
     country: 'Singapore',
@@ -364,6 +382,7 @@ const SEED_EVENTS = [
       'Fresh OFAC designations targeting shadow-banking intermediaries trigger renewed pressure on the parallel rial; state media dismisses the action.',
     source: 'AP News',
     url: 'https://apnews.com/middle-east',
+    isSeed: true,
     publishedAt: minutesAgo(455),
     city: 'Tehran',
     country: 'Iran',
@@ -382,6 +401,7 @@ const SEED_EVENTS = [
       'Full-time employment surprises to the upside; the AUD strengthens modestly while swap markets trim rate cut expectations.',
     source: 'ABC News',
     url: 'https://www.abc.net.au/news/business',
+    isSeed: true,
     publishedAt: minutesAgo(490),
     city: 'Sydney',
     country: 'Australia',
@@ -400,6 +420,7 @@ const SEED_EVENTS = [
       'Eskom reports a second consecutive week without load-shedding; independent monitors note underlying plant performance still fragile.',
     source: 'News24',
     url: 'https://www.news24.com/business',
+    isSeed: true,
     publishedAt: minutesAgo(540),
     city: 'Johannesburg',
     country: 'South Africa',

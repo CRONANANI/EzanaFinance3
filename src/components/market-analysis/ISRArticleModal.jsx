@@ -144,9 +144,16 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
               Source
             </h3>
             <div className="sentinel-report-section-body">
-              <p>
-                Published by <strong>{event.source}</strong>.{' '}
-                {event.url ? (
+              {event.isSeed ? (
+                <p>
+                  <strong>{event.source}</strong> — sample entry.{' '}
+                  <span className="isr-article-source-note">
+                    Live news from this region will replace this once the news feed catches up.
+                  </span>
+                </p>
+              ) : event.url ? (
+                <p>
+                  Published by <strong>{event.source}</strong>.{' '}
                   <a
                     href={event.url}
                     target="_blank"
@@ -155,10 +162,12 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
                   >
                     Open the original article ↗
                   </a>
-                ) : (
-                  'No public URL available.'
-                )}
-              </p>
+                </p>
+              ) : (
+                <p>
+                  Published by <strong>{event.source}</strong>. No public URL available for this story.
+                </p>
+              )}
               <p className="isr-article-disclaimer">
                 ISR aggregates publicly reported news and geolocates events to a
                 city/country. It does not surveil private or ambient data.

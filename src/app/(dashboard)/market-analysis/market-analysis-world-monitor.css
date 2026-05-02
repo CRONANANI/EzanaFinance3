@@ -1898,6 +1898,19 @@ body.light-mode .ma-ticker-sep {
 .isr-feed-dot { color: rgba(148, 163, 184, 0.4); }
 .isr-feed-loc { color: #94a3b8; }
 .isr-feed-source { color: #94a3b8; }
+.isr-feed-demo-pill {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-sans);
+}
 .isr-feed-row {
   display: flex;
   align-items: flex-start;
@@ -2059,6 +2072,17 @@ body.light-mode .ma-ticker-sep {
   text-decoration: none;
 }
 .isr-article-source-link:hover { text-decoration: underline; }
+.isr-article-source-note {
+  display: inline-block;
+  margin-top: 0.3rem;
+  padding: 0.4rem 0.65rem;
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #c9d1d9);
+  font-style: italic;
+}
 .isr-article-disclaimer {
   margin-top: 0.5rem;
   color: #64748b;
