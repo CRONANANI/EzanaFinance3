@@ -102,7 +102,7 @@ export const SECTOR_ERAS = [
 
 export const sectorDominanceArticle = {
   id: 'dominating-us-stock-market-sectors-through-the-times',
-  title: 'Dominating US Stock Market Sectors Through The Times',
+  title: "Tech Reigns, But Falls Short of History's Heavyweights",
   excerpt:
     "Two centuries of US equity history compressed into one chart: how Finance, Transport, Energy, and now Technology each held the largest sector crown — and what each era's dominance reveals about the economy that produced it.",
   contentBlocks: [
@@ -114,7 +114,7 @@ export const sectorDominanceArticle = {
     {
       type: 'chart',
       variant: 'interactive-stacked-area',
-      title: 'Tech Is Dominant, But Not As Dominant As Sectors Of Yore',
+      title: 'Share of the Largest US Stock Market Sector, 1800–2025',
       caption:
         'Share of the largest sector in the US stock market, 1800–2025. Hover the chart for era-specific stats. Source: Datastream, Goldman Sachs Research (October 2025).',
       dataKey: 'sectorDominance',
