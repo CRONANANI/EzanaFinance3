@@ -8,7 +8,7 @@
  * a visual/brand reference, not a description of the data source.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useIsrFeed } from '@/hooks/useIsrFeed';
 import { usePolymarketMatches } from '@/hooks/usePolymarketMatches';
 
@@ -35,6 +35,70 @@ const WINDOWS = [
   { key: '7d', label: '7 days' },
 ];
 
+/**
+ * Normalize a chain-view event (from /api/market-data/economic-calendar)
+ * to the ISR event shape so the render block works unchanged.
+ *
+ * Chain shape:  { id, title, body, source, url, time, impact, country, region, topic }
+ * ISR shape:    { id, headline, summary, source, url, publishedAt, severity, countryCode, city, country, lat, lng }
+ */
+function normalizeToIsrShape(e) {
+  if (e.headline && e.publishedAt) return e;
+
+  const IMPACT_TO_SEVERITY = {
+    CRITICAL: 'Critical',
+    ELEVATED: 'High',
+    MODERATE: 'Medium',
+    HIGH: 'High',
+    LOW: 'Low',
+  };
+
+  const REGION_TO_CODE = {
+    US: 'US',
+    'North America': 'US',
+    EU: 'EU',
+    Europe: 'EU',
+    GB: 'GB',
+    UK: 'GB',
+    ME: 'ME',
+    'Middle East': 'ME',
+    CN: 'CN',
+    China: 'CN',
+    RU: 'RU',
+    Russia: 'RU',
+    IN: 'IN',
+    India: 'IN',
+    JP: 'JP',
+    Japan: 'JP',
+    LATAM: 'LATAM',
+    'Latin America': 'LATAM',
+    OC: 'OC',
+    Oceania: 'OC',
+    AF: 'AF',
+    Africa: 'AF',
+  };
+
+  return {
+    id: e.id || `chain-${(e.title || '').slice(0, 20).replace(/\s/g, '-')}-${e.time || ''}`,
+    headline: e.title || e.headline || 'Untitled Event',
+    summary: e.body || e.summary || '',
+    source: e.source || '',
+    url: e.url || null,
+    publishedAt: e.time
+      ? (typeof e.time === 'number' ? new Date(e.time * 1000).toISOString() : e.time)
+      : new Date().toISOString(),
+    severity: IMPACT_TO_SEVERITY[(e.impact || '').toUpperCase()] || 'Medium',
+    countryCode: REGION_TO_CODE[e.region] || REGION_TO_CODE[e.country] || '',
+    city: '',
+    country: e.country || e.region || '',
+    lat: e.lat ?? null,
+    lng: e.lng ?? null,
+    topic: e.topic || '',
+    _chainEvent: true,
+    _originalImpact: e.impact,
+  };
+}
+
 function timeAgo(iso) {
   const ms = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(ms / 60_000);
@@ -59,29 +123,73 @@ function severityClass(sev) {
  *   onSelectEvent: (event: any, match: any|null) => void,
  *   onClose: () => void,
  *   onEventsChange?: (events: any[], matches: Record<string, any>) => void,
+ *   chainEvents?: any[] | null,
+ *   chainEventsLoading?: boolean,
  * }} props
  */
-/**
- * Live ISR items are backed by Massive news cache; each refresh hits
- * `/api/news/massive/poll` (rate-limited) then `/api/isr/feed` — see `useIsrFeed`.
- */
-export function ISRFeedCard({ onSelectEvent, onClose, onEventsChange }) {
+export function ISRFeedCard({
+  onSelectEvent,
+  onClose,
+  onEventsChange,
+  chainEvents = null,
+  chainEventsLoading = false,
+}) {
   const [selectedCountries, setSelectedCountries] = useState(['US', 'EU', 'ME', 'CN']);
   const [topic, setTopic] = useState('All');
   const [minSeverity, setMinSeverity] = useState('Low');
   const [windowKey, setWindowKey] = useState('24h');
 
-  const { data: events, isLoading } = useIsrFeed({
+  const hasChainData = chainEvents != null;
+  const { data: isrFallbackEvents, isLoading: isrFallbackLoading } = useIsrFeed({
     countries: selectedCountries,
     topic,
     minSeverity,
     window: windowKey,
+    enabled: !hasChainData,
   });
+
+  const rawEvents = hasChainData ? chainEvents : (isrFallbackEvents || []);
+  const isLoading = hasChainData ? chainEventsLoading : isrFallbackLoading;
+
+  const events = useMemo(() => {
+    const normalized = rawEvents.map((e) => normalizeToIsrShape(e));
+
+    let filtered = normalized;
+
+    if (selectedCountries.length > 0) {
+      const countrySet = new Set(selectedCountries.map((c) => c.toUpperCase()));
+      filtered = filtered.filter((e) => {
+        if (!e.countryCode) return true;
+        return countrySet.has(e.countryCode.toUpperCase()) ||
+          countrySet.has((e.region || '').toUpperCase());
+      });
+    }
+
+    if (topic !== 'All') {
+      const t = topic.toLowerCase();
+      filtered = filtered.filter((e) =>
+        (e.topic || '').toLowerCase().includes(t) ||
+        (e.headline || '').toLowerCase().includes(t) ||
+        (e.summary || '').toLowerCase().includes(t)
+      );
+    }
+
+    const SEVERITY_ORDER = { Low: 0, Medium: 1, Moderate: 1, High: 2, Elevated: 2, Critical: 3 };
+    const minLevel = SEVERITY_ORDER[minSeverity] ?? 0;
+    filtered = filtered.filter((e) => (SEVERITY_ORDER[e.severity] ?? 0) >= minLevel);
+
+    const windowMs = { '1h': 3600000, '6h': 21600000, '24h': 86400000, '7d': 604800000 };
+    const cutoff = Date.now() - (windowMs[windowKey] || 86400000);
+    filtered = filtered.filter((e) => {
+      const t = e.publishedAt ? new Date(e.publishedAt).getTime() : Date.now();
+      return t >= cutoff;
+    });
+
+    return filtered;
+  }, [rawEvents, selectedCountries, topic, minSeverity, windowKey]);
 
   const { data: polymarketMatches } = usePolymarketMatches(events);
 
-  // Lift events + matches up so the page can render pulsating dots for the
-  // same set of events, and the article modal knows which badge to show.
   useEffect(() => {
     onEventsChange?.(events || [], polymarketMatches || {});
   }, [events, polymarketMatches, onEventsChange]);

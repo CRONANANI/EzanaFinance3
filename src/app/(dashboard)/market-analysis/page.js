@@ -795,10 +795,10 @@ function chainPanelDomId(event) {
   return `pm-chain-${chainEventKey(event).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 }
 
-function ChainView() {
+function ChainView({ events: externalEvents, loading: externalLoading }) {
   const router = useRouter();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const events = externalEvents || [];
+  const loading = externalLoading ?? false;
   const [analyzeEvent, setAnalyzeEvent] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState('');
@@ -818,39 +818,6 @@ function ChainView() {
   useEffect(() => {
     if (!analyzeEvent) setShowRelatedPm(false);
   }, [analyzeEvent]);
-
-  useEffect(() => {
-    fetch('/api/market-data/economic-calendar')
-      .then((res) => res.json())
-      .then((data) => {
-        setEvents(data.events || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const pollAndRefresh = async () => {
-      try {
-        await fetch('/api/news/massive/poll', { cache: 'no-store' });
-        if (cancelled) return;
-        const res = await fetch('/api/market-data/economic-calendar', { cache: 'no-store' });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        setEvents(data.events || []);
-      } catch {
-        /* ignore */
-      }
-    };
-
-    const interval = setInterval(pollAndRefresh, 60_000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
 
   const timeAgo = (isoOrUnix) => {
     const ms = typeof isoOrUnix === 'number'
@@ -1286,6 +1253,8 @@ export default function MarketAnalysisPage() {
   const [isrEvents, setIsrEvents] = useState([]);
   const [isrMatches, setIsrMatches] = useState({});
   const [selectedIsrEvent, setSelectedIsrEvent] = useState(null);
+  const [chainEvents, setChainEvents] = useState([]);
+  const [chainEventsLoading, setChainEventsLoading] = useState(true);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const mapRef = useRef(null);
   const gpmButtonRef = useRef(null);
@@ -1328,6 +1297,49 @@ export default function MarketAnalysisPage() {
   const handleIsrEventsChange = useCallback((events, matches) => {
     setIsrEvents(events || []);
     setIsrMatches(matches || {});
+  }, []);
+
+  /* Shared chain-view data: single fetch for Chain timeline + ISR sidebar */
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch('/api/market-data/economic-calendar');
+        if (cancelled) return;
+        if (!res.ok) {
+          if (!cancelled) setChainEventsLoading(false);
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setChainEvents(data.events || []);
+          setChainEventsLoading(false);
+        }
+      } catch {
+        if (!cancelled) setChainEventsLoading(false);
+      }
+    };
+
+    load();
+
+    const interval = setInterval(async () => {
+      try {
+        await fetch('/api/news/massive/poll', { cache: 'no-store' });
+        if (cancelled) return;
+        const res = await fetch('/api/market-data/economic-calendar', { cache: 'no-store' });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (!cancelled) setChainEvents(data.events || []);
+      } catch {
+        /* ignore */
+      }
+    }, 60_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   const openIsrEvent = useCallback((event, match) => {
@@ -1850,11 +1862,13 @@ export default function MarketAnalysisPage() {
               onSelectEvent={openIsrEvent}
               onClose={() => setIsrOpen(false)}
               onEventsChange={handleIsrEventsChange}
+              chainEvents={chainEvents}
+              chainEventsLoading={chainEventsLoading}
             />
           )}
         </>
       ) : (
-        <ChainView />
+        <ChainView events={chainEvents} loading={chainEventsLoading} />
       )}
 
       {selectedIsrEvent && (

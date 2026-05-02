@@ -6,10 +6,17 @@ import { useEffect, useRef, useState } from 'react';
  * Fetches the ISR feed from /api/isr/feed based on the given filters.
  * Refreshes every 60s while the tab is visible (hidden tabs skip to save
  * bandwidth and Polymarket calls). Returns a { data, isLoading, error } shape.
+ * When `enabled` is false, no requests are made (empty data, not loading).
  */
-export function useIsrFeed({ countries = [], topic = 'All', minSeverity = 'Low', window = '24h' } = {}) {
+export function useIsrFeed({
+  countries = [],
+  topic = 'All',
+  minSeverity = 'Low',
+  window = '24h',
+  enabled = true,
+} = {}) {
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState(null);
   const mountedRef = useRef(true);
 
@@ -18,6 +25,13 @@ export function useIsrFeed({ countries = [], topic = 'All', minSeverity = 'Low',
   const countriesKey = countries.join(',');
 
   useEffect(() => {
+    if (!enabled) {
+      setData([]);
+      setIsLoading(false);
+      setError(null);
+      return undefined;
+    }
+
     let active = true;
     async function run() {
       try {
@@ -53,7 +67,7 @@ export function useIsrFeed({ countries = [], topic = 'All', minSeverity = 'Low',
       active = false;
       clearInterval(interval);
     };
-  }, [countriesKey, topic, minSeverity, window]);
+  }, [countriesKey, topic, minSeverity, window, enabled]);
 
   return { data, isLoading, error };
 }
