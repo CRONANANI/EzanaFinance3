@@ -1291,131 +1291,149 @@ export function HomeTerminalSummary({
                     </button>
                   </div>
                 </div>
-                <div style={{ padding: '0 1.25rem 0.5rem' }}>
-                  <p
-                    style={{
-                      fontSize: '0.625rem',
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: 'var(--home-muted)',
-                      margin: '0.25rem 0 0.35rem',
-                    }}
-                  >
-                    GAINERS
-                  </p>
-                  {moversLoading ? (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
-                  ) : marketGainers.length === 0 ? (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No gainer data right now.</p>
-                  ) : (
-                    marketGainers.map((m) => (
-                    <div
-                      key={m.ticker}
+                <div
+                  className="hts-movers-content"
+                  style={{
+                    padding: '0 1.25rem 0.75rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0,
+                  }}
+                >
+                  <div className="hts-movers-section">
+                    <p
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.35rem 0',
-                        borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                        fontSize: '0.625rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: 'var(--home-muted)',
+                        margin: '0.25rem 0 0.35rem',
                       }}
                     >
-                      <div
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 8,
-                          background: tickerColor(m.ticker),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.7rem',
-                          fontWeight: 800,
-                          color: '#fff',
-                        }}
-                      >
-                        {(m.ticker || '?')[0]}
-                      </div>
-                      <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
-                      <span
-                        style={{
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: 6,
-                          fontSize: '0.6875rem',
-                          fontWeight: 700,
-                          background: 'rgba(16, 185, 129, 0.12)',
-                          color: '#10b981',
-                        }}
-                      >
-                        {m.change}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
-                      <MiniSparkline positive={m.positive} />
-                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                      GAINERS
+                    </p>
+                    <div className="hts-movers-list">
+                      {moversLoading ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
+                      ) : marketGainers.length === 0 ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No gainer data right now.</p>
+                      ) : (
+                        marketGainers.map((m) => (
+                          <div
+                            key={m.ticker}
+                            className="hts-mover-row"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: 8,
+                                background: tickerColor(m.ticker),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                color: '#fff',
+                              }}
+                            >
+                              {(m.ticker || '?')[0]}
+                            </div>
+                            <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
+                            <span
+                              style={{
+                                padding: '0.15rem 0.4rem',
+                                borderRadius: 6,
+                                fontSize: '0.6875rem',
+                                fontWeight: 700,
+                                background: 'rgba(16, 185, 129, 0.12)',
+                                color: '#10b981',
+                              }}
+                            >
+                              {m.change}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
+                            <MiniSparkline positive={m.positive} />
+                            <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                          </div>
+                        ))
+                      )}
                     </div>
-                    ))
-                  )}
-                  <p
-                    style={{
-                      fontSize: '0.625rem',
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: 'var(--home-muted)',
-                      margin: '0.5rem 0 0.35rem',
-                    }}
-                  >
-                    LOSERS
-                  </p>
-                  {moversLoading ? (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
-                  ) : marketLosers.length === 0 ? (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No loser data right now.</p>
-                  ) : (
-                    marketLosers.map((m) => (
-                    <div
-                      key={m.ticker}
+                  </div>
+
+                  <div className="hts-movers-section">
+                    <p
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.35rem 0',
-                        borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                        fontSize: '0.625rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: 'var(--home-muted)',
+                        margin: '0.5rem 0 0.35rem',
                       }}
                     >
-                      <div
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 8,
-                          background: tickerColor(m.ticker),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.7rem',
-                          fontWeight: 800,
-                          color: '#fff',
-                        }}
-                      >
-                        {(m.ticker || '?')[0]}
-                      </div>
-                      <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
-                      <span
-                        style={{
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: 6,
-                          fontSize: '0.6875rem',
-                          fontWeight: 700,
-                          background: 'rgba(239, 68, 68, 0.12)',
-                          color: '#ef4444',
-                        }}
-                      >
-                        {m.change}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
-                      <MiniSparkline positive={m.positive} />
-                      <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                      LOSERS
+                    </p>
+                    <div className="hts-movers-list">
+                      {moversLoading ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>Loading movers…</p>
+                      ) : marketLosers.length === 0 ? (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--home-muted)', margin: '0.25rem 0' }}>No loser data right now.</p>
+                      ) : (
+                        marketLosers.map((m) => (
+                          <div
+                            key={m.ticker}
+                            className="hts-mover-row"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: 8,
+                                background: tickerColor(m.ticker),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                color: '#fff',
+                              }}
+                            >
+                              {(m.ticker || '?')[0]}
+                            </div>
+                            <span style={{ fontWeight: 800, color: 'var(--home-heading)', fontSize: '0.8125rem', minWidth: 44 }}>{m.ticker}</span>
+                            <span
+                              style={{
+                                padding: '0.15rem 0.4rem',
+                                borderRadius: 6,
+                                fontSize: '0.6875rem',
+                                fontWeight: 700,
+                                background: 'rgba(239, 68, 68, 0.12)',
+                                color: '#ef4444',
+                              }}
+                            >
+                              {m.change}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
+                            <MiniSparkline positive={m.positive} />
+                            <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                          </div>
+                        ))
+                      )}
                     </div>
-                    ))
-                  )}
+                  </div>
                 </div>
               </div>
               </div>

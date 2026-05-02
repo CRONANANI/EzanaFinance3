@@ -1321,6 +1321,55 @@ body.light-mode .hts-week-standing-row {
   min-height: 0;
 }
 
+/* ════════════════════════════════════════════════════════════
+   Top Movers card — even vertical distribution
+   ════════════════════════════════════════════════════════════ */
+
+.home-top-movers-card .hts-movers-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-top-movers-card .hts-movers-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.home-top-movers-card .hts-movers-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+  min-height: 0;
+}
+
+.home-top-movers-card .hts-mover-row {
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  flex-shrink: 0;
+}
+
+.home-top-movers-card .hts-movers-section + .hts-movers-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-height: 900px) {
+  .home-top-movers-card .hts-mover-row {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+@media (max-height: 720px) {
+  .home-top-movers-card .hts-movers-list {
+    justify-content: flex-start;
+  }
+}
+
 .home-events-rail-wide .home-events-compact-body {
   max-height: none;
 }
