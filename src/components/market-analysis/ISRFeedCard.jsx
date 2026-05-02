@@ -61,6 +61,10 @@ function severityClass(sev) {
  *   onEventsChange?: (events: any[], matches: Record<string, any>) => void,
  * }} props
  */
+/**
+ * Live ISR items are backed by Massive news cache; each refresh hits
+ * `/api/news/massive/poll` (rate-limited) then `/api/isr/feed` — see `useIsrFeed`.
+ */
 export function ISRFeedCard({ onSelectEvent, onClose, onEventsChange }) {
   const [selectedCountries, setSelectedCountries] = useState(['US', 'EU', 'ME', 'CN']);
   const [topic, setTopic] = useState('All');

@@ -213,8 +213,46 @@ export async function GET() {
       return true;
     });
 
-    // ── Merge econ + all news, sort by time desc, raise cap to 250 ─────────
-    const combined = [...econEvents, ...dedupedNews].sort((a, b) => {
+    let massiveCacheEvents = [];
+    try {
+      const { supabaseAdmin: admin } = await import('@/lib/plaid');
+      const { data } = await admin
+        .from('news_articles_cache')
+        .select('*')
+        .gte('published_utc', new Date(Date.now() - 24 * 3600000).toISOString())
+        .order('published_utc', { ascending: false })
+        .limit(80);
+      massiveCacheEvents = (data || []).map((row) => ({
+        id: `massive-${row.id}`,
+        type: 'news',
+        title: row.title,
+        country: row.region_label,
+        time: row.published_utc,
+        impact:
+          row.severity === 'Critical'
+            ? 'CRITICAL'
+            : row.severity === 'High'
+              ? 'ELEVATED'
+              : 'MODERATE',
+        body: row.description || row.title,
+        source: row.publisher_name || 'Massive',
+        url: row.article_url,
+        region: row.region,
+        topic: row.topic,
+      }));
+    } catch (e) {
+      console.error('[economic-calendar] Massive cache fetch failed:', e.message);
+    }
+
+    const allCandidates = [...econEvents, ...dedupedNews, ...massiveCacheEvents];
+    const seenUrlsAll = new Set();
+    const dedupedAll = allCandidates.filter((e) => {
+      const key = e.url || e.id;
+      if (seenUrlsAll.has(key)) return false;
+      seenUrlsAll.add(key);
+      return true;
+    });
+    const combined = dedupedAll.sort((a, b) => {
       const tA = new Date(a.time).getTime() || 0;
       const tB = new Date(b.time).getTime() || 0;
       return tB - tA;
@@ -223,7 +261,7 @@ export async function GET() {
     return NextResponse.json(
       { events: combined.slice(0, 250) },
       {
-        headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
       }
     );
   } catch (error) {

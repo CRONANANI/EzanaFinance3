@@ -829,6 +829,29 @@ function ChainView() {
       .catch(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const pollAndRefresh = async () => {
+      try {
+        await fetch('/api/news/massive/poll', { cache: 'no-store' });
+        if (cancelled) return;
+        const res = await fetch('/api/market-data/economic-calendar', { cache: 'no-store' });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        setEvents(data.events || []);
+      } catch {
+        /* ignore */
+      }
+    };
+
+    const interval = setInterval(pollAndRefresh, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   const timeAgo = (isoOrUnix) => {
     const ms = typeof isoOrUnix === 'number'
       ? Date.now() - isoOrUnix * 1000

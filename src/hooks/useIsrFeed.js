@@ -23,13 +23,14 @@ export function useIsrFeed({ countries = [], topic = 'All', minSeverity = 'Low',
       try {
         setIsLoading(true);
         setError(null);
+        await fetch('/api/news/massive/poll', { cache: 'no-store' });
         const params = new URLSearchParams({
           countries: countriesKey,
           topic,
           minSeverity,
           window,
         });
-        const res = await fetch(`/api/isr/feed?${params.toString()}`);
+        const res = await fetch(`/api/isr/feed?${params.toString()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error(`ISR feed failed: ${res.status}`);
         const payload = await res.json();
         if (!active || !mountedRef.current) return;
