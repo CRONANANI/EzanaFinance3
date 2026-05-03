@@ -15,7 +15,7 @@ const ATTACHMENT_ICONS = {
   document: 'bi-file-earmark',
 };
 
-export function OrgSendToTeamModal({ onClose, attachment }) {
+export function OrgSendToTeamModal({ onClose, attachment, preSelectedRecipient }) {
   const { orgData, hasPermission } = useOrg();
   const [recipientId, setRecipientId] = useState('');
   const [note, setNote] = useState('');
@@ -24,6 +24,10 @@ export function OrgSendToTeamModal({ onClose, attachment }) {
   const [success, setSuccess] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const [peers, setPeers] = useState([]);
+
+  useEffect(() => {
+    if (preSelectedRecipient) setRecipientId(preSelectedRecipient);
+  }, [preSelectedRecipient]);
 
   useEffect(() => {
     if (!orgData?.org?.id || !orgData?.member?.id) return undefined;

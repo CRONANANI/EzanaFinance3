@@ -1,8 +1,11 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useOrg } from '@/contexts/OrgContext';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { OrgHierarchyCard } from '@/components/org/OrgHierarchyCard';
+import { OrgChartCard } from '@/components/org/OrgChartCard';
+import { OrgMemberProfileModal } from '@/components/org/OrgMemberProfileModal';
 import { OrgNotificationManager } from '@/components/org/OrgNotificationManager';
 import { PerformanceMetricsCard } from '@/components/org/PerformanceMetricsCard';
 import { UpcomingDeadlinesCard } from '@/components/org/UpcomingDeadlinesCard';
@@ -25,6 +28,11 @@ import { FilePreviewModal } from '@/components/file-preview/FilePreviewModal';
 import '../../../../app-legacy/assets/css/theme.css';
 import './team-hub.css';
 import '../org-trading/org-trading.css';
+
+const OrgSendToTeamModal = dynamic(
+  () => import('@/components/org/OrgSendToTeamModal').then((m) => ({ default: m.OrgSendToTeamModal })),
+  { ssr: false },
+);
 
 /* ── Helpers ───────────────────────────────────────────────── */
 function getFileTypeInfo(filename) {
@@ -729,6 +737,8 @@ function FilePortalCard({ members }) {
 export default function OrgTeamHubPage() {
   const { isOrgUser, orgRole, orgData, isLoading } = useOrg();
   const [tasks, setTasks] = useState([]);
+  const [profileMember, setProfileMember] = useState(null);
+  const [sendToMember, setSendToMember] = useState(null);
 
   useEffect(() => {
     if (!isOrgUser || !orgData) return;
@@ -775,6 +785,8 @@ export default function OrgTeamHubPage() {
       </div>
 
       {isExecutive && <TeamRankingRow />}
+
+      <OrgChartCard onSelectMember={setProfileMember} />
 
       <div className="th-row-task-file">
         <div className="th-card th-task-col">
@@ -849,6 +861,32 @@ export default function OrgTeamHubPage() {
           {isAnalyst && <SkillDevelopmentCard />}
         </div>
       </div>
+
+      {profileMember && (
+        <OrgMemberProfileModal
+          member={profileMember}
+          isOpen={!!profileMember}
+          viewerMemberId={orgData?.member?.id}
+          onClose={() => setProfileMember(null)}
+          onSendToTeam={(member) => {
+            setProfileMember(null);
+            setSendToMember(member);
+          }}
+        />
+      )}
+
+      {sendToMember && (
+        <OrgSendToTeamModal
+          onClose={() => setSendToMember(null)}
+          attachment={{
+            kind: 'document',
+            ref: JSON.stringify({ recipient: sendToMember.id }),
+            label: `Message to ${sendToMember.name}`,
+            meta: {},
+          }}
+          preSelectedRecipient={sendToMember.id}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useOrg } from '@/contexts/OrgContext';
+import { useTheme } from '@/components/ThemeProvider';
 import Link from 'next/link';
 import {
   ORG_NAME,
@@ -52,7 +53,7 @@ function AvatarCircle({ name, role, size = 40, highlight = false }) {
   );
 }
 
-function MemberNode({ member, isCurrentUser, onSelect }) {
+function MemberNode({ member, isCurrentUser, onSelect, isDark }) {
   const team = MOCK_TEAMS.find((t) => t.id === member.team_id);
   return (
     <div
@@ -75,10 +76,14 @@ function MemberNode({ member, isCurrentUser, onSelect }) {
         borderRadius: '10px',
         background: isCurrentUser
           ? 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.2))'
-          : 'rgba(255,255,255,0.02)',
+          : isDark
+            ? 'rgba(255,255,255,0.02)'
+            : '#f9fafb',
         border: isCurrentUser
           ? '1.5px solid rgba(99,102,241,0.4)'
-          : '1px solid rgba(255,255,255,0.06)',
+          : isDark
+            ? '1px solid rgba(255,255,255,0.06)'
+            : '1px solid #e5e7eb',
         minWidth: '110px',
         maxWidth: '140px',
         position: 'relative',
@@ -94,8 +99,10 @@ function MemberNode({ member, isCurrentUser, onSelect }) {
       onMouseLeave={(e) => {
         e.currentTarget.style.background = isCurrentUser
           ? 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.2))'
-          : 'rgba(255,255,255,0.02)';
-        e.currentTarget.style.borderColor = isCurrentUser ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.06)';
+          : isDark
+            ? 'rgba(255,255,255,0.02)'
+            : '#f9fafb';
+        e.currentTarget.style.borderColor = isCurrentUser ? 'rgba(99,102,241,0.4)' : isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb';
       }}
     >
       {isCurrentUser && (
@@ -117,10 +124,10 @@ function MemberNode({ member, isCurrentUser, onSelect }) {
         </span>
       )}
       <AvatarCircle name={member.name} role={member.role} size={38} highlight={isCurrentUser} />
-      <p style={{ color: '#f0f6fc', fontSize: '0.6875rem', fontWeight: 600, margin: 0, textAlign: 'center', lineHeight: 1.3 }}>
+      <p style={{ color: isDark ? '#f0f6fc' : '#111827', fontSize: '0.6875rem', fontWeight: 600, margin: 0, textAlign: 'center', lineHeight: 1.3 }}>
         {member.name}
       </p>
-      <p style={{ color: '#6b7280', fontSize: '0.5625rem', margin: 0, textAlign: 'center', lineHeight: 1.2 }}>
+      <p style={{ color: isDark ? '#6b7280' : '#9ca3af', fontSize: '0.5625rem', margin: 0, textAlign: 'center', lineHeight: 1.2 }}>
         {member.sub_role || member.role.replace('_', ' ')}
       </p>
       {team && (
@@ -132,13 +139,13 @@ function MemberNode({ member, isCurrentUser, onSelect }) {
   );
 }
 
-function ConnectorLine({ style: customStyle }) {
+function ConnectorLine({ style: customStyle, isDark }) {
   return (
     <div
       style={{
         width: '1px',
         height: '24px',
-        background: 'rgba(99,102,241,0.25)',
+        background: isDark ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.2)',
         margin: '0 auto',
         ...customStyle,
       }}
@@ -146,7 +153,7 @@ function ConnectorLine({ style: customStyle }) {
   );
 }
 
-function TierLabel({ label }) {
+function TierLabel({ label, isDark }) {
   return (
     <div
       style={{
@@ -157,12 +164,12 @@ function TierLabel({ label }) {
         marginTop: '1.5rem',
       }}
     >
-      <div style={{ height: '1px', flex: 1, background: 'rgba(99,102,241,0.1)' }} />
+      <div style={{ height: '1px', flex: 1, background: isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.15)' }} />
       <span
         style={{
           fontSize: '0.5625rem',
           fontWeight: 700,
-          color: '#6b7280',
+          color: isDark ? '#6b7280' : '#9ca3af',
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
           whiteSpace: 'nowrap',
@@ -170,17 +177,19 @@ function TierLabel({ label }) {
       >
         {label}
       </span>
-      <div style={{ height: '1px', flex: 1, background: 'rgba(99,102,241,0.1)' }} />
+      <div style={{ height: '1px', flex: 1, background: isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.15)' }} />
     </div>
   );
 }
 
 export default function OrgHierarchyPage() {
   const { isOrgUser, orgData, isLoading } = useOrg();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [selectedMember, setSelectedMember] = useState(null);
 
-  if (isLoading) return <div style={{ padding: '2rem', color: '#888' }}>Loading...</div>;
-  if (!isOrgUser) return <div style={{ padding: '2rem', color: '#888' }}>This page is for organizational members only.</div>;
+  if (isLoading) return <div style={{ padding: '2rem', color: isDark ? '#888' : '#6b7280' }}>Loading...</div>;
+  if (!isOrgUser) return <div style={{ padding: '2rem', color: isDark ? '#888' : '#6b7280' }}>This page is for organizational members only.</div>;
 
   const emailMatch = getMemberByEmail(orgData?.member?.email);
   const currentMemberId = emailMatch?.id || null;
@@ -205,7 +214,7 @@ export default function OrgHierarchyPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}>
         <Link
           href="/org-team-hub"
-          style={{ color: '#6b7280', fontSize: '0.8125rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+          style={{ color: isDark ? '#6b7280' : '#4b5563', fontSize: '0.8125rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
         >
           <i className="bi bi-arrow-left" /> Team Hub
         </Link>
@@ -213,8 +222,8 @@ export default function OrgHierarchyPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
         <i className="bi bi-diagram-3" style={{ color: '#6366f1', fontSize: '1.5rem' }} />
         <div>
-          <h1 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Organization Hierarchy</h1>
-          <p style={{ color: '#888', fontSize: '0.8rem', margin: 0 }}>{ORG_NAME}</p>
+          <h1 style={{ color: isDark ? '#fff' : '#111827', fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Organization Hierarchy</h1>
+          <p style={{ color: isDark ? '#888' : '#6b7280', fontSize: '0.8rem', margin: 0 }}>{ORG_NAME}</p>
         </div>
       </div>
 
@@ -222,7 +231,7 @@ export default function OrgHierarchyPage() {
       <div className="db-card" style={{ padding: '1.5rem', overflow: 'auto' }}>
 
         {/* Executive Tier */}
-        <TierLabel label="Executive Board" />
+        <TierLabel label="Executive Board" isDark={isDark} />
         <div
           style={{
             display: 'flex',
@@ -237,14 +246,15 @@ export default function OrgHierarchyPage() {
               member={m}
               isCurrentUser={m.id === currentMemberId}
               onSelect={setSelectedMember}
+              isDark={isDark}
             />
           ))}
         </div>
 
-        <ConnectorLine style={{ height: '32px' }} />
+        <ConnectorLine style={{ height: '32px' }} isDark={isDark} />
 
         {/* PM + Analyst Tiers grouped by team */}
-        <TierLabel label="Sector Teams" />
+        <TierLabel label="Sector Teams" isDark={isDark} />
         <div
           style={{
             display: 'grid',
@@ -259,7 +269,7 @@ export default function OrgHierarchyPage() {
                 border: '1px solid rgba(99,102,241,0.1)',
                 borderRadius: '10px',
                 padding: '0.75rem',
-                background: 'rgba(99,102,241,0.02)',
+                background: isDark ? 'rgba(99,102,241,0.02)' : '#fafafa',
               }}
             >
               {/* Team name */}
@@ -284,11 +294,12 @@ export default function OrgHierarchyPage() {
                     member={team.pm}
                     isCurrentUser={team.pm.id === currentMemberId}
                     onSelect={setSelectedMember}
+                    isDark={isDark}
                   />
                 </div>
               )}
 
-              {team.analysts.length > 0 && <ConnectorLine style={{ height: '16px' }} />}
+              {team.analysts.length > 0 && <ConnectorLine style={{ height: '16px' }} isDark={isDark} />}
 
               {/* Analysts */}
               <div
@@ -305,12 +316,13 @@ export default function OrgHierarchyPage() {
                     member={a}
                     isCurrentUser={a.id === currentMemberId}
                     onSelect={setSelectedMember}
+                    isDark={isDark}
                   />
                 ))}
               </div>
 
               {!team.pm && team.analysts.length === 0 && (
-                <p style={{ color: '#4b5563', fontSize: '0.6875rem', textAlign: 'center', margin: 0 }}>
+                <p style={{ color: isDark ? '#4b5563' : '#9ca3af', fontSize: '0.6875rem', textAlign: 'center', margin: 0 }}>
                   No members assigned
                 </p>
               )}
@@ -344,7 +356,7 @@ export default function OrgHierarchyPage() {
                   display: 'inline-block',
                 }}
               />
-              <span style={{ color: '#9ca3af', fontSize: '0.625rem', fontWeight: 500 }}>
+              <span style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.625rem', fontWeight: 500 }}>
                 {item.label}
               </span>
             </div>

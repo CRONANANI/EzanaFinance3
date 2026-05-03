@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@/contexts/ToastContext';
+import { useTheme } from '@/components/ThemeProvider';
 import {
   MOCK_TEAMS,
   getOrgMemberReportsTo,
@@ -45,11 +46,11 @@ function AvatarCircle({ name, role, size = 48 }) {
   );
 }
 
-function SectionTitle({ children }) {
+function SectionTitle({ children, isDark }) {
   return (
     <p
       style={{
-        color: '#9ca3af',
+        color: isDark ? '#9ca3af' : '#64748b',
         fontSize: '0.5625rem',
         fontWeight: 700,
         textTransform: 'uppercase',
@@ -62,9 +63,12 @@ function SectionTitle({ children }) {
   );
 }
 
-export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId }) {
+export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId, onSendToTeam }) {
   const { toast } = useToast();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [messageBody, setMessageBody] = useState('');
+  const [sending, setSending] = useState(false);
 
   const handleClose = useCallback(() => {
     setMessageBody('');
@@ -94,7 +98,17 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
   const activity = getMockMemberActivitySummary(member.id);
   const isSelf = viewerMemberId && member.id === viewerMemberId;
 
-  const sendMessage = () => {
+  const cardBg = isDark ? '#0d1117' : '#ffffff';
+  const cardBorder = isDark ? '1px solid rgba(99,102,241,0.2)' : '1px solid #e5e7eb';
+  const heading = isDark ? '#f0f6fc' : '#111827';
+  const body = isDark ? '#d1d5db' : '#374151';
+  const bodySecondary = isDark ? '#cbd5e1' : '#4b5563';
+  const muted = isDark ? '#8b949e' : '#6b7280';
+  const closeBtnBorder = isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb';
+  const textareaBg = isDark ? 'rgba(0,0,0,0.25)' : '#f9fafb';
+  const textareaColor = isDark ? '#f0f6fc' : '#111827';
+
+  const sendMessage = async () => {
     const trimmed = messageBody.trim();
     if (!trimmed) {
       toast.warning('Write a message before sending.');
@@ -104,8 +118,29 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
       toast.info('You cannot message yourself.');
       return;
     }
-    toast.success(`Message sent to ${member.name}`);
-    setMessageBody('');
+
+    setSending(true);
+    try {
+      const res = await fetch('/api/org/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient_member_id: member.id,
+          subject: 'Direct message',
+          body: trimmed,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to send');
+      }
+      toast.success(`Message sent to ${member.name}`);
+      setMessageBody('');
+    } catch (e) {
+      toast.error(e.message || 'Could not send message. Try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -135,8 +170,9 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
           maxWidth: 440,
           maxHeight: 'min(90vh, 720px)',
           overflow: 'auto',
-          border: '1px solid rgba(99,102,241,0.2)',
-          boxShadow: '0 24px 48px rgba(0,0,0,0.45)',
+          background: cardBg,
+          border: cardBorder,
+          boxShadow: isDark ? '0 24px 48px rgba(0,0,0,0.45)' : '0 24px 48px rgba(0,0,0,0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -147,13 +183,13 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
             justifyContent: 'space-between',
             gap: '0.75rem',
             padding: '1rem 1rem 0',
-            borderBottom: '1px solid rgba(99,102,241,0.1)',
+            borderBottom: isDark ? '1px solid rgba(99,102,241,0.1)' : '1px solid #e5e7eb',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <AvatarCircle name={member.name} role={member.role} size={52} />
             <div>
-              <h2 id="org-member-profile-title" style={{ color: '#f0f6fc', fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
+              <h2 id="org-member-profile-title" style={{ color: heading, fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
                 {member.name}
               </h2>
               <p style={{ color: '#818cf8', fontSize: '0.75rem', fontWeight: 600, margin: '4px 0 0' }}>
@@ -167,10 +203,10 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
             onClick={handleClose}
             aria-label="Close profile"
             style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: closeBtnBg,
+              border: closeBtnBorder,
               borderRadius: '8px',
-              color: '#9ca3af',
+              color: muted,
               width: 36,
               height: 36,
               cursor: 'pointer',
@@ -184,14 +220,14 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
         </div>
 
         <div style={{ padding: '1rem' }}>
-          <SectionTitle>Contact</SectionTitle>
-          <p style={{ color: '#d1d5db', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+          <SectionTitle isDark={isDark}>Contact</SectionTitle>
+          <p style={{ color: body, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
             <i className="bi bi-envelope" style={{ marginRight: 6, opacity: 0.7 }} />
             {member.email || '—'}
           </p>
 
-          <SectionTitle>Platform activity (demo)</SectionTitle>
-          <ul style={{ color: '#cbd5e1', fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem', lineHeight: 1.6 }}>
+          <SectionTitle isDark={isDark}>Platform activity (demo)</SectionTitle>
+          <ul style={{ color: bodySecondary, fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem', lineHeight: 1.6 }}>
             <li>Last active: {activity.lastActive}</li>
             <li>Active tasks: {activity.activeTasks} · Completed: {activity.completedTasks}</li>
             {member.role !== 'analyst' && <li>Tasks delegated to others: {activity.tasksDelegated}</li>}
@@ -199,37 +235,37 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
             <li>Learning sessions (30d): {activity.learningSessions}</li>
           </ul>
 
-          <SectionTitle>Reports to</SectionTitle>
+          <SectionTitle isDark={isDark}>Reports to</SectionTitle>
           {reportsTo ? (
-            <p style={{ color: '#e5e7eb', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+            <p style={{ color: isDark ? '#e5e7eb' : '#374151', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
               {reportsTo.name}
-              <span style={{ color: '#6b7280', fontSize: '0.7rem' }}>
+              <span style={{ color: meta, fontSize: '0.7rem' }}>
                 {' '}
                 ({reportsTo.sub_role || reportsTo.role.replace('_', ' ')})
               </span>
             </p>
           ) : (
-            <p style={{ color: '#6b7280', fontSize: '0.8125rem', margin: '0 0 1rem' }}>
+            <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 1rem' }}>
               Council-level role — no direct report above in this chart.
             </p>
           )}
 
           {(member.role === 'executive' || member.role === 'portfolio_manager') && directReports.length > 0 && (
             <>
-              <SectionTitle>{member.role === 'executive' ? 'Direct oversight' : 'Analysts on team'}</SectionTitle>
-              <ul style={{ color: '#cbd5e1', fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem' }}>
+              <SectionTitle isDark={isDark}>{member.role === 'executive' ? 'Direct oversight' : 'Analysts on team'}</SectionTitle>
+              <ul style={{ color: bodySecondary, fontSize: '0.78rem', margin: '0 0 1rem', paddingLeft: '1.1rem' }}>
                 {directReports.slice(0, 8).map((m) => (
                   <li key={m.id}>{m.name}</li>
                 ))}
-                {directReports.length > 8 && <li style={{ color: '#6b7280' }}>+{directReports.length - 8} more</li>}
+                {directReports.length > 8 && <li style={{ color: meta }}>+{directReports.length - 8} more</li>}
               </ul>
             </>
           )}
 
-          <SectionTitle>Interacts with most (demo)</SectionTitle>
+          <SectionTitle isDark={isDark}>Interacts with most (demo)</SectionTitle>
           <div style={{ marginBottom: '1rem' }}>
             {topInteractions.length === 0 ? (
-              <p style={{ color: '#6b7280', fontSize: '0.8125rem', margin: 0 }}>No interaction data yet.</p>
+              <p style={{ color: meta, fontSize: '0.8125rem', margin: 0 }}>No interaction data yet.</p>
             ) : (
               topInteractions.map((m, i) => (
                 <div
@@ -239,19 +275,19 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '0.35rem 0',
-                    borderBottom: '1px solid rgba(99,102,241,0.06)',
+                    borderBottom: isDark ? '1px solid rgba(99,102,241,0.06)' : '1px solid #f3f4f6',
                   }}
                 >
-                  <span style={{ color: '#e5e7eb', fontSize: '0.8125rem' }}>{m.name}</span>
+                  <span style={{ color: isDark ? '#e5e7eb' : '#374151', fontSize: '0.8125rem' }}>{m.name}</span>
                   <span style={{ color: '#6366f1', fontSize: '0.65rem', fontWeight: 700 }}>#{i + 1}</span>
                 </div>
               ))
             )}
           </div>
 
-          <SectionTitle>Send message</SectionTitle>
+          <SectionTitle isDark={isDark}>Send message</SectionTitle>
           {isSelf ? (
-            <p style={{ color: '#6b7280', fontSize: '0.8125rem', margin: '0 0 0.5rem' }}>This is your profile.</p>
+            <p style={{ color: meta, fontSize: '0.8125rem', margin: '0 0 0.5rem' }}>This is your profile.</p>
           ) : (
             <>
               <textarea
@@ -266,8 +302,8 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
                   padding: '0.65rem',
                   borderRadius: '8px',
                   border: '1px solid rgba(99,102,241,0.25)',
-                  background: 'rgba(0,0,0,0.25)',
-                  color: '#f0f6fc',
+                  background: textareaBg,
+                  color: textareaColor,
                   fontSize: '0.8125rem',
                   marginBottom: '0.6rem',
                   boxSizing: 'border-box',
@@ -276,6 +312,7 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
               <button
                 type="button"
                 onClick={sendMessage}
+                disabled={sending || !messageBody.trim() || isSelf}
                 style={{
                   width: '100%',
                   padding: '0.55rem',
@@ -285,7 +322,8 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
                   color: '#fff',
                   fontWeight: 600,
                   fontSize: '0.875rem',
-                  cursor: 'pointer',
+                  cursor: sending || !messageBody.trim() ? 'not-allowed' : 'pointer',
+                  opacity: sending || !messageBody.trim() ? 0.7 : 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -293,11 +331,33 @@ export function OrgMemberProfileModal({ member, isOpen, onClose, viewerMemberId 
                 }}
               >
                 <i className="bi bi-send-fill" />
-                Send message
+                {sending ? 'Sending…' : 'Send'}
               </button>
-              <p style={{ color: '#52525b', fontSize: '0.65rem', margin: '0.5rem 0 0', textAlign: 'center' }}>
-                Demo: message is not persisted; in production this would use org messaging.
-              </p>
+              {onSendToTeam && (
+                <button
+                  type="button"
+                  onClick={() => onSendToTeam(member)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    padding: '0.5rem 0.85rem',
+                    marginTop: '0.5rem',
+                    background: 'rgba(99, 102, 241, 0.08)',
+                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                    borderRadius: 6,
+                    color: '#818cf8',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    width: '100%',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <i className="bi bi-share" />
+                  Send Chart, News, or Model to {member.name.split(' ')[0]}
+                </button>
+              )}
             </>
           )}
         </div>

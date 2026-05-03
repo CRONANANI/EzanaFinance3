@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useOrg } from '@/contexts/OrgContext';
+import { useTheme } from '@/components/ThemeProvider';
 import {
   MOCK_MEMBERS,
   MOCK_TEAMS,
@@ -52,7 +53,7 @@ function AvatarCircle({ name, role, size = 36 }) {
   );
 }
 
-function PersonRow({ member, label, compact = false }) {
+function PersonRow({ member, label, compact = false, isDark }) {
   if (!member) return null;
   const team = MOCK_TEAMS.find((t) => t.id === member.team_id);
   return (
@@ -62,15 +63,15 @@ function PersonRow({ member, label, compact = false }) {
         alignItems: 'center',
         gap: '0.6rem',
         padding: compact ? '0.35rem 0' : '0.5rem 0',
-        borderBottom: '1px solid rgba(99,102,241,0.06)',
+        borderBottom: isDark ? '1px solid rgba(99,102,241,0.06)' : '1px solid #f3f4f6',
       }}
     >
       <AvatarCircle name={member.name} role={member.role} size={compact ? 30 : 36} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ color: '#f0f6fc', fontSize: '0.8125rem', fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
+        <p style={{ color: isDark ? '#f0f6fc' : '#111827', fontSize: '0.8125rem', fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
           {member.name}
         </p>
-        <p style={{ color: '#6b7280', fontSize: '0.625rem', margin: '1px 0 0', lineHeight: 1.3 }}>
+        <p style={{ color: isDark ? '#6b7280' : '#9ca3af', fontSize: '0.625rem', margin: '1px 0 0', lineHeight: 1.3 }}>
           {member.sub_role || member.role.replace('_', ' ')}
           {team ? ` · ${team.name}` : ''}
         </p>
@@ -96,6 +97,8 @@ function PersonRow({ member, label, compact = false }) {
 
 export function OrgHierarchyCard() {
   const { isOrgUser, orgRole, orgData } = useOrg();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   if (!isOrgUser || !orgData) return null;
 
   const emailMatch = getMemberByEmail(orgData?.member?.email);
@@ -126,7 +129,7 @@ export function OrgHierarchyCard() {
         >
           <p
             style={{
-              color: '#9ca3af',
+              color: isDark ? '#9ca3af' : '#64748b',
               fontSize: '0.5625rem',
               fontWeight: 600,
               textTransform: 'uppercase',
@@ -139,7 +142,7 @@ export function OrgHierarchyCard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <AvatarCircle name={currentMember.name} role={currentMember.role} size={40} />
             <div>
-              <p style={{ color: '#f0f6fc', fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>
+              <p style={{ color: isDark ? '#f0f6fc' : '#111827', fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>
                 {currentMember.name}
               </p>
               <p style={{ color: '#818cf8', fontSize: '0.6875rem', fontWeight: 600, margin: '2px 0 0' }}>
@@ -154,7 +157,7 @@ export function OrgHierarchyCard() {
           <div style={{ marginBottom: '0.75rem' }}>
             <p
               style={{
-                color: '#9ca3af',
+                color: isDark ? '#9ca3af' : '#64748b',
                 fontSize: '0.5625rem',
                 fontWeight: 600,
                 textTransform: 'uppercase',
@@ -164,7 +167,7 @@ export function OrgHierarchyCard() {
             >
               Reports To
             </p>
-            <PersonRow member={reportsTo} label={reportsTo.sub_role} />
+            <PersonRow member={reportsTo} label={reportsTo.sub_role} isDark={isDark} />
           </div>
         )}
 
@@ -172,7 +175,7 @@ export function OrgHierarchyCard() {
           <div style={{ marginBottom: '0.75rem' }}>
             <p
               style={{
-                color: '#9ca3af',
+                color: isDark ? '#9ca3af' : '#64748b',
                 fontSize: '0.5625rem',
                 fontWeight: 600,
                 textTransform: 'uppercase',
@@ -184,10 +187,10 @@ export function OrgHierarchyCard() {
             </p>
             {directReports.slice(0, 4).map((m) => {
               const team = MOCK_TEAMS.find((t) => t.id === m.team_id);
-              return <PersonRow key={m.id} member={m} label={team?.name} compact />;
+              return <PersonRow key={m.id} member={m} label={team?.name} compact isDark={isDark} />;
             })}
             {directReports.length > 4 && (
-              <p style={{ color: '#6b7280', fontSize: '0.625rem', margin: '0.3rem 0 0' }}>
+              <p style={{ color: isDark ? '#6b7280' : '#9ca3af', fontSize: '0.625rem', margin: '0.3rem 0 0' }}>
                 +{directReports.length - 4} more
               </p>
             )}
@@ -198,7 +201,7 @@ export function OrgHierarchyCard() {
           <div style={{ marginBottom: '0.75rem' }}>
             <p
               style={{
-                color: '#9ca3af',
+                color: isDark ? '#9ca3af' : '#64748b',
                 fontSize: '0.5625rem',
                 fontWeight: 600,
                 textTransform: 'uppercase',
@@ -209,10 +212,10 @@ export function OrgHierarchyCard() {
               Analysts You Manage
             </p>
             {directReports.slice(0, 3).map((m) => (
-              <PersonRow key={m.id} member={m} label={m.sub_role} compact />
+              <PersonRow key={m.id} member={m} label={m.sub_role} compact isDark={isDark} />
             ))}
             {directReports.length > 3 && (
-              <p style={{ color: '#6b7280', fontSize: '0.625rem', margin: '0.3rem 0 0' }}>
+              <p style={{ color: isDark ? '#6b7280' : '#9ca3af', fontSize: '0.625rem', margin: '0.3rem 0 0' }}>
                 +{directReports.length - 3} more
               </p>
             )}
@@ -222,7 +225,7 @@ export function OrgHierarchyCard() {
         <div style={{ marginBottom: '0.75rem' }}>
           <p
             style={{
-              color: '#9ca3af',
+              color: isDark ? '#9ca3af' : '#64748b',
               fontSize: '0.5625rem',
               fontWeight: 600,
               textTransform: 'uppercase',
@@ -233,7 +236,7 @@ export function OrgHierarchyCard() {
             Top Collaborators
           </p>
           {topColleagues.map((m, i) => (
-            <PersonRow key={m.id} member={m} label={`#${i + 1}`} compact />
+            <PersonRow key={m.id} member={m} label={`#${i + 1}`} compact isDark={isDark} />
           ))}
         </div>
 
