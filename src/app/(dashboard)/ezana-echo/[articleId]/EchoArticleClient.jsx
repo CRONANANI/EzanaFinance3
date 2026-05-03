@@ -505,10 +505,359 @@ function MarketForecastChart({ title, caption, yLabel }) {
   );
 }
 
+function FiberCompanyProfileCard({ company, isDark, onClose }) {
+  const [quote, setQuote] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [ytdChart, setYtdChart] = useState([]);
+  const [threeYChart, setThreeYChart] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const t = {
+    cardBg: isDark ? '#0d1117' : '#ffffff',
+    cardBorder: isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.15)',
+    headingColor: isDark ? '#f0f6fc' : '#1e293b',
+    bodyColor: isDark ? '#c9d1d9' : '#475569',
+    mutedColor: isDark ? '#8b949e' : '#94a3b8',
+    statBg: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+    statBorder: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)',
+    chartLineBg: isDark ? '#161b22' : '#f1f5f9',
+  };
+
+  useEffect(() => {
+    if (!company?.ticker) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+
+    const sym = encodeURIComponent(company.ticker);
+
+    Promise.all([
+      fetch(`/api/fmp/quote?symbols=${sym}`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/api/fmp/stock-stats?symbol=${sym}`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/api/market-data/stock-candles?symbol=${sym}&range=1Y`).then((r) => (r.ok ? r.json() : null)),
+      fetch(`/api/market-data/stock-candles?symbol=${sym}&range=3Y`).then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([q, s, ytd, threeY]) => {
+        if (cancelled) return;
+        const up = (company.ticker || '').toUpperCase();
+        const quoteObj =
+          q?.quotes?.[0] || (up && q?.priceMap?.[up]) || (q?.price != null ? q : null);
+        setQuote(quoteObj);
+        setStats(s);
+        setYtdChart((ytd?.candles || ytd?.data || []).map((c) => c.close ?? c.c).filter(Boolean));
+        setThreeYChart((threeY?.candles || threeY?.data || []).map((c) => c.close ?? c.c).filter(Boolean));
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [company?.ticker]);
+
+  const price = quote?.price ?? quote?.previousClose ?? null;
+  const change = quote?.change ?? null;
+  const changePct = quote?.changesPercentage ?? null;
+  const isPositive = (change ?? 0) >= 0;
+
+  const marketCapRaw = stats?.marketCap ?? stats?.mktCap ?? null;
+  const marketCapDisplay =
+    stats?.mcap && stats.mcap !== '--'
+      ? stats.mcap
+      : marketCapRaw != null
+        ? fmtLargeNum(marketCapRaw)
+        : null;
+  const peRaw = stats?.pe ?? stats?.peRatio ?? null;
+  const peDisplay =
+    peRaw != null && peRaw !== '--' && !Number.isNaN(Number(peRaw)) ? Number(peRaw).toFixed(1) : null;
+  const epsRaw = stats?.eps ?? null;
+  const epsDisplay =
+    epsRaw != null && epsRaw !== '--' && !Number.isNaN(Number(epsRaw)) ? `$${Number(epsRaw).toFixed(2)}` : null;
+  const high52 = stats?.yearHigh ?? stats?.range?.split('-')?.[1] ?? null;
+  const low52 = stats?.yearLow ?? stats?.range?.split('-')?.[0] ?? null;
+
+  return (
+    <div
+      style={{
+        background: t.cardBg,
+        border: `1px solid ${t.cardBorder}`,
+        borderRadius: 10,
+        padding: '1rem 1.1rem',
+        marginTop: '0.75rem',
+        position: 'relative',
+        boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 4px 16px rgba(0,0,0,0.08)',
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          top: 8,
+          right: 10,
+          background: 'transparent',
+          border: 'none',
+          color: t.mutedColor,
+          fontSize: '0.9rem',
+          cursor: 'pointer',
+          padding: '0.25rem',
+        }}
+        aria-label="Close profile"
+      >
+        <i className="bi bi-x-lg" />
+      </button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            background: `${INDUSTRY_COLORS[company.industry] || '#6366f1'}22`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: INDUSTRY_COLORS[company.industry] || '#6366f1',
+            fontSize: '0.9rem',
+            fontWeight: 800,
+          }}
+        >
+          {company.name.charAt(0)}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: t.headingColor,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {company.name}
+          </div>
+          <div style={{ fontSize: '0.65rem', color: t.mutedColor }}>
+            {company.ticker || 'Private'} · {company.hq}
+          </div>
+        </div>
+        <span
+          style={{
+            padding: '0.2rem 0.5rem',
+            borderRadius: 4,
+            background: `${INDUSTRY_COLORS[company.industry] || '#6366f1'}18`,
+            color: INDUSTRY_COLORS[company.industry] || '#6366f1',
+            fontSize: '0.55rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
+          {company.industry}
+        </span>
+      </div>
+
+      {!company.ticker && (
+        <div style={{ padding: '1rem 0', textAlign: 'center', color: t.mutedColor, fontSize: '0.75rem' }}>
+          <i className="bi bi-lock" style={{ fontSize: '1.25rem', display: 'block', marginBottom: '0.4rem' }} />
+          Private company — financial data not available.
+        </div>
+      )}
+
+      {company.ticker && loading && (
+        <div style={{ padding: '1.5rem 0', textAlign: 'center', color: t.mutedColor, fontSize: '0.75rem' }}>
+          Loading {company.ticker} data…
+        </div>
+      )}
+
+      {company.ticker && !loading && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.4rem', fontWeight: 800, color: t.headingColor }}>
+              {price != null ? `$${Number(price).toFixed(2)}` : '—'}
+            </span>
+            {change != null && (
+              <span
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  color: isPositive ? '#10b981' : '#ef4444',
+                }}
+              >
+                {isPositive ? '+' : ''}
+                {Number(change).toFixed(2)} ({isPositive ? '+' : ''}
+                {Number(changePct).toFixed(2)}%)
+              </span>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '0.4rem',
+              marginBottom: '0.75rem',
+            }}
+          >
+            {[
+              { label: 'Market Cap', value: marketCapDisplay ?? '—' },
+              { label: 'P/E Ratio', value: peDisplay ?? '—' },
+              { label: 'EPS', value: epsDisplay ?? '—' },
+              {
+                label: '52W Range',
+                value:
+                  low52 && high52 ? `${Number(low52).toFixed(0)} – ${Number(high52).toFixed(0)}` : '—',
+              },
+            ].map((s) => (
+              <div
+                key={s.label}
+                style={{
+                  padding: '0.45rem 0.6rem',
+                  background: t.statBg,
+                  border: `1px solid ${t.statBorder}`,
+                  borderRadius: 6,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.55rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: t.mutedColor,
+                    marginBottom: '0.15rem',
+                  }}
+                >
+                  {s.label}
+                </div>
+                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: t.headingColor }}>
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+            <MiniSparkChart data={ytdChart} label="YTD" isDark={isDark} bg={t.chartLineBg} />
+            <MiniSparkChart data={threeYChart} label="3Y" isDark={isDark} bg={t.chartLineBg} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MiniSparkChart({ data, label, isDark, bg }) {
+  if (!data || data.length < 2) {
+    return (
+      <div style={{ background: bg, borderRadius: 6, padding: '0.5rem', textAlign: 'center' }}>
+        <div
+          style={{
+            fontSize: '0.55rem',
+            fontWeight: 600,
+            color: isDark ? '#8b949e' : '#94a3b8',
+            marginBottom: '0.25rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
+          {label}
+        </div>
+        <div style={{ fontSize: '0.65rem', color: isDark ? '#6b7280' : '#cbd5e1' }}>No data</div>
+      </div>
+    );
+  }
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 200;
+  const h = 48;
+  const pad = 2;
+
+  const points = data
+    .map((v, i) => {
+      const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+      const y = pad + (1 - (v - min) / range) * (h - pad * 2);
+      return `${x},${y}`;
+    })
+    .join(' ');
+
+  const isUp = data[data.length - 1] >= data[0];
+  const lineColor = isUp ? '#10b981' : '#ef4444';
+  const pctChange = (((data[data.length - 1] - data[0]) / data[0]) * 100).toFixed(1);
+  const gradId = `fiber-spark-${label.replace(/\s/g, '')}`;
+
+  return (
+    <div style={{ background: bg, borderRadius: 6, padding: '0.4rem 0.5rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '0.2rem',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '0.55rem',
+            fontWeight: 600,
+            color: isDark ? '#8b949e' : '#94a3b8',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
+          {label}
+        </span>
+        <span style={{ fontSize: '0.6rem', fontWeight: 700, color: lineColor }}>
+          {isUp ? '+' : ''}
+          {pctChange}%
+        </span>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 48 }} preserveAspectRatio="none">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={lineColor} stopOpacity="0.15" />
+            <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={`${pad},${h - pad} ${points} ${w - pad},${h - pad}`} fill={`url(#${gradId})`} />
+        <polyline
+          points={points}
+          fill="none"
+          stroke={lineColor}
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+function fmtLargeNum(n) {
+  const num = Number(n);
+  if (Number.isNaN(num)) return '—';
+  if (num >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+  if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
+  if (num >= 1e6) return `$${(num / 1e6).toFixed(0)}M`;
+  return `$${num.toLocaleString()}`;
+}
+
 function FiberOpticWorldMap({ title, caption }) {
   const [activeContinents, setActiveContinents] = useState(() => new Set(CONTINENTS));
   const [activeIndustries, setActiveIndustries] = useState(() => new Set(INDUSTRIES));
   const [hovered, setHovered] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+
+  const handleDotClick = (company) => {
+    setSelectedCompany((prev) => (prev?.name === company.name ? null : company));
+  };
 
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -696,7 +1045,13 @@ function FiberOpticWorldMap({ title, caption }) {
           const r = c.highlight ? 7 : 4.5;
           const fill = industryColor(c.industry);
           return (
-            <g key={c.name} onMouseEnter={() => setHovered(c)} onMouseLeave={() => setHovered(null)}>
+            <g
+              key={c.name}
+              onMouseEnter={() => setHovered(c)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={() => handleDotClick(c)}
+              style={{ cursor: 'pointer' }}
+            >
               {c.highlight && (
                 <circle cx={x} cy={y} r={14} fill="none" stroke={t.highlightPulseStroke} strokeWidth={1} opacity={0.25}>
                   <animate attributeName="r" values="10;18;10" dur="2.5s" repeatCount="indefinite" />
@@ -706,10 +1061,18 @@ function FiberOpticWorldMap({ title, caption }) {
               <circle
                 cx={x}
                 cy={y}
-                r={r}
+                r={selectedCompany?.name === c.name ? r + 2 : r}
                 fill={fill}
-                stroke={c.highlight ? t.highlightStroke : t.dotStroke}
-                strokeWidth={c.highlight ? 2 : 0.5}
+                stroke={
+                  selectedCompany?.name === c.name
+                    ? isDark
+                      ? '#f0f6fc'
+                      : '#1e293b'
+                    : c.highlight
+                      ? t.highlightStroke
+                      : t.dotStroke
+                }
+                strokeWidth={selectedCompany?.name === c.name ? 2.5 : c.highlight ? 2 : 0.5}
                 opacity={0.9}
                 style={{ cursor: 'pointer' }}
               />
@@ -758,6 +1121,14 @@ function FiberOpticWorldMap({ title, caption }) {
           {visible.length} companies shown
         </text>
       </svg>
+
+      {selectedCompany && (
+        <FiberCompanyProfileCard
+          company={selectedCompany}
+          isDark={isDark}
+          onClose={() => setSelectedCompany(null)}
+        />
+      )}
 
       {caption && <figcaption className="echo-chart-caption">{caption}</figcaption>}
     </figure>
