@@ -8,6 +8,11 @@ export const iranWarCommoditiesArticle2026 = {
     'Best-Performing Commodities Since the Iran War: Tungsten, Oil, Aluminum, and Fertilizers Lead the Surge',
   excerpt:
     "Since the Iran war began on February 28, 2026, supply disruptions through the Strait of Hormuz have repriced commodities markets globally. Tungsten leads with a 557% gain, oil is up 40-55%, fertilizers are up roughly 75%, and aluminum has climbed 12%. Here's what's driving each move and how to position around it.",
+  heroImage: {
+    src: '/us-iran-chess.jpg',
+    alt: 'US and Iran flags behind chess king pieces on a chessboard — geopolitical standoff',
+    caption: 'The US-Iran conflict has repriced global commodity markets since February 28, 2026.',
+  },
   contentBlocks: [
     {
       type: 'paragraph',
