@@ -20,7 +20,6 @@ export const USER_DASHBOARD_ROUTES = [
   '/betting-markets',
   '/financial-analytics',
   '/inside-the-capitol',
-  '/ezana-echo',
   '/alternative-markets',
   '/centaur-intelligence',
   '/kairos-signal',

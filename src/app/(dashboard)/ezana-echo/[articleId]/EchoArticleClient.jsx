@@ -392,41 +392,40 @@ function renderBarChart({ data, title, caption, W, H, PADDING, innerW, innerH })
   );
 }
 
-function FredPpiChart({ title, caption, yLabel }) {
+function FredPpiChart({ title, caption }) {
   return (
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
-      <div style={{ width: '100%', height: 320 }}>
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={FRED_PPI_DATA} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
+      <div className="echo-chart-responsive-wrap">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={FRED_PPI_DATA} margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
             <XAxis
               dataKey="date"
-              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 9 }}
               tickLine={false}
               axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              interval={3}
+              interval="preserveStartEnd"
+              tickFormatter={(v) => {
+                const year = v.split('-')[0];
+                return year;
+              }}
+              minTickGap={30}
             />
             <YAxis
               domain={[78, 102]}
-              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 9 }}
               tickLine={false}
               axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              label={{
-                value: yLabel || 'Index',
-                angle: -90,
-                position: 'insideLeft',
-                fill: 'var(--echo-axis-tick, #6b7280)',
-                fontSize: 10,
-              }}
+              width={35}
             />
             <Tooltip
               contentStyle={{
-                background: '#0d1117',
+                background: 'var(--echo-tooltip-bg, #0d1117)',
                 border: '1px solid rgba(99,102,241,0.3)',
                 borderRadius: 8,
-                color: '#f0f6fc',
-                fontSize: '0.75rem',
+                color: 'var(--echo-tooltip-text, #f0f6fc)',
+                fontSize: '0.7rem',
               }}
               formatter={(v) => [`${Number(v).toFixed(1)}`, 'PPI']}
               labelFormatter={(l) => `${l}`}
@@ -464,35 +463,17 @@ function MarketForecastChart({ title, caption, yLabel }) {
     }
   }
 
-  /* Custom legend renderer */
   const renderLegend = () => (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: '0.6rem 1.1rem',
-        paddingTop: 10,
-      }}
-    >
+    <div className="echo-forecast-legend">
       {MARKET_FORECAST_KEYS.map((k) => (
-        <div key={k.key} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.35rem', minWidth: 0 }}>
+        <div key={k.key} className="echo-forecast-legend-item">
           <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: 2,
-              background: k.color,
-              flexShrink: 0,
-              marginTop: 2,
-            }}
+            className="echo-forecast-legend-swatch"
+            style={{ background: k.color }}
           />
-          <div style={{ lineHeight: 1.3 }}>
-            <div style={{ fontSize: '0.625rem', fontWeight: 600, color: 'var(--echo-legend-text, #c9d1d9)' }}>
-              {k.key}
-            </div>
-            <div style={{ fontSize: '0.55rem', fontWeight: 700, color: k.color, letterSpacing: '0.02em' }}>
+          <div>
+            <div className="echo-forecast-legend-name">{k.key}</div>
+            <div className="echo-forecast-legend-cagr" style={{ color: k.color }}>
               CAGR {cagrByKey[k.key]}%
             </div>
           </div>
@@ -504,26 +485,30 @@ function MarketForecastChart({ title, caption, yLabel }) {
   return (
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
-      <div style={{ width: '100%', height: 360 }}>
-        <ResponsiveContainer width="100%" height={360}>
-          <BarChart data={MARKET_FORECAST_DATA} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+      <div className="echo-chart-responsive-wrap echo-chart-responsive-wrap--tall">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={MARKET_FORECAST_DATA} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
             <XAxis
               dataKey="year"
-              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 9 }}
               tickLine={false}
               axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              interval={0}
+              tickFormatter={(v) => `'${String(v).slice(2)}`}
             />
             <YAxis
-              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 9 }}
               tickLine={false}
               axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              width={30}
               label={{
                 value: yLabel || 'USD Bn',
                 angle: -90,
                 position: 'insideLeft',
                 fill: 'var(--echo-axis-tick, #6b7280)',
-                fontSize: 10,
+                fontSize: 8,
+                offset: 5,
               }}
             />
             <Tooltip
@@ -936,15 +921,7 @@ function FiberOpticWorldMap({ title, caption }) {
     tooltipNameFill: isDark ? '#f0f6fc' : '#1e293b',
     tooltipMetaFill: isDark ? '#8b949e' : '#64748b',
 
-    /* Toggle buttons */
-    btnBorderActive: '#6366f1',
-    btnBorderInactive: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
-    btnBgActive: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
-    btnBgInactive: 'transparent',
-    btnColorActive: isDark ? '#c7d2fe' : '#4338ca',
-    btnColorInactive: isDark ? '#6b7280' : '#94a3b8',
-
-    /* Industry button (same pattern but per-industry color) */
+    /* Industry chip inactive (continent chips reuse these) */
     indBorderInactive: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
     indColorInactive: isDark ? '#6b7280' : '#94a3b8',
 
@@ -986,60 +963,41 @@ function FiberOpticWorldMap({ title, caption }) {
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.5rem', padding: '0 0.25rem' }}>
-        {CONTINENTS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => toggleContinent(c)}
-            style={{
-              padding: '0.25rem 0.6rem',
-              borderRadius: 4,
-              border: activeContinents.has(c) ? `1px solid ${t.btnBorderActive}` : `1px solid ${t.btnBorderInactive}`,
-              background: activeContinents.has(c) ? t.btnBgActive : t.btnBgInactive,
-              color: activeContinents.has(c) ? t.btnColorActive : t.btnColorInactive,
-              fontSize: '0.625rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            {c}
-          </button>
-        ))}
+      {/* Region filter row */}
+      <div className="echo-map-filter-row">
+        <span className="echo-map-filter-label">Region</span>
+        <div className="echo-map-filter-chips">
+          {CONTINENTS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => toggleContinent(c)}
+              className={`echo-map-chip ${activeContinents.has(c) ? 'is-active' : ''}`}
+              style={activeContinents.has(c) ? { borderColor: '#6366f1', background: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', color: isDark ? '#c7d2fe' : '#4338ca' } : { borderColor: t.indBorderInactive, color: t.indColorInactive }}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.75rem', padding: '0 0.25rem' }}>
-        {INDUSTRIES.map((ind) => (
-          <button
-            key={ind}
-            type="button"
-            onClick={() => toggleIndustry(ind)}
-            style={{
-              padding: '0.25rem 0.6rem',
-              borderRadius: 4,
-              border: activeIndustries.has(ind)
-                ? `1px solid ${industryColor(ind)}`
-                : `1px solid ${t.indBorderInactive}`,
-              background: activeIndustries.has(ind) ? `${industryColor(ind)}22` : 'transparent',
-              color: activeIndustries.has(ind) ? industryColor(ind) : t.indColorInactive,
-              fontSize: '0.6rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            <span
-              style={{
-                display: 'inline-block',
-                width: 6,
-                height: 6,
-                borderRadius: 2,
-                background: industryColor(ind),
-                marginRight: 4,
-              }}
-            />
-            {ind}
-          </button>
-        ))}
+      {/* Industry filter row */}
+      <div className="echo-map-filter-row">
+        <span className="echo-map-filter-label">Industry</span>
+        <div className="echo-map-filter-chips">
+          {INDUSTRIES.map((ind) => (
+            <button
+              key={ind}
+              type="button"
+              onClick={() => toggleIndustry(ind)}
+              className={`echo-map-chip ${activeIndustries.has(ind) ? 'is-active' : ''}`}
+              style={activeIndustries.has(ind) ? { borderColor: industryColor(ind), background: `${industryColor(ind)}22`, color: industryColor(ind) } : { borderColor: t.indBorderInactive, color: t.indColorInactive }}
+            >
+              <span className="echo-map-chip-dot" style={{ background: industryColor(ind) }} />
+              {ind}
+            </button>
+          ))}
+        </div>
       </div>
 
       <svg

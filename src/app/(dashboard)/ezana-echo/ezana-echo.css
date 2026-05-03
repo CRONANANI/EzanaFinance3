@@ -1909,3 +1909,188 @@ body.light-mode .echo-article-page .echo-sector-tooltip-row > span:last-child {
 body.light-mode .echo-article-page .echo-sector-tooltip-era {
   color: inherit;
 }
+
+/* ════════════════════════════════════════════════════════════
+   ECHO CHARTS — responsive height wrappers + mobile fixes
+   ════════════════════════════════════════════════════════════ */
+
+.echo-chart-responsive-wrap {
+  width: 100%;
+  height: 320px;
+}
+
+.echo-chart-responsive-wrap--tall {
+  height: 360px;
+}
+
+@media (max-width: 640px) {
+  .echo-chart-responsive-wrap {
+    height: 220px;
+  }
+  .echo-chart-responsive-wrap--tall {
+    height: 260px;
+  }
+
+  .echo-article-page .echo-chart {
+    padding: 0.75rem;
+    margin: 1.25rem 0;
+  }
+
+  .echo-article-page .echo-chart-title {
+    font-size: 0.825rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .echo-article-page .echo-chart-caption {
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+  }
+}
+
+/* ── Forecast chart legend (mobile-friendly) ── */
+.echo-forecast-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0.9rem;
+  padding-top: 8px;
+}
+
+.echo-forecast-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.echo-forecast-legend-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.echo-forecast-legend-name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--echo-legend-text, #c9d1d9);
+  line-height: 1.2;
+}
+
+.echo-forecast-legend-cagr {
+  font-size: 0.525rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .echo-forecast-legend {
+    gap: 0.35rem 0.6rem;
+  }
+
+  .echo-forecast-legend-swatch {
+    width: 6px;
+    height: 6px;
+  }
+
+  .echo-forecast-legend-name {
+    font-size: 0.525rem;
+  }
+
+  .echo-forecast-legend-cagr {
+    font-size: 0.45rem;
+  }
+}
+
+/* ── World map filter rows ── */
+.echo-map-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+  padding: 0 0.25rem;
+}
+
+.echo-map-filter-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--echo-map-label, #8b949e);
+  flex-shrink: 0;
+  min-width: 52px;
+}
+
+.echo-map-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.echo-map-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  font-size: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.echo-map-chip.is-active {
+  font-weight: 700;
+}
+
+.echo-map-chip-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .echo-map-filter-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .echo-map-filter-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .echo-map-filter-label {
+    font-size: 0.5rem;
+    min-width: 44px;
+  }
+
+  .echo-map-chip {
+    font-size: 0.45rem;
+    padding: 0.12rem 0.35rem;
+  }
+
+  .echo-map-chip-dot {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+/* ── Light mode overrides for map filters ── */
+body.light-mode .echo-map-filter-label {
+  color: #64748b;
+}
+
+body.light-mode .echo-map-chip {
+  border-color: rgba(0, 0, 0, 0.1);
+}
