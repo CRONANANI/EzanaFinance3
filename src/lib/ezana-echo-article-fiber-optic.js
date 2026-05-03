@@ -134,19 +134,19 @@ export const fiberOpticArticle = {
   id: 'fiber-optic-cable-ai-boom-benny-fazio',
   title: "Fiber Optic Cable: Alotta Money In This Stuff",
   excerpt:
-    'From a back-of-the-van heist to a $30 billion global market — how fiber optic cable went from Benny Fazio\'s side hustle to the backbone of the AI revolution, and why Corning\'s stock is outrunning Nvidia.',
+    'From a construction site score to a $30 billion global market — how fiber optic cable went from Benny Fazio\'s side hustle to the backbone of the AI revolution, and why Corning\'s stock is outrunning Nvidia.',
   contentBlocks: [
     {
       type: 'paragraph',
-      text: 'There is a scene in The Sopranos that every fiber optic investor should tattoo on their Bloomberg terminal. Christopher Moltisanti stares at a pile of cable in the back of a van and asks the only honest question in the room: "What is all that?" Benny Fazio, criminal mastermind prodigy of the Soprano family, barely looks up. "Fiber optic cable. High-speed internet access." And then Vito Spatafore, leaning against the van like a man who has seen the future, delivers the thesis of the decade: "Alotta money in this stuff."',
+      text: 'There is a scene in The Sopranos that every fiber optic investor should tattoo on their Bloomberg terminal. Christopher Moltisanti pulls up to a construction site and sees spools of cable laid out across the dirt. He asks the only honest question in the room: "What is all that?" Benny Fazio, criminal mastermind prodigy of the Soprano family, barely looks up. "Fiber optic cable. High-speed internet access." And then Vito Spatafore, surveying the haul like a man who has seen the future, delivers the thesis of the decade: "Alotta money in this stuff."',
     },
     {
       type: 'paragraph',
-      text: 'The scene aired in the early 2000s. The dot-com bubble had just burst. Half of Wall Street thought the internet was a fad. And here were three guys from North Jersey — guys whose primary expertise was in waste management consulting — standing around a stolen spool of glass thread and correctly identifying the investment opportunity of the century. Vito called the top. Benny called the product. Christopher, asking "what is all that?", was every retail investor who ignored fiber for twenty years and is now panic-buying Corning at all-time highs.',
+      text: 'The scene aired in the early 2000s. The dot-com bubble had just burst. Half of Wall Street thought the internet was a fad. And here were three guys from North Jersey — guys whose primary expertise was in waste management consulting — standing at a construction site, staring at a pile of glass thread, and correctly identifying the investment opportunity of the century. Vito called the top. Benny called the product. Christopher, asking "what is all that?", was every retail investor who ignored fiber for twenty years and is now panic-buying Corning at all-time highs.',
     },
     {
       type: 'paragraph',
-      text: 'The joke writes itself: the mob figured out fiber optics before most hedge funds did. But the punchline is that Benny Fazio was not wrong. He was early. If you had taken his side-hustle thesis seriously — that the physical layer of the internet was going to be worth stealing — and bought the companies that actually manufacture the cable, you would be sitting on one of the best-performing industrial trades of the last two decades. Fiber optic cable was not a fad. It was infrastructure. And infrastructure always wins.',
+      text: 'The joke writes itself: the mob figured out fiber optics before most hedge funds did. But the punchline is that Benny Fazio was not wrong. He was early. If you had taken his construction-site thesis seriously — that the physical layer of the internet was valuable enough to lift off the ground — and bought the companies that actually manufacture the cable, you would be sitting on one of the best-performing industrial trades of the last two decades. Fiber optic cable was not a fad. It was infrastructure. And infrastructure always wins.',
     },
 
     { type: 'heading', text: 'The Price Index: What The Factory Floor Is Telling Us', level: 2 },
