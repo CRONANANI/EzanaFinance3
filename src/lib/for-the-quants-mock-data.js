@@ -18,6 +18,7 @@ export const MY_STRATEGIES = [
     lastRun: '2h ago',
     status: 'Active',
     statusTone: 'active',
+    version: 3,
   },
   {
     id: 'rsi-mom',
@@ -27,6 +28,7 @@ export const MY_STRATEGIES = [
     lastRun: '1d ago',
     status: 'Paused',
     statusTone: 'paused',
+    version: 1,
   },
   {
     id: 'mean-rev-draft',
@@ -36,6 +38,7 @@ export const MY_STRATEGIES = [
     lastRun: null,
     status: 'Draft',
     statusTone: 'draft',
+    version: 2,
   },
 ];
 
@@ -235,3 +238,278 @@ export const STRATEGY_DETAILS = {
 export function getStrategyDetail(strategyId) {
   return STRATEGY_DETAILS[strategyId] ?? null;
 }
+
+/* ── Dataset Registry ─────────────────────────────────────── */
+export const DATASETS = [
+  {
+    id: 'congressional-trades',
+    name: 'Congressional Trades',
+    source: 'FMP / Quiver',
+    description: 'Real-time stock trades disclosed by US Congress members',
+    updateFreq: 'Daily',
+    historyRange: '2004–present',
+    icon: 'bi-bank',
+    planAccess: { personal: '2 years', advanced: 'Full', family: 'Full', pro: 'Full + real-time' },
+    endpoint: '/api/fmp/congress-latest',
+  },
+  {
+    id: 'hedge-fund-13f',
+    name: 'Hedge Fund 13F Filings',
+    source: 'Quiver / SEC',
+    description: 'Quarterly institutional holdings (top hedge funds)',
+    updateFreq: 'Quarterly',
+    historyRange: '2013–present',
+    icon: 'bi-briefcase',
+    planAccess: { personal: null, advanced: '5 years', family: 'Full', pro: 'Full + alerts' },
+    endpoint: '/api/quiver/sec13f',
+  },
+  {
+    id: 'insider-trading',
+    name: 'Corporate Insider Trades',
+    source: 'SEC Form 4',
+    description: 'C-suite and board member buy/sell disclosures',
+    updateFreq: 'Daily',
+    historyRange: '2010–present',
+    icon: 'bi-person-badge',
+    planAccess: { personal: '1 year', advanced: 'Full', family: 'Full', pro: 'Full + alerts' },
+    endpoint: null,
+  },
+  {
+    id: 'macro-indicators',
+    name: 'Macro Economic Indicators',
+    source: 'FRED / BLS',
+    description: 'CPI, GDP, unemployment, PMI, Fed funds rate, yield curves',
+    updateFreq: 'Monthly',
+    historyRange: '1950–present',
+    icon: 'bi-globe',
+    planAccess: { personal: '5 years', advanced: 'Full', family: 'Full', pro: 'Full' },
+    endpoint: null,
+  },
+  {
+    id: 'lobbying',
+    name: 'Corporate Lobbying Spend',
+    source: 'Quiver',
+    description: 'Quarterly lobbying expenditure by company and sector',
+    updateFreq: 'Quarterly',
+    historyRange: '2018–present',
+    icon: 'bi-megaphone',
+    planAccess: { personal: null, advanced: '3 years', family: 'Full', pro: 'Full' },
+    endpoint: '/api/quiver/lobbying',
+  },
+  {
+    id: 'sector-performance',
+    name: 'Sector Performance',
+    source: 'FMP',
+    description: 'S&P 500 sector returns by timeframe (1D to 5Y)',
+    updateFreq: 'Real-time',
+    historyRange: '2000–present',
+    icon: 'bi-pie-chart',
+    planAccess: { personal: '1 year', advanced: 'Full', family: 'Full', pro: 'Full' },
+    endpoint: '/api/fmp/sector-performance',
+  },
+];
+
+/* ── Strategy Templates ───────────────────────────────────── */
+export const STRATEGY_TEMPLATES = [
+  {
+    id: 'tmpl-follow-congress',
+    name: 'Follow Congress',
+    description:
+      'Buy when 3+ Congress members disclose purchases of the same stock within 7 days. Sell after 30 days or 10% gain.',
+    category: 'Alternative Data',
+    datasets: ['congressional-trades'],
+    expectedReturn: '+18.4%',
+    sharpe: '1.42',
+    icon: 'bi-bank2',
+    conditions: [
+      { type: 'data', dataset: 'congressional-trades', field: 'type', op: 'equals', value: 'purchase' },
+      { type: 'aggregate', fn: 'count_distinct', field: 'representative', window: '7d', op: 'gte', value: 3 },
+      { type: 'action', action: 'buy', sizing: 'equal_weight', exitRule: '30d_or_10pct' },
+    ],
+  },
+  {
+    id: 'tmpl-momentum-rsi',
+    name: 'Momentum + RSI',
+    description:
+      'Classic momentum strategy: buy when RSI crosses above 30 from oversold AND 50-day MA is above 200-day MA.',
+    category: 'Technical',
+    datasets: [],
+    expectedReturn: '+14.2%',
+    sharpe: '1.18',
+    icon: 'bi-graph-up-arrow',
+    conditions: [
+      { type: 'indicator', name: 'RSI', period: 14, op: 'crosses_above', value: 30 },
+      { type: 'indicator', name: 'SMA', period: 50, op: 'gt', compareTo: 'SMA_200' },
+      { type: 'action', action: 'buy', sizing: '5pct_portfolio', exitRule: 'rsi_above_70' },
+    ],
+  },
+  {
+    id: 'tmpl-insider-buying',
+    name: 'Insider Buying Alpha',
+    description: 'Track CEO/CFO open-market purchases above $500K. Buy the stock, hold 60 days.',
+    category: 'Alternative Data',
+    datasets: ['insider-trading'],
+    expectedReturn: '+22.1%',
+    sharpe: '1.65',
+    icon: 'bi-person-check',
+    conditions: [
+      {
+        type: 'data',
+        dataset: 'insider-trading',
+        field: 'insider_title',
+        op: 'in',
+        value: ['CEO', 'CFO', 'COO'],
+      },
+      { type: 'data', dataset: 'insider-trading', field: 'transaction_value', op: 'gte', value: 500000 },
+      { type: 'action', action: 'buy', sizing: 'equal_weight', exitRule: '60d_hold' },
+    ],
+  },
+  {
+    id: 'tmpl-mean-reversion',
+    name: 'Mean Reversion',
+    description:
+      'Short-term mean reversion: buy when price drops 2+ standard deviations below 20-day mean. Exit on mean cross.',
+    category: 'Statistical',
+    datasets: [],
+    expectedReturn: '+11.8%',
+    sharpe: '1.31',
+    icon: 'bi-arrow-left-right',
+    conditions: [
+      { type: 'indicator', name: 'Bollinger', period: 20, op: 'below_lower', stdDev: 2 },
+      { type: 'action', action: 'buy', sizing: '3pct_portfolio', exitRule: 'cross_middle_band' },
+    ],
+  },
+  {
+    id: 'tmpl-sector-rotation',
+    name: 'Sector Rotation',
+    description:
+      'Monthly rotation into the 3 best-performing sectors over the trailing 3 months. Equal-weight allocation.',
+    category: 'Macro',
+    datasets: ['sector-performance'],
+    expectedReturn: '+16.7%',
+    sharpe: '1.25',
+    icon: 'bi-arrow-repeat',
+    conditions: [
+      { type: 'data', dataset: 'sector-performance', field: 'change_3m', op: 'top_n', value: 3 },
+      { type: 'action', action: 'buy', sizing: 'equal_weight', exitRule: 'monthly_rebalance' },
+    ],
+  },
+];
+
+/* ── Visual Builder: Condition options ────────────────────── */
+export const CONDITION_CATEGORIES = [
+  {
+    label: 'Market Data',
+    conditions: [
+      { id: 'price_above_sma', label: 'Price above SMA', params: [{ name: 'Period', type: 'number', default: 50 }] },
+      { id: 'price_below_sma', label: 'Price below SMA', params: [{ name: 'Period', type: 'number', default: 200 }] },
+      { id: 'rsi_below', label: 'RSI below threshold', params: [{ name: 'Threshold', type: 'number', default: 30 }] },
+      { id: 'rsi_above', label: 'RSI above threshold', params: [{ name: 'Threshold', type: 'number', default: 70 }] },
+      { id: 'volume_spike', label: 'Volume spike (vs 20d avg)', params: [{ name: 'Multiple', type: 'number', default: 2 }] },
+      { id: 'macd_crossover', label: 'MACD bullish crossover', params: [] },
+      {
+        id: 'bollinger_touch',
+        label: 'Price touches Bollinger Band',
+        params: [{ name: 'Band', type: 'select', options: ['Lower', 'Upper'], default: 'Lower' }],
+      },
+    ],
+  },
+  {
+    label: 'Alternative Data',
+    conditions: [
+      { id: 'congress_buy', label: 'Congress member buys stock', params: [{ name: 'Min members', type: 'number', default: 1 }] },
+      { id: 'congress_sell', label: 'Congress member sells stock', params: [{ name: 'Min members', type: 'number', default: 1 }] },
+      { id: 'insider_purchase', label: 'Corporate insider purchase', params: [{ name: 'Min value ($)', type: 'number', default: 100000 }] },
+      { id: 'hedge_fund_new_position', label: 'Hedge fund initiates position', params: [{ name: 'Min AUM ($B)', type: 'number', default: 10 }] },
+    ],
+  },
+  {
+    label: 'Macro',
+    conditions: [
+      {
+        id: 'fed_rate_change',
+        label: 'Fed changes interest rate',
+        params: [{ name: 'Direction', type: 'select', options: ['Cut', 'Hike', 'Any'], default: 'Any' }],
+      },
+      {
+        id: 'cpi_surprise',
+        label: 'CPI surprise vs consensus',
+        params: [{ name: 'Direction', type: 'select', options: ['Above', 'Below'], default: 'Above' }],
+      },
+      { id: 'yield_curve_inversion', label: 'Yield curve inverts (2Y/10Y)', params: [] },
+    ],
+  },
+];
+
+export const ACTION_OPTIONS = [
+  { id: 'buy', label: 'Buy', icon: 'bi-cart-plus' },
+  { id: 'sell', label: 'Sell', icon: 'bi-cart-dash' },
+  { id: 'short', label: 'Short', icon: 'bi-arrow-down-circle' },
+  { id: 'alert_only', label: 'Alert Only (no trade)', icon: 'bi-bell' },
+];
+
+export const SIZING_OPTIONS = [
+  { id: 'equal_weight', label: 'Equal Weight' },
+  { id: '5pct', label: '5% of Portfolio' },
+  { id: '3pct', label: '3% of Portfolio' },
+  { id: '1pct', label: '1% of Portfolio' },
+  { id: 'kelly', label: 'Kelly Criterion' },
+];
+
+export const EXIT_RULES = [
+  { id: 'trailing_stop_10', label: '10% trailing stop' },
+  { id: 'trailing_stop_5', label: '5% trailing stop' },
+  { id: 'time_30d', label: 'Exit after 30 days' },
+  { id: 'time_60d', label: 'Exit after 60 days' },
+  { id: 'target_10pct', label: '10% profit target' },
+  { id: 'rsi_exit', label: 'Exit when RSI > 70' },
+  { id: 'manual', label: 'Manual exit only' },
+];
+
+/* ── Backtest Explainability (trade-level) ────────────────── */
+export const EXPLAINER_TRADES = [
+  {
+    id: 'expl-1',
+    ticker: 'NVDA',
+    action: 'BUY',
+    date: '2026-01-15',
+    price: '$142.50',
+    reasons: [
+      { condition: 'Congress member buys stock', detail: 'Rep. Pelosi disclosed NVDA purchase ($500K–$1M) on 2026-01-14' },
+      { condition: 'RSI below 30', detail: 'RSI(14) was 28.4 — oversold signal confirmed' },
+    ],
+    outcome: { exitDate: '2026-02-14', exitPrice: '$168.20', pnl: '+18.0%', holdDays: 30 },
+  },
+  {
+    id: 'expl-2',
+    ticker: 'AAPL',
+    action: 'BUY',
+    date: '2026-02-03',
+    price: '$198.10',
+    reasons: [
+      { condition: 'Corporate insider purchase', detail: 'CEO Tim Cook purchased 50,000 shares ($9.9M) on 2026-02-02' },
+    ],
+    outcome: { exitDate: '2026-04-03', exitPrice: '$215.40', pnl: '+8.7%', holdDays: 59 },
+  },
+  {
+    id: 'expl-3',
+    ticker: 'META',
+    action: 'BUY',
+    date: '2026-03-10',
+    price: '$510.00',
+    reasons: [
+      { condition: 'Volume spike (vs 20d avg)', detail: 'Volume was 3.2× the 20-day average — institutional accumulation signal' },
+      { condition: 'Price above SMA(50)', detail: 'Price $510 vs SMA(50) $485 — uptrend confirmed' },
+    ],
+    outcome: { exitDate: null, exitPrice: null, pnl: 'Open', holdDays: null },
+  },
+];
+
+/* ── Strategy Comparison ──────────────────────────────────── */
+export const COMPARISON_STRATEGIES = [
+  { id: 'cmp-congress', name: 'Follow Congress', returnPct: '+18.4%', sharpe: '1.42', maxDd: '-8.2%', winRate: '67%', trades: 42, alpha: '+6.3%', color: '#6366f1' },
+  { id: 'cmp-momentum', name: 'Momentum RSI', returnPct: '+14.2%', sharpe: '1.18', maxDd: '-12.1%', winRate: '58%', trades: 89, alpha: '+2.1%', color: '#10b981' },
+  { id: 'cmp-insider', name: 'Insider Buying', returnPct: '+22.1%', sharpe: '1.65', maxDd: '-6.8%', winRate: '72%', trades: 28, alpha: '+10.0%', color: '#f59e0b' },
+  { id: 'cmp-mean-rev', name: 'Mean Reversion', returnPct: '+11.8%', sharpe: '1.31', maxDd: '-9.5%', winRate: '62%', trades: 156, alpha: '-0.3%', color: '#ec4899' },
+  { id: 'cmp-sector-rot', name: 'Sector Rotation', returnPct: '+16.7%', sharpe: '1.25', maxDd: '-10.4%', winRate: '61%', trades: 36, alpha: '+4.6%', color: '#06b6d4' },
+];

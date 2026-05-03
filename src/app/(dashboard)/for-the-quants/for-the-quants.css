@@ -369,9 +369,23 @@
   padding-left: 2rem;
 }
 
-.ftq-link-btn {
+.ftq-lb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
   margin-top: 0.5rem;
   margin-left: 2rem;
+}
+
+.ftq-lb-side {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.65rem;
+}
+
+.ftq-link-btn {
+  margin-top: 0;
+  margin-left: 0;
   padding: 0;
   font-size: 0.75rem;
   font-weight: 600;
@@ -639,5 +653,388 @@ body.light-mode .db-card-header h3 {
 body.light-mode .ftq-pm-input {
   background: #f9fafb;
   border-color: rgba(0, 0, 0, 0.08);
+  color: #111827;
+}
+
+/* ════════════════════════════════════════════════════════════
+   Visual Strategy Builder
+   ════════════════════════════════════════════════════════════ */
+.ftq-vb { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.ftq-vb-name {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.ftq-vb-section-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6366f1;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.ftq-vb-rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(99,102,241,0.04);
+  border: 1px solid rgba(99,102,241,0.12);
+  border-radius: 6px;
+}
+
+.ftq-vb-keyword {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #a78bfa;
+  min-width: 28px;
+}
+
+.ftq-vb-select {
+  padding: 0.3rem 0.5rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 0.7rem;
+}
+
+.ftq-vb-select--wide { min-width: 180px; }
+.ftq-vb-select--sm { width: 70px; }
+
+.ftq-vb-param {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  color: #8b949e;
+}
+
+.ftq-vb-param-label { font-weight: 600; }
+
+.ftq-vb-input-sm {
+  width: 60px;
+  padding: 0.2rem 0.4rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 0.7rem;
+}
+
+.ftq-vb-remove {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 0.8rem;
+}
+.ftq-vb-remove:hover { color: #ef4444; }
+
+.ftq-vb-add { margin-top: 0.25rem; }
+
+.ftq-vb-action-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.ftq-vb-action-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(99,102,241,0.2);
+  background: transparent;
+  color: #c9d1d9;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s;
+}
+
+.ftq-vb-action-btn.active {
+  background: rgba(99,102,241,0.15);
+  border-color: #6366f1;
+  color: #c7d2fe;
+}
+
+.ftq-vb-config-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ftq-vb-config-group { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 140px; }
+
+.ftq-vb-config-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8b949e;
+}
+
+.ftq-vb-summary {
+  padding: 0.6rem 0.75rem;
+  background: rgba(16,185,129,0.04);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.ftq-vb-summary-label {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}
+
+.ftq-vb-summary-text { font-size: 0.75rem; color: #d1d5db; margin: 0; line-height: 1.5; }
+
+.ftq-vb-footer { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+.ftq-btn-primary--accent {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+/* ── Templates ── */
+.ftq-template-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.ftq-template-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(99,102,241,0.04);
+  border: 1px solid rgba(99,102,241,0.12);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+.ftq-template-card:hover { border-color: rgba(99,102,241,0.3); }
+
+.ftq-template-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(99,102,241,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ftq-template-body { flex: 1; min-width: 0; }
+.ftq-template-name { font-size: 0.825rem; font-weight: 700; color: #f0f6fc; margin: 0 0 0.2rem; }
+.ftq-template-desc { font-size: 0.7rem; color: #8b949e; margin: 0 0 0.35rem; line-height: 1.4; }
+
+.ftq-template-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.6rem; }
+.ftq-template-cat { color: #6366f1; font-weight: 600; }
+.ftq-template-ret { color: #10b981; font-weight: 700; }
+.ftq-template-sharpe { color: #8b949e; }
+
+.ftq-template-datasets { font-size: 0.6rem; color: #6b7280; margin-top: 0.25rem; font-style: italic; }
+.ftq-template-clone { flex-shrink: 0; align-self: center; }
+
+/* ── Version badge ── */
+.ftq-version-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(99,102,241,0.12);
+  color: #818cf8;
+  font-size: 0.55rem;
+  font-weight: 700;
+}
+
+/* ── Dataset registry ── */
+.ftq-ds-subtitle { font-size: 0.75rem; color: #8b949e; margin: 0 0 0.75rem; }
+.ftq-ds-list { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.ftq-ds-row {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  align-items: flex-start;
+}
+
+.ftq-ds-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(99,102,241,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.ftq-ds-info { flex: 1; min-width: 0; }
+.ftq-ds-name { font-size: 0.8rem; font-weight: 700; color: #f0f6fc; }
+.ftq-ds-desc { font-size: 0.675rem; color: #8b949e; margin-top: 0.15rem; }
+.ftq-ds-meta { font-size: 0.6rem; color: #6b7280; margin-top: 0.2rem; }
+
+.ftq-ds-plans { display: flex; flex-wrap: wrap; gap: 0.25rem; flex-shrink: 0; max-width: 200px; }
+
+.ftq-ds-plan-pill {
+  font-size: 0.5rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(99,102,241,0.2);
+  white-space: nowrap;
+}
+
+.ftq-ds-plan-pill.locked {
+  color: #4b5563 !important;
+  border-color: rgba(75,85,99,0.3) !important;
+  background: rgba(75,85,99,0.08);
+}
+
+/* ── Comparison ── */
+.ftq-cmp-selectors { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.ftq-cmp-sel { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 120px; }
+.ftq-cmp-label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.ftq-cmp-vs { font-size: 0.7rem; font-weight: 800; color: #6b7280; }
+.ftq-cmp-chart { margin-bottom: 0.75rem; }
+.ftq-cmp-legend { display: flex; gap: 1rem; font-size: 0.65rem; font-weight: 600; margin-top: 0.3rem; }
+
+.ftq-cmp-table { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.ftq-cmp-header-row, .ftq-cmp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+}
+
+.ftq-cmp-header-row {
+  background: rgba(99,102,241,0.06);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ftq-cmp-row { font-size: 0.75rem; color: #d1d5db; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.ftq-cmp-cell--label { color: #8b949e; font-size: 0.65rem; font-weight: 600; }
+
+/* ── Explainer ── */
+.ftq-expl { margin-top: 1rem; border-top: 1px solid rgba(99,102,241,0.1); padding-top: 0.75rem; }
+.ftq-expl-header { font-size: 0.7rem; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 0.3rem; }
+.ftq-expl-sub { font-size: 0.65rem; color: #6b7280; margin: 0.2rem 0 0.5rem; }
+
+.ftq-expl-trade { margin-bottom: 0.4rem; border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; }
+
+.ftq-expl-trade-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.6rem;
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: #d1d5db;
+  font-size: 0.75rem;
+}
+.ftq-expl-trade-header:hover { background: rgba(99,102,241,0.04); }
+
+.ftq-expl-action { font-weight: 800; font-size: 0.6rem; padding: 1px 5px; border-radius: 3px; }
+.ftq-expl-action.buy { background: rgba(16,185,129,0.15); color: #10b981; }
+.ftq-expl-action.sell { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+.ftq-expl-ticker { font-weight: 700; color: #f0f6fc; }
+.ftq-expl-price { color: #8b949e; }
+.ftq-expl-date { color: #6b7280; font-size: 0.65rem; }
+.ftq-expl-pnl { margin-left: auto; font-weight: 700; font-size: 0.7rem; }
+.ftq-expl-pnl.positive { color: #10b981; }
+.ftq-expl-pnl.negative { color: #ef4444; }
+.ftq-expl-pnl.open { color: #6366f1; }
+
+.ftq-expl-detail { padding: 0.5rem 0.6rem; background: rgba(99,102,241,0.03); }
+
+.ftq-expl-reasons { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.ftq-expl-reason {
+  display: flex;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.ftq-expl-check { color: #10b981; font-size: 0.7rem; margin-top: 1px; }
+.ftq-expl-cond { font-size: 0.7rem; font-weight: 600; color: #c9d1d9; }
+.ftq-expl-detail-text { font-size: 0.625rem; color: #8b949e; margin-top: 1px; }
+
+.ftq-expl-outcome {
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(16,185,129,0.06);
+  border-left: 3px solid #10b981;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  color: #c9d1d9;
+}
+
+.ftq-expl-outcome--open {
+  background: rgba(99,102,241,0.06);
+  border-left-color: #6366f1;
+  color: #818cf8;
+}
+
+@media (max-width: 768px) {
+  .ftq-vb-rule { flex-direction: column; align-items: stretch; }
+  .ftq-vb-select--wide { min-width: 100%; }
+  .ftq-vb-action-row { flex-direction: column; }
+  .ftq-vb-config-row { flex-direction: column; }
+  .ftq-ds-row { flex-direction: column; }
+  .ftq-ds-plans { max-width: none; }
+  .ftq-cmp-selectors { flex-direction: column; }
+  .ftq-cmp-vs { align-self: center; }
+}
+
+body.light-mode .ftq-vb-name,
+body.light-mode .ftq-vb-select,
+body.light-mode .ftq-vb-input-sm {
+  background: #f9fafb;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+body.light-mode .ftq-vb-summary-text,
+body.light-mode .ftq-vb-action-btn {
+  color: #374151;
+}
+
+body.light-mode .ftq-template-name,
+body.light-mode .ftq-ds-name,
+body.light-mode .ftq-expl-ticker {
   color: #111827;
 }
