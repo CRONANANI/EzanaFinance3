@@ -23,10 +23,12 @@
 
 import { iranWarCommoditiesArticle2026 } from './ezana-echo-article-iran-commodities-2026.js';
 import { sectorDominanceArticle } from './ezana-echo-article-sector-dominance.js';
+import { fiberOpticArticle } from './ezana-echo-article-fiber-optic.js';
 
 const ARTICLES = [
   sectorDominanceArticle,
   iranWarCommoditiesArticle2026,
+  fiberOpticArticle,
   {
     id: 'the-45-day-loophole-congressional-trade-disclosure',
     title: 'The 45-Day Loophole: Why Congressional Trade Disclosure Must Happen in Real Time',

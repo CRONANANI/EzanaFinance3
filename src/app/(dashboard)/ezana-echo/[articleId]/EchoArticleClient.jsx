@@ -10,6 +10,11 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  Legend,
 } from 'recharts';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
@@ -18,6 +23,15 @@ import { parseKeywords } from '@/components/echo/parseKeywords';
 import { formatPublishedDate, getAllArticles, getRelatedArticles } from '@/lib/ezana-echo-mock';
 import { getKeywordById } from '@/lib/echo-keywords';
 import { SECTOR_DOMINANCE_DATA, SECTOR_ERAS } from '@/lib/ezana-echo-article-sector-dominance';
+import {
+  FRED_PPI_DATA,
+  MARKET_FORECAST_DATA,
+  MARKET_FORECAST_KEYS,
+  FIBER_OPTIC_COMPANIES,
+  CONTINENTS,
+  INDUSTRIES,
+  INDUSTRY_COLORS,
+} from '@/lib/ezana-echo-article-fiber-optic';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -139,6 +153,15 @@ function ArticleChart({ variant = 'line', title, caption, data, series = [], ann
   }
   if (variant === 'bar') {
     return renderBarChart({ data, title, caption, W, H, PADDING, innerW, innerH });
+  }
+  if (variant === 'fred-line') {
+    return <FredPpiChart title={title} caption={caption} yLabel={yLabel} />;
+  }
+  if (variant === 'stacked-bar-forecast') {
+    return <MarketForecastChart title={title} caption={caption} yLabel={yLabel} />;
+  }
+  if (variant === 'fiber-optic-world-map') {
+    return <FiberOpticWorldMap title={title} caption={caption} />;
   }
   return null;
 }
@@ -364,6 +387,300 @@ function renderBarChart({ data, title, caption, W, H, PADDING, innerW, innerH })
           );
         })}
       </svg>
+    </figure>
+  );
+}
+
+function FredPpiChart({ title, caption, yLabel }) {
+  return (
+    <figure className="echo-chart">
+      {title && <div className="echo-chart-title">{title}</div>}
+      <div style={{ width: '100%', height: 320 }}>
+        <ResponsiveContainer width="100%" height={320}>
+          <LineChart data={FRED_PPI_DATA} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <XAxis
+              dataKey="date"
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              interval={3}
+            />
+            <YAxis
+              domain={[78, 102]}
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              label={{
+                value: yLabel || 'Index',
+                angle: -90,
+                position: 'insideLeft',
+                fill: 'var(--echo-axis-tick, #6b7280)',
+                fontSize: 10,
+              }}
+            />
+            <Tooltip
+              contentStyle={{
+                background: '#0d1117',
+                border: '1px solid rgba(99,102,241,0.3)',
+                borderRadius: 8,
+                color: '#f0f6fc',
+                fontSize: '0.75rem',
+              }}
+              formatter={(v) => [`${Number(v).toFixed(1)}`, 'PPI']}
+              labelFormatter={(l) => `${l}`}
+            />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="#6366f1"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4, fill: '#6366f1', stroke: '#0d1117', strokeWidth: 2 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      {caption && <figcaption className="echo-chart-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+
+function MarketForecastChart({ title, caption, yLabel }) {
+  return (
+    <figure className="echo-chart">
+      {title && <div className="echo-chart-title">{title}</div>}
+      <div style={{ width: '100%', height: 360 }}>
+        <ResponsiveContainer width="100%" height={360}>
+          <BarChart data={MARKET_FORECAST_DATA} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <XAxis
+              dataKey="year"
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+            />
+            <YAxis
+              tick={{ fill: 'var(--echo-axis-tick, #8b949e)', fontSize: 10 }}
+              tickLine={false}
+              axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              label={{
+                value: yLabel || 'USD Bn',
+                angle: -90,
+                position: 'insideLeft',
+                fill: 'var(--echo-axis-tick, #6b7280)',
+                fontSize: 10,
+              }}
+            />
+            <Tooltip
+              contentStyle={{
+                background: '#0d1117',
+                border: '1px solid rgba(99,102,241,0.3)',
+                borderRadius: 8,
+                color: '#f0f6fc',
+                fontSize: '0.7rem',
+              }}
+              formatter={(v, name) => [`$${Number(v).toFixed(1)}B`, name]}
+            />
+            <Legend
+              wrapperStyle={{ fontSize: '0.65rem', color: '#8b949e', paddingTop: 8 }}
+              iconType="square"
+              iconSize={10}
+            />
+            {MARKET_FORECAST_KEYS.map((k) => (
+              <Bar
+                key={k.key}
+                dataKey={k.key}
+                stackId="a"
+                fill={k.color}
+                radius={k.key === 'Others' ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      {caption && <figcaption className="echo-chart-caption">{caption}</figcaption>}
+    </figure>
+  );
+}
+
+function FiberOpticWorldMap({ title, caption }) {
+  const [activeContinents, setActiveContinents] = useState(() => new Set(CONTINENTS));
+  const [activeIndustries, setActiveIndustries] = useState(() => new Set(INDUSTRIES));
+  const [hovered, setHovered] = useState(null);
+
+  const toggleContinent = (c) => {
+    setActiveContinents((prev) => {
+      const next = new Set(prev);
+      if (next.has(c)) next.delete(c);
+      else next.add(c);
+      return next;
+    });
+  };
+
+  const toggleIndustry = (ind) => {
+    setActiveIndustries((prev) => {
+      const next = new Set(prev);
+      if (next.has(ind)) next.delete(ind);
+      else next.add(ind);
+      return next;
+    });
+  };
+
+  const visible = FIBER_OPTIC_COMPANIES.filter(
+    (c) => activeContinents.has(c.continent) && activeIndustries.has(c.industry)
+  );
+
+  const project = (lat, lng) => {
+    const x = ((lng + 180) / 360) * 700;
+    const y = ((90 - lat) / 180) * 400;
+    return { x, y };
+  };
+
+  const industryColor = (ind) => INDUSTRY_COLORS[ind] || '#6366f1';
+
+  return (
+    <figure className="echo-chart">
+      {title && <div className="echo-chart-title">{title}</div>}
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.5rem', padding: '0 0.25rem' }}>
+        {CONTINENTS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => toggleContinent(c)}
+            style={{
+              padding: '0.25rem 0.6rem',
+              borderRadius: 4,
+              border: activeContinents.has(c) ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)',
+              background: activeContinents.has(c) ? 'rgba(99,102,241,0.15)' : 'transparent',
+              color: activeContinents.has(c) ? '#c7d2fe' : '#6b7280',
+              fontSize: '0.625rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.75rem', padding: '0 0.25rem' }}>
+        {INDUSTRIES.map((ind) => (
+          <button
+            key={ind}
+            type="button"
+            onClick={() => toggleIndustry(ind)}
+            style={{
+              padding: '0.25rem 0.6rem',
+              borderRadius: 4,
+              border: activeIndustries.has(ind)
+                ? `1px solid ${industryColor(ind)}`
+                : '1px solid rgba(255,255,255,0.08)',
+              background: activeIndustries.has(ind) ? `${industryColor(ind)}22` : 'transparent',
+              color: activeIndustries.has(ind) ? industryColor(ind) : '#6b7280',
+              fontSize: '0.6rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                width: 6,
+                height: 6,
+                borderRadius: 2,
+                background: industryColor(ind),
+                marginRight: 4,
+              }}
+            />
+            {ind}
+          </button>
+        ))}
+      </div>
+
+      <svg
+        viewBox="0 0 700 400"
+        style={{
+          width: '100%',
+          height: 'auto',
+          maxHeight: 400,
+          background: '#0a0e13',
+          borderRadius: 8,
+          border: '1px solid rgba(99,102,241,0.12)',
+        }}
+      >
+        <g opacity="0.15" fill="none" stroke="#6366f1" strokeWidth="0.5">
+          <path d="M50,60 L160,40 L200,80 L190,130 L150,160 L120,200 L80,180 L60,120 Z" />
+          <path d="M140,210 L180,200 L200,250 L190,320 L160,360 L130,340 L120,280 Z" />
+          <path d="M310,50 L380,40 L390,80 L370,120 L340,110 L310,90 Z" />
+          <path d="M330,150 L380,140 L400,200 L390,280 L350,310 L320,260 L310,200 Z" />
+          <path d="M400,40 L560,30 L600,80 L580,150 L520,180 L450,160 L400,120 Z" />
+          <path d="M560,250 L640,240 L660,280 L630,310 L570,300 Z" />
+        </g>
+
+        {visible.map((c) => {
+          const { x, y } = project(c.lat, c.lng);
+          const r = c.highlight ? 7 : 4.5;
+          const fill = industryColor(c.industry);
+          return (
+            <g key={c.name} onMouseEnter={() => setHovered(c)} onMouseLeave={() => setHovered(null)}>
+              {c.highlight && (
+                <circle cx={x} cy={y} r={14} fill="none" stroke="#f0f6fc" strokeWidth={1} opacity={0.25}>
+                  <animate attributeName="r" values="10;18;10" dur="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.45;0.1;0.45" dur="2.5s" repeatCount="indefinite" />
+                </circle>
+              )}
+              <circle
+                cx={x}
+                cy={y}
+                r={r}
+                fill={fill}
+                stroke={c.highlight ? '#f0f6fc' : 'rgba(255,255,255,0.3)'}
+                strokeWidth={c.highlight ? 2 : 0.5}
+                opacity={0.9}
+                style={{ cursor: 'pointer' }}
+              />
+            </g>
+          );
+        })}
+
+        {hovered && (() => {
+          const { x, y } = project(hovered.lat, hovered.lng);
+          const tipX = x > 500 ? x - 160 : x + 12;
+          const tipY = y > 300 ? y - 60 : y + 8;
+          const hc = industryColor(hovered.industry);
+          return (
+            <g>
+              <rect
+                x={tipX}
+                y={tipY}
+                width={155}
+                height={52}
+                rx={6}
+                fill="#0d1117"
+                stroke="rgba(99,102,241,0.4)"
+                strokeWidth={1}
+              />
+              <text x={tipX + 8} y={tipY + 16} fill="#f0f6fc" fontSize="9" fontWeight="700" fontFamily="sans-serif">
+                {hovered.name}
+              </text>
+              <text x={tipX + 8} y={tipY + 28} fill="#8b949e" fontSize="7.5" fontFamily="sans-serif">
+                {hovered.hq} · {hovered.industry}
+              </text>
+              <text x={tipX + 8} y={tipY + 40} fill={hc} fontSize="7.5" fontWeight="600" fontFamily="sans-serif">
+                {hovered.ticker ? `${hovered.ticker}` : 'Private'}
+              </text>
+            </g>
+          );
+        })()}
+
+        <text x={685} y={390} textAnchor="end" fill="#4b5563" fontSize="8" fontFamily="sans-serif">
+          {visible.length} companies shown
+        </text>
+      </svg>
+
+      {caption && <figcaption className="echo-chart-caption">{caption}</figcaption>}
     </figure>
   );
 }
