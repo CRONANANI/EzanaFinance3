@@ -1315,6 +1315,10 @@ body.light-mode .echo-article-page .echo-stat-value {
 body.light-mode .echo-article-page .echo-chart {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.06);
+  --echo-legend-text: #334155;
+  --echo-tooltip-bg: #ffffff;
+  --echo-tooltip-text: #0f172a;
+  --echo-axis-tick: #64748b;
 }
 
 body.light-mode .echo-article-page .echo-chart-title {

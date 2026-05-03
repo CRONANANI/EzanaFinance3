@@ -448,6 +448,59 @@ function FredPpiChart({ title, caption, yLabel }) {
 }
 
 function MarketForecastChart({ title, caption, yLabel }) {
+  /* Compute 10-year CAGR for each segment: (end/start)^(1/n) - 1 */
+  const startYear = MARKET_FORECAST_DATA[0];
+  const endYear = MARKET_FORECAST_DATA[MARKET_FORECAST_DATA.length - 1];
+  const n = endYear.year - startYear.year; /* 10 years */
+
+  const cagrByKey = {};
+  for (const k of MARKET_FORECAST_KEYS) {
+    const startVal = startYear[k.key];
+    const endVal = endYear[k.key];
+    if (startVal > 0 && endVal > 0) {
+      cagrByKey[k.key] = ((Math.pow(endVal / startVal, 1 / n) - 1) * 100).toFixed(1);
+    } else {
+      cagrByKey[k.key] = '—';
+    }
+  }
+
+  /* Custom legend renderer */
+  const renderLegend = () => (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: '0.6rem 1.1rem',
+        paddingTop: 10,
+      }}
+    >
+      {MARKET_FORECAST_KEYS.map((k) => (
+        <div key={k.key} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.35rem', minWidth: 0 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: 2,
+              background: k.color,
+              flexShrink: 0,
+              marginTop: 2,
+            }}
+          />
+          <div style={{ lineHeight: 1.3 }}>
+            <div style={{ fontSize: '0.625rem', fontWeight: 600, color: 'var(--echo-legend-text, #c9d1d9)' }}>
+              {k.key}
+            </div>
+            <div style={{ fontSize: '0.55rem', fontWeight: 700, color: k.color, letterSpacing: '0.02em' }}>
+              CAGR {cagrByKey[k.key]}%
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <figure className="echo-chart">
       {title && <div className="echo-chart-title">{title}</div>}
@@ -475,19 +528,15 @@ function MarketForecastChart({ title, caption, yLabel }) {
             />
             <Tooltip
               contentStyle={{
-                background: '#0d1117',
+                background: 'var(--echo-tooltip-bg, #0d1117)',
                 border: '1px solid rgba(99,102,241,0.3)',
                 borderRadius: 8,
-                color: '#f0f6fc',
+                color: 'var(--echo-tooltip-text, #f0f6fc)',
                 fontSize: '0.7rem',
               }}
               formatter={(v, name) => [`$${Number(v).toFixed(1)}B`, name]}
             />
-            <Legend
-              wrapperStyle={{ fontSize: '0.65rem', color: '#8b949e', paddingTop: 8 }}
-              iconType="square"
-              iconSize={10}
-            />
+            <Legend content={renderLegend} />
             {MARKET_FORECAST_KEYS.map((k) => (
               <Bar
                 key={k.key}
