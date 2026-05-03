@@ -2095,3 +2095,85 @@ body.light-mode .echo-map-filter-label {
 body.light-mode .echo-map-chip {
   border-color: rgba(0, 0, 0, 0.1);
 }
+
+/* ════════════════════════════════════════════════════════════
+   ECHO ARTICLE — Hero image + inline images
+   ════════════════════════════════════════════════════════════ */
+
+.echo-hero-image {
+  margin: 1.75rem 0 0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.echo-hero-image-img {
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.echo-hero-image-caption {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: #8b949e;
+  text-align: center;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+body.light-mode .echo-hero-image-caption {
+  color: #64748b;
+}
+
+/* Inline images within the article body */
+.echo-inline-image {
+  margin: 2rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.echo-inline-image-img {
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.light-mode .echo-inline-image-img {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.echo-inline-image-caption {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: #8b949e;
+  text-align: center;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+body.light-mode .echo-inline-image-caption {
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .echo-hero-image-img {
+    max-height: 280px;
+  }
+
+  .echo-hero-image-caption {
+    font-size: 0.625rem;
+    padding: 0 0.5rem;
+  }
+
+  .echo-inline-image-img {
+    max-height: 320px;
+  }
+}

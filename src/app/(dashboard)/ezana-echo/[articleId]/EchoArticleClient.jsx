@@ -119,6 +119,19 @@ function ArticleBlock({ block }) {
         </blockquote>
       );
 
+    case 'image':
+      return (
+        <figure className="echo-inline-image">
+          <img
+            src={block.src}
+            alt={block.alt || ''}
+            className="echo-inline-image-img"
+            loading="lazy"
+          />
+          {block.caption && <figcaption className="echo-inline-image-caption">{block.caption}</figcaption>}
+        </figure>
+      );
+
     default:
       return null;
   }
@@ -1349,6 +1362,19 @@ export default function EchoArticleClient({ article }) {
                     </Link>
                   ))}
                 </div>
+              )}
+              {article.heroImage && (
+                <figure className="echo-hero-image">
+                  <img
+                    src={article.heroImage.src}
+                    alt={article.heroImage.alt}
+                    className="echo-hero-image-img"
+                    loading="eager"
+                  />
+                  {article.heroImage.caption && (
+                    <figcaption className="echo-hero-image-caption">{article.heroImage.caption}</figcaption>
+                  )}
+                </figure>
               )}
             </header>
 
