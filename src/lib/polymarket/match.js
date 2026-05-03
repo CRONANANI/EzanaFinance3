@@ -155,21 +155,6 @@ export async function findMatchingMarket(event) {
 }
 
 /**
- * Extract noun-like keywords from longer text (descriptions, summaries).
- * Drops short tokens, stop words, and pure numbers. Used in addition to
- * headline extraction so descriptions contribute relevant terms.
- */
-function extractKeywordsFromText(text) {
-  if (!text || typeof text !== 'string') return [];
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 4 && !STOP_WORDS.has(w) && !/^\d+$/.test(w))
-    .slice(0, 8);
-}
-
-/**
  * Map a raw Polymarket market record into the shape the UI renders.
  * Pulls out icon/image, end date, and 24h volume in addition to the existing fields.
  */
@@ -207,99 +192,116 @@ function normalizeSymbolsList(list) {
   return Array.from(new Set(out));
 }
 
-/** @param {string} haystackLower */
-function tickerHits(haystackLower, symbolsNorm) {
-  for (const u of symbolsNorm) {
-    const base = u.includes('=') ? u.split('=')[0].toUpperCase() : u;
-    const variants = [u.toLowerCase(), base.toLowerCase(), `$${base.toLowerCase()}`];
-    for (const p of variants) {
-      if (p && haystackLower.includes(p)) return true;
-    }
-  }
-  return false;
-}
-
 function topicToTagSlug(topic) {
   if (!topic || typeof topic !== 'string') return null;
   return TOPIC_TAG_SLUG[topic] || null;
 }
 
 /**
- * Priority terms for Gamma search `q`, then scoring. Keywords & symbols first (ISR), then text.
+ * Extract the primary subject of an event — the noun/entity the article is ABOUT.
+ *
+ * Priority:
+ * 1. Tickers/symbols (e.g., BTC, NVDA, AAPL) — strongest signal
+ * 2. First impactedKeyword (editorial-tagged subject)
+ * 3. First significant noun from the headline (>4 chars, not a stop word)
+ *
+ * Returns: { subject: string, subjectVariants: string[], topic: string|null }
  */
-function buildMatcherTerms(event) {
-  const headline = typeof event?.headline === 'string' ? event.headline : String(event?.title || '');
+function extractPrimarySubject(event) {
+  const headline = String(event?.headline || event?.title || '');
   const symbolsNorm = normalizeSymbolsList(event?.impactedSymbols);
+  const keywords = (event?.impactedKeywords || []).filter((k) => typeof k === 'string' && k.trim());
 
-  const keywordStrings = [];
-  for (const kw of event?.impactedKeywords || []) {
-    if (typeof kw === 'string' && kw.trim()) keywordStrings.push(kw.trim().toLowerCase());
+  let subject = '';
+  let subjectVariants = [];
+
+  /* 1. Tickers — strongest signal */
+  if (symbolsNorm.length > 0) {
+    subject = symbolsNorm[0].toLowerCase();
+    subjectVariants = symbolsNorm.map((s) => s.toLowerCase());
+
+    /* Add common name mappings for major assets */
+    const TICKER_TO_NAME = {
+      btc: ['bitcoin'],
+      eth: ['ethereum'],
+      sol: ['solana'],
+      xrp: ['ripple'],
+      doge: ['dogecoin'],
+      ada: ['cardano'],
+      aapl: ['apple'],
+      nvda: ['nvidia'],
+      tsla: ['tesla'],
+      msft: ['microsoft'],
+      meta: ['meta', 'facebook'],
+      goog: ['google', 'alphabet'],
+      amzn: ['amazon'],
+      glw: ['corning'],
+    };
+    for (const sym of symbolsNorm) {
+      const names = TICKER_TO_NAME[sym.toLowerCase()];
+      if (names) subjectVariants.push(...names);
+    }
   }
 
-  const descKeywords = extractKeywordsFromText(
-    [event?.summary, event?.description].filter(Boolean).join(' ')
-  );
-
-  const headlineTokens = headline
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
-
-  const termOrder = [];
-  const seen = new Set();
-  const push = (t) => {
-    const x = String(t).toLowerCase().trim();
-    if (x.length < 2 || seen.has(x)) return;
-    seen.add(x);
-    termOrder.push(x);
-  };
-
-  for (const k of keywordStrings) push(k);
-  for (const s of symbolsNorm) push(s);
-  for (const t of headlineTokens.slice(0, 8)) push(t);
-  for (const t of descKeywords) push(t);
-  if (event?.country) push(String(event.country).toLowerCase());
-
-  const qTokens = [];
-  for (const k of keywordStrings.slice(0, 4)) qTokens.push(k);
-  for (const s of symbolsNorm.slice(0, 2)) qTokens.push(s);
-  for (const t of headlineTokens.slice(0, 4)) {
-    if (qTokens.length >= 4) break;
-    qTokens.push(t);
+  /* 2. First impactedKeyword */
+  if (!subject && keywords.length > 0) {
+    subject = keywords[0].toLowerCase();
+    subjectVariants = keywords.slice(0, 3).map((k) => k.toLowerCase());
   }
-  for (const t of descKeywords) {
-    if (qTokens.length >= 4) break;
-    qTokens.push(t);
+
+  /* 3. First significant headline noun */
+  if (!subject) {
+    const tokens = headline
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 4 && !STOP_WORDS.has(w));
+    if (tokens.length > 0) {
+      subject = tokens[0];
+      subjectVariants = tokens.slice(0, 3);
+    }
   }
-  const q = qTokens.slice(0, 3).join(' ').trim();
 
-  const scoreTerms = termOrder.filter(
-    (t) => !symbolsNorm.some((sym) => sym.toLowerCase() === t || sym.split('=')[0].toLowerCase() === t)
-  );
+  /* Deduplicate variants */
+  subjectVariants = [...new Set([subject, ...subjectVariants].filter(Boolean))];
 
-  return { q, scoreTerms, symbolsNorm, keywordStrings };
+  /* Map to Polymarket topic tag */
+  const topic = topicToTagSlug(event?.topic) || inferTopicFromSubject(subject);
+
+  return { subject, subjectVariants, topic };
+}
+
+/**
+ * Infer a Polymarket tag_slug from a subject when the event doesn't have
+ * an explicit topic field.
+ */
+function inferTopicFromSubject(subject) {
+  if (!subject) return null;
+  const s = subject.toLowerCase();
+
+  const CRYPTO_TERMS = ['ethereum', 'eth', 'bitcoin', 'btc', 'crypto', 'sol', 'solana', 'xrp', 'doge', 'cardano', 'ada', 'defi', 'nft', 'blockchain', 'stablecoin', 'usdt', 'usdc'];
+  if (CRYPTO_TERMS.some((t) => s.includes(t))) return 'crypto';
+
+  const POLITICS_TERMS = ['trump', 'biden', 'congress', 'senate', 'election', 'vote', 'democrat', 'republican', 'president', 'governor', 'legislation'];
+  if (POLITICS_TERMS.some((t) => s.includes(t))) return 'politics';
+
+  const TECH_TERMS = ['nvidia', 'apple', 'google', 'microsoft', 'openai', 'chatgpt', 'semiconductor', 'chip', 'artificial intelligence'];
+  if (TECH_TERMS.some((t) => s.includes(t)) || /\bai\b/.test(s)) return 'tech';
+
+  const FINANCE_TERMS = ['stock', 'market', 'fed', 'interest rate', 'inflation', 'gdp', 'recession', 'earnings', 'ipo', 's&p', 'nasdaq'];
+  if (FINANCE_TERMS.some((t) => s.includes(t))) return 'finance';
+
+  const SPORTS_TERMS = ['nba', 'nfl', 'mlb', 'nhl', 'soccer', 'football', 'basketball', 'baseball', 'tennis', 'f1', 'ufc'];
+  if (SPORTS_TERMS.some((t) => s.includes(t))) return 'sports';
+
+  const GEO_TERMS = ['war', 'conflict', 'iran', 'china', 'russia', 'ukraine', 'israel', 'nato', 'sanctions', 'tariff'];
+  if (GEO_TERMS.some((t) => s.includes(t))) return 'international-affairs';
+
+  return null;
 }
 
 function openActiveMarket(m) {
   return Boolean(m?.active) && !m?.closed;
-}
-
-async function fetchGammaEvents(searchQ, tagSlug) {
-  const params = new URLSearchParams({
-    active: 'true',
-    closed: 'false',
-    limit: '25',
-    q: searchQ,
-  });
-  if (tagSlug) params.set('tag_slug', tagSlug);
-  const res = await fetch(`${GAMMA_BASE}/events?${params}`, {
-    next: { revalidate: 60 },
-    headers: { Accept: 'application/json' },
-  });
-  if (!res.ok) return [];
-  const payload = await res.json();
-  return Array.isArray(payload) ? payload : [];
 }
 
 async function fetchGammaMarkets(searchQ, fetchLimit) {
@@ -321,106 +323,119 @@ async function fetchGammaMarkets(searchQ, fetchLimit) {
   return Array.isArray(list) ? list : [];
 }
 
-function flattenEventMarkets(events, { fromEvent: fromEventFlag }) {
-  /** @type {Map<string, { m: any, fromEvent: boolean, eventSlug: string|null }>} */
-  const byId = new Map();
-  const sorted = [...events].sort(
-    (a, b) => Number(b?.volume24hr ?? 0) - Number(a?.volume24hr ?? 0)
-  );
-  const top = sorted.slice(0, 3);
-  for (const ev of top) {
-    const eventSlug = ev?.slug || null;
-    const markets = Array.isArray(ev?.markets) ? ev.markets : [];
-    for (const m of markets) {
-      if (!openActiveMarket(m)) continue;
-      const id = String(m?.id ?? m?.conditionId ?? '');
-      if (!id || byId.has(id)) continue;
-      byId.set(id, { m, fromEvent: fromEventFlag, eventSlug });
-    }
-  }
-  return byId;
-}
-
 /**
- * Find multiple Polymarket markets relevant to an event (ISR keywords, tickers, topic).
- * Events-first on Gamma (`GET /events`), then `GET /markets` fallback; open markets only.
+ * Find Polymarket markets relevant to an event using subject-first matching.
  *
- * @param {{ headline?: string, title?: string, topic?: string, summary?: string, description?: string, impactedKeywords?: string[], impactedSymbols?: string[], country?: string }} event
+ * Strategy:
+ * 1. Extract the primary subject (ticker/keyword/entity the event is ABOUT)
+ * 2. Search Gamma for markets matching the subject — pick up to 6, sorted by volume
+ * 3. If fewer than 6, backfill with the most-active markets in the same TOPIC category
+ * 4. Deduplicate and cap at 6 total
+ *
+ * @param {Object} event  — ISR or chain-view event
  * @param {{ limit?: number }} options
  * @returns {Promise<{ markets: PolymarketMatch[], noHighConfidence: boolean }>}
  */
-export async function findMatchingMarkets(event, { limit = 8 } = {}) {
+export async function findMatchingMarkets(event, { limit = 6 } = {}) {
+  const TARGET = Math.min(limit, 6);
+
   try {
     const normalizedEvent = {
       ...event,
       headline: event?.headline ?? event?.title ?? '',
     };
 
-    const { q, scoreTerms, symbolsNorm, keywordStrings } = buildMatcherTerms(normalizedEvent);
+    const { subject, subjectVariants, topic } = extractPrimarySubject(normalizedEvent);
 
-    const hadPayloadSignal =
-      keywordStrings.length > 0 ||
-      symbolsNorm.length > 0 ||
-      String(normalizedEvent.headline || '').trim().length > 0 ||
-      String(event?.summary || '').trim().length > 0 ||
-      String(event?.description || '').trim().length > 0;
-
-    const searchQ =
-      q.trim() ||
-      (symbolsNorm.length ? symbolsNorm.slice(0, 3).join(' ') : '');
-
-    if (!searchQ) {
-      return { markets: [], noHighConfidence: Boolean(hadPayloadSignal) };
+    if (!subject) {
+      return { markets: [], noHighConfidence: true };
     }
 
-    const tagSlug = topicToTagSlug(event?.topic);
-    let events = await fetchGammaEvents(searchQ, tagSlug);
-    if (!events.length && tagSlug) {
-      events = await fetchGammaEvents(searchQ, null);
-    }
+    /* ── Phase 1: Subject-direct markets ────────────────────────── */
+    const subjectMarkets = [];
+    const seenIds = new Set();
 
-    const byId = flattenEventMarkets(events, { fromEvent: true });
+    /* Try each variant as a search query — broadest first */
+    for (const variant of subjectVariants.slice(0, 3)) {
+      if (subjectMarkets.length >= TARGET) break;
 
-    if (byId.size < Math.max(8, limit * 2)) {
-      const fallback = await fetchGammaMarkets(searchQ, Math.max(24, limit * 5));
-      for (const m of fallback) {
+      const fetched = await fetchGammaMarkets(variant, 20);
+
+      /* Score and filter: market title must contain at least one subject variant */
+      for (const m of fetched) {
         if (!openActiveMarket(m)) continue;
         const id = String(m?.id ?? m?.conditionId ?? '');
-        if (!id || byId.has(id)) continue;
-        byId.set(id, { m, fromEvent: false, eventSlug: null });
+        if (!id || seenIds.has(id)) continue;
+
+        const titleLower = String(m?.question ?? m?.title ?? '').toLowerCase();
+        const descLower = String(m?.description ?? '').toLowerCase();
+        const haystack = `${titleLower} ${descLower}`;
+
+        /* Must mention the subject in title or description */
+        const isAboutSubject = subjectVariants.some((v) => haystack.includes(v));
+        if (!isAboutSubject) continue;
+
+        seenIds.add(id);
+        subjectMarkets.push({
+          m,
+          volume: Number(m?.volume ?? m?.volumeNum ?? 0),
+          volume24hr: Number(m?.volume24hr ?? m?.volume24Hr ?? 0),
+        });
       }
     }
 
-    const ranked = [];
-    for (const { m, fromEvent, eventSlug } of byId.values()) {
-      const haystack = [m?.question, m?.title, m?.description]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-      const hits = scoreTerms.reduce((acc, t) => acc + (haystack.includes(t) ? 1 : 0), 0);
-      const tHit = tickerHits(haystack, symbolsNorm);
-      const passesFloor = hits >= 2 || fromEvent || tHit;
-      if (!passesFloor) continue;
+    /* Sort subject markets by 24h volume (most active first) */
+    subjectMarkets.sort((a, b) => b.volume24hr - a.volume24hr || b.volume - a.volume);
+    const topSubject = subjectMarkets.slice(0, TARGET);
 
-      const vol24 = Number(m?.volume24hr ?? m?.volume24Hr ?? 0);
-      const vol = Number(m?.volume ?? m?.volumeNum ?? 0);
-      const rankScore =
-        hits * 100 +
-        (tHit ? 40 : 0) +
-        (fromEvent ? 35 : 0) +
-        Math.min(25, Math.log10(vol24 + 10) * 8);
+    /* ── Phase 2: Topic backfill (if fewer than TARGET) ─────────── */
+    const topicMarkets = [];
+    const remaining = TARGET - topSubject.length;
 
-      ranked.push({ m, eventSlug, hits, vol24, vol, rankScore });
+    if (remaining > 0 && topic) {
+      /* Fetch most active markets in the topic category */
+      const params = new URLSearchParams({
+        closed: 'false',
+        active: 'true',
+        limit: '30',
+        order: 'volume',
+        ascending: 'false',
+        tag_slug: topic,
+      });
+
+      try {
+        const res = await fetch(`${GAMMA_BASE}/markets?${params}`, {
+          next: { revalidate: 60 },
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          const list = Array.isArray(payload) ? payload : payload?.data;
+          if (Array.isArray(list)) {
+            for (const m of list) {
+              if (topicMarkets.length >= remaining) break;
+              if (!openActiveMarket(m)) continue;
+              const id = String(m?.id ?? m?.conditionId ?? '');
+              if (!id || seenIds.has(id)) continue;
+              seenIds.add(id);
+              topicMarkets.push({ m });
+            }
+          }
+        }
+      } catch {
+        /* Topic backfill is best-effort — if it fails, return subject-only results */
+      }
     }
 
-    ranked.sort(
-      (a, b) => b.rankScore - a.rankScore || b.vol24 - a.vol24 || b.vol - a.vol
-    );
+    /* ── Combine: subject-direct first, then topic backfill ──── */
+    const combined = [
+      ...topSubject.map((row) => formatMarket(row.m)),
+      ...topicMarkets.map((row) => formatMarket(row.m)),
+    ].slice(0, TARGET);
 
-    const markets = ranked.slice(0, limit).map((row) => formatMarket(row.m, row.eventSlug));
-    const noHighConfidence = Boolean(hadPayloadSignal && markets.length === 0);
+    const noHighConfidence = combined.length === 0 && subject.length > 0;
 
-    return { markets, noHighConfidence };
+    return { markets: combined, noHighConfidence };
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console

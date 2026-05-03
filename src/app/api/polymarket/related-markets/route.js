@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const limit = Math.min(20, Math.max(1, Number(body?.limit) || 8));
+    const limit = Math.min(6, Math.max(1, Number(body?.limit) || 6));
 
     const { markets, noHighConfidence } = await findMatchingMarkets(
       {

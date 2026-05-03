@@ -113,7 +113,7 @@ export function ISRArticleModal({ event, polymarket, onClose }) {
               <i className={`bi ${showRelated ? 'bi-chevron-up' : 'bi-chevron-down'}`} />
             </button>
             {showRelated && (
-              <RelatedMarketsPanel event={event} enabled={showRelated} limit={8} variant="inline" />
+              <RelatedMarketsPanel event={event} enabled={showRelated} limit={6} variant="inline" />
             )}
           </div>
 

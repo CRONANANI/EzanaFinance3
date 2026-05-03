@@ -1121,7 +1121,7 @@ function ChainView({ events: externalEvents, loading: externalLoading, showSendT
                       country: analyzeEvent.country,
                     }}
                     enabled={showRelatedPm}
-                    limit={8}
+                    limit={6}
                     variant="inline"
                   />
                 )}
