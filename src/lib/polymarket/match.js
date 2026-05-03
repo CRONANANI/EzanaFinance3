@@ -289,13 +289,36 @@ function normalizeProbability(market) {
 }
 
 function buildMarketUrl(market) {
-  const slug = market?.slug || market?.marketSlug || market?.id || market?.conditionId;
-  if (!slug) return 'https://polymarket.com/';
-  return `https://polymarket.com/event/${slug}`;
+  /*
+   * Polymarket URL structure:
+   *   polymarket.com/event/{eventSlug}           → event page (chart + all outcomes)
+   *   polymarket.com/event/{eventSlug}?tid={cid}  → event page with specific outcome selected
+   *
+   * Gamma API returns:
+   *   groupSlug  → parent event slug (VALID Polymarket URL)
+   *   slug       → individual market/outcome slug (NOT a valid standalone URL)
+   *   conditionId → outcome ID for deep-linking via ?tid=
+   *
+   * Priority: groupSlug > slug (as last resort) > fallback to polymarket.com
+   */
+  const eventSlug = market?.groupSlug || market?.group_slug || market?.eventSlug || market?.event_slug;
+  const conditionId = market?.conditionId || market?.condition_id;
+
+  if (eventSlug) {
+    const base = `https://polymarket.com/event/${eventSlug}`;
+    return conditionId ? `${base}?tid=${conditionId}` : base;
+  }
+
+  const fallbackSlug = market?.slug || market?.marketSlug || market?.id;
+  if (fallbackSlug) {
+    return `https://polymarket.com/event/${fallbackSlug}`;
+  }
+
+  return 'https://polymarket.com/';
 }
 
 function formatMarket(m, eventSlugForUrl = null) {
-  const urlMarket = eventSlugForUrl ? { ...m, slug: eventSlugForUrl } : m;
+  const urlMarket = eventSlugForUrl ? { ...m, groupSlug: eventSlugForUrl } : m;
   return {
     marketId: String(m?.id ?? m?.conditionId ?? ''),
     marketTitle: String(m?.question ?? m?.title ?? 'Market'),
