@@ -138,7 +138,7 @@ export const fiberOpticArticle = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: 'There is a scene in The Sopranos that every fiber optic investor should tattoo on their Bloomberg terminal. Christopher Moltisanti pulls up to a construction site and sees spools of cable laid out across the dirt. He asks the only honest question in the room: "What is all that?" Benny Fazio, criminal mastermind prodigy of the Soprano family, barely looks up. "Fiber optic cable. High-speed internet access." And then Vito Spatafore, surveying the haul like a man who has seen the future, delivers the thesis of the decade: "Alotta money in this stuff."',
+      text: 'There is a scene in The Sopranos that should be required viewing before anyone opens a position in fiber optic cable. Christopher Moltisanti pulls up to a construction site and sees spools of cable laid out across the dirt. He asks the only honest question in the room: "What is all that?" Benny Fazio, criminal mastermind prodigy of the Soprano family, barely looks up. "Fiber optic cable. High-speed internet access." And then Vito Spatafore, surveying the haul like a man who has seen the future, delivers the thesis of the decade: "Alotta money in this stuff."',
     },
     {
       type: 'paragraph',
