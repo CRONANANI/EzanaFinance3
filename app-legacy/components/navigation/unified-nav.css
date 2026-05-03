@@ -294,8 +294,6 @@ body:not(.light-mode) .nav-action-tap:focus-visible {
 .main-nav .nav-action-inner.nav-settings-gear i,
 .partner-nav .nav-action-inner.nav-settings-gear i {
   color: #047857;
-  -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.88);
-  paint-order: stroke fill;
 }
 
 .main-nav .nav-action-tap:hover .nav-action-inner.nav-settings-gear,
@@ -322,8 +320,6 @@ body:not(.light-mode) .nav-action-tap:focus-visible {
 .main-nav .nav-action-inner.nav-logout-btn i,
 .partner-nav .nav-action-inner.nav-logout-btn i {
   color: #b91c1c;
-  -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.92);
-  paint-order: stroke fill;
 }
 
 .main-nav .nav-action-tap:hover .nav-action-inner.nav-logout-btn,
