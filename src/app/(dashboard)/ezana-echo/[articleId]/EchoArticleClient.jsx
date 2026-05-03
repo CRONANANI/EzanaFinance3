@@ -16,6 +16,7 @@ import {
   Bar,
   Legend,
 } from 'recharts';
+import { useTheme } from '@/components/ThemeProvider';
 import { EchoArticleEngagement } from '@/components/echo/EchoArticleEngagement';
 import { EchoKeywordProvider, useKeywordPopup } from '@/components/echo/EchoKeywordContext';
 import { EchoKeywordPopup } from '@/components/echo/EchoKeywordPopup';
@@ -509,6 +510,50 @@ function FiberOpticWorldMap({ title, caption }) {
   const [activeIndustries, setActiveIndustries] = useState(() => new Set(INDUSTRIES));
   const [hovered, setHovered] = useState(null);
 
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  /* Theme-aware color tokens */
+  const t = {
+    /* SVG background */
+    mapBg: isDark ? '#0a0e13' : '#f8fafc',
+    mapBorder: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.2)',
+
+    /* Continent outlines */
+    continentStroke: isDark ? '#6366f1' : '#94a3b8',
+    continentFill: isDark ? 'none' : 'rgba(148,163,184,0.06)',
+    continentOpacity: isDark ? 0.15 : 0.5,
+
+    /* Continent label text */
+    continentLabelFill: isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.5)',
+
+    /* Company dots */
+    dotStroke: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+    highlightStroke: isDark ? '#f0f6fc' : '#1e293b',
+    highlightPulseStroke: isDark ? '#f0f6fc' : '#6366f1',
+
+    /* Tooltip */
+    tooltipBg: isDark ? '#0d1117' : '#ffffff',
+    tooltipBorder: isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)',
+    tooltipNameFill: isDark ? '#f0f6fc' : '#1e293b',
+    tooltipMetaFill: isDark ? '#8b949e' : '#64748b',
+
+    /* Toggle buttons */
+    btnBorderActive: '#6366f1',
+    btnBorderInactive: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)',
+    btnBgActive: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
+    btnBgInactive: 'transparent',
+    btnColorActive: isDark ? '#c7d2fe' : '#4338ca',
+    btnColorInactive: isDark ? '#6b7280' : '#94a3b8',
+
+    /* Industry button (same pattern but per-industry color) */
+    indBorderInactive: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    indColorInactive: isDark ? '#6b7280' : '#94a3b8',
+
+    /* Counter text */
+    counterFill: isDark ? '#4b5563' : '#94a3b8',
+  };
+
   const toggleContinent = (c) => {
     setActiveContinents((prev) => {
       const next = new Set(prev);
@@ -552,9 +597,9 @@ function FiberOpticWorldMap({ title, caption }) {
             style={{
               padding: '0.25rem 0.6rem',
               borderRadius: 4,
-              border: activeContinents.has(c) ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)',
-              background: activeContinents.has(c) ? 'rgba(99,102,241,0.15)' : 'transparent',
-              color: activeContinents.has(c) ? '#c7d2fe' : '#6b7280',
+              border: activeContinents.has(c) ? `1px solid ${t.btnBorderActive}` : `1px solid ${t.btnBorderInactive}`,
+              background: activeContinents.has(c) ? t.btnBgActive : t.btnBgInactive,
+              color: activeContinents.has(c) ? t.btnColorActive : t.btnColorInactive,
               fontSize: '0.625rem',
               fontWeight: 600,
               cursor: 'pointer',
@@ -576,9 +621,9 @@ function FiberOpticWorldMap({ title, caption }) {
               borderRadius: 4,
               border: activeIndustries.has(ind)
                 ? `1px solid ${industryColor(ind)}`
-                : '1px solid rgba(255,255,255,0.08)',
+                : `1px solid ${t.indBorderInactive}`,
               background: activeIndustries.has(ind) ? `${industryColor(ind)}22` : 'transparent',
-              color: activeIndustries.has(ind) ? industryColor(ind) : '#6b7280',
+              color: activeIndustries.has(ind) ? industryColor(ind) : t.indColorInactive,
               fontSize: '0.6rem',
               fontWeight: 600,
               cursor: 'pointer',
@@ -605,18 +650,45 @@ function FiberOpticWorldMap({ title, caption }) {
           width: '100%',
           height: 'auto',
           maxHeight: 400,
-          background: '#0a0e13',
+          background: t.mapBg,
           borderRadius: 8,
-          border: '1px solid rgba(99,102,241,0.12)',
+          border: `1px solid ${t.mapBorder}`,
         }}
       >
-        <g opacity="0.15" fill="none" stroke="#6366f1" strokeWidth="0.5">
+        <g
+          opacity={t.continentOpacity}
+          fill={t.continentFill}
+          stroke={t.continentStroke}
+          strokeWidth={isDark ? 0.5 : 1}
+        >
           <path d="M50,60 L160,40 L200,80 L190,130 L150,160 L120,200 L80,180 L60,120 Z" />
           <path d="M140,210 L180,200 L200,250 L190,320 L160,360 L130,340 L120,280 Z" />
           <path d="M310,50 L380,40 L390,80 L370,120 L340,110 L310,90 Z" />
           <path d="M330,150 L380,140 L400,200 L390,280 L350,310 L320,260 L310,200 Z" />
           <path d="M400,40 L560,30 L600,80 L580,150 L520,180 L450,160 L400,120 Z" />
           <path d="M560,250 L640,240 L660,280 L630,310 L570,300 Z" />
+        </g>
+
+        {/* Continent labels */}
+        <g fill={t.continentLabelFill} fontSize="9" fontFamily="sans-serif" fontWeight="600" letterSpacing="0.1em">
+          <text x="120" y="110">
+            N. AMERICA
+          </text>
+          <text x="150" y="290">
+            S. AMERICA
+          </text>
+          <text x="340" y="80">
+            EUROPE
+          </text>
+          <text x="345" y="220">
+            AFRICA
+          </text>
+          <text x="490" y="90">
+            ASIA
+          </text>
+          <text x="590" y="270">
+            OCEANIA
+          </text>
         </g>
 
         {visible.map((c) => {
@@ -626,7 +698,7 @@ function FiberOpticWorldMap({ title, caption }) {
           return (
             <g key={c.name} onMouseEnter={() => setHovered(c)} onMouseLeave={() => setHovered(null)}>
               {c.highlight && (
-                <circle cx={x} cy={y} r={14} fill="none" stroke="#f0f6fc" strokeWidth={1} opacity={0.25}>
+                <circle cx={x} cy={y} r={14} fill="none" stroke={t.highlightPulseStroke} strokeWidth={1} opacity={0.25}>
                   <animate attributeName="r" values="10;18;10" dur="2.5s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="0.45;0.1;0.45" dur="2.5s" repeatCount="indefinite" />
                 </circle>
@@ -636,7 +708,7 @@ function FiberOpticWorldMap({ title, caption }) {
                 cy={y}
                 r={r}
                 fill={fill}
-                stroke={c.highlight ? '#f0f6fc' : 'rgba(255,255,255,0.3)'}
+                stroke={c.highlight ? t.highlightStroke : t.dotStroke}
                 strokeWidth={c.highlight ? 2 : 0.5}
                 opacity={0.9}
                 style={{ cursor: 'pointer' }}
@@ -658,14 +730,21 @@ function FiberOpticWorldMap({ title, caption }) {
                 width={155}
                 height={52}
                 rx={6}
-                fill="#0d1117"
-                stroke="rgba(99,102,241,0.4)"
+                fill={t.tooltipBg}
+                stroke={t.tooltipBorder}
                 strokeWidth={1}
               />
-              <text x={tipX + 8} y={tipY + 16} fill="#f0f6fc" fontSize="9" fontWeight="700" fontFamily="sans-serif">
+              <text
+                x={tipX + 8}
+                y={tipY + 16}
+                fill={t.tooltipNameFill}
+                fontSize="9"
+                fontWeight="700"
+                fontFamily="sans-serif"
+              >
                 {hovered.name}
               </text>
-              <text x={tipX + 8} y={tipY + 28} fill="#8b949e" fontSize="7.5" fontFamily="sans-serif">
+              <text x={tipX + 8} y={tipY + 28} fill={t.tooltipMetaFill} fontSize="7.5" fontFamily="sans-serif">
                 {hovered.hq} · {hovered.industry}
               </text>
               <text x={tipX + 8} y={tipY + 40} fill={hc} fontSize="7.5" fontWeight="600" fontFamily="sans-serif">
@@ -675,7 +754,7 @@ function FiberOpticWorldMap({ title, caption }) {
           );
         })()}
 
-        <text x={685} y={390} textAnchor="end" fill="#4b5563" fontSize="8" fontFamily="sans-serif">
+        <text x={685} y={390} textAnchor="end" fill={t.counterFill} fontSize="8" fontFamily="sans-serif">
           {visible.length} companies shown
         </text>
       </svg>
