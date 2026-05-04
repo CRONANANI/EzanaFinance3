@@ -1,246 +1,248 @@
 /**
  * Polymarket matcher — server-side.
  *
- * Two-stage matching: entity extraction → Gamma search → hard relevance gate.
- * A market must share at least one named entity with the article to be shown.
- * If no markets pass the gate, the UI shows "No related markets found" —
- * better than an irrelevant match.
+ * Two-stage matching with hard relevance gate:
+ * 1. Extract named entities (orgs, countries, people, tickers) from event
+ * 2. Search Gamma using ONLY entity-based queries
+ * 3. Hard gate: every candidate market must share a named entity with the article
+ * 4. If no entity-direct matches, backfill with same-topic markets by tag_slug
+ * 5. If still nothing, return empty — never show an irrelevant market
+ *
+ * URL construction uses groupSlug (event-level) + ?tid= (outcome deep-link).
  */
 
 const GAMMA_BASE = 'https://gamma-api.polymarket.com';
 
 /* ════════════════════════════════════════════════════════════════════
-   Stop words — filtered from search queries and entity extraction.
+   Stop words — not emitted as search queries (entity-only queries).
    ════════════════════════════════════════════════════════════════════ */
+// eslint-disable-next-line no-unused-vars -- vocabulary reference; matching uses KNOWN_ENTITIES only
 const STOP_WORDS = new Set([
-  'the','a','an','and','or','of','to','in','on','for','with','at','by','from','as',
-  'is','are','was','were','be','been','being','it','its','this','that','these','those',
-  'report','reports','reported','reporting','say','says','said','update','updates',
-  'news','live','breaking','latest','amid','over','new','post','posts','see',
-  'minutes','minute','signal','signals','steady','cooling','heating','watch','watching',
-  'still','just','than','into','out','up','down','but','not','has','have','had',
-  'will','can','may','week','month','year','day','days','last','next',
-  'after','before','about','between','during','through','while','since',
-  'could','would','should','also','more','most','much','many','some','other',
-  'what','when','where','which','who','how','why','been','does','did','doing',
-  'steep','price','battle','reverse','fortunes','pays','sources','according',
-  'despite','faces','facing','warns','shows','showing',
-  'opens','opening','rises','rising','falls','falling','surges','surging',
-  'drops','dropping','hits','hitting','reaches','reaching',
+  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'with', 'at', 'by', 'from', 'as',
+  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'it', 'its', 'this', 'that', 'these', 'those',
+  'report', 'reports', 'reported', 'reporting', 'say', 'says', 'said', 'update', 'updates',
+  'news', 'live', 'breaking', 'latest', 'amid', 'over', 'new', 'post', 'posts', 'see',
+  'minutes', 'minute', 'signal', 'signals', 'steady', 'cooling', 'heating', 'watch', 'watching',
+  'still', 'just', 'than', 'into', 'out', 'up', 'down', 'but', 'not', 'has', 'have', 'had',
+  'will', 'can', 'may', 'week', 'month', 'year', 'day', 'days', 'last', 'next',
+  'after', 'before', 'about', 'between', 'during', 'through', 'while', 'since',
+  'could', 'would', 'should', 'also', 'more', 'most', 'much', 'many', 'some', 'other',
+  'what', 'when', 'where', 'which', 'who', 'how', 'why', 'does', 'did', 'doing',
+  'steep', 'price', 'battle', 'reverse', 'fortunes', 'pays', 'sources', 'according',
+  'leaves', 'stance', 'frustrated', 'opportunity', 'investors', 'lead', 'securities',
+  'fraud', 'lawsuit', 'apps', 'coding', 'vibe', 'startups', 'company', 'companies',
+  'stock', 'stocks', 'market', 'markets', 'trade', 'trades', 'trading', 'buy', 'sell',
+  'billion', 'million', 'trillion', 'percent', 'point', 'points', 'high', 'low',
+  'close', 'open', 'opens', 'opening', 'rises', 'rising', 'falls', 'falling',
+  'surges', 'surging', 'drops', 'dropping', 'hits', 'hitting', 'reaches',
 ]);
 
 /* ════════════════════════════════════════════════════════════════════
-   Named entity dictionaries — proper nouns the system recognizes.
+   Named Entity Dictionaries
    ════════════════════════════════════════════════════════════════════ */
 
-/** Organizations, political groups, militant groups, international bodies */
-const KNOWN_ORGS = new Set([
-  'hezbollah','hamas','isis','taliban','al-qaeda','nato','opec','un','eu',
-  'who','imf','worldbank','fed','federal reserve','ecb','boj','pboc',
-  'sec','cftc','doj','fbi','cia','nsa','pentagon',
-  'openai','nvidia','apple','google','alphabet','microsoft','amazon','meta',
-  'tesla','spacex','twitter','tiktok','bytedance','samsung','tsmc','intel',
-  'amd','broadcom','qualcomm','palantir','coinbase','binance','robinhood',
-  'jpmorgan','goldman sachs','morgan stanley','blackrock','citadel','bridgewater',
-  'berkshire hathaway','softbank',
+const KNOWN_ENTITIES = new Map([
+  /* ── Major tech companies ── */
+  ['apple', { canonical: 'apple', type: 'company', topic: 'tech' }],
+  ['iphone', { canonical: 'apple', type: 'product', topic: 'tech' }],
+  ['ipad', { canonical: 'apple', type: 'product', topic: 'tech' }],
+  ['macbook', { canonical: 'apple', type: 'product', topic: 'tech' }],
+  ['app store', { canonical: 'apple', type: 'product', topic: 'tech' }],
+  ['siri', { canonical: 'apple', type: 'product', topic: 'tech' }],
+  ['google', { canonical: 'google', type: 'company', topic: 'tech' }],
+  ['alphabet', { canonical: 'google', type: 'company', topic: 'tech' }],
+  ['microsoft', { canonical: 'microsoft', type: 'company', topic: 'tech' }],
+  ['amazon', { canonical: 'amazon', type: 'company', topic: 'tech' }],
+  ['meta', { canonical: 'meta', type: 'company', topic: 'tech' }],
+  ['facebook', { canonical: 'meta', type: 'company', topic: 'tech' }],
+  ['nvidia', { canonical: 'nvidia', type: 'company', topic: 'tech' }],
+  ['tesla', { canonical: 'tesla', type: 'company', topic: 'tech' }],
+  ['openai', { canonical: 'openai', type: 'company', topic: 'tech' }],
+  ['chatgpt', { canonical: 'openai', type: 'product', topic: 'tech' }],
+  ['bytedance', { canonical: 'bytedance', type: 'company', topic: 'tech' }],
+  ['tiktok', { canonical: 'bytedance', type: 'product', topic: 'tech' }],
+  ['spacex', { canonical: 'spacex', type: 'company', topic: 'tech' }],
+  ['samsung', { canonical: 'samsung', type: 'company', topic: 'tech' }],
+  ['tsmc', { canonical: 'tsmc', type: 'company', topic: 'tech' }],
+  ['intel', { canonical: 'intel', type: 'company', topic: 'tech' }],
+  ['amd', { canonical: 'amd', type: 'company', topic: 'tech' }],
+  ['broadcom', { canonical: 'broadcom', type: 'company', topic: 'tech' }],
+  ['qualcomm', { canonical: 'qualcomm', type: 'company', topic: 'tech' }],
+  ['palantir', { canonical: 'palantir', type: 'company', topic: 'tech' }],
+  ['anthropic', { canonical: 'anthropic', type: 'company', topic: 'tech' }],
+  ['netflix', { canonical: 'netflix', type: 'company', topic: 'tech' }],
+  ['uber', { canonical: 'uber', type: 'company', topic: 'tech' }],
+  ['airbnb', { canonical: 'airbnb', type: 'company', topic: 'tech' }],
+  ['disney', { canonical: 'disney', type: 'company', topic: 'tech' }],
+  ['alibaba', { canonical: 'alibaba', type: 'company', topic: 'tech' }],
+  ['corning', { canonical: 'corning', type: 'company', topic: 'tech' }],
+
+  /* ── Finance ── */
+  ['jpmorgan', { canonical: 'jpmorgan', type: 'company', topic: 'finance' }],
+  ['goldman sachs', { canonical: 'goldman sachs', type: 'company', topic: 'finance' }],
+  ['morgan stanley', { canonical: 'morgan stanley', type: 'company', topic: 'finance' }],
+  ['blackrock', { canonical: 'blackrock', type: 'company', topic: 'finance' }],
+  ['citadel', { canonical: 'citadel', type: 'company', topic: 'finance' }],
+  ['bridgewater', { canonical: 'bridgewater', type: 'company', topic: 'finance' }],
+  ['berkshire', { canonical: 'berkshire', type: 'company', topic: 'finance' }],
+  ['coinbase', { canonical: 'coinbase', type: 'company', topic: 'crypto' }],
+  ['binance', { canonical: 'binance', type: 'company', topic: 'crypto' }],
+  ['robinhood', { canonical: 'robinhood', type: 'company', topic: 'finance' }],
+  ['fed', { canonical: 'federal reserve', type: 'org', topic: 'finance' }],
+  ['federal reserve', { canonical: 'federal reserve', type: 'org', topic: 'finance' }],
+
+  /* ── Crypto ── */
+  ['bitcoin', { canonical: 'bitcoin', type: 'crypto', topic: 'crypto' }],
+  ['btc', { canonical: 'bitcoin', type: 'crypto', topic: 'crypto' }],
+  ['ethereum', { canonical: 'ethereum', type: 'crypto', topic: 'crypto' }],
+  ['eth', { canonical: 'ethereum', type: 'crypto', topic: 'crypto' }],
+  ['solana', { canonical: 'solana', type: 'crypto', topic: 'crypto' }],
+  ['xrp', { canonical: 'xrp', type: 'crypto', topic: 'crypto' }],
+  ['dogecoin', { canonical: 'dogecoin', type: 'crypto', topic: 'crypto' }],
+  ['cardano', { canonical: 'cardano', type: 'crypto', topic: 'crypto' }],
+
+  /* ── Geopolitics / Organizations ── */
+  ['hezbollah', { canonical: 'hezbollah', type: 'org', topic: 'international-affairs' }],
+  ['hamas', { canonical: 'hamas', type: 'org', topic: 'international-affairs' }],
+  ['isis', { canonical: 'isis', type: 'org', topic: 'international-affairs' }],
+  ['taliban', { canonical: 'taliban', type: 'org', topic: 'international-affairs' }],
+  ['al-qaeda', { canonical: 'al-qaeda', type: 'org', topic: 'international-affairs' }],
+  ['nato', { canonical: 'nato', type: 'org', topic: 'international-affairs' }],
+  ['opec', { canonical: 'opec', type: 'org', topic: 'international-affairs' }],
+
+  /* ── Countries ── */
+  ['iran', { canonical: 'iran', type: 'country', topic: 'international-affairs' }],
+  ['russia', { canonical: 'russia', type: 'country', topic: 'international-affairs' }],
+  ['ukraine', { canonical: 'ukraine', type: 'country', topic: 'international-affairs' }],
+  ['china', { canonical: 'china', type: 'country', topic: 'international-affairs' }],
+  ['taiwan', { canonical: 'taiwan', type: 'country', topic: 'international-affairs' }],
+  ['israel', { canonical: 'israel', type: 'country', topic: 'international-affairs' }],
+  ['palestine', { canonical: 'palestine', type: 'country', topic: 'international-affairs' }],
+  ['gaza', { canonical: 'gaza', type: 'country', topic: 'international-affairs' }],
+  ['syria', { canonical: 'syria', type: 'country', topic: 'international-affairs' }],
+  ['lebanon', { canonical: 'lebanon', type: 'country', topic: 'international-affairs' }],
+  ['north korea', { canonical: 'north korea', type: 'country', topic: 'international-affairs' }],
+  ['saudi arabia', { canonical: 'saudi arabia', type: 'country', topic: 'international-affairs' }],
+
+  /* ── People ── */
+  ['trump', { canonical: 'trump', type: 'person', topic: 'politics' }],
+  ['biden', { canonical: 'biden', type: 'person', topic: 'politics' }],
+  ['putin', { canonical: 'putin', type: 'person', topic: 'international-affairs' }],
+  ['zelensky', { canonical: 'zelensky', type: 'person', topic: 'international-affairs' }],
+  ['netanyahu', { canonical: 'netanyahu', type: 'person', topic: 'international-affairs' }],
+  ['elon musk', { canonical: 'elon musk', type: 'person', topic: 'tech' }],
+  ['musk', { canonical: 'elon musk', type: 'person', topic: 'tech' }],
+  ['zuckerberg', { canonical: 'zuckerberg', type: 'person', topic: 'tech' }],
+  ['sam altman', { canonical: 'sam altman', type: 'person', topic: 'tech' }],
+  ['warren buffett', { canonical: 'warren buffett', type: 'person', topic: 'finance' }],
+  ['pelosi', { canonical: 'pelosi', type: 'person', topic: 'politics' }],
+  ['desantis', { canonical: 'desantis', type: 'person', topic: 'politics' }],
+  ['harris', { canonical: 'harris', type: 'person', topic: 'politics' }],
+  ['vance', { canonical: 'vance', type: 'person', topic: 'politics' }],
 ]);
 
-/** Countries and major regions */
-const KNOWN_COUNTRIES = new Set([
-  'us','usa','united states','america','china','russia','ukraine','iran','iraq',
-  'israel','palestine','gaza','syria','lebanon','turkey','india','pakistan',
-  'north korea','south korea','japan','taiwan','saudi arabia','uae',
-  'uk','united kingdom','britain','france','germany','italy','spain',
-  'brazil','mexico','argentina','canada','australia','egypt','nigeria','south africa',
-]);
-
-/** People — political figures, business leaders */
-const KNOWN_PEOPLE = new Set([
-  'trump','biden','obama','putin','xi jinping','zelensky','netanyahu',
-  'elon musk','jeff bezos','zuckerberg','tim cook','satya nadella','sam altman',
-  'warren buffett','jamie dimon','jerome powell','janet yellen','lagarde',
-  'pelosi','mcconnell','desantis','newsom','rfk','vance','harris',
-]);
-
-/** Crypto assets — map to full names for Polymarket search */
-const CRYPTO_MAP = {
-  btc: 'bitcoin', bitcoin: 'bitcoin',
-  eth: 'ethereum', ethereum: 'ethereum',
-  sol: 'solana', solana: 'solana',
-  xrp: 'xrp', ripple: 'xrp',
-  doge: 'dogecoin', dogecoin: 'dogecoin',
-  ada: 'cardano', cardano: 'cardano',
-  bnb: 'bnb', avax: 'avalanche',
-  dot: 'polkadot', matic: 'polygon',
-  link: 'chainlink',
-};
-
-/** Ticker → company name for search */
-const TICKER_MAP = {
+/** Ticker → canonical entity name */
+const TICKER_TO_ENTITY = {
   aapl: 'apple', nvda: 'nvidia', tsla: 'tesla', msft: 'microsoft',
   meta: 'meta', goog: 'google', amzn: 'amazon', glw: 'corning',
-  nflx: 'netflix', dis: 'disney', baba: 'alibaba', tsl: 'tesla',
+  nflx: 'netflix', dis: 'disney', baba: 'alibaba',
+  btc: 'bitcoin', eth: 'ethereum', sol: 'solana',
 };
 
-/** Topic classification keywords → Gamma tag_slug */
-const TOPIC_RULES = [
-  { tag: 'crypto', terms: ['bitcoin','btc','ethereum','eth','crypto','blockchain','defi','nft','stablecoin','token','mining','halving','solana','dogecoin','coinbase','binance','altcoin'] },
-  { tag: 'politics', terms: ['trump','biden','election','vote','congress','senate','democrat','republican','president','governor','legislation','impeach','primary','poll','ballot','gop','dnc'] },
-  { tag: 'international-affairs', terms: ['war','conflict','iran','russia','ukraine','china','taiwan','hezbollah','hamas','nato','sanctions','tariff','missile','nuclear','ceasefire','invasion','troops','military','gaza','israel','syria','lebanon','strike','bomb','attack','defense','pentagon','army'] },
-  { tag: 'tech', terms: ['ai','artificial intelligence','openai','chatgpt','nvidia','apple','google','microsoft','semiconductor','chip','software','startup','ipo','tech'] },
-  { tag: 'finance', terms: ['stock','market','fed','interest rate','inflation','gdp','recession','earnings','s&p','nasdaq','dow','bond','yield','banking','wall street'] },
-  { tag: 'sports', terms: ['nba','nfl','mlb','nhl','soccer','football','basketball','baseball','tennis','f1','ufc','championship','playoff','finals','super bowl'] },
-  { tag: 'science', terms: ['nasa','space','mars','climate','vaccine','pandemic','virus','fda','drug','pharma','biotech','crispr','gene'] },
-];
-
 /* ════════════════════════════════════════════════════════════════════
-   Entity Extraction
+   Entity Extraction (Rule-Based NER)
    ════════════════════════════════════════════════════════════════════ */
 
 /**
- * Extract named entities from event text. Returns:
- * {
- *   entities: string[] — recognized proper nouns (orgs, countries, people, tickers)
- *   topic: string|null — Gamma tag_slug
- *   searchQueries: string[] — search terms to send to Gamma (max 3)
- * }
+ * Extract named entities from an event. Returns:
+ * - entities: Map of canonical entity names → metadata
+ * - topic: Gamma tag_slug for the dominant topic
+ * - searchQueries: terms to send to Gamma (max 3, entity-only)
  */
 function extractEntities(event) {
   const headline = String(event?.headline || event?.title || '');
-  const summary = String(event?.summary || event?.description || '');
+  const summary = String(event?.summary || event?.body || event?.description || '');
   const fullText = `${headline} ${summary}`.toLowerCase();
 
-  const entities = new Set();
+  const found = new Map();
 
-  /* Check symbols/tickers */
+  /* Check tickers first */
   const symbols = normalizeSymbolsList(event?.impactedSymbols);
   for (const sym of symbols) {
-    const lower = sym.toLowerCase();
-    entities.add(lower);
-    if (TICKER_MAP[lower]) {
-      entities.add(TICKER_MAP[lower]);
-    }
-    if (CRYPTO_MAP[lower]) {
-      entities.add(CRYPTO_MAP[lower]);
+    const mapped = TICKER_TO_ENTITY[sym.toLowerCase()];
+    if (mapped && KNOWN_ENTITIES.has(mapped)) {
+      found.set(mapped, KNOWN_ENTITIES.get(mapped));
     }
   }
 
-  /* Check keywords */
+  /* Check impactedKeywords */
   for (const kw of (event?.impactedKeywords || [])) {
-    if (typeof kw === 'string' && kw.trim()) {
-      entities.add(kw.trim().toLowerCase());
+    const lower = String(kw).toLowerCase().trim();
+    if (KNOWN_ENTITIES.has(lower)) {
+      const info = KNOWN_ENTITIES.get(lower);
+      found.set(info.canonical, info);
     }
   }
 
-  /* Scan text for known entities */
-  for (const org of KNOWN_ORGS) {
-    if (fullText.includes(org)) {
-      entities.add(org);
-    }
-  }
-  for (const country of KNOWN_COUNTRIES) {
-    if (fullText.includes(country)) {
-      entities.add(country);
-    }
-  }
-  for (const person of KNOWN_PEOPLE) {
-    if (fullText.includes(person)) {
-      entities.add(person);
-    }
-  }
-  for (const [key, name] of Object.entries(CRYPTO_MAP)) {
-    if (fullText.includes(key)) {
-      entities.add(name);
+  /* Scan full text for known entities */
+  for (const [key, info] of KNOWN_ENTITIES) {
+    if (key.length >= 3 && fullText.includes(key)) {
+      found.set(info.canonical, info);
     }
   }
 
-  /* Classify topic */
+  /* Determine topic from the most common topic among found entities */
   let topic = null;
-  let topicScore = 0;
-  for (const rule of TOPIC_RULES) {
-    const score = rule.terms.reduce((acc, t) => acc + (fullText.includes(t) ? 1 : 0), 0);
-    if (score > topicScore) {
-      topicScore = score;
-      topic = rule.tag;
+  if (found.size > 0) {
+    const topicCounts = {};
+    for (const [, inf] of found) {
+      topicCounts[inf.topic] = (topicCounts[inf.topic] || 0) + 1;
     }
+    topic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   }
 
-  /* Also use explicit event.topic if available */
+  /* Fallback topic from event.topic field (Gamma tag_slug values) */
   if (!topic && event?.topic) {
-    const TOPIC_TAG_MAP = {
+    const TOPIC_MAP = {
       Geopolitics: 'international-affairs', Conflict: 'international-affairs',
       Economy: 'finance', Tech: 'tech', Health: 'science',
       Politics: 'politics', Crypto: 'crypto', Finance: 'finance',
       Sports: 'sports', Business: 'finance',
     };
-    topic = TOPIC_TAG_MAP[event.topic] || null;
+    topic = TOPIC_MAP[event.topic] || null;
   }
 
-  /* Build search queries — entities first, then significant headline nouns */
-  const searchQueries = [];
-  const entityArr = [...entities];
+  /* Build search queries: canonical entity names only */
+  const searchQueries = [...found.keys()].slice(0, 3);
 
-  /* Prioritize non-generic entities (orgs > countries > tickers) */
-  const prioritized = entityArr
-    .filter((e) => e.length > 2 && !STOP_WORDS.has(e))
-    .sort((a, b) => {
-      const aOrg = KNOWN_ORGS.has(a) || KNOWN_PEOPLE.has(a) ? 2 : 0;
-      const bOrg = KNOWN_ORGS.has(b) || KNOWN_PEOPLE.has(b) ? 2 : 0;
-      return bOrg - aOrg;
-    });
-
-  for (const e of prioritized.slice(0, 3)) {
-    searchQueries.push(e);
-  }
-
-  /* If we have fewer than 2 search queries, add headline nouns */
-  if (searchQueries.length < 2) {
-    const tokens = headline
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, ' ')
-      .split(/\s+/)
-      .filter((w) => w.length > 4 && !STOP_WORDS.has(w) && !entities.has(w));
-    for (const t of tokens.slice(0, 3)) {
-      if (searchQueries.length >= 3) break;
-      searchQueries.push(t);
-    }
-  }
-
-  return {
-    entities: entityArr,
-    topic,
-    searchQueries,
-  };
+  return { entities: found, topic, searchQueries };
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   Hard Relevance Gate
+   Relevance Gate
    ════════════════════════════════════════════════════════════════════ */
 
 /**
- * Check if a Polymarket market is relevant to the event's entities.
- * The market title/description must contain at least one of the event's
- * named entities. Generic keyword overlap (like "price" or "market") does
- * NOT count.
- *
- * @returns {number} relevance score (0 = reject, higher = more relevant)
+ * Score how relevant a Polymarket market is to the event's entities.
+ * Returns 0 if no entity overlap (REJECT) or a positive score (ACCEPT).
  */
-function relevanceScore(market, entities) {
-  if (entities.length === 0) return 0;
+function relevanceScore(market, entityMap) {
+  if (entityMap.size === 0) return 0;
 
-  const marketText = [
+  const haystack = [
     market?.question,
     market?.title,
+    market?.groupItemTitle,
     market?.description,
   ].filter(Boolean).join(' ').toLowerCase();
 
   let score = 0;
-  for (const entity of entities) {
-    if (entity.length < 3) continue;
-    if (marketText.includes(entity)) {
-      /* Weight by entity specificity */
-      if (KNOWN_ORGS.has(entity) || KNOWN_PEOPLE.has(entity)) score += 3;
-      else if (KNOWN_COUNTRIES.has(entity)) score += 2;
+  for (const [canonical, info] of entityMap) {
+    if (canonical.length < 3) continue;
+    if (haystack.includes(canonical)) {
+      if (info.type === 'company' || info.type === 'person') score += 3;
+      else if (info.type === 'country' || info.type === 'org') score += 2;
+      else if (info.type === 'crypto' || info.type === 'product') score += 2;
       else score += 1;
     }
   }
@@ -249,7 +251,7 @@ function relevanceScore(market, entities) {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   Helpers (preserved from original)
+   Helpers
    ════════════════════════════════════════════════════════════════════ */
 
 function normalizeSymbol(raw) {
@@ -259,48 +261,35 @@ function normalizeSymbol(raw) {
 
 function normalizeSymbolsList(list) {
   if (!Array.isArray(list)) return [];
-  const out = [];
-  for (const s of list) {
-    const n = normalizeSymbol(s);
-    if (n.length >= 2) out.push(n);
-  }
-  return Array.from(new Set(out));
+  return [...new Set(list.map(normalizeSymbol).filter((s) => s.length >= 2))];
 }
 
 function normalizeProbability(market) {
   const candidates = [market?.outcomePrices, market?.outcomes, market?.lastTradePrice];
-  for (const candidate of candidates) {
-    if (typeof candidate === 'number' && candidate > 0 && candidate < 1) return candidate;
-    if (Array.isArray(candidate) && candidate.length > 0) {
-      const first = Number(candidate[0]);
+  for (const c of candidates) {
+    if (typeof c === 'number' && c > 0 && c < 1) return c;
+    if (Array.isArray(c) && c.length > 0) {
+      const first = Number(c[0]);
       if (Number.isFinite(first) && first > 0 && first < 1) return first;
     }
-    if (typeof candidate === 'string') {
+    if (typeof c === 'string') {
       try {
-        const parsed = JSON.parse(candidate);
+        const parsed = JSON.parse(c);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const first = Number(parsed[0]);
-          if (Number.isFinite(first) && first > 0 && first < 1) return first;
+          const f = Number(parsed[0]);
+          if (Number.isFinite(f) && f > 0 && f < 1) return f;
         }
-      } catch { /* ignore */ }
+      } catch { /* not JSON */ }
     }
   }
   return 0.5;
 }
 
+/**
+ * Build a Polymarket URL using the EVENT slug (groupSlug), not the market slug.
+ * Appends ?tid= for outcome deep-linking.
+ */
 function buildMarketUrl(market) {
-  /*
-   * Polymarket URL structure:
-   *   polymarket.com/event/{eventSlug}           → event page (chart + all outcomes)
-   *   polymarket.com/event/{eventSlug}?tid={cid}  → event page with specific outcome selected
-   *
-   * Gamma API returns:
-   *   groupSlug  → parent event slug (VALID Polymarket URL)
-   *   slug       → individual market/outcome slug (NOT a valid standalone URL)
-   *   conditionId → outcome ID for deep-linking via ?tid=
-   *
-   * Priority: groupSlug > slug (as last resort) > fallback to polymarket.com
-   */
   const eventSlug = market?.groupSlug || market?.group_slug || market?.eventSlug || market?.event_slug;
   const conditionId = market?.conditionId || market?.condition_id;
 
@@ -309,21 +298,22 @@ function buildMarketUrl(market) {
     return conditionId ? `${base}?tid=${conditionId}` : base;
   }
 
-  const fallbackSlug = market?.slug || market?.marketSlug || market?.id;
-  if (fallbackSlug) {
-    return `https://polymarket.com/event/${fallbackSlug}`;
-  }
+  const fallback = market?.slug || market?.marketSlug || market?.id;
+  if (fallback) return `https://polymarket.com/event/${fallback}`;
 
   return 'https://polymarket.com/';
 }
 
-function formatMarket(m, eventSlugForUrl = null) {
-  const urlMarket = eventSlugForUrl ? { ...m, groupSlug: eventSlugForUrl } : m;
+function openActiveMarket(m) {
+  return Boolean(m?.active) && !m?.closed;
+}
+
+function formatMarket(m) {
   return {
     marketId: String(m?.id ?? m?.conditionId ?? ''),
     marketTitle: String(m?.question ?? m?.title ?? 'Market'),
     description: typeof m?.description === 'string' ? m.description : '',
-    url: buildMarketUrl(urlMarket),
+    url: buildMarketUrl(m),
     yesProbability: normalizeProbability(m),
     volume: Number(m?.volume ?? m?.volumeNum ?? 0),
     volume24hr: Number(m?.volume24hr ?? m?.volume24Hr ?? 0),
@@ -334,10 +324,6 @@ function formatMarket(m, eventSlugForUrl = null) {
   };
 }
 
-function openActiveMarket(m) {
-  return Boolean(m?.active) && !m?.closed;
-}
-
 async function fetchGammaMarkets(query, fetchLimit = 20, tagSlug = null) {
   const params = new URLSearchParams({
     closed: 'false',
@@ -345,9 +331,10 @@ async function fetchGammaMarkets(query, fetchLimit = 20, tagSlug = null) {
     limit: String(fetchLimit),
     order: 'volume',
     ascending: 'false',
-    q: query,
   });
+  if (query) params.set('q', query);
   if (tagSlug) params.set('tag_slug', tagSlug);
+
   try {
     const res = await fetch(`${GAMMA_BASE}/markets?${params}`, {
       next: { revalidate: 60 },
@@ -363,12 +350,12 @@ async function fetchGammaMarkets(query, fetchLimit = 20, tagSlug = null) {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   Main matching functions
+   Main Matching Functions
    ════════════════════════════════════════════════════════════════════ */
 
 /**
  * Find a single best Polymarket match for an event (used for badge rendering).
- * Returns null if no relevant market found — the badge simply doesn't render.
+ * Returns null if no relevant market found — badge simply doesn't render.
  */
 export async function findMatchingMarket(event) {
   try {
@@ -376,14 +363,12 @@ export async function findMatchingMarket(event) {
 
     if (searchQueries.length === 0) return null;
 
-    /* Search Gamma with entity-based queries */
     const allCandidates = [];
     for (const q of searchQueries.slice(0, 2)) {
       const markets = await fetchGammaMarkets(q, 10);
       allCandidates.push(...markets);
     }
 
-    /* Deduplicate */
     const seen = new Set();
     const deduped = [];
     for (const m of allCandidates) {
@@ -394,14 +379,10 @@ export async function findMatchingMarket(event) {
       deduped.push(m);
     }
 
-    /* Hard relevance gate — must share at least one entity */
     const scored = deduped
       .map((m) => ({ m, score: relevanceScore(m, entities) }))
       .filter((x) => x.score > 0)
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        return Number(b.m?.volume ?? 0) - Number(a.m?.volume ?? 0);
-      });
+      .sort((a, b) => b.score - a.score || Number(b.m?.volume ?? 0) - Number(a.m?.volume ?? 0));
 
     const best = scored[0]?.m;
     if (!best) return null;
@@ -423,18 +404,10 @@ export async function findMatchingMarket(event) {
 }
 
 /**
- * Find multiple relevant Polymarket markets for an event.
+ * Find up to 6 relevant Polymarket markets for an event.
  *
- * Two-stage approach:
- * 1. Entity-direct: search for markets that mention the event's named entities
- * 2. Topic backfill: if fewer than TARGET, add top-volume markets from the same topic
- *
- * Hard gate: every returned market must share at least one named entity with the event
- * OR be from the topic backfill (which is categorically relevant by tag_slug).
- *
- * @param {Object} event
- * @param {{ limit?: number }} options
- * @returns {Promise<{ markets: any[], noHighConfidence: boolean }>}
+ * Phase 1: entity-direct search (hard relevance gate)
+ * Phase 2: topic backfill if < 6 results
  */
 export async function findMatchingMarkets(event, { limit = 6 } = {}) {
   const TARGET = Math.min(limit, 6);
@@ -449,20 +422,20 @@ export async function findMatchingMarkets(event, { limit = 6 } = {}) {
       return { markets: [], noHighConfidence: true };
     }
 
-    /* ── Phase 1: Entity-direct search ──────────────────────────── */
     const seenIds = new Set();
     const entityMatches = [];
 
     for (const q of searchQueries.slice(0, 3)) {
       if (entityMatches.length >= TARGET * 2) break;
       const fetched = await fetchGammaMarkets(q, 20);
+
       for (const m of fetched) {
         if (!openActiveMarket(m)) continue;
         const id = String(m?.id ?? m?.conditionId ?? '');
         if (!id || seenIds.has(id)) continue;
 
         const score = relevanceScore(m, entities);
-        if (score === 0) continue; /* Hard gate: must share an entity */
+        if (score === 0) continue;
 
         seenIds.add(id);
         entityMatches.push({
@@ -474,11 +447,11 @@ export async function findMatchingMarkets(event, { limit = 6 } = {}) {
       }
     }
 
-    /* Sort: relevance score first, then volume */
-    entityMatches.sort((a, b) => b.score - a.score || b.volume24hr - a.volume24hr || b.volume - a.volume);
+    entityMatches.sort((a, b) =>
+      b.score - a.score || b.volume24hr - a.volume24hr || b.volume - a.volume
+    );
     const topEntity = entityMatches.slice(0, TARGET);
 
-    /* ── Phase 2: Topic backfill ────────────────────────────────── */
     const topicMarkets = [];
     const remaining = TARGET - topEntity.length;
 
@@ -489,16 +462,11 @@ export async function findMatchingMarkets(event, { limit = 6 } = {}) {
         if (!openActiveMarket(m)) continue;
         const id = String(m?.id ?? m?.conditionId ?? '');
         if (!id || seenIds.has(id)) continue;
-
-        /* Topic backfill has a softer gate: must be from the right category
-           (ensured by tag_slug), but doesn't need entity overlap since it's
-           explicitly "more from this topic" not "about this specific event" */
         seenIds.add(id);
         topicMarkets.push({ m });
       }
     }
 
-    /* ── Combine ─────────────────────────────────────────────────── */
     const combined = [
       ...topEntity.map((row) => formatMarket(row.m)),
       ...topicMarkets.map((row) => formatMarket(row.m)),
