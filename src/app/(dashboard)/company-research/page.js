@@ -327,8 +327,8 @@ function CompanyResearchPageInner() {
           {model.flagship ? (
             <div className="grpv-brand-logo">
               <EzanaNavLogo
-                width={28}
-                height={24}
+                width={22}
+                height={19}
                 className="grpv-logo-img nav-logo-img nav-logo-img--wing"
               />
             </div>
@@ -339,10 +339,6 @@ function CompanyResearchPageInner() {
           )}
           <div className="model-metric-content">
             <span className="model-metric-label cr-model-tile__title">{model.name}</span>
-            <span className="model-metric-value">{model.description}</span>
-            <span className="model-metric-change">
-              {model.flagship ? 'Flagship' : model.subtitle} · {selectedStock ? 'Click to analyze' : 'Select a stock'}
-            </span>
           </div>
           {isPremium && (
             <span className="cr-model-premium-star" aria-hidden>

@@ -103,16 +103,6 @@ body:not(.light-mode) .model-metric-card.cr-model-tile--premium .model-metric-ic
   font-weight: 800;
 }
 
-.model-metric-card.cr-model-tile--premium .model-metric-value {
-  color: inherit !important;
-  opacity: 0.9;
-}
-
-.model-metric-card.cr-model-tile--premium .model-metric-change {
-  color: inherit !important;
-  opacity: 0.8;
-}
-
 .model-metric-card.cr-model-tile--premium.active {
   border-color: rgba(212, 175, 55, 0.75) !important;
   box-shadow:
