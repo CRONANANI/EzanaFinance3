@@ -9,8 +9,12 @@ import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
 import './centaur-intelligence.css';
+import './chamber.css';
 import '../empire-ranking/empire-ranking.css';
 import { CentaurPromptBox } from '@/components/ui/chatgpt-prompt-input';
+import { ChamberCard, useAmbientSpeaker } from '@/components/centaur/chamber/ChamberCard';
+import { AdvisorModal } from '@/components/centaur/chamber/AdvisorModal';
+import { ADVISORS } from '@/lib/centaur-advisors';
 import dynamicImport from 'next/dynamic';
 
 /* SentinelReportModal is a modal + Recharts-heavy dialog that never renders
@@ -97,6 +101,8 @@ export default function CentaurIntelligencePage() {
   const [selectedReportWeek, setSelectedReportWeek] = useState(0);
   const [sentinelModalOpen, setSentinelModalOpen] = useState(false);
   const [modalReport, setModalReport] = useState(null);
+  const [selectedAdvisor, setSelectedAdvisor] = useState(null);
+  const speakingId = useAmbientSpeaker('wood');
   const messagesEndRef = useRef(null);
 
   const activeInvestor = useMemo(
@@ -255,6 +261,16 @@ export default function CentaurIntelligencePage() {
     ]);
   };
 
+  const handleAdvisorMeeting = (advisor) => {
+    const match = LEGENDARY_INVESTORS.find(
+      (inv) => inv.botName === advisor.name || inv.id === advisor.id,
+    );
+    if (match) {
+      startBoardroom(match);
+    }
+    setSelectedAdvisor(null);
+  };
+
   const showDalioBanner =
     boardroomMode === 'DalioMind' && displayMessages.filter((m) => m.role === 'user').length === 0;
 
@@ -337,6 +353,22 @@ export default function CentaurIntelligencePage() {
           </div>
         </div>
 
+        {/* ═══ Council Chamber — SVG horseshoe boardroom ═══ */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <ChamberCard
+            onSelectAdvisor={setSelectedAdvisor}
+            selectedId={selectedAdvisor?.id}
+            speakingId={speakingId}
+          />
+        </div>
+
+        <AdvisorModal
+          advisor={selectedAdvisor}
+          onClose={() => setSelectedAdvisor(null)}
+          onStart={handleAdvisorMeeting}
+        />
+
+        {/* ═══ Existing component cards grid ═══ */}
         <div className="centaur-grid">
           <div className="er-card chat-card">
             <div className="er-card-header">
@@ -486,6 +518,44 @@ export default function CentaurIntelligencePage() {
                     >
                       {boardroomMode === investor.botName ? 'Active' : 'Start'}
                     </button>
+                  </div>
+                ))}
+                {/* New advisors from the Council Chamber — coming soon */}
+                {ADVISORS.filter((a) => !LEGENDARY_INVESTORS.some((inv) => inv.botName === a.name)).map((advisor) => (
+                  <div
+                    key={advisor.id}
+                    style={{
+                      marginBottom: '0.75rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '10px',
+                      opacity: 0.6,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '10px',
+                          background: 'rgba(212, 175, 55, 0.1)',
+                          border: '1px solid rgba(212, 175, 55, 0.15)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          fontSize: '1.2rem',
+                        }}
+                      >
+                        {advisor.glyph}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: '#D4AF37' }}>{advisor.name}</p>
+                        <p style={{ margin: 0, fontSize: '0.6875rem', color: '#6b7280' }}>Inspired by {advisor.persona}</p>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '0.6rem', color: '#6b7280', fontStyle: 'italic' }}>Coming soon</span>
                   </div>
                 ))}
               </div>
