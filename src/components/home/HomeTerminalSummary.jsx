@@ -31,6 +31,7 @@ import { useUpcomingEvents, formatEventDay } from '@/hooks/useUpcomingEvents';
 import { useUserRelevanceSet } from '@/hooks/useUserRelevanceSet';
 import { HERO_DATA } from '@/lib/dashboard-hero-data';
 import EloWidget from './EloWidget';
+import { MarketOpportunities } from './MarketOpportunities';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -1136,6 +1137,9 @@ export function HomeTerminalSummary({
 
                 <EloWidget />
               </div>
+
+              {/* Market Opportunities — gold accent card, between skill rating and congress tracker */}
+              <MarketOpportunities />
 
               <div className="home-rail-congress">
                 <div className="db-card" style={{ display: 'flex', flexDirection: 'column' }}>

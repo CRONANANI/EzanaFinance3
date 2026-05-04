@@ -1,0 +1,236 @@
+/* ════════════════════════════════════════════════════════════
+   Market Opportunities — Gold accent theme
+   ════════════════════════════════════════════════════════════ */
+
+.mkt-opps-card {
+  background: var(--db-card, #0d1117);
+  border: 1.5px solid #D4AF37;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mkt-opps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.1rem 0.6rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.mkt-opps-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mkt-opps-header-icon {
+  font-size: 1rem;
+  color: #D4AF37;
+}
+
+.mkt-opps-title {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #D4AF37;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.mkt-opps-risk-badge {
+  display: inline-block;
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: #D4AF37;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  padding: 1px 8px;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mkt-opps-tabs {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.mkt-opps-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: transparent;
+  color: rgba(212, 175, 55, 0.5);
+  font-size: 0.625rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mkt-opps-tab:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+  color: #D4AF37;
+}
+
+.mkt-opps-tab.is-active.is-windfall {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.mkt-opps-tab.is-active.is-bane {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.mkt-opps-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  max-height: 280px;
+}
+
+.mkt-opps-loading,
+.mkt-opps-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: rgba(212, 175, 55, 0.4);
+  font-size: 0.75rem;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.mkt-opps-loading i,
+.mkt-opps-empty i {
+  font-size: 1.25rem;
+}
+
+.mkt-opps-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mkt-opps-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.06);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.mkt-opps-item:hover {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.mkt-opps-item:last-child {
+  border-bottom: none;
+}
+
+.mkt-opps-item-indicator {
+  width: 4px;
+  height: 32px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.mkt-opps-item-indicator.windfall {
+  background: linear-gradient(180deg, #10b981, #059669);
+}
+
+.mkt-opps-item-indicator.bane {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+.mkt-opps-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mkt-opps-item-headline {
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--home-heading, #f0f6fc);
+  margin: 0;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mkt-opps-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+  font-size: 0.575rem;
+  color: var(--home-muted, #6b7280);
+}
+
+.mkt-opps-item-ticker {
+  color: #D4AF37;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mkt-opps-item-arrow {
+  color: rgba(212, 175, 55, 0.3);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.mkt-opps-item:hover .mkt-opps-item-arrow {
+  color: #D4AF37;
+}
+
+.mkt-opps-footer {
+  padding: 0.5rem 1.1rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.08);
+  font-size: 0.55rem;
+  color: rgba(212, 175, 55, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* ── Light mode ── */
+body.light-mode .mkt-opps-card {
+  background: #ffffff;
+  border-color: #D4AF37;
+}
+
+body.light-mode .mkt-opps-header {
+  border-bottom-color: rgba(212, 175, 55, 0.15);
+}
+
+body.light-mode .mkt-opps-item-headline {
+  color: #1e293b;
+}
+
+body.light-mode .mkt-opps-item-meta {
+  color: #9ca3af;
+}
+
+body.light-mode .mkt-opps-item:hover {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+body.light-mode .mkt-opps-footer {
+  border-top-color: rgba(212, 175, 55, 0.12);
+  color: rgba(212, 175, 55, 0.5);
+}
