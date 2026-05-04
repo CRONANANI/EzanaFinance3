@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useOrg } from '@/contexts/OrgContext';
 import './market-opportunities.css';
 
 export function MarketOpportunities() {
   const router = useRouter();
+  const { isOrgUser, orgRole, isLoading: orgLoading } = useOrg();
   const [activeTab, setActiveTab] = useState('windfalls');
   const [windfalls, setWindfalls] = useState([]);
   const [banes, setBanes] = useState([]);
@@ -13,8 +15,11 @@ export function MarketOpportunities() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (orgLoading) return;
     let cancelled = false;
-    fetch('/api/market-opportunities', { credentials: 'same-origin' })
+    setLoading(true);
+    const endpoint = isOrgUser ? '/api/market-opportunities/org' : '/api/market-opportunities';
+    fetch(endpoint, { credentials: 'same-origin' })
       .then((r) => (r.ok ? r.json() : { windfalls: [], banes: [] }))
       .then((d) => {
         if (cancelled) return;
@@ -29,7 +34,7 @@ export function MarketOpportunities() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isOrgUser, orgLoading]);
 
   const handleEventClick = (event) => {
     const params = new URLSearchParams({
@@ -50,7 +55,12 @@ export function MarketOpportunities() {
           <div>
             <h3 className="mkt-opps-title">Market Opportunities</h3>
             {riskCategory && (
-              <span className="mkt-opps-risk-badge">{riskCategory} profile</span>
+              <span className="mkt-opps-risk-badge">
+                {isOrgUser
+                  ? `${orgRole === 'executive' ? 'Exec' : orgRole === 'portfolio_manager' ? 'PM' : 'Analyst'} · `
+                  : ''}
+                {riskCategory} profile
+              </span>
             )}
           </div>
         </div>

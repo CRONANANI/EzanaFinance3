@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { InvestorQuestionnaire } from '@/components/onboarding/InvestorQuestionnaire';
+import { OrgQuestionnaire } from '@/components/onboarding/OrgQuestionnaire';
 import './onboarding.css';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [userId, setUserId] = useState(null);
+  const [orgRole, setOrgRole] = useState(null); /* null = regular user, string = org role */
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function OnboardingPage() {
         return;
       }
 
-      /* Check if questionnaire is already completed */
+      /* Check if already completed */
       const { data: profile } = await supabase
         .from('profiles')
         .select('investor_questionnaire_completed')
@@ -27,9 +29,21 @@ export default function OnboardingPage() {
         .maybeSingle();
 
       if (profile?.investor_questionnaire_completed) {
-        /* Already done — skip to dashboard */
         router.replace('/home');
         return;
+      }
+
+      /* Check if org member */
+      const { data: orgMember } = await supabase
+        .from('org_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle();
+
+      if (orgMember?.role) {
+        setOrgRole(orgMember.role);
       }
 
       setUserId(user.id);
@@ -38,7 +52,6 @@ export default function OnboardingPage() {
   }, [router]);
 
   const handleComplete = async () => {
-    /* Mark onboarding as completed too (for the old flag) */
     if (userId) {
       await supabase
         .from('profiles')
@@ -54,19 +67,27 @@ export default function OnboardingPage() {
 
   if (checking) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#0a0e13',
-        color: '#8b949e',
-        fontSize: '0.875rem',
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0a0e13',
+          color: '#8b949e',
+          fontSize: '0.875rem',
+        }}
+      >
         Loading…
       </div>
     );
   }
 
+  /* Org users get role-specific questionnaire */
+  if (orgRole) {
+    return <OrgQuestionnaire userId={userId} role={orgRole} onComplete={handleComplete} />;
+  }
+
+  /* Regular users get the standard investor questionnaire */
   return <InvestorQuestionnaire userId={userId} onComplete={handleComplete} />;
 }
