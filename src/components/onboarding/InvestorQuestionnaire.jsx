@@ -121,6 +121,8 @@ const PROFILE_CONFIGS = {
 };
 
 export function InvestorQuestionnaire({ userId, onComplete }) {
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [multiSelections, setMultiSelections] = useState({});
