@@ -1357,6 +1357,15 @@ body.light-mode .hts-week-standing-row {
   margin-top: 0.5rem;
 }
 
+.home-top-movers-card .hts-mover-row:hover {
+  background: rgba(99, 102, 241, 0.04);
+  border-radius: 6px;
+}
+
+body.light-mode .home-top-movers-card .hts-mover-row:hover {
+  background: rgba(99, 102, 241, 0.06);
+}
+
 @media (min-height: 900px) {
   .home-top-movers-card .hts-mover-row {
     padding-top: 0.5rem;

@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
@@ -211,6 +212,7 @@ export function HomeTerminalSummary({
   mockHasMockPortfolio = false,
 }) {
   const { user } = useAuth();
+  const router = useRouter();
   const { loginDates, streakDays } = useLoginHistory(30);
   const relevance = useUserRelevanceSet();
   const {
@@ -1327,11 +1329,20 @@ export function HomeTerminalSummary({
                           <div
                             key={m.ticker}
                             className="hts-mover-row"
+                            onClick={() => router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`);
+                              }
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '0.5rem',
                               borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                              cursor: 'pointer',
                             }}
                           >
                             <div
@@ -1365,7 +1376,17 @@ export function HomeTerminalSummary({
                             </span>
                             <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
                             <MiniSparkline positive={m.positive} />
-                            <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                            <span
+                              style={{
+                                marginLeft: 'auto',
+                                fontSize: '0.575rem',
+                                color: 'var(--home-muted)',
+                                fontVariantNumeric: 'tabular-nums',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {m.range52w ?? '—'}
+                            </span>
                           </div>
                         ))
                       )}
@@ -1394,11 +1415,20 @@ export function HomeTerminalSummary({
                           <div
                             key={m.ticker}
                             className="hts-mover-row"
+                            onClick={() => router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                router.push(`/company-research?q=${encodeURIComponent(m.ticker)}`);
+                              }
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '0.5rem',
                               borderBottom: '1px solid rgba(16, 185, 129, 0.04)',
+                              cursor: 'pointer',
                             }}
                           >
                             <div
@@ -1432,7 +1462,17 @@ export function HomeTerminalSummary({
                             </span>
                             <span style={{ fontSize: '0.75rem', color: 'var(--home-muted-soft)' }}>{m.dollarChange}</span>
                             <MiniSparkline positive={m.positive} />
-                            <span style={{ marginLeft: 'auto', fontSize: '0.6875rem', color: 'var(--home-muted)' }}>{m.volume}</span>
+                            <span
+                              style={{
+                                marginLeft: 'auto',
+                                fontSize: '0.575rem',
+                                color: 'var(--home-muted)',
+                                fontVariantNumeric: 'tabular-nums',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {m.range52w ?? '—'}
+                            </span>
                           </div>
                         ))
                       )}

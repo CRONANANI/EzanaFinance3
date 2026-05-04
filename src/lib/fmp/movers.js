@@ -34,6 +34,8 @@ export async function getBiggestLosers(limit = 5) {
 function normalizeMover(m) {
   const pct = Number(m.changesPercentage ?? 0);
   const dollarChange = Number(m.change ?? 0);
+  const yearHigh = Number(m.yearHigh ?? 0);
+  const yearLow = Number(m.yearLow ?? 0);
 
   return {
     ticker: m.symbol || '',
@@ -43,7 +45,19 @@ function normalizeMover(m) {
     dollarChange: dollarChange >= 0 ? `+${dollarChange.toFixed(2)}` : dollarChange.toFixed(2),
     volume: m.volume ? formatVolume(m.volume) : '—',
     positive: pct >= 0,
+    yearHigh: yearHigh > 0 ? yearHigh : null,
+    yearLow: yearLow > 0 ? yearLow : null,
+    range52w:
+      yearHigh > 0 && yearLow > 0
+        ? `$${formatPrice(yearLow)} – $${formatPrice(yearHigh)}`
+        : '—',
   };
+}
+
+function formatPrice(n) {
+  if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  if (n >= 100) return n.toFixed(1);
+  return n.toFixed(2);
 }
 
 function formatVolume(v) {
