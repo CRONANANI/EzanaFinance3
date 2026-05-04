@@ -447,6 +447,7 @@ export default function CommunityPageClient() {
   const [followBusy, setFollowBusy] = useState({});
   const [activeModal, setActiveModal] = useState(null);
   const [initialPostCount, setInitialPostCount] = useState(null);
+  const [mobileTab, setMobileTab] = useState('feed');
 
   const firstName = useMemo(() => {
     const raw =
@@ -776,7 +777,8 @@ export default function CommunityPageClient() {
       className="dashboard-page-inset db-page community-root"
       style={{ paddingTop: 0, paddingBottom: '2rem' }}
     >
-      {/* ═══ Top row: greeting on left, page tabs on right ═══ */}
+      {/* ═══════════ DESKTOP LAYOUT (≥768px via CSS) ═══════════════════════ */}
+      <div className="comm-desktop-shell">
       <div className="comm-greeting-row">
         <div className="comm-greeting-section">
           <h1 className="db-greeting">
@@ -939,168 +941,13 @@ export default function CommunityPageClient() {
       </section>
 
       <div className="comm-3col">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
-
-          <CopyRequestInbox />
-
-          <section
-            className="db-card suggested-for-you-card"
-            data-community-card
-            aria-label="Suggested investors"
-          >
-            <div className="db-card-header has-icon">
-              <div className="comm-card-head-left">
-                <div className="comm-card-icon" aria-hidden>
-                  <i className="bi bi-stars" />
-                </div>
-                <div className="comm-card-head-meta">
-                  <h3>Suggested for You</h3>
-                  <p>Investors worth following this week</p>
-                </div>
-              </div>
-              <Link href="/leaderboard" className="comm-card-view-all">
-                View All
-              </Link>
-            </div>
-
-            <div className="comm-leaderboard-body">
-              {suggestedLoading && (
-                <>
-                  {[0, 1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="comm-list-row"
-                      aria-hidden
-                    >
-                      <div className="comm-skeleton-avatar" style={{ width: 30, height: 30 }} />
-                      <div className="comm-list-row__body">
-                        <div className="comm-skeleton-line comm-skeleton-line--mid" />
-                        <div className="comm-skeleton-line comm-skeleton-line--short" style={{ marginTop: 4 }} />
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              {!suggestedLoading && suggestedError && (
-                <div className="comm-state-card comm-state-card--error" role="alert">
-                  <div className="comm-state-card__icon">
-                    <i className="bi bi-exclamation-triangle" aria-hidden />
-                  </div>
-                  <p className="comm-state-card__title">
-                    Couldn&apos;t load suggestions
-                  </p>
-                  <p className="comm-state-card__desc">
-                    Something went wrong fetching this week&apos;s top investors.
-                  </p>
-                  <button
-                    type="button"
-                    className="comm-state-card__retry"
-                    onClick={loadSuggested}
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
-
-              {!suggestedLoading && !suggestedError && suggestedUsers.length === 0 && (
-                <div className="comm-state-card">
-                  <div className="comm-state-card__icon">
-                    <i className="bi bi-people" aria-hidden />
-                  </div>
-                  <p className="comm-state-card__title">No suggestions yet</p>
-                  <p className="comm-state-card__desc">
-                    Check back once this week&apos;s rankings are computed.
-                  </p>
-                </div>
-              )}
-
-              {!suggestedLoading && !suggestedError && suggestedUsers.length > 0 &&
-                suggestedUsers.map((u, i) => (
-                  <div key={u.id} className="comm-list-row">
-                    <span className={rankPillClass(i)} aria-label={`Rank ${i + 1}`}>
-                      {i + 1}
-                    </span>
-                    <div className="comm-list-row__avatar" aria-hidden>
-                      {getInitials(u.name)}
-                    </div>
-                    <div className="comm-list-row__body">
-                      <Link
-                        href={`/profile/${u.username || u.id}`}
-                        className="comm-list-row__name"
-                      >
-                        {u.name}
-                      </Link>
-                      <p className="comm-list-row__handle">
-                        {u.username ? `@${u.username}` : `${u.followers} followers`}
-                      </p>
-                    </div>
-                    <div className="comm-list-row__trail">
-                      <p className="comm-list-row__trail-primary comm-metric-pos">
-                        {u.return}
-                      </p>
-                      <p className="comm-list-row__trail-secondary">
-                        {u.followers} followers
-                      </p>
-                    </div>
-                    {user?.id !== u.id && (
-                      <button
-                        type="button"
-                        disabled={followBusy[u.id]}
-                        onClick={() => handleFollowSuggested(u.id)}
-                        className="comm-follow-btn"
-                      >
-                        {followBusy[u.id] ? '…' : 'Follow'}
-                      </button>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </section>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div className="comm-feed-nav">
-            <select
-              value={feedSort}
-              onChange={(e) => setFeedSort(e.target.value)}
-              className="comm-feed-nav__sort"
-              aria-label="Sort feed"
-            >
-              <option>Latest</option>
-              <option>Popular</option>
-              <option>Following</option>
-            </select>
-            <div className="comm-feed-nav__tabs">
-              {FEED_TABS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => {
-                    if (t === 'Badges') {
-                      router.push('/badges');
-                      return;
-                    }
-                    setFeedTab(t);
-                  }}
-                  className={`comm-feed-nav__tab ${feedTab === t ? 'is-active' : ''}`}
-                >
-                  {t === 'Badges' && <i className="bi bi-award" aria-hidden />}
-                  {t}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => document.getElementById('comm-composer')?.focus()}
-                className="comm-feed-nav__cta"
-              >
-                <i className="bi bi-pencil-square" aria-hidden /> New Post
-              </button>
-            </div>
+          <div className="comm-col-left">
+            <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
+            <CopyRequestInbox />
           </div>
 
-          <>
+          <div className="comm-col-center">
+            <div className="comm-sticky-composer">
               <FeedComposer
                 user={user}
                 userProfile={userProfile}
@@ -1130,55 +977,513 @@ export default function CommunityPageClient() {
                 setTickerPeriod={setTickerPeriod}
                 onPosted={fetchFeed}
               />
+            </div>
 
-              <div className="comm-feed-stream">
-                {feedLoading ? (
-                  <FeedSkeleton rows={3} />
-                ) : feedError ? (
-                  <div
-                    className="db-card comm-state-card comm-state-card--error"
-                    data-community-card
-                    role="alert"
+            <div className="comm-feed-nav">
+              <select
+                value={feedSort}
+                onChange={(e) => setFeedSort(e.target.value)}
+                className="comm-feed-nav__sort"
+                aria-label="Sort feed"
+              >
+                <option>Latest</option>
+                <option>Popular</option>
+                <option>Following</option>
+              </select>
+              <div className="comm-feed-nav__tabs">
+                {FEED_TABS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      if (t === 'Badges') {
+                        router.push('/badges');
+                        return;
+                      }
+                      setFeedTab(t);
+                    }}
+                    className={`comm-feed-nav__tab ${feedTab === t ? 'is-active' : ''}`}
                   >
+                    {t === 'Badges' && <i className="bi bi-award" aria-hidden />}
+                    {t}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('comm-composer')?.focus()}
+                  className="comm-feed-nav__cta"
+                >
+                  <i className="bi bi-pencil-square" aria-hidden /> New Post
+                </button>
+              </div>
+            </div>
+
+            <div className="comm-feed-stream">
+              {feedLoading ? (
+                <FeedSkeleton rows={3} />
+              ) : feedError ? (
+                <div
+                  className="db-card comm-state-card comm-state-card--error"
+                  data-community-card
+                  role="alert"
+                >
+                  <div className="comm-state-card__icon">
+                    <i className="bi bi-exclamation-triangle" aria-hidden />
+                  </div>
+                  <p className="comm-state-card__title">Couldn&apos;t load posts</p>
+                  <p className="comm-state-card__desc">
+                    {feedMessage || 'The community feed is temporarily unavailable.'}
+                  </p>
+                  <button type="button" className="comm-state-card__retry" onClick={fetchFeed}>
+                    Retry
+                  </button>
+                </div>
+              ) : feedPosts.length === 0 ? (
+                <div className="db-card comm-state-card" data-community-card>
+                  <div className="comm-state-card__icon">
+                    <i className="bi bi-chat-dots" aria-hidden />
+                  </div>
+                  <p className="comm-state-card__title">No posts yet</p>
+                  <p className="comm-state-card__desc">
+                    Be the first to share something with the community.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {feedMessage && (
+                    <div className="db-card comm-state-card" data-community-card>
+                      <p className="comm-state-card__desc">{feedMessage}</p>
+                    </div>
+                  )}
+                  {feedPosts.map((post) => (
+                    <CommunityFeedPost
+                      key={post.id}
+                      post={post}
+                      expanded={expandedId === post.id}
+                      onToggle={toggleExpand}
+                      onLike={handleLike}
+                      onSave={handleSave}
+                      quote={post.tickerSym ? quoteMap[post.tickerSym] : undefined}
+                      onCommentPosted={handleCommentPosted}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="comm-col-right">
+            <section className="db-card suggested-for-you-card" data-community-card aria-label="Suggested investors">
+              <div className="db-card-header has-icon">
+                <div className="comm-card-head-left">
+                  <div className="comm-card-icon" aria-hidden>
+                    <i className="bi bi-stars" />
+                  </div>
+                  <div className="comm-card-head-meta">
+                    <h3>Suggested for You</h3>
+                    <p>Investors worth following this week</p>
+                  </div>
+                </div>
+                <Link href="/leaderboard" className="comm-card-view-all">
+                  View All
+                </Link>
+              </div>
+
+              <div className="comm-leaderboard-body">
+                {suggestedLoading && (
+                  <>
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="comm-list-row" aria-hidden>
+                        <div className="comm-skeleton-avatar" style={{ width: 30, height: 30 }} />
+                        <div className="comm-list-row__body">
+                          <div className="comm-skeleton-line comm-skeleton-line--mid" />
+                          <div className="comm-skeleton-line comm-skeleton-line--short" style={{ marginTop: 4 }} />
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {!suggestedLoading && suggestedError && (
+                  <div className="comm-state-card comm-state-card--error" role="alert">
                     <div className="comm-state-card__icon">
                       <i className="bi bi-exclamation-triangle" aria-hidden />
                     </div>
-                    <p className="comm-state-card__title">Couldn&apos;t load posts</p>
+                    <p className="comm-state-card__title">Couldn&apos;t load suggestions</p>
                     <p className="comm-state-card__desc">
-                      {feedMessage || 'The community feed is temporarily unavailable.'}
+                      Something went wrong fetching this week&apos;s top investors.
                     </p>
-                    <button
-                      type="button"
-                      className="comm-state-card__retry"
-                      onClick={fetchFeed}
-                    >
+                    <button type="button" className="comm-state-card__retry" onClick={loadSuggested}>
                       Retry
                     </button>
                   </div>
-                ) : feedPosts.length === 0 ? (
-                  <div
-                    className="db-card comm-state-card"
-                    data-community-card
-                  >
+                )}
+
+                {!suggestedLoading && !suggestedError && suggestedUsers.length === 0 && (
+                  <div className="comm-state-card">
                     <div className="comm-state-card__icon">
-                      <i className="bi bi-chat-dots" aria-hidden />
+                      <i className="bi bi-people" aria-hidden />
                     </div>
-                    <p className="comm-state-card__title">No posts yet</p>
+                    <p className="comm-state-card__title">No suggestions yet</p>
                     <p className="comm-state-card__desc">
-                      Be the first to share something with the community.
+                      Check back once this week&apos;s rankings are computed.
+                    </p>
+                  </div>
+                )}
+
+                {!suggestedLoading && !suggestedError && suggestedUsers.length > 0 &&
+                  suggestedUsers.map((u, i) => (
+                    <div key={u.id} className="comm-list-row">
+                      <span className={rankPillClass(i)} aria-label={`Rank ${i + 1}`}>
+                        {i + 1}
+                      </span>
+                      <div className="comm-list-row__avatar" aria-hidden>
+                        {getInitials(u.name)}
+                      </div>
+                      <div className="comm-list-row__body">
+                        <Link href={`/profile/${u.username || u.id}`} className="comm-list-row__name">
+                          {u.name}
+                        </Link>
+                        <p className="comm-list-row__handle">
+                          {u.username ? `@${u.username}` : `${u.followers} followers`}
+                        </p>
+                      </div>
+                      <div className="comm-list-row__trail">
+                        <p className="comm-list-row__trail-primary comm-metric-pos">{u.return}</p>
+                        <p className="comm-list-row__trail-secondary">{u.followers} followers</p>
+                      </div>
+                      {user?.id !== u.id && (
+                        <button
+                          type="button"
+                          disabled={followBusy[u.id]}
+                          onClick={() => handleFollowSuggested(u.id)}
+                          className="comm-follow-btn"
+                        >
+                          {followBusy[u.id] ? '…' : 'Follow'}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </section>
+
+            <section className="db-card" data-community-card aria-label="Friends activity">
+              <div className="db-card-header has-icon">
+                <div className="comm-card-head-left">
+                  <div className="comm-card-icon" aria-hidden>
+                    <i className="bi bi-activity" />
+                  </div>
+                  <div className="comm-card-head-meta">
+                    <h3>Friends Activity</h3>
+                    <p>See what your friends are up to</p>
+                  </div>
+                </div>
+                <Link href="/community" className="comm-card-view-all">
+                  View All
+                </Link>
+              </div>
+
+              <div className="comm-leaderboard-body">
+                {friendsActivity.length === 0 ? (
+                  <p
+                    className="comm-state-card__desc"
+                    style={{ margin: '0.75rem 1rem', color: 'var(--db-muted, #8b949e)' }}
+                  >
+                    No recent activity from people you follow. Follow investors to see updates here.
+                  </p>
+                ) : (
+                  friendsActivity.map((f) => (
+                    <div key={`${f.username}-${f.time}-${f.name}`} className="comm-list-row">
+                      <div className="comm-list-row__avatar" aria-hidden>
+                        {getInitials(f.name)}
+                      </div>
+                      <div className="comm-list-row__body">
+                        <p className="comm-list-row__name">{f.name}</p>
+                        <p className="comm-list-row__handle">@{f.username}</p>
+                        <p className="comm-list-row__meta">{f.action}</p>
+                      </div>
+                      <div className="comm-list-row__trail">
+                        <p className="comm-list-row__trail-secondary">{f.time}</p>
+                        {f.ret && (
+                          <p
+                            className={`comm-list-row__trail-primary ${
+                              f.direction === 'pos' ? 'comm-metric-pos' : 'comm-metric-neg'
+                            }`}
+                          >
+                            {f.ret}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className="db-card" data-community-card aria-label="Trending discussions">
+              <div className="db-card-header has-icon">
+                <div className="comm-card-head-left">
+                  <div className="comm-card-icon" aria-hidden>
+                    <i className="bi bi-chat-quote" />
+                  </div>
+                  <div className="comm-card-head-meta">
+                    <h3>Trending Discussions</h3>
+                    <p>What everyone is talking about</p>
+                  </div>
+                </div>
+                <Link href="/community" className="comm-card-view-all">
+                  View All
+                </Link>
+              </div>
+
+              <div className="comm-leaderboard-body">
+                {trendingDiscussions.length === 0 ? (
+                  <p
+                    className="comm-state-card__desc"
+                    style={{ margin: '0.75rem 1rem', color: 'var(--db-muted, #8b949e)' }}
+                  >
+                    No discussion threads with activity this week yet.
+                  </p>
+                ) : (
+                  trendingDiscussions.map((d, di) => {
+                    const tone = DISCUSSION_TONE_TO_CSS[d.tone] || DISCUSSION_TONE_TO_CSS.emerald;
+                    return (
+                      <div
+                        key={`${d.title}-${di}`}
+                        className="comm-list-row comm-list-row--interactive"
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <div
+                          className="comm-list-row__icon"
+                          style={{
+                            background: tone.background,
+                            color: tone.color,
+                          }}
+                          aria-hidden
+                        >
+                          <i className="bi bi-chat-dots" />
+                        </div>
+                        <div className="comm-list-row__body">
+                          <p className="comm-list-row__name">{d.title}</p>
+                          <p className="comm-list-row__handle">Started by {d.author}</p>
+                        </div>
+                        <div className="comm-list-row__trail">
+                          <p className="comm-list-row__trail-secondary">
+                            <i className="bi bi-chat" aria-hidden /> {d.comments.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+          </div>
+      </div>
+
+      </div>
+
+      <div className="comm-mobile-shell">
+        <div className="comm-mobile-header">
+          <h1 className="comm-mobile-header__title">Community</h1>
+          <button type="button" className="comm-mobile-header__notif" aria-label="Notifications">
+            <i className="bi bi-bell" />
+          </button>
+        </div>
+
+        <div className="comm-mobile-tabbar">
+          {[
+            { id: 'feed', label: 'Feed', icon: 'bi-rss' },
+            { id: 'trending', label: 'Trending', icon: 'bi-fire' },
+            { id: 'people', label: 'People', icon: 'bi-people' },
+            { id: 'me', label: 'Me', icon: 'bi-person' },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setMobileTab(t.id)}
+              className={`comm-mobile-tabbar__tab ${mobileTab === t.id ? 'is-active' : ''}`}
+            >
+              <i className={`bi ${t.icon}`} />
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="comm-mobile-body">
+          {mobileTab === 'feed' && (
+            <>
+              <div className="comm-mobile-stat-row">
+                <div className="comm-mobile-stat-card">
+                  <span className="comm-mobile-stat-label">POSTS</span>
+                  <span className="comm-mobile-stat-value">{feedPosts.length}</span>
+                </div>
+                <div className="comm-mobile-stat-card">
+                  <span className="comm-mobile-stat-label">FOLLOWING</span>
+                  <span className="comm-mobile-stat-value">{suggestedUsers.length}</span>
+                </div>
+              </div>
+              <div className="comm-sticky-composer">
+                <FeedComposer
+                  user={user}
+                  userProfile={userProfile}
+                  composerText={composerText}
+                  setComposerText={setComposerText}
+                  posting={posting}
+                  setPosting={setPosting}
+                  composerImage={composerImage}
+                  setComposerImage={setComposerImage}
+                  showImageMenu={showImageMenu}
+                  setShowImageMenu={setShowImageMenu}
+                  showPollBuilder={showPollBuilder}
+                  setShowPollBuilder={setShowPollBuilder}
+                  pollQuestion={pollQuestion}
+                  setPollQuestion={setPollQuestion}
+                  pollOptions={pollOptions}
+                  setPollOptions={setPollOptions}
+                  showTickerSearch={showTickerSearch}
+                  setShowTickerSearch={setShowTickerSearch}
+                  tickerQuery={tickerQuery}
+                  setTickerQuery={setTickerQuery}
+                  tickerEmbedSymbols={tickerEmbedSymbols}
+                  setTickerEmbedSymbols={setTickerEmbedSymbols}
+                  tickerStep={tickerStep}
+                  setTickerStep={setTickerStep}
+                  tickerPeriod={tickerPeriod}
+                  setTickerPeriod={setTickerPeriod}
+                  onPosted={fetchFeed}
+                />
+              </div>
+              <div className="comm-feed-stream">
+                {feedLoading ? (
+                  <FeedSkeleton rows={3} />
+                ) : feedPosts.length === 0 ? (
+                  <div className="db-card comm-state-card" data-community-card>
+                    <p className="comm-state-card__title">No posts yet</p>
+                  </div>
+                ) : (
+                  feedPosts.map((post) => (
+                    <CommunityFeedPost
+                      key={post.id}
+                      post={post}
+                      expanded={expandedId === post.id}
+                      onToggle={toggleExpand}
+                      onLike={handleLike}
+                      onSave={handleSave}
+                      quote={post.tickerSym ? quoteMap[post.tickerSym] : undefined}
+                      onCommentPosted={handleCommentPosted}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {mobileTab === 'trending' && (
+            <div className="comm-mobile-trending-grid">
+              {trendingTopics.length === 0 ? (
+                <p className="comm-state-card__desc">No trending topics right now.</p>
+              ) : (
+                trendingTopics.map((topic, i) => (
+                  <div key={`${topic.tag}-${i}`} className="comm-mobile-trending-tile">
+                    <span className="comm-mobile-trending-tag">#{topic.tag}</span>
+                    <span className="comm-mobile-trending-count">{topic.posts} posts</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {mobileTab === 'people' && (
+            <>
+              <section className="db-card" data-community-card>
+                <div className="db-card-header has-icon">
+                  <div className="comm-card-head-left">
+                    <div className="comm-card-icon" aria-hidden>
+                      <i className="bi bi-stars" />
+                    </div>
+                    <div className="comm-card-head-meta">
+                      <h3>Suggested for You</h3>
+                    </div>
+                  </div>
+                </div>
+                <div className="comm-leaderboard-body">
+                  {suggestedUsers.map((u) => (
+                    <div key={u.id} className="comm-list-row">
+                      <div className="comm-list-row__avatar" aria-hidden>
+                        {getInitials(u.name)}
+                      </div>
+                      <div className="comm-list-row__body">
+                        <Link href={`/profile/${u.username || u.id}`} className="comm-list-row__name">
+                          {u.name}
+                        </Link>
+                        <p className="comm-list-row__handle">{u.return}</p>
+                      </div>
+                      {user?.id !== u.id && (
+                        <button
+                          type="button"
+                          disabled={followBusy[u.id]}
+                          onClick={() => handleFollowSuggested(u.id)}
+                          className="comm-follow-btn"
+                        >
+                          {followBusy[u.id] ? '…' : 'Follow'}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section className="db-card" data-community-card style={{ marginTop: '0.75rem' }}>
+                <div className="db-card-header has-icon">
+                  <div className="comm-card-head-left">
+                    <div className="comm-card-icon" aria-hidden>
+                      <i className="bi bi-activity" />
+                    </div>
+                    <div className="comm-card-head-meta">
+                      <h3>Friends Activity</h3>
+                    </div>
+                  </div>
+                </div>
+                <div className="comm-leaderboard-body">
+                  {friendsActivity.length === 0 ? (
+                    <p className="comm-state-card__desc" style={{ margin: '0.75rem 1rem' }}>
+                      No recent activity.
+                    </p>
+                  ) : (
+                    friendsActivity.map((f) => (
+                      <div key={`${f.username}-${f.time}`} className="comm-list-row">
+                        <div className="comm-list-row__avatar" aria-hidden>
+                          {getInitials(f.name)}
+                        </div>
+                        <div className="comm-list-row__body">
+                          <p className="comm-list-row__name">{f.name}</p>
+                          <p className="comm-list-row__meta">{f.action}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            </>
+          )}
+
+          {mobileTab === 'me' && (
+            <>
+              <div className="comm-feed-stream">
+                {feedLoading ? (
+                  <FeedSkeleton rows={2} />
+                ) : feedPosts.filter((p) => p.userId === user?.id).length === 0 ? (
+                  <div className="db-card comm-state-card" data-community-card>
+                    <p className="comm-state-card__title">Your posts</p>
+                    <p className="comm-state-card__desc">
+                      Nothing here yet. Compose from the Feed tab.
                     </p>
                   </div>
                 ) : (
-                  <>
-                    {feedMessage && (
-                      <div
-                        className="db-card comm-state-card"
-                        data-community-card
-                      >
-                        <p className="comm-state-card__desc">{feedMessage}</p>
-                      </div>
-                    )}
-                    {feedPosts.map((post) => (
+                  feedPosts
+                    .filter((p) => p.userId === user?.id)
+                    .map((post) => (
                       <CommunityFeedPost
                         key={post.id}
                         post={post}
@@ -1189,135 +1494,46 @@ export default function CommunityPageClient() {
                         quote={post.tickerSym ? quoteMap[post.tickerSym] : undefined}
                         onCommentPosted={handleCommentPosted}
                       />
-                    ))}
-                  </>
+                    ))
                 )}
               </div>
+              <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
+              <div style={{ marginTop: '0.75rem' }}>
+                <CopyRequestInbox />
+              </div>
             </>
+          )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <section
-            className="db-card"
-            data-community-card
-            aria-label="Friends activity"
+        <nav className="comm-mobile-bottom-nav">
+          <button type="button" onClick={() => router.push('/home')} className="comm-bottom-icon">
+            <i className="bi bi-house" />
+            <span>Home</span>
+          </button>
+          <button type="button" onClick={() => router.push('/company-research')} className="comm-bottom-icon">
+            <i className="bi bi-search" />
+            <span>Search</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileTab('feed');
+              document.getElementById('comm-composer')?.focus();
+            }}
+            className="comm-bottom-icon comm-bottom-icon--compose"
           >
-            <div className="db-card-header has-icon">
-              <div className="comm-card-head-left">
-                <div className="comm-card-icon" aria-hidden>
-                  <i className="bi bi-activity" />
-                </div>
-                <div className="comm-card-head-meta">
-                  <h3>Friends Activity</h3>
-                  <p>See what your friends are up to</p>
-                </div>
-              </div>
-              <Link href="/community" className="comm-card-view-all">
-                View All
-              </Link>
-            </div>
-
-            <div className="comm-leaderboard-body">
-              {friendsActivity.length === 0 ? (
-                <p className="comm-state-card__desc" style={{ margin: '0.75rem 1rem', color: 'var(--db-muted, #8b949e)' }}>
-                  No recent activity from people you follow. Follow investors to see updates here.
-                </p>
-              ) : (
-                friendsActivity.map((f) => (
-                <div key={`${f.username}-${f.time}-${f.name}`} className="comm-list-row">
-                  <div className="comm-list-row__avatar" aria-hidden>
-                    {getInitials(f.name)}
-                  </div>
-                  <div className="comm-list-row__body">
-                    <p className="comm-list-row__name">{f.name}</p>
-                    <p className="comm-list-row__handle">@{f.username}</p>
-                    <p className="comm-list-row__meta">{f.action}</p>
-                  </div>
-                  <div className="comm-list-row__trail">
-                    <p className="comm-list-row__trail-secondary">{f.time}</p>
-                    {f.ret && (
-                      <p
-                        className={`comm-list-row__trail-primary ${
-                          f.direction === 'pos'
-                            ? 'comm-metric-pos'
-                            : 'comm-metric-neg'
-                        }`}
-                      >
-                        {f.ret}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                ))
-              )}
-            </div>
-          </section>
-
-          <section
-            className="db-card"
-            data-community-card
-            aria-label="Trending discussions"
-          >
-            <div className="db-card-header has-icon">
-              <div className="comm-card-head-left">
-                <div className="comm-card-icon" aria-hidden>
-                  <i className="bi bi-chat-quote" />
-                </div>
-                <div className="comm-card-head-meta">
-                  <h3>Trending Discussions</h3>
-                  <p>What everyone is talking about</p>
-                </div>
-              </div>
-              <Link href="/community" className="comm-card-view-all">
-                View All
-              </Link>
-            </div>
-
-            <div className="comm-leaderboard-body">
-              {trendingDiscussions.length === 0 ? (
-                <p className="comm-state-card__desc" style={{ margin: '0.75rem 1rem', color: 'var(--db-muted, #8b949e)' }}>
-                  No discussion threads with activity this week yet.
-                </p>
-              ) : (
-                trendingDiscussions.map((d, di) => {
-                const tone = DISCUSSION_TONE_TO_CSS[d.tone] ||
-                  DISCUSSION_TONE_TO_CSS.emerald;
-                return (
-                  <div
-                    key={`${d.title}-${di}`}
-                    className="comm-list-row comm-list-row--interactive"
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div
-                      className="comm-list-row__icon"
-                      style={{
-                        background: tone.background,
-                        color: tone.color,
-                      }}
-                      aria-hidden
-                    >
-                      <i className="bi bi-chat-dots" />
-                    </div>
-                    <div className="comm-list-row__body">
-                      <p className="comm-list-row__name">{d.title}</p>
-                      <p className="comm-list-row__handle">
-                        Started by {d.author}
-                      </p>
-                    </div>
-                    <div className="comm-list-row__trail">
-                      <p className="comm-list-row__trail-secondary">
-                        <i className="bi bi-chat" aria-hidden />{' '}
-                        {d.comments.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                );
-                })
-              )}
-            </div>
-          </section>
-        </div>
+            <i className="bi bi-plus-circle-fill" />
+            <span>Post</span>
+          </button>
+          <button type="button" className="comm-bottom-icon is-active">
+            <i className="bi bi-people-fill" />
+            <span>Community</span>
+          </button>
+          <button type="button" onClick={() => onPageTab('My Profile')} className="comm-bottom-icon">
+            <i className="bi bi-person" />
+            <span>Profile</span>
+          </button>
+        </nav>
       </div>
     </div>
   );
