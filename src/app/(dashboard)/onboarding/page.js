@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { PLANS } from '@/config/pricing';
 import { useOrg } from '@/contexts/OrgContext';
+import { InvestorQuestionnaire } from '@/components/onboarding/InvestorQuestionnaire';
 import '../../../../app-legacy/assets/css/theme.css';
 import '../../../../app-legacy/assets/css/unified-component-cards.css';
 import '../../../../app-legacy/assets/css/pages-common.css';
@@ -18,6 +19,7 @@ const REGULAR_STEPS = [
   { key: 'profile', label: 'Profile', number: 2 },
   { key: 'notifications', label: 'Notifications', number: 3 },
   { key: 'plan', label: 'Plan & Billing', number: 4 },
+  { key: 'investor_quiz', label: 'Investor Profile', number: 5 },
 ];
 
 const ORG_STEPS = [
@@ -25,6 +27,7 @@ const ORG_STEPS = [
   { key: 'org_profile', label: 'Your Role', number: 2 },
   { key: 'org_preferences', label: 'Preferences', number: 3 },
   { key: 'notifications', label: 'Notifications', number: 4 },
+  { key: 'investor_quiz', label: 'Investor Profile', number: 5 },
 ];
 
 /* ───────────────────────── constants ───────────────────────── */
@@ -72,6 +75,7 @@ export default function OnboardingPage() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [initialLoaded, setInitialLoaded] = useState(false);
+  const [authUserId, setAuthUserId] = useState(null);
 
   const [formData, setFormData] = useState({
     phone: '',
@@ -117,13 +121,20 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setInitialLoaded(true); return; }
 
+      setAuthUserId(user.id);
+
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_step, user_settings')
+        .select('onboarding_step, user_settings, investor_questionnaire_completed')
         .eq('id', user.id)
         .maybeSingle();
 
       if (profile) {
+        if (profile.investor_questionnaire_completed === true) {
+          router.replace('/home');
+          setInitialLoaded(true);
+          return;
+        }
         if (profile.onboarding_step > 0) {
           setStep(Math.min(profile.onboarding_step, STEPS.length - 1));
         }
@@ -134,7 +145,7 @@ export default function OnboardingPage() {
       setInitialLoaded(true);
     }
     if (!orgLoading) restore();
-  }, [orgLoading, STEPS.length]);
+  }, [orgLoading, STEPS.length, router]);
 
   const updateFormData = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -177,6 +188,7 @@ export default function OnboardingPage() {
       if (formData.org_preferred_asset_classes.length === 0) { setError('Select at least one asset class'); return false; }
       return true;
     }
+    if (stepKey === 'investor_quiz') return true;
     return true;
   };
 
@@ -238,8 +250,7 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleOrgComplete = async () => {
-    if (!validateStep(step)) return;
+  const finalizeOnboardingExit = async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -274,6 +285,16 @@ export default function OnboardingPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOrgComplete = async () => {
+    if (!validateStep(step)) return;
+    await finalizeOnboardingExit();
+  };
+
+  const completeRegularOnboarding = async () => {
+    if (!validateStep(step)) return;
+    await finalizeOnboardingExit();
   };
 
   const handleSelectPlan = async (planKey) => {
@@ -660,8 +681,19 @@ export default function OnboardingPage() {
             </div>
           </div>
         )}
+
+        {STEPS[step]?.key === 'investor_quiz' && (
+          <InvestorQuestionnaire
+            userId={authUserId}
+            onComplete={async () => {
+              if (isOrgUser) await handleOrgComplete();
+              else await completeRegularOnboarding();
+            }}
+          />
+        )}
       </div>
 
+      {STEPS[step]?.key !== 'investor_quiz' && (
       <div className="onboarding-actions">
         {step > 0 && (
           <button type="button" className="onboarding-btn-secondary" onClick={() => setStep(step - 1)} disabled={loading}>← Back</button>
@@ -671,10 +703,11 @@ export default function OnboardingPage() {
           <button type="button" className="onboarding-btn-primary" onClick={handleContinue} disabled={loading}>{loading ? 'Saving…' : 'Continue →'}</button>
         )}
 
-        {isOrgUser && step === STEPS.length - 1 && (
+        {isOrgUser && step === STEPS.length - 1 && STEPS[step]?.key !== 'investor_quiz' && (
           <button type="button" className="onboarding-btn-primary" onClick={handleOrgComplete} disabled={loading}>{loading ? 'Completing…' : 'Complete Setup →'}</button>
         )}
       </div>
+      )}
     </div>
   );
 }

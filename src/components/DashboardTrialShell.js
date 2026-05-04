@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { getTrialStatus } from '@/lib/trial';
 import { hasActiveSubscription } from '@/lib/subscription';
@@ -22,6 +22,7 @@ function shouldSkipTrialCheck(pathname, isPartner) {
 
 export function DashboardTrialShell({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isPartner } = usePartner();
   const [ready, setReady] = useState(() => shouldSkipTrialCheck(pathname ?? '', isPartner));
   const [blocked, setBlocked] = useState(false);
@@ -60,6 +61,24 @@ export function DashboardTrialShell({ children }) {
       if (cancelled) return;
 
       if (orgMember) {
+        const { data: orgProfile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed, investor_questionnaire_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (
+          orgProfile?.onboarding_completed === true
+          && orgProfile?.investor_questionnaire_completed !== true
+          && (pathname ?? '') !== '/onboarding'
+          && !(pathname ?? '').startsWith('/onboarding')
+        ) {
+          router.replace('/onboarding');
+          return;
+        }
+
         setBlocked(false);
         setReady(true);
         return;
@@ -67,11 +86,21 @@ export function DashboardTrialShell({ children }) {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_status, one_time_plan, one_time_plan_purchased_at, current_period_end')
+        .select('subscription_status, one_time_plan, one_time_plan_purchased_at, current_period_end, onboarding_completed, investor_questionnaire_completed')
         .eq('id', user.id)
         .maybeSingle();
 
       if (cancelled) return;
+
+      if (
+        profile?.onboarding_completed === true
+        && profile?.investor_questionnaire_completed !== true
+        && (pathname ?? '') !== '/onboarding'
+        && !(pathname ?? '').startsWith('/onboarding')
+      ) {
+        router.replace('/onboarding');
+        return;
+      }
 
       const trial = getTrialStatus(profile, user.created_at);
 
@@ -94,7 +123,7 @@ export function DashboardTrialShell({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname, isPartner]);
+  }, [pathname, isPartner, router]);
 
   if (!ready && !shouldSkipTrialCheck(pathname ?? '', isPartner)) {
     return (
