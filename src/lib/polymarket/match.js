@@ -311,7 +311,7 @@ function openActiveMarket(m) {
 function formatMarket(m) {
   return {
     marketId: String(m?.id ?? m?.conditionId ?? ''),
-    marketTitle: String(m?.question ?? m?.title ?? 'Market'),
+    marketTitle: String(m?.groupItemTitle ?? m?.question ?? m?.title ?? 'Market'),
     description: typeof m?.description === 'string' ? m.description : '',
     url: buildMarketUrl(m),
     yesProbability: normalizeProbability(m),
@@ -389,7 +389,7 @@ export async function findMatchingMarket(event) {
 
     return {
       marketId: String(best.id ?? best.conditionId ?? ''),
-      marketTitle: String(best.question ?? best.title ?? 'Market'),
+      marketTitle: String(best.groupItemTitle ?? best.question ?? best.title ?? 'Market'),
       url: buildMarketUrl(best),
       yesProbability: normalizeProbability(best),
       volume: Number(best.volume ?? best.volumeNum ?? 0),
