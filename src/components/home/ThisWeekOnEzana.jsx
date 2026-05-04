@@ -56,6 +56,15 @@ function weekRangeLabel() {
   return `${fmtYmd(cur)} – ${fmtYmd(sun)}`;
 }
 
+/** Get today's short day label (Mon, Tue, etc.) in NY timezone */
+function todayDayLabel() {
+  const dayName = new Date().toLocaleDateString('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+  });
+  return dayName; // "Mon", "Tue", etc.
+}
+
 const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'portfolio'];
 const MARKET_KEYS = ['spx', 'ixic', 'rut', 'dji'];
 const PORTFOLIO_KEY = 'portfolio';
@@ -142,7 +151,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
     const portfolioSeries = portfolioPayload?.series || [];
 
-    return marketSeries.map((row, i) => {
+    const allDays = marketSeries.map((row, i) => {
       const out = { day: row.day };
       MARKET_KEYS.forEach((k) => {
         const pt = idx[k]?.series?.[i];
@@ -150,6 +159,14 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
       });
       out.portfolio = portfolioSeries[i]?.pct ?? null;
       return out;
+    });
+
+    /* Only include days that have at least one real data point.
+       This means Monday-only on Mon, Mon+Tue on Tue, etc.
+       Future days with all-null values are excluded. */
+    return allDays.filter((row) => {
+      const hasAnyData = CHART_KEYS.some((k) => row[k] !== null && row[k] !== undefined);
+      return hasAnyData;
     });
   }, [indexPayload, portfolioPayload]);
 
@@ -229,15 +246,14 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
           >
             <ResponsiveContainer width="100%" height={chartH}>
               <LineChart
-                data={chartData.length ? chartData : [{ day: 'Mon' }, { day: 'Tue' }, { day: 'Wed' }, { day: 'Thu' }, { day: 'Fri' }]}
+                data={chartData.length ? chartData : [{ day: todayDayLabel() }]}
                 margin={{ top: 2, right: 12, left: compact ? -4 : 4, bottom: chartOnly ? 4 : 8 }}
               >
                 <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} strokeDasharray="2 4" />
                 <XAxis
                   dataKey="day"
-                  interval="preserveStartEnd"
-                  minTickGap={12}
-                  padding={{ left: 12, right: 8 }}
+                  interval={0}
+                  padding={{ left: chartData.length <= 1 ? 100 : 12, right: chartData.length <= 1 ? 100 : 8 }}
                   tick={{ fill: 'var(--home-muted)', fontSize: 9 }}
                   axisLine={false}
                   tickLine={false}
@@ -276,8 +292,8 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
                       dataKey={k}
                       stroke={SERIES_COLORS[k]}
                       strokeWidth={k === PORTFOLIO_KEY ? 2.4 : 1.8}
-                      dot={{ r: 2.5, fill: SERIES_COLORS[k], strokeWidth: 0 }}
-                      activeDot={{ r: 4, strokeWidth: 1.5, stroke: '#161b22' }}
+                      dot={{ r: chartData.length <= 1 ? 5 : 2.5, fill: SERIES_COLORS[k], strokeWidth: chartData.length <= 1 ? 2 : 0, stroke: chartData.length <= 1 ? '#161b22' : 'none' }}
+                      activeDot={{ r: chartData.length <= 1 ? 7 : 4, strokeWidth: 1.5, stroke: '#161b22' }}
                       connectNulls
                       name={SERIES_NAMES[k]}
                       isAnimationActive={false}
