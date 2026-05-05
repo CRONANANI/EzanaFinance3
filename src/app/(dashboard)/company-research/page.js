@@ -246,7 +246,7 @@ function CompanyResearchPageInner() {
 
   /** DCF & Earnings (custom interactive) — gold accent on tiles (see company-research-theme.css). */
   const PREMIUM_MODEL_IDS = useMemo(
-    () => new Set(['dcf', 'earnings']),
+    () => new Set(['grpv', 'dcf', 'earnings', 'comps', 'threestatement', 'lbo', 'ma', 'risk', 'montecarlo']),
     [],
   );
 
