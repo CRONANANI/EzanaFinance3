@@ -177,6 +177,398 @@ export const KEYWORDS = {
     courseId: 'stocks-intermediate-1',
     courseTitle: 'Fundamental Analysis 101',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Fiber Optic Cable article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'producer-price-index': {
+    id: 'producer-price-index',
+    term: 'Producer Price Index (PPI)',
+    definition:
+      'The PPI measures the average change over time in selling prices received by domestic producers. Unlike CPI (which tracks consumer prices), PPI captures price movements at the wholesale/factory level — before goods reach retail shelves.',
+    template: 'comparison',
+    templateData: {
+      title: 'PPI vs CPI',
+      headers: ['Metric', 'What it measures', 'Who uses it'],
+      rows: [
+        { label: 'PPI', cells: ['Prices received by producers', 'Manufacturers, commodity traders'] },
+        { label: 'CPI', cells: ['Prices paid by consumers', 'Fed policy, wage negotiations'] },
+      ],
+      footnote: 'Rising PPI often leads CPI — factory price increases eventually pass through to consumers.',
+    },
+    realWorld:
+      "When the PPI for fiber optic cable rises, it signals that demand is outrunning supply at the factory level. Cable installers and data center operators will soon pay more, which flows into Corning's revenue and margins.",
+    courseId: 'macro-indicators-2',
+    courseTitle: 'Understanding Economic Indicators',
+  },
+
+  'compound-annual-growth-rate': {
+    id: 'compound-annual-growth-rate',
+    term: 'CAGR (Compound Annual Growth Rate)',
+    definition:
+      'CAGR measures the mean annual growth rate of an investment or market over a specified time period longer than one year. It smooths out volatility to show a steady trajectory — useful for comparing growth across different time horizons.',
+    template: 'formula',
+    templateData: {
+      formula: 'CAGR = (End Value / Start Value)^(1/n) – 1',
+      example: {
+        title: 'Fiber optic market example',
+        substitution: 'Start (2024): $6.7B · End (2034): $30.6B · Years: 10 · CAGR: ~16.4%',
+      },
+    },
+    realWorld:
+      'A 16% CAGR means the fiber optic cable market roughly doubles every 4.5 years. For investors, CAGR is more honest than "total growth" because it accounts for compounding and time.',
+    courseId: 'valuation-101-3',
+    courseTitle: 'Growth Rate Analysis',
+  },
+
+  'data-center': {
+    id: 'data-center',
+    term: 'Data Center',
+    definition:
+      'A facility housing networked computers and storage used to organize, process, store, and disseminate large amounts of data. AI training requires massive data center buildouts with thousands of GPU racks connected by fiber optic cables.',
+    template: 'schema',
+    templateData: {
+      title: 'Data center infrastructure stack',
+      nodes: [
+        { label: 'Power Grid', sectors: [], color: '#10b981' },
+        { label: 'Cooling Systems', sectors: [], color: '#3b82f6' },
+        { label: 'Server Racks (GPUs)', sectors: [], color: '#f59e0b' },
+        { label: 'Networking (Fiber Optic)', sectors: [], color: '#a855f7' },
+        { label: 'Storage (SSD/HDD)', sectors: [], color: '#64748b' },
+        { label: 'Software Layer', sectors: [], color: '#0ea5e9' },
+      ],
+    },
+    realWorld:
+      'A single hyperscale data center can cost $500M–$2B to build. Meta, Microsoft, Amazon, and Google are each spending $30–50B+ per year on data center capex — and most of that networking layer is fiber optic cable.',
+    courseId: 'tech-fundamentals-5',
+    courseTitle: 'Understanding Cloud Infrastructure',
+  },
+
+  'multicore-fiber': {
+    id: 'multicore-fiber',
+    term: 'Multicore Fiber (MCF)',
+    definition:
+      'An optical fiber strand containing multiple light-carrying cores within a single 125-micron cladding. Traditional fiber has one core; MCF packs 4+ cores in the same diameter, multiplying data density without increasing cable bulk.',
+    template: 'comparison',
+    templateData: {
+      title: 'Single-core vs Multicore fiber',
+      headers: ['Type', 'Cores', 'Density', 'Use case'],
+      rows: [
+        { label: 'Single-core', cells: ['1', '1× baseline', 'Telecom backhaul, submarine cables'] },
+        { label: 'MCF (4-core)', cells: ['4', '4× density', 'AI data centers, rack-to-rack'] },
+      ],
+      footnote: "Corning's MCF reduces cable count by 75% in data center deployments.",
+    },
+    realWorld:
+      "When a data center needs to connect 100,000 GPU racks, the difference between 1-core and 4-core fiber is the difference between 200,000 cable runs and 50,000. That's not just cost savings — it's physical space savings in conduits and trays.",
+    courseId: 'tech-fundamentals-6',
+    courseTitle: 'Fiber Optic Technology Basics',
+  },
+
+  hyperscale: {
+    id: 'hyperscale',
+    term: 'Hyperscale',
+    definition:
+      'Refers to the massive scale at which cloud providers (Meta, Amazon, Microsoft, Google) build and operate infrastructure. Hyperscale data centers have 100,000+ servers and are designed for horizontal scaling — adding capacity by adding more identical units.',
+    template: 'comparison',
+    templateData: {
+      title: 'Hyperscale vs enterprise data centers',
+      headers: ['Feature', 'Enterprise', 'Hyperscale'],
+      rows: [
+        { label: 'Servers', cells: ['100–10,000', '100,000–1,000,000+'] },
+        { label: 'Capex', cells: ['$5M–$50M', '$500M–$2B+'] },
+        { label: 'Operators', cells: ['Company IT teams', 'Big Tech (Meta, AWS, Azure, GCP)'] },
+      ],
+      footnote: 'Hyperscale operators are the primary buyers of fiber optic cable today.',
+    },
+    realWorld:
+      "When Corning signs a $6B deal with Meta for optical fiber, that's hyperscale purchasing power. A single hyperscale customer can justify building an entire new factory.",
+    courseId: 'tech-fundamentals-7',
+    courseTitle: 'Cloud Computing Economics',
+  },
+
+  'supply-chain': {
+    id: 'supply-chain',
+    term: 'Supply Chain',
+    definition:
+      'The entire system of organizations, people, activities, and resources involved in moving a product from supplier to customer. For fiber optic cables, this spans glass preform manufacturing, fiber drawing, cable assembly, and installation.',
+    template: 'schema',
+    templateData: {
+      title: 'Fiber optic cable supply chain',
+      nodes: [
+        { label: 'Glass preform mfg (Corning, YOFC)', sectors: [], color: '#10b981' },
+        { label: 'Fiber drawing', sectors: [], color: '#3b82f6' },
+        { label: 'Cable assembly', sectors: [], color: '#f59e0b' },
+        { label: 'Distribution', sectors: [], color: '#a855f7' },
+        { label: 'Installation (telcos, data centers)', sectors: [], color: '#64748b' },
+      ],
+    },
+    realWorld:
+      'The fiber optic supply chain is oligopolistic — Corning, Prysmian, and YOFC control ~60% of global preform capacity. When AI demand surges, supply chain constraints create pricing power for manufacturers.',
+    courseId: 'economics-101-4',
+    courseTitle: 'Supply Chain Economics',
+  },
+
+  capex: {
+    id: 'capex',
+    term: 'Capital Expenditure (CapEx)',
+    definition:
+      'Money spent by a company to acquire, upgrade, or maintain physical assets like buildings, equipment, or infrastructure. CapEx is distinct from operating expenses (OpEx) — it represents long-term investment that gets depreciated over time.',
+    template: 'formula',
+    templateData: {
+      formula: 'Free Cash Flow = Operating Cash Flow – CapEx',
+      example: {
+        title: "Meta's AI capex",
+        substitution: '2025 CapEx guidance: $37B–$40B · Primarily: data center construction · Includes: fiber optic cable, GPUs, cooling',
+      },
+    },
+    realWorld:
+      "When Meta commits $6B to Corning for fiber optic cable, that's a CapEx line item on Meta's income statement. For Corning, it's revenue. Following Big Tech capex budgets tells you where infrastructure demand is heading.",
+    courseId: 'accounting-101-3',
+    courseTitle: 'Understanding Financial Statements',
+  },
+
+  'single-mode-vs-multi-mode': {
+    id: 'single-mode-vs-multi-mode',
+    term: 'Single-Mode vs Multi-Mode Fiber',
+    definition:
+      'Single-mode fiber has a narrow core (~9 microns) that carries one light mode over long distances with low attenuation. Multi-mode fiber has a wider core (~50 microns) that carries multiple light modes over short distances. Data centers use both: multi-mode for rack-to-rack, single-mode for building-to-building.',
+    template: 'comparison',
+    templateData: {
+      title: 'Single-mode vs multi-mode fiber',
+      headers: ['Feature', 'Single-Mode', 'Multi-Mode'],
+      rows: [
+        { label: 'Core diameter', cells: ['~9 µm', '~50 µm'] },
+        { label: 'Distance', cells: ['Up to 100+ km', 'Up to 500 m'] },
+        { label: 'Cost', cells: ['Higher (precision laser)', 'Lower (LED source)'] },
+        { label: 'Use case', cells: ['Telecom backhaul, submarine', 'Data center, campus'] },
+      ],
+      footnote: 'AI data centers consume massive quantities of both types.',
+    },
+    realWorld:
+      'Submarine cables spanning oceans use single-mode exclusively. Inside a data center, multi-mode handles the short rack-to-rack connections. Both segments are growing because AI drives demand across the full distance spectrum.',
+    courseId: 'tech-fundamentals-6',
+    courseTitle: 'Fiber Optic Technology Basics',
+  },
+
+  'margin-of-safety': {
+    id: 'margin-of-safety',
+    term: 'Margin of Safety',
+    definition:
+      'A principle from Benjamin Graham: only buy a stock when its market price is significantly below your estimate of intrinsic value. The gap between price and value is your "margin of safety" — it protects you if your analysis is wrong.',
+    template: 'formula',
+    templateData: {
+      formula: 'Margin of Safety = (Intrinsic Value – Market Price) / Intrinsic Value',
+      example: {
+        title: 'Example',
+        substitution: 'Intrinsic value: $150 · Market price: $120 · Margin of safety: 20%',
+      },
+    },
+    realWorld:
+      "Graham's Golden Fleece — the concept that protects investors from overpaying. If you estimate a stock is worth $150 but only buy at $120, you have a 20% buffer if your valuation is off. Infrastructure companies like Corning often trade with visible margins of safety during cyclical lows.",
+    courseId: 'valuation-101-1',
+    courseTitle: 'Value Investing Foundations',
+  },
+
+  'dot-com-bubble': {
+    id: 'dot-com-bubble',
+    term: 'Dot-Com Bubble',
+    definition:
+      'The speculative bubble in internet-related stocks from 1995–2001. The NASDAQ rose 400% before crashing 78%. Many telecom companies overbuilt fiber optic networks during the bubble, creating a supply glut that depressed prices for over a decade.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '1995', label: 'Netscape IPO — internet mania begins' },
+        { year: '1999', label: 'NASDAQ peaks above 5,000' },
+        { year: '2000', label: 'Bubble bursts — NASDAQ crashes 78%' },
+        { year: '2001–2003', label: 'Fiber optic overcapacity, Corning stock drops 99%' },
+        { year: '2017–present', label: '5G + AI drive fiber demand recovery' },
+      ],
+    },
+    realWorld:
+      'The dot-com bust left millions of miles of unused fiber optic cable buried underground ("dark fiber"). It took nearly two decades for demand to catch up to supply. The AI buildout is the first time since the bubble that demand has genuinely outpaced installed capacity.',
+    courseId: 'market-history-2',
+    courseTitle: 'Market Bubbles & Crashes',
+  },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Iran / Commodities article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'strait-of-hormuz': {
+    id: 'strait-of-hormuz',
+    term: 'Strait of Hormuz',
+    definition:
+      "A narrow waterway between Iran and Oman connecting the Persian Gulf to the Gulf of Oman. Roughly 20% of the world's oil supply passes through this chokepoint. Any disruption (military, political, or logistical) can spike global oil prices instantly.",
+    template: 'schema',
+    templateData: {
+      title: 'Strait of Hormuz: key facts',
+      nodes: [
+        { label: 'Width: ~39 km at narrowest', sectors: [], color: '#ef4444' },
+        { label: '~20% of global oil transit', sectors: [], color: '#f59e0b' },
+        { label: '~25% of global LNG transit', sectors: [], color: '#10b981' },
+        { label: 'Iran controls the northern shore', sectors: [], color: '#64748b' },
+        { label: 'Key for: Saudi, Iraq, Kuwait, UAE, Qatar exports', sectors: [], color: '#3b82f6' },
+      ],
+    },
+    realWorld:
+      'When tensions rise between Iran and the US, oil traders immediately price in "Hormuz risk" — the possibility that Iran could mine, blockade, or disrupt shipping through the strait. Even a partial disruption can add $10–20/barrel to crude prices.',
+    courseId: 'geopolitics-101-1',
+    courseTitle: 'Geopolitical Risk in Markets',
+  },
+
+  'commodity-supercycle': {
+    id: 'commodity-supercycle',
+    term: 'Commodity Supercycle',
+    definition:
+      'A prolonged period (10–25 years) of above-trend commodity prices driven by structural demand shifts. Previous supercycles: 1900s (US industrialization), 1950s (post-WWII rebuilding), 1970s (oil shocks), 2000s (China urbanization).',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '1900–1920', label: 'US industrialization supercycle' },
+        { year: '1945–1965', label: 'Post-WWII reconstruction' },
+        { year: '1970–1980', label: 'Oil embargo / stagflation' },
+        { year: '2000–2011', label: 'China urbanization demand' },
+        { year: '2020–?', label: 'Energy transition + AI infrastructure (ongoing?)' },
+      ],
+    },
+    realWorld:
+      'Some analysts argue we are in the early stages of a new commodity supercycle driven by the energy transition (copper, lithium, nickel for EVs), AI infrastructure (power, cooling), and geopolitical supply disruptions (sanctions, reshoring).',
+    courseId: 'commodities-101-1',
+    courseTitle: 'Understanding Commodity Markets',
+  },
+
+  sanctions: {
+    id: 'sanctions',
+    term: 'Economic Sanctions',
+    definition:
+      'Restrictions imposed by governments to limit trade, financial transactions, or economic activity with targeted countries, entities, or individuals. Sanctions are a foreign policy tool used as an alternative to military action.',
+    template: 'comparison',
+    templateData: {
+      title: 'Types of sanctions',
+      headers: ['Type', 'What it restricts', 'Example'],
+      rows: [
+        { label: 'Trade embargo', cells: ['Import/export of goods', 'US-Cuba embargo'] },
+        { label: 'Financial', cells: ['Banking, SWIFT access', 'Russia post-2022'] },
+        { label: 'Sectoral', cells: ['Specific industries (oil, tech)', 'Iran oil sanctions'] },
+        { label: 'Targeted', cells: ['Named individuals/entities', 'Asset freezes, travel bans'] },
+      ],
+      footnote: 'Sanctions often have unintended consequences — they can spike commodity prices globally.',
+    },
+    realWorld:
+      "When the US sanctions Iranian oil exports, the lost supply (1–2M barrels/day) tightens the global market and lifts prices for every other producer. Saudi Aramco, ExxonMobil, and Chevron benefit even though they're not the target.",
+    courseId: 'geopolitics-101-2',
+    courseTitle: 'Sanctions & Market Impact',
+  },
+
+  'supply-disruption': {
+    id: 'supply-disruption',
+    term: 'Supply Disruption',
+    definition:
+      'An unexpected reduction in the availability of a commodity or good, typically caused by geopolitical events, natural disasters, or infrastructure failures. Supply disruptions create immediate price spikes because demand is relatively inelastic in the short term.',
+    template: 'schema',
+    templateData: {
+      title: 'Supply disruption transmission mechanism',
+      nodes: [
+        { label: 'Event (war, storm, embargo)', sectors: [], color: '#ef4444' },
+        { label: 'Physical supply reduced', sectors: [], color: '#f59e0b' },
+        { label: 'Inventory drawdown', sectors: [], color: '#eab308' },
+        { label: 'Spot price spikes', sectors: [], color: '#10b981' },
+        { label: 'Futures curve shifts to backwardation', sectors: [], color: '#3b82f6' },
+        { label: 'End-user costs rise', sectors: [], color: '#64748b' },
+      ],
+    },
+    realWorld:
+      'The Iran conflict disrupted tanker traffic through the Strait of Hormuz, cutting ~3M barrels/day of accessible supply. Oil prices jumped 40–55% in weeks — not because global oil ran out, but because deliverable supply shrank faster than demand could adjust.',
+    courseId: 'commodities-101-2',
+    courseTitle: 'Commodity Price Dynamics',
+  },
+
+  'strategic-reserves': {
+    id: 'strategic-reserves',
+    term: 'Strategic Petroleum Reserve (SPR)',
+    definition:
+      'Government-held stockpiles of crude oil maintained for emergency supply disruptions. The US SPR is the world\'s largest at ~370M barrels (down from 700M+ after drawdowns in 2022). The SPR acts as a buffer — releasing barrels can temporarily moderate price spikes.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '1975', label: 'US SPR created after 1973 oil embargo' },
+        { year: '2011', label: '30M barrel release during Libya conflict' },
+        { year: '2022', label: '180M barrel release (largest ever) — Ukraine war' },
+        { year: '2024–26', label: 'Partial refill at ~$70–80/barrel' },
+      ],
+    },
+    realWorld:
+      'After the 2022 drawdown, the US SPR dropped to its lowest level since 1984. With less buffer available, future supply disruptions (like the Iran conflict) have a larger impact on prices because the government has fewer barrels to release.',
+    courseId: 'commodities-101-3',
+    courseTitle: 'Oil Markets & Government Policy',
+  },
+
+  backwardation: {
+    id: 'backwardation',
+    term: 'Backwardation',
+    definition:
+      'A futures curve shape where near-term contracts trade at a higher price than longer-dated ones. It signals that the market wants supply NOW — buyers are willing to pay a premium for immediate delivery. Opposite of contango.',
+    template: 'comparison',
+    templateData: {
+      title: 'Backwardation vs Contango',
+      headers: ['Curve shape', 'Signal', 'What it means'],
+      rows: [
+        { label: 'Backwardation', cells: ['Near > Far', 'Current supply shortage, urgency'] },
+        { label: 'Contango', cells: ['Near < Far', 'Ample supply, storage costs priced in'] },
+      ],
+      footnote: 'Oil markets shifted into steep backwardation during the Iran conflict — a clear supply-fear signal.',
+    },
+    realWorld:
+      'When oil is in backwardation, refiners and airlines are scrambling for barrels today, not next month. For investors, backwardation in commodity futures is one of the strongest signals that a supply disruption is real, not just media noise.',
+    courseId: 'commodities-101-4',
+    courseTitle: 'Futures Curves & Trading',
+  },
+
+  tungsten: {
+    id: 'tungsten',
+    term: 'Tungsten',
+    definition:
+      'A rare metal with the highest melting point of any element (3,422°C). Used in ammunition, armor-piercing projectiles, cutting tools, and electronics. China controls ~80% of global tungsten supply, making it a critical strategic mineral during geopolitical conflicts.',
+    template: 'schema',
+    templateData: {
+      title: 'Tungsten supply chain',
+      nodes: [
+        { label: 'Mining (80% China)', sectors: [], color: '#ef4444' },
+        { label: 'Processing (APT conversion)', sectors: [], color: '#f59e0b' },
+        { label: 'Alloy manufacturing', sectors: [], color: '#10b981' },
+        { label: 'End uses: defense, tooling, electronics', sectors: [], color: '#3b82f6' },
+      ],
+    },
+    realWorld:
+      'Tungsten prices surged 557% since the Iran conflict began — the largest gain of any commodity tracked. Military demand for ammunition and armor-piercing rounds, combined with China restricting exports as geopolitical leverage, created a perfect supply squeeze.',
+    courseId: 'commodities-101-5',
+    courseTitle: 'Strategic Minerals & Defense',
+  },
+
+  'fertilizer-market': {
+    id: 'fertilizer-market',
+    term: 'Fertilizer Markets',
+    definition:
+      'The global market for nitrogen, phosphorus, and potassium (NPK) compounds used in agriculture. Natural gas is the primary feedstock for nitrogen fertilizers. When energy prices spike (oil, gas), fertilizer costs follow — directly impacting food prices worldwide.',
+    template: 'schema',
+    templateData: {
+      title: 'Energy → fertilizer → food price chain',
+      nodes: [
+        { label: 'Natural gas price rises', sectors: [], color: '#ef4444' },
+        { label: 'Ammonia production costs up', sectors: [], color: '#f59e0b' },
+        { label: 'Urea/NPK fertilizer prices up', sectors: [], color: '#eab308' },
+        { label: 'Farm input costs up', sectors: [], color: '#10b981' },
+        { label: 'Food prices up', sectors: [], color: '#3b82f6' },
+        { label: 'Consumer inflation', sectors: [], color: '#64748b' },
+      ],
+    },
+    realWorld:
+      'The Iran conflict disrupted Middle East energy flows, pushing natural gas prices higher. Since natural gas is ~70–80% of the cost of producing ammonia (the base for nitrogen fertilizers), fertilizer prices surged ~75% — directly threatening food security in import-dependent nations.',
+    courseId: 'commodities-101-6',
+    courseTitle: 'Agricultural Commodities',
+  },
 };
 
 export function getKeywordById(id) {

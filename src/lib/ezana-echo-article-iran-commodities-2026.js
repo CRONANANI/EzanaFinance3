@@ -16,7 +16,7 @@ export const iranWarCommoditiesArticle2026 = {
   contentBlocks: [
     {
       type: 'paragraph',
-      text: "When the United States and Israel launched joint strikes on Iran on February 28, 2026, commodities markets entered one of the most aggressive repricing cycles in recent years. What was forecast to be a relatively balanced year — modest demand growth, robust supply, and weakening prices — has instead been redefined by a geopolitical shock centered on the Strait of Hormuz. The strait carries roughly one-fifth of global oil and LNG trade, and its effective closure has rippled through energy, metals, and agricultural commodities almost simultaneously.",
+      text: "When the United States and Israel launched joint strikes on Iran on February 28, 2026, [[kw:commodity-supercycle]]commodities[[/kw]] markets entered one of the most aggressive repricing cycles in recent years. What was forecast to be a relatively balanced year — modest demand growth, robust supply, and weakening prices — has instead been redefined by a geopolitical shock centered on the [[kw:strait-of-hormuz]]Strait of Hormuz[[/kw]]. The strait carries roughly one-fifth of global oil and LNG trade, and its effective closure has rippled through energy, metals, and agricultural commodities almost simultaneously.",
     },
     {
       type: 'stat-grid',
@@ -30,7 +30,7 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'Energy markets at the center of the shock', level: 2 },
     {
       type: 'paragraph',
-      text: "Oil markets reacted first and hardest. The Strait of Hormuz carries roughly 10 million barrels per day of crude exports — most of it from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran itself. Following the joint strikes, the strait closed to commercial transit. Brent crude rallied from roughly $70 per barrel in early February to above $115 at the peak of the supply scare in late March. As of mid-April, Brent has settled around $96.36, with WTI tracking close behind at $92.52.",
+      text: "Oil markets reacted first and hardest. The Strait of Hormuz carries roughly 10 million barrels per day of crude exports — most of it from Saudi Arabia, the UAE, Iraq, Kuwait, and Iran itself. Following the joint strikes, the strait closed to commercial transit. Brent crude rallied from roughly $70 per barrel in early February to above $115 at the peak of the supply scare in late March. As of mid-April, Brent has settled around $96.36, with WTI tracking close behind at $92.52. Drawdowns from [[kw:strategic-reserves]]strategic reserves[[/kw]] were too small to fully offset the shock.",
     },
     {
       type: 'chart',
@@ -67,7 +67,7 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'Tungsten: the standout performer', level: 2 },
     {
       type: 'paragraph',
-      text: "But oil is not even the standout performer. That title belongs to tungsten, the metal almost as hard as a diamond and with the highest melting point of any element on the periodic table. Tungsten powers electronics, computing, and telecommunications — and increasingly, advanced AI chips, where it manages heat and provides the electrical stability inference workloads demand. Demand was already structurally tight thanks to the AI buildout. The Iran war has now layered military demand on top: tungsten is critical to missiles, ammunition, and aircraft, all of which are being procured at accelerated rates by Western governments.",
+      text: "But oil is not even the standout performer. That title belongs to [[kw:tungsten]]tungsten[[/kw]], the metal almost as hard as a diamond and with the highest melting point of any element on the periodic table. Tungsten powers electronics, computing, and telecommunications — and increasingly, advanced AI chips, where it manages heat and provides the electrical stability inference workloads demand. Demand was already structurally tight thanks to the AI buildout. The Iran war has now layered military demand on top: tungsten is critical to missiles, ammunition, and aircraft, all of which are being procured at accelerated rates by Western governments.",
     },
     {
       type: 'callout',
@@ -78,7 +78,7 @@ export const iranWarCommoditiesArticle2026 = {
     },
     {
       type: 'paragraph',
-      text: "The supply side is what makes tungsten especially exposed. China produces roughly 80% of the world's tungsten and operates tight export restrictions that predate the current conflict. The remaining global supply trickles in from Vietnam, Russia, and North Korea — none of which are politically aligned in a way that lets Western buyers easily diversify. About 27% of US tungsten imports in 2024 came directly from China. Ramping up domestic production would take years even with aggressive policy support. Investors looking for exposure are mostly limited to the small number of listed tungsten miners (Almonty Industries on the TSX) and rare-earth metals ETFs that hold them as a basket position.",
+      text: "The supply side is what makes tungsten especially exposed. China produces roughly 80% of the world's tungsten and operates [[kw:sanctions]]sanctions[[/kw]]-style export restrictions that predate the current conflict. The remaining global supply trickles in from Vietnam, Russia, and North Korea — none of which are politically aligned in a way that lets Western buyers easily diversify. About 27% of US tungsten imports in 2024 came directly from China. Ramping up domestic production would take years even with aggressive policy support. Investors looking for exposure are mostly limited to the small number of listed tungsten miners (Almonty Industries on the TSX) and rare-earth metals ETFs that hold them as a basket position.",
     },
     { type: 'heading', text: 'Industrial metals: divergence within the complex', level: 2 },
     {
@@ -92,7 +92,7 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'Fertilizers and agriculture: the long tail', level: 2 },
     {
       type: 'paragraph',
-      text: "Fertilizers are the third major story, and arguably the one with the longest tail. Roughly one-third of global fertilizer production passes through the Strait of Hormuz, and natural gas — a critical feedstock for nitrogen fertilizers like urea — has spiked harder than oil in regional terms. Urea prices are now up roughly 75% year-on-year, with broader fertilizer prices forecast to be 20% higher in Q2 2026 than the prior year.",
+      text: "[[kw:fertilizer-market]]Fertilizers[[/kw]] are the third major story, and arguably the one with the longest tail. Roughly one-third of global fertilizer production passes through the Strait of Hormuz, and natural gas — a critical feedstock for nitrogen fertilizers like urea — has spiked harder than oil in regional terms. Urea prices are now up roughly 75% year-on-year, with broader fertilizer prices forecast to be 20% higher in Q2 2026 than the prior year.",
     },
     {
       type: 'paragraph',
@@ -176,11 +176,11 @@ export const iranWarCommoditiesArticle2026 = {
     { type: 'heading', text: 'How to position around the move', level: 2 },
     {
       type: 'paragraph',
-      text: "Investors looking to get exposure to the commodity rally have several routes. For broad commodity exposure, S&P GSCI tracking ETFs and DBC capture the basket move. For oil specifically, USO tracks WTI futures, OIH captures oilfield services, XLE holds the largest US energy companies, and individual names like XOM, CVX, and EOG provide leveraged exposure to crude. Aluminum exposure is harder — the cleanest plays are Alcoa (AA) and Century Aluminum (CENX). Fertilizer exposure runs through CF Industries (CF), Nutrien (NTR), and Mosaic (MOS). For tungsten, the listed pure-play universe is small; rare-earth metals ETFs like REMX provide partial exposure. Gold investors have GLD and IAU.",
+      text: "Investors looking to get exposure to the commodity rally have several routes. For broad commodity exposure, S&P GSCI tracking ETFs and DBC capture the basket move. For oil specifically, USO tracks WTI futures — when the curve shows [[kw:backwardation]]backwardation[[/kw]], futures-based ETFs face extra roll dynamics — OIH captures oilfield services, XLE holds the largest US energy companies, and individual names like XOM, CVX, and EOG provide leveraged exposure to crude. Aluminum exposure is harder — the cleanest plays are Alcoa (AA) and Century Aluminum (CENX). Fertilizer exposure runs through CF Industries (CF), Nutrien (NTR), and Mosaic (MOS). For tungsten, the listed pure-play universe is small; rare-earth metals ETFs like REMX provide partial exposure. Gold investors have GLD and IAU.",
     },
     {
       type: 'paragraph',
-      text: "The conventional analytical framework — supply, demand, inventories, seasonality — is not sufficient for the current market. Three forces are now interacting: direct supply disruption (especially in energy), cost transmission (energy costs flowing into metals and agriculture), and financial amplification (positioning, dollar dynamics, and policy expectations). Each of these moves on its own timeline, and the cross-market linkages are tighter than they have been in any commodity cycle since 2008. That makes single-commodity bets riskier than they look on paper, and basket exposure — or paired trades that hedge one leg of the disruption — more attractive.",
+      text: "The conventional analytical framework — supply, demand, inventories, seasonality — is not sufficient for the current market. Three forces are now interacting: direct [[kw:supply-disruption]]supply disruption[[/kw]] (especially in energy), cost transmission (energy costs flowing into metals and agriculture), and financial amplification (positioning, dollar dynamics, and policy expectations). Each of these moves on its own timeline, and the cross-market linkages are tighter than they have been in any commodity cycle since 2008. That makes single-commodity bets riskier than they look on paper, and basket exposure — or paired trades that hedge one leg of the disruption — more attractive.",
     },
     {
       type: 'paragraph',
