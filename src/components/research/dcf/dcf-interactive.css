@@ -17,10 +17,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1.25rem;
+  padding: 0.4rem 1rem;
   border-bottom: 1px solid var(--card-border, #e5e7eb);
-  background: var(--card-bg, #ffffff);
-  gap: 0.75rem;
+  background: transparent;
+  gap: 0.5rem;
 }
 
 .dcf-interactive-header h3 {
@@ -371,7 +371,7 @@ body.dark-mode .dcf-slider::-webkit-slider-thumb,
 
 .dcf-chart-area {
   width: 100%;
-  padding: 1.5rem 1.75rem;
+  padding: 1rem 1.25rem 0.75rem;
   min-height: 420px;
   background: var(--card-bg, #ffffff);
 }
@@ -546,10 +546,11 @@ body.dark-mode .dcf-chart-area,
 }
 
 .dcf-chart-footer {
-  padding: 1rem;
+  padding: 0.65rem 0.85rem;
   background: var(--code-bg, #f9fafb);
   border-radius: 8px;
   border: 1px solid var(--card-border, #e5e7eb);
+  margin-bottom: 0;
 }
 
 .dcf-chart-footer p {
@@ -803,25 +804,26 @@ body.dark-mode .dcf-delta-row-track,
 .dcf-mode-switcher {
   display: flex;
   gap: 0.4rem;
-  padding: 0.5rem 1rem 1rem;
+  padding: 0.35rem 1rem 0.35rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .dcf-mode-btn {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  padding: 0.65rem 0.85rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-muted, #8b949e);
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition: all 150ms ease;
 }
@@ -843,12 +845,12 @@ body.dark-mode .dcf-delta-row-track,
 }
 
 .dcf-mode-sub {
-  font-size: 0.6875rem;
+  font-size: 0.575rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted, #8b949e);
-  margin-top: 0.1rem;
+  margin-top: 0;
 }
 
 .dcf-mode-btn.is-active .dcf-mode-sub {
@@ -1205,3 +1207,76 @@ body.dark-mode .rdcf-history-row,
 
 body.dark-mode .rdcf-fixed-list > span:not(:nth-child(even)),
 .dark .rdcf-fixed-list > span:not(:nth-child(even)) { color: #e2e8f0; }
+
+/* ════════════════════════════════════════════════════════════
+   DCF — Dark mode contrast fixes (force-dark-theme / body:not(.light-mode))
+   ════════════════════════════════════════════════════════════ */
+
+body:not(.light-mode) .dcf-interactive-header h3 {
+  color: #f0f6fc;
+}
+
+body:not(.light-mode) .dcf-interactive-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+body:not(.light-mode) .dcf-chart-header h4 {
+  color: #f0f6fc;
+}
+
+body:not(.light-mode) .dcf-chart-footer {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+body:not(.light-mode) .dcf-chart-footer p {
+  color: #c9d1d9;
+}
+
+body:not(.light-mode) .dcf-chart-footer strong {
+  color: #f0f6fc;
+}
+
+body:not(.light-mode) .dcf-chart-verdict {
+  color: #f0f6fc;
+}
+
+body:not(.light-mode) .dcf-chart-delta {
+  font-weight: 700;
+}
+
+body:not(.light-mode) .dcf-delta-row-label {
+  color: #e2e8f0;
+}
+
+body:not(.light-mode) .dcf-delta-row-pct {
+  color: #f0f6fc;
+  font-weight: 700;
+}
+
+body:not(.light-mode) .dcf-close-btn {
+  color: #c9d1d9;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body:not(.light-mode) .dcf-close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f0f6fc;
+}
+
+body:not(.light-mode) .dcf-peer-toggle {
+  color: #c9d1d9;
+}
+
+body:not(.light-mode) .dcf-assumptions-toolbar {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+body:not(.light-mode) .dcf-chart-area {
+  background: transparent;
+}
+
+body:not(.light-mode) .dcf-mode-switcher {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
