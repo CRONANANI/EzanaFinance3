@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useOrg } from '@/contexts/OrgContext';
+import { OpportunityAnalysisModal } from './OpportunityAnalysisModal';
 import './market-opportunities.css';
 
 export function MarketOpportunities() {
-  const router = useRouter();
   const { isOrgUser, orgRole, isLoading: orgLoading } = useOrg();
   const [activeTab, setActiveTab] = useState('windfalls');
   const [windfalls, setWindfalls] = useState([]);
   const [banes, setBanes] = useState([]);
   const [riskCategory, setRiskCategory] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     if (orgLoading) return;
@@ -37,12 +37,7 @@ export function MarketOpportunities() {
   }, [isOrgUser, orgLoading]);
 
   const handleEventClick = (event) => {
-    const params = new URLSearchParams({
-      headline: event.headline,
-      ticker: event.ticker || '',
-      type: event.type,
-    });
-    router.push(`/centaur-intelligence?opportunity=${encodeURIComponent(params.toString())}`);
+    setSelectedEvent(event);
   };
 
   const items = activeTab === 'windfalls' ? windfalls : banes;
@@ -126,6 +121,10 @@ export function MarketOpportunities() {
       <div className="mkt-opps-footer">
         <i className="bi bi-robot" /> AI-curated based on your risk profile and activity
       </div>
+
+      {selectedEvent && (
+        <OpportunityAnalysisModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
     </div>
   );
 }
