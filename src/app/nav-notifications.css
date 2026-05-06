@@ -364,6 +364,7 @@
   border-radius: 50%;
   margin-top: 8px;
 }
+.nn-priority-critical { background: #b91c1c; box-shadow: 0 0 8px rgba(185, 28, 28, 0.55); }
 .nn-priority-high   { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
 .nn-priority-medium { background: #fbbf24; box-shadow: 0 0 6px rgba(251, 191, 36, 0.3); }
 .nn-priority-low    { background: #6b7280; }

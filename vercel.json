@@ -44,6 +44,10 @@
     {
       "path": "/api/cron/changelog-daily-summary",
       "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/notifications/generate",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

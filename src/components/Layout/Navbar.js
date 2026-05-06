@@ -11,6 +11,7 @@ import { NavNotifications } from '@/components/NavNotifications';
 import { ChecklistProgressIcon } from '@/components/ChecklistProgressIcon';
 import { AnimatedNav } from '@/components/ui/AnimatedNav';
 import { MobileAuthNavDrawer } from '@/components/Layout/MobileAuthNavDrawer';
+import { useActivityTracker } from '@/hooks/useActivityTracker';
 import '@/components/ui/animated-nav.css';
 
 export function Navbar() {
@@ -18,6 +19,7 @@ export function Navbar() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { isOrgUser } = useOrg();
+  useActivityTracker();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const landingNavRef = useRef(null);
   const isSettings = pathname?.startsWith('/settings');

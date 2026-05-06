@@ -8,6 +8,7 @@ import { ManageBillingButton } from '@/components/ManageBillingButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/components/AuthProvider';
+import { NotificationPreferences } from './NotificationPreferences';
 
 /* ═══════════════════════════════════════════════════════════
    SETTINGS PANELS — 10 panels with full form fields
@@ -1023,6 +1024,8 @@ export function NotificationsPanel({ onSave, settings, updateSetting }) {
             </div>
           ))}
         </div>
+
+        <NotificationPreferences />
 
         <div className="settings-btn-row">
           <button type="button" className="settings-btn-primary" onClick={onSave}>

@@ -46,6 +46,10 @@ function mapDbNotification(row) {
               : t === 'learning'
                 ? 'bi-mortarboard'
                 : 'bi-bell';
+  let priority = 'medium';
+  if (/\u{1F534}/u.test(row.title || '')) priority = 'critical';
+  else if (/\u{1F7E1}/u.test(row.title || '')) priority = 'high';
+
   return {
     id: row.id,
     type: t,
@@ -55,7 +59,7 @@ function mapDbNotification(row) {
     read: !!row.read,
     icon,
     badge,
-    priority: 'medium',
+    priority,
   };
 }
 
