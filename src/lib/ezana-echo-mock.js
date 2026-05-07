@@ -24,11 +24,13 @@
 import { iranWarCommoditiesArticle2026 } from './ezana-echo-article-iran-commodities-2026.js';
 import { sectorDominanceArticle } from './ezana-echo-article-sector-dominance.js';
 import { fiberOpticArticle } from './ezana-echo-article-fiber-optic.js';
+import { hantavirusArticle } from './ezana-echo-article-hantavirus.js';
 
 const ARTICLES = [
   sectorDominanceArticle,
   iranWarCommoditiesArticle2026,
   fiberOpticArticle,
+  hantavirusArticle,
 ];
 
 export const ECHO_TRENDING = {

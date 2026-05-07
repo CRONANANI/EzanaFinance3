@@ -569,6 +569,275 @@ export const KEYWORDS = {
     courseId: 'commodities-101-6',
     courseTitle: 'Agricultural Commodities',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Hantavirus article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'hantavirus-definition': {
+    id: 'hantavirus-definition',
+    term: 'Hantavirus',
+    definition:
+      'A family of viruses carried by rodents that cause two main diseases in humans: Hantavirus Pulmonary Syndrome (HPS) in the Americas and Hemorrhagic Fever with Renal Syndrome (HFRS) in Europe and Asia. HPS has a ~38% case fatality rate. There is no approved vaccine or antiviral treatment.',
+    template: 'comparison',
+    templateData: {
+      title: 'Two forms of hantavirus disease',
+      headers: ['Disease', 'Region', 'Fatality rate', 'Primary carrier'],
+      rows: [
+        { label: 'HPS', cells: ['Americas', '~38%', 'Deer mouse (Peromyscus maniculatus)'] },
+        { label: 'HFRS', cells: ['Europe, Asia', '1–15%', 'Bank vole, striped field mouse'] },
+      ],
+      footnote: '~150,000 HFRS cases reported annually worldwide, mainly in China. HPS cases are rarer but far more lethal.',
+    },
+    realWorld:
+      'Hantavirus is named after the Hantan River in South Korea, where it was first isolated in 1978. In the US, it was identified in 1993 after a cluster of mysterious deaths on a Navajo reservation in the Four Corners region.',
+    courseId: 'health-101-1',
+    courseTitle: 'Infectious Disease & Markets',
+  },
+
+  'andes-virus': {
+    id: 'andes-virus',
+    term: 'Andes Virus',
+    definition:
+      'A strain of hantavirus endemic to South America, primarily carried by the long-tailed pygmy rice rat. It is the ONLY hantavirus with documented human-to-human transmission — all other strains are "dead-end infections" that pass from rodent to human but not person to person.',
+    template: 'schema',
+    templateData: {
+      title: 'Why Andes virus is unique',
+      nodes: [
+        { label: 'Carried by rice rats in Argentina/Chile' },
+        { label: 'Can spread person-to-person (respiratory droplets)' },
+        { label: 'All other hantaviruses: rodent → human only' },
+        { label: 'Incubation: 1–8 weeks' },
+        { label: 'Cruise ship outbreak: possible first closed-environment cluster' },
+      ],
+    },
+    realWorld:
+      'The 2018–2019 Epuyen outbreak in Argentina confirmed person-to-person transmission of Andes virus for the first time. That outbreak infected 34 people and killed 11. The MV Hondius cruise ship outbreak in 2026 may be the second.',
+    courseId: 'health-101-2',
+    courseTitle: 'Emerging Infectious Disease',
+  },
+
+  'who-notification': {
+    id: 'who-notification',
+    term: 'WHO Outbreak Notification',
+    definition:
+      'Under the International Health Regulations (IHR), WHO member states must notify the WHO within 24 hours of any event that may constitute a Public Health Emergency of International Concern (PHEIC). The WHO then coordinates global response through its GOARN (Global Outbreak Alert and Response Network).',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: 'Day 0', label: 'Outbreak detected in a member state' },
+        { year: '24 hours', label: 'National IHR Focal Point notifies WHO' },
+        { year: '48 hours', label: 'WHO assesses risk, notifies all member states' },
+        { year: '72 hours', label: 'GOARN coordination, lab networks activated' },
+      ],
+    },
+    realWorld:
+      'The US withdrew from WHO in January 2025. This means the US no longer receives IHR notifications through the formal cascade — it gets outbreak information on the same timeline as anyone reading the news. For the 2026 World Cup across 11 American cities, this gap in early warning capability is a tangible epidemiological risk.',
+    courseId: 'geopolitics-101-3',
+    courseTitle: 'Global Health Governance',
+  },
+
+  nndss: {
+    id: 'nndss',
+    term: 'NNDSS (National Notifiable Diseases Surveillance System)',
+    definition:
+      'The CDC system that collects and publishes data on nationally notifiable infectious diseases in the United States. Physicians and labs are required by law to report certain diseases — including hantavirus — to state health departments, which relay the data to the CDC through NNDSS.',
+    template: 'schema',
+    templateData: {
+      title: 'How disease surveillance flows',
+      nodes: [
+        { label: 'Patient presents symptoms' },
+        { label: 'Lab confirms pathogen' },
+        { label: 'Physician reports to state' },
+        { label: 'State reports to CDC/NNDSS' },
+        { label: 'CDC publishes weekly MMWR tables' },
+      ],
+    },
+    realWorld:
+      'NNDSS is how we know there have been 864 hantavirus cases in the US since 1993. Without this surveillance system, outbreaks in rural areas would go undetected and uncounted.',
+    courseId: 'health-101-3',
+    courseTitle: 'Public Health Infrastructure',
+  },
+
+  'rodent-population-dynamics': {
+    id: 'rodent-population-dynamics',
+    term: 'Rodent Population Dynamics',
+    definition:
+      'The cyclical rise and fall of rodent populations driven by food availability, weather patterns, and predator pressure. Deer mouse populations boom after wet years (El Niño) when vegetation and seed production increase. More mice = more hantavirus exposure for humans.',
+    template: 'schema',
+    templateData: {
+      title: 'El Niño → mice → hantavirus cycle',
+      nodes: [
+        { label: 'Heavy rains (El Niño)' },
+        { label: 'Abundant vegetation/seeds' },
+        { label: 'Deer mouse population boom' },
+        { label: 'Mice invade human structures' },
+        { label: 'Humans inhale aerosolized excreta' },
+        { label: 'Hantavirus cases spike' },
+      ],
+    },
+    realWorld:
+      'The 1993 hantavirus discovery year — with 48 cases, the highest ever — followed a period of heavy El Niño rains in the Four Corners region. Researchers at UNM have found over 30 small mammal species in New Mexico that carry live hantavirus, beyond just the deer mouse.',
+    courseId: 'health-101-4',
+    courseTitle: 'Environmental Drivers of Disease',
+  },
+
+  'four-corners-region': {
+    id: 'four-corners-region',
+    term: 'Four Corners Region',
+    definition:
+      'The geographic area where Utah, Colorado, New Mexico, and Arizona meet — the only place in the US where four states share a single boundary point. This arid, rural region is the epicenter of US hantavirus cases due to the high density of deer mice in proximity to human dwellings.',
+    template: 'comparison',
+    templateData: {
+      title: 'Four Corners states: hantavirus cases (1993–2023)',
+      headers: ['State', 'Cases', '% of US total'],
+      rows: [
+        { label: 'New Mexico', cells: ['129', '14.9%'] },
+        { label: 'Colorado', cells: ['121', '14.0%'] },
+        { label: 'Arizona', cells: ['92', '10.6%'] },
+        { label: 'Utah', cells: ['48', '5.6%'] },
+      ],
+      footnote: 'Combined: 390 of 864 US cases (45%) from just four states.',
+    },
+    realWorld:
+      'Hantavirus was originally called "Four Corners disease" before it was formally named. The Navajo Nation, which spans parts of all four states, was particularly affected in 1993. Traditional Navajo knowledge already recognized a connection between increased mouse populations and respiratory illness — long before Western medicine identified the virus.',
+    courseId: 'health-101-5',
+    courseTitle: 'Geography of Disease',
+  },
+
+  'incubation-period': {
+    id: 'incubation-period',
+    term: 'Incubation Period',
+    definition:
+      'The time between exposure to a pathogen and the onset of symptoms. For hantavirus, the incubation period is unusually long: 1 to 8 weeks (most commonly 2-4 weeks). This long window makes contact tracing difficult because patients may not remember their exposure event.',
+    template: 'comparison',
+    templateData: {
+      title: 'Incubation periods of notable pathogens',
+      headers: ['Pathogen', 'Incubation', 'Implication'],
+      rows: [
+        { label: 'Influenza', cells: ['1–4 days', 'Rapid spread, rapid detection'] },
+        { label: 'COVID-19', cells: ['2–14 days', 'Moderate tracing window'] },
+        { label: 'Hantavirus', cells: ['1–8 weeks', 'Very difficult to trace exposure'] },
+        { label: 'HIV', cells: ['2–4 weeks (acute)', 'Years before AIDS'] },
+      ],
+      footnote: 'Longer incubation periods make outbreak investigation harder.',
+    },
+    realWorld:
+      'On the MV Hondius, the first patient developed symptoms on April 6 — five days after departure from Ushuaia on April 1. With a 1-8 week incubation period, he could have been infected anytime from early February to early April, including before boarding.',
+    courseId: 'health-101-6',
+    courseTitle: 'Epidemiology Basics',
+  },
+
+  'contact-tracing': {
+    id: 'contact-tracing',
+    term: 'Contact Tracing',
+    definition:
+      'The process of identifying, notifying, and monitoring people who have been in contact with an infected person. For the MV Hondius outbreak, contact tracing spans passengers who disembarked at multiple ports across different countries, co-passengers on medical evacuation flights, and healthcare workers at receiving hospitals.',
+    template: 'schema',
+    templateData: {
+      title: 'MV Hondius contact tracing challenge',
+      nodes: [
+        { label: '147 passengers from 23 countries' },
+        { label: 'Multiple port stops (Antarctica → Saint Helena → Ascension → Cabo Verde)' },
+        { label: 'Medical evacuations to South Africa' },
+        { label: 'Flight co-passengers at risk' },
+        { label: '5 countries coordinating response' },
+      ],
+    },
+    realWorld:
+      'Contact tracing for a cruise ship is exponentially harder than for a land-based outbreak. Passengers scattered to 23 countries after disembarking, each with different health surveillance systems. The WHO is coordinating between Cabo Verde, Netherlands, Spain, South Africa, and the UK.',
+    courseId: 'health-101-7',
+    courseTitle: 'Outbreak Response Methods',
+  },
+
+  ecmo: {
+    id: 'ecmo',
+    term: 'ECMO (Extracorporeal Membrane Oxygenation)',
+    definition:
+      'A life-support machine that pumps blood outside the body through an artificial lung (oxygenator) and back in. Used when the lungs are too damaged to oxygenate blood on their own. In severe hantavirus cases, ECMO can keep patients alive while their lungs recover — but it requires specialized ICU equipment and trained perfusionists.',
+    template: 'schema',
+    templateData: {
+      title: 'How ECMO works',
+      nodes: [
+        { label: 'Blood drawn from patient via catheter' },
+        { label: 'Pumped through artificial oxygenator' },
+        { label: 'CO₂ removed, O₂ added' },
+        { label: 'Blood returned to patient' },
+        { label: 'Buys time for lung recovery (days to weeks)' },
+      ],
+    },
+    realWorld:
+      'ECMO machines cost $100K-$250K each and require 24/7 specialist staffing. Most rural hospitals in the Four Corners region — where hantavirus is most common — do not have ECMO capability. Patients must be airlifted to urban tertiary care centers, adding critical delay.',
+    courseId: 'health-101-8',
+    courseTitle: 'Critical Care Technology',
+  },
+
+  'pandemic-preparedness': {
+    id: 'pandemic-preparedness',
+    term: 'Pandemic Preparedness',
+    definition:
+      "Government and institutional programs to develop countermeasures (vaccines, antivirals, diagnostics) for pathogens with pandemic potential BEFORE an outbreak occurs. The NIH's ReVAMPP program and BARDA's medical countermeasure stockpile are the primary US mechanisms.",
+    template: 'comparison',
+    templateData: {
+      title: 'US pandemic preparedness agencies',
+      headers: ['Agency', 'Role', 'Budget (est.)'],
+      rows: [
+        { label: 'BARDA', cells: ['Develop & stockpile countermeasures', '~$8B/year'] },
+        { label: 'NIH/NIAID', cells: ['Basic research, grants, clinical trials', '~$6B/year'] },
+        { label: 'CDC', cells: ['Surveillance, outbreak response', '~$9B/year'] },
+        { label: 'ASPR', cells: ['Strategic National Stockpile', '~$3B/year'] },
+      ],
+      footnote: 'Hantavirus is classified by NIH as a Category A priority pathogen for biodefense research.',
+    },
+    realWorld:
+      'In 2024, the NIH identified hantaviruses as one of several pathogen families with no effective vaccines or treatments, making them "of special concern for pandemic potential." The ReVAMPP grants fund structural biology, vaccine candidates, and antibody therapies — but progress is slow without a commercial market to incentivize pharma investment.',
+    courseId: 'health-101-9',
+    courseTitle: 'Biodefense & Market Implications',
+  },
+
+  'pcr-diagnostics': {
+    id: 'pcr-diagnostics',
+    term: 'PCR Diagnostics',
+    definition:
+      "Polymerase Chain Reaction (PCR) testing amplifies tiny amounts of viral genetic material to detectable levels. It is the gold standard for confirming hantavirus infection. The MV Hondius outbreak was confirmed when PCR testing at South Africa's National Institute for Communicable Diseases detected hantavirus RNA in a critically ill patient.",
+    template: 'schema',
+    templateData: {
+      title: 'PCR testing process',
+      nodes: [
+        { label: 'Patient blood/tissue sample' },
+        { label: 'RNA extraction' },
+        { label: 'Reverse transcription to cDNA' },
+        { label: 'PCR amplification (30-40 cycles)' },
+        { label: 'Detection: positive if viral RNA present' },
+        { label: 'Sequencing to identify strain (Andes, Sin Nombre, etc.)' },
+      ],
+    },
+    realWorld:
+      'On the MV Hondius, initial testing for influenza, COVID-19, and legionella all came back negative. It took two rounds of negative results before clinicians in South Africa tested for hantavirus — a rarely considered diagnosis. This diagnostic delay cost critical time. Companies like Cepheid (Danaher) and BioMérieux make multiplexed PCR platforms that could include hantavirus on respiratory panels.',
+    courseId: 'health-101-10',
+    courseTitle: 'Diagnostic Technology',
+  },
+
+  'ihr-notifications': {
+    id: 'ihr-notifications',
+    term: 'IHR (International Health Regulations)',
+    definition:
+      'A legally binding framework of 196 countries that requires WHO member states to detect, assess, report, and respond to public health events that may cross borders. The IHR notification cascade compresses the time between outbreak detection and global response from weeks to hours.',
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '2005', label: 'Current IHR adopted after SARS' },
+        { year: '2009', label: 'H1N1 declared PHEIC under IHR' },
+        { year: '2020', label: 'COVID-19 PHEIC — IHR stress-tested' },
+        { year: '2025', label: 'US withdraws from WHO — exits IHR framework' },
+        { year: '2026', label: 'MV Hondius outbreak: US gets no formal IHR notification' },
+      ],
+    },
+    realWorld:
+      'The IHR notification cascade is not a diplomatic nicety — it is the system that compresses outbreak detection-to-response timelines. Without it, the US receives the same information as anyone with an internet connection, on the same timeline. During the 2026 FIFA World Cup, this gap means American public health authorities may learn about relevant outbreaks later than countries still in the WHO system.',
+    courseId: 'geopolitics-101-3',
+    courseTitle: 'Global Health Governance',
+  },
 };
 
 export function getKeywordById(id) {

@@ -33,6 +33,7 @@ import {
   INDUSTRIES,
   INDUSTRY_COLORS,
 } from '@/lib/ezana-echo-article-fiber-optic';
+import { HANTAVIRUS_YEARLY_DATA, HANTAVIRUS_STATE_DATA } from '@/lib/ezana-echo-article-hantavirus';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -176,6 +177,12 @@ function ArticleChart({ variant = 'line', title, caption, data, series = [], ann
   }
   if (variant === 'fiber-optic-world-map') {
     return <FiberOpticWorldMap title={title} caption={caption} />;
+  }
+  if (variant === 'hantavirus-yearly') {
+    return <HantavirusYearlyChart title={title} caption={caption} />;
+  }
+  if (variant === 'hantavirus-state-map') {
+    return <HantavirusStateMap title={title} caption={caption} />;
   }
   return null;
 }
@@ -894,6 +901,204 @@ function fmtLargeNum(n) {
   if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
   if (num >= 1e6) return `$${(num / 1e6).toFixed(0)}M`;
   return `$${num.toLocaleString()}`;
+}
+
+/* ── Hantavirus Yearly Stacked Bar Chart ──────────────────── */
+function HantavirusYearlyChart({ title, caption }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== 'light';
+  const t = {
+    bg: isDark ? '#0d1117' : '#ffffff',
+    text: isDark ? '#c9d1d9' : '#4b5563',
+    grid: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+  };
+
+  return (
+    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem' }}>
+      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#f0f6fc' : '#111827', margin: '0 0 0.75rem' }}>
+        {title || 'U.S. Hantavirus Cases by Year (1993–2023)'}
+      </h4>
+      <div className="echo-chart-responsive-wrap">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={HANTAVIRUS_YEARLY_DATA} barCategoryGap="15%">
+            <CartesianGrid strokeDasharray="3 3" stroke={t.grid} />
+            <XAxis dataKey="year" tick={{ fill: t.text, fontSize: 9 }} interval={2} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: t.text, fontSize: 10 }} axisLine={false} tickLine={false} />
+            <Tooltip
+              contentStyle={{
+                background: isDark ? '#161b22' : '#fff',
+                border: `1px solid ${t.border}`,
+                borderRadius: 8,
+                fontSize: '0.75rem',
+              }}
+              labelStyle={{ color: isDark ? '#f0f6fc' : '#111', fontWeight: 700 }}
+            />
+            <Legend wrapperStyle={{ fontSize: '0.65rem' }} />
+            <Bar dataKey="died" stackId="cases" fill="#3b82f6" name="Died" radius={[0, 0, 0, 0]} />
+            <Bar dataKey="lived" stackId="cases" fill="#86efac" name="Lived" radius={[0, 0, 0, 0]} />
+            <Bar dataKey="unknown" stackId="cases" fill="#bfdbfe" name="Unknown Outcome" radius={[2, 2, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <p style={{ fontSize: '0.6rem', color: t.text, marginTop: '0.5rem', opacity: 0.6 }}>
+        {caption ? `Source: ${caption}. Cases met surveillance case definition at time of reporting.` : 'Source: CDC / NNDSS. Cases met surveillance case definition at time of reporting.'}
+      </p>
+    </div>
+  );
+}
+
+/* ── Hantavirus State Map (Interactive Bubble Map) ──────────── */
+function HantavirusStateMap({ title, caption }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== 'light';
+  const [hoveredState, setHoveredState] = useState(null);
+
+  const t = {
+    bg: isDark ? '#0d1117' : '#ffffff',
+    text: isDark ? '#c9d1d9' : '#4b5563',
+    border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+  };
+
+  const maxCases = Math.max(...HANTAVIRUS_STATE_DATA.map((s) => s.cases));
+
+  const getColor = (cases) => {
+    if (cases > 50) return isDark ? '#dc2626' : '#b91c1c';
+    if (cases > 15) return isDark ? '#f97316' : '#ea580c';
+    return isDark ? '#fbbf24' : '#d97706';
+  };
+
+  const getRadius = (cases) => {
+    const minR = 6;
+    const maxR = 28;
+    return minR + (cases / maxCases) * (maxR - minR);
+  };
+
+  const projectX = (lng) => ((lng + 130) / 65) * 800;
+  const projectY = (lat) => ((50 - lat) / 22) * 450;
+
+  return (
+    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem' }}>
+      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#f0f6fc' : '#111827', margin: '0 0 0.75rem' }}>
+        {title || 'Cumulative Hantavirus Cases by State (1993–2023)'}
+      </h4>
+      <div className="echo-chart-responsive-wrap" style={{ position: 'relative' }}>
+        <svg viewBox="0 0 800 450" style={{ width: '100%', height: 'auto' }}>
+          <rect width="800" height="450" fill="transparent" />
+          {HANTAVIRUS_STATE_DATA.map((s) => {
+            const cx = projectX(s.lng);
+            const cy = projectY(s.lat);
+            const r = getRadius(s.cases);
+            const isHovered = hoveredState === s.state;
+            return (
+              <g
+                key={s.state}
+                onMouseEnter={() => setHoveredState(s.state)}
+                onMouseLeave={() => setHoveredState(null)}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill={getColor(s.cases)}
+                  opacity={isHovered ? 0.95 : 0.7}
+                  stroke={isHovered ? '#fff' : 'none'}
+                  strokeWidth={isHovered ? 2 : 0}
+                />
+                <text
+                  x={cx}
+                  y={cy - r - 3}
+                  textAnchor="middle"
+                  fill={t.text}
+                  fontSize={isHovered ? 11 : 9}
+                  fontWeight={isHovered ? 700 : 600}
+                >
+                  {s.state}
+                </text>
+                {(s.cases > 20 || isHovered) && (
+                  <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize={isHovered ? 11 : 8} fontWeight={700}>
+                    {s.cases}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+        {hoveredState &&
+          (() => {
+            const s = HANTAVIRUS_STATE_DATA.find((x) => x.state === hoveredState);
+            if (!s) return null;
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  background: isDark ? '#161b22' : '#fff',
+                  border: `1px solid ${t.border}`,
+                  borderRadius: 8,
+                  padding: '0.5rem 0.75rem',
+                  fontSize: '0.7rem',
+                  color: isDark ? '#f0f6fc' : '#111',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }}
+              >
+                <div style={{ fontWeight: 700 }}>{s.name}</div>
+                <div style={{ color: getColor(s.cases), fontWeight: 800, fontSize: '1rem' }}>{s.cases} cases</div>
+                <div style={{ fontSize: '0.6rem', color: t.text, opacity: 0.7 }}>1993–2023 cumulative</div>
+              </div>
+            );
+          })()}
+      </div>
+      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.6rem', color: t.text }}>
+        <span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: isDark ? '#fbbf24' : '#d97706',
+              marginRight: 4,
+            }}
+          />
+          1–15
+        </span>
+        <span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: isDark ? '#f97316' : '#ea580c',
+              marginRight: 4,
+            }}
+          />
+          16–50
+        </span>
+        <span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: isDark ? '#dc2626' : '#b91c1c',
+              marginRight: 4,
+            }}
+          />
+          50+
+        </span>
+      </div>
+      <p style={{ fontSize: '0.6rem', color: t.text, marginTop: '0.5rem', opacity: 0.6 }}>
+        {caption
+          ? `Source: ${caption}. All cases confirmed 1993–2023, meeting NNDSS surveillance case definition.`
+          : 'Source: CDC. All cases confirmed 1993–2023, meeting NNDSS surveillance case definition.'}
+      </p>
+    </div>
+  );
 }
 
 function FiberOpticWorldMap({ title, caption }) {
