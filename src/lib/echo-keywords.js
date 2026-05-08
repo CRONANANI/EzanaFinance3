@@ -838,6 +838,276 @@ export const KEYWORDS = {
     courseId: 'geopolitics-101-3',
     courseTitle: 'Global Health Governance',
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     Semiconductor / Silicon Shield article keywords
+     ════════════════════════════════════════════════════════════════════════ */
+
+  'nanometer-process': {
+    id: 'nanometer-process',
+    term: 'Nanometer Process Node',
+    definition:
+      'The "nm" number (e.g., 2nm, 7nm) refers to the size of transistor features on a chip. Smaller nodes pack more transistors per square millimeter, delivering higher performance and lower power consumption. TSMC leads at 2nm; China\'s SMIC targets 7nm domestically.',
+    template: 'comparison',
+    templateData: {
+      title: 'Process node comparison',
+      headers: ['Node', 'Transistor density', 'Performance vs 7nm', 'Leading producer'],
+      rows: [
+        { label: '2nm', cells: ['~490M/mm²', '+45% perf, −75% power', 'TSMC (2025+)'] },
+        { label: '3nm', cells: ['~290M/mm²', '+30% perf, −35% power', 'TSMC, Samsung'] },
+        { label: '5nm', cells: ['~170M/mm²', '+15% perf, −20% power', 'TSMC, Samsung'] },
+        { label: '7nm', cells: ['~96M/mm²', 'Baseline', 'TSMC, Samsung, SMIC (limited)'] },
+      ],
+      footnote: 'Smaller node = more powerful, more efficient, and much harder to manufacture.',
+    },
+    realWorld:
+      'Each node shrink costs $15-20 billion in fab construction and takes 3-5 years of R&D. This is why only TSMC and Samsung can manufacture at the leading edge — the capital barrier is insurmountable for most companies.',
+    courseId: 'tech-fundamentals-8',
+    courseTitle: 'Semiconductor Manufacturing',
+  },
+
+  chokepoint: {
+    id: 'chokepoint',
+    term: 'Economic Chokepoint',
+    definition:
+      "A single point in a supply chain where disruption would cascade through the entire global economy. Taiwan's chip manufacturing is the most consequential chokepoint — more concentrated than oil (multiple producers) or rare earths (substitutes exist).",
+    template: 'comparison',
+    templateData: {
+      title: 'Global economic chokepoints',
+      headers: ['Chokepoint', 'Controls', 'Disruption impact'],
+      rows: [
+        { label: 'Taiwan (TSMC)', cells: ['90% advanced chips', 'Global tech, AI, military — $600B-$1T GDP hit'] },
+        { label: 'Strait of Hormuz', cells: ['20% global oil', 'Energy prices, inflation — $200-400B GDP hit'] },
+        { label: 'ASML (Netherlands)', cells: ['100% EUV lithography machines', 'No new advanced fabs without ASML'] },
+      ],
+      footnote: 'TSMC + ASML together form a two-node chokepoint — you need both to make advanced chips.',
+    },
+    realWorld:
+      'The concentration of advanced chip manufacturing in Taiwan is more extreme than oil in the Middle East. At least 13 countries produce significant oil. Only one company produces 90%+ of advanced chips.',
+    courseId: 'geopolitics-101-4',
+    courseTitle: 'Supply Chain Geopolitics',
+  },
+
+  'pure-play-foundry': {
+    id: 'pure-play-foundry',
+    term: 'Pure-Play Foundry Model',
+    definition:
+      'A business model where a company manufactures chips designed by other companies, without designing or selling its own branded chips. Invented by Morris Chang at TSMC in 1987. This eliminated the conflict of interest that prevented chip designers from outsourcing to competitors.',
+    template: 'schema',
+    templateData: {
+      title: 'How the foundry model works',
+      nodes: [
+        { label: 'Chip designer (Nvidia, Apple, AMD) creates design' },
+        { label: 'Sends design files to TSMC' },
+        { label: 'TSMC manufactures on its fab lines' },
+        { label: 'Ships finished wafers back to designer' },
+        { label: 'Designer packages, tests, and sells to end customers' },
+      ],
+    },
+    realWorld:
+      'Before TSMC, every major chip company had to build its own fabs ($10B+ each). The foundry model let startups like Nvidia focus entirely on design while TSMC handled the capital-intensive manufacturing. This unlocked the fabless revolution.',
+    courseId: 'tech-fundamentals-9',
+    courseTitle: 'Semiconductor Business Models',
+  },
+
+  'silicon-shield': {
+    id: 'silicon-shield',
+    term: 'Silicon Shield',
+    definition:
+      "The geopolitical theory that Taiwan's semiconductor manufacturing dominance deters Chinese invasion — because disrupting TSMC would cause catastrophic global economic damage, compelling Taiwan's allies to intervene militarily.",
+    template: 'schema',
+    templateData: {
+      title: 'Silicon shield deterrence logic',
+      nodes: [
+        { label: 'China considers invasion' },
+        { label: 'TSMC operations disrupted/destroyed' },
+        { label: 'Global chip supply collapses' },
+        { label: 'Tech, auto, defense industries halt' },
+        { label: '$600B-$1T global GDP loss' },
+        { label: 'US/Japan/allies compelled to intervene' },
+      ],
+    },
+    realWorld:
+      'Former President Tsai Ing-wen explicitly named this strategy in Foreign Affairs in 2021. Critics argue the shield is weakening as the US and China build domestic chip capacity — reducing dependence on Taiwan and potentially reducing the deterrent.',
+    courseId: 'geopolitics-101-5',
+    courseTitle: 'Taiwan & Semiconductor Geopolitics',
+  },
+
+  'chips-act': {
+    id: 'chips-act',
+    term: 'CHIPS and Science Act',
+    definition:
+      'A US federal law signed in 2022 providing $52 billion in subsidies and tax credits to incentivize domestic semiconductor manufacturing. The largest recipients include TSMC ($6.6B for Arizona fab), Intel ($8.5B for Ohio/Arizona), and Samsung ($6.4B for Texas).',
+    template: 'comparison',
+    templateData: {
+      title: 'Major CHIPS Act recipients',
+      headers: ['Company', 'Award', 'Location', 'Commitment'],
+      rows: [
+        { label: 'Intel', cells: ['$8.5B', 'Ohio, Arizona, Oregon', '$100B total investment'] },
+        { label: 'TSMC', cells: ['$6.6B', 'Phoenix, Arizona', '$165B total investment'] },
+        { label: 'Samsung', cells: ['$6.4B', 'Taylor, Texas', '$45B total investment'] },
+        { label: 'Micron', cells: ['$6.1B', 'New York, Idaho', '$50B total investment'] },
+      ],
+      footnote: 'Total CHIPS Act funding: $52.7B in manufacturing incentives + $13.2B in R&D.',
+    },
+    realWorld:
+      'The CHIPS Act is the largest US industrial policy intervention since the Interstate Highway Act. It reflects bipartisan recognition that semiconductor manufacturing is a national security priority, not just an economic one.',
+    courseId: 'policy-101-1',
+    courseTitle: 'Industrial Policy & Markets',
+  },
+
+  'made-in-china-2025': {
+    id: 'made-in-china-2025',
+    term: 'Made in China 2025',
+    definition:
+      "A Chinese industrial policy announced in 2015 aiming to transform China into a high-tech manufacturing superpower by 2025. Semiconductors were a key target — China aimed for 70% chip self-sufficiency by 2025 but achieved only ~33%, making it the strategy's biggest shortfall.",
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '2015', label: 'Made in China 2025 announced — 70% chip self-sufficiency target' },
+        { year: '2020', label: 'US export controls block ASML EUV sales to China' },
+        { year: '2023', label: "Huawei's Mate 60 Pro uses SMIC 7nm chip — surprise breakthrough" },
+        { year: '2025', label: 'China reaches ~33% self-sufficiency — misses 70% target' },
+        { year: '2026', label: 'New 80% target set for 2030 by Chinese chip executives' },
+      ],
+    },
+    realWorld:
+      "China's chip ambitions are real but constrained. Without access to ASML's EUV lithography machines (blocked by US/Dutch export controls), Chinese fabs cannot manufacture below ~7nm using standard techniques. SMIC's 7nm breakthrough used older DUV equipment in a multi-patterning process that is slower, more expensive, and lower-yield than EUV.",
+    courseId: 'geopolitics-101-6',
+    courseTitle: "China's Technology Strategy",
+  },
+
+  'two-nanometer': {
+    id: 'two-nanometer',
+    term: '2-Nanometer Chips',
+    definition:
+      "The current leading edge of semiconductor manufacturing. TSMC's 2nm (N2) process uses Gate-All-Around (GAA) transistor architecture — a fundamental redesign from FinFET transistors used since 2012. 2nm chips deliver 45% more performance at 75% less power vs 7nm.",
+    template: 'comparison',
+    templateData: {
+      title: '2nm vs 7nm chips',
+      headers: ['Metric', '7nm', '2nm', 'Improvement'],
+      rows: [
+        { label: 'Performance', cells: ['Baseline', '+45%', '1.45× faster'] },
+        { label: 'Power', cells: ['Baseline', '−75%', '4× more efficient'] },
+        { label: 'Density', cells: ['96M/mm²', '~490M/mm²', '5× more transistors'] },
+        { label: 'Fab cost', cells: ['~$5B', '~$20B+', '4× more expensive to build'] },
+      ],
+      footnote: 'Only TSMC and Samsung are attempting 2nm production. Intel targets 18A (roughly equivalent).',
+    },
+    realWorld:
+      "For AI training, the difference between 7nm and 2nm is roughly the difference between training a model in 6 months versus 6 weeks — same compute, fraction of the power bill. This is why every hyperscaler is competing for TSMC 2nm allocation.",
+    courseId: 'tech-fundamentals-8',
+    courseTitle: 'Semiconductor Manufacturing',
+  },
+
+  'fabless-model': {
+    id: 'fabless-model',
+    term: 'Fabless Semiconductor Company',
+    definition:
+      'A company that designs chips but does not own fabrication facilities (fabs). Instead, it outsources manufacturing to foundries like TSMC. Nvidia, AMD, Qualcomm, Apple, and Broadcom are all fabless — they design the chips that TSMC manufactures.',
+    template: 'comparison',
+    templateData: {
+      title: 'Fabless vs IDM vs Foundry',
+      headers: ['Model', 'Design?', 'Manufacture?', 'Examples'],
+      rows: [
+        { label: 'Fabless', cells: ['Yes', 'No (outsource)', 'Nvidia, AMD, Qualcomm, Apple'] },
+        { label: 'IDM', cells: ['Yes', 'Yes (own fabs)', 'Intel, Micron, Texas Instruments'] },
+        { label: 'Foundry', cells: ['No', 'Yes (for others)', 'TSMC, Samsung Foundry, GlobalFoundries'] },
+      ],
+      footnote: 'Fabless companies capture the highest margins — Nvidia\'s net margin is ~52% vs Intel\'s negative.',
+    },
+    realWorld:
+      'The fabless model is why Nvidia can be worth $5 trillion without owning a single factory. All the manufacturing risk, capital expenditure, and yield headaches belong to TSMC. Nvidia focuses purely on design, software, and ecosystem — the highest-margin activities.',
+    courseId: 'tech-fundamentals-9',
+    courseTitle: 'Semiconductor Business Models',
+  },
+
+  idm: {
+    id: 'idm',
+    term: 'Integrated Device Manufacturer (IDM)',
+    definition:
+      'A semiconductor company that both designs AND manufactures its own chips in its own fabrication facilities. Intel is the most prominent IDM. The model requires massive capital expenditure ($20B+ per fab) but provides full control over the manufacturing process.',
+    template: 'schema',
+    templateData: {
+      title: 'IDM value chain (fully vertical)',
+      nodes: [
+        { label: 'Chip design (in-house)' },
+        { label: 'Wafer fabrication (own fabs)' },
+        { label: 'Testing & packaging' },
+        { label: 'Sales to OEMs and consumers' },
+      ],
+    },
+    realWorld:
+      "Intel's struggle illustrates the IDM challenge: you must be world-class at BOTH design and manufacturing simultaneously. When Intel fell behind TSMC in manufacturing (stuck at 10nm while TSMC shipped 5nm), its entire product line suffered — because unlike Nvidia, Intel couldn't just switch to a better foundry.",
+    courseId: 'tech-fundamentals-9',
+    courseTitle: 'Semiconductor Business Models',
+  },
+
+  'idm-2-0': {
+    id: 'idm-2-0',
+    term: 'IDM 2.0 Strategy',
+    definition:
+      "Intel's strategic pivot announced in 2021: splitting into separate design and foundry divisions, and opening Intel's fabs to manufacture chips for external customers (Intel Foundry Services / IFS). The goal is to combine IDM vertical integration with foundry-model revenue.",
+    template: 'timeline',
+    templateData: {
+      events: [
+        { year: '2021', label: 'Pat Gelsinger announces IDM 2.0 at Intel' },
+        { year: '2022', label: 'IFS launched — Intel accepts external foundry orders' },
+        { year: '2024', label: 'Intel 18A process in development (comparable to 2nm)' },
+        { year: '2025', label: 'CHIPS Act awards Intel $8.5B for Ohio/Arizona fabs' },
+        { year: '2026', label: 'Intel reports -$20.5B net income TTM — turnaround uncertain' },
+      ],
+    },
+    realWorld:
+      "IDM 2.0 is Intel's bet-the-company strategy. If it works, Intel becomes both a leading chip designer AND a TSMC competitor. If it fails, Intel may need to split or sell its foundry business. The -$20.5B net income shows the cost of this transition — Intel is spending massively on new fabs while its existing products lose market share to AMD and Nvidia.",
+    courseId: 'tech-fundamentals-10',
+    courseTitle: "Intel's Transformation",
+  },
+
+  terafab: {
+    id: 'terafab',
+    term: 'Terafab',
+    definition:
+      "Elon Musk's planned advanced chip fabrication facility in Texas for Tesla and SpaceX. The concept consolidates every stage of semiconductor production — design, fabrication, packaging, testing — under one roof. Estimated cost: $25 billion.",
+    template: 'schema',
+    templateData: {
+      title: 'Terafab concept: vertically integrated chip production',
+      nodes: [
+        { label: 'Chip design (Tesla AI team)' },
+        { label: 'Wafer fabrication (on-site)' },
+        { label: 'Advanced packaging' },
+        { label: 'Testing & validation' },
+        { label: 'Direct integration into Tesla/SpaceX products' },
+      ],
+    },
+    realWorld:
+      "Musk's motivation: TSMC cannot produce enough chips for Tesla's Full Self-Driving compute needs and SpaceX's Starlink satellite processors. Building a captive fab eliminates supply chain dependence but requires replicating capabilities that took TSMC 37 years to develop.",
+    courseId: 'tech-fundamentals-11',
+    courseTitle: 'Vertical Integration in Tech',
+  },
+
+  onshoring: {
+    id: 'onshoring',
+    term: 'Onshoring / Reshoring',
+    definition:
+      'The process of moving manufacturing from overseas locations back to the home country. In semiconductors, onshoring refers to the US and European efforts to build domestic chip fabrication capacity to reduce dependence on Taiwan.',
+    template: 'comparison',
+    templateData: {
+      title: 'Semiconductor onshoring efforts',
+      headers: ['Country', 'Investment', 'Key projects'],
+      rows: [
+        { label: 'United States', cells: ['$52B (CHIPS Act) + private', 'TSMC Arizona, Intel Ohio, Samsung Texas'] },
+        { label: 'European Union', cells: ['€43B (EU Chips Act)', 'Intel Magdeburg, TSMC Dresden'] },
+        { label: 'Japan', cells: ['¥3.9T ($26B)', 'TSMC Kumamoto, Rapidus Hokkaido'] },
+        { label: 'India', cells: ['$10B incentives', 'Tata-PSMC Gujarat fab'] },
+      ],
+      footnote: 'Even with these investments, analysts expect Taiwan to retain 60%+ of advanced chip production through 2030.',
+    },
+    realWorld:
+      'Onshoring sounds straightforward but is extraordinarily difficult. TSMC\'s Arizona fab has faced delays, cost overruns, and talent shortages. Building a fab is a $20B+ commitment that takes 3-5 years — and the technology may advance a full node in that time, requiring redesigns.',
+    courseId: 'policy-101-2',
+    courseTitle: 'Manufacturing Reshoring',
+  },
 };
 
 export function getKeywordById(id) {

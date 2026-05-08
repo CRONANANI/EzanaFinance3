@@ -34,6 +34,7 @@ import {
   INDUSTRY_COLORS,
 } from '@/lib/ezana-echo-article-fiber-optic';
 import { HANTAVIRUS_YEARLY_DATA, HANTAVIRUS_STATE_DATA } from '@/lib/ezana-echo-article-hantavirus';
+import { US_SEMI_MARKET_CAP, SEMI_FINANCIALS, FOUNDRY_MARKET_SHARE } from '@/lib/ezana-echo-article-semiconductors';
 
 import '../../../../../app-legacy/assets/css/theme.css';
 import '../../../../../app-legacy/assets/css/unified-component-cards.css';
@@ -183,6 +184,15 @@ function ArticleChart({ variant = 'line', title, caption, data, series = [], ann
   }
   if (variant === 'hantavirus-state-map') {
     return <HantavirusStateMap title={title} caption={caption} />;
+  }
+  if (variant === 'semi-market-cap-ranking') {
+    return <SemiMarketCapChart title={title} caption={caption} />;
+  }
+  if (variant === 'semi-financials-table') {
+    return <SemiFinancialsTable title={title} caption={caption} />;
+  }
+  if (variant === 'foundry-market-share') {
+    return <FoundryMarketShareChart title={title} caption={caption} />;
   }
   return null;
 }
@@ -1097,6 +1107,321 @@ function HantavirusStateMap({ title, caption }) {
           ? `Source: ${caption}. All cases confirmed 1993–2023, meeting NNDSS surveillance case definition.`
           : 'Source: CDC. All cases confirmed 1993–2023, meeting NNDSS surveillance case definition.'}
       </p>
+    </div>
+  );
+}
+
+/* ── Top 10 US Semiconductors — Horizontal Bar Chart ──────── */
+function SemiMarketCapChart({ title, caption }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== 'light';
+  const t = {
+    bg: isDark ? '#0d1117' : '#ffffff',
+    text: isDark ? '#c9d1d9' : '#4b5563',
+    heading: isDark ? '#f0f6fc' : '#111827',
+    border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+    rowBg: isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb',
+    rowHover: isDark ? 'rgba(255,255,255,0.04)' : '#f3f4f6',
+  };
+  const [hovered, setHovered] = useState(null);
+  const maxCap = US_SEMI_MARKET_CAP[0].marketCap;
+
+  return (
+    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem', overflow: 'hidden' }}>
+      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: '0 0 0.75rem' }}>
+        {title || 'Who Dominates U.S. Semiconductors?'}
+      </h4>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '28px 60px 1fr 90px',
+            gap: 8,
+            padding: '4px 8px',
+            fontSize: '0.55rem',
+            fontWeight: 700,
+            color: t.text,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
+          <span>#</span>
+          <span>TICKER</span>
+          <span>COMPANY</span>
+          <span style={{ textAlign: 'right' }}>MARKET CAP</span>
+        </div>
+        {US_SEMI_MARKET_CAP.map((row) => {
+          const barWidth = `${(row.marketCap / maxCap) * 100}%`;
+          const isHov = hovered === row.ticker;
+          return (
+            <div
+              key={row.ticker}
+              role="presentation"
+              onMouseEnter={() => setHovered(row.ticker)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '28px 60px 1fr 90px',
+                gap: 8,
+                alignItems: 'center',
+                padding: '8px 8px',
+                borderRadius: 8,
+                background: isHov ? t.rowHover : row.rank % 2 === 0 ? t.rowBg : 'transparent',
+                transition: 'background 0.15s',
+                cursor: 'pointer',
+                position: 'relative',
+              }}
+            >
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: t.text }}>{row.rank}</span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: t.heading, fontFamily: 'var(--font-mono, monospace)' }}>
+                {row.ticker}
+              </span>
+              <div style={{ position: 'relative', minHeight: 24 }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 2,
+                    height: 20,
+                    width: barWidth,
+                    background: `${row.color}22`,
+                    borderRadius: 4,
+                    transition: 'width 0.5s ease',
+                  }}
+                />
+                <span style={{ position: 'relative', fontSize: '0.7rem', color: t.text, lineHeight: '24px' }}>{row.company}</span>
+              </div>
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: t.heading,
+                  textAlign: 'right',
+                  fontFamily: 'var(--font-mono, monospace)',
+                }}
+              >
+                {row.marketCap >= 1000 ? `$${(row.marketCap / 1000).toFixed(2)}T` : `$${row.marketCap.toFixed(1)}B`}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      {caption && (
+        <p style={{ fontSize: '0.6rem', color: t.text, marginTop: '0.5rem', opacity: 0.6 }}>
+          {caption}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ── Semiconductor Financials Interactive Table ────────────── */
+function SemiFinancialsTable({ title, caption }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== 'light';
+  const [sortKey, setSortKey] = useState('marketCap');
+  const [sortDir, setSortDir] = useState('desc');
+  const t = {
+    bg: isDark ? '#0d1117' : '#ffffff',
+    text: isDark ? '#c9d1d9' : '#4b5563',
+    heading: isDark ? '#f0f6fc' : '#111827',
+    border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+    headerBg: isDark ? '#161b22' : '#1e293b',
+    rowBg: isDark ? 'rgba(255,255,255,0.02)' : '#f9fafb',
+  };
+
+  const sorted = [...SEMI_FINANCIALS].sort((a, b) => {
+    const aVal = a[sortKey] ?? 0;
+    const bVal = b[sortKey] ?? 0;
+    return sortDir === 'desc' ? bVal - aVal : aVal - bVal;
+  });
+
+  const toggleSort = (key) => {
+    if (sortKey === key) setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'));
+    else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const cols = [
+    { key: 'company', label: 'Company', align: 'left', format: (v) => v },
+    { key: 'type', label: 'Type', align: 'left', format: (v) => v },
+    { key: 'revenue', label: 'Revenue TTM', align: 'right', format: (v) => `$${v}B` },
+    { key: 'netIncome', label: 'Net Income TTM', align: 'right', format: (v) => (v < 0 ? `-$${Math.abs(v)}B` : `$${v}B`) },
+    { key: 'marketCap', label: 'Market Cap', align: 'right', format: (v) => (v >= 1000 ? `$${(v / 1000).toFixed(1)}T` : `$${v}B`) },
+  ];
+
+  const sortable = (key) => key === 'revenue' || key === 'netIncome' || key === 'marketCap';
+
+  return (
+    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+      <div style={{ padding: '1rem 1rem 0.5rem' }}>
+        <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: 0 }}>
+          {title || 'U.S. Semiconductor Financials (TTM)'}
+        </h4>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem' }}>
+          <thead>
+            <tr style={{ background: t.headerBg }}>
+              {cols.map((c) => (
+                <th
+                  key={c.key}
+                  scope="col"
+                  onClick={() => sortable(c.key) && toggleSort(c.key)}
+                  style={{
+                    padding: '8px 12px',
+                    textAlign: c.align,
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: '0.6rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    cursor: sortable(c.key) ? 'pointer' : 'default',
+                    whiteSpace: 'nowrap',
+                    userSelect: 'none',
+                  }}
+                >
+                  {c.label} {sortKey === c.key ? (sortDir === 'desc' ? '▼' : '▲') : ''}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((row, i) => (
+              <tr
+                key={row.ticker}
+                style={{
+                  background: i % 2 === 0 ? 'transparent' : t.rowBg,
+                  borderBottom: `1px solid ${t.border}`,
+                }}
+              >
+                {cols.map((c) => (
+                  <td
+                    key={c.key}
+                    style={{
+                      padding: '8px 12px',
+                      textAlign: c.align,
+                      color: c.key === 'netIncome' && row.netIncome < 0 ? '#ef4444' : t.heading,
+                      fontWeight: c.key === 'company' ? 700 : 500,
+                      whiteSpace: 'nowrap',
+                      fontFamily: c.align === 'right' ? 'var(--font-mono, monospace)' : 'inherit',
+                    }}
+                  >
+                    {c.format(row[c.key])}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {caption && (
+        <p style={{ fontSize: '0.6rem', color: t.text, padding: '0.5rem 1rem', opacity: 0.6 }}>
+          {caption}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ── Global Foundry Market Share — Donut Chart ────────────── */
+function FoundryMarketShareChart({ title, caption }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme !== 'light';
+  const [hovered, setHovered] = useState(null);
+  const t = {
+    bg: isDark ? '#0d1117' : '#ffffff',
+    text: isDark ? '#c9d1d9' : '#4b5563',
+    heading: isDark ? '#f0f6fc' : '#111827',
+    border: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+  };
+
+  const cx = 120;
+  const cy = 120;
+  const outerR = 100;
+  const innerR = 60;
+  let cumAngle = -90;
+
+  const slices = FOUNDRY_MARKET_SHARE.map((d) => {
+    const startAngle = cumAngle;
+    const sweep = (d.share / 100) * 360;
+    cumAngle += sweep;
+    const endAngle = startAngle + sweep;
+    const startRad = (startAngle * Math.PI) / 180;
+    const endRad = (endAngle * Math.PI) / 180;
+    const largeArc = sweep > 180 ? 1 : 0;
+    const x1 = cx + outerR * Math.cos(startRad);
+    const y1 = cy + outerR * Math.sin(startRad);
+    const x2 = cx + outerR * Math.cos(endRad);
+    const y2 = cy + outerR * Math.sin(endRad);
+    const ix1 = cx + innerR * Math.cos(endRad);
+    const iy1 = cy + innerR * Math.sin(endRad);
+    const ix2 = cx + innerR * Math.cos(startRad);
+    const iy2 = cy + innerR * Math.sin(startRad);
+    const path = `M ${x1} ${y1} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${innerR} ${innerR} 0 ${largeArc} 0 ${ix2} ${iy2} Z`;
+    return { ...d, path };
+  });
+
+  const hoveredRow = hovered ? FOUNDRY_MARKET_SHARE.find((d) => d.company === hovered) : null;
+
+  return (
+    <div style={{ width: '100%', background: t.bg, borderRadius: 12, border: `1px solid ${t.border}`, padding: '1rem' }}>
+      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: t.heading, margin: '0 0 0.75rem' }}>
+        {title || 'Global Foundry Market Share'}
+      </h4>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <svg viewBox="0 0 240 240" style={{ width: 220, height: 220 }}>
+          {slices.map((s) => (
+            <path
+              key={s.company}
+              d={s.path}
+              fill={s.color}
+              opacity={hovered && hovered !== s.company ? 0.3 : 0.85}
+              stroke={t.bg}
+              strokeWidth={2}
+              onMouseEnter={() => setHovered(s.company)}
+              onMouseLeave={() => setHovered(null)}
+              style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+            />
+          ))}
+          <text x={cx} y={cy - 6} textAnchor="middle" fill={t.heading} fontSize={hovered ? 14 : 22} fontWeight={800}>
+            {hoveredRow ? `${hoveredRow.share}%` : 'TSMC'}
+          </text>
+          <text x={cx} y={cy + 14} textAnchor="middle" fill={t.text} fontSize={hovered ? 10 : 11}>
+            {hoveredRow ? hoveredRow.region : '62% share'}
+          </text>
+        </svg>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {FOUNDRY_MARKET_SHARE.map((d) => (
+            <div
+              key={d.company}
+              role="presentation"
+              onMouseEnter={() => setHovered(d.company)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                cursor: 'pointer',
+                opacity: hovered && hovered !== d.company ? 0.4 : 1,
+                transition: 'opacity 0.2s',
+              }}
+            >
+              <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color, flexShrink: 0 }} />
+              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: t.heading, minWidth: 110 }}>{d.company}</span>
+              <span style={{ fontSize: '0.7rem', color: t.text, fontFamily: 'var(--font-mono, monospace)' }}>{d.share}%</span>
+              <span style={{ fontSize: '0.6rem', color: t.text, opacity: 0.6 }}>{d.region}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {caption && (
+        <p style={{ fontSize: '0.6rem', color: t.text, marginTop: '0.75rem', opacity: 0.6 }}>
+          {caption}
+        </p>
+      )}
     </div>
   );
 }
