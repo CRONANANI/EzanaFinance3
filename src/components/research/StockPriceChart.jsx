@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   AreaChart,
   Area,
@@ -58,6 +58,54 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
 
+  /* ── Click-to-measure: anchor price + current hover price ── */
+  const [anchorPoint, setAnchorPoint] = useState(null);
+  const [hoverPoint, setHoverPoint] = useState(null);
+  const chartContainerRef = useRef(null);
+
+  const handleChartClick = useCallback(
+    (data) => {
+      if (anchorPoint) {
+        setAnchorPoint(null);
+        setHoverPoint(null);
+        return;
+      }
+      if (!data?.activePayload?.[0]) return;
+      const point = data.activePayload[0].payload;
+      setAnchorPoint({
+        price: point.price,
+        label: point.label,
+        index: data.activeTooltipIndex,
+      });
+    },
+    [anchorPoint],
+  );
+
+  const handleChartMouseMove = useCallback(
+    (data) => {
+      if (!anchorPoint || !data?.activePayload?.[0]) {
+        setHoverPoint(null);
+        return;
+      }
+      const point = data.activePayload[0].payload;
+      setHoverPoint({
+        price: point.price,
+        label: point.label,
+        index: data.activeTooltipIndex,
+        chartX: data.chartX,
+        chartY: data.chartY,
+      });
+    },
+    [anchorPoint],
+  );
+
+  const handleChartMouseLeave = useCallback(() => {
+    setHoverPoint(null);
+  }, []);
+
+  const measurePct =
+    anchorPoint && hoverPoint ? ((hoverPoint.price - anchorPoint.price) / anchorPoint.price) * 100 : null;
+
   const fetchCandles = useCallback(async (sym, rng) => {
     if (!sym) return;
     setLoading(true);
@@ -82,6 +130,8 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
 
   useEffect(() => {
     if (!symbol) return;
+    setAnchorPoint(null);
+    setHoverPoint(null);
     fetchCandles(symbol, range);
   }, [symbol, range, fetchCandles]);
 
@@ -178,7 +228,7 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
       </div>
 
       {/* ── Chart body ── */}
-      <div className="chart-viewport-sm relative w-full">
+      <div ref={chartContainerRef} className="chart-viewport-sm relative w-full" style={{ overflow: 'visible' }}>
         {loading && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '8px', color: 'var(--muted-foreground, #6b7280)', fontSize: '0.78rem' }}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" style={{ animation: 'spin 0.9s linear infinite' }}>
@@ -216,41 +266,132 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
         )}
 
         {!loading && candles.length > 0 && (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={candles} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor={lineColour} stopOpacity={0.25} />
-                  <stop offset="100%" stopColor={lineColour} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="2 4" stroke="rgba(128,128,128,0.12)" vertical={false} />
-              <XAxis
-                dataKey="label"
-                tick={{
-                  /* fill via .spc-axis-tick in globals.css (--foreground isn’t in theme; inline SVG
+          <>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={candles}
+                margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+                onClick={handleChartClick}
+                onMouseMove={handleChartMouseMove}
+                onMouseLeave={handleChartMouseLeave}
+                style={{ cursor: anchorPoint ? 'crosshair' : 'pointer' }}
+              >
+                <defs>
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stopColor={lineColour} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={lineColour} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="2 4" stroke="rgba(128,128,128,0.12)" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{
+                    /* fill via .spc-axis-tick in globals.css (--foreground isn’t in theme; inline SVG
                      fill with theme vars fails; stylesheet rules resolve var() on SVG <text>). */
-                  className: 'spc-axis-tick',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-mono, monospace)',
+                    className: 'spc-axis-tick',
+                    fontSize: 10,
+                    fontFamily: 'var(--font-mono, monospace)',
+                  }}
+                  axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={50}
+                />
+                <YAxis
+                  domain={[minPrice, maxPrice]}
+                  tick={{
+                    className: 'spc-axis-tick',
+                    fontSize: 10,
+                    fontFamily: 'var(--font-mono, monospace)',
+                  }}
+                  axisLine={false} tickLine={false} width={40}
+                  tickFormatter={(v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }} />
+                {firstPrice && <ReferenceLine y={firstPrice} stroke="rgba(128,128,128,0.2)" strokeDasharray="3 4" />}
+                {anchorPoint && (
+                  <ReferenceLine
+                    y={anchorPoint.price}
+                    stroke="#D4AF37"
+                    strokeDasharray="4 3"
+                    strokeWidth={1.5}
+                    label={{
+                      value: `$${Number(anchorPoint.price).toFixed(2)}`,
+                      position: 'right',
+                      fill: '#D4AF37',
+                      fontSize: 10,
+                      fontWeight: 700,
+                    }}
+                  />
+                )}
+                {anchorPoint && hoverPoint && (
+                  <ReferenceLine
+                    y={hoverPoint.price}
+                    stroke={measurePct >= 0 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}
+                    strokeDasharray="2 3"
+                    strokeWidth={1}
+                  />
+                )}
+                <Area type="monotone" dataKey="price" stroke={lineColour} strokeWidth={1.5} fill={`url(#${gradientId})`} dot={false} activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+            {anchorPoint && !hoverPoint && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  left: 8,
+                  background: 'rgba(212, 175, 55, 0.12)',
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  borderRadius: 6,
+                  padding: '4px 10px',
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  color: '#D4AF37',
+                  pointerEvents: 'none',
+                  zIndex: 20,
+                  fontVariantNumeric: 'tabular-nums',
                 }}
-                axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={50}
-              />
-              <YAxis
-                domain={[minPrice, maxPrice]}
-                tick={{
-                  className: 'spc-axis-tick',
-                  fontSize: 10,
-                  fontFamily: 'var(--font-mono, monospace)',
+              >
+                Anchored at ${Number(anchorPoint.price).toFixed(2)} · Move mouse to measure · Click to clear
+              </div>
+            )}
+            {measurePct !== null && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  background: measurePct >= 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  border: `1px solid ${measurePct >= 0 ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
+                  borderRadius: 8,
+                  padding: '6px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: 2,
+                  zIndex: 20,
+                  pointerEvents: 'none',
+                  fontVariantNumeric: 'tabular-nums',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                 }}
-                axisLine={false} tickLine={false} width={40}
-                tickFormatter={(v) => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }} />
-              {firstPrice && <ReferenceLine y={firstPrice} stroke="rgba(128,128,128,0.2)" strokeDasharray="3 4" />}
-              <Area type="monotone" dataKey="price" stroke={lineColour} strokeWidth={1.5} fill={`url(#${gradientId})`} dot={false} activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }} />
-            </AreaChart>
-          </ResponsiveContainer>
+              >
+                <span
+                  style={{
+                    fontSize: '1rem',
+                    fontWeight: 800,
+                    color: measurePct >= 0 ? '#10b981' : '#ef4444',
+                    fontFamily: 'var(--font-mono, monospace)',
+                  }}
+                >
+                  {measurePct >= 0 ? '+' : ''}
+                  {measurePct.toFixed(2)}%
+                </span>
+                <span style={{ fontSize: '0.6rem', color: 'var(--muted-foreground, #8b949e)' }}>
+                  ${Number(anchorPoint.price).toFixed(2)} → ${Number(hoverPoint.price).toFixed(2)}
+                  {' · '}$
+                  {Math.abs(hoverPoint.price - anchorPoint.price).toFixed(2)} {measurePct >= 0 ? 'gain' : 'loss'}
+                </span>
+              </div>
+            )}
+          </>
         )}
       </div>
 
