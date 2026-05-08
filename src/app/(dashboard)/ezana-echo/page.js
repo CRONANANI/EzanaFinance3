@@ -146,9 +146,28 @@ export default function EzanaEchoPage() {
           .map((article) => (
             <Link key={article.id} href={`/ezana-echo/${article.id}`} className="echo-article-card">
               <div className="echo-article-card-img-wrap">
-                <div className="echo-article-card-img-placeholder">
-                  <CategoryBadge category={article.category} />
-                </div>
+                {article.heroImage?.src ? (
+                  <div className="echo-article-card-img-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
+                    <img
+                      src={article.heroImage.src}
+                      alt={article.heroImage.alt || article.title}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <div style={{ position: 'absolute', top: 8, left: 8, zIndex: 2 }}>
+                      <CategoryBadge category={article.category} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="echo-article-card-img-placeholder">
+                    <CategoryBadge category={article.category} />
+                  </div>
+                )}
               </div>
               <div className="echo-article-card-body">
                 <p className="echo-article-card-date">

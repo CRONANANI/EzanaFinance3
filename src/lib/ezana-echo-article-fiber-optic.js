@@ -135,6 +135,11 @@ export const fiberOpticArticle = {
   title: "Fiber Optic Cable: Alotta Money In This Stuff",
   excerpt:
     'From a construction site score to a $30 billion global market — how fiber optic cable went from Benny Fazio\'s side hustle to the backbone of the AI revolution, and why Corning\'s stock is outrunning Nvidia.',
+  heroImage: {
+    src: '/benny-fazio-christopher.png',
+    alt: 'Benny Fazio and Christopher Moltisanti at a pizza shop — The Sopranos',
+    caption: '"Fiber optic cable. High-speed internet access." — Benny Fazio',
+  },
   contentBlocks: [
     {
       type: 'paragraph',
