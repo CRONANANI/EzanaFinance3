@@ -51,25 +51,6 @@ export const semiconductorArticle = {
     "One company — TSMC — produces over 90% of the world's most advanced semiconductor chips. These chips power AI training, military systems, smartphones, and the entire digital economy. Taiwan transformed this manufacturing supremacy into what analysts call a \"silicon shield\" — the theory that no rational actor would invade the island and risk disrupting the global chip supply. Here's the full picture for investors.",
   heroImage: null,
   contentBlocks: [
-    {
-      type: 'chart',
-      variant: 'semi-market-cap-ranking',
-      title: 'Who Dominates U.S. Semiconductors? Top 10 by Market Cap',
-      caption: 'Market data as of May 2026',
-    },
-    {
-      type: 'chart',
-      variant: 'semi-financials-table',
-      title: 'U.S. Semiconductor Industry: Financial Comparison (TTM)',
-      caption: 'Company filings, trailing twelve months',
-    },
-    {
-      type: 'chart',
-      variant: 'foundry-market-share',
-      title: 'Global Foundry Market Share',
-      caption: 'TrendForce, Counterpoint Research estimates',
-    },
-
     { type: 'heading', text: 'The Most Important Factory In The World', level: 2 },
     {
       type: 'paragraph',
@@ -78,6 +59,12 @@ export const semiconductorArticle = {
     {
       type: 'paragraph',
       text: "These are not commodity products. They are the processors that train large language models, guide precision munitions, render real-time graphics, and enable every smartphone sold on the planet. Without them, Nvidia cannot ship GPUs. Apple cannot build iPhones. The Pentagon cannot deploy its most advanced weapons systems. The concentration of this capability in a single company, on a single island, 100 miles from a hostile superpower, is the most consequential [[kw:chokepoint]]chokepoint[[/kw]] in the global economy.",
+    },
+    {
+      type: 'chart',
+      variant: 'foundry-market-share',
+      title: 'Global Foundry Market Share',
+      caption: 'TrendForce, Counterpoint Research estimates',
     },
 
     { type: 'heading', text: 'How Taiwan Built A Monopoly On Purpose', level: 2 },
@@ -130,6 +117,12 @@ export const semiconductorArticle = {
     {
       type: 'paragraph',
       text: "Intel's position is particularly notable. Once the undisputed leader in semiconductor manufacturing, Intel has reported negative net income of $20.5 billion TTM while trading at a $107 billion market cap — a fraction of its fabless rivals. The company is attempting a historic pivot under its [[kw:idm-2-0]]IDM 2.0 strategy[[/kw]], splitting into separate design and manufacturing divisions and accepting foundry contracts from other chipmakers. Whether Intel can execute this transformation or become another cautionary tale is one of the most consequential binary outcomes in the sector.",
+    },
+    {
+      type: 'chart',
+      variant: 'semi-financials-table',
+      title: 'U.S. Semiconductor Industry: Financial Comparison (TTM)',
+      caption: 'Company filings, trailing twelve months',
     },
 
     { type: 'heading', text: 'The Talent Problem', level: 2 },

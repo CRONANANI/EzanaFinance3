@@ -915,8 +915,8 @@ function fmtLargeNum(n) {
 
 /* ── Hantavirus Yearly Stacked Bar Chart ──────────────────── */
 function HantavirusYearlyChart({ title, caption }) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== 'light';
+  const { theme } = useTheme();
+  const isDark = theme !== 'light';
   const t = {
     bg: isDark ? '#0d1117' : '#ffffff',
     text: isDark ? '#c9d1d9' : '#4b5563',
@@ -960,8 +960,8 @@ function HantavirusYearlyChart({ title, caption }) {
 
 /* ── Hantavirus State Map (Interactive Bubble Map) ──────────── */
 function HantavirusStateMap({ title, caption }) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== 'light';
+  const { theme } = useTheme();
+  const isDark = theme !== 'light';
   const [hoveredState, setHoveredState] = useState(null);
 
   const t = {
@@ -1113,8 +1113,8 @@ function HantavirusStateMap({ title, caption }) {
 
 /* ── Top 10 US Semiconductors — Horizontal Bar Chart ──────── */
 function SemiMarketCapChart({ title, caption }) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== 'light';
+  const { theme } = useTheme();
+  const isDark = theme !== 'light';
   const t = {
     bg: isDark ? '#0d1117' : '#ffffff',
     text: isDark ? '#c9d1d9' : '#4b5563',
@@ -1217,8 +1217,8 @@ function SemiMarketCapChart({ title, caption }) {
 
 /* ── Semiconductor Financials Interactive Table ────────────── */
 function SemiFinancialsTable({ title, caption }) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== 'light';
+  const { theme } = useTheme();
+  const isDark = theme !== 'light';
   const [sortKey, setSortKey] = useState('marketCap');
   const [sortDir, setSortDir] = useState('desc');
   const t = {
@@ -1328,8 +1328,8 @@ function SemiFinancialsTable({ title, caption }) {
 
 /* ── Global Foundry Market Share — Donut Chart ────────────── */
 function FoundryMarketShareChart({ title, caption }) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme !== 'light';
+  const { theme } = useTheme();
+  const isDark = theme !== 'light';
   const [hovered, setHovered] = useState(null);
   const t = {
     bg: isDark ? '#0d1117' : '#ffffff',
