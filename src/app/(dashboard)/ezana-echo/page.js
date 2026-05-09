@@ -56,9 +56,13 @@ function AuthorAvatar({ name }) {
   );
 }
 
+const HERO_FALLBACK_IMG = '/congress-chamber.jpg';
+
 export default function EzanaEchoPage() {
   const featured = useMemo(() => getFeaturedArticle(), []);
   const allArticles = useMemo(() => getAllArticles(), []);
+  const heroSrc = featured.heroImage?.src ?? HERO_FALLBACK_IMG;
+  const heroAlt = featured.heroImage?.alt ?? featured.title;
 
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState('Newest');
@@ -85,8 +89,8 @@ export default function EzanaEchoPage() {
       <Link href={`/ezana-echo/${featured.id}`} className="echo-hero-banner" aria-label={featured.title}>
         <div className="echo-hero-banner-img-wrap">
           <img
-            src="/congress-chamber.jpg"
-            alt="U.S. Congress chamber"
+            src={heroSrc}
+            alt={heroAlt}
             className="echo-hero-banner-img"
             onError={(e) => {
               e.currentTarget.style.display = 'none';

@@ -196,7 +196,7 @@ export const iranWarCommoditiesArticle2026 = {
   tickers: ['USO', 'XLE', 'XOM', 'CVX', 'EOG', 'AA', 'CF', 'NTR', 'GLD'],
   readTime: 11,
   publishedAt: '2026-04-26',
-  featured: true,
+  featured: false,
   likes: 0,
   comments: 0,
   reads: 0,
