@@ -420,7 +420,7 @@ function CompanyResearchPageInner() {
                 <div className="chart-header compact">
                   <div className="chart-title-area">
                     <h2 className="chart-title">Stock Market Heatmap</h2>
-                    <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Market Cap</span>
+                    <span className="heatmap-subtitle">S&amp;P 500 · Performance YTD % · Tile size by return magnitude</span>
                   </div>
                 </div>
                 <div className="heatmap-container" id="heatmapContainer" data-task-target="research-company-card">
