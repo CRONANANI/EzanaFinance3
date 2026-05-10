@@ -41,6 +41,35 @@ const DAY_LABELS = {
   Friday: 'Fri',
 };
 
+/** Cost basis + cash from mock portfolio JSONB (`mock_portfolios.portfolio`). */
+function mockPortfolioCostPlusCash(portfolio) {
+  if (!portfolio || typeof portfolio !== 'object') return null;
+  const cash = Number(portfolio.cash ?? 0);
+  const cashNum = Number.isFinite(cash) ? cash : 0;
+  const positions = portfolio.positions;
+  let costBasis = 0;
+  let hasPosition = false;
+  if (positions && typeof positions === 'object' && !Array.isArray(positions)) {
+    for (const p of Object.values(positions)) {
+      const qty = Number(p?.shares ?? p?.qty ?? 0) || 0;
+      if (qty <= 0) continue;
+      const avg = Number(p?.avgCost ?? p?.costBasis ?? 0) || 0;
+      costBasis += qty * avg;
+      hasPosition = true;
+    }
+  } else if (Array.isArray(positions)) {
+    for (const p of positions) {
+      const qty = Number(p?.shares ?? p?.qty ?? 0) || 0;
+      if (qty <= 0) continue;
+      const avg = Number(p?.avgCost ?? p?.costBasis ?? 0) || 0;
+      costBasis += qty * avg;
+      hasPosition = true;
+    }
+  }
+  if (!hasPosition && cashNum <= 0) return null;
+  return costBasis + cashNum;
+}
+
 /**
  * GET /api/portfolio/week-series
  *
@@ -48,7 +77,7 @@ const DAY_LABELS = {
  * percent change from Monday's opening value. 5 weekday points (Mon-Fri).
  *
  * Response shape (matches /api/market/index-week single-series shape):
- *   { ok: true, series: [{ day, ymd, value, pct }], source: 'db' | 'synthetic' }
+ *   { ok: true, series: [{ day, ymd, value, pct }], source: 'db' | 'empty' | 'computed' }
  */
 export async function GET(request) {
   try {
@@ -90,17 +119,35 @@ export async function GET(request) {
     const realPoints = slots.filter((s) => s.value != null).length;
 
     if (realPoints < 2) {
-      const seed = user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const rand = (n) => {
-        const x = Math.sin(seed * 1000 + n) * 10000;
-        return x - Math.floor(x);
-      };
-      const synth = slots.map((s, i) => ({
-        ...s,
-        pct: parseFloat(((rand(i) - 0.5) * 1.4).toFixed(3)),
-      }));
-      synth[0].pct = 0;
-      return NextResponse.json({ ok: true, series: synth, source: 'synthetic' });
+      const { data: mockRow } = await supabaseAdmin
+        .from('mock_portfolios')
+        .select('portfolio')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const costPlusCash = mockPortfolioCostPlusCash(mockRow?.portfolio);
+
+      if (costPlusCash == null) {
+        const empty = slots.map((s) => ({ ...s, pct: null }));
+        return NextResponse.json({ ok: true, series: empty, source: 'empty' });
+      }
+
+      if (realPoints === 1) {
+        const baseline = slots.find((s) => s.value != null)?.value;
+        const seriesWithPct = slots.map((s) => {
+          if (s.value == null || baseline == null) return { ...s, pct: null };
+          const pct = ((s.value - baseline) / baseline) * 100;
+          return { ...s, pct: parseFloat(pct.toFixed(3)) };
+        });
+        return NextResponse.json({ ok: true, series: seriesWithPct, source: 'db' });
+      }
+
+      const todayYmd = todayNy();
+      const baselineSeries = slots.map((s) => {
+        if (s.ymd === todayYmd) return { ...s, value: costPlusCash, pct: 0 };
+        return { ...s, pct: null };
+      });
+      return NextResponse.json({ ok: true, series: baselineSeries, source: 'computed' });
     }
 
     const baseline = slots.find((s) => s.value != null)?.value;

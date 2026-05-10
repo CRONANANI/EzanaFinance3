@@ -630,36 +630,27 @@ export function HomeTerminalSummary({
                         : '\u00a0'}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', gap: '0.35rem' }}>
-                      {['1D', '1M', '6M', '1Y'].map((tf) => (
-                        <button
-                          key={tf}
-                          type="button"
-                          onClick={() => setPortfolioValueTf(tf)}
-                          style={{
-                            padding: '0.2rem 0.45rem',
-                            borderRadius: '4px',
-                            border: 'none',
-                            fontSize: '0.625rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            background: portfolioValueTf === tf ? '#10b981' : 'rgba(107, 114, 128, 0.1)',
-                            color: portfolioValueTf === tf ? '#fff' : 'var(--home-muted)',
-                          }}
-                        >
-                          {tf}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.35rem' }}>
-                      <button type="button" className="db-tf-btn-sm active" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Line chart">
-                        <i className="bi bi-graph-up" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
+                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
+                      <button
+                        key={tf}
+                        type="button"
+                        onClick={() => setPortfolioValueTf(tf)}
+                        style={{
+                          padding: '0.2rem 0.4rem',
+                          borderRadius: '4px',
+                          border: 'none',
+                          fontSize: '0.575rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          background: portfolioValueTf === tf ? '#10b981' : 'rgba(107, 114, 128, 0.1)',
+                          color: portfolioValueTf === tf ? '#fff' : 'var(--home-muted)',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {tf}
                       </button>
-                      <button type="button" className="db-tf-btn-sm" style={{ padding: '0.25rem 0.45rem', minWidth: 32 }} aria-label="Bar chart">
-                        <i className="bi bi-bar-chart-line" />
-                      </button>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
