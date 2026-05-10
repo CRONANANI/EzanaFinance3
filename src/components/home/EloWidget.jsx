@@ -30,34 +30,6 @@ const NEXT_TIER = {
   grandmaster: null,
 };
 
-const CATEGORY_LABELS = {
-  learning: { label: 'Learning', icon: 'bi-book' },
-  activity: { label: 'Activity', icon: 'bi-lightning' },
-  portfolio: { label: 'Portfolio', icon: 'bi-graph-up' },
-  social: { label: 'Social', icon: 'bi-people' },
-  competition: { label: 'Competition', icon: 'bi-trophy' },
-  decay: { label: 'Decay', icon: 'bi-hourglass' },
-  admin: { label: 'Admin', icon: 'bi-tools' },
-};
-
-function formatDelta(d) {
-  if (d > 0) return `+${d}`;
-  if (d < 0) return `${d}`;
-  return '0';
-}
-
-function timeAgo(iso) {
-  const now = Date.now();
-  const then = new Date(iso).getTime();
-  const minutes = Math.floor((now - then) / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
 export default function EloWidget() {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +68,6 @@ export default function EloWidget() {
   }
 
   const elo = state.elo || {};
-  const transactions = state.transactions || [];
   const rating = elo.current_rating ?? 0;
   const tier = elo.tier || 'novice';
   const tierInfo = TIER_DISPLAY[tier] || TIER_DISPLAY.novice;
@@ -109,8 +80,6 @@ export default function EloWidget() {
         Math.min(100, ((rating - currentThreshold) / (nextThreshold - currentThreshold)) * 100)
       )
     : 100;
-
-  const recentTransactions = transactions.filter((t) => t.delta !== 0).slice(0, 5);
 
   return (
     <div className="db-card elo-widget" data-dashboard-card>
@@ -152,32 +121,6 @@ export default function EloWidget() {
               {nextThreshold - rating} to {TIER_DISPLAY[nextTier].label}
             </span>
           </div>
-        </div>
-      )}
-
-      {recentTransactions.length > 0 && (
-        <div className="elo-widget-recent">
-          <div className="elo-widget-recent-header">Recent</div>
-          <ul className="elo-widget-recent-list">
-            {recentTransactions.map((tx) => {
-              const catInfo = CATEGORY_LABELS[tx.category] || { label: tx.category, icon: 'bi-asterisk' };
-              const isPositive = tx.delta > 0;
-              return (
-                <li key={tx.id} className="elo-widget-recent-row">
-                  <div className="elo-widget-recent-left">
-                    <i className={`bi ${catInfo.icon} elo-widget-recent-icon`} aria-hidden />
-                    <div className="elo-widget-recent-text">
-                      <span className="elo-widget-recent-reason">{tx.reason}</span>
-                      <span className="elo-widget-recent-time">{timeAgo(tx.created_at)}</span>
-                    </div>
-                  </div>
-                  <span className={`elo-widget-recent-delta ${isPositive ? 'is-up' : 'is-down'}`}>
-                    {formatDelta(tx.delta)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
         </div>
       )}
     </div>
