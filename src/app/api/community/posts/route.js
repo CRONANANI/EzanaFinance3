@@ -83,7 +83,7 @@ async function buildEnrichedResponse(supabase, user, list) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const rawTab = searchParams.get('tab') || 'recent';
+    const rawTab = (searchParams.get('tab') || 'recent').toLowerCase();
     const tab = rawTab === 'latest' ? 'recent' : rawTab;
     const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10));
 
@@ -130,7 +130,26 @@ export async function GET(request) {
           message: 'Follow users to see their posts',
         });
       }
-      query = query.in('user_id', followingIds);
+      const authorIds = [...new Set([...followingIds, user.id])];
+      query = query.in('user_id', authorIds);
+    } else if (tab === 'friends' && user) {
+      const [{ data: outRows }, { data: inRows }] = await Promise.all([
+        supabase.from('user_follows').select('following_id').eq('follower_id', user.id),
+        supabase.from('user_follows').select('follower_id').eq('following_id', user.id),
+      ]);
+      const followingSet = new Set((outRows || []).map((r) => r.following_id));
+      const followerSet = new Set((inRows || []).map((r) => r.follower_id));
+      const mutualIds = [...followingSet].filter((id) => followerSet.has(id));
+      if (mutualIds.length === 0) {
+        return NextResponse.json({
+          posts: [],
+          message: 'No posts from friends yet',
+        });
+      }
+      const authorIds = [...new Set([...mutualIds, user.id])];
+      query = query.in('user_id', authorIds);
+    } else if (tab === 'friends' && !user) {
+      return NextResponse.json({ posts: [], message: "Sign in to see friends' posts" });
     } else if (tab === 'my-posts' && user) {
       query = query.eq('user_id', user.id);
     } else if (tab === 'my-posts' && !user) {

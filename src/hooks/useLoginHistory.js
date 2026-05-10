@@ -30,10 +30,17 @@ export function useLoginHistory(days = 30) {
     (async () => {
       try {
         setIsLoading(true);
-        await fetch('/api/login-history', { method: 'POST', credentials: 'include' }).catch(() => {});
+        const postRes = await fetch('/api/login-history', { method: 'POST', credentials: 'include' });
+        if (!postRes.ok) {
+          const errText = await postRes.text().catch(() => '');
+          console.warn('[useLoginHistory] POST /api/login-history failed:', postRes.status, errText);
+        }
 
         const res = await fetch(`/api/login-history?days=${days}`, { credentials: 'include' });
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.warn('[useLoginHistory] GET /api/login-history failed:', res.status);
+          return;
+        }
         const data = await res.json();
         if (cancelled) return;
         setLoginDates(new Set(data.dates || []));

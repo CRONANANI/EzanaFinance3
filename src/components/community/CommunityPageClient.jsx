@@ -43,7 +43,8 @@ const FEED_TABS = ['Feed', 'Following', 'Friends', 'Discussions', 'Badges'];
 const PAGE_TABS = ['Community', 'My Profile', 'Messages'];
 
 function tabToApiParam(feedTab, feedSort, hasUser) {
-  if (feedTab === 'Following' || feedTab === 'Friends') return 'following';
+  if (feedTab === 'Friends') return 'friends';
+  if (feedTab === 'Following') return 'following';
   if (feedTab === 'Discussions') {
     return feedSort === 'Popular' ? 'trending' : 'recent';
   }
@@ -106,8 +107,8 @@ function FeedSkeleton({ rows = 3 }) {
   );
 }
 
-function TrendingTopicsCard({ topics }) {
-  const PAGE_SIZE = 5;
+function TrendingTopicsCard({ topics, compact = false }) {
+  const PAGE_SIZE = compact ? 5 : 5;
   const [pageIndex, setPageIndex] = useState(0);
 
   const totalPages = Math.max(1, Math.ceil(topics.length / PAGE_SIZE));
@@ -124,6 +125,7 @@ function TrendingTopicsCard({ topics }) {
       className="db-card comm-hero-card comm-trending-card comm-trending-card--paginated"
       data-community-card
       aria-label="Trending topics"
+      style={compact ? { padding: '0.75rem' } : undefined}
     >
       <div className="comm-hero-card-head">
         <div className="comm-card-head-left">
@@ -132,9 +134,11 @@ function TrendingTopicsCard({ topics }) {
           </div>
           <div className="comm-card-head-meta">
             <h3>Trending Topics</h3>
-            <p>
-              Showing {startIdx + 1}–{Math.min(startIdx + PAGE_SIZE, topics.length)} of {topics.length}
-            </p>
+            {!compact && (
+              <p>
+                Showing {startIdx + 1}–{Math.min(startIdx + PAGE_SIZE, topics.length)} of {topics.length}
+              </p>
+            )}
           </div>
         </div>
 
@@ -812,10 +816,31 @@ export default function CommunityPageClient() {
         </div>
       </div>
 
-      {/* ═══ Trending Topics — full-width card below greeting/tabs ═══ */}
-      <div className="comm-hero-cards">
-        <TrendingTopicsCard topics={trendingTopics} />
-      </div>
+      <section
+        className="db-card comm-usersearch-card"
+        data-community-card
+        aria-label="Find investors"
+      >
+        <div className="db-card-header has-icon">
+          <div className="comm-card-head-left">
+            <div className="comm-card-icon" aria-hidden>
+              <i className="bi bi-search" />
+            </div>
+            <div className="comm-card-head-meta">
+              <h3>Find investors</h3>
+              <p>
+                Search by name or email to view their profile and trading
+                activity.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="comm-usersearch-body">
+          <UserSearch />
+        </div>
+      </section>
+
+      {/* Trending topics: compact card in left column (see comm-3col) */}
 
       {/* ═══ KPI strip — community-wide snapshot ═══ */}
       <section className="comm-kpi-row" aria-label="Community at a glance">
@@ -897,15 +922,17 @@ export default function CommunityPageClient() {
           className="db-card comm-kpi-card comm-kpi-card--actionable"
           data-community-card
           onClick={() => setActiveModal('investors-to-follow')}
-          aria-label="View investors with similar holdings"
+          aria-label="View suggested investors"
         >
           <div className="comm-kpi-icon" aria-hidden>
-            <i className="bi bi-person-plus" />
+            <i className="bi bi-stars" />
           </div>
           <div className="comm-kpi-body">
-            <span className="comm-kpi-label">Investors to follow</span>
-            <span className="comm-kpi-value">{suggestedUsers.length}</span>
-            <span className="comm-kpi-sub">Similar to your sectors</span>
+            <span className="comm-kpi-label">Suggested for you</span>
+            <span className="comm-kpi-value">{suggestedUsers.length} investors</span>
+            <span className="comm-kpi-sub">
+              {suggestedUsers[0]?.name ? `Top: ${suggestedUsers[0].name}` : 'Find new connections'}
+            </span>
           </div>
           <i className="bi bi-chevron-right comm-kpi-card__chevron" aria-hidden />
         </button>
@@ -915,34 +942,11 @@ export default function CommunityPageClient() {
         <CommunityKpiModal kind={activeModal} data={kpiModalData} onClose={closeKpiModal} />
       )}
 
-      {/* ═══ Find investors — user search wrapped in the shared card shell ═══ */}
-      <section
-        className="db-card comm-usersearch-card"
-        data-community-card
-        aria-label="Find investors"
-      >
-        <div className="db-card-header has-icon">
-          <div className="comm-card-head-left">
-            <div className="comm-card-icon" aria-hidden>
-              <i className="bi bi-search" />
-            </div>
-            <div className="comm-card-head-meta">
-              <h3>Find investors</h3>
-              <p>
-                Search by name or email to view their profile and trading
-                activity.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="comm-usersearch-body">
-          <UserSearch />
-        </div>
-      </section>
-
       <div className="comm-3col">
           <div className="comm-col-left">
-            <CommunitySocialConnectCard variant={isPartner ? 'partner' : 'user'} />
+            <div style={{ maxHeight: 320, overflow: 'hidden' }}>
+              <TrendingTopicsCard topics={trendingTopics} compact />
+            </div>
             <CopyRequestInbox />
           </div>
 
@@ -1073,100 +1077,6 @@ export default function CommunityPageClient() {
           </div>
 
           <div className="comm-col-right">
-            <section className="db-card suggested-for-you-card" data-community-card aria-label="Suggested investors">
-              <div className="db-card-header has-icon">
-                <div className="comm-card-head-left">
-                  <div className="comm-card-icon" aria-hidden>
-                    <i className="bi bi-stars" />
-                  </div>
-                  <div className="comm-card-head-meta">
-                    <h3>Suggested for You</h3>
-                    <p>Investors worth following this week</p>
-                  </div>
-                </div>
-                <Link href="/leaderboard" className="comm-card-view-all">
-                  View All
-                </Link>
-              </div>
-
-              <div className="comm-leaderboard-body">
-                {suggestedLoading && (
-                  <>
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="comm-list-row" aria-hidden>
-                        <div className="comm-skeleton-avatar" style={{ width: 30, height: 30 }} />
-                        <div className="comm-list-row__body">
-                          <div className="comm-skeleton-line comm-skeleton-line--mid" />
-                          <div className="comm-skeleton-line comm-skeleton-line--short" style={{ marginTop: 4 }} />
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-
-                {!suggestedLoading && suggestedError && (
-                  <div className="comm-state-card comm-state-card--error" role="alert">
-                    <div className="comm-state-card__icon">
-                      <i className="bi bi-exclamation-triangle" aria-hidden />
-                    </div>
-                    <p className="comm-state-card__title">Couldn&apos;t load suggestions</p>
-                    <p className="comm-state-card__desc">
-                      Something went wrong fetching this week&apos;s top investors.
-                    </p>
-                    <button type="button" className="comm-state-card__retry" onClick={loadSuggested}>
-                      Retry
-                    </button>
-                  </div>
-                )}
-
-                {!suggestedLoading && !suggestedError && suggestedUsers.length === 0 && (
-                  <div className="comm-state-card">
-                    <div className="comm-state-card__icon">
-                      <i className="bi bi-people" aria-hidden />
-                    </div>
-                    <p className="comm-state-card__title">No suggestions yet</p>
-                    <p className="comm-state-card__desc">
-                      Check back once this week&apos;s rankings are computed.
-                    </p>
-                  </div>
-                )}
-
-                {!suggestedLoading && !suggestedError && suggestedUsers.length > 0 &&
-                  suggestedUsers.map((u, i) => (
-                    <div key={u.id} className="comm-list-row">
-                      <span className={rankPillClass(i)} aria-label={`Rank ${i + 1}`}>
-                        {i + 1}
-                      </span>
-                      <div className="comm-list-row__avatar" aria-hidden>
-                        {getInitials(u.name)}
-                      </div>
-                      <div className="comm-list-row__body">
-                        <Link href={`/profile/${u.username || u.id}`} className="comm-list-row__name">
-                          {u.name}
-                        </Link>
-                        <p className="comm-list-row__handle">
-                          {u.username ? `@${u.username}` : `${u.followers} followers`}
-                        </p>
-                      </div>
-                      <div className="comm-list-row__trail">
-                        <p className="comm-list-row__trail-primary comm-metric-pos">{u.return}</p>
-                        <p className="comm-list-row__trail-secondary">{u.followers} followers</p>
-                      </div>
-                      {user?.id !== u.id && (
-                        <button
-                          type="button"
-                          disabled={followBusy[u.id]}
-                          onClick={() => handleFollowSuggested(u.id)}
-                          className="comm-follow-btn"
-                        >
-                          {followBusy[u.id] ? '…' : 'Follow'}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </section>
-
             <section className="db-card" data-community-card aria-label="Friends activity">
               <div className="db-card-header has-icon">
                 <div className="comm-card-head-left">

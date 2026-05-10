@@ -58,7 +58,49 @@ export async function POST(request) {
       .from('user_login_history')
       .insert({ user_id: user.id, login_date: todayStr });
 
-    if (error && error.code !== '23505') {
+    if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json({ recorded: true, login_date: todayStr, duplicate: true });
+      }
+
+      if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        console.warn('[login-history] table missing — attempting auto-create via exec_sql RPC');
+        try {
+          await supabaseAdmin.rpc('exec_sql', {
+            sql: `
+              CREATE TABLE IF NOT EXISTS public.user_login_history (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+                login_date DATE NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                CONSTRAINT login_history_user_date_unique UNIQUE (user_id, login_date)
+              );
+              CREATE INDEX IF NOT EXISTS idx_login_history_user_date
+                ON public.user_login_history (user_id, login_date DESC);
+            `,
+          });
+        } catch (rpcErr) {
+          console.warn('[login-history] exec_sql unavailable — apply migration 20260528120000_user_login_history.sql:', rpcErr?.message || rpcErr);
+        }
+
+        const retry = await supabaseAdmin
+          .from('user_login_history')
+          .insert({ user_id: user.id, login_date: todayStr });
+
+        if (retry.error && retry.error.code !== '23505') {
+          console.error('[login-history] insert after auto-create failed:', retry.error);
+          return NextResponse.json(
+            {
+              error: retry.error.message,
+              hint: 'Run supabase migration user_login_history on the database.',
+            },
+            { status: 500 },
+          );
+        }
+
+        return NextResponse.json({ recorded: true, login_date: todayStr, created_table: true });
+      }
+
       console.error('[login-history] insert failed:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -98,6 +140,9 @@ export async function GET(request) {
       .order('login_date', { ascending: false });
 
     if (error) {
+      if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        return NextResponse.json({ dates: [], streakDays: 0, windowDays: days });
+      }
       console.error('[login-history GET] read failed:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
