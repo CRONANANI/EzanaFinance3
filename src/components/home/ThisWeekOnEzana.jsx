@@ -65,15 +65,24 @@ function todayDayLabel() {
   return dayName; // "Mon", "Tue", etc.
 }
 
-const CHART_KEYS = ['spx', 'ixic', 'rut', 'dji', 'portfolio'];
-const MARKET_KEYS = ['spx', 'ixic', 'rut', 'dji'];
+const MARKET_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix', 'wti', 'brent', 'tnx', 'dxy', 'pmi', 'cpi', 'hys', 'bdi'];
 const PORTFOLIO_KEY = 'portfolio';
+const CHART_KEYS = [...MARKET_KEYS, PORTFOLIO_KEY];
 
 const SERIES_COLORS = {
   spx:       '#ef4444',
   ixic:      '#10b981',
   rut:       '#8b5cf6',
   dji:       '#f59e0b',
+  vix:       '#f43f5e',
+  wti:       '#d97706',
+  brent:     '#92400e',
+  tnx:       '#0ea5e9',
+  dxy:       '#14b8a6',
+  pmi:       '#a3e635',
+  cpi:       '#fb923c',
+  hys:       '#e879f9',
+  bdi:       '#22d3ee',
   portfolio: '#06b6d4',
 };
 
@@ -82,7 +91,33 @@ const SERIES_NAMES = {
   ixic:      'NASDAQ',
   rut:       'Russell 2K',
   dji:       'Dow Jones',
+  vix:       'VIX',
+  wti:       'WTI Crude',
+  brent:     'Brent Crude',
+  tnx:       '10Y Treasury',
+  dxy:       'DXY',
+  pmi:       'PMI',
+  cpi:       'CPI',
+  hys:       'HY Spreads',
+  bdi:       'Baltic Dry',
   portfolio: 'My Portfolio',
+};
+
+const SERIES_DESCRIPTIONS = {
+  spx:       'Tracks the 500 largest US public companies. The broadest measure of how well the American stock market is performing overall.',
+  ixic:      'The NASDAQ Composite is heavily weighted toward technology stocks. It tells you how well the tech sector and growth companies are doing relative to the broader market.',
+  rut:       'Tracks 2,000 small-cap US companies. Small caps tend to lead in early recoveries and lag in recessions — a useful economic sentiment gauge.',
+  dji:       'The Dow Jones Industrial Average tracks 30 blue-chip US stocks. It\'s price-weighted, so higher-priced stocks have more influence.',
+  vix:       'The CBOE Volatility Index measures expected market volatility over the next 30 days. Often called the "Fear Index" — a spike in VIX means investors are pricing in uncertainty and hedging aggressively. When VIX is above 30, markets are in stress.',
+  wti:       'West Texas Intermediate is the US benchmark for crude oil. Tracking WTI helps you understand how oil prices are fluctuating, which directly impacts energy stocks, transportation costs, and consumer inflation.',
+  brent:     'Brent Crude is the international benchmark for oil pricing. It tends to trade at a premium to WTI and reflects global supply/demand dynamics, especially from the Middle East and Europe.',
+  tnx:       'The 10-Year US Treasury yield is the benchmark for interest rates across the economy. When yields rise, borrowing costs increase for mortgages, corporate debt, and government spending. It\'s the single most important number in fixed income.',
+  dxy:       'The US Dollar Index tracks the dollar against a basket of 6 major currencies (EUR, JPY, GBP, CAD, SEK, CHF). A strong dollar hurts US exporters and emerging markets; a weak dollar boosts commodity prices and multinationals\' overseas earnings.',
+  pmi:       'The Purchasing Managers\' Index surveys manufacturing executives on new orders, production, and employment. A reading above 50 signals economic expansion; below 50 signals contraction. It\'s one of the earliest indicators of where GDP is heading.',
+  cpi:       'The Consumer Price Index measures the average change in prices consumers pay for goods and services. It\'s the primary measure of inflation that drives Federal Reserve interest rate decisions.',
+  hys:       'The difference between high-yield (junk) bond yields and Treasury yields. When spreads widen, it means investors are demanding more compensation for credit risk — historically one of the strongest recession indicators. Spreads above 500bps have preceded every recession since 1990.',
+  bdi:       'The Baltic Dry Index tracks the cost of shipping raw materials (iron ore, coal, grain) by sea. Because shipping demand can\'t be speculated on (you only book a ship if you need to move cargo), BDI is considered a pure indicator of global trade activity.',
+  portfolio: 'Your portfolio\'s weekly performance based on your mock trading positions. Compare against the indices to see if you\'re outperforming or underperforming the market.',
 };
 
 /**
@@ -129,8 +164,13 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   }, []);
 
   const [visibleSeries, setVisibleSeries] = useState({
-    spx: true, ixic: true, rut: true, dji: true, portfolio: true,
+    spx: true, ixic: true, rut: true, dji: true,
+    vix: false, wti: false, brent: false, tnx: false, dxy: false,
+    pmi: false, cpi: false, hys: false, bdi: false,
+    portfolio: true,
   });
+
+  const [hoveredKey, setHoveredKey] = useState(null);
 
   const toggleSeries = (key) => {
     setVisibleSeries((prev) => {
@@ -216,11 +256,11 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
   return (
     <div className={`hts-week-tab-inner hts-week-market-v3${chartOnly ? ' hts-week-market-v3--chart-only' : ''}`}>
 
-      {correlationDisplay !== null && (
-        <div className="hts-week-corr-badge" aria-label={`Portfolio correlation: ${correlationDisplay}`}>
-          <span className="hts-week-corr-label">Portfolio correlation</span>
-          <span className="hts-week-corr-value" style={{ color: correlationColor }}>
-            {correlationDisplay}
+      {visibleSeries.portfolio && (
+        <div className="hts-week-corr-badge" aria-label={correlationDisplay ? `Portfolio correlation: ${correlationDisplay}` : 'Portfolio correlation: insufficient data'}>
+          <span className="hts-week-corr-label">Portfolio ρ</span>
+          <span className="hts-week-corr-value" style={{ color: correlationDisplay ? correlationColor : 'var(--home-muted)' }}>
+            {correlationDisplay ?? '—'}
           </span>
         </div>
       )}
@@ -304,32 +344,76 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
             </ResponsiveContainer>
           </div>
 
-          <div className="hts-week-legend" role="group" aria-label="Toggle chart series">
+          <div className="hts-week-legend" role="group" aria-label="Toggle chart series" style={{ flexWrap: 'wrap', gap: '0.3rem 0.5rem' }}>
             {CHART_KEYS.map((k) => {
               const isVisible = visibleSeries[k];
               const isMarket = MARKET_KEYS.includes(k);
               const visibleMarketCount = MARKET_KEYS.filter((mk) => visibleSeries[mk]).length;
               const isLastMarket = isMarket && isVisible && visibleMarketCount === 1;
+              const isHovered = hoveredKey === k;
+              const desc = SERIES_DESCRIPTIONS[k];
 
               return (
-                <button
-                  key={k}
-                  type="button"
-                  className={`hts-week-legend-item ${isVisible ? 'is-on' : 'is-off'} ${isLastMarket ? 'is-locked' : ''}`}
-                  onClick={() => toggleSeries(k)}
-                  disabled={isLastMarket}
-                  title={isLastMarket ? 'At least one market must remain selected' : `Toggle ${SERIES_NAMES[k]}`}
-                  aria-pressed={isVisible}
-                >
-                  <span
-                    className="hts-week-legend-swatch"
-                    style={{
-                      background: isVisible ? SERIES_COLORS[k] : 'transparent',
-                      borderColor: SERIES_COLORS[k],
-                    }}
-                  />
-                  <span className="hts-week-legend-label">{SERIES_NAMES[k]}</span>
-                </button>
+                <div key={k} style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    className={`hts-week-legend-item ${isVisible ? 'is-on' : 'is-off'} ${isLastMarket ? 'is-locked' : ''}`}
+                    onClick={() => toggleSeries(k)}
+                    disabled={isLastMarket}
+                    title={isLastMarket ? 'At least one market must remain selected' : undefined}
+                    aria-pressed={isVisible}
+                    onMouseEnter={() => setHoveredKey(k)}
+                    onMouseLeave={() => setHoveredKey(null)}
+                  >
+                    <span
+                      className="hts-week-legend-swatch"
+                      style={{
+                        background: isVisible ? SERIES_COLORS[k] : 'transparent',
+                        borderColor: SERIES_COLORS[k],
+                      }}
+                    />
+                    <span className="hts-week-legend-label">{SERIES_NAMES[k]}</span>
+                  </button>
+
+                  {isHovered && desc && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 'calc(100% + 8px)',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 260,
+                        padding: '0.6rem 0.75rem',
+                        background: '#0d1117',
+                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                        borderRadius: 10,
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                        zIndex: 100,
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.7rem', fontWeight: 700, color: SERIES_COLORS[k] }}>
+                        {SERIES_NAMES[k]}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.6rem', lineHeight: 1.5, color: '#c9d1d9' }}>
+                        {desc}
+                      </p>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: -6,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 0,
+                          height: 0,
+                          borderLeft: '6px solid transparent',
+                          borderRight: '6px solid transparent',
+                          borderTop: '6px solid rgba(16, 185, 129, 0.2)',
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>

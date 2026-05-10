@@ -144,8 +144,8 @@ export async function GET(request) {
 
       const todayYmd = todayNy();
       const baselineSeries = slots.map((s) => {
-        if (s.ymd === todayYmd) return { ...s, value: costPlusCash, pct: 0 };
-        return { ...s, pct: null };
+        if (s.ymd > todayYmd) return { ...s, pct: null };
+        return { ...s, value: costPlusCash, pct: 0 };
       });
       return NextResponse.json({ ok: true, series: baselineSeries, source: 'computed' });
     }

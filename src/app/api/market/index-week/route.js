@@ -7,15 +7,20 @@ const FMP_KEY =
   process.env.NEXT_PUBLIC_FMP_API_KEY;
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
-// Four equity indices — FMP uses caret-prefixed symbols for indices
+// Equity indices + volatility, crude, yields, FX — FMP uses caret-prefixed symbols where applicable
 const INDICES = {
   spx:  { symbol: '^GSPC', name: 'S&P 500' },
   ixic: { symbol: '^IXIC', name: 'NASDAQ' },
   rut:  { symbol: '^RUT',  name: 'Russell 2000' },
   dji:  { symbol: '^DJI',  name: 'Dow Jones' },
+  vix:  { symbol: '^VIX',  name: 'VIX' },
+  wti:  { symbol: 'WTIUSD', name: 'WTI Crude' },
+  brent: { symbol: 'BRENTUSD', name: 'Brent Crude' },
+  tnx:  { symbol: '^TNX',  name: '10Y Treasury' },
+  dxy:  { symbol: 'DX-Y.NYB', name: 'US Dollar Index' },
 };
 
-const INDEX_KEYS = ['spx', 'ixic', 'rut', 'dji'];
+const INDEX_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix', 'wti', 'brent', 'tnx', 'dxy'];
 
 /** Get current NY date as YYYY-MM-DD */
 function todayNy() {
