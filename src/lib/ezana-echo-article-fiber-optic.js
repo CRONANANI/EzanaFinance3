@@ -271,7 +271,7 @@ export const fiberOpticArticle = {
   ],
   author: 'Ezana Finance Editorial',
   category: 'companies',
-  tickers: ['GLW', 'COMM', 'PRY', 'NEX', 'COHR', 'BDC', 'META', 'NVDA'],
+  tickers: ['GLW', 'COMM', 'COHR', 'META', 'NVDA', 'AVGO', 'MSFT', 'AMZN'],
   readTime: 14,
   publishedAt: '2026-05-02',
   featured: false,
