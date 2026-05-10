@@ -4,9 +4,9 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
-/** @typedef {'1D'|'1M'|'6M'|'1Y'} PortfolioRange */
+/** @typedef {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} PortfolioRange */
 
-const RANGE_ORDER = ['1D', '1M', '6M', '1Y'];
+const RANGE_ORDER = ['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'];
 
 /**
  * Fetches `/api/portfolio/value-series?range=` with the range in the URL so

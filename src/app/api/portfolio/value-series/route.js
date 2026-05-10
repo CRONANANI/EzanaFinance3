@@ -6,7 +6,7 @@ import { HERO_DATA } from '@/lib/dashboard-hero-data';
 
 export const dynamic = 'force-dynamic';
 
-const RANGES = new Set(['1D', '1M', '6M', '1Y']);
+const RANGES = new Set(['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL']);
 
 /**
  * @param {import('next/server').NextRequest} req
@@ -19,7 +19,7 @@ export async function GET(req) {
     }
 
     const range = RANGES.has(req.nextUrl.searchParams.get('range'))
-      ? /** @type {'1D'|'1M'|'6M'|'1Y'} */ (req.nextUrl.searchParams.get('range'))
+      ? /** @type {'1D'|'7D'|'1M'|'3M'|'6M'|'1Y'|'ALL'} */ (req.nextUrl.searchParams.get('range'))
       : '1M';
 
     const endValue = await getPortfolioEndValue(user.id);
@@ -35,8 +35,11 @@ export async function GET(req) {
     const fromDate = (() => {
       const t = new Date();
       t.setHours(0, 0, 0, 0);
-      if (range === '1M') t.setDate(t.getDate() - 30);
+      if (range === '7D') t.setDate(t.getDate() - 7);
+      else if (range === '1M') t.setDate(t.getDate() - 30);
+      else if (range === '3M') t.setDate(t.getDate() - 90);
       else if (range === '6M') t.setMonth(t.getMonth() - 6);
+      else if (range === 'ALL') t.setFullYear(t.getFullYear() - 10);
       else t.setDate(t.getDate() - 365);
       return t.toISOString().slice(0, 10);
     })();

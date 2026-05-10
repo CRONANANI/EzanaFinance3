@@ -36,8 +36,35 @@ function holdingColor(ticker) {
   return HOLDING_PALETTE[h % HOLDING_PALETTE.length];
 }
 
+const SECTOR_COLORS = {
+  Technology: '#3b82f6',
+  Healthcare: '#10b981',
+  Finance: '#a78bfa',
+  Defense: '#f59e0b',
+  Energy: '#f97316',
+  Consumer: '#ec4899',
+  ETF: '#06b6d4',
+  Crypto: '#fbbf24',
+  Commodity: '#84cc16',
+  'Communication Services': '#8b5cf6',
+  'Real Estate': '#14b8a6',
+  Industrials: '#f97316',
+  Materials: '#78716c',
+  Utilities: '#22d3ee',
+  'Consumer Defensive': '#fb923c',
+  'Consumer Cyclical': '#ec4899',
+  'Financial Services': '#a78bfa',
+  'Basic Materials': '#78716c',
+  Other: '#6b7280',
+};
+
+function sectorColor(sectorName) {
+  if (!sectorName) return '#6b7280';
+  return SECTOR_COLORS[sectorName] ?? '#6b7280';
+}
+
 /* ═══════════════════════════════════════════════════════════
-   TIMEFRAME-AWARE DATA — Hero + Holdings update when 1D/1M/6M/1Y clicked
+   TIMEFRAME-AWARE DATA — Hero + Holdings update when 1D/7D/1M/3M/6M/1Y/ALL clicked
    Current Value matches Home + Mock Trading: mock.totalValue or Plaid summary, not
    value-series “last” (server / DB prices can differ from client live total).
    ═══════════════════════════════════════════════════════════ */
@@ -324,6 +351,7 @@ export default function HomeDashboardPage() {
         positionValue: pos.posValue,
         change: pos.dayChangePct,
         changeDollar: pos.dayChange,
+        sector: pos.sector || 'Other',
         color: holdingColor(pos.symbol),
         worst: pos.dayChangePct < 0,
       }));
@@ -361,6 +389,7 @@ export default function HomeDashboardPage() {
             positionValue,
             change: ch,
             changeDollar,
+            sector: h.sector || h.type || 'Other',
             color: holdingColor(ticker),
             worst: ch < 0,
           };
@@ -669,7 +698,7 @@ export default function HomeDashboardPage() {
               </span>
             </div>
             <div className="db-hero-timeframes">
-              {['1D', '1M', '6M', '1Y'].map((tf) => (
+              {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
                 <button
                   key={tf}
                   className={`db-tf-btn ${timeframe === tf ? 'active' : ''}`}
@@ -770,7 +799,7 @@ export default function HomeDashboardPage() {
             </div>
             <div className="db-card-header-right">
               <div className="db-tf-group-sm">
-                {['1D', '1M', '6M', '1Y'].map((tf) => (
+                {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
                   <button key={tf} className={`db-tf-btn-sm ${timeframe === tf ? 'active' : ''}`} onClick={() => setTimeframe(tf)}>{tf}</button>
                 ))}
               </div>
@@ -789,9 +818,10 @@ export default function HomeDashboardPage() {
                     key={h.ticker}
                     href={`/trading/mock?symbol=${encodeURIComponent(h.ticker)}`}
                     className={`db-holding-card db-holding-card-link ${chSafe >= 0 ? 'db-holding-positive' : 'db-holding-negative'}`}
+                    style={{ borderLeftColor: sectorColor(h.sector) }}
                   >
                     <div className="db-holding-top">
-                      <span className="db-holding-dot" style={{ background: h.color }} />
+                      <span className="db-holding-dot" style={{ background: sectorColor(h.sector) }} />
                       <div className="db-holding-info">
                         <div className="db-holding-title-row">
                           <span className="db-holding-label">
