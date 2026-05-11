@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser, getAdminClient } from '@/lib/supabase';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase/index';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

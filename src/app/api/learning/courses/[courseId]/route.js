@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase';
+import { getUserClient } from '@/lib/supabase/index';
 import { getCourseById } from '@/lib/learning-curriculum';
 import { getCourseContent } from '@/lib/learning-content';
 import { buildProgressMap, canAccessCourse } from '@/lib/learning-progress-logic';

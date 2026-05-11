@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase';
+import { getUserClient } from '@/lib/supabase/index';
 import { buildLearningCommunityBadgeState } from '@/lib/learning-community-badges';
 
 export const dynamic = 'force-dynamic';
