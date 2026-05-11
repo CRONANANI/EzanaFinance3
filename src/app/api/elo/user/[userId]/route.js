@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserEloState } from '@/lib/elo';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { isValidUuid } from '@/lib/uuid';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export async function GET(_request, { params }) {
   try {
     const { userId } = await params;
 
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

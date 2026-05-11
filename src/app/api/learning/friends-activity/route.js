@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getUserClient, getAdminClient } from '@/lib/supabase';
 import { ALL_COURSES, TRACKS } from '@/lib/learning-curriculum';
 import {
   buildProgressMap,
@@ -13,7 +12,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
+    const supabaseAdmin = getAdminClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

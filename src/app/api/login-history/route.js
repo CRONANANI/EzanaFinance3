@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -47,11 +46,12 @@ function computeStreakFromDates(dateSet) {
  */
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabaseAdmin = getAdminClient();
     const todayStr = utcYmd(new Date());
 
     const { error } = await supabaseAdmin
@@ -114,11 +114,12 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabaseAdmin = getAdminClient();
     const { searchParams } = new URL(request.url);
     const days = Math.min(Math.max(parseInt(searchParams.get('days') || '30', 10), 1), 365);
 

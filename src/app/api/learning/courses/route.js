@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { ALL_COURSES, TRACKS, getTotalCourses } from '@/lib/learning-curriculum';
 import { buildProgressMap, computeTrackSummary, getActiveLearningTrack } from '@/lib/learning-progress-logic';
 
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

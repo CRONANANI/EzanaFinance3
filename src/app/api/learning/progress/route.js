@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
 import { awardELO } from '@/lib/elo';
@@ -110,7 +110,7 @@ async function updateBrokerageFlags(supabase, userId, courseId) {
 
 export async function POST(request) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

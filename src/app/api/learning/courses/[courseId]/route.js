@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getCourseById } from '@/lib/learning-curriculum';
 import { getCourseContent } from '@/lib/learning-content';
 import { buildProgressMap, canAccessCourse } from '@/lib/learning-progress-logic';
@@ -14,7 +14,7 @@ export async function GET(_request, { params }) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

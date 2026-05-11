@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { buildLearningCommunityBadgeState } from '@/lib/learning-community-badges';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

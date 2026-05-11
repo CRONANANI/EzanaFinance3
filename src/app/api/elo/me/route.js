@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 import { getUserEloState, awardELO } from '@/lib/elo';
 import { getCourseById } from '@/lib/learning-curriculum';
 
@@ -25,7 +25,7 @@ export const runtime = 'nodejs';
  * GET /api/elo/me — authenticated user's ELO + recent transactions (session cookie).
  */
 export async function GET() {
-  const supabase = createServerSupabase();
+  const supabase = getUserClient();
 
   const {
     data: { user },
@@ -44,7 +44,7 @@ export async function GET() {
 
   if (!hasLearningElo) {
     try {
-      const sb = createServerSupabase();
+      const sb = getUserClient();
 
       const { data: progress } = await sb
         .from('user_course_progress')
