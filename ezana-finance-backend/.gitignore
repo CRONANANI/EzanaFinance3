@@ -1,6 +1,0 @@
-node_modules/
-functions/lib/
-.env
-*.log
-.firebase/
-.firebaserc.local
