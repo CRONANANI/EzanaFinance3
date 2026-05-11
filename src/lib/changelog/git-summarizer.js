@@ -135,7 +135,10 @@ Output ONLY the JSON object. No markdown fencing, no preamble, no explanation.`;
 
   if (!parsed.title || !parsed.body) return null;
 
-  const VALID_CATEGORIES = ['feature', 'improvement', 'fix', 'announcement', 'breaking'];
+  const VALID_CATEGORIES = [
+    'feature', 'improvement', 'fix', 'announcement', 'breaking',
+    'security', 'design', 'performance', 'data', 'content',
+  ];
   const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : 'improvement';
 
   return {

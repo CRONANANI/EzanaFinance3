@@ -5,7 +5,10 @@ import { isAdminUser } from '@/lib/admin-helpers';
 
 export const dynamic = 'force-dynamic';
 
-const VALID_CATEGORIES = ['feature', 'improvement', 'fix', 'announcement', 'breaking'];
+const VALID_CATEGORIES = [
+  'feature', 'improvement', 'fix', 'announcement', 'breaking',
+  'security', 'design', 'performance', 'data', 'content',
+];
 
 /**
  * OPTIONS /api/admin/changelog
