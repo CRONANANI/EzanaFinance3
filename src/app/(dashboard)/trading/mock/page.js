@@ -195,6 +195,8 @@ function MockTradingPageInner() {
   const [livePrices, setLivePrices] = useState({});
   const [priceFetchError, setPriceFetchError] = useState(null);
 
+  const [posSort, setPosSort] = useState({ key: null, dir: 'desc' });
+
   const fetchQuote = useCallback(async (sym) => {
     if (!sym) return;
     setQuoteLoading(true);
@@ -549,6 +551,76 @@ function MockTradingPageInner() {
   }, [portfolio.positions, portfolio.history, livePrices]);
 
   const positionsList = Object.values(portfolio.positions || {});
+
+  const sortedPositions = useMemo(() => {
+    const list = [...positionsList];
+    if (!posSort.key) return list;
+
+    list.sort((a, b) => {
+      let aVal, bVal;
+
+      switch (posSort.key) {
+        case 'opened': {
+          const aDate = resolveOpenedAt(a, portfolio.history) || '';
+          const bDate = resolveOpenedAt(b, portfolio.history) || '';
+          aVal = aDate;
+          bVal = bDate;
+          return posSort.dir === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+        case 'qty':
+          aVal = Number(a.qty) || 0;
+          bVal = Number(b.qty) || 0;
+          break;
+        case 'avgCost':
+          aVal = Number(a.avgCost) || 0;
+          bVal = Number(b.avgCost) || 0;
+          break;
+        case 'current': {
+          const aLive = resolveLivePrice(livePrices[String(a.symbol || '').trim().toUpperCase()]);
+          const bLive = resolveLivePrice(livePrices[String(b.symbol || '').trim().toUpperCase()]);
+          aVal = aLive ?? a.currentPrice ?? a.avgCost ?? 0;
+          bVal = bLive ?? b.currentPrice ?? b.avgCost ?? 0;
+          break;
+        }
+        case 'pnl': {
+          const aSym = String(a.symbol || '').trim().toUpperCase();
+          const bSym = String(b.symbol || '').trim().toUpperCase();
+          const aCur = resolveLivePrice(livePrices[aSym]) ?? a.currentPrice ?? a.avgCost;
+          const bCur = resolveLivePrice(livePrices[bSym]) ?? b.currentPrice ?? b.avgCost;
+          aVal = (aCur - a.avgCost) * a.qty;
+          bVal = (bCur - b.avgCost) * b.qty;
+          break;
+        }
+        case 'value': {
+          const aSym = String(a.symbol || '').trim().toUpperCase();
+          const bSym = String(b.symbol || '').trim().toUpperCase();
+          const aCur = resolveLivePrice(livePrices[aSym]) ?? a.currentPrice ?? a.avgCost;
+          const bCur = resolveLivePrice(livePrices[bSym]) ?? b.currentPrice ?? b.avgCost;
+          aVal = aCur * a.qty;
+          bVal = bCur * b.qty;
+          break;
+        }
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return posSort.dir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return posSort.dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return list;
+  }, [positionsList, posSort, livePrices, portfolio.history]);
+
+  const togglePosSort = useCallback((key) => {
+    setPosSort((prev) => ({
+      key,
+      dir: prev.key === key && prev.dir === 'desc' ? 'asc' : 'desc',
+    }));
+  }, []);
+
   const openPositionSymbolsKey = useMemo(() => {
     const set = new Set();
     for (const p of Object.values(portfolio.positions || {})) {
@@ -872,17 +944,30 @@ function MockTradingPageInner() {
                   <thead>
                     <tr>
                       <th>Asset</th>
-                      <th>Opened</th>
-                      <th>Qty</th>
-                      <th>Avg Cost</th>
-                      <th>Current</th>
-                      <th>P&amp;L</th>
-                      <th>Current Value</th>
+                      {[
+                        { key: 'opened', label: 'Opened' },
+                        { key: 'qty', label: 'Qty' },
+                        { key: 'avgCost', label: 'Avg Cost' },
+                        { key: 'current', label: 'Current' },
+                        { key: 'pnl', label: 'P&L' },
+                        { key: 'value', label: 'Current Value' },
+                      ].map((col) => (
+                        <th
+                          key={col.key}
+                          onClick={() => togglePosSort(col.key)}
+                          style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                        >
+                          {col.label}{' '}
+                          <span style={{ fontSize: '0.6rem', opacity: posSort.key === col.key ? 1 : 0.3 }}>
+                            {posSort.key === col.key ? (posSort.dir === 'desc' ? '▼' : '▲') : '▼'}
+                          </span>
+                        </th>
+                      ))}
                       <th />
                     </tr>
                   </thead>
                   <tbody>
-                    {positionsList.map((pos) => {
+                    {sortedPositions.map((pos) => {
                       const sym = String(pos.symbol || '').trim().toUpperCase();
                       const livePx = resolveLivePrice(livePrices[sym]);
                       const curPrice = livePx ?? pos.currentPrice ?? pos.avgCost;
