@@ -66,7 +66,7 @@ export function Navbar() {
         { id: 29, title: 'Kairos Signal', description: 'Weather & alternative macro data', url: '/kairos-signal', icon: 'bi-cloud-sun-fill', variant: 'gold' },
         { id: 25, title: 'Betting Markets', description: 'Odds, predictions & EV models', url: '/betting-markets', icon: 'bi-bullseye', variant: 'gold' },
         { id: 24, title: 'For The Quants', description: 'Quant tools & backtesting', url: '/for-the-quants', icon: 'bi-calculator', variant: 'gold' },
-        { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building' },
+        { id: 21, title: 'Inside The Capitol', description: 'Congressional trading', url: '/inside-the-capitol', icon: 'bi-building', variant: 'gold' },
       ],
     },
     {
