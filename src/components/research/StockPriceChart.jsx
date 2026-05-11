@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts';
 
 const RANGES = ['1D', '1W', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'ALL'];
@@ -58,53 +59,92 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
 
-  /* ── Click-to-measure: anchor price + current hover price ── */
-  const [anchorPoint, setAnchorPoint] = useState(null);
-  const [hoverPoint, setHoverPoint] = useState(null);
+  /* ── Google-style drag-to-measure ── */
+  const [dragStart, setDragStart] = useState(null);
+  const [dragEnd, setDragEnd] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [measurement, setMeasurement] = useState(null);
   const chartContainerRef = useRef(null);
 
-  const handleChartClick = useCallback(
-    (data) => {
-      if (anchorPoint) {
-        setAnchorPoint(null);
-        setHoverPoint(null);
-        return;
-      }
-      if (!data?.activePayload?.[0]) return;
-      const point = data.activePayload[0].payload;
-      setAnchorPoint({
-        price: point.price,
-        label: point.label,
-        index: data.activeTooltipIndex,
-      });
-    },
-    [anchorPoint],
-  );
+  const handleChartMouseDown = useCallback((data) => {
+    if (!data?.activePayload?.[0]) return;
+    const point = data.activePayload[0].payload;
+    if (measurement) {
+      setMeasurement(null);
+      return;
+    }
+    const idx =
+      typeof data.activeTooltipIndex === 'number'
+        ? data.activeTooltipIndex
+        : candles.findIndex((c) => c.label === point.label);
+    setDragStart({
+      price: point.price,
+      label: point.label,
+      index: idx >= 0 ? idx : 0,
+    });
+    setDragEnd(null);
+    setIsDragging(true);
+  }, [measurement, candles]);
 
-  const handleChartMouseMove = useCallback(
-    (data) => {
-      if (!anchorPoint || !data?.activePayload?.[0]) {
-        setHoverPoint(null);
-        return;
-      }
-      const point = data.activePayload[0].payload;
-      setHoverPoint({
-        price: point.price,
-        label: point.label,
-        index: data.activeTooltipIndex,
-        chartX: data.chartX,
-        chartY: data.chartY,
-      });
-    },
-    [anchorPoint],
-  );
+  const handleChartMouseMove = useCallback((data) => {
+    if (!isDragging || !dragStart || !data?.activePayload?.[0]) return;
+    const point = data.activePayload[0].payload;
+    const idx =
+      typeof data.activeTooltipIndex === 'number'
+        ? data.activeTooltipIndex
+        : candles.findIndex((c) => c.label === point.label);
+    setDragEnd({
+      price: point.price,
+      label: point.label,
+      index: idx >= 0 ? idx : 0,
+    });
+  }, [isDragging, dragStart, candles]);
+
+  const handleChartMouseUp = useCallback(() => {
+    if (!isDragging) return;
+    if (!dragStart || !dragEnd) {
+      setIsDragging(false);
+      setDragStart(null);
+      setDragEnd(null);
+      return;
+    }
+    const startPrice = dragStart.price;
+    const endPrice = dragEnd.price;
+    const dollarChange = endPrice - startPrice;
+    const pct = ((endPrice - startPrice) / startPrice) * 100;
+
+    setMeasurement({
+      start: dragStart,
+      end: dragEnd,
+      pct,
+      dollarChange,
+      dateRange: `${dragStart.label} – ${dragEnd.label}`,
+      startIndex: Math.min(dragStart.index, dragEnd.index),
+      endIndex: Math.max(dragStart.index, dragEnd.index),
+    });
+    setIsDragging(false);
+    setDragStart(null);
+    setDragEnd(null);
+  }, [isDragging, dragStart, dragEnd]);
 
   const handleChartMouseLeave = useCallback(() => {
-    setHoverPoint(null);
-  }, []);
+    if (isDragging) {
+      if (dragStart && dragEnd) {
+        handleChartMouseUp();
+      } else {
+        setIsDragging(false);
+        setDragStart(null);
+        setDragEnd(null);
+      }
+    }
+  }, [isDragging, dragStart, dragEnd, handleChartMouseUp]);
 
-  const measurePct =
-    anchorPoint && hoverPoint ? ((hoverPoint.price - anchorPoint.price) / anchorPoint.price) * 100 : null;
+  const activePct = isDragging && dragStart && dragEnd
+    ? ((dragEnd.price - dragStart.price) / dragStart.price) * 100
+    : null;
+  const activeDollar = isDragging && dragStart && dragEnd
+    ? dragEnd.price - dragStart.price
+    : null;
 
   const fetchCandles = useCallback(async (sym, rng) => {
     if (!sym) return;
@@ -130,8 +170,10 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
 
   useEffect(() => {
     if (!symbol) return;
-    setAnchorPoint(null);
-    setHoverPoint(null);
+    setDragStart(null);
+    setDragEnd(null);
+    setIsDragging(false);
+    setMeasurement(null);
     fetchCandles(symbol, range);
   }, [symbol, range, fetchCandles]);
 
@@ -271,10 +313,11 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
               <AreaChart
                 data={candles}
                 margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-                onClick={handleChartClick}
+                onMouseDown={handleChartMouseDown}
                 onMouseMove={handleChartMouseMove}
+                onMouseUp={handleChartMouseUp}
                 onMouseLeave={handleChartMouseLeave}
-                style={{ cursor: anchorPoint ? 'crosshair' : 'pointer' }}
+                style={{ cursor: isDragging ? 'col-resize' : 'crosshair', userSelect: 'none' }}
               >
                 <defs>
                   <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -306,89 +349,112 @@ export default function StockPriceChart({ symbol, livePrice = null, stats = null
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(128,128,128,0.2)', strokeWidth: 1 }} />
                 {firstPrice && <ReferenceLine y={firstPrice} stroke="rgba(128,128,128,0.2)" strokeDasharray="3 4" />}
-                {anchorPoint && (
-                  <ReferenceLine
-                    y={anchorPoint.price}
-                    stroke="#D4AF37"
-                    strokeDasharray="4 3"
-                    strokeWidth={1.5}
-                    label={{
-                      value: `$${Number(anchorPoint.price).toFixed(2)}`,
-                      position: 'right',
-                      fill: '#D4AF37',
-                      fontSize: 10,
-                      fontWeight: 700,
-                    }}
+                {isDragging && dragStart && dragEnd && (
+                  <ReferenceArea
+                    x1={candles[Math.min(dragStart.index, dragEnd.index)]?.label}
+                    x2={candles[Math.max(dragStart.index, dragEnd.index)]?.label}
+                    fill={activePct >= 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)'}
+                    strokeOpacity={0}
                   />
                 )}
-                {anchorPoint && hoverPoint && (
-                  <ReferenceLine
-                    y={hoverPoint.price}
-                    stroke={measurePct >= 0 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}
-                    strokeDasharray="2 3"
-                    strokeWidth={1}
+                {measurement && (
+                  <ReferenceArea
+                    x1={candles[measurement.startIndex]?.label}
+                    x2={candles[measurement.endIndex]?.label}
+                    fill={measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}
+                    stroke={measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}
+                    strokeDasharray="3 3"
                   />
                 )}
                 <Area type="monotone" dataKey="price" stroke={lineColour} strokeWidth={1.5} fill={`url(#${gradientId})`} dot={false} activeDot={{ r: 3, fill: lineColour, strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
-            {anchorPoint && !hoverPoint && (
+            {isDragging && dragStart && dragEnd && activePct !== null && (
               <div
                 style={{
                   position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  background: 'rgba(212, 175, 55, 0.12)',
-                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                  borderRadius: 6,
-                  padding: '4px 10px',
-                  fontSize: '0.65rem',
-                  fontWeight: 600,
-                  color: '#D4AF37',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  background: 'rgba(13, 17, 23, 0.92)',
+                  border: `1px solid ${activePct >= 0 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
+                  borderRadius: 10,
+                  padding: '8px 16px',
                   pointerEvents: 'none',
-                  zIndex: 20,
-                  fontVariantNumeric: 'tabular-nums',
+                  zIndex: 30,
+                  textAlign: 'center',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 }}
               >
-                Anchored at ${Number(anchorPoint.price).toFixed(2)} · Move mouse to measure · Click to clear
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, justifyContent: 'center' }}>
+                  <span style={{
+                    fontSize: '0.95rem', fontWeight: 800, fontFamily: 'var(--font-mono, monospace)',
+                    color: activePct >= 0 ? '#10b981' : '#ef4444',
+                  }}
+                  >
+                    {activeDollar >= 0 ? '+' : ''}{activeDollar.toFixed(2)}
+                  </span>
+                  <span style={{
+                    fontSize: '0.8rem', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)',
+                    color: activePct >= 0 ? '#10b981' : '#ef4444',
+                  }}
+                  >
+                    ({Math.abs(activePct).toFixed(2)}%)
+                  </span>
+                  <span style={{ fontSize: '0.85rem', color: activePct >= 0 ? '#10b981' : '#ef4444' }}>
+                    {activePct >= 0 ? '↑' : '↓'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.6rem', color: '#8b949e', marginTop: 3 }}>
+                  {dragStart.label} – {dragEnd.label}
+                </div>
               </div>
             )}
-            {measurePct !== null && (
+
+            {measurement && !isDragging && (
               <div
                 style={{
                   position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  background: measurePct >= 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                  border: `1px solid ${measurePct >= 0 ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
-                  borderRadius: 8,
-                  padding: '6px 14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                  gap: 2,
-                  zIndex: 20,
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  background: 'rgba(13, 17, 23, 0.95)',
+                  border: `1px solid ${measurement.pct >= 0 ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`,
+                  borderRadius: 10,
+                  padding: '10px 18px',
                   pointerEvents: 'none',
-                  fontVariantNumeric: 'tabular-nums',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  zIndex: 30,
+                  textAlign: 'center',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: '1rem',
-                    fontWeight: 800,
-                    color: measurePct >= 0 ? '#10b981' : '#ef4444',
-                    fontFamily: 'var(--font-mono, monospace)',
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, justifyContent: 'center' }}>
+                  <span style={{
+                    fontSize: '1.05rem', fontWeight: 800, fontFamily: 'var(--font-mono, monospace)',
+                    color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
                   }}
-                >
-                  {measurePct >= 0 ? '+' : ''}
-                  {measurePct.toFixed(2)}%
-                </span>
-                <span style={{ fontSize: '0.6rem', color: 'var(--muted-foreground, #8b949e)' }}>
-                  ${Number(anchorPoint.price).toFixed(2)} → ${Number(hoverPoint.price).toFixed(2)}
-                  {' · '}$
-                  {Math.abs(hoverPoint.price - anchorPoint.price).toFixed(2)} {measurePct >= 0 ? 'gain' : 'loss'}
-                </span>
+                  >
+                    {measurement.dollarChange >= 0 ? '+' : ''}{measurement.dollarChange.toFixed(2)}
+                  </span>
+                  <span style={{
+                    fontSize: '0.85rem', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)',
+                    color: measurement.pct >= 0 ? '#10b981' : '#ef4444',
+                  }}
+                  >
+                    ({Math.abs(measurement.pct).toFixed(2)}%)
+                  </span>
+                  <span style={{ fontSize: '0.95rem', color: measurement.pct >= 0 ? '#10b981' : '#ef4444' }}>
+                    {measurement.pct >= 0 ? '↑' : '↓'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.625rem', color: '#8b949e', marginTop: 4 }}>
+                  {measurement.dateRange}
+                </div>
+                <div style={{ fontSize: '0.5rem', color: '#6b7280', marginTop: 2 }}>
+                  Click anywhere to clear
+                </div>
               </div>
             )}
           </>
