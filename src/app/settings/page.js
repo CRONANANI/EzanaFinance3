@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -68,6 +68,54 @@ function SettingsInner() {
   const { isPartner } = usePartner();
   const { isOrgUser, orgRole } = useOrg();
   const dashboardPath = isPartner ? '/partner-home' : '/home-dashboard';
+
+  const [backLabel, setBackLabel] = useState('Dashboard');
+  const [backPath, setBackPath] = useState(dashboardPath);
+  const backFromReferrerRef = useRef(false);
+
+  useEffect(() => {
+    try {
+      const ref = document.referrer;
+      if (ref) {
+        const url = new URL(ref);
+        const path = url.pathname;
+        const PAGE_NAMES = {
+          '/home': 'Home',
+          '/home-dashboard': 'Dashboard',
+          '/company-research': 'Company Research',
+          '/market-analysis': 'Market Analysis',
+          '/trading/mock': 'Mock Trading',
+          '/ezana-echo': 'Ezana Echo',
+          '/community': 'Community',
+          '/for-the-quants': 'For The Quants',
+          '/centaur-intelligence': 'Centaur Intelligence',
+          '/betting-markets': 'Betting Markets',
+          '/inside-the-capitol': 'Inside The Capitol',
+          '/kairos-signal': 'Kairos Signal',
+          '/learning-center': 'Learning Center',
+          '/alternative-markets': 'Alternative Markets',
+          '/watchlist': 'Watchlist',
+          '/changelog': 'Changelog',
+          '/partner-home': 'Partner Home',
+        };
+        const match =
+          PAGE_NAMES[path] || Object.entries(PAGE_NAMES).find(([p]) => path.startsWith(`${p}/`))?.[1];
+        if (match) {
+          backFromReferrerRef.current = true;
+          setBackLabel(match);
+          setBackPath(path);
+        }
+      }
+    } catch {
+      /* referrer parsing failed — keep defaults */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!backFromReferrerRef.current) {
+      setBackPath(dashboardPath);
+    }
+  }, [dashboardPath]);
 
   const {
     settings,
@@ -145,11 +193,12 @@ function SettingsInner() {
   return (
     <div className="settings-page">
       <header className="settings-header">
-        <Link href={dashboardPath} className="settings-header-back">
-          <i className="bi bi-arrow-left" />
-          <span>Back to Dashboard</span>
-        </Link>
-        <h1 className="settings-header-title">Settings</h1>
+        <div className="settings-header-inner">
+          <Link href={backPath} className="settings-header-back">
+            <i className="bi bi-arrow-left" />
+            <span>Back to {backLabel}</span>
+          </Link>
+        </div>
       </header>
 
       <div className="settings-mobile-selector">
@@ -211,11 +260,11 @@ function SettingsInner() {
           <div className="settings-sidebar-footer">
             <button
               className="settings-back-btn"
-              onClick={() => router.push(dashboardPath)}
+              onClick={() => router.push(backPath)}
               type="button"
             >
               <i className="bi bi-arrow-left" />
-              <span>Back to Dashboard</span>
+              <span>Back to {backLabel}</span>
             </button>
           </div>
         </aside>
