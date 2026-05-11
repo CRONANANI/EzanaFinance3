@@ -40,6 +40,11 @@ const OrgSendToTeamModal = dynamic(
   { ssr: false, loading: () => null }
 );
 
+const StockPriceChart = dynamic(
+  () => import('@/components/research/StockPriceChart'),
+  { ssr: false }
+);
+
 /* ── Helpers ── */
 function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
 function fmtPrice(n) {
@@ -814,11 +819,21 @@ export default function WatchlistPage() {
             </div>
           </div>
 
-          <div className="wl-tr-row">
-            {TIME_RANGES.map(t => <button key={t} type="button" className={`wl-tr ${timeRange===t?'on':''}`} onClick={()=>setTimeRange(t)}>{t}</button>)}
-        </div>
-
-          <Chart item={selectedMerged} timeRange={timeRange}/>
+          {selected?.type === 'stock' && selected?.ticker ? (
+            <div style={{ width: '100%' }}>
+              <StockPriceChart
+                symbol={selected.ticker}
+                livePrice={selectedMerged?.price ?? null}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="wl-tr-row">
+                {TIME_RANGES.map(t => <button key={t} type="button" className={`wl-tr ${timeRange===t?'on':''}`} onClick={()=>setTimeRange(t)}>{t}</button>)}
+              </div>
+              <Chart item={selectedMerged} timeRange={timeRange}/>
+            </>
+          )}
 
           {comparableRows.length > 0 && (
             <div className="wl-top-assets wl-comp-section">
