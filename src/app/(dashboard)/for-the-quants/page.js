@@ -1,6 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -43,59 +52,72 @@ function generatePoints(seed, n, min, max) {
   return pts;
 }
 
-function pointsToPath(pts, w, h) {
-  const min = Math.min(...pts);
-  const max = Math.max(...pts);
-  const range = max - min || 1;
-  const pad = 6;
-  return pts
-    .map((p, i) => {
-      const x = (i / (pts.length - 1)) * w;
-      const y = pad + (h - 2 * pad) * (1 - (p - min) / range);
-      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
-}
-
-function MiniEquityChart({ seed = 1, color = '#10b981' }) {
-  const w = 280;
-  const h = 72;
+function MiniEquityChart({ seed = 1 }) {
   const pts = useMemo(() => generatePoints(seed, 40, 100, 220), [seed]);
-  const line = pointsToPath(pts, w, h);
-  const min = Math.min(...pts);
-  const max = Math.max(...pts);
-  const range = max - min || 1;
-  const pad = 6;
-  const pointXY = (idx) => {
-    const p = pts[idx];
-    const x = (idx / (pts.length - 1)) * w;
-    const y = pad + (h - 2 * pad) * (1 - (p - min) / range);
-    return { x, y };
-  };
-  const markerIdx = [
-    Math.min(pts.length - 1, Math.floor(pts.length * 0.22)),
-    Math.min(pts.length - 1, Math.floor(pts.length * 0.52)),
-    Math.min(pts.length - 1, Math.floor(pts.length * 0.78)),
-  ];
+
+  const data = useMemo(
+    () =>
+      pts.map((val, i) => ({
+        day: i === 0 ? 'Start' : i === pts.length - 1 ? 'End' : `D${i}`,
+        value: parseFloat(val.toFixed(2)),
+      })),
+    [pts]
+  );
+
+  const startVal = data[0]?.value ?? 0;
+  const endVal = data[data.length - 1]?.value ?? 0;
+  const isPositive = endVal >= startVal;
+  const lineColor = isPositive ? '#10b981' : '#ef4444';
+  const gradId = `ftq-eq-grad-${seed}`;
+
   return (
-    <div className="ftq-mini-chart-wrap">
-      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block' }}>
-        <path d={line} fill="none" stroke={color} strokeWidth="2" />
-        {markerIdx.map((idx, i) => {
-          const { x, y } = pointXY(idx);
-          return (
-            <circle
-              key={`m-${seed}-${i}`}
-              cx={x}
-              cy={y}
-              r={3}
-              fill="#f59e0b"
-              stroke="#0d1117"
-              strokeWidth={1}
-            />
-          );
-        })}
-      </svg>
+    <div className="ftq-mini-chart-wrap" style={{ height: 140, marginTop: '0.5rem' }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={lineColor} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 4" stroke="rgba(255,255,255,0.04)" />
+          <XAxis
+            dataKey="day"
+            tick={{ fill: '#6b7280', fontSize: 9 }}
+            axisLine={false}
+            tickLine={false}
+            interval={Math.floor(data.length / 5)}
+          />
+          <YAxis
+            tick={{ fill: '#6b7280', fontSize: 9 }}
+            axisLine={false}
+            tickLine={false}
+            width={38}
+            tickFormatter={(v) => `$${v}`}
+            domain={['auto', 'auto']}
+          />
+          <Tooltip
+            contentStyle={{
+              background: '#161b22',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 8,
+              fontSize: '0.7rem',
+              padding: '6px 10px',
+            }}
+            labelStyle={{ color: '#f0f6fc', fontWeight: 700, fontSize: '0.65rem' }}
+            formatter={(val) => [`$${Number(val).toFixed(2)}`, 'Portfolio']}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={lineColor}
+            strokeWidth={1.5}
+            fill={`url(#${gradId})`}
+            dot={false}
+            activeDot={{ r: 3, fill: lineColor, strokeWidth: 0 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
