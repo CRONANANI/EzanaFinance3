@@ -9,7 +9,6 @@ import { useChecklist } from '@/hooks/useChecklist';
 import { getCoursesForWatchlistPreview } from '@/lib/learning-curriculum';
 import { useOrg } from '@/contexts/OrgContext';
 import { MOCK_TEAM_PERFORMANCE } from '@/lib/orgMockData';
-import { getComparableAssets } from '@/lib/comparableAssets';
 import { useWatchlists } from '@/hooks/useWatchlists';
 import { getTickerMeta } from '@/lib/tickerSearchData';
 import { WatchlistSearch } from '@/components/watchlist/WatchlistSearch';
@@ -531,13 +530,6 @@ export default function WatchlistPage() {
     return items;
   }, [search, isOrgUser, stripItems, mockWatchlists, selectedWatchlistId, sideTab]);
 
-  const comparableRows = useMemo(() => {
-    if (!selected) return [];
-    if (selected.type === 'politician' || selected.type === 'institution') return [];
-    const sym = (selected.quoteSymbol || selected.ticker || '').toUpperCase().replace(/\./g, '-');
-    return getComparableAssets(sym);
-  }, [selected]);
-
   const selectAny = useCallback((item) => {
     setManualSelected(item);
     if (item?.type === 'stock' && !addedStockRef.current) {
@@ -833,32 +825,6 @@ export default function WatchlistPage() {
               </div>
               <Chart item={selectedMerged} timeRange={timeRange}/>
             </>
-          )}
-
-          {comparableRows.length > 0 && (
-            <div className="wl-top-assets wl-comp-section">
-              <h4>Comparable Assets</h4>
-              <div className="wl-comp-table">
-                <div className="wl-comp-head">
-                  <span>Ticker</span>
-                  <span>Name</span>
-                  <span>Price</span>
-                  <span>Chg</span>
-                  <span>Mkt cap</span>
-                  <span>Vol</span>
-                </div>
-                {comparableRows.map((row) => (
-                  <div key={row.ticker} className="wl-comp-row">
-                    <span className="wl-comp-tk">{row.ticker}</span>
-                    <span>{row.name}</span>
-                    <span>{fmtSmall(row.price)}</span>
-                    <span className={`wl-comp-chg ${row.changePct >= 0 ? 'up' : 'dn'}`}>{fmtPct(row.changePct)}</span>
-                    <span>{row.marketCap}</span>
-                    <span>{row.volume}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           )}
 
           <div className="wl-cmp">

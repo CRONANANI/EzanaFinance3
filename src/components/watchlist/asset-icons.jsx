@@ -252,24 +252,60 @@ function GenericCryptoIcon({ ticker }) {
 
 /* ─── STOCK ICONS ─── */
 
-/** Stylized monogram: ticker first 1-2 chars on a colored tile. */
+/** Sector → [topGradient, bottomGradient]. Matches dashboard holdings + sector pie. */
+const SECTOR_COLORS = {
+  Technology: ['#3b82f6', '#2563eb'],
+  Healthcare: ['#10b981', '#059669'],
+  Finance: ['#a78bfa', '#7c3aed'],
+  'Financial Services': ['#a78bfa', '#7c3aed'],
+  Defense: ['#f59e0b', '#d97706'],
+  Energy: ['#f97316', '#ea580c'],
+  Consumer: ['#ec4899', '#db2777'],
+  'Consumer Cyclical': ['#ec4899', '#db2777'],
+  'Consumer Defensive': ['#fb923c', '#ea580c'],
+  ETF: ['#06b6d4', '#0891b2'],
+  Crypto: ['#fbbf24', '#d97706'],
+  Commodity: ['#84cc16', '#65a30d'],
+  'Communication Services': ['#8b5cf6', '#7c3aed'],
+  'Real Estate': ['#14b8a6', '#0d9488'],
+  Industrials: ['#f59e0b', '#d97706'],
+  Materials: ['#78716c', '#57534e'],
+  Utilities: ['#22d3ee', '#06b6d4'],
+  'Basic Materials': ['#78716c', '#57534e'],
+};
+
+/** Ticker → sector lookup. Covers the most-watchlisted names; unknown tickers
+ *  fall back to Technology (since most watchlist additions are tech). */
+const TICKER_SECTOR = {
+  AAPL: 'Technology', MSFT: 'Technology', NVDA: 'Technology', GOOGL: 'Technology', GOOG: 'Technology',
+  META: 'Technology', AMZN: 'Consumer Cyclical', TSLA: 'Consumer Cyclical', NFLX: 'Technology',
+  AVGO: 'Technology', AMD: 'Technology', INTC: 'Technology', CRM: 'Technology', ADBE: 'Technology',
+  ORCL: 'Technology', CSCO: 'Technology', QCOM: 'Technology', TXN: 'Technology',
+  JPM: 'Financial Services', GS: 'Financial Services', MS: 'Financial Services', BAC: 'Financial Services',
+  V: 'Financial Services', MA: 'Financial Services', WFC: 'Financial Services',
+  JNJ: 'Healthcare', PFE: 'Healthcare', UNH: 'Healthcare', LLY: 'Healthcare', MRK: 'Healthcare',
+  ABBV: 'Healthcare', TMO: 'Healthcare', ABT: 'Healthcare',
+  XOM: 'Energy', CVX: 'Energy', COP: 'Energy', SLB: 'Energy',
+  BA: 'Industrials', CAT: 'Industrials', UPS: 'Industrials', LMT: 'Industrials', GE: 'Industrials',
+  WMT: 'Consumer Defensive', COST: 'Consumer Defensive', PG: 'Consumer Defensive', KO: 'Consumer Defensive',
+  HD: 'Consumer Cyclical', NKE: 'Consumer Cyclical', MCD: 'Consumer Cyclical', SBUX: 'Consumer Cyclical',
+  DIS: 'Communication Services', CMCSA: 'Communication Services', T: 'Communication Services',
+  NEE: 'Utilities', DUK: 'Utilities', SO: 'Utilities',
+  BTC: 'Crypto', ETH: 'Crypto', SOL: 'Crypto',
+  SPY: 'ETF', QQQ: 'ETF', VTI: 'ETF', IWM: 'ETF',
+};
+
+/** Sector-colored tile that shows the full ticker (up to 5 chars). */
 function StockMonogram({ ticker }) {
   const uid = svgIdSafe(React.useId());
   const t = (ticker || '').toUpperCase();
-  const colorMap = {
-    AAPL: ['#a8a29e', '#57534e'],
-    MSFT: ['#0078d4', '#005a9e'],
-    NVDA: ['#76b900', '#558700'],
-    GOOGL: ['#4285f4', '#1a73e8'],
-    AMZN: ['#ff9900', '#cc7a00'],
-    META: ['#0866ff', '#0844cc'],
-    TSLA: ['#cc0000', '#990000'],
-    JPM: ['#0033a0', '#001f6b'],
-    XOM: ['#1e3a8a', '#172554'],
-    'BRK.B': ['#000000', '#1f2937'],
-  };
-  const [c1, c2] = colorMap[t] || ['#475569', '#1e293b'];
-  const display = t.includes('.') ? t.split('.').slice(0, 2).join('').slice(0, 2) : t.slice(0, 2);
+
+  const sector = TICKER_SECTOR[t] || 'Technology';
+  const [c1, c2] = SECTOR_COLORS[sector] || ['#475569', '#1e293b'];
+
+  const display = t.length <= 5 ? t : t.slice(0, 5);
+  const fontSize =
+    display.length <= 2 ? 9 : display.length <= 3 ? 7.5 : display.length <= 4 ? 6.5 : 5.5;
   const gid = `sm-${t}-${uid}`;
 
   return (
@@ -283,13 +319,13 @@ function StockMonogram({ ticker }) {
       <rect width="24" height="24" rx="5" fill={`url(#${gid})`} />
       <text
         x="12"
-        y="16"
+        y={display.length <= 2 ? 16 : 15.5}
         textAnchor="middle"
-        fontSize="9"
+        fontSize={fontSize}
         fontWeight="900"
         fill="#fff"
-        fontFamily="Arial, sans-serif"
-        letterSpacing="-0.3"
+        fontFamily="system-ui, -apple-system, sans-serif"
+        letterSpacing={display.length >= 4 ? '-0.3' : '0'}
       >
         {display}
       </text>
