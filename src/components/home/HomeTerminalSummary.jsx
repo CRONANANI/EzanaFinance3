@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import { TimeRangeSelector } from '@/components/ui/TimeRangeSelector';
 import '@/app/(dashboard)/home-dashboard/home-dashboard.css';
 import './home-terminal-summary.css';
 import dynamic from 'next/dynamic';
@@ -630,28 +631,13 @@ export function HomeTerminalSummary({
                         : '\u00a0'}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
-                    {['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL'].map((tf) => (
-                      <button
-                        key={tf}
-                        type="button"
-                        onClick={() => setPortfolioValueTf(tf)}
-                        style={{
-                          padding: '0.2rem 0.4rem',
-                          borderRadius: '4px',
-                          border: 'none',
-                          fontSize: '0.575rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                          background: portfolioValueTf === tf ? '#10b981' : 'rgba(107, 114, 128, 0.1)',
-                          color: portfolioValueTf === tf ? '#fff' : 'var(--home-muted)',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {tf}
-                      </button>
-                    ))}
-                  </div>
+                  <TimeRangeSelector
+                    ranges={['1D', '7D', '1M', '3M', '6M', '1Y', 'ALL']}
+                    value={portfolioValueTf}
+                    onChange={setPortfolioValueTf}
+                    inactiveTextColor="var(--home-muted)"
+                    style={{ marginLeft: 'auto' }}
+                  />
                 </div>
 
                 <p className="home-num-hero portfolio-value" style={{ margin: '0 0 0.15rem' }}>
