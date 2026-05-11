@@ -141,14 +141,26 @@ export async function GET() {
 
     const mondayOpen = openMap.get(mondayYmd) ?? null;
     const mondayClose = closeMap.get(mondayYmd) ?? null;
-    mondayOpens[key] = mondayOpen != null && Number.isFinite(mondayOpen) ? mondayOpen : null;
+
+    /* Fallback baseline from live quote when historical data isn't available yet
+       (common on Monday morning before the historical endpoint publishes) */
+    const quoteOpen = quote?.open != null && Number.isFinite(quote.open) && quote.open > 0 ? quote.open : null;
+    const quotePrevClose = quote?.previousClose != null && Number.isFinite(quote.previousClose) && quote.previousClose > 0 ? quote.previousClose : null;
 
     const baseline =
       mondayOpen != null && mondayOpen > 0
         ? mondayOpen
         : mondayClose != null && mondayClose > 0
           ? mondayClose
-          : null;
+          : quoteOpen
+            ? quoteOpen
+            : quotePrevClose
+              ? quotePrevClose
+              : quote?.price != null && Number.isFinite(quote.price) && quote.price > 0
+                ? quote.price
+                : null;
+
+    mondayOpens[key] = baseline;
 
     const series = slots.map(({ label, ymd }) => {
       let close = closeMap.get(ymd) ?? null;
