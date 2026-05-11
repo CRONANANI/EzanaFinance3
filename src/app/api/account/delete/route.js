@@ -5,8 +5,8 @@ import {
   createServerSupabaseClient,
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
-import { stripe } from '@/lib/stripe';
-import { resend } from '@/lib/resend';
+import { stripe } from '@/lib/services/stripe';
+import { resend } from '@/lib/services/resend';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

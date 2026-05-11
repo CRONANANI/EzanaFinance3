@@ -3,7 +3,7 @@ import {
   createServerSupabaseClient,
   isServerSupabaseConfigured,
 } from '@/lib/supabase-service-role';
-import { stripe } from '@/lib/stripe';
+import { stripe } from '@/lib/services/stripe';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

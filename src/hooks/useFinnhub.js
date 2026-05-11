@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { FinnhubAPI } from '@/lib/finnhub';
+import { FinnhubAPI } from '@/lib/services/finnhub';
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);

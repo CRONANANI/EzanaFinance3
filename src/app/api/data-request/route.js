@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-service-role';
-import { resend } from '@/lib/resend';
+import { resend } from '@/lib/services/resend';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

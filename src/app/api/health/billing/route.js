@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { stripe } from '@/lib/services/stripe';
 import { PLANS } from '@/config/pricing';
 
 export const runtime = 'nodejs';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FmpAPI } from '@/lib/fmp-api';
+import { FmpAPI } from '@/lib/services/fmp';
 
 export function useCompanySearch() {
   const [suggestions, setSuggestions] = useState([]);

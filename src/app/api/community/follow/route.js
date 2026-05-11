@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { supabaseAdmin } from '@/lib/plaid';
-import { resend } from '@/lib/resend';
+import { resend } from '@/lib/services/resend';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/plaid';
-import { REGIONS, fetchMassiveNews, normalizeArticle } from '@/lib/massive-news';
+import { REGIONS, fetchMassiveNews, normalizeArticle } from '@/lib/services/massive-news';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

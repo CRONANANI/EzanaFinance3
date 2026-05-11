@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { resend } from '@/lib/resend';
+import { resend } from '@/lib/services/resend';
 import { createServerSupabaseClient } from '@/lib/supabase-service-role';
 
 export const runtime = 'nodejs';

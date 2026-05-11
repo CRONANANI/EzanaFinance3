@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { FinnhubAPI } from '@/lib/finnhub';
+import { FinnhubAPI } from '@/lib/services/finnhub';
 
 /** Fetch news and stats for portfolio holdings - real data from connected accounts */
 export function usePortfolioNews(holdings = [], summary = null) {

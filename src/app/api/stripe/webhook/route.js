@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
-import { stripe } from '@/lib/stripe';
+import { stripe } from '@/lib/services/stripe';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
