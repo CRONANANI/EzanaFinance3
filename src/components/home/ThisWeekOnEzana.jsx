@@ -65,7 +65,7 @@ function todayDayLabel() {
   return dayName; // "Mon", "Tue", etc.
 }
 
-const MARKET_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix', 'wti', 'brent', 'tnx', 'dxy', 'pmi', 'cpi', 'hys', 'bdi'];
+const MARKET_KEYS = ['spx', 'ixic', 'rut', 'dji', 'vix', 'wti', 'brent', 'tnx'];
 const PORTFOLIO_KEY = 'portfolio';
 const CHART_KEYS = [...MARKET_KEYS, PORTFOLIO_KEY];
 
@@ -78,11 +78,6 @@ const SERIES_COLORS = {
   wti:       '#d97706',
   brent:     '#92400e',
   tnx:       '#0ea5e9',
-  dxy:       '#14b8a6',
-  pmi:       '#a3e635',
-  cpi:       '#fb923c',
-  hys:       '#e879f9',
-  bdi:       '#22d3ee',
   portfolio: '#06b6d4',
 };
 
@@ -95,11 +90,6 @@ const SERIES_NAMES = {
   wti:       'WTI Crude',
   brent:     'Brent Crude',
   tnx:       '10Y Treasury',
-  dxy:       'DXY',
-  pmi:       'PMI',
-  cpi:       'CPI',
-  hys:       'HY Spreads',
-  bdi:       'Baltic Dry',
   portfolio: 'My Portfolio',
 };
 
@@ -112,11 +102,6 @@ const SERIES_DESCRIPTIONS = {
   wti:       'West Texas Intermediate is the US benchmark for crude oil. Tracking WTI helps you understand how oil prices are fluctuating, which directly impacts energy stocks, transportation costs, and consumer inflation.',
   brent:     'Brent Crude is the international benchmark for oil pricing. It tends to trade at a premium to WTI and reflects global supply/demand dynamics, especially from the Middle East and Europe.',
   tnx:       'The 10-Year US Treasury yield is the benchmark for interest rates across the economy. When yields rise, borrowing costs increase for mortgages, corporate debt, and government spending. It\'s the single most important number in fixed income.',
-  dxy:       'The US Dollar Index tracks the dollar against a basket of 6 major currencies (EUR, JPY, GBP, CAD, SEK, CHF). A strong dollar hurts US exporters and emerging markets; a weak dollar boosts commodity prices and multinationals\' overseas earnings.',
-  pmi:       'The Purchasing Managers\' Index surveys manufacturing executives on new orders, production, and employment. A reading above 50 signals economic expansion; below 50 signals contraction. It\'s one of the earliest indicators of where GDP is heading.',
-  cpi:       'The Consumer Price Index measures the average change in prices consumers pay for goods and services. It\'s the primary measure of inflation that drives Federal Reserve interest rate decisions.',
-  hys:       'The difference between high-yield (junk) bond yields and Treasury yields. When spreads widen, it means investors are demanding more compensation for credit risk — historically one of the strongest recession indicators. Spreads above 500bps have preceded every recession since 1990.',
-  bdi:       'The Baltic Dry Index tracks the cost of shipping raw materials (iron ore, coal, grain) by sea. Because shipping demand can\'t be speculated on (you only book a ship if you need to move cargo), BDI is considered a pure indicator of global trade activity.',
   portfolio: 'Your portfolio\'s weekly performance based on your mock trading positions. Compare against the indices to see if you\'re outperforming or underperforming the market.',
 };
 
@@ -165,8 +150,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
 
   const [visibleSeries, setVisibleSeries] = useState({
     spx: true, ixic: true, rut: true, dji: true,
-    vix: false, wti: false, brent: false, tnx: false, dxy: false,
-    pmi: false, cpi: false, hys: false, bdi: false,
+    vix: false, wti: false, brent: false, tnx: false,
     portfolio: true,
   });
 
@@ -190,6 +174,10 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
     if (!marketSeries) return [];
 
     const portfolioSeries = portfolioPayload?.series || [];
+    const portfolioByDay = {};
+    for (const pt of portfolioSeries) {
+      if (pt?.day && pt?.pct != null) portfolioByDay[pt.day] = pt.pct;
+    }
 
     const allDays = marketSeries.map((row, i) => {
       const out = { day: row.day };
@@ -197,7 +185,7 @@ function MarketPerformanceTab({ compact = false, indexPayload, chartOnly = false
         const pt = idx[k]?.series?.[i];
         out[k] = pt?.pct ?? null;
       });
-      out.portfolio = portfolioSeries[i]?.pct ?? null;
+      out.portfolio = portfolioByDay[row.day] ?? null;
       return out;
     });
 
