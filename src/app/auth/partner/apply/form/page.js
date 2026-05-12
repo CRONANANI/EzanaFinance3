@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import '../partner-apply.css';
@@ -19,7 +19,51 @@ export default function PartnerApplicationForm() {
     whyPartner: '', contentPlan: '', referralSource: '',
   });
 
+  /* Country / city dropdown data. Countries are fetched once on mount; cities
+     are fetched whenever the selected country code changes.
+
+     We store the ISO country code in `countryCode` (used to look up cities)
+     and the human-readable name in `form.country` (used in the submission
+     payload so admins see "United States" instead of "US"). */
+  const [countries, setCountries] = useState([]);
+  const [countryCode, setCountryCode] = useState('');
+  const [cities, setCities] = useState([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/locations/countries')
+      .then(r => r.json())
+      .then(data => {
+        if (!cancelled && Array.isArray(data?.countries)) setCountries(data.countries);
+      })
+      .catch(() => { /* dropdown will fall back to a single "Loading…" option */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!countryCode) { setCities([]); return; }
+    let cancelled = false;
+    setCitiesLoading(true);
+    fetch(`/api/locations/cities?country=${encodeURIComponent(countryCode)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        setCities(Array.isArray(data?.cities) ? data.cities : []);
+      })
+      .catch(() => { if (!cancelled) setCities([]); })
+      .finally(() => { if (!cancelled) setCitiesLoading(false); });
+    return () => { cancelled = true; };
+  }, [countryCode]);
+
   const update = (key, val) => setForm(p => ({ ...p, [key]: val }));
+  /* When country changes, clear the previously-selected city so we never
+     submit a city that doesn't belong to the new country. */
+  const updateCountry = (code) => {
+    const match = countries.find(c => c.code === code);
+    setCountryCode(code);
+    setForm(p => ({ ...p, country: match ? match.name : '', city: '' }));
+  };
   const toggleArray = (key, val) => {
     setForm(p => ({
       ...p,
@@ -73,11 +117,51 @@ export default function PartnerApplicationForm() {
             <div className="partner-form-row">
               <div>
                 <label>Country</label>
-                <input value={form.country} onChange={e => update('country', e.target.value)} placeholder="United States" />
+                <select
+                  value={countryCode}
+                  onChange={e => updateCountry(e.target.value)}
+                  disabled={countries.length === 0}
+                >
+                  <option value="">
+                    {countries.length === 0 ? 'Loading countries…' : 'Select a country'}
+                  </option>
+                  {countries.map(c => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag ? `${c.flag} ${c.name}` : c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label>City</label>
-                <input value={form.city} onChange={e => update('city', e.target.value)} placeholder="New York" />
+                <select
+                  value={form.city}
+                  onChange={e => update('city', e.target.value)}
+                  disabled={!countryCode || citiesLoading}
+                >
+                  <option value="">
+                    {!countryCode
+                      ? 'Select a country first'
+                      : citiesLoading
+                        ? 'Loading cities…'
+                        : cities.length === 0
+                          ? 'No cities found — type below'
+                          : 'Select a city'}
+                  </option>
+                  {cities.map(c => (
+                    <option key={`${c.name}-${c.stateCode || ''}`} value={c.name}>
+                      {c.stateCode ? `${c.name} (${c.stateCode})` : c.name}
+                    </option>
+                  ))}
+                </select>
+                {countryCode && !citiesLoading && cities.length === 0 && (
+                  <input
+                    style={{ marginTop: '0.5rem' }}
+                    value={form.city}
+                    onChange={e => update('city', e.target.value)}
+                    placeholder="Enter your city"
+                  />
+                )}
               </div>
             </div>
             <button className="partner-form-next" onClick={() => setStep(2)} disabled={!form.fullName || !form.email}>

@@ -71,7 +71,7 @@ export default function PartnerLoginPage() {
   };
 
   return (
-    <div className="auth-page partner-auth-page">
+    <div className="signin-dark-lock auth-page partner-auth-page">
       <div className="auth-container">
         <div className="auth-card partner-auth-card">
           <div className="auth-logo-wrap">

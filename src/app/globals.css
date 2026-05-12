@@ -1929,10 +1929,41 @@ body:has(.signin-dark-lock) {
   color-scheme: dark;
 }
 
-/* Defend against body.light-mode rules that try to lighten descendant text.
-   Empty on purpose: documents intent; explicit Tailwind classes hold contrast. */
-body.light-mode .signin-dark-lock,
-body.light-mode .signin-dark-lock * {
+/* Defend against body.light-mode rules that try to darken descendant text
+   inside dark-locked auth/onboarding chrome. These overrides ensure that even
+   if the body is in light mode, every heading/label/paragraph inside the
+   sign-in wrapper remains readable against the forced dark background. */
+body.light-mode .signin-dark-lock {
+  background-color: #0a0e13 !important;
+  color: #f0f6fc !important;
+}
+body.light-mode .signin-dark-lock h1,
+body.light-mode .signin-dark-lock h2,
+body.light-mode .signin-dark-lock h3,
+body.light-mode .signin-dark-lock h4,
+body.light-mode .signin-dark-lock .auth-title,
+body.light-mode .signin-dark-lock .pauth-title {
+  color: #f0f6fc !important;
+}
+body.light-mode .signin-dark-lock p,
+body.light-mode .signin-dark-lock label,
+body.light-mode .signin-dark-lock .auth-subtitle,
+body.light-mode .signin-dark-lock .auth-label,
+body.light-mode .signin-dark-lock .auth-footer-text {
+  color: #c9d1d9 !important;
+}
+body.light-mode .signin-dark-lock .auth-card,
+body.light-mode .signin-dark-lock .partner-auth-card,
+body.light-mode .signin-dark-lock .auth-page,
+body.light-mode .signin-dark-lock.auth-page {
+  background-color: #0d1117 !important;
+}
+body.light-mode .signin-dark-lock .auth-input,
+body.light-mode .signin-dark-lock input,
+body.light-mode .signin-dark-lock select,
+body.light-mode .signin-dark-lock textarea {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  color: #f0f6fc !important;
 }
 
 /* Override autofill yellow/cream (Chrome/Safari) on saved credentials. */

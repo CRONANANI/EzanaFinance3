@@ -44,7 +44,8 @@
 }
 .pauth-badge i { font-size: 0.875rem; }
 
-.pauth-title { color: #f0f6fc; }
+.partner-auth-page .auth-title.pauth-title,
+.partner-auth-page .pauth-title { color: #f0f6fc !important; }
 
 .pauth-input {
   background: rgba(255, 255, 255, 0.04);
