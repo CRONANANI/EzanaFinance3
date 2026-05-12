@@ -1929,6 +1929,33 @@ body:has(.signin-dark-lock) {
   color-scheme: dark;
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   Typography lock — marketing landing + auth/onboarding flows
+   ════════════════════════════════════════════════════════════════════════════
+   The dashboard and home pages render every heading / label / paragraph in
+   Plus Jakarta Sans (via `body { font-family: var(--font-sans) !important }`
+   in @layer base). Tailwind preflight and various component libraries can
+   re-declare `font-family` on certain elements (anchors, buttons, native
+   form controls), so to guarantee that the landing page, login chooser,
+   each individual login route, sign-up, "Become a Partner" landing, and
+   every step of the partner application all render text in the same
+   Plus Jakarta Sans the dashboard uses, we explicitly set the sans stack
+   on every common text element inside those page wrappers.
+
+   We do NOT use !important here so that elements which are intentionally
+   set to var(--font-mono) (numeric tickers, terminal output, tabular
+   figures) keep their monospaced font — the user asked for text only,
+   not numbers, to match the dashboard. */
+.landing-page :is(h1, h2, h3, h4, h5, h6, p, a, span, li, button, label,
+  input, select, textarea, blockquote, td, th, dt, dd, figcaption, summary,
+  small, strong, em, time),
+.signin-dark-lock :is(h1, h2, h3, h4, h5, h6, p, a, span, li, button, label,
+  input, select, textarea, blockquote, td, th, dt, dd, figcaption, summary,
+  small, strong, em, time) {
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
 /* Defend against body.light-mode rules that try to darken descendant text
    inside dark-locked auth/onboarding chrome. These overrides ensure that even
    if the body is in light mode, every heading/label/paragraph inside the

@@ -395,6 +395,16 @@
   transition: all 0.15s;
 }
 
+/* Step 1's Continue button sits as a direct child of .partner-form-step
+   (steps 2 and 3 wrap it in .partner-form-nav, which already has its own
+   top margin). Without an explicit gap here, the green Continue button
+   hugs the bottom of the Country / City dropdown row. Reserve breathing
+   room above the button so the form doesn't feel cramped after the user
+   has finished step 1's fields. */
+.partner-form-step > .partner-form-next {
+  margin-top: 2rem;
+}
+
 .partner-form-next:disabled,
 .partner-form-submit:disabled {
   opacity: 0.5;
