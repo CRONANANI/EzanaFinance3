@@ -2,6 +2,7 @@
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
+const { withSentryConfig } = require('@sentry/nextjs');
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -20,6 +21,10 @@ const nextConfig = {
   // the bundler sometimes bundles the whole icon set into the shared chunk.
   // framer-motion benefits by pulling in only the features used on a page.
   experimental: {
+    // Required on Next.js 14 so that `instrumentation.js` runs before
+    // requests are handled (used to initialise Sentry on the server +
+    // edge runtimes). Already on by default in Next.js 15+.
+    instrumentationHook: true,
     optimizePackageImports: [
       'lucide-react',
       'react-icons',
@@ -64,4 +69,28 @@ const nextConfig = {
   },
 };
 
-module.exports = withBundleAnalyzer(nextConfig);
+/* Sentry build-time options. Source-map upload + release tagging is
+   gated on SENTRY_AUTH_TOKEN; when the token is missing (e.g. running
+   `next build` locally without Sentry credentials) the plugin runs in
+   "silent" mode and still applies its runtime wrappers, but skips the
+   upload step. */
+const sentryWebpackPluginOptions = {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+
+  /* Upload broader source maps so original stack traces resolve in
+     Sentry. Hidden so the maps are not served to end users. */
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+
+  /* Tunnel browser events through a same-origin /monitoring route so
+     ad-blockers don't block them in production. */
+  tunnelRoute: '/monitoring',
+};
+
+module.exports = withSentryConfig(
+  withBundleAnalyzer(nextConfig),
+  sentryWebpackPluginOptions,
+);
