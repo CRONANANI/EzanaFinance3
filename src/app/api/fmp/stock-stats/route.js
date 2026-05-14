@@ -31,8 +31,8 @@ function fmtDivYield(raw) {
   return `${pct.toFixed(2)}%`;
 }
 
-async function fetchWithRetry(url, cacheSeconds = 300) {
-  let res = await fetch(url, { next: { revalidate: cacheSeconds } });
+async function fetchWithRetry(url) {
+  let res = await fetch(url, { cache: 'no-store' });
   if (res.status === 429) {
     await new Promise((r) => setTimeout(r, 1500));
     res = await fetch(url, { cache: 'no-store' });
@@ -41,7 +41,7 @@ async function fetchWithRetry(url, cacheSeconds = 300) {
 }
 
 async function fmpFirstObject(url) {
-  const res = await fetchWithRetry(url, 300);
+  const res = await fetchWithRetry(url);
   if (!res.ok) return null;
   const raw = await res.json();
   if (Array.isArray(raw)) return raw[0] ?? null;
@@ -71,10 +71,10 @@ export async function GET(request) {
     const ratiosFyUrl = `${BASE}/ratios?symbol=${sym}&apikey=${key}`;
 
     const [quoteRes, profileRes, ratiosTtmRes, ratiosFyRes] = await Promise.all([
-      fetchWithRetry(quoteUrl, 300),
-      fetchWithRetry(profileUrl, 3600),
-      fetchWithRetry(ratiosTtmUrl, 3600),
-      fetchWithRetry(ratiosFyUrl, 3600),
+      fetchWithRetry(quoteUrl),
+      fetchWithRetry(profileUrl),
+      fetchWithRetry(ratiosTtmUrl),
+      fetchWithRetry(ratiosFyUrl),
     ]);
 
     if (
@@ -94,7 +94,7 @@ export async function GET(request) {
           capType: '--',
           price: null,
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -113,12 +113,7 @@ export async function GET(request) {
       parse(ratiosFyRes),
     ]);
 
-    const mcapNum =
-      q?.marketCap ??
-      q?.market_cap ??
-      prof?.mktCap ??
-      prof?.marketCap ??
-      null;
+    const mcapNum = q?.marketCap ?? q?.market_cap ?? prof?.mktCap ?? prof?.marketCap ?? null;
 
     const price = q?.price ?? prof?.price ?? null;
 
@@ -132,11 +127,7 @@ export async function GET(request) {
       null;
 
     const eps =
-      q?.eps ??
-      ratiosTtm?.netIncomePerShareTTM ??
-      ratiosTtm?.epsTTM ??
-      ratiosTtm?.eps ??
-      null;
+      q?.eps ?? ratiosTtm?.netIncomePerShareTTM ?? ratiosTtm?.epsTTM ?? ratiosTtm?.eps ?? null;
 
     let divYieldStr = '--';
     const divRaw =
@@ -170,7 +161,7 @@ export async function GET(request) {
     console.error('[fmp/stock-stats]', err);
     return NextResponse.json(
       { error: err.message, mcap: '--', pe: '--', divYield: '--', eps: '--', capType: '--' },
-      { status: 200 }
+      { status: 200 },
     );
   }
 }

@@ -34,7 +34,7 @@ async function fetchOneQuote(symbol) {
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
-      console.warn(`[fmp/quote] ${symbol}: HTTP ${res.status}`);
+      console.error(`[FMP quote] ${res.status} ${res.statusText} for ${symbol}`);
       return null;
     }
     const data = await res.json();
@@ -63,7 +63,7 @@ export async function GET(request) {
     console.error('[fmp/quote] FMP_API_KEY missing');
     return NextResponse.json(
       { error: 'FMP_API_KEY not configured', quotes: [], priceMap: {} },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -89,7 +89,10 @@ export async function GET(request) {
   }
 
   // ── Multi-symbol mode (parallel per-ticker fetches) ──
-  const symbols = many.split(',').map((s) => s.trim()).filter(Boolean);
+  const symbols = many
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   console.log(`[fmp/quote] parallel fetching ${symbols.length} symbols:`, symbols.join(','));
 
   // Fire all fetches in parallel — no batch endpoint, no complex payload
@@ -146,9 +149,7 @@ export async function GET(request) {
     console.warn('[fmp/quote] warnings:', warnings);
   }
 
-  console.log(
-    `[fmp/quote] priceMap has ${Object.keys(priceMap).length}/${symbols.length} entries`
-  );
+  console.log(`[fmp/quote] priceMap has ${Object.keys(priceMap).length}/${symbols.length} entries`);
 
   return NextResponse.json({ quotes, priceMap, warnings });
 }
