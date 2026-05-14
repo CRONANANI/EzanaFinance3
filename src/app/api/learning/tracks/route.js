@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase/index';
+import { getUserClient } from '@/lib/supabase';
 import { TRACKS } from '@/lib/learning-curriculum';
 import { buildProgressMap, computeTrackSummary } from '@/lib/learning-progress-logic';
 
@@ -13,10 +13,16 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ tracks: TRACKS.map((t) => ({ ...t, summary: null })), authenticated: false });
+      return NextResponse.json({
+        tracks: TRACKS.map((t) => ({ ...t, summary: null })),
+        authenticated: false,
+      });
     }
 
-    const { data: progressRows } = await supabase.from('user_course_progress').select('*').eq('user_id', user.id);
+    const { data: progressRows } = await supabase
+      .from('user_course_progress')
+      .select('*')
+      .eq('user_id', user.id);
 
     const progressById = buildProgressMap(progressRows || []);
 

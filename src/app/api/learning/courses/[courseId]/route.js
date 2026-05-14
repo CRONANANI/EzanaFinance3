@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase/index';
+import { getUserClient } from '@/lib/supabase';
 import { getCourseById } from '@/lib/learning-curriculum';
 import { getCourseContent } from '@/lib/learning-content';
 import { buildProgressMap, canAccessCourse } from '@/lib/learning-progress-logic';
@@ -31,7 +31,10 @@ export async function GET(_request, { params }) {
       });
     }
 
-    const { data: progressRows } = await supabase.from('user_course_progress').select('*').eq('user_id', user.id);
+    const { data: progressRows } = await supabase
+      .from('user_course_progress')
+      .select('*')
+      .eq('user_id', user.id);
 
     const progressById = buildProgressMap(progressRows || []);
     const access = canAccessCourse(course, progressById);

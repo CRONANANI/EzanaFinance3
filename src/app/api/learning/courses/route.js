@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase/index';
+import { getUserClient } from '@/lib/supabase';
 import { ALL_COURSES, TRACKS, getTotalCourses } from '@/lib/learning-curriculum';
-import { buildProgressMap, computeTrackSummary, getActiveLearningTrack } from '@/lib/learning-progress-logic';
+import {
+  buildProgressMap,
+  computeTrackSummary,
+  getActiveLearningTrack,
+} from '@/lib/learning-progress-logic';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +29,10 @@ export async function GET() {
       } else {
         progressRows = data || [];
       }
-      const { data: badgeRows } = await supabase.from('user_learning_badges').select('*').eq('user_id', user.id);
+      const { data: badgeRows } = await supabase
+        .from('user_learning_badges')
+        .select('*')
+        .eq('user_id', user.id);
       badges = badgeRows || [];
       const { data: profileRow } = await supabase
         .from('profiles')
@@ -50,7 +57,9 @@ export async function GET() {
       viewer.currentTrackId = getActiveLearningTrack(progressById);
     }
     const total = getTotalCourses();
-    const completed = progressRows.filter((r) => r.status === 'completed' && r.quiz_passed === true).length;
+    const completed = progressRows.filter(
+      (r) => r.status === 'completed' && r.quiz_passed === true,
+    ).length;
 
     const courses = ALL_COURSES.map((c) => ({
       ...c,

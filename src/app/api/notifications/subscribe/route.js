@@ -1,6 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { requireUser } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,36 +13,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid subscription' }, { status: 400 });
     }
 
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {
-                // ignore
-              }
-            });
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, client: supabase } = await requireUser(request);
 
     const row = {
       user_id: user.id,
@@ -62,6 +32,9 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('subscribe route:', error);
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }

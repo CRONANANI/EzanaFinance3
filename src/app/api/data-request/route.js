@@ -1,7 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
 
 export const runtime = 'nodejs';
@@ -16,44 +14,12 @@ const ALLOWED_TYPES = new Set([
   'other',
 ]);
 
-function getCookieSupabase() {
-  const cookieStore = cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            try {
-              cookieStore.set(name, value, options);
-            } catch {
-              // ignore
-            }
-          });
-        },
-      },
-    },
-  );
-}
-
 /** Authenticated user: list their submitted requests (newest first). */
-export async function GET() {
+export async function GET(request) {
   try {
-    const authClient = getCookieSupabase();
-    const {
-      data: { user },
-      error: authError,
-    } = await authClient.auth.getUser();
+    const { user } = await requireUser(request);
+    const admin = getAdminClient();
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-
-    const admin = createServerSupabaseClient();
     const { data, error } = await admin
       .from('data_subject_requests')
       .select('id, request_type, details, status, created_at')
@@ -68,6 +34,9 @@ export async function GET() {
 
     return NextResponse.json({ requests: data || [] });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
     console.error('[data-request GET]', e);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
@@ -88,15 +57,7 @@ const TYPE_LABELS = {
  */
 export async function POST(request) {
   try {
-    const authClient = getCookieSupabase();
-    const {
-      data: { user },
-      error: authError,
-    } = await authClient.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const { user } = await requireUser(request);
 
     let body = {};
     try {
@@ -110,15 +71,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid request type' }, { status: 400 });
     }
 
-    const details =
-      typeof body.details === 'string' ? body.details.trim().slice(0, 8000) : '';
+    const details = typeof body.details === 'string' ? body.details.trim().slice(0, 8000) : '';
 
     const clientContext =
-      body.accountContext && typeof body.accountContext === 'object' && !Array.isArray(body.accountContext)
+      body.accountContext &&
+      typeof body.accountContext === 'object' &&
+      !Array.isArray(body.accountContext)
         ? body.accountContext
         : {};
 
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const { data: inserted, error: insertError } = await admin
       .from('data_subject_requests')
       .insert({
@@ -187,6 +149,9 @@ export async function POST(request) {
         'Your request was submitted. Our team will respond using your account email where required.',
     });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
     console.error('[data-request POST]', e);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

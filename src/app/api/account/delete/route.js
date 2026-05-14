@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
-import { createServerSupabase } from '@/lib/supabase-server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 import { stripe } from '@/lib/services/stripe';
 import { resend } from '@/lib/services/resend';
 
@@ -18,24 +14,18 @@ const DEFAULT_GRACE_DAYS = 14;
 /**
  * POST /api/account/delete — soft-delete with grace period + reactivation email.
  */
-export async function POST() {
+export async function POST(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user } = await requireUser(request);
 
-    if (!isServerSupabaseConfigured()) {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json(
         { error: 'Service unavailable. Please contact support.' },
         { status: 500 },
       );
     }
 
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
 
     const { data: profile, error: readErr } = await admin
       .from('profiles')
@@ -151,11 +141,11 @@ export async function POST() {
       stripe_canceled: stripeCanceled,
     });
   } catch (err) {
+    if (err?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('[account/delete] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }
 

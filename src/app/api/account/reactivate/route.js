@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { stripe } from '@/lib/services/stripe';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +7,10 @@ export const runtime = 'nodejs';
 
 /**
  * POST /api/account/reactivate — body: { token }
+ *
+ * Intentionally unauthenticated: the reactivation token in the request body
+ * is the authorization mechanism (delivered to the user out-of-band via the
+ * deletion-confirmation email).
  */
 export async function POST(request) {
   try {
@@ -19,14 +20,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'token required' }, { status: 400 });
     }
 
-    if (!isServerSupabaseConfigured()) {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json(
         { error: 'Service unavailable. Please contact support.' },
         { status: 500 },
       );
     }
 
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
 
     const { data: profile, error: readErr } = await admin
       .from('profiles')
@@ -35,17 +36,13 @@ export async function POST(request) {
       .maybeSingle();
 
     if (readErr || !profile) {
-      return NextResponse.json(
-        { error: 'Invalid or expired reactivation link' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Invalid or expired reactivation link' }, { status: 404 });
     }
 
     if (profile.deletion_scheduled_for && new Date(profile.deletion_scheduled_for) < new Date()) {
       return NextResponse.json(
         {
-          error:
-            'This reactivation link has expired. Your account has been permanently deleted.',
+          error: 'This reactivation link has expired. Your account has been permanently deleted.',
         },
         { status: 410 },
       );
@@ -100,9 +97,6 @@ export async function POST(request) {
     });
   } catch (err) {
     console.error('[account/reactivate] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }

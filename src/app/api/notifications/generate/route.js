@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 import { classifyEvent } from '@/lib/notifications/event-classifier';
 import { scoreEventForUser } from '@/lib/notifications/matching-engine';
 import { buildUserProfile } from '@/lib/notifications/interest-profile';
@@ -27,6 +27,12 @@ export async function GET(request) {
     return NextResponse.json({ ok: false, error: 'FMP_API_KEY not configured' }, { status: 500 });
   }
 
+  /* Service-role client — cron-driven, no user-scoped RLS needed.
+     Initialized inside the handler so the route still cold-starts when the
+     SUPABASE_SERVICE_ROLE_KEY is misconfigured (it surfaces as a 500 here
+     instead of crashing at module load). */
+  const admin = getAdminClient();
+
   try {
     const newsRes = await fetch(
       `${FMP_BASE}/news/stock-latest?page=0&limit=20&apikey=${encodeURIComponent(FMP_KEY)}`,
@@ -52,13 +58,15 @@ export async function GET(request) {
       return NextResponse.json({ ok: true, sent: 0, reason: 'no_significant_events' });
     }
 
-    let { data: profiles } = await supabaseAdmin
+    let { data: profiles } = await admin
       .from('user_interest_profiles')
-      .select('user_id, ticker_scores, sector_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs')
+      .select(
+        'user_id, ticker_scores, sector_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs',
+      )
       .limit(500);
 
     if (!profiles?.length) {
-      const { data: profileRows } = await supabaseAdmin.from('profiles').select('id').limit(100);
+      const { data: profileRows } = await admin.from('profiles').select('id').limit(100);
       for (const row of profileRows || []) {
         try {
           await buildUserProfile(row.id);
@@ -66,9 +74,11 @@ export async function GET(request) {
           console.warn('[notification-generator] buildUserProfile', row.id, e);
         }
       }
-      const again = await supabaseAdmin
+      const again = await admin
         .from('user_interest_profiles')
-        .select('user_id, ticker_scores, sector_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs')
+        .select(
+          'user_id, ticker_scores, sector_scores, feature_scores, topic_scores, risk_score, risk_category, notification_prefs',
+        )
         .limit(500);
       profiles = again.data;
     }
@@ -85,7 +95,7 @@ export async function GET(request) {
 
         if (!shouldNotify) continue;
 
-        const { data: existing } = await supabaseAdmin
+        const { data: existing } = await admin
           .from('notification_delivery_log')
           .select('id')
           .eq('user_id', profile.user_id)
@@ -97,7 +107,8 @@ export async function GET(request) {
         const e = event.originalEvent;
         const symbol = (e.symbol && String(e.symbol).toUpperCase()) || event.tickers[0] || '';
         const severityEmoji = event.severity === 'critical' ? '🔴' : '🟡';
-        const sentimentEmoji = event.sentiment === 'bullish' ? '📈' : event.sentiment === 'bearish' ? '📉' : '📊';
+        const sentimentEmoji =
+          event.sentiment === 'bullish' ? '📈' : event.sentiment === 'bearish' ? '📉' : '📊';
 
         const titleLabel =
           event.eventType === 'earnings'
@@ -108,7 +119,9 @@ export async function GET(request) {
                 ? 'Geopolitical Alert'
                 : 'Market Signal';
         const title = `${severityEmoji} ${titleLabel}`;
-        const linkPath = symbol ? `/company-research?q=${encodeURIComponent(symbol)}` : '/market-analysis';
+        const linkPath = symbol
+          ? `/company-research?q=${encodeURIComponent(symbol)}`
+          : '/market-analysis';
         const content = `${sentimentEmoji} ${String(e.title).slice(0, 120)}${symbol ? ` ($${symbol})` : ''}\n↳ ${linkPath}`;
 
         const notifType =
@@ -120,7 +133,7 @@ export async function GET(request) {
                 ? 'inside-the-capitol'
                 : 'market_news';
 
-        const { error: insErr } = await supabaseAdmin.from('user_notifications').insert({
+        const { error: insErr } = await admin.from('user_notifications').insert({
           user_id: profile.user_id,
           type: notifType,
           title,
@@ -133,7 +146,7 @@ export async function GET(request) {
           continue;
         }
 
-        const { error: logErr } = await supabaseAdmin.from('notification_delivery_log').insert({
+        const { error: logErr } = await admin.from('notification_delivery_log').insert({
           user_id: profile.user_id,
           event_fingerprint: event.fingerprint,
         });
@@ -148,6 +161,9 @@ export async function GET(request) {
     return NextResponse.json({ ok: true, sent: totalSent, events_processed: significant.length });
   } catch (err) {
     console.error('[notification-generator]', err);
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : String(err) },
+      { status: 500 },
+    );
   }
 }

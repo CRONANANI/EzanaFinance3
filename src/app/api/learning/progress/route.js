@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserClient } from '@/lib/supabase/index';
+import { getUserClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 import { getCourseById, getCoursesByTrack, LEVEL_KEYS } from '@/lib/learning-curriculum';
 import { awardELO } from '@/lib/elo';
@@ -48,7 +48,10 @@ function labelForLevelBadgeKey(key) {
 }
 
 async function syncTrackAndBadges(supabase, userId, course) {
-  const { data: rows } = await supabase.from('user_course_progress').select('*').eq('user_id', userId);
+  const { data: rows } = await supabase
+    .from('user_course_progress')
+    .select('*')
+    .eq('user_id', userId);
   const progressById = buildProgressMap(rows || []);
   const track = course.track;
 
@@ -62,7 +65,7 @@ async function syncTrackAndBadges(supabase, userId, course) {
       expert_completed: isLevelComplete(track, 'expert', progressById),
       current_level: course.level,
     },
-    { onConflict: 'user_id,track' }
+    { onConflict: 'user_id,track' },
   );
 
   const newBadges = [];
@@ -71,7 +74,9 @@ async function syncTrackAndBadges(supabase, userId, course) {
     if (isLevelComplete(track, lv, progressById)) {
       const key = levelBadgeKey(track, lv);
       if (!key) continue;
-      const { error } = await supabase.from('user_learning_badges').insert({ user_id: userId, badge_key: key });
+      const { error } = await supabase
+        .from('user_learning_badges')
+        .insert({ user_id: userId, badge_key: key });
       if (!error) {
         newBadges.push({ key, label: labelForLevelBadgeKey(key) });
       }
@@ -80,11 +85,14 @@ async function syncTrackAndBadges(supabase, userId, course) {
 
   const trackCourses = getCoursesByTrack(track);
   const allTrackDone =
-    trackCourses.length > 0 && trackCourses.every((c) => isCourseFullyCompleted(progressById[c.id]));
+    trackCourses.length > 0 &&
+    trackCourses.every((c) => isCourseFullyCompleted(progressById[c.id]));
 
   if (allTrackDone) {
     const tk = trackBadgeKey(track);
-    const { error } = await supabase.from('user_learning_badges').insert({ user_id: userId, badge_key: tk });
+    const { error } = await supabase
+      .from('user_learning_badges')
+      .insert({ user_id: userId, badge_key: tk });
     if (!error) {
       newBadges.push({ key: tk, label: TRACK_BADGE_LABELS[track] || tk });
     }
@@ -126,7 +134,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid course' }, { status: 400 });
     }
 
-    const { data: progressRows } = await supabase.from('user_course_progress').select('*').eq('user_id', user.id);
+    const { data: progressRows } = await supabase
+      .from('user_course_progress')
+      .select('*')
+      .eq('user_id', user.id);
     const progressById = buildProgressMap(progressRows || []);
 
     const access = canAccessCourse(course, progressById);
@@ -196,7 +207,7 @@ export async function POST(request) {
             quiz_score: existing?.quiz_score ?? null,
             quiz_passed: existing?.quiz_passed ?? null,
           },
-          { onConflict: 'user_id,course_id' }
+          { onConflict: 'user_id,course_id' },
         )
         .select()
         .single();
@@ -213,8 +224,10 @@ export async function POST(request) {
       }
       if (!Array.isArray(answers) || answers.length !== total) {
         return NextResponse.json(
-          { error: `Please answer all ${total} question${total === 1 ? '' : 's'} before submitting.` },
-          { status: 400 }
+          {
+            error: `Please answer all ${total} question${total === 1 ? '' : 's'} before submitting.`,
+          },
+          { status: 400 },
         );
       }
 
@@ -243,7 +256,10 @@ export async function POST(request) {
         .maybeSingle();
 
       if (!existing?.reading_complete) {
-        return NextResponse.json({ error: 'Mark reading as complete before taking the quiz' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Mark reading as complete before taking the quiz' },
+          { status: 400 },
+        );
       }
 
       const row = {
@@ -281,7 +297,7 @@ export async function POST(request) {
               eloDelta,
               `Completed ${tierName} course: ${course.title}`,
               'learning',
-              { course_id: courseId, level: course.level, tier: tierName }
+              { course_id: courseId, level: course.level, tier: tierName },
             );
           }
           for (const b of badges) {

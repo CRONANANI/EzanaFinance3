@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser, getAdminClient } from '@/lib/supabase/index';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -80,7 +80,10 @@ export async function POST(request) {
             `,
           });
         } catch (rpcErr) {
-          console.warn('[login-history] exec_sql unavailable — apply migration 20260528120000_user_login_history.sql:', rpcErr?.message || rpcErr);
+          console.warn(
+            '[login-history] exec_sql unavailable — apply migration 20260528120000_user_login_history.sql:',
+            rpcErr?.message || rpcErr,
+          );
         }
 
         const retry = await supabaseAdmin
@@ -125,11 +128,7 @@ export async function GET(request) {
 
     const today = new Date();
     const cutoff = new Date(
-      Date.UTC(
-        today.getUTCFullYear(),
-        today.getUTCMonth(),
-        today.getUTCDate() - (days - 1),
-      ),
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - (days - 1)),
     );
     const cutoffStr = utcYmd(cutoff);
 

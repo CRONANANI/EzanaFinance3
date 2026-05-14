@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserEloState } from '@/lib/elo';
-import { getUserClient } from '@/lib/supabase/index';
+import { getUserClient } from '@/lib/supabase';
 import { isValidUuid } from '@/lib/uuid';
 
 export const dynamic = 'force-dynamic';

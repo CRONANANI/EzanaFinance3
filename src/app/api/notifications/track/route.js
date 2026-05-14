@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(request) {
-  const supabase = createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  let user;
+  let client;
+  try {
+    ({ user, client } = await requireUser(request));
+  } catch (err) {
+    if (err?.status === 401) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+    throw err;
+  }
 
   let body;
   try {
@@ -21,7 +26,7 @@ export async function POST(request) {
   const { event_type, event_data } = body;
   if (!event_type) return NextResponse.json({ ok: false }, { status: 400 });
 
-  const { error } = await supabase.from('activity_breadcrumbs').insert({
+  const { error } = await client.from('activity_breadcrumbs').insert({
     user_id: user.id,
     event_type,
     event_data: event_data || {},
