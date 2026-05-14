@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel an in-flight run when a new commit lands on the same ref so a quick
+# follow-up push doesn't keep an old run alive.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-and-lint:
+    name: Format check + ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prettier (check formatting on adopted paths)
+        # Phase 1 introduces Prettier incrementally. `format:check` only
+        # checks the paths we've explicitly adopted (docs, root configs).
+        # The husky pre-commit hook + lint-staged is the actual enforcement
+        # gate for source files; this step catches anyone who bypasses the
+        # hook with --no-verify on the adopted paths.
+        # As future phases adopt more directories, expand the glob in
+        # package.json's format:check script.
+        run: npm run format:check
+
+      - name: ESLint (next lint)
+        # eslint-config-next runs Next.js rules + our no-restricted-imports
+        # rule for legacy Supabase modules. Warnings do not fail the build
+        # during the Phase 2 migration; errors still do.
+        run: npm run lint
+  # See note below about why a `build` job is intentionally absent.
+
+  # NOTE: a `build` job that runs `next build` is intentionally NOT added in
+  # this Phase 1 PR. Several integration libs (Resend, Plaid) construct
+  # clients eagerly at module load with `process.env.X` as a required arg,
+  # which crashes Next.js's page-data collection unless every API key is
+  # present. Wiring stub values for ~10 integrations in CI is a band-aid
+  # that masks the underlying eager-init bug.
+  #
+  # The proper fix lands in Phase 4 of REFACTOR_ROADMAP.md (strict typed
+  # env + lazy client factories). Once those land, this CI workflow gets
+  # a `build` job that uses three stub Supabase env vars and runs
+  # `npm run build` to catch real bundle-time regressions.
+  #
+  # In the meantime, Vercel preview deploys catch build regressions on
+  # every PR — they run the actual production build with real env vars.

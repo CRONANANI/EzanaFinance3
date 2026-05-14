@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json.schemastore.org/eslintrc",
+  "root": true,
+  "extends": ["next/core-web-vitals", "prettier"],
+  "ignorePatterns": [
+    ".next/",
+    "node_modules/",
+    "out/",
+    "build/",
+    "dist/",
+    "public/",
+    "coverage/",
+    "app-legacy/",
+    "scripts/copy-app-legacy.js",
+    "**/world-atlas/**"
+  ],
+  "rules": {
+    "no-restricted-imports": [
+      "warn",
+      {
+        "paths": [
+          {
+            "name": "@/lib/supabase-server",
+            "message": "Legacy facade. Use requireUser / getUserClient from '@/lib/supabase' instead. See docs/REFACTOR_ROADMAP.md Phase 2."
+          },
+          {
+            "name": "@/lib/supabase-service-role",
+            "message": "Legacy facade. Use getAdminClient from '@/lib/supabase' instead. See docs/REFACTOR_ROADMAP.md Phase 2."
+          },
+          {
+            "name": "@/lib/auth-helpers",
+            "message": "Legacy facade. Use requireUser / getCurrentUser from '@/lib/supabase' instead. See docs/REFACTOR_ROADMAP.md Phase 2."
+          },
+          {
+            "name": "@/lib/supabase.js",
+            "message": "Import from the directory facade '@/lib/supabase' (not the .js file) to ensure resolution picks up src/lib/supabase/index.js."
+          }
+        ],
+        "patterns": [
+          {
+            "group": ["@/lib/plaid"],
+            "importNames": ["supabaseAdmin"],
+            "message": "supabaseAdmin is being removed from @/lib/plaid in Phase 2. Import getAdminClient from '@/lib/supabase' instead."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/lib/supabase/**/*.{js,jsx,ts,tsx}", "src/lib/plaid.js"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

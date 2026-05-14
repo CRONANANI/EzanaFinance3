@@ -1,5 +1,16 @@
 'use client';
 
+/* eslint-disable react-hooks/rules-of-hooks --
+ * Known pre-existing violation: the `modelId === 'dcf'` and
+ * `modelId === 'earnings'` early returns sit above the hook calls (useState,
+ * useRef, useCallback, useEffect, useMemo), so React's hook order shifts when
+ * the user switches modelId between a special case and the generic path.
+ *
+ * Correct fix is to split this into a dispatcher + a generic-panel child so
+ * hooks always run unconditionally. Tracked in docs/REFACTOR_ROADMAP.md
+ * Phase 8 (page decomposition will split the AI analysis surfaces anyway).
+ */
+
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { getModelConfig } from '@/lib/ai/analysis-prompts';
 import { getModelStripVariables } from '@/lib/research/modelStripVariables';

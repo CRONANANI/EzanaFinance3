@@ -50,17 +50,17 @@ This document is an honest senior-engineer-level read of the code as it stands t
 
 ## 2. Inventory (numbers that matter)
 
-| Metric                                                | Count |
-| ----------------------------------------------------- | ----: |
-| Next.js API route files (`src/app/api/**/route.js`)   |   186 |
-| Files under `src/lib/`                                |   117 |
-| Hook files under `src/hooks/`                         |    37 |
-| Component files under `src/components/`               |  ~301 |
-| Components/pages > 1000 lines                         |    11 |
+| Metric                                                     | Count |
+| ---------------------------------------------------------- | ----: |
+| Next.js API route files (`src/app/api/**/route.js`)        |   186 |
+| Files under `src/lib/`                                     |   117 |
+| Hook files under `src/hooks/`                              |    37 |
+| Component files under `src/components/`                    |  ~301 |
+| Components/pages > 1000 lines                              |    11 |
 | Existing test files (`*.test.*` / `*.spec.*` / Playwright) |     0 |
-| GitHub Actions workflows under `.github/workflows/`   |     0 |
-| Dockerfile / docker-compose                           |     0 |
-| Vercel cron entries in `vercel.json`                  |    11 |
+| GitHub Actions workflows under `.github/workflows/`        |     0 |
+| Dockerfile / docker-compose                                |     0 |
+| Vercel cron entries in `vercel.json`                       |    11 |
 
 ---
 
@@ -68,14 +68,14 @@ This document is an honest senior-engineer-level read of the code as it stands t
 
 `src/app/api/**/route.js` currently uses **five overlapping Supabase patterns**:
 
-| Pattern                                                              | Source module                  | API routes using it |
-| -------------------------------------------------------------------- | ------------------------------ | ------------------: |
-| `getUserClient` / `getAdminClient` / `requireUser` (new canonical)   | `src/lib/supabase/index.js`    |                  61 |
-| `getAuthUser`                                                        | `src/lib/auth-helpers.js`      |                  29 |
-| `createServerSupabase`                                                | `src/lib/supabase-server.js`   |                  43 |
-| `createServerSupabaseClient`                                         | `src/lib/supabase-service-role.js` |              21 |
-| `supabaseAdmin` (service-role client exported from a Plaid lib (!))   | `src/lib/plaid.js`             |                  67 |
-| Raw `createClient` from `@supabase/supabase-js`                       | (inline)                       |                   8 |
+| Pattern                                                             | Source module                      | API routes using it |
+| ------------------------------------------------------------------- | ---------------------------------- | ------------------: |
+| `getUserClient` / `getAdminClient` / `requireUser` (new canonical)  | `src/lib/supabase/index.js`        |                  61 |
+| `getAuthUser`                                                       | `src/lib/auth-helpers.js`          |                  29 |
+| `createServerSupabase`                                              | `src/lib/supabase-server.js`       |                  43 |
+| `createServerSupabaseClient`                                        | `src/lib/supabase-service-role.js` |                  21 |
+| `supabaseAdmin` (service-role client exported from a Plaid lib (!)) | `src/lib/plaid.js`                 |                  67 |
+| Raw `createClient` from `@supabase/supabase-js`                     | (inline)                           |                   8 |
 
 **Symptoms:**
 
@@ -87,18 +87,18 @@ This document is an honest senior-engineer-level read of the code as it stands t
 
 **Largest API route files (top 10 by lines):**
 
-| Lines | File                                                        |
-| ----: | ----------------------------------------------------------- |
-|   458 | `src/app/api/cron/monthly-elo/route.js`                     |
-|   421 | `src/app/api/market-data/upcoming-events/route.js`          |
-|   389 | `src/app/api/community/posts/route.js`                      |
-|   382 | `src/app/api/earnings/analysis/[symbol]/route.js`           |
-|   369 | `src/app/api/community/copy-request/route.js`               |
-|   328 | `src/app/api/fmp/politician-profile/route.js`               |
-|   316 | `src/app/api/learning/progress/route.js`                    |
-|   315 | `src/app/api/centaur/chat/route.js`                         |
-|   306 | `src/app/api/market-data/sector-detail/route.js`            |
-|   265 | `src/app/api/market-data/analyze-event/route.js`            |
+| Lines | File                                               |
+| ----: | -------------------------------------------------- |
+|   458 | `src/app/api/cron/monthly-elo/route.js`            |
+|   421 | `src/app/api/market-data/upcoming-events/route.js` |
+|   389 | `src/app/api/community/posts/route.js`             |
+|   382 | `src/app/api/earnings/analysis/[symbol]/route.js`  |
+|   369 | `src/app/api/community/copy-request/route.js`      |
+|   328 | `src/app/api/fmp/politician-profile/route.js`      |
+|   316 | `src/app/api/learning/progress/route.js`           |
+|   315 | `src/app/api/centaur/chat/route.js`                |
+|   306 | `src/app/api/market-data/sector-detail/route.js`   |
+|   265 | `src/app/api/market-data/analyze-event/route.js`   |
 
 These read more like service classes than route handlers. They mix transport (request parsing, response shaping) with domain logic (scoring, normalization, retries) and integration concerns (FMP timeouts, Anthropic retries) inside a single 300+ line file.
 
@@ -116,30 +116,30 @@ These read more like service classes than route handlers. They mix transport (re
 
 ### What's missing or weak
 
-| Concern                       | Current state                                                                                                                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Distributed rate limiting     | `src/lib/rate-limit.js` is an in-process `Map`. On Vercel each lambda instance gets its own counter; an attacker hitting different regions/cold-start instances bypasses it.               |
-| Coverage of the rate limiter  | Only **4 of 186** routes invoke `withApiGuard` (`partner/profile`, `partner/badges`, `partner-application/submit`, `market-data/quotes`).                                                  |
-| CSRF                          | **Zero** mentions of `csrf` in `src/`. Same-site cookies + bearer auth reduce the textbook XSS-driven CSRF surface, but there is no explicit control.                                      |
-| RBAC                          | No central authorization module. Admin checks are spread across `admin/*` routes and re-implemented locally.                                                                                |
-| Audit logging                 | No append-only audit table or middleware. Some `admin/*` routes log to Supabase manually; behavior is per-route.                                                                            |
-| Service-role exposure         | `supabaseAdmin` is imported from `@/lib/plaid.js` into 67 routes. The blast radius if one of those routes is missing a user check is a service-role client running with no RLS.            |
-| Dependency vulnerabilities    | `npm audit` reports 13 vulnerabilities (5 moderate, 7 high, 1 critical) — including a published `next@14.2.15` security advisory.                                                          |
+| Concern                      | Current state                                                                                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Distributed rate limiting    | `src/lib/rate-limit.js` is an in-process `Map`. On Vercel each lambda instance gets its own counter; an attacker hitting different regions/cold-start instances bypasses it.    |
+| Coverage of the rate limiter | Only **4 of 186** routes invoke `withApiGuard` (`partner/profile`, `partner/badges`, `partner-application/submit`, `market-data/quotes`).                                       |
+| CSRF                         | **Zero** mentions of `csrf` in `src/`. Same-site cookies + bearer auth reduce the textbook XSS-driven CSRF surface, but there is no explicit control.                           |
+| RBAC                         | No central authorization module. Admin checks are spread across `admin/*` routes and re-implemented locally.                                                                    |
+| Audit logging                | No append-only audit table or middleware. Some `admin/*` routes log to Supabase manually; behavior is per-route.                                                                |
+| Service-role exposure        | `supabaseAdmin` is imported from `@/lib/plaid.js` into 67 routes. The blast radius if one of those routes is missing a user check is a service-role client running with no RLS. |
+| Dependency vulnerabilities   | `npm audit` reports 13 vulnerabilities (5 moderate, 7 high, 1 critical) — including a published `next@14.2.15` security advisory.                                               |
 
 ---
 
 ## 5. Observability
 
-| Capability             | State                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| Error tracking         | **Done** (Sentry browser + server + edge, `onRequestError` forwarded).                                 |
-| Performance tracing    | **Done** (10% sampled in prod, 100% in dev).                                                            |
-| CPU profiling          | **Done** (`@sentry/profiling-node`, `profileLifecycle: 'trace'`).                                       |
-| Structured logs        | **Partial** — `Sentry.logger.*` is enabled server-side; nothing structured on the client.              |
-| Metrics dashboards     | **None** beyond Vercel's built-in.                                                                      |
-| Request tracing        | **None** — no central request-ID middleware, no `traceparent` propagation between client/server/Sentry. |
-| Health checks          | **Partial** — `src/app/api/health/*` routes exist but are not consolidated; no `/healthz` `/readyz` distinction. |
-| Uptime monitoring      | **Unknown / external.**                                                                                 |
+| Capability          | State                                                                                                            |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Error tracking      | **Done** (Sentry browser + server + edge, `onRequestError` forwarded).                                           |
+| Performance tracing | **Done** (10% sampled in prod, 100% in dev).                                                                     |
+| CPU profiling       | **Done** (`@sentry/profiling-node`, `profileLifecycle: 'trace'`).                                                |
+| Structured logs     | **Partial** — `Sentry.logger.*` is enabled server-side; nothing structured on the client.                        |
+| Metrics dashboards  | **None** beyond Vercel's built-in.                                                                               |
+| Request tracing     | **None** — no central request-ID middleware, no `traceparent` propagation between client/server/Sentry.          |
+| Health checks       | **Partial** — `src/app/api/health/*` routes exist but are not consolidated; no `/healthz` `/readyz` distinction. |
+| Uptime monitoring   | **Unknown / external.**                                                                                          |
 
 ---
 
@@ -149,18 +149,18 @@ These read more like service classes than route handlers. They mix transport (re
 - A wrapper (`src/lib/api-service.js`, `class ApiService`) does exist with a single 401-retry pattern — used by **exactly one** file (`useMarketData.js`).
 - Top 10 hooks by line count:
 
-| Lines | File                                       |
-| ----: | ------------------------------------------ |
-|   450 | `src/hooks/useMockPortfolio.js`            |
-|   375 | `src/hooks/useGlobalPowerMap.ts`           |
-|   364 | `src/hooks/useFinnhub.js`                  |
-|   353 | `src/hooks/useMessages.js`                 |
-|   293 | `src/hooks/useWatchlists.js`               |
-|   264 | `src/hooks/useAchievements.js`             |
-|   252 | `src/hooks/use-toast.tsx`                  |
-|   238 | `src/hooks/useProfileActivity.js`          |
-|   208 | `src/hooks/useActiveTask.js`               |
-|   178 | `src/hooks/useWatchlistPriceAlerts.js`     |
+| Lines | File                                   |
+| ----: | -------------------------------------- |
+|   450 | `src/hooks/useMockPortfolio.js`        |
+|   375 | `src/hooks/useGlobalPowerMap.ts`       |
+|   364 | `src/hooks/useFinnhub.js`              |
+|   353 | `src/hooks/useMessages.js`             |
+|   293 | `src/hooks/useWatchlists.js`           |
+|   264 | `src/hooks/useAchievements.js`         |
+|   252 | `src/hooks/use-toast.tsx`              |
+|   238 | `src/hooks/useProfileActivity.js`      |
+|   208 | `src/hooks/useActiveTask.js`           |
+|   178 | `src/hooks/useWatchlistPriceAlerts.js` |
 
 There is no query cache, no request deduplication, and no centralized retry/backoff. SWR / React Query are not installed.
 
@@ -168,30 +168,30 @@ There is no query cache, no request deduplication, and no centralized retry/back
 
 ## 7. Component / design-system state
 
-| Area                                       | State                                                                                                                |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Tailwind tokens                            | `tailwind.config.js` has `theme.extend.fontFamily.sans` mapped, but `theme.extend.colors` is **half-mapped to CSS vars and half hard-coded hex**. |
-| CSS design tokens                          | `src/app/theme-variables.css` defines backgrounds, surfaces, text, brand emerald + gold, danger, accents, radius, shadow, navbar, scrollbar, chart tokens. |
-| Token consumption                          | `grep` counts > 199 files still hard-code `#10b981`, `#0a0e13`, `#f0f6fc`, etc. The tokens exist; most CSS hasn't migrated to them. |
-| Shared primitives                          | `src/components/ui/` has 57 files. Recently added: `TimeRangeSelector`, `StatCard`, `GradientAreaChart`, `SortableTable`. Not yet composed into a documented kit. |
-| Storybook / visual regression              | **None.**                                                                                                            |
-| Monoliths (top 11 files > 1000 lines)      | See list below.                                                                                                      |
+| Area                                  | State                                                                                                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tailwind tokens                       | `tailwind.config.js` has `theme.extend.fontFamily.sans` mapped, but `theme.extend.colors` is **half-mapped to CSS vars and half hard-coded hex**.                 |
+| CSS design tokens                     | `src/app/theme-variables.css` defines backgrounds, surfaces, text, brand emerald + gold, danger, accents, radius, shadow, navbar, scrollbar, chart tokens.        |
+| Token consumption                     | `grep` counts > 199 files still hard-code `#10b981`, `#0a0e13`, `#f0f6fc`, etc. The tokens exist; most CSS hasn't migrated to them.                               |
+| Shared primitives                     | `src/components/ui/` has 57 files. Recently added: `TimeRangeSelector`, `StatCard`, `GradientAreaChart`, `SortableTable`. Not yet composed into a documented kit. |
+| Storybook / visual regression         | **None.**                                                                                                                                                         |
+| Monoliths (top 11 files > 1000 lines) | See list below.                                                                                                                                                   |
 
 **Top monoliths**
 
-| Lines | File                                                              |
-| ----: | ----------------------------------------------------------------- |
-|  1933 | `src/app/(dashboard)/market-analysis/page.js`                     |
-|  1836 | `src/app/(dashboard)/empire-ranking/page.js`                      |
-|  1467 | `src/components/home/HomeTerminalSummary.jsx`                     |
-|  1450 | `src/components/community/CommunityPageClient.jsx`                |
-|  1356 | `src/app/(dashboard)/trading/mock/page.js`                        |
-|  1275 | `src/app/(dashboard)/betting-markets/page.js`                     |
-|  1240 | `src/app/(dashboard)/kairos-signal/page.js`                       |
-|  1233 | `src/components/settings/SettingsPanels.jsx`                      |
-|  1194 | `src/app/(dashboard)/home-dashboard/page.js`                      |
-|  1087 | `src/app/(dashboard)/watchlist/page.js`                           |
-|  1020 | `src/app/(dashboard)/inside-the-capitol/page.js`                  |
+| Lines | File                                               |
+| ----: | -------------------------------------------------- |
+|  1933 | `src/app/(dashboard)/market-analysis/page.js`      |
+|  1836 | `src/app/(dashboard)/empire-ranking/page.js`       |
+|  1467 | `src/components/home/HomeTerminalSummary.jsx`      |
+|  1450 | `src/components/community/CommunityPageClient.jsx` |
+|  1356 | `src/app/(dashboard)/trading/mock/page.js`         |
+|  1275 | `src/app/(dashboard)/betting-markets/page.js`      |
+|  1240 | `src/app/(dashboard)/kairos-signal/page.js`        |
+|  1233 | `src/components/settings/SettingsPanels.jsx`       |
+|  1194 | `src/app/(dashboard)/home-dashboard/page.js`       |
+|  1087 | `src/app/(dashboard)/watchlist/page.js`            |
+|  1020 | `src/app/(dashboard)/inside-the-capitol/page.js`   |
 
 These are the highest-leverage targets for decomposition — every one of them combines route shell, data fetching, business logic, and >5 inline subcomponents.
 
@@ -199,16 +199,16 @@ These are the highest-leverage targets for decomposition — every one of them c
 
 ## 8. Tooling, testing, CI
 
-| Item                                  | State                                                                                                |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| ESLint                                | `eslint-config-next` only. No standalone `.eslintrc` or `eslint.config.js`. No custom rules.        |
-| Prettier                              | **Not installed.**                                                                                   |
-| `.editorconfig`                       | **Missing.**                                                                                         |
-| husky / lint-staged                   | **Not installed.**                                                                                   |
-| Tests (any kind)                      | **None.**                                                                                            |
-| GitHub Actions                        | **None.**                                                                                            |
-| Dockerfile / docker-compose           | **None.**                                                                                            |
-| Type system                           | Mostly JavaScript (.js / .jsx). A small number of `.ts` / `.tsx` files exist but the project is not strict-typed. |
+| Item                        | State                                                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| ESLint                      | `eslint-config-next` only. No standalone `.eslintrc` or `eslint.config.js`. No custom rules.                      |
+| Prettier                    | **Not installed.**                                                                                                |
+| `.editorconfig`             | **Missing.**                                                                                                      |
+| husky / lint-staged         | **Not installed.**                                                                                                |
+| Tests (any kind)            | **None.**                                                                                                         |
+| GitHub Actions              | **None.**                                                                                                         |
+| Dockerfile / docker-compose | **None.**                                                                                                         |
+| Type system                 | Mostly JavaScript (.js / .jsx). A small number of `.ts` / `.tsx` files exist but the project is not strict-typed. |
 
 ---
 

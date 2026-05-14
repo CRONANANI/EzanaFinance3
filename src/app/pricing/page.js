@@ -422,7 +422,7 @@ export default function PricingPage() {
                 </p>
 
                 <div className="plan-features-divider" />
-                <div className="plan-features-label">What's included</div>
+                <div className="plan-features-label">What&apos;s included</div>
                 <ul className="plan-features">
                   {plan.features.map((f) => (
                     <li key={f}>

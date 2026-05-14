@@ -35,7 +35,7 @@ export function FAQSection() {
         <div className="faq-header">
           <h2 className="faq-title">Frequently Asked Questions</h2>
           <p className="faq-subtitle">
-            If you're new to Ezana Finance or looking to maximize the platform experience,
+            If you&apos;re new to Ezana Finance or looking to maximize the platform experience,
             this guide will help you learn more about our features and capabilities.
           </p>
         </div>

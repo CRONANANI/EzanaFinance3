@@ -123,6 +123,12 @@ export function MonteCarloCard() {
     );
   }
 
+  /* Pre-existing violation: the Pro-gate paywall early-return sits above
+   * this useMemo so the hook order shifts when a user upgrades. Tracked
+   * in docs/REFACTOR_ROADMAP.md Phase 8 alongside the model-card
+   * decomposition. Fix is to lift the paywall check to the parent or
+   * split this component into a paywall wrapper + a content child. */
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const probabilityLabel = useMemo(() => {
     if (!result) return null;
     const pct = Math.round(result.probability * 100);

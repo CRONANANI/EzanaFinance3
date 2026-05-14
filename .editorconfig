@@ -1,0 +1,24 @@
+# EditorConfig — https://editorconfig.org
+# Keeps whitespace + line endings consistent across editors and OS.
+
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Markdown allows trailing whitespace for hard line breaks (two spaces).
+[*.md]
+trim_trailing_whitespace = false
+
+# Makefiles must use real tabs.
+[Makefile]
+indent_style = tab
+
+# Windows batch + Powershell scripts ship CRLF.
+[*.{bat,cmd,ps1}]
+end_of_line = crlf

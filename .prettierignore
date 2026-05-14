@@ -1,0 +1,41 @@
+# Build outputs
+.next/
+out/
+build/
+dist/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Lockfiles + generated
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Static assets we never want Prettier touching
+public/
+
+# Legacy HTML/CSS/JS stack copied at build time. Owned by app-legacy maintainers;
+# format on demand only, not on every commit.
+app-legacy/
+
+# Editor / tool internals
+.git/
+.cursor/
+.husky/_
+
+# Files Prettier has no parser for
+.editorconfig
+.prettierignore
+.gitignore
+
+# Env files (never mutate, must round-trip exactly)
+.env
+.env.*
+
+# Logs
+*.log
+
+# Generated content/data we don't author by hand
+**/world-atlas/**

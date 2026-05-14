@@ -50,6 +50,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Migration Status
 
 ### Completed
+
 - [x] Next.js scaffold and config
 - [x] Theme provider (dark/light)
 - [x] Global layout with Navbar
@@ -57,13 +58,16 @@ Open [http://localhost:3000](http://localhost:3000).
 - [x] Route placeholders for all main pages
 
 ### In Progress
+
 - [ ] Full content migration for each page
 - [ ] Antigravity background, CardSwap, Cursor Reveal
 - [ ] Notifications sidebar
 - [ ] Chart.js integrations (home dashboard, market analysis)
 
 ### Legacy App
+
 The original `app/` folder remains for:
+
 - CSS reference (imported by Next.js pages)
 - Asset files (images, etc.)
 - Gradual migration reference
@@ -71,6 +75,7 @@ The original `app/` folder remains for:
 ## Coexistence
 
 During migration, both can run:
+
 - **Next.js:** `npm run dev` → localhost:3000
 - **Legacy:** Serve `app/` with any static server if needed
 

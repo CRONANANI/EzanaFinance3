@@ -20,18 +20,18 @@ Phases are ordered by **(risk reduction × leverage) ÷ blast-radius**. Phases 1
 
 These are listed for honest accounting; do **not** re-do them.
 
-| Item                                                                       | Where it lives                                                  |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Repo cleanup: dead Python backends, junk root files, orphan component dirs | git history, `docs/` consolidation                              |
-| Supabase facade module                                                     | `src/lib/supabase/index.js`                                     |
-| Service-client extraction                                                  | `src/lib/services/{fmp,finnhub,massive-news,resend,stripe}.js`  |
+| Item                                                                       | Where it lives                                                                       |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Repo cleanup: dead Python backends, junk root files, orphan component dirs | git history, `docs/` consolidation                                                   |
+| Supabase facade module                                                     | `src/lib/supabase/index.js`                                                          |
+| Service-client extraction                                                  | `src/lib/services/{fmp,finnhub,massive-news,resend,stripe}.js`                       |
 | Shared UI primitives                                                       | `src/components/ui/{TimeRangeSelector,StatCard,GradientAreaChart,SortableTable}.jsx` |
-| Design tokens declared                                                     | `src/app/theme-variables.css`                                   |
-| Sentry browser + server + edge with profiling + logs                       | `sentry.{client,server,edge}.config.js`, `instrumentation.js`, `next.config.js` |
-| Auth contrast fixes (signin-dark-lock + light-mode overrides)              | `src/app/globals.css`, `auth/partner-login/partner-login.css`   |
-| Country/city cascading dropdowns                                           | `src/app/api/locations/{countries,cities}/route.js`, partner application form |
-| Plus Jakarta Sans typography lock on landing + auth                        | `src/app/globals.css`                                           |
-| Partner-application step 1 button breathing room                           | `src/app/auth/partner/apply/partner-apply.css`                  |
+| Design tokens declared                                                     | `src/app/theme-variables.css`                                                        |
+| Sentry browser + server + edge with profiling + logs                       | `sentry.{client,server,edge}.config.js`, `instrumentation.js`, `next.config.js`      |
+| Auth contrast fixes (signin-dark-lock + light-mode overrides)              | `src/app/globals.css`, `auth/partner-login/partner-login.css`                        |
+| Country/city cascading dropdowns                                           | `src/app/api/locations/{countries,cities}/route.js`, partner application form        |
+| Plus Jakarta Sans typography lock on landing + auth                        | `src/app/globals.css`                                                                |
+| Partner-application step 1 button breathing room                           | `src/app/auth/partner/apply/partner-apply.css`                                       |
 
 ---
 
@@ -165,7 +165,7 @@ These are listed for honest accounting; do **not** re-do them.
 
 **Goal:** zero hardcoded brand hex codes outside `theme-variables.css` and `tailwind.config.js`. Tailwind color palette is fully variable-driven so dark/light/partner themes flip cleanly.
 
-**Why now:** 199+ files still hard-code `#10b981` / `#0a0e13` / `#f0f6fc`. Every new theme variant doubles the work to add. The tokens *exist*; they just aren't consumed.
+**Why now:** 199+ files still hard-code `#10b981` / `#0a0e13` / `#f0f6fc`. Every new theme variant doubles the work to add. The tokens _exist_; they just aren't consumed.
 
 **Concrete deliverables:**
 
@@ -212,19 +212,19 @@ These are listed for honest accounting; do **not** re-do them.
 
 **Concrete deliverables (one PR per page):**
 
-| Target page                                             | Plan                                                                                                                           |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `market-analysis/page.js` (1933)                        | Extract `MarketSessions`, `RegionalNewsPanel`, `OptionsChainPanel`, `EconomicCalendar` into `src/components/market-analysis/`. |
-| `empire-ranking/page.js` (1836)                         | Extract `EmpireHero`, `EmpireFiltersBar`, `EmpireRankingsTable`, `EmpireSpotlightDrawer`.                                       |
-| `HomeTerminalSummary.jsx` (1467)                        | Extract `PortfolioSnapshotCard`, `TopHoldingsCard`, `TopMoversCard`, `CongressionalTrackerCard`, `StreakCard`.                   |
-| `CommunityPageClient.jsx` (1450)                        | Extract `CommunityFeed`, `FollowSuggestions`, `CommunityFiltersBar`, `MessagesQuickLinks`.                                       |
-| `trading/mock/page.js` (1356)                           | Extract `PositionsTable`, `TradePanel`, `PortfolioStats`, `OrderHistory`.                                                        |
-| `betting-markets/page.js` (1275)                        | Extract `MarketCategoriesNav`, `MarketCardGrid`, `MarketDetailDrawer`.                                                          |
-| `kairos-signal/page.js` (1240)                          | Extract `SignalsList`, `SignalDetailPanel`, `SignalConfigForm`.                                                                  |
-| `SettingsPanels.jsx` (1233)                             | Already sub-tabbed. Extract one panel per file: `AccountPanel`, `BillingPanel`, `NotificationsPanel`, `IntegrationsPanel`, `DataPanel`. |
-| `home-dashboard/page.js` (1194)                         | Extract `DashboardHero`, `DashboardCardsGrid`, `DashboardSidekickPanel`.                                                         |
-| `watchlist/page.js` (1087)                              | Extract `WatchlistHeader`, `WatchlistTabs`, `WatchlistDetailPanel`, `WatchlistChartPanel`.                                       |
-| `inside-the-capitol/page.js` (1020)                     | Extract `CapitolHero`, `CapitolTradesTable`, `CapitolPoliticianDrawer`.                                                          |
+| Target page                         | Plan                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `market-analysis/page.js` (1933)    | Extract `MarketSessions`, `RegionalNewsPanel`, `OptionsChainPanel`, `EconomicCalendar` into `src/components/market-analysis/`.          |
+| `empire-ranking/page.js` (1836)     | Extract `EmpireHero`, `EmpireFiltersBar`, `EmpireRankingsTable`, `EmpireSpotlightDrawer`.                                               |
+| `HomeTerminalSummary.jsx` (1467)    | Extract `PortfolioSnapshotCard`, `TopHoldingsCard`, `TopMoversCard`, `CongressionalTrackerCard`, `StreakCard`.                          |
+| `CommunityPageClient.jsx` (1450)    | Extract `CommunityFeed`, `FollowSuggestions`, `CommunityFiltersBar`, `MessagesQuickLinks`.                                              |
+| `trading/mock/page.js` (1356)       | Extract `PositionsTable`, `TradePanel`, `PortfolioStats`, `OrderHistory`.                                                               |
+| `betting-markets/page.js` (1275)    | Extract `MarketCategoriesNav`, `MarketCardGrid`, `MarketDetailDrawer`.                                                                  |
+| `kairos-signal/page.js` (1240)      | Extract `SignalsList`, `SignalDetailPanel`, `SignalConfigForm`.                                                                         |
+| `SettingsPanels.jsx` (1233)         | Already sub-tabbed. Extract one panel per file: `AccountPanel`, `BillingPanel`, `NotificationsPanel`, `IntegrationsPanel`, `DataPanel`. |
+| `home-dashboard/page.js` (1194)     | Extract `DashboardHero`, `DashboardCardsGrid`, `DashboardSidekickPanel`.                                                                |
+| `watchlist/page.js` (1087)          | Extract `WatchlistHeader`, `WatchlistTabs`, `WatchlistDetailPanel`, `WatchlistChartPanel`.                                              |
+| `inside-the-capitol/page.js` (1020) | Extract `CapitolHero`, `CapitolTradesTable`, `CapitolPoliticianDrawer`.                                                                 |
 
 **Risk:** **Medium.** Inline subcomponents close over many state variables; extraction means lifting state to the parent or threading props. Mitigation: one page per PR + a manual screenshot diff list (each card visually unchanged before/after).
 
@@ -238,7 +238,7 @@ These are listed for honest accounting; do **not** re-do them.
 
 **Goal:** the core financial paths (portfolio summary, watchlist add/remove, mock trading buy/sell, partner application submit, login flows) have integration tests. The shared UI primitives (`src/components/ui/`) have snapshot tests.
 
-**Why now:** zero tests today. Every refactor in Phases 2–8 is technically a leap of faith. Adding tests *as we go* is how we make those leaps cheaper.
+**Why now:** zero tests today. Every refactor in Phases 2–8 is technically a leap of faith. Adding tests _as we go_ is how we make those leaps cheaper.
 
 **Concrete deliverables:**
 
@@ -303,4 +303,4 @@ Total focused engineering time across all phases is roughly **80–110 hours** s
 - Do not introduce a new framework (no NestJS, no tRPC, no GraphQL). Each phase above lands on top of what's already there.
 - Do not migrate all Supabase patterns in one PR. The blast radius of a missed RLS check at scale is too high.
 - Do not start Phase 8 (page decomposition) before Phase 5 (TanStack Query) — extracting components while data fetching is still inline produces worse code than doing nothing.
-- Do not add tests retroactively to legacy code that's about to be decomposed. Add tests *as* you decompose, not before.
+- Do not add tests retroactively to legacy code that's about to be decomposed. Add tests _as_ you decompose, not before.

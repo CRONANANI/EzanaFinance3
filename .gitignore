@@ -43,3 +43,6 @@ app-build-old/
 
 # Copied at build time from app-legacy (do not commit)
 public/app-legacy/
+
+# Husky internals (the user-authored hooks live at .husky/<hook-name>)
+.husky/_/

@@ -7,9 +7,22 @@
     "build": "node scripts/copy-app-legacy.js && next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write \".\"",
+    "format:check": "prettier --check \"docs/**/*.md\" \"package.json\" \".eslintrc.json\" \".prettierrc.json\" \".github/**/*.{yml,yaml}\"",
+    "format:check:all": "prettier --check \".\"",
+    "prepare": "husky",
     "seed:learning": "node scripts/seed-learning.mjs",
     "backfill:changelog": "node scripts/backfill-changelog.mjs",
     "optimize-president-images": "node scripts/optimize-president-images.js"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "prettier --write"
+    ],
+    "*.{json,md,mdx,css,scss,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.79.0",
@@ -71,8 +84,12 @@
     "dotenv": "^16.6.1",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.15",
+    "eslint-config-prettier": "^9.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
+    "prettier": "^3.8.3",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.19"
   }
