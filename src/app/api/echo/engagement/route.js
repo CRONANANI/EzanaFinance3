@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const admin = getAdminClient();
+
 function articleIdFromRequest(request) {
   const { searchParams } = new URL(request.url);
-  return String(
-    searchParams.get('articleId') || searchParams.get('article_id') || '',
-  ).trim();
+  return String(searchParams.get('articleId') || searchParams.get('article_id') || '').trim();
 }
 
 /**
@@ -23,11 +22,11 @@ export async function GET(request) {
     }
 
     const [{ count: likeCount }, { count: commentCount }] = await Promise.all([
-      supabaseAdmin
+      admin
         .from('echo_article_likes')
         .select('id', { count: 'exact', head: true })
         .eq('article_id', articleId),
-      supabaseAdmin
+      admin
         .from('echo_article_comments')
         .select('id', { count: 'exact', head: true })
         .eq('article_id', articleId)
@@ -36,9 +35,9 @@ export async function GET(request) {
 
     let userHasLiked = false;
     try {
-      const authUser = await getAuthUser(request);
+      const authUser = await getCurrentUser(request);
       if (authUser) {
-        const { data: existingLike } = await supabaseAdmin
+        const { data: existingLike } = await admin
           .from('echo_article_likes')
           .select('id')
           .eq('user_id', authUser.id)
@@ -57,9 +56,6 @@ export async function GET(request) {
     });
   } catch (err) {
     console.error('[echo/engagement] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }

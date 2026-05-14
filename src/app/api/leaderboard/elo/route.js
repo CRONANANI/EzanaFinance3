@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request) {
   try {
-    if (!isServerSupabaseConfigured()) {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
     }
 
@@ -18,7 +18,7 @@ export async function GET(request) {
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
     const search = (searchParams.get('search') || '').trim().toLowerCase();
 
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     let q = supabase
       .from('user_elo')
@@ -46,7 +46,12 @@ export async function GET(request) {
 
     let merged = (rows || []).map((r, idx) => {
       const p = profileMap[r.user_id] || {};
-      const displayName = (p.full_name || p.user_settings?.display_name || p.username || 'Member').trim();
+      const displayName = (
+        p.full_name ||
+        p.user_settings?.display_name ||
+        p.username ||
+        'Member'
+      ).trim();
       return {
         rank: offset + idx + 1,
         user_id: r.user_id,
@@ -65,7 +70,7 @@ export async function GET(request) {
       merged = merged.filter(
         (r) =>
           (r.username || '').toLowerCase().includes(search) ||
-          (r.display_name || '').toLowerCase().includes(search)
+          (r.display_name || '').toLowerCase().includes(search),
       );
     }
 
@@ -74,6 +79,9 @@ export async function GET(request) {
       pagination: { offset, limit, total: count ?? 0 },
     });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 500 },
+    );
   }
 }

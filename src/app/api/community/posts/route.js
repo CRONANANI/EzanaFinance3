@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { requireUser, getCurrentUser, getUserClient, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
+
+const admin = getAdminClient();
 
 const LIMIT = 20;
 
@@ -38,7 +39,10 @@ async function buildEnrichedResponse(supabase, user, list) {
 
   let profileMap = {};
   if (userIds.length > 0) {
-    const { data: profs } = await supabaseAdmin.from('profiles').select('id, username, user_settings').in('id', userIds);
+    const { data: profs } = await admin
+      .from('profiles')
+      .select('id, username, user_settings')
+      .in('id', userIds);
     profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
   }
 
@@ -87,10 +91,8 @@ export async function GET(request) {
     const tab = rawTab === 'latest' ? 'recent' : rawTab;
     const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10));
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const supabase = getUserClient();
+    const user = await getCurrentUser(request);
 
     const from = page * LIMIT;
     const to = from + LIMIT - 1;
@@ -155,7 +157,10 @@ export async function GET(request) {
     } else if (tab === 'my-posts' && !user) {
       return NextResponse.json({ posts: [], message: 'Sign in to see your posts' });
     } else if (tab === 'following' && !user) {
-      return NextResponse.json({ posts: [], message: 'Sign in to see posts from people you follow' });
+      return NextResponse.json({
+        posts: [],
+        message: 'Sign in to see posts from people you follow',
+      });
     }
 
     query = query.order('created_at', { ascending: false }).range(from, to);
@@ -179,12 +184,18 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const content = typeof body.content === 'string' ? body.content : '';
-    const mentioned_ticker = body.mentioned_ticker ? String(body.mentioned_ticker).slice(0, 8) : null;
+    const mentioned_ticker = body.mentioned_ticker
+      ? String(body.mentioned_ticker).slice(0, 8)
+      : null;
     const parent_post_id =
-      typeof body.parent_post_id === 'string' && body.parent_post_id.length > 0 ? body.parent_post_id : null;
+      typeof body.parent_post_id === 'string' && body.parent_post_id.length > 0
+        ? body.parent_post_id
+        : null;
 
     const image_url =
-      typeof body.image_url === 'string' && body.image_url.startsWith('http') ? body.image_url : null;
+      typeof body.image_url === 'string' && body.image_url.startsWith('http')
+        ? body.image_url
+        : null;
 
     let poll_data = null;
     if (body.poll_data && typeof body.poll_data === 'object') {
@@ -217,13 +228,13 @@ export async function POST(request) {
             .trim();
           if (!sym) continue;
           const hp =
-            typeof s.highlight_price === 'number' && Number.isFinite(s.highlight_price) ? s.highlight_price : null;
+            typeof s.highlight_price === 'number' && Number.isFinite(s.highlight_price)
+              ? s.highlight_price
+              : null;
           symbols.push({ symbol: sym, highlight_price: hp });
         }
       } else if (body.ticker_embed.symbol) {
-        const sym = String(body.ticker_embed.symbol)
-          .toUpperCase()
-          .trim();
+        const sym = String(body.ticker_embed.symbol).toUpperCase().trim();
         const hp =
           typeof body.ticker_embed.highlight_price === 'number' &&
           Number.isFinite(body.ticker_embed.highlight_price)
@@ -248,13 +259,17 @@ export async function POST(request) {
     const maxLen = isComment ? 500 : 1000;
     if (content.length > maxLen) {
       return NextResponse.json(
-        { error: isComment ? `Comment must be under ${maxLen} characters` : `Post must be under ${maxLen} characters` },
-        { status: 400 }
+        {
+          error: isComment
+            ? `Comment must be under ${maxLen} characters`
+            : `Post must be under ${maxLen} characters`,
+        },
+        { status: 400 },
       );
     }
 
     if (isComment) {
-      const { data: parent, error: pErr } = await supabaseAdmin
+      const { data: parent, error: pErr } = await admin
         .from('community_posts')
         .select('id, parent_post_id')
         .eq('id', parent_post_id)
@@ -264,11 +279,7 @@ export async function POST(request) {
       }
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const { data: post, error } = await supabase
       .from('community_posts')
@@ -282,7 +293,7 @@ export async function POST(request) {
         ticker_embed: isComment ? null : ticker_embed,
       })
       .select(
-        'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at, parent_post_id'
+        'id, user_id, content, mentioned_ticker, image_url, poll_data, ticker_embed, likes_count, comments_count, reposts_count, created_at, parent_post_id',
       )
       .single();
 
@@ -301,7 +312,11 @@ export async function POST(request) {
       console.error('posts POST: awardXP', e);
     }
 
-    const { data: prof } = await supabaseAdmin.from('profiles').select('id, username, user_settings').eq('id', user.id).maybeSingle();
+    const { data: prof } = await admin
+      .from('profiles')
+      .select('id, username, user_settings')
+      .eq('id', user.id)
+      .maybeSingle();
 
     return NextResponse.json({
       post: {
@@ -313,6 +328,9 @@ export async function POST(request) {
       },
     });
   } catch (error) {
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('POST posts:', error);
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
@@ -328,13 +346,9 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'post_id and option_id required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user } = await requireUser(request);
 
-    const { data: row } = await supabaseAdmin
+    const { data: row } = await admin
       .from('community_posts')
       .select('poll_data')
       .eq('id', post_id)
@@ -344,7 +358,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'Post has no poll' }, { status: 400 });
     }
 
-    const { data: existingVote } = await supabaseAdmin
+    const { data: existingVote } = await admin
       .from('poll_votes')
       .select('option_id')
       .eq('post_id', post_id)
@@ -360,7 +374,7 @@ export async function PATCH(request) {
       const oldOpt = pd.options.find((o) => o.id === existingVote.option_id);
       if (oldOpt) oldOpt.votes = Math.max(0, (oldOpt.votes || 0) - 1);
       pd.total_votes = Math.max(0, (pd.total_votes || 0) - 1);
-      await supabaseAdmin.from('poll_votes').delete().eq('post_id', post_id).eq('user_id', user.id);
+      await admin.from('poll_votes').delete().eq('post_id', post_id).eq('user_id', user.id);
     }
 
     const newOpt = pd.options.find((o) => o.id === option_id);
@@ -368,7 +382,7 @@ export async function PATCH(request) {
     newOpt.votes = (newOpt.votes || 0) + 1;
     pd.total_votes = (pd.total_votes || 0) + 1;
 
-    const { error: insErr } = await supabaseAdmin
+    const { error: insErr } = await admin
       .from('poll_votes')
       .insert({ post_id, user_id: user.id, option_id });
     if (insErr) {
@@ -376,7 +390,10 @@ export async function PATCH(request) {
       return NextResponse.json({ error: insErr.message }, { status: 500 });
     }
 
-    const { error: updErr } = await supabaseAdmin.from('community_posts').update({ poll_data: pd }).eq('id', post_id);
+    const { error: updErr } = await admin
+      .from('community_posts')
+      .update({ poll_data: pd })
+      .eq('id', post_id);
     if (updErr) {
       console.error('community_posts poll update:', updErr);
       return NextResponse.json({ error: updErr.message }, { status: 500 });
@@ -384,6 +401,9 @@ export async function PATCH(request) {
 
     return NextResponse.json({ poll_data: pd, my_vote: option_id });
   } catch (err) {
+    if (err?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

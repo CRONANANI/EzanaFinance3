@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAuthContext } from '@/lib/auth-helpers';
+import { requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,10 +19,7 @@ export async function GET(request) {
       return NextResponse.json({ results: [] });
     }
 
-    const { user, supabase } = await getAuthContext(request);
-    if (!user || !supabase) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { user, client: supabase } = await requireUser(request);
 
     const { data: convos, error: convoErr } = await supabase
       .from('conversations')
@@ -69,6 +66,9 @@ export async function GET(request) {
 
     return NextResponse.json({ results });
   } catch (err) {
+    if (err?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }

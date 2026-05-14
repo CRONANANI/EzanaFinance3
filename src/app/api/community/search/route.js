@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,11 +29,12 @@ export async function GET(request) {
       return NextResponse.json({ users: [] });
     }
 
+    const admin = getAdminClient();
     const pattern = `%${raw}%`;
     const cols = 'id, username, full_name, user_settings, is_partner, partner_type';
 
     // ── Search profiles by full_name ──
-    const { data: byFull, error: e1 } = await supabaseAdmin
+    const { data: byFull, error: e1 } = await admin
       .from('profiles')
       .select(cols)
       .ilike('full_name', pattern)
@@ -42,7 +43,7 @@ export async function GET(request) {
     if (e1) console.error('community search full_name', e1);
 
     // ── Search profiles by display_name in user_settings ──
-    const { data: bySettings, error: e2 } = await supabaseAdmin
+    const { data: bySettings, error: e2 } = await admin
       .from('profiles')
       .select(cols)
       .filter('user_settings->display_name', 'ilike', pattern)
@@ -51,7 +52,7 @@ export async function GET(request) {
     if (e2) console.error('community search display_name', e2);
 
     // ── Search profiles by username ──
-    const { data: byUsername, error: e3 } = await supabaseAdmin
+    const { data: byUsername, error: e3 } = await admin
       .from('profiles')
       .select(cols)
       .ilike('username', pattern)
@@ -64,7 +65,7 @@ export async function GET(request) {
     let byEmail = [];
     if (raw.includes('@') || raw.includes('.')) {
       // Only search email if the query looks like it could be an email fragment
-      const { data: emailRows, error: e4 } = await supabaseAdmin
+      const { data: emailRows, error: e4 } = await admin
         .from('profiles')
         .select(cols + ', email')
         .ilike('email', pattern)
@@ -77,9 +78,7 @@ export async function GET(request) {
           // Mask the email for privacy: show first 3 chars + domain
           const email = r.email || '';
           const [local, domain] = email.split('@');
-          const masked = local
-            ? local.slice(0, 3) + '***@' + (domain || '')
-            : '';
+          const masked = local ? local.slice(0, 3) + '***@' + (domain || '') : '';
           return { ...r, _email_hint: masked };
         });
       }
@@ -88,7 +87,12 @@ export async function GET(request) {
     // ── Merge and deduplicate ──
     const seen = new Set();
     const merged = [];
-    for (const row of [...(byFull || []), ...(bySettings || []), ...(byUsername || []), ...byEmail]) {
+    for (const row of [
+      ...(byFull || []),
+      ...(bySettings || []),
+      ...(byUsername || []),
+      ...byEmail,
+    ]) {
       if (!row || seen.has(row.id)) continue;
       seen.add(row.id);
       merged.push(mapRow(row));

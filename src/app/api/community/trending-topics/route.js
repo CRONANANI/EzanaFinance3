@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -12,8 +12,9 @@ const TAG_RE = /#([A-Za-z][A-Za-z0-9_]*)/g;
  */
 export async function GET() {
   try {
+    const admin = getAdminClient();
     const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await admin
       .from('community_posts')
       .select('content, mentioned_ticker')
       .gte('created_at', sevenDaysAgo)

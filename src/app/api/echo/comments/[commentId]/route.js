@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const admin = getAdminClient();
 
 /**
  * DELETE /api/echo/comments/<commentId> — soft-delete own comment
  */
 export async function DELETE(request, { params }) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -20,7 +21,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'commentId required' }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await admin
       .from('echo_article_comments')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', commentId)
@@ -34,18 +35,12 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Could not delete comment' }, { status: 500 });
     }
     if (!data) {
-      return NextResponse.json(
-        { error: 'Comment not found or already deleted' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Comment not found or already deleted' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[echo/comments DELETE] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }

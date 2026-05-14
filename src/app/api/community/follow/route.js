@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 import { resend } from '@/lib/services/resend';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
+
+const admin = getAdminClient();
 
 const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://ezana.world';
 
@@ -22,11 +23,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'action must be follow or unfollow' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     if (user.id === target_user_id) {
       return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 });
@@ -50,7 +47,7 @@ export async function POST(request) {
       if (inserted) {
         let followerName = 'Someone';
         try {
-          const { data: followerProfile } = await supabaseAdmin
+          const { data: followerProfile } = await admin
             .from('profiles')
             .select('full_name')
             .eq('id', user.id)
@@ -58,7 +55,8 @@ export async function POST(request) {
           followerName =
             (followerProfile?.full_name && String(followerProfile.full_name).trim()) || 'Someone';
 
-          const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.getUserById(target_user_id);
+          const { data: authData, error: authErr } =
+            await admin.auth.admin.getUserById(target_user_id);
           if (authErr) {
             console.error('follow: getUserById', authErr);
           }
@@ -95,7 +93,7 @@ export async function POST(request) {
 
         // ── In-app notification: "[Name] started following you" ──
         try {
-          await supabaseAdmin.from('user_notifications').insert({
+          await admin.from('user_notifications').insert({
             user_id: target_user_id,
             title: `${followerName} started following you`,
             content: 'Check out their profile and follow them back to become friends!',
@@ -105,7 +103,7 @@ export async function POST(request) {
           console.error('follow: notification insert', notifErr);
         }
 
-        const { data: reciprocal } = await supabaseAdmin
+        const { data: reciprocal } = await admin
           .from('user_follows')
           .select('follower_id')
           .eq('follower_id', target_user_id)
@@ -127,6 +125,9 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

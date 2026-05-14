@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export async function GET() {
+const admin = getAdminClient();
+
+export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const [copyingResult, copiedByResult] = await Promise.all([
       supabase
@@ -47,7 +44,7 @@ export async function GET() {
 
     let nameMap = {};
     if (allUserIds.length > 0) {
-      const { data: profiles } = await supabaseAdmin
+      const { data: profiles } = await admin
         .from('profiles')
         .select('id, full_name, username, user_settings')
         .in('id', allUserIds);
@@ -55,7 +52,7 @@ export async function GET() {
         (profiles || []).map((p) => [
           p.id,
           (p.full_name || p.user_settings?.display_name || p.username || 'Member').trim(),
-        ])
+        ]),
       );
     }
 
@@ -70,6 +67,9 @@ export async function GET() {
       })),
     });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('GET active-copies', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
@@ -83,11 +83,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'copy_id and action=stop required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const { data: copyRow } = await supabase
       .from('active_copies')
@@ -107,7 +103,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'Not authorized to stop this copy' }, { status: 403 });
     }
 
-    const { error: stopErr } = await supabaseAdmin
+    const { error: stopErr } = await admin
       .from('active_copies')
       .update({
         is_active: false,
@@ -123,6 +119,9 @@ export async function PATCH(request) {
 
     return NextResponse.json({ success: true });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('PATCH active-copies', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }

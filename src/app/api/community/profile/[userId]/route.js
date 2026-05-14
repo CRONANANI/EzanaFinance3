@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 import { isValidUuid } from '@/lib/uuid';
 
 export const dynamic = 'force-dynamic';
+
+const admin = getAdminClient();
 
 export async function GET(request, { params }) {
   try {
@@ -11,17 +12,17 @@ export async function GET(request, { params }) {
     if (!userId) return NextResponse.json({ error: 'Missing user id' }, { status: 400 });
     if (!isValidUuid(userId)) {
       return NextResponse.json(
-        { error: 'Invalid profile link. Open a member from search or the leaderboard — names without an account use placeholder links only.' },
-        { status: 400 }
+        {
+          error:
+            'Invalid profile link. Open a member from search or the leaderboard — names without an account use placeholder links only.',
+        },
+        { status: 400 },
       );
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user: viewer },
-    } = await supabase.auth.getUser();
+    const viewer = await getCurrentUser(request);
 
-    const { data: profileRow, error } = await supabaseAdmin
+    const { data: profileRow, error } = await admin
       .from('profiles')
       .select('id, user_settings, email, full_name, is_partner, partner_type, partner_verified_at')
       .eq('id', userId)
@@ -38,17 +39,17 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Profile is private' }, { status: 403 });
     }
 
-    const { count: followerCount } = await supabaseAdmin
+    const { count: followerCount } = await admin
       .from('user_follows')
       .select('*', { count: 'exact', head: true })
       .eq('following_id', userId);
 
-    const { count: followingCount } = await supabaseAdmin
+    const { count: followingCount } = await admin
       .from('user_follows')
       .select('*', { count: 'exact', head: true })
       .eq('follower_id', userId);
 
-    const { count: postCount } = await supabaseAdmin
+    const { count: postCount } = await admin
       .from('community_posts')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -56,7 +57,7 @@ export async function GET(request, { params }) {
 
     let isFollowing = false;
     if (viewer && viewer.id !== userId) {
-      const { data: fr } = await supabaseAdmin
+      const { data: fr } = await admin
         .from('user_follows')
         .select('id')
         .eq('follower_id', viewer.id)
@@ -66,14 +67,14 @@ export async function GET(request, { params }) {
     }
 
     let badges = [];
-    const { data: earnedBadges, error: badgeErr } = await supabaseAdmin
+    const { data: earnedBadges, error: badgeErr } = await admin
       .from('partner_badges')
       .select('badge_id, earned_at')
       .eq('partner_id', userId);
 
     if (!badgeErr && earnedBadges?.length) {
       const badgeIds = earnedBadges.map((b) => b.badge_id);
-      const { data: defs } = await supabaseAdmin.from('badge_definitions').select('*').in('id', badgeIds);
+      const { data: defs } = await admin.from('badge_definitions').select('*').in('id', badgeIds);
       const earnedMap = Object.fromEntries(earnedBadges.map((b) => [b.badge_id, b.earned_at]));
       badges = (defs || []).map((d) => ({
         id: d.id,
@@ -86,7 +87,7 @@ export async function GET(request, { params }) {
     }
 
     let likesGiven = 0;
-    const { count: lc, error: likeErr } = await supabaseAdmin
+    const { count: lc, error: likeErr } = await admin
       .from('post_likes')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
@@ -96,14 +97,20 @@ export async function GET(request, { params }) {
     const strategies = Array.isArray(strategiesRaw)
       ? strategiesRaw
       : typeof strategiesRaw === 'string' && strategiesRaw.trim()
-        ? strategiesRaw.split(',').map((s) => s.trim()).filter(Boolean)
+        ? strategiesRaw
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
 
     const favoriteTools = settings.favorite_research_tools;
     const favoriteResearchTools = Array.isArray(favoriteTools)
       ? favoriteTools
       : typeof favoriteTools === 'string' && favoriteTools.trim()
-        ? favoriteTools.split(',').map((s) => s.trim()).filter(Boolean)
+        ? favoriteTools
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
 
     return NextResponse.json({

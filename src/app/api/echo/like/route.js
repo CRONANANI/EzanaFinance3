@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const admin = getAdminClient();
 
 function parseArticleId(body) {
   return String(body?.articleId ?? body?.article_id ?? '').trim();
@@ -17,7 +18,7 @@ function parseArticleId(body) {
  */
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Sign in to like articles.' }, { status: 401 });
     }
@@ -28,14 +29,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'articleId required' }, { status: 400 });
     }
 
-    const { error: insertErr } = await supabaseAdmin
+    const { error: insertErr } = await admin
       .from('echo_article_likes')
       .insert({ user_id: user.id, article_id: articleId });
 
     let liked;
     if (insertErr) {
       if (insertErr.code === '23505') {
-        const { error: deleteErr } = await supabaseAdmin
+        const { error: deleteErr } = await admin
           .from('echo_article_likes')
           .delete()
           .eq('user_id', user.id)
@@ -53,7 +54,7 @@ export async function POST(request) {
       liked = true;
     }
 
-    const { count: likeCount } = await supabaseAdmin
+    const { count: likeCount } = await admin
       .from('echo_article_likes')
       .select('id', { count: 'exact', head: true })
       .eq('article_id', articleId);
@@ -65,9 +66,6 @@ export async function POST(request) {
     });
   } catch (err) {
     console.error('[echo/like] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }

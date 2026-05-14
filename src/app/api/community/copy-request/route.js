@@ -1,22 +1,19 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const admin = getAdminClient();
+
 const COOLDOWN_DAYS = 30;
 const MIN_ACCOUNT_AGE_DAYS = 7;
 const ANNUAL_REQUEST_ELO_CAP = 500;
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const [incomingResult, outgoingResult] = await Promise.all([
       supabase
@@ -52,7 +49,7 @@ export async function GET() {
 
     let nameMap = {};
     if (allUserIds.length > 0) {
-      const { data: profiles } = await supabaseAdmin
+      const { data: profiles } = await admin
         .from('profiles')
         .select('id, full_name, username, user_settings')
         .in('id', allUserIds);
@@ -63,7 +60,7 @@ export async function GET() {
             name: (p.full_name || p.user_settings?.display_name || p.username || 'Member').trim(),
             username: p.username,
           },
-        ])
+        ]),
       );
     }
 
@@ -80,6 +77,9 @@ export async function GET() {
       })),
     });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('GET copy-request', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
@@ -95,11 +95,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'target_user_id required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     if (user.id === targetUserId) {
       return NextResponse.json({ error: 'Cannot request copy of own portfolio' }, { status: 400 });
@@ -113,11 +109,11 @@ export async function POST(request) {
           error: `Account must be at least ${MIN_ACCOUNT_AGE_DAYS} days old to send copy requests`,
           accountAgeDays: Math.floor(accountAgeDays),
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
-    const { count: bronzeCount } = await supabaseAdmin
+    const { count: bronzeCount } = await admin
       .from('user_course_progress')
       .select('course_id', { count: 'exact', head: true })
       .eq('user_id', user.id)
@@ -126,7 +122,7 @@ export async function POST(request) {
     if (!bronzeCount || bronzeCount < 1) {
       return NextResponse.json(
         { error: 'Must complete at least one course to send copy requests' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -151,7 +147,7 @@ export async function POST(request) {
             created_at: recentRequest.created_at,
           },
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -164,10 +160,13 @@ export async function POST(request) {
       .maybeSingle();
 
     if (pendingOther) {
-      return NextResponse.json({ error: 'A pending request to this user already exists' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'A pending request to this user already exists' },
+        { status: 409 },
+      );
     }
 
-    const { data: inserted, error: insErr } = await supabaseAdmin
+    const { data: inserted, error: insErr } = await admin
       .from('copy_requests')
       .insert({
         requester_id: user.id,
@@ -183,7 +182,7 @@ export async function POST(request) {
       return NextResponse.json({ error: insErr.message }, { status: 500 });
     }
 
-    const { data: targetElo } = await supabaseAdmin
+    const { data: targetElo } = await admin
       .from('user_elo')
       .select('lifetime_copy_requests, partner_eligible')
       .eq('user_id', targetUserId)
@@ -192,7 +191,7 @@ export async function POST(request) {
     const newLifetime = (targetElo?.lifetime_copy_requests || 0) + 1;
     const becamePartnerEligible = !targetElo?.partner_eligible && newLifetime >= 100;
 
-    const { error: eloUpdErr } = await supabaseAdmin
+    const { error: eloUpdErr } = await admin
       .from('user_elo')
       .update({
         lifetime_copy_requests: newLifetime,
@@ -208,7 +207,7 @@ export async function POST(request) {
     }
 
     const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString();
-    const { data: yearAwards } = await supabaseAdmin
+    const { data: yearAwards } = await admin
       .from('elo_transactions')
       .select('delta')
       .eq('user_id', targetUserId)
@@ -225,7 +224,7 @@ export async function POST(request) {
         allowedDelta,
         'Copy request received',
         'social',
-        { request_id: inserted.id, requester_id: user.id }
+        { request_id: inserted.id, requester_id: user.id },
       );
       if (!eloResult) {
         console.warn('copy-request awardELO returned null for target', targetUserId);
@@ -233,7 +232,7 @@ export async function POST(request) {
     }
 
     try {
-      const { data: requesterProfile } = await supabaseAdmin
+      const { data: requesterProfile } = await admin
         .from('profiles')
         .select('full_name, user_settings')
         .eq('id', user.id)
@@ -244,7 +243,7 @@ export async function POST(request) {
         'Someone'
       ).trim();
 
-      await supabaseAdmin.from('user_notifications').insert({
+      await admin.from('user_notifications').insert({
         user_id: targetUserId,
         title: `${requesterName} wants to copy your portfolio`,
         content: message || 'Review this request and decide whether to approve it.',
@@ -260,6 +259,9 @@ export async function POST(request) {
       targetMilestone: becamePartnerEligible ? 'partner_eligible' : null,
     });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('POST copy-request', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
@@ -275,11 +277,7 @@ export async function PATCH(request) {
       return NextResponse.json({ error: 'request_id and valid action required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const { data: req, error: fetchErr } = await supabase
       .from('copy_requests')
@@ -305,9 +303,10 @@ export async function PATCH(request) {
       }
     }
 
-    const newStatus = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'withdrawn';
+    const newStatus =
+      action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'withdrawn';
 
-    const { error: updErr } = await supabaseAdmin
+    const { error: updErr } = await admin
       .from('copy_requests')
       .update({
         status: newStatus,
@@ -321,7 +320,7 @@ export async function PATCH(request) {
     }
 
     if (action === 'approve') {
-      const { data: existingActive } = await supabaseAdmin
+      const { data: existingActive } = await admin
         .from('active_copies')
         .select('id')
         .eq('copier_id', req.requester_id)
@@ -330,7 +329,7 @@ export async function PATCH(request) {
         .maybeSingle();
 
       if (!existingActive) {
-        const { error: acErr } = await supabaseAdmin.from('active_copies').insert({
+        const { error: acErr } = await admin.from('active_copies').insert({
           copier_id: req.requester_id,
           target_user_id: req.target_user_id,
           request_id: req.id,
@@ -340,7 +339,7 @@ export async function PATCH(request) {
       }
 
       try {
-        const { data: targetProfile } = await supabaseAdmin
+        const { data: targetProfile } = await admin
           .from('profiles')
           .select('full_name, user_settings')
           .eq('id', user.id)
@@ -350,7 +349,7 @@ export async function PATCH(request) {
           targetProfile?.user_settings?.display_name ||
           'They'
         ).trim();
-        await supabaseAdmin.from('user_notifications').insert({
+        await admin.from('user_notifications').insert({
           user_id: req.requester_id,
           title: `${targetName} approved your copy request`,
           content: 'You can now mirror their portfolio strategy.',
@@ -363,6 +362,9 @@ export async function PATCH(request) {
 
     return NextResponse.json({ success: true, status: newStatus });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('PATCH copy-request', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }

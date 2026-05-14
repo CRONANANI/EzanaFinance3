@@ -5,17 +5,18 @@
  * name, and whether a conversation already exists.
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+const admin = getAdminClient();
+
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { data: following } = await supabaseAdmin
+    const { data: following } = await admin
       .from('user_follows')
       .select('following_id')
       .eq('follower_id', user.id);
@@ -25,7 +26,7 @@ export async function GET(request) {
       return NextResponse.json({ friends: [] });
     }
 
-    const { data: mutuals } = await supabaseAdmin
+    const { data: mutuals } = await admin
       .from('user_follows')
       .select('follower_id')
       .eq('following_id', user.id)
@@ -36,12 +37,12 @@ export async function GET(request) {
       return NextResponse.json({ friends: [] });
     }
 
-    const { data: profiles } = await supabaseAdmin
+    const { data: profiles } = await admin
       .from('profiles')
       .select('id, full_name, avatar_url, user_settings')
       .in('id', friendIds);
 
-    const { data: existingConvos } = await supabaseAdmin
+    const { data: existingConvos } = await admin
       .from('conversations')
       .select('id, participant_a, participant_b')
       .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`);
@@ -56,8 +57,7 @@ export async function GET(request) {
 
     const friends = (profiles || [])
       .map((p) => {
-        const displayName =
-          (p.full_name || p.user_settings?.display_name || '').trim() || 'Member';
+        const displayName = (p.full_name || p.user_settings?.display_name || '').trim() || 'Member';
         return {
           id: p.id,
           name: displayName,

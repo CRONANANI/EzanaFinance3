@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
+
+const admin = getAdminClient();
 
 function displayNameFromProfile(row) {
   if (!row) return 'Someone';
@@ -11,13 +12,9 @@ function displayNameFromProfile(row) {
 }
 
 /** GET — pending incoming friend requests for current user */
-export async function GET() {
+export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const { data: rows, error } = await supabase
       .from('friend_requests')
@@ -34,7 +31,10 @@ export async function GET() {
     const senderIds = [...new Set((rows || []).map((r) => r.sender_id))];
     let profileMap = {};
     if (senderIds.length > 0) {
-      const { data: profs } = await supabaseAdmin.from('profiles').select('id, full_name, user_settings').in('id', senderIds);
+      const { data: profs } = await admin
+        .from('profiles')
+        .select('id, full_name, user_settings')
+        .in('id', senderIds);
       profileMap = Object.fromEntries((profs || []).map((p) => [p.id, p]));
     }
 
@@ -47,6 +47,9 @@ export async function GET() {
 
     return NextResponse.json({ requests });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('GET friend-request', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
@@ -61,16 +64,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'receiver_id required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
     if (user.id === receiverId) {
       return NextResponse.json({ error: 'Cannot send a request to yourself' }, { status: 400 });
     }
 
-    const { data: existing } = await supabaseAdmin.from('profiles').select('id').eq('id', receiverId).maybeSingle();
+    const { data: existing } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('id', receiverId)
+      .maybeSingle();
     if (!existing) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -95,6 +98,9 @@ export async function POST(request) {
 
     return NextResponse.json({ request: inserted });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('POST friend-request', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }
@@ -107,14 +113,13 @@ export async function PATCH(request) {
     const requestId = typeof body.id === 'string' ? body.id : '';
     const status = body.status === 'accepted' || body.status === 'rejected' ? body.status : null;
     if (!requestId || !status) {
-      return NextResponse.json({ error: 'id and status (accepted|rejected) required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'id and status (accepted|rejected) required' },
+        { status: 400 },
+      );
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     const { data: row, error: fetchErr } = await supabase
       .from('friend_requests')
@@ -142,14 +147,19 @@ export async function PATCH(request) {
     }
 
     if (status === 'accepted') {
-      await supabaseAdmin.from('user_follows').upsert(
-        { follower_id: row.receiver_id, following_id: row.sender_id },
-        { onConflict: 'follower_id,following_id' }
-      );
+      await admin
+        .from('user_follows')
+        .upsert(
+          { follower_id: row.receiver_id, following_id: row.sender_id },
+          { onConflict: 'follower_id,following_id' },
+        );
     }
 
     return NextResponse.json({ ok: true, status });
   } catch (e) {
+    if (e?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     console.error('PATCH friend-request', e);
     return NextResponse.json({ error: e.message || 'Server error' }, { status: 500 });
   }

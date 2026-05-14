@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,8 @@ export async function GET(request) {
     const limit = Math.min(100, Math.max(10, parseInt(searchParams.get('limit') || '50', 10)));
     const period = searchParams.get('period') || 'weekly';
 
-    const { data: profileRows, error } = await supabaseAdmin
+    const admin = getAdminClient();
+    const { data: profileRows, error } = await admin
       .from('profiles')
       .select('id, username, user_settings, full_name')
       .order('created_at', { ascending: false })

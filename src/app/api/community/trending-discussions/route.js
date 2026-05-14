@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -10,9 +10,10 @@ export const runtime = 'nodejs';
  */
 export async function GET() {
   try {
+    const admin = getAdminClient();
     const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await admin
       .from('community_posts')
       .select('id, content, comments_count, user_id, updated_at')
       .gte('updated_at', sevenDaysAgo)
@@ -25,14 +26,15 @@ export async function GET() {
     }
 
     const uids = [...new Set(data.map((d) => d.user_id).filter(Boolean))];
-    const { data: profs } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username')
-      .in('id', uids);
+    const { data: profs } = await admin.from('profiles').select('id, username').in('id', uids);
     const pmap = Object.fromEntries((profs || []).map((p) => [p.id, p.username]));
 
     const discussions = data.map((d) => {
-      const title = String(d.content || '').split('\n')[0].trim().slice(0, 120) || 'Discussion';
+      const title =
+        String(d.content || '')
+          .split('\n')[0]
+          .trim()
+          .slice(0, 120) || 'Discussion';
       const un = pmap[d.user_id];
       return {
         title,

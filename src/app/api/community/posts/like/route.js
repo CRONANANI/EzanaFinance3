@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { requireUser, getAdminClient } from '@/lib/supabase';
 import { awardXP } from '@/lib/rewards';
 
 export const dynamic = 'force-dynamic';
+
+const admin = getAdminClient();
 
 /** POST { post_id, action: 'like' | 'unlike' } */
 export async function POST(request) {
@@ -19,11 +20,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'action must be like or unlike' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { user, client: supabase } = await requireUser(request);
 
     if (action === 'like') {
       const { error } = await supabase.from('post_likes').insert({ user_id: user.id, post_id });
@@ -32,7 +29,7 @@ export async function POST(request) {
       }
       if (!error) {
         try {
-          const { data: postRow } = await supabaseAdmin
+          const { data: postRow } = await admin
             .from('community_posts')
             .select('user_id')
             .eq('id', post_id)
@@ -45,7 +42,11 @@ export async function POST(request) {
         }
       }
     } else {
-      const { error } = await supabase.from('post_likes').delete().eq('user_id', user.id).eq('post_id', post_id);
+      const { error } = await supabase
+        .from('post_likes')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('post_id', post_id);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -57,6 +58,9 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, likes_count: row?.likes_count ?? 0 });
   } catch (error) {
+    if (error?.status === 401) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

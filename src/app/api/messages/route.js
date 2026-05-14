@@ -2,20 +2,21 @@
  * GET /api/messages — list conversations. POST /api/messages — send message (friend-gated).
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+const admin = getAdminClient();
+
 async function areMutualFollows(userIdA, userIdB) {
-  const { data: aToB } = await supabaseAdmin
+  const { data: aToB } = await admin
     .from('user_follows')
     .select('follower_id')
     .eq('follower_id', userIdA)
     .eq('following_id', userIdB)
     .maybeSingle();
 
-  const { data: bToA } = await supabaseAdmin
+  const { data: bToA } = await admin
     .from('user_follows')
     .select('follower_id')
     .eq('follower_id', userIdB)
@@ -31,13 +32,13 @@ function orderedPair(a, b) {
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '30', 10), 1), 100);
 
-    const { data: convos, error: convErr } = await supabaseAdmin
+    const { data: convos, error: convErr } = await admin
       .from('conversations')
       .select('id, participant_a, participant_b, last_message_at, created_at')
       .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
@@ -54,11 +55,11 @@ export async function GET(request) {
     }
 
     const otherIds = convos.map((c) =>
-      c.participant_a === user.id ? c.participant_b : c.participant_a
+      c.participant_a === user.id ? c.participant_b : c.participant_a,
     );
     const uniqueOtherIds = [...new Set(otherIds)];
 
-    const { data: profiles } = await supabaseAdmin
+    const { data: profiles } = await admin
       .from('profiles')
       .select('id, full_name, avatar_url, user_settings')
       .in('id', uniqueOtherIds);
@@ -67,7 +68,7 @@ export async function GET(request) {
 
     const convoIds = convos.map((c) => c.id);
 
-    const { data: lastMsgs } = await supabaseAdmin
+    const { data: lastMsgs } = await admin
       .from('messages')
       .select('id, conversation_id, sender_id, content, created_at, read_at')
       .in('conversation_id', convoIds)
@@ -80,7 +81,7 @@ export async function GET(request) {
       }
     }
 
-    const { data: unreadCounts } = await supabaseAdmin
+    const { data: unreadCounts } = await admin
       .from('messages')
       .select('conversation_id')
       .in('conversation_id', convoIds)
@@ -132,7 +133,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json().catch(() => ({}));
@@ -149,7 +150,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
     }
     if (content.length > 5000) {
-      return NextResponse.json({ error: 'Message too long (max 5000 characters)' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Message too long (max 5000 characters)' },
+        { status: 400 },
+      );
     }
 
     const mutual = await areMutualFollows(user.id, toUserId);
@@ -158,14 +162,14 @@ export async function POST(request) {
         {
           error: 'You can only message friends (mutual followers). Follow each other first.',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const [pA, pB] = orderedPair(user.id, toUserId);
     const now = new Date().toISOString();
 
-    let { data: convo } = await supabaseAdmin
+    let { data: convo } = await admin
       .from('conversations')
       .select('id')
       .eq('participant_a', pA)
@@ -173,7 +177,7 @@ export async function POST(request) {
       .maybeSingle();
 
     if (!convo) {
-      const { data: newConvo, error: createErr } = await supabaseAdmin
+      const { data: newConvo, error: createErr } = await admin
         .from('conversations')
         .insert({
           participant_a: pA,
@@ -185,7 +189,7 @@ export async function POST(request) {
 
       if (createErr) {
         if (createErr.code === '23505') {
-          const { data: retry } = await supabaseAdmin
+          const { data: retry } = await admin
             .from('conversations')
             .select('id')
             .eq('participant_a', pA)
@@ -205,7 +209,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to resolve conversation' }, { status: 500 });
     }
 
-    const { data: msg, error: msgErr } = await supabaseAdmin
+    const { data: msg, error: msgErr } = await admin
       .from('messages')
       .insert({
         conversation_id: convo.id,
@@ -220,7 +224,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
 
-    await supabaseAdmin
+    await admin
       .from('conversations')
       .update({ last_message_at: msg.created_at })
       .eq('id', convo.id);

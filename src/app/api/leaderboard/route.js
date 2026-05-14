@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
+import { getAdminClient } from '@/lib/supabase';
+import { computeUserStats, getPeriodStartIso } from '@/lib/userTradeStats';
 
 export const dynamic = 'force-dynamic';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
-import { computeUserStats, getPeriodStartIso } from '@/lib/userTradeStats';
 
 function yesterdayStr() {
   const d = new Date();
@@ -27,7 +27,7 @@ export async function GET(request) {
         meta: { period: 'all_time', error: 'service_role_unconfigured' },
       });
     }
-    const admin = createServerSupabaseClient();
+    const admin = getAdminClient();
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'all_time';
     const includeRising = searchParams.get('includeRising') === '1';
@@ -37,7 +37,9 @@ export async function GET(request) {
 
     const { data: profilesRaw, error: pe } = await admin
       .from('profiles')
-      .select('id, username, full_name, display_name, avatar_url, is_partner, privacy_show_on_leaderboard')
+      .select(
+        'id, username, full_name, display_name, avatar_url, is_partner, privacy_show_on_leaderboard',
+      )
       .not('username', 'is', null);
 
     if (pe) {
@@ -45,9 +47,7 @@ export async function GET(request) {
       return NextResponse.json({ error: pe.message }, { status: 500 });
     }
 
-    const profiles = (profilesRaw || []).filter(
-      (p) => p.privacy_show_on_leaderboard !== false,
-    );
+    const profiles = (profilesRaw || []).filter((p) => p.privacy_show_on_leaderboard !== false);
     const userIds = profiles.map((p) => p.id);
     if (userIds.length === 0) {
       return NextResponse.json({ rows: [], averages: null, meta: { period } });

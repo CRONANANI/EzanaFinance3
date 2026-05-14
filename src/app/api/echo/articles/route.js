@@ -5,14 +5,18 @@
  * PATCH — update article (auth'd, own articles only)
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+const admin = getAdminClient();
 
 function slugify(text) {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
 }
 
 export async function GET(request) {
@@ -24,7 +28,7 @@ export async function GET(request) {
   const slug = searchParams.get('slug');
 
   if (slug) {
-    const { data: article } = await supabaseAdmin
+    const { data: article } = await admin
       .from('echo_articles')
       .select('*')
       .eq('article_slug', slug)
@@ -33,7 +37,7 @@ export async function GET(request) {
 
     if (!article) return NextResponse.json({ error: 'Article not found' }, { status: 404 });
 
-    await supabaseAdmin
+    await admin
       .from('echo_articles')
       .update({ view_count: (article.view_count || 0) + 1 })
       .eq('id', article.id);
@@ -42,10 +46,10 @@ export async function GET(request) {
   }
 
   if (myArticles) {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { data: articles } = await supabaseAdmin
+    const { data: articles } = await admin
       .from('echo_articles')
       .select('*')
       .eq('author_id', user.id)
@@ -58,9 +62,12 @@ export async function GET(request) {
   const pageSize = 20;
   const start = (page - 1) * pageSize;
 
-  let query = supabaseAdmin
+  let query = admin
     .from('echo_articles')
-    .select('id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, read_time_minutes, view_count, like_count, published_at', { count: 'exact' })
+    .select(
+      'id, author_id, author_name, author_avatar, article_title, article_slug, article_excerpt, article_category, cover_image_url, read_time_minutes, view_count, like_count, published_at',
+      { count: 'exact' },
+    )
     .eq('article_status', 'published')
     .order('published_at', { ascending: false })
     .range(start, start + pageSize - 1);
@@ -74,10 +81,10 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const user = await getAuthUser(request);
+  const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: partner } = await supabaseAdmin
+  const { data: partner } = await admin
     .from('partners')
     .select('echo_writer_approved, display_name, avatar_url')
     .eq('user_id', user.id)
@@ -85,8 +92,10 @@ export async function POST(request) {
 
   if (!partner?.echo_writer_approved) {
     return NextResponse.json(
-      { error: 'You must be an approved Echo writer to submit articles. Apply via Creator Studio.' },
-      { status: 403 }
+      {
+        error: 'You must be an approved Echo writer to submit articles. Apply via Creator Studio.',
+      },
+      { status: 403 },
     );
   }
 
@@ -102,7 +111,7 @@ export async function POST(request) {
   const wordCount = articleBody.trim().split(/\s+/).filter(Boolean).length;
   const readTime = Math.max(1, Math.round(wordCount / 200));
 
-  const { data: article, error: insertErr } = await supabaseAdmin
+  const { data: article, error: insertErr } = await admin
     .from('echo_articles')
     .insert({
       author_id: user.id,
@@ -130,7 +139,7 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-  const user = await getAuthUser(request);
+  const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
@@ -154,7 +163,7 @@ export async function PATCH(request) {
     updates.submitted_at = new Date().toISOString();
   }
 
-  const { data: article, error: updateErr } = await supabaseAdmin
+  const { data: article, error: updateErr } = await admin
     .from('echo_articles')
     .update(updates)
     .eq('id', articleId)

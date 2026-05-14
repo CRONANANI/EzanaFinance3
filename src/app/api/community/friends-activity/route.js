@@ -1,23 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const admin = getAdminClient();
 
 /**
  * GET /api/community/friends-activity
  * Recent posts from users the current user follows.
  */
-export async function GET() {
+export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ activity: [] });
 
-    const { data: follows, error: followsErr } = await supabaseAdmin
+    const { data: follows, error: followsErr } = await admin
       .from('user_follows')
       .select('following_id')
       .eq('follower_id', user.id);
@@ -28,7 +26,7 @@ export async function GET() {
 
     const followedIds = [...new Set(follows.map((f) => f.following_id))];
 
-    const { data: posts } = await supabaseAdmin
+    const { data: posts } = await admin
       .from('community_posts')
       .select('id, user_id, content, created_at')
       .in('user_id', followedIds)
@@ -41,7 +39,7 @@ export async function GET() {
     }
 
     const uids = [...new Set(posts.map((p) => p.user_id))];
-    const { data: profs } = await supabaseAdmin
+    const { data: profs } = await admin
       .from('profiles')
       .select('id, full_name, username')
       .in('id', uids);

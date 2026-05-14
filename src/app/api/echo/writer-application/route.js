@@ -4,24 +4,27 @@
  * GET — check application status
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+const admin = getAdminClient();
 
 export async function POST(request) {
-  const user = await getAuthUser(request);
+  const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: partner } = await supabaseAdmin
+  const { data: partner } = await admin
     .from('partners')
     .select('id, display_name, echo_writer_approved')
     .eq('user_id', user.id)
     .single();
 
   if (!partner) {
-    return NextResponse.json({ error: 'Only partners can apply to write for Ezana Echo' }, { status: 403 });
+    return NextResponse.json(
+      { error: 'Only partners can apply to write for Ezana Echo' },
+      { status: 403 },
+    );
   }
 
   if (partner.echo_writer_approved) {
@@ -35,7 +38,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Writing experience is required' }, { status: 400 });
   }
 
-  const { data: app, error: insertErr } = await supabaseAdmin
+  const { data: app, error: insertErr } = await admin
     .from('echo_writer_applications')
     .upsert(
       {
@@ -43,7 +46,7 @@ export async function POST(request) {
         applicant_name: partner.display_name || user.email,
         applicant_email: user.email,
         writing_experience: writingExperience,
-        sample_urls: Array.isArray(sampleUrls) ? sampleUrls.join('\n') : (sampleUrls || null),
+        sample_urls: Array.isArray(sampleUrls) ? sampleUrls.join('\n') : sampleUrls || null,
         specialization: specialization || null,
         reason_to_write: reasonToWrite || null,
         portfolio_url: portfolioUrl || null,
@@ -51,7 +54,7 @@ export async function POST(request) {
         submitted_at: new Date().toISOString(),
         reviewer_notes: null,
       },
-      { onConflict: 'user_id' }
+      { onConflict: 'user_id' },
     )
     .select()
     .single();
@@ -65,16 +68,16 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  const user = await getAuthUser(request);
+  const user = await getCurrentUser(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: app } = await supabaseAdmin
+  const { data: app } = await admin
     .from('echo_writer_applications')
     .select('*')
     .eq('user_id', user.id)
     .single();
 
-  const { data: partner } = await supabaseAdmin
+  const { data: partner } = await admin
     .from('partners')
     .select('echo_writer_approved')
     .eq('user_id', user.id)

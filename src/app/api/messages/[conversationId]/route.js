@@ -7,13 +7,14 @@
  * Mark all unread messages in this conversation as read (for the current user).
  */
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+const admin = getAdminClient();
+
 async function verifyParticipant(conversationId, userId) {
-  const { data } = await supabaseAdmin
+  const { data } = await admin
     .from('conversations')
     .select('id, participant_a, participant_b')
     .eq('id', conversationId)
@@ -26,7 +27,7 @@ async function verifyParticipant(conversationId, userId) {
 
 export async function GET(request, { params }) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { conversationId } = params;
@@ -43,7 +44,7 @@ export async function GET(request, { params }) {
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10), 1), 200);
     const before = searchParams.get('before');
 
-    let query = supabaseAdmin
+    let query = admin
       .from('messages')
       .select('id, conversation_id, sender_id, content, created_at, read_at')
       .eq('conversation_id', conversationId)
@@ -61,10 +62,9 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Failed to load messages' }, { status: 500 });
     }
 
-    const otherId =
-      convo.participant_a === user.id ? convo.participant_b : convo.participant_a;
+    const otherId = convo.participant_a === user.id ? convo.participant_b : convo.participant_a;
 
-    const { data: otherProfile } = await supabaseAdmin
+    const { data: otherProfile } = await admin
       .from('profiles')
       .select('id, full_name, avatar_url, user_settings')
       .eq('id', otherId)
@@ -97,7 +97,7 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { conversationId } = params;
@@ -112,7 +112,7 @@ export async function PATCH(request, { params }) {
 
     const now = new Date().toISOString();
 
-    const { data: updated, error } = await supabaseAdmin
+    const { data: updated, error } = await admin
       .from('messages')
       .update({ read_at: now })
       .eq('conversation_id', conversationId)

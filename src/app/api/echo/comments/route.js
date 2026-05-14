@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getCurrentUser, getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const admin = getAdminClient();
 
 function parseArticleId(bodyOrSearch, fromSearch = false) {
   if (fromSearch) {
@@ -24,7 +25,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'articleId required' }, { status: 400 });
     }
 
-    const { data: comments, error: commentsErr } = await supabaseAdmin
+    const { data: comments, error: commentsErr } = await admin
       .from('echo_article_comments')
       .select('id, user_id, content, created_at')
       .eq('article_id', articleId)
@@ -41,15 +42,13 @@ export async function GET(request) {
     const authorsByUserId = {};
 
     if (userIds.length > 0) {
-      const { data: profiles } = await supabaseAdmin
+      const { data: profiles } = await admin
         .from('profiles')
         .select('id, full_name, avatar_url, user_settings')
         .in('id', userIds);
       for (const p of profiles || []) {
         const name =
-          (p.full_name && String(p.full_name).trim()) ||
-          p.user_settings?.display_name ||
-          'Reader';
+          (p.full_name && String(p.full_name).trim()) || p.user_settings?.display_name || 'Reader';
         authorsByUserId[p.id] = {
           id: p.id,
           name,
@@ -83,16 +82,13 @@ export async function GET(request) {
     return NextResponse.json({ comments: hydrated });
   } catch (err) {
     console.error('[echo/comments GET] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }
 
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Sign in to comment.' }, { status: 401 });
     }
@@ -111,7 +107,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Comment too long (max 4000 chars)' }, { status: 400 });
     }
 
-    const { data: inserted, error: insertErr } = await supabaseAdmin
+    const { data: inserted, error: insertErr } = await admin
       .from('echo_article_comments')
       .insert({
         user_id: user.id,
@@ -126,7 +122,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Could not post comment' }, { status: 500 });
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile } = await admin
       .from('profiles')
       .select('full_name, avatar_url, user_settings')
       .eq('id', user.id)
@@ -163,9 +159,6 @@ export async function POST(request) {
     });
   } catch (err) {
     console.error('[echo/comments POST] unexpected error:', err);
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }
