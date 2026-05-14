@@ -2,7 +2,7 @@
  * Builds and updates a user's interest profile from behavioral signals.
  */
 
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 const DEFAULT_NOTIFICATION_PREFS = {
   earnings_alerts: true,
@@ -18,17 +18,46 @@ const DEFAULT_NOTIFICATION_PREFS = {
 };
 
 const SECTOR_MAP = {
-  AAPL: 'Technology', NVDA: 'Technology', MSFT: 'Technology', GOOG: 'Technology', GOOGL: 'Technology',
-  META: 'Technology', TSLA: 'Technology', AMZN: 'Technology', NFLX: 'Technology',
-  JPM: 'Finance', GS: 'Finance', MS: 'Finance', BAC: 'Finance', V: 'Finance',
-  JNJ: 'Healthcare', PFE: 'Healthcare', UNH: 'Healthcare', LLY: 'Healthcare',
-  XOM: 'Energy', CVX: 'Energy', COP: 'Energy', SLB: 'Energy',
-  PG: 'Consumer Staples', KO: 'Consumer Staples', WMT: 'Consumer Staples',
-  DIS: 'Communication', CMCSA: 'Communication', T: 'Communication',
-  BA: 'Industrials', CAT: 'Industrials', UNP: 'Industrials',
-  NEE: 'Utilities', DUK: 'Utilities', SO: 'Utilities',
-  AMT: 'Real Estate', PLD: 'Real Estate', CCI: 'Real Estate',
-  BTC: 'Crypto', ETH: 'Crypto', SOL: 'Crypto',
+  AAPL: 'Technology',
+  NVDA: 'Technology',
+  MSFT: 'Technology',
+  GOOG: 'Technology',
+  GOOGL: 'Technology',
+  META: 'Technology',
+  TSLA: 'Technology',
+  AMZN: 'Technology',
+  NFLX: 'Technology',
+  JPM: 'Finance',
+  GS: 'Finance',
+  MS: 'Finance',
+  BAC: 'Finance',
+  V: 'Finance',
+  JNJ: 'Healthcare',
+  PFE: 'Healthcare',
+  UNH: 'Healthcare',
+  LLY: 'Healthcare',
+  XOM: 'Energy',
+  CVX: 'Energy',
+  COP: 'Energy',
+  SLB: 'Energy',
+  PG: 'Consumer Staples',
+  KO: 'Consumer Staples',
+  WMT: 'Consumer Staples',
+  DIS: 'Communication',
+  CMCSA: 'Communication',
+  T: 'Communication',
+  BA: 'Industrials',
+  CAT: 'Industrials',
+  UNP: 'Industrials',
+  NEE: 'Utilities',
+  DUK: 'Utilities',
+  SO: 'Utilities',
+  AMT: 'Real Estate',
+  PLD: 'Real Estate',
+  CCI: 'Real Estate',
+  BTC: 'Crypto',
+  ETH: 'Crypto',
+  SOL: 'Crypto',
 };
 
 const PAGE_TO_FEATURE = {
@@ -51,7 +80,15 @@ function normalizeRiskFromProfile(row) {
   let riskScore = row.risk_score;
   if (riskScore == null && row.investor_profile?.risk) {
     const r = String(row.investor_profile.risk).replace('-Oriented', '').trim();
-    const map = { Conservative: 25, Moderate: 50, Intermediate: 50, Growth: 70, Aggressive: 85, Expert: 85, Beginner: 30 };
+    const map = {
+      Conservative: 25,
+      Moderate: 50,
+      Intermediate: 50,
+      Growth: 70,
+      Aggressive: 85,
+      Expert: 85,
+      Beginner: 30,
+    };
     riskScore = map[r] ?? 50;
     riskCategory = r || riskCategory;
   }
@@ -60,17 +97,20 @@ function normalizeRiskFromProfile(row) {
 }
 
 export async function buildUserProfile(userId) {
-  const [watchlistData, portfolioData, breadcrumbs, questionnaire, existingRes] = await Promise.all([
-    fetchWatchlistTickers(userId),
-    fetchPortfolioHoldings(userId),
-    fetchRecentBreadcrumbs(userId, 30),
-    fetchQuestionnaireProfile(userId),
-    supabaseAdmin
-      .from('user_interest_profiles')
-      .select('notification_prefs')
-      .eq('user_id', userId)
-      .maybeSingle(),
-  ]);
+  const admin = getAdminClient();
+  const [watchlistData, portfolioData, breadcrumbs, questionnaire, existingRes] = await Promise.all(
+    [
+      fetchWatchlistTickers(userId),
+      fetchPortfolioHoldings(userId),
+      fetchRecentBreadcrumbs(userId, 30),
+      fetchQuestionnaireProfile(userId),
+      admin
+        .from('user_interest_profiles')
+        .select('notification_prefs')
+        .eq('user_id', userId)
+        .maybeSingle(),
+    ],
+  );
   const existingProfile = existingRes?.data;
 
   const tickerScores = {};
@@ -91,7 +131,9 @@ export async function buildUserProfile(userId) {
 
   const searches = breadcrumbs.filter((b) => b.event_type === 'search');
   for (const b of searches) {
-    const t = b.event_data?.ticker || (typeof b.event_data?.query === 'string' ? b.event_data.query.toUpperCase() : null);
+    const t =
+      b.event_data?.ticker ||
+      (typeof b.event_data?.query === 'string' ? b.event_data.query.toUpperCase() : null);
     if (t && t.length <= 5 && /^[A-Z0-9.-]+$/.test(t)) tickerScores[t] = (tickerScores[t] || 0) + 8;
   }
 
@@ -135,12 +177,13 @@ export async function buildUserProfile(userId) {
 
   const mergedPrefs = {
     ...DEFAULT_NOTIFICATION_PREFS,
-    ...(existingProfile?.notification_prefs && typeof existingProfile.notification_prefs === 'object'
+    ...(existingProfile?.notification_prefs &&
+    typeof existingProfile.notification_prefs === 'object'
       ? existingProfile.notification_prefs
       : {}),
   };
 
-  await supabaseAdmin.from('user_interest_profiles').upsert(
+  await admin.from('user_interest_profiles').upsert(
     {
       user_id: userId,
       ticker_scores: tickerScores,
@@ -160,16 +203,19 @@ export async function buildUserProfile(userId) {
 }
 
 async function fetchWatchlistTickers(userId) {
-  const { data } = await supabaseAdmin
-    .from('user_watchlist_items')
-    .select('ticker')
-    .eq('user_id', userId);
+  const admin = getAdminClient();
+  const { data } = await admin.from('user_watchlist_items').select('ticker').eq('user_id', userId);
   const set = new Set((data || []).map((r) => r.ticker).filter(Boolean));
   return [...set];
 }
 
 async function fetchPortfolioHoldings(userId) {
-  const { data } = await supabaseAdmin.from('mock_portfolios').select('portfolio').eq('user_id', userId).maybeSingle();
+  const admin = getAdminClient();
+  const { data } = await admin
+    .from('mock_portfolios')
+    .select('portfolio')
+    .eq('user_id', userId)
+    .maybeSingle();
   if (!data?.portfolio?.positions) return [];
   const pos = data.portfolio.positions;
   if (Array.isArray(pos)) {
@@ -179,8 +225,9 @@ async function fetchPortfolioHoldings(userId) {
 }
 
 async function fetchRecentBreadcrumbs(userId, days) {
+  const admin = getAdminClient();
   const cutoff = new Date(Date.now() - days * 86400000).toISOString();
-  const { data } = await supabaseAdmin
+  const { data } = await admin
     .from('activity_breadcrumbs')
     .select('event_type, event_data, created_at')
     .eq('user_id', userId)
@@ -191,7 +238,8 @@ async function fetchRecentBreadcrumbs(userId, days) {
 }
 
 async function fetchQuestionnaireProfile(userId) {
-  const { data } = await supabaseAdmin
+  const admin = getAdminClient();
+  const { data } = await admin
     .from('profiles')
     .select('risk_score, risk_category, investor_profile')
     .eq('id', userId)

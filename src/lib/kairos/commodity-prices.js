@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 /** @typedef {{ date: string, open?: number, high?: number, low?: number, close: number, volume?: number }} PriceRow */
 
@@ -58,7 +58,8 @@ export async function fetchCommodityHistory(symbol, fromDate, toDate) {
     throw new Error('symbol, fromDate, toDate are all required');
   }
 
-  const { data: cached } = await supabaseAdmin
+  const admin = getAdminClient();
+  const { data: cached } = await admin
     .from('kairos_commodity_prices')
     .select('trade_date, open, high, low, close, volume')
     .eq('symbol', symbol)
@@ -111,12 +112,12 @@ export async function fetchCommodityHistory(symbol, fromDate, toDate) {
   const BATCH = 1000;
   for (let i = 0; i < upsertRows.length; i += BATCH) {
     const batch = upsertRows.slice(i, i + BATCH);
-    await supabaseAdmin.from('kairos_commodity_prices').upsert(batch, { onConflict: 'symbol,trade_date' });
+    await admin.from('kairos_commodity_prices').upsert(batch, { onConflict: 'symbol,trade_date' });
   }
 
   const dates = fmpRows.map((r) => r.date).sort();
   if (dates.length > 0) {
-    await supabaseAdmin.from('kairos_commodity_cache_status').upsert({
+    await admin.from('kairos_commodity_cache_status').upsert({
       symbol,
       earliest_date: dates[0],
       latest_date: dates[dates.length - 1],

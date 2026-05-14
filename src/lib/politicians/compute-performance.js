@@ -15,11 +15,8 @@
  * actual portfolio returns.
  */
 
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
-import {
-  fetchChamberTrades,
-  fetchHistoricalPriceOnDate,
-} from './fmp-client';
+import { getAdminClient } from '@/lib/supabase';
+import { fetchChamberTrades, fetchHistoricalPriceOnDate } from './fmp-client';
 import {
   parseAmountRange,
   normalizePoliticianId,
@@ -73,12 +70,12 @@ export async function computeAllPoliticianPerformance(opts) {
 
     await computeYearPerformance(year);
     console.log(
-      `[politician-perf] year ${year} completed in ${Date.now() - yearStart}ms (cumulative ingested rows: ${ingested})`
+      `[politician-perf] year ${year} completed in ${Date.now() - yearStart}ms (cumulative ingested rows: ${ingested})`,
     );
   }
 
   console.log(
-    `[politician-perf] sync finished in ${Date.now() - startedAt}ms, total FMP rows ingested: ${ingested}, years: ${years.join(',')}`
+    `[politician-perf] sync finished in ${Date.now() - startedAt}ms, total FMP rows ingested: ${ingested}, years: ${years.join(',')}`,
   );
   return { ingested, years };
 }
@@ -91,7 +88,7 @@ export async function computeAllPoliticianPerformance(opts) {
  * @param {number} year
  */
 async function persistTrades(trades, chamber, year) {
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
 
   const rows = trades
     .map((t) => {
@@ -120,9 +117,7 @@ async function persistTrades(trades, chamber, year) {
         symbol,
         transaction_type: t.type ?? '',
         transaction_date: txDate,
-        disclosure_date: (t.dateRecieved || t.disclosureDate || '')
-          .toString()
-          .slice(0, 10) || null,
+        disclosure_date: (t.dateRecieved || t.disclosureDate || '').toString().slice(0, 10) || null,
         amount_min: min,
         amount_max: max,
         amount_midpoint: midpoint,
@@ -134,11 +129,9 @@ async function persistTrades(trades, chamber, year) {
   if (rows.length === 0) return;
 
   for (const chunk of chunked(rows, 500)) {
-    const { error } = await supabase
-      .from('congressional_trades')
-      .upsert(chunk, {
-        onConflict: 'politician_id,symbol,transaction_date,transaction_type',
-      });
+    const { error } = await supabase.from('congressional_trades').upsert(chunk, {
+      onConflict: 'politician_id,symbol,transaction_date,transaction_type',
+    });
     if (error) {
       console.error('[persistTrades] upsert error', error);
     }
@@ -152,7 +145,7 @@ async function persistTrades(trades, chamber, year) {
  * @param {number} year
  */
 async function computeYearPerformance(year) {
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
 
   const { data: trades, error } = await supabase
     .from('congressional_trades')
@@ -231,9 +224,7 @@ async function simulatePoliticianYear(trades, year) {
   let biggestWinnerPnl = 0;
 
   for (const [symbol, symTrades] of bySymbol) {
-    symTrades.sort((a, b) =>
-      a.transaction_date.localeCompare(b.transaction_date)
-    );
+    symTrades.sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
 
     for (const trade of symTrades) {
       const txType = normalizeTransactionType(trade.transaction_type);
@@ -245,7 +236,7 @@ async function simulatePoliticianYear(trades, year) {
       const laterSell = symTrades.find(
         (s) =>
           normalizeTransactionType(s.transaction_type) === 'sell' &&
-          s.transaction_date > trade.transaction_date
+          s.transaction_date > trade.transaction_date,
       );
       const exitDate = laterSell?.transaction_date ?? `${year}-12-31`;
 
@@ -289,7 +280,9 @@ function extractState(office, district, state) {
   if (/^[A-Z]{2}$/.test(direct)) return direct;
   const fromDistrict = String(district || '').match(/\b([A-Z]{2})\b/);
   if (fromDistrict) return fromDistrict[1];
-  const tail = String(office || '').toUpperCase().match(/\b([A-Z]{2})\b/);
+  const tail = String(office || '')
+    .toUpperCase()
+    .match(/\b([A-Z]{2})\b/);
   if (tail) return tail[1];
   return null;
 }

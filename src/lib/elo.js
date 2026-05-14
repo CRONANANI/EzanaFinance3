@@ -18,7 +18,7 @@
  *   - 'decay'        — inactivity penalties (auto-applied)
  *   - 'admin'        — manual adjustments by you (corrections, awards)
  */
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 /** ELO tier bands. Lower bound is the minimum rating for the tier. */
 export const ELO_TIERS = [
@@ -71,14 +71,22 @@ export async function awardELO(userId, delta, reason, category, metadata = {}) {
     console.warn('[elo] awardELO: reason required');
     return null;
   }
-  const validCategories = ['learning', 'activity', 'portfolio', 'social', 'competition', 'decay', 'admin']; // 'learning','activity','portfolio','social','competition','decay','admin'
+  const validCategories = [
+    'learning',
+    'activity',
+    'portfolio',
+    'social',
+    'competition',
+    'decay',
+    'admin',
+  ]; // 'learning','activity','portfolio','social','competition','decay','admin'
   if (!validCategories.includes(category)) {
     console.warn('[elo] awardELO: invalid category', category);
     return null;
   }
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data: disabledRow } = await supabase
       .from('profiles')
@@ -163,7 +171,7 @@ export async function awardELO(userId, delta, reason, category, metadata = {}) {
 export async function getEloLeaderboard(limit = 100) {
   const safeLimit = Math.max(1, Math.min(1000, Math.round(limit)));
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('user_elo')
       .select('user_id, current_rating, peak_rating, tier, last_activity_at')
@@ -190,13 +198,9 @@ export async function getEloLeaderboard(limit = 100) {
 export async function getUserEloState(userId, transactionLimit = 50) {
   if (!userId) return null;
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const [eloResult, txResult] = await Promise.all([
-      supabase
-        .from('user_elo')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle(),
+      supabase.from('user_elo').select('*').eq('user_id', userId).maybeSingle(),
       supabase
         .from('elo_transactions')
         .select('id, delta, reason, category, metadata, rating_before, rating_after, created_at')

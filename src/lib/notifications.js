@@ -1,5 +1,5 @@
 import webpush from 'web-push';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 const rawContact = process.env.VAPID_CONTACT_EMAIL || 'support@ezanafinance.com';
 const VAPID_SUBJECT = rawContact.startsWith('mailto:') ? rawContact : `mailto:${rawContact}`;
@@ -34,7 +34,7 @@ export async function sendPushNotification(userId, { title, body, url, tag, imag
 
   let supabase;
   try {
-    supabase = createServerSupabaseClient();
+    supabase = getAdminClient();
   } catch {
     return { sent: 0, error: 'Supabase service client unavailable' };
   }

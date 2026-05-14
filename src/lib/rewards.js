@@ -2,7 +2,7 @@
  * Server-only: award XP and sync tier (service role).
  * Tables: user_rewards, xp_transactions (see supabase migrations).
  */
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 const TIERS = [
   { name: 'diamond', minXp: 15000 },
@@ -44,7 +44,7 @@ export async function awardXP(userId, amount, reason, category) {
   }
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error: insErr } = await supabase.from('xp_transactions').insert({
       user_id: userId,
@@ -78,7 +78,9 @@ export async function awardXP(userId, amount, reason, category) {
       row.sweepstakes_entries = perks.sweepstakes_entries;
     }
 
-    const { error: upErr } = await supabase.from('user_rewards').upsert(row, { onConflict: 'user_id' });
+    const { error: upErr } = await supabase
+      .from('user_rewards')
+      .upsert(row, { onConflict: 'user_id' });
     if (upErr) throw upErr;
 
     return { newTotal, newTier, oldTier };

@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { getUserClient } from '@/lib/supabase';
 
 /**
  * Resolve the theme ('light' | 'dark') to use for the current request, server-side.
@@ -23,7 +23,7 @@ import { createServerSupabase } from '@/lib/supabase-server';
 export async function getServerTheme() {
   const COOKIE_NAME = 'ezana.theme';
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
 
     const {
       data: { user },
