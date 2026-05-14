@@ -1,13 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 
 export const dynamic = 'force-dynamic';
 
 const VALID_CATEGORIES = [
-  'feature', 'improvement', 'fix', 'announcement', 'breaking',
-  'security', 'design', 'performance', 'data', 'content',
+  'feature',
+  'improvement',
+  'fix',
+  'announcement',
+  'breaking',
+  'security',
+  'design',
+  'performance',
+  'data',
+  'content',
 ];
 
 /**
@@ -15,13 +22,13 @@ const VALID_CATEGORIES = [
  * Used by the client to detect whether the current user is an admin.
  * Returns 204 if admin, 403 otherwise.
  */
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
       return new NextResponse(null, { status: 401 });
     }
     if (!isAdminUser(user)) {
@@ -41,16 +48,17 @@ export async function OPTIONS() {
  */
 export async function POST(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (!isAdminUser(user)) {
       return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 });
     }
+    const supabaseAdmin = getAdminClient();
 
     let body;
     try {
@@ -109,12 +117,15 @@ export async function POST(request) {
  */
 export async function PATCH(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!isAdminUser(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const supabaseAdmin = getAdminClient();
 
     let body;
     try {
@@ -164,12 +175,15 @@ export async function PATCH(request) {
  */
 export async function DELETE(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!isAdminUser(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const supabaseAdmin = getAdminClient();
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

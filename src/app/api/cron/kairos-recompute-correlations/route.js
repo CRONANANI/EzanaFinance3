@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 import { fetchCommodityHistory, computeForwardReturns } from '@/lib/kairos/commodity-prices';
 import { fetchWeatherHistory, computeMonthlyAnomalies } from '@/lib/kairos/weather-history';
 import { pearson, pValueForPearson, quintileConditionalMeans } from '@/lib/kairos/correlations';
@@ -25,6 +25,12 @@ async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
+  }
 
   const today = new Date();
   const fromDate = new Date(today);
@@ -42,7 +48,7 @@ async function run(request) {
         region.lon,
         fromIso,
         toIso,
-        WEATHER_VARIABLES
+        WEATHER_VARIABLES,
       );
       if (weatherRows.length < 365) {
         errors.push({ region: region.id, error: `Only ${weatherRows.length} weather rows` });
@@ -104,8 +110,9 @@ async function run(request) {
                 computed_at: new Date().toISOString(),
               },
               {
-                onConflict: 'region_id,commodity_symbol,weather_variable,lookahead_days,history_window',
-              }
+                onConflict:
+                  'region_id,commodity_symbol,weather_variable,lookahead_days,history_window',
+              },
             );
 
             if (upErr) {

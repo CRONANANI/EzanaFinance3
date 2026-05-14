@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { resend } from '@/lib/services/resend';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,49 +9,32 @@ function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-export async function POST() {
+export async function POST(request) {
   try {
     if (!process.env.RESEND_API_KEY) {
       console.error('RESEND_API_KEY is not set');
       return NextResponse.json({ error: 'Email delivery is not configured' }, { status: 503 });
     }
 
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {
-                // ignore
-              }
-            });
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    let user;
+    let supabase;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+      supabase = auth.client;
+    } catch {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.error('send-verification: missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL');
+    let supabaseAdmin;
+    try {
+      supabaseAdmin = getAdminClient();
+    } catch {
+      console.error(
+        'send-verification: missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL',
+      );
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
-
-    const supabaseAdmin = createServerSupabaseClient();
 
     let { data: profile } = await supabase
       .from('profiles')
@@ -79,7 +60,7 @@ export async function POST() {
     if (profile.email_verified) {
       return NextResponse.json(
         { error: 'Email already verified', alreadyVerified: true },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -93,13 +74,12 @@ export async function POST() {
       .maybeSingle();
 
     if (!recentErr && recentCode?.created_at) {
-      const secondsSinceLastCode =
-        (Date.now() - new Date(recentCode.created_at).getTime()) / 1000;
+      const secondsSinceLastCode = (Date.now() - new Date(recentCode.created_at).getTime()) / 1000;
       if (secondsSinceLastCode < 60) {
         const waitSeconds = Math.ceil(60 - secondsSinceLastCode);
         return NextResponse.json(
           { error: `Please wait ${waitSeconds} seconds before requesting a new code` },
-          { status: 429 }
+          { status: 429 },
         );
       }
     }
@@ -125,8 +105,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Failed to generate code' }, { status: 500 });
     }
 
-    const fromAddress =
-      process.env.RESEND_FROM_EMAIL || 'Ezana Finance <noreply@ezana.world>';
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'Ezana Finance <noreply@ezana.world>';
 
     const { error: emailError } = await resend.emails.send({
       from: fromAddress,

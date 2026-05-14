@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { scoreCompetition } from '@/lib/competition-scoring';
 
 export { scoreCompetition };
@@ -34,7 +34,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'name, starts_at, ends_at required' }, { status: 400 });
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
 
   const insertRow = {
     name: body.name,
@@ -49,7 +49,11 @@ export async function POST(request) {
     status: 'upcoming',
   };
 
-  const { data: created, error } = await supabase.from('competitions').insert(insertRow).select().single();
+  const { data: created, error } = await supabase
+    .from('competitions')
+    .insert(insertRow)
+    .select()
+    .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -76,10 +80,13 @@ export async function PATCH(request) {
   const competitionId = body?.competition_id;
   const action = body?.action;
   if (!competitionId || !['activate', 'score', 'cancel'].includes(action)) {
-    return NextResponse.json({ error: 'competition_id and valid action required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'competition_id and valid action required' },
+      { status: 400 },
+    );
   }
 
-  const supabase = createServerSupabaseClient();
+  const supabase = getAdminClient();
   const { data: comp, error: fetchErr } = await supabase
     .from('competitions')
     .select('*')
@@ -92,7 +99,10 @@ export async function PATCH(request) {
 
   if (action === 'activate') {
     if (comp.status !== 'upcoming') {
-      return NextResponse.json({ error: `Cannot activate: status is ${comp.status}` }, { status: 409 });
+      return NextResponse.json(
+        { error: `Cannot activate: status is ${comp.status}` },
+        { status: 409 },
+      );
     }
     await supabase.from('competitions').update({ status: 'active' }).eq('id', competitionId);
     return NextResponse.json({ success: true, status: 'active' });
@@ -108,7 +118,10 @@ export async function PATCH(request) {
 
   if (action === 'score') {
     if (comp.status !== 'active' && comp.status !== 'ended') {
-      return NextResponse.json({ error: `Cannot score: status is ${comp.status}` }, { status: 409 });
+      return NextResponse.json(
+        { error: `Cannot score: status is ${comp.status}` },
+        { status: 409 },
+      );
     }
     const result = await scoreCompetition(supabase, comp);
     return NextResponse.json({ success: true, ...result });

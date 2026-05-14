@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,21 +11,28 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const statusFilter = searchParams.get('status');
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let user;
+    let supabase;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+      supabase = auth.client;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     let q = supabase
       .from('competitions')
       .select(
-        'id, name, description, starts_at, ends_at, rules, starting_balance, status, elo_top1pct_award, elo_top10pct_award, elo_bottom25pct_penalty'
+        'id, name, description, starts_at, ends_at, rules, starting_balance, status, elo_top1pct_award, elo_top10pct_award, elo_bottom25pct_penalty',
       )
       .order('starts_at', { ascending: false })
       .limit(50);
 
-    if (statusFilter && ['upcoming', 'active', 'ended', 'scored', 'cancelled'].includes(statusFilter)) {
+    if (
+      statusFilter &&
+      ['upcoming', 'active', 'ended', 'scored', 'cancelled'].includes(statusFilter)
+    ) {
       q = q.eq('status', statusFilter);
     }
 
@@ -47,7 +53,10 @@ export async function GET(request) {
       })),
     });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 500 },
+    );
   }
 }
 
@@ -62,11 +71,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'competition_id required' }, { status: 400 });
     }
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let user;
+    let supabase;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+      supabase = auth.client;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const supabaseAdmin = getAdminClient();
 
     const { data: comp } = await supabase
       .from('competitions')
@@ -112,6 +126,9 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, participation: created });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 500 },
+    );
   }
 }

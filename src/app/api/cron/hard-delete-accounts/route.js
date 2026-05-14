@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,12 +16,12 @@ async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  if (!isServerSupabaseConfigured()) {
+  let admin;
+  try {
+    admin = getAdminClient();
+  } catch {
     return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
   }
-
-  const admin = createServerSupabaseClient();
   const now = new Date().toISOString();
 
   const { data: dueAccounts, error: readErr } = await admin

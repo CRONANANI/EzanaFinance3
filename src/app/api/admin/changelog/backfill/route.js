@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 import { fetchCommits, summarizeCommits, getIsoWeekRange } from '@/lib/changelog/git-summarizer';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +21,12 @@ export async function POST(request) {
   const auth = request.headers.get('authorization') || '';
   if (auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
 
   const now = new Date();
@@ -64,7 +70,10 @@ export async function POST(request) {
         continue;
       }
 
-      const summary = await summarizeCommits(commits, { start: w.start.toISOString(), end: w.end.toISOString() });
+      const summary = await summarizeCommits(commits, {
+        start: w.start.toISOString(),
+        end: w.end.toISOString(),
+      });
       if (!summary) {
         log.push(`${w.weekKey}: skip (no summary, ${commits.length} commits)`);
         skipped++;

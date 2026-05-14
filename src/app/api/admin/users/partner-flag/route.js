@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 
 export const dynamic = 'force-dynamic';
@@ -12,12 +11,15 @@ export const runtime = 'nodejs';
  */
 export async function POST(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!isAdminUser(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const supabaseAdmin = getAdminClient();
 
     let body;
     try {

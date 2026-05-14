@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -14,17 +14,35 @@ export const maxDuration = 60;
 export async function GET(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
-    return NextResponse.json({
-      ok: false,
-      error: 'Server misconfigured: CRON_SECRET not set in Vercel env',
-    }, { status: 503 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Server misconfigured: CRON_SECRET not set in Vercel env',
+      },
+      { status: 503 },
+    );
   }
   const auth = request.headers.get('authorization') || '';
   if (auth !== `Bearer ${secret}`) {
-    return NextResponse.json({
-      ok: false,
-      error: 'Unauthorized — pass `Authorization: Bearer <CRON_SECRET>`',
-    }, { status: 401 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Unauthorized — pass `Authorization: Bearer <CRON_SECRET>`',
+      },
+      { status: 401 },
+    );
+  }
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = getAdminClient();
+  } catch {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Server misconfigured: Supabase service-role environment is missing',
+      },
+      { status: 503 },
+    );
   }
 
   const report = {
@@ -143,10 +161,12 @@ export async function GET(request) {
       report.database = {
         ok: true,
         recent_entries_count: rows.length,
-        most_recent: rows[0] ? {
-          title: rows[0].title,
-          released_at: rows[0].released_at,
-        } : null,
+        most_recent: rows[0]
+          ? {
+              title: rows[0].title,
+              released_at: rows[0].released_at,
+            }
+          : null,
         any_daily_entries: rows.some((r) => /Day \d{4}-\d{2}-\d{2}/.test(r.body || '')),
         any_weekly_entries: rows.some((r) => /Week \d{4}-W\d{2}/.test(r.body || '')),
       };

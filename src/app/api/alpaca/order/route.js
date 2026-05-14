@@ -5,13 +5,11 @@
  */
 import { NextResponse } from 'next/server';
 import { alpacaRequest } from '@/lib/alpaca';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-
-async function getAlpacaAccountId(userId) {
+async function getAlpacaAccountId(supabaseAdmin, userId) {
   const { data } = await supabaseAdmin
     .from('alpaca_accounts')
     .select('alpaca_account_id')
@@ -22,14 +20,16 @@ async function getAlpacaAccountId(userId) {
 
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const body = await request.json();
-    const { symbol, side, type, timeInForce, qty, notional, limitPrice, stopPrice, trailPercent } = body;
+    const { symbol, side, type, timeInForce, qty, notional, limitPrice, stopPrice, trailPercent } =
+      body;
 
     if (!symbol || !side) {
       return NextResponse.json({ error: 'symbol and side are required' }, { status: 400 });
@@ -76,17 +76,18 @@ export async function POST(request) {
     console.error('[Alpaca] Order error:', error);
     return NextResponse.json(
       { error: 'Order failed', details: error.details || error.message },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
     );
   }
 }
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const { searchParams } = new URL(request.url);
@@ -94,24 +95,26 @@ export async function GET(request) {
     const limit = searchParams.get('limit') || '50';
 
     const orders = await alpacaRequest(
-      `/v1/trading/accounts/${accountId}/orders?status=${status}&limit=${limit}&direction=desc`
+      `/v1/trading/accounts/${accountId}/orders?status=${status}&limit=${limit}&direction=desc`,
     );
 
     return NextResponse.json({
-      orders: Array.isArray(orders) ? orders.map((o) => ({
-        id: o.id,
-        symbol: o.symbol,
-        side: o.side,
-        type: o.type,
-        qty: o.qty,
-        notional: o.notional,
-        filledQty: o.filled_qty,
-        filledAvgPrice: o.filled_avg_price,
-        status: o.status,
-        submittedAt: o.submitted_at,
-        filledAt: o.filled_at,
-        canceledAt: o.canceled_at,
-      })) : [],
+      orders: Array.isArray(orders)
+        ? orders.map((o) => ({
+            id: o.id,
+            symbol: o.symbol,
+            side: o.side,
+            type: o.type,
+            qty: o.qty,
+            notional: o.notional,
+            filledQty: o.filled_qty,
+            filledAvgPrice: o.filled_avg_price,
+            status: o.status,
+            submittedAt: o.submitted_at,
+            filledAt: o.filled_at,
+            canceledAt: o.canceled_at,
+          }))
+        : [],
     });
   } catch (error) {
     console.error('[Alpaca] Orders fetch error:', error);
@@ -121,17 +124,20 @@ export async function GET(request) {
 
 export async function DELETE(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('orderId');
 
     if (orderId) {
-      await alpacaRequest(`/v1/trading/accounts/${accountId}/orders/${orderId}`, { method: 'DELETE' });
+      await alpacaRequest(`/v1/trading/accounts/${accountId}/orders/${orderId}`, {
+        method: 'DELETE',
+      });
       return NextResponse.json({ success: true, canceled: orderId });
     } else {
       await alpacaRequest(`/v1/trading/accounts/${accountId}/orders`, { method: 'DELETE' });

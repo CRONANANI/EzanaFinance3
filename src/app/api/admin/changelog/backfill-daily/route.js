@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 import { fetchCommits, summarizeCommits, getDayRange } from '@/lib/changelog/git-summarizer';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +16,12 @@ export async function POST(request) {
   if (!secret) return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   if ((request.headers.get('authorization') || '') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
 
   const body = await request.json().catch(() => ({}));

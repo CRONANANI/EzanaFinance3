@@ -1,42 +1,20 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { buildSentinelReportText } from '@/lib/sentinel-report';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 export async function GET(request) {
   try {
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {}
-            });
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabaseAdmin = getAdminClient();
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '12', 10), 1), 48);
@@ -50,10 +28,7 @@ export async function GET(request) {
 
     if (error) {
       console.error('Sentinel report fetch error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch report' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch report' }, { status: 500 });
     }
 
     if (!rows?.length) {
@@ -71,31 +46,15 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { report_text } = await request.json();
-
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {}
-            });
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabaseAdmin = getAdminClient();
 
     // Save report
     const { data, error } = await supabaseAdmin
@@ -110,10 +69,7 @@ export async function POST(request) {
 
     if (error) {
       console.error('Sentinel report save error:', error);
-      return NextResponse.json(
-        { error: 'Failed to save report' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to save report' }, { status: 500 });
     }
 
     return NextResponse.json({ report: data });
@@ -124,6 +80,7 @@ export async function POST(request) {
 }
 
 async function generateDefaultReport(userId) {
+  const supabaseAdmin = getAdminClient();
   const today = new Date();
 
   const { data: holdings } = await supabaseAdmin

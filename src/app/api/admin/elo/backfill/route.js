@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 import { getCourseById } from '@/lib/learning-curriculum';
 
@@ -60,7 +60,12 @@ export async function POST(request) {
     });
   }
 
-  const supabase = createServerSupabaseClient();
+  let supabase;
+  try {
+    supabase = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+  }
 
   try {
     let usersQuery = supabase.from('user_elo').select('user_id');
@@ -162,7 +167,7 @@ export async function POST(request) {
           backfill: true,
           breakdown: userBreakdown,
           coursesCompleted: nCourses,
-        }
+        },
       );
 
       if (!result) {

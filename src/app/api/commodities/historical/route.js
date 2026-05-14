@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { requireUser } from '@/lib/supabase';
 import { fetchCommodityHistory, TRACKED_COMMODITIES } from '@/lib/kairos/commodity-prices';
 
 export const dynamic = 'force-dynamic';
@@ -10,11 +10,9 @@ export const runtime = 'nodejs';
  */
 export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    try {
+      await requireUser(request);
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -24,14 +22,17 @@ export async function GET(request) {
     const toDate = searchParams.get('to');
 
     if (!symbol || !fromDate || !toDate) {
-      return NextResponse.json({ error: 'symbol, from, to required (YYYY-MM-DD)' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'symbol, from, to required (YYYY-MM-DD)' },
+        { status: 400 },
+      );
     }
 
     const tracked = TRACKED_COMMODITIES.find((c) => c.symbol === symbol);
     if (!tracked) {
       return NextResponse.json(
         { error: `Symbol must be one of: ${TRACKED_COMMODITIES.map((c) => c.symbol).join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

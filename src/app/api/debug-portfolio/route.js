@@ -1,15 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient, getUserClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
-
-function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
-}
 
 export async function GET(request) {
   const report = {
@@ -34,7 +26,7 @@ export async function GET(request) {
 
   // 1. Cookie auth
   try {
-    const supabase = createServerSupabase();
+    const supabase = getUserClient();
     const {
       data: { user },
       error,
@@ -53,8 +45,13 @@ export async function GET(request) {
   // 2. Bearer token auth
   const authHeader = request.headers.get('authorization') || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-  const admin = getAdminClient();
-  report.adminClient.available = !!admin;
+  let admin = null;
+  try {
+    admin = getAdminClient();
+    report.adminClient.available = true;
+  } catch {
+    report.adminClient.available = false;
+  }
 
   let resolvedUserId = report.cookieAuth.userId;
 

@@ -1,14 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
-
-function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
-}
 
 /** Extract bearer token from Authorization header OR x-auth-token header */
 function extractToken(request) {
@@ -21,29 +14,31 @@ function extractToken(request) {
 
 /** Validate token and return user using admin client */
 async function getUser(token) {
-  const admin = getAdminClient();
-  if (!admin) return null;
-  if (!token) return null;
-  try {
-    const { data, error } = await admin.auth.getUser(token);
-    if (error || !data?.user) return null;
-    return data.user;
-  } catch {
-    return null;
+  if (token) {
+    try {
+      const admin = getAdminClient();
+      const { data, error } = await admin.auth.getUser(token);
+      if (!error && data?.user) return data.user;
+    } catch {
+      return null;
+    }
   }
+  return null;
 }
 
 export async function GET(request) {
   try {
     const token = extractToken(request);
-    const user = await getUser(token);
+    const user = (await getCurrentUser(request)) || (await getUser(token));
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const admin = getAdminClient();
-    if (!admin) {
+    let admin;
+    try {
+      admin = getAdminClient();
+    } catch {
       console.error('[mock-portfolio GET] missing SUPABASE_SERVICE_ROLE_KEY');
       return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
     }
@@ -71,7 +66,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const token = extractToken(request);
-    const user = await getUser(token);
+    const user = (await getCurrentUser(request)) || (await getUser(token));
 
     if (!user) {
       console.error('[mock-portfolio POST] no valid token');
@@ -85,8 +80,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid portfolio' }, { status: 400 });
     }
 
-    const admin = getAdminClient();
-    if (!admin) {
+    let admin;
+    try {
+      admin = getAdminClient();
+    } catch {
       console.error('[mock-portfolio POST] missing SUPABASE_SERVICE_ROLE_KEY');
       return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
     }
@@ -94,7 +91,7 @@ export async function POST(request) {
       .from('mock_portfolios')
       .upsert(
         { user_id: user.id, portfolio, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id' }
+        { onConflict: 'user_id' },
       )
       .select('updated_at')
       .single();

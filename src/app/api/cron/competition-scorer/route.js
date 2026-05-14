@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { scoreCompetition } from '@/app/api/admin/competitions/route';
 
 export const dynamic = 'force-dynamic';
@@ -16,11 +16,12 @@ async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!isServerSupabaseConfigured()) {
+  let supabase;
+  try {
+    supabase = getAdminClient();
+  } catch {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
-
-  const supabase = createServerSupabaseClient();
   const now = new Date().toISOString();
 
   const { data: activated } = await supabase

@@ -4,21 +4,30 @@
  */
 import { NextResponse } from 'next/server';
 import { alpacaRequest } from '@/lib/alpaca';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 
 export const dynamic = 'force-dynamic';
 
-
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
     const body = await request.json();
-    const { firstName, lastName, dateOfBirth, taxId, phone,
-            streetAddress, city, state, postalCode, fundingSource } = body;
+    const {
+      firstName,
+      lastName,
+      dateOfBirth,
+      taxId,
+      phone,
+      streetAddress,
+      city,
+      state,
+      postalCode,
+      fundingSource,
+    } = body;
 
     const account = await alpacaRequest('/v1/accounts', {
       method: 'POST',
@@ -50,23 +59,36 @@ export async function POST(request) {
           immediate_family_exposed: false,
         },
         agreements: [
-          { agreement: 'margin_agreement', signed_at: new Date().toISOString(), ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0' },
-          { agreement: 'account_agreement', signed_at: new Date().toISOString(), ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0' },
-          { agreement: 'customer_agreement', signed_at: new Date().toISOString(), ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0' },
+          {
+            agreement: 'margin_agreement',
+            signed_at: new Date().toISOString(),
+            ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+          },
+          {
+            agreement: 'account_agreement',
+            signed_at: new Date().toISOString(),
+            ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+          },
+          {
+            agreement: 'customer_agreement',
+            signed_at: new Date().toISOString(),
+            ip_address: request.headers.get('x-forwarded-for') || '0.0.0.0',
+          },
         ],
       }),
     });
 
-    const { error: upsertErr } = await supabaseAdmin
-      .from('alpaca_accounts')
-      .upsert({
+    const { error: upsertErr } = await supabaseAdmin.from('alpaca_accounts').upsert(
+      {
         user_id: user.id,
         alpaca_account_id: account.id,
         account_status: account.status,
         first_name: firstName,
         last_name: lastName,
         created_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
+      },
+      { onConflict: 'user_id' },
+    );
 
     if (upsertErr) {
       console.error('[Alpaca] alpaca_accounts upsert:', upsertErr);
@@ -101,15 +123,16 @@ export async function POST(request) {
     console.error('[Alpaca] Account creation error:', error);
     return NextResponse.json(
       { error: 'Account creation failed', details: error.details || error.message },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
     );
   }
 }
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
     const { data: record } = await supabaseAdmin
       .from('alpaca_accounts')
@@ -144,7 +167,7 @@ export async function GET(request) {
     console.error('[Alpaca] Account check error:', error);
     return NextResponse.json(
       { error: 'Failed to check account', details: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

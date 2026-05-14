@@ -1,22 +1,11 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 const ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022';
 const MAX_ARTICLE_CHARS = 6000; // cap to keep prompt size reasonable
 const MAX_HOLDINGS = 25; // cap holdings list length
-
-function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return null;
-  return createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
 
 /**
  * Try to fetch the full article body from its URL. Returns null on any failure.
@@ -54,7 +43,7 @@ async function tryFetchArticle(url) {
  * Resolve the user's holdings: live Plaid first, mock portfolio second.
  * Returns { source: 'brokerage'|'mock'|'none', holdings: [{ ticker, qty, price?, costBasis? }] }
  */
-async function loadHoldings(supabase, userId) {
+async function loadHoldings(supabase, admin, userId) {
   // Priority 1: Plaid live holdings (schema: ticker, quantity, price, cost_basis; some rows use ticker_symbol)
   const { data: plaid } = await supabase.from('plaid_holdings').select('*').eq('user_id', userId);
 
@@ -71,7 +60,6 @@ async function loadHoldings(supabase, userId) {
   }
 
   // Priority 2: mock portfolio (stored as JSONB blob)
-  const admin = getAdminClient();
   if (admin) {
     const { data: row } = await admin
       .from('mock_portfolios')
@@ -121,8 +109,7 @@ function formatHoldingsForPrompt({ source, holdings }) {
       (h.costBasis ? ` (avg cost $${h.costBasis.toFixed(2)})` : '') +
       (h.price ? ` (current $${h.price.toFixed(2)})` : ''),
   );
-  const sourceLabel =
-    source === 'brokerage' ? 'live brokerage account (Plaid)' : 'mock portfolio';
+  const sourceLabel = source === 'brokerage' ? 'live brokerage account (Plaid)' : 'mock portfolio';
   return `User portfolio (from ${sourceLabel}):\n${lines.join('\n')}`;
 }
 
@@ -165,32 +152,21 @@ Important rules:
 export async function POST(request) {
   try {
     const { eventTitle, eventBody, eventCountry, eventUrl } = await request.json();
-
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {}
-            });
-          },
-        },
-      },
-    );
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    let user;
+    let supabase;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+      supabase = auth.client;
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let admin = null;
+    try {
+      admin = getAdminClient();
+    } catch {
+      admin = null;
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -208,10 +184,13 @@ export async function POST(request) {
       : (eventBody || eventTitle || '').slice(0, MAX_ARTICLE_CHARS);
 
     if (!articleText) {
-      return NextResponse.json({ analysis: 'No article content available to analyze.' }, { status: 200 });
+      return NextResponse.json(
+        { analysis: 'No article content available to analyze.' },
+        { status: 200 },
+      );
     }
 
-    const holdingsResult = await loadHoldings(supabase, user.id);
+    const holdingsResult = await loadHoldings(supabase, admin, user.id);
     const holdingsBlock = formatHoldingsForPrompt(holdingsResult);
     const prompt = buildPrompt({
       eventTitle,
@@ -247,7 +226,10 @@ export async function POST(request) {
     const analysis = data?.content?.[0]?.text;
 
     if (!analysis) {
-      console.error('[analyze-event] Unexpected Anthropic response shape:', JSON.stringify(data).slice(0, 300));
+      console.error(
+        '[analyze-event] Unexpected Anthropic response shape:',
+        JSON.stringify(data).slice(0, 300),
+      );
       return NextResponse.json(
         { analysis: 'Analysis returned an empty response. Please try again.' },
         { status: 200 },

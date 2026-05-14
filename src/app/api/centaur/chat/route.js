@@ -1,17 +1,10 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { RAY_DALIO_SYSTEM_PROMPT } from '@/lib/rayDalioSystemPrompt';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-);
 
 /**
  * Claude 4.x: first message must be `user`, last must be `user` (no assistant prefill),
@@ -174,32 +167,15 @@ export async function POST(request) {
       console.log('[centaur/chat] ANTHROPIC_API_KEY set:', Boolean(process.env.ANTHROPIC_API_KEY));
     }
 
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {}
-            });
-          },
-        },
-      },
-    );
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabaseAdmin = getAdminClient();
 
     const { data: holdings } = await supabaseAdmin
       .from('plaid_holdings')
@@ -207,7 +183,10 @@ export async function POST(request) {
       .eq('user_id', user.id);
 
     const portfolioContext = (holdings || [])
-      .map((h) => `${h.ticker_symbol}: ${h.quantity} shares, cost basis $${h.cost_basis}, current ~$${h.price_per_unit}`)
+      .map(
+        (h) =>
+          `${h.ticker_symbol}: ${h.quantity} shares, cost basis $${h.cost_basis}, current ~$${h.price_per_unit}`,
+      )
       .join('\n');
 
     const rawPersona = investor ?? persona ?? 'yohannes';
@@ -222,18 +201,19 @@ export async function POST(request) {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    const debriefContext = (debriefItems || []).map((d) => `- ${d.event_title} (${d.event_country})`).join('\n');
+    const debriefContext = (debriefItems || [])
+      .map((d) => `- ${d.event_title} (${d.event_country})`)
+      .join('\n');
 
     const systemPrompt = resolveSystemPrompt(investor, persona, portfolioContext, debriefContext);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn('[centaur/chat] ANTHROPIC_API_KEY not configured, using fallback response');
-      const fallbackReply =
-        isYohannes
-          ? "I appreciate your question! However, my AI backend isn't currently configured. In the meantime, I'd recommend reviewing your portfolio fundamentals and keeping an eye on the events in your debrief queue. Would you like to discuss any specific holdings?"
-          : nameLower.includes('dalio')
-            ? "I want to be clear — my full AI backend isn't configured here, so I can't give you the depth I'd like. When it's live, we'll walk through cycles, debt, and the world order with real rigor. In the meantime, what's on your mind about macro or your portfolio?"
-            : `Thank you for asking! I'd need my AI systems fully configured to give you a complete perspective. Based on what I see in your portfolio, though, the fundamentals look worth exploring further. What specific position would you like to discuss?`;
+      const fallbackReply = isYohannes
+        ? "I appreciate your question! However, my AI backend isn't currently configured. In the meantime, I'd recommend reviewing your portfolio fundamentals and keeping an eye on the events in your debrief queue. Would you like to discuss any specific holdings?"
+        : nameLower.includes('dalio')
+          ? "I want to be clear — my full AI backend isn't configured here, so I can't give you the depth I'd like. When it's live, we'll walk through cycles, debt, and the world order with real rigor. In the meantime, what's on your mind about macro or your portfolio?"
+          : `Thank you for asking! I'd need my AI systems fully configured to give you a complete perspective. Based on what I see in your portfolio, though, the fundamentals look worth exploring further. What specific position would you like to discuss?`;
 
       return NextResponse.json({ reply: fallbackReply });
     }
@@ -297,7 +277,10 @@ export async function POST(request) {
 
     const reply = data?.content?.[0]?.text;
     if (!reply) {
-      console.error('[centaur/chat] Unexpected Anthropic response structure:', JSON.stringify(data));
+      console.error(
+        '[centaur/chat] Unexpected Anthropic response structure:',
+        JSON.stringify(data),
+      );
       return NextResponse.json(
         { reply: 'I received an unexpected response from the AI. Please try again.' },
         { status: 500 },

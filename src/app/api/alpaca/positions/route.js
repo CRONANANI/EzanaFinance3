@@ -4,13 +4,11 @@
  */
 import { NextResponse } from 'next/server';
 import { alpacaRequest } from '@/lib/alpaca';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-
-async function getAlpacaAccountId(userId) {
+async function getAlpacaAccountId(supabaseAdmin, userId) {
   const { data } = await supabaseAdmin
     .from('alpaca_accounts')
     .select('alpaca_account_id')
@@ -21,10 +19,11 @@ async function getAlpacaAccountId(userId) {
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const positions = await alpacaRequest(`/v1/trading/accounts/${accountId}/positions`);
@@ -72,10 +71,11 @@ export async function GET(request) {
 
 export async function DELETE(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const { searchParams } = new URL(request.url);
@@ -84,14 +84,13 @@ export async function DELETE(request) {
     if (symbol) {
       const result = await alpacaRequest(
         `/v1/trading/accounts/${accountId}/positions/${symbol.toUpperCase()}`,
-        { method: 'DELETE' }
+        { method: 'DELETE' },
       );
       return NextResponse.json({ success: true, closed: symbol, order: result });
     } else {
-      const result = await alpacaRequest(
-        `/v1/trading/accounts/${accountId}/positions`,
-        { method: 'DELETE' }
-      );
+      const result = await alpacaRequest(`/v1/trading/accounts/${accountId}/positions`, {
+        method: 'DELETE',
+      });
       return NextResponse.json({ success: true, closed: 'all', orders: result });
     }
   } catch (error) {

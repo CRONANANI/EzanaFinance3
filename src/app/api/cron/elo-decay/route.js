@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { awardELO, DECAY_FLOOR } from '@/lib/elo';
 
 export const dynamic = 'force-dynamic';
@@ -20,11 +20,12 @@ async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!isServerSupabaseConfigured()) {
+  let supabase;
+  try {
+    supabase = getAdminClient();
+  } catch {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
-
-  const supabase = createServerSupabaseClient();
   const now = Date.now();
   const inactivityCutoff = new Date(now - INACTIVITY_THRESHOLD_DAYS * MS_PER_DAY).toISOString();
   const decayCheckCutoff = new Date(now - 30 * MS_PER_DAY).toISOString();
@@ -71,7 +72,7 @@ async function run(request) {
         effectiveDelta,
         `Inactivity decay (${daysInactive} days)`,
         'decay',
-        { days_inactive: daysInactive, applied_at: new Date().toISOString() }
+        { days_inactive: daysInactive, applied_at: new Date().toISOString() },
       );
 
       if (!awardResult) {

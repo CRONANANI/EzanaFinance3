@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,17 +13,17 @@ export const runtime = 'nodejs';
  */
 export async function POST() {
   try {
-    if (!isServerSupabaseConfigured()) {
+    let supabase;
+    try {
+      supabase = getAdminClient();
+    } catch {
       return NextResponse.json(
         {
-          error:
-            'Service role client unavailable. Check SUPABASE_SERVICE_ROLE_KEY env var.',
+          error: 'Service role client unavailable. Check SUPABASE_SERVICE_ROLE_KEY env var.',
         },
         { status: 500 },
       );
     }
-
-    const supabase = createServerSupabaseClient();
 
     const { data: buckets, error: listErr } = await supabase.storage.listBuckets();
     if (listErr) {
@@ -65,9 +62,6 @@ export async function POST() {
       created: true,
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err?.message || 'Unknown error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { requireUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,11 +17,11 @@ export async function GET(request) {
     const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
     const since = searchParams.get('since'); // ISO timestamp, optional
 
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    let supabase;
+    try {
+      const auth = await requireUser(request);
+      supabase = auth.client;
+    } catch {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

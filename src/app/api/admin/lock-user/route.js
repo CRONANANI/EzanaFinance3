@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import {
-  createServerSupabaseClient,
-  isServerSupabaseConfigured,
-} from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -32,10 +29,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!isServerSupabaseConfigured()) {
-    return NextResponse.json({ error: 'Service role not configured' }, { status: 500 });
-  }
-
   let body;
   try {
     body = await request.json();
@@ -51,7 +44,12 @@ export async function POST(request) {
     return NextResponse.json({ error: 'email required' }, { status: 400 });
   }
 
-  const admin = createServerSupabaseClient();
+  let admin;
+  try {
+    admin = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Service role not configured' }, { status: 500 });
+  }
 
   try {
     let targetUser = null;

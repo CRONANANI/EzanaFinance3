@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminClient } from '@/lib/supabase';
 import { stripe } from '@/lib/services/stripe';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 export async function POST(request) {
   if (!stripe) {
@@ -35,6 +30,8 @@ export async function POST(request) {
   }
 
   try {
+    const supabaseAdmin = getAdminClient();
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
@@ -67,10 +64,10 @@ export async function POST(request) {
               onboarding_completed: true,
               updated_at: new Date().toISOString(),
             },
-            { onConflict: 'id' }
+            { onConflict: 'id' },
           );
           console.log(
-            `Subscription created for user ${userId}, plan: ${planKey}, status: ${subscription.status}`
+            `Subscription created for user ${userId}, plan: ${planKey}, status: ${subscription.status}`,
           );
         }
         break;

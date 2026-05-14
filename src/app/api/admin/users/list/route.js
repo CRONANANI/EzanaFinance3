@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 import { isAdminUser } from '@/lib/admin-helpers';
 
 export const dynamic = 'force-dynamic';
@@ -11,12 +10,15 @@ export const runtime = 'nodejs';
  */
 export async function GET(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!isAdminUser(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const supabaseAdmin = getAdminClient();
 
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get('q') || '').trim();
@@ -42,13 +44,15 @@ export async function GET(request) {
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(request) {
   try {
-    const supabase = createServerSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return new NextResponse(null, { status: 401 });
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
+      return new NextResponse(null, { status: 401 });
+    }
     if (!isAdminUser(user)) return new NextResponse(null, { status: 403 });
     return new NextResponse(null, { status: 204 });
   } catch {

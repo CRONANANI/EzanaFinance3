@@ -4,13 +4,11 @@
  */
 import { NextResponse } from 'next/server';
 import { alpacaRequest } from '@/lib/alpaca';
-import { getAuthUser } from '@/lib/auth-helpers';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient, getCurrentUser } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-
-async function getAlpacaAccountId(userId) {
+async function getAlpacaAccountId(supabaseAdmin, userId) {
   const { data } = await supabaseAdmin
     .from('alpaca_accounts')
     .select('alpaca_account_id')
@@ -21,11 +19,13 @@ async function getAlpacaAccountId(userId) {
 
 export async function POST(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
-    if (!accountId) return NextResponse.json({ error: 'No brokerage account found' }, { status: 404 });
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
+    if (!accountId)
+      return NextResponse.json({ error: 'No brokerage account found' }, { status: 404 });
 
     const body = await request.json();
 
@@ -71,17 +71,18 @@ export async function POST(request) {
     console.error('[Alpaca] Funding error:', error);
     return NextResponse.json(
       { error: 'Funding operation failed', details: error.details || error.message },
-      { status: error.status || 500 }
+      { status: error.status || 500 },
     );
   }
 }
 
 export async function GET(request) {
   try {
-    const user = await getAuthUser(request);
+    const user = await getCurrentUser(request);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabaseAdmin = getAdminClient();
 
-    const accountId = await getAlpacaAccountId(user.id);
+    const accountId = await getAlpacaAccountId(supabaseAdmin, user.id);
     if (!accountId) return NextResponse.json({ error: 'No brokerage account' }, { status: 404 });
 
     const relationships = await alpacaRequest(`/v1/accounts/${accountId}/ach_relationships`);

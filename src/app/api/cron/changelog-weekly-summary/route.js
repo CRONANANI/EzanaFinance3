@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 import { fetchCommits, summarizeCommits, getIsoWeekRange } from '@/lib/changelog/git-summarizer';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +15,12 @@ function isAuthorized(request) {
 async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
 
   // Get the just-completed week (Monday-Sunday in UTC).
@@ -46,13 +52,24 @@ async function run(request) {
 
   let summary;
   try {
-    summary = await summarizeCommits(commits, { start: start.toISOString(), end: end.toISOString() });
+    summary = await summarizeCommits(commits, {
+      start: start.toISOString(),
+      end: end.toISOString(),
+    });
   } catch (e) {
-    return NextResponse.json({ error: `Claude summarization failed: ${e.message}` }, { status: 500 });
+    return NextResponse.json(
+      { error: `Claude summarization failed: ${e.message}` },
+      { status: 500 },
+    );
   }
 
   if (!summary) {
-    return NextResponse.json({ skipped: true, reason: 'no meaningful commits', weekKey, commitCount: commits.length });
+    return NextResponse.json({
+      skipped: true,
+      reason: 'no meaningful commits',
+      weekKey,
+      commitCount: commits.length,
+    });
   }
 
   // released_at must fall inside the summarized week (end is exclusive Monday 00:00 UTC).

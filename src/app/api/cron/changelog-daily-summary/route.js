@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/plaid';
+import { getAdminClient } from '@/lib/supabase';
 import { fetchCommits, summarizeCommits, getDayRange } from '@/lib/changelog/git-summarizer';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +16,12 @@ async function run(request) {
   if ((request.headers.get('authorization') || '') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  let supabaseAdmin;
+  try {
+    supabaseAdmin = getAdminClient();
+  } catch {
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
+  }
 
   const now = new Date();
   const range = getDayRange(now);
@@ -27,7 +33,11 @@ async function run(request) {
     .limit(1);
 
   if (existing && existing.length > 0) {
-    return NextResponse.json({ skipped: true, reason: 'day already summarized', dayKey: range.dayKey });
+    return NextResponse.json({
+      skipped: true,
+      reason: 'day already summarized',
+      dayKey: range.dayKey,
+    });
   }
 
   let commits;
@@ -48,7 +58,10 @@ async function run(request) {
       end: range.end.toISOString(),
     });
   } catch (e) {
-    return NextResponse.json({ error: `Claude summarization failed: ${e.message}` }, { status: 500 });
+    return NextResponse.json(
+      { error: `Claude summarization failed: ${e.message}` },
+      { status: 500 },
+    );
   }
 
   if (!summary) {

@@ -21,7 +21,7 @@
  * after Phase 1 inserts those rows.
  */
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { awardELO } from '@/lib/elo';
 import {
   computeReturnPct,
@@ -169,7 +169,7 @@ async function processActiveCopiesPhase(supabase, dateRange) {
 
       const { baseDelta, profitabilityDelta, totalDelta } = activeCopyDeltaForTarget(
         copierCount,
-        scoreForDelta
+        scoreForDelta,
       );
 
       const { data: ytdAwards } = await supabase
@@ -215,9 +215,8 @@ async function processActiveCopiesPhase(supabase, dateRange) {
 
       const nowIso = new Date().toISOString();
       for (const copy of targetCopies) {
-        const payload =
-          Number.isFinite(monthlyReturnPct) ?
-            { performance_pct: monthlyReturnPct, performance_updated_at: nowIso }
+        const payload = Number.isFinite(monthlyReturnPct)
+          ? { performance_pct: monthlyReturnPct, performance_updated_at: nowIso }
           : { performance_pct: null, performance_updated_at: nowIso };
 
         const { error } = await supabase.from('active_copies').update(payload).eq('id', copy.id);
@@ -291,7 +290,7 @@ async function processOnePortfolioType(supabase, userId, dateRange, spyReturn, i
     userId,
     sharpeFromIso,
     dateRange.endIso,
-    isReal
+    isReal,
   );
   const sharpe90d = computeSharpe(dailyReturns);
 
@@ -378,11 +377,12 @@ async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!isServerSupabaseConfigured()) {
+  let supabase;
+  try {
+    supabase = getAdminClient();
+  } catch {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
-
-  const supabase = createServerSupabaseClient();
   const dateRange = getPriorMonthRange();
   const spyReturn = await fetchSpyReturn(dateRange.startIso, dateRange.endIso);
 
@@ -402,7 +402,13 @@ async function run(request) {
 
   for (const userId of uniqueUsers) {
     try {
-      const realResult = await processOnePortfolioType(supabase, userId, dateRange, spyReturn, true);
+      const realResult = await processOnePortfolioType(
+        supabase,
+        userId,
+        dateRange,
+        spyReturn,
+        true,
+      );
       if (realResult.outcome === 'computed') {
         realComputed++;
         totalEloAwarded += realResult.eloAwarded || 0;
@@ -410,7 +416,13 @@ async function run(request) {
         errors.push({ userId, kind: 'real', error: realResult.reason });
       }
 
-      const mockResult = await processOnePortfolioType(supabase, userId, dateRange, spyReturn, false);
+      const mockResult = await processOnePortfolioType(
+        supabase,
+        userId,
+        dateRange,
+        spyReturn,
+        false,
+      );
       if (mockResult.outcome === 'computed') {
         mockComputed++;
         totalEloAwarded += mockResult.eloAwarded || 0;

@@ -1,8 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { awardELO } from '@/lib/elo';
+import { getAdminClient, requireUser } from '@/lib/supabase';
 
 async function grantEmailVerifiedElo(supabaseAdmin, userId) {
   try {
@@ -15,13 +13,9 @@ async function grantEmailVerifiedElo(supabaseAdmin, userId) {
       .maybeSingle();
 
     if (!existingActivity) {
-      await awardELO(
-        userId,
-        25,
-        'Email verified + onboarding completed',
-        'activity',
-        { event: 'email_verified' }
-      );
+      await awardELO(userId, 25, 'Email verified + onboarding completed', 'activity', {
+        event: 'email_verified',
+      });
     }
   } catch (eloErr) {
     console.error('[verify-code] awardELO failed (non-fatal):', eloErr);
@@ -41,46 +35,21 @@ export async function POST(request) {
 
     const codeStr = String(code).trim();
 
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              try {
-                cookieStore.set(name, value, options);
-              } catch {
-                // ignore
-              }
-            });
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
+    let user;
+    try {
+      const auth = await requireUser(request);
+      user = auth.user;
+    } catch {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !serviceRoleKey) {
+    let supabaseAdmin;
+    try {
+      supabaseAdmin = getAdminClient();
+    } catch {
       console.error('verify-code: missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
-
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
 
     const { data: verificationRecord, error: fetchError } = await supabaseAdmin
       .from('email_verification_codes')
@@ -94,7 +63,7 @@ export async function POST(request) {
     if (fetchError || !verificationRecord) {
       return NextResponse.json(
         { error: 'No verification code found. Please request a new one.' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -103,7 +72,7 @@ export async function POST(request) {
 
       return NextResponse.json(
         { error: 'Too many attempts. Please request a new code.' },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -112,7 +81,7 @@ export async function POST(request) {
 
       return NextResponse.json(
         { error: 'Code has expired. Please request a new one.' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -124,10 +93,13 @@ export async function POST(request) {
         .eq('id', verificationRecord.id);
 
       if (newAttempts >= 5) {
-        await supabaseAdmin.from('email_verification_codes').delete().eq('id', verificationRecord.id);
+        await supabaseAdmin
+          .from('email_verification_codes')
+          .delete()
+          .eq('id', verificationRecord.id);
         return NextResponse.json(
           { error: 'Too many attempts. Please request a new code.' },
-          { status: 429 }
+          { status: 429 },
         );
       }
 
@@ -136,7 +108,7 @@ export async function POST(request) {
         {
           error: `Incorrect code. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

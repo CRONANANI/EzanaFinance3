@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, isServerSupabaseConfigured } from '@/lib/supabase-service-role';
+import { getAdminClient } from '@/lib/supabase';
 import { alpacaRequest } from '@/lib/alpaca';
 
 export const dynamic = 'force-dynamic';
@@ -65,15 +65,13 @@ async function fetchMockValue(supabase, userId) {
   if (Array.isArray(positions)) {
     positionsValue = positions.reduce((s, p) => {
       const qty = Number(p?.shares ?? p?.qty ?? 0) || 0;
-      const price =
-        Number(p?.currentPrice ?? p?.price ?? p?.lastPrice ?? p?.avgCost ?? 0) || 0;
+      const price = Number(p?.currentPrice ?? p?.price ?? p?.lastPrice ?? p?.avgCost ?? 0) || 0;
       return s + qty * price;
     }, 0);
   } else {
     for (const p of Object.values(positions)) {
       const qty = Number(p?.shares ?? p?.qty ?? 0) || 0;
-      const price =
-        Number(p?.currentPrice ?? p?.price ?? p?.lastPrice ?? p?.avgCost ?? 0) || 0;
+      const price = Number(p?.currentPrice ?? p?.price ?? p?.lastPrice ?? p?.avgCost ?? 0) || 0;
       positionsValue += qty * price;
     }
   }
@@ -84,16 +82,20 @@ async function run(request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  if (!isServerSupabaseConfigured()) {
+  let supabase;
+  try {
+    supabase = getAdminClient();
+  } catch {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
   }
-
-  const supabase = createServerSupabaseClient();
   const today = new Date().toISOString().slice(0, 10);
 
   const { data: users, error: userErr } = await supabase.from('user_elo').select('user_id');
   if (userErr || !users) {
-    return NextResponse.json({ error: userErr?.message || 'Failed to list users' }, { status: 500 });
+    return NextResponse.json(
+      { error: userErr?.message || 'Failed to list users' },
+      { status: 500 },
+    );
   }
 
   let processed = 0;
@@ -128,7 +130,7 @@ async function run(request) {
             mock: mockVal,
           },
         },
-        { onConflict: 'user_id,snapshot_date' }
+        { onConflict: 'user_id,snapshot_date' },
       );
 
       if (upErr) {
