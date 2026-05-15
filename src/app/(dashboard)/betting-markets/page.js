@@ -16,178 +16,87 @@ import '../../../../app-legacy/components/learning/learning-opportunities.css';
 import './betting-markets.css';
 import TraderProfileModal from '@/components/polymarket/TraderProfileModal';
 
-const STAT_CARDS = [
-  {
-    id: 'live',
-    icon: '🏈',
-    label: 'Live Events',
-    value: '24 today',
-    sub: 'NFL NBA NHL',
-  },
-  {
-    id: 'vol',
-    icon: '💰',
-    label: 'Total Volume',
-    value: '$4.2M today',
-    sub: '▲ +12% vs yesterday',
-    subTone: 'up',
-  },
-  {
-    id: 'win',
-    icon: '🎯',
-    label: 'Your Win Rate',
-    value: '68% (34/50)',
-    sub: '▲ from 62%',
-    subTone: 'up',
-  },
-  {
-    id: 'ev',
-    icon: '📊',
-    label: 'EV Opportunities',
-    value: '7 found today',
-    sub: '3 high confidence',
-  },
-];
-
 const SPORT_TABS = ['NFL', 'NBA', 'NHL', 'MLB', 'Soccer'];
 
-const ODDS_DATA = {
-  NFL: [
-    {
-      league: 'NFL — Today',
-      games: [
-        {
-          title: 'Chiefs vs Bills',
-          time: '4:25 PM ET',
-          away: 'KC',
-          home: 'BUF',
-          spreadAway: '-2.5 (-110)',
-          spreadHome: '+2.5 (-110)',
-          total: 'O/U 48.5',
-          ml: 'Moneyline: KC -145  BUF +125',
-        },
-        {
-          title: 'Cowboys vs Eagles',
-          time: '8:20 PM ET',
-          away: 'DAL',
-          home: 'PHI',
-          spreadAway: '+3.0 (-105)',
-          spreadHome: '-3.0 (-115)',
-          total: 'O/U 44.0',
-          ml: 'Moneyline: DAL +140  PHI -160',
-        },
-      ],
-    },
-  ],
-  NBA: [
-    {
-      league: 'NBA — Today',
-      games: [
-        {
-          title: 'Lakers vs Celtics',
-          time: '7:30 PM ET',
-          away: 'LAL',
-          home: 'BOS',
-          spreadAway: '+3.5 (-110)',
-          spreadHome: '-3.5 (-110)',
-          total: 'O/U 224.5',
-          ml: 'Moneyline: LAL +145  BOS -165',
-        },
-        {
-          title: 'Warriors vs Bucks',
-          time: '8:00 PM ET',
-          away: 'GSW',
-          home: 'MIL',
-          spreadAway: '-1.5 (-105)',
-          spreadHome: '+1.5 (-115)',
-          total: 'O/U 231',
-          ml: 'Moneyline: GSW -125  MIL +105',
-        },
-        {
-          title: 'Nuggets vs Suns',
-          time: '10:00 PM ET',
-          away: 'DEN',
-          home: 'PHX',
-          spreadAway: '-4.0 (-108)',
-          spreadHome: '+4.0 (-112)',
-          total: 'O/U 226.0',
-          ml: 'Moneyline: DEN -195  PHX +168',
-        },
-      ],
-    },
-  ],
-  NHL: [
-    {
-      league: 'NHL — Today',
-      games: [
-        {
-          title: 'Canadiens vs Bruins',
-          time: '7:00 PM ET',
-          away: 'MTL',
-          home: 'BOS',
-          spreadAway: '+1.5 (-135)',
-          spreadHome: '-1.5 (+115)',
-          total: 'O/U 5.5',
-          ml: 'Moneyline: MTL +180  BOS -210',
-        },
-        {
-          title: 'Rangers vs Hurricanes',
-          time: '7:00 PM ET',
-          away: 'NYR',
-          home: 'CAR',
-          spreadAway: '-1.5 (-120)',
-          spreadHome: '+1.5 (+100)',
-          total: 'O/U 6.0',
-          ml: 'Moneyline: NYR -135  CAR +115',
-        },
-      ],
-    },
-  ],
-  MLB: [
-    {
-      league: 'MLB — Today',
-      games: [
-        {
-          title: 'Yankees vs Red Sox',
-          time: '1:05 PM ET',
-          away: 'NYY',
-          home: 'BOS',
-          spreadAway: '-1.5 (-115)',
-          spreadHome: '+1.5 (-105)',
-          total: 'O/U 8.5',
-          ml: 'Moneyline: NYY -150  BOS +130',
-        },
-      ],
-    },
-  ],
-  Soccer: [
-    {
-      league: 'Soccer — Today',
-      games: [
-        {
-          title: 'Arsenal vs Manchester City',
-          time: '12:30 PM ET',
-          away: 'ARS',
-          home: 'MCI',
-          spreadAway: '+0.5 (-110)',
-          spreadHome: '-0.5 (-110)',
-          total: 'O/U 2.5',
-          ml: 'Moneyline: ARS +155  MCI -185',
-        },
-      ],
-    },
-  ],
-};
+// Empty fallback — real games are fetched from /api/betting/live-games at
+// runtime. The fallback exists so the page still has a defined source if
+// the fetch is in flight or fails. Stat cards (live event count, active
+// sports) are derived dynamically inside the component from `liveGames`.
+const ODDS_DATA_FALLBACK = {};
 
 const LEADER_ALL = [
-  { rank: 1, name: 'Emma Wilson', slug: 'emma-wilson', pnl: '+$4,230', win: '72% win', tag: '🔥', partner: false },
-  { rank: 2, name: 'David Kim', slug: 'david-kim', pnl: '+$3,180', win: '68% win', tag: '', partner: false },
-  { rank: 3, name: 'Alex Chen', slug: 'alex-chen', pnl: '+$2,890', win: '71% win', tag: '', partner: true },
-  { rank: 4, name: 'Lisa Park', slug: 'lisa-park', pnl: '+$2,450', win: '65% win', tag: '', partner: false },
-  { rank: 5, name: 'Sarah Johnson', slug: 'sarah-johnson', pnl: '+$1,980', win: '63% win', tag: '', partner: false },
-  { rank: 6, name: 'Mike Torres', slug: 'mike-torres', pnl: '+$1,750', win: '67% win', tag: '✅', partner: true },
-  { rank: 7, name: 'James Wilson', slug: 'james-wilson', pnl: '+$1,420', win: '61% win', tag: '', partner: false },
-  { rank: 8, name: 'Maria Garcia', slug: 'maria-garcia', pnl: '+$1,180', win: '66% win', tag: '', partner: false },
+  {
+    rank: 1,
+    name: 'Emma Wilson',
+    slug: 'emma-wilson',
+    pnl: '+$4,230',
+    win: '72% win',
+    tag: '🔥',
+    partner: false,
+  },
+  {
+    rank: 2,
+    name: 'David Kim',
+    slug: 'david-kim',
+    pnl: '+$3,180',
+    win: '68% win',
+    tag: '',
+    partner: false,
+  },
+  {
+    rank: 3,
+    name: 'Alex Chen',
+    slug: 'alex-chen',
+    pnl: '+$2,890',
+    win: '71% win',
+    tag: '',
+    partner: true,
+  },
+  {
+    rank: 4,
+    name: 'Lisa Park',
+    slug: 'lisa-park',
+    pnl: '+$2,450',
+    win: '65% win',
+    tag: '',
+    partner: false,
+  },
+  {
+    rank: 5,
+    name: 'Sarah Johnson',
+    slug: 'sarah-johnson',
+    pnl: '+$1,980',
+    win: '63% win',
+    tag: '',
+    partner: false,
+  },
+  {
+    rank: 6,
+    name: 'Mike Torres',
+    slug: 'mike-torres',
+    pnl: '+$1,750',
+    win: '67% win',
+    tag: '✅',
+    partner: true,
+  },
+  {
+    rank: 7,
+    name: 'James Wilson',
+    slug: 'james-wilson',
+    pnl: '+$1,420',
+    win: '61% win',
+    tag: '',
+    partner: false,
+  },
+  {
+    rank: 8,
+    name: 'Maria Garcia',
+    slug: 'maria-garcia',
+    pnl: '+$1,180',
+    win: '66% win',
+    tag: '',
+    partner: false,
+  },
 ];
 
 const LEADER_FRIENDS = LEADER_ALL.filter((_, i) => [0, 1, 3, 7].includes(i));
@@ -235,7 +144,9 @@ const EV_ITEMS = [
         'Market prices Warriors win at 52% implied.',
         'Our model: 55.4% after pace and defense adjustments.',
       ],
-      backstory: ['Bucks on a back-to-back; Warriors defense ranks top-5 in rim protection over the last 10.'],
+      backstory: [
+        'Bucks on a back-to-back; Warriors defense ranks top-5 in rim protection over the last 10.',
+      ],
     },
   },
   {
@@ -399,7 +310,9 @@ function PolymarketSection() {
     fetch('/api/polymarket/tags')
       .then((r) => (r.ok ? r.json() : { tags: [] }))
       .then((d) => {
-        const curated = (d.tags || []).filter((t) => PM_TOP_MARKET_TAG_SLUGS.has(String(t.slug || '').toLowerCase()));
+        const curated = (d.tags || []).filter((t) =>
+          PM_TOP_MARKET_TAG_SLUGS.has(String(t.slug || '').toLowerCase()),
+        );
         setTags(curated);
       })
       .catch(() => setTags([]));
@@ -446,7 +359,12 @@ function PolymarketSection() {
             href="https://polymarket.com"
             target="_blank"
             rel="noreferrer"
-            style={{ fontSize: '0.6875rem', color: '#6366f1', fontWeight: 600, textDecoration: 'none' }}
+            style={{
+              fontSize: '0.6875rem',
+              color: '#6366f1',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
           >
             View All ↗
           </a>
@@ -461,7 +379,11 @@ function PolymarketSection() {
                 padding: '0 0 0.75rem',
               }}
             >
-              <button type="button" onClick={() => setActiveTag(null)} style={chipStyle(!activeTag)}>
+              <button
+                type="button"
+                onClick={() => setActiveTag(null)}
+                style={chipStyle(!activeTag)}
+              >
                 All
               </button>
               {tags.map((tag) => (
@@ -477,7 +399,9 @@ function PolymarketSection() {
             </div>
           )}
           {marketsLoading && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Loading markets…</p>
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+              Loading markets…
+            </p>
           )}
           {!marketsLoading && markets.length === 0 && (
             <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
@@ -507,7 +431,13 @@ function PolymarketSection() {
                     borderRadius: '50%',
                     flexShrink: 0,
                     background:
-                      yesProb != null ? (yesProb > 60 ? '#10b981' : yesProb > 40 ? '#f59e0b' : '#ef4444') : '#6b7280',
+                      yesProb != null
+                        ? yesProb > 60
+                          ? '#10b981'
+                          : yesProb > 40
+                            ? '#f59e0b'
+                            : '#ef4444'
+                        : '#6b7280',
                   }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -525,7 +455,15 @@ function PolymarketSection() {
                     {m.question || m.title || 'Market'}
                   </p>
                   {vol && (
-                    <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>Vol: {vol}</p>
+                    <p
+                      style={{
+                        color: 'var(--home-muted, #6b7280)',
+                        fontSize: '0.6875rem',
+                        margin: 0,
+                      }}
+                    >
+                      Vol: {vol}
+                    </p>
                   )}
                 </div>
                 {yesProb != null && (
@@ -539,7 +477,15 @@ function PolymarketSection() {
                     >
                       {yesProb.toFixed(0)}%
                     </span>
-                    <p style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)', margin: 0 }}>YES</p>
+                    <p
+                      style={{
+                        fontSize: '0.5625rem',
+                        color: 'var(--home-muted, #6b7280)',
+                        margin: 0,
+                      }}
+                    >
+                      YES
+                    </p>
                   </div>
                 )}
               </div>
@@ -582,9 +528,13 @@ function PolymarketSection() {
               }}
             />
           </div>
-          {searching && <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>Searching…</p>}
+          {searching && (
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>Searching…</p>
+          )}
           {!searching && searchResults.length === 0 && searchQuery.trim().length >= 2 && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>No traders found.</p>
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem' }}>
+              No traders found.
+            </p>
           )}
           {searchResults.map((u, i) => (
             <div
@@ -615,7 +565,14 @@ function PolymarketSection() {
                 {(u.name || u.username || 'U').slice(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ color: 'var(--home-heading, #111827)', fontSize: '0.8125rem', fontWeight: 700, margin: 0 }}>
+                <p
+                  style={{
+                    color: 'var(--home-heading, #111827)',
+                    fontSize: '0.8125rem',
+                    fontWeight: 700,
+                    margin: 0,
+                  }}
+                >
                   {u.name || u.username || 'Trader'}
                 </p>
                 <p
@@ -640,7 +597,9 @@ function PolymarketSection() {
                   }}
                 >
                   {Number(u.profitLoss) >= 0 ? '+' : ''}$
-                  {Math.abs(Number(u.profitLoss)).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                  {Math.abs(Number(u.profitLoss)).toLocaleString('en-US', {
+                    maximumFractionDigits: 0,
+                  })}
                 </span>
               )}
               <button
@@ -707,7 +666,9 @@ function KalshiSection() {
     }
     setSearching(true);
     try {
-      const res = await fetch(`/api/polygon/markets?source=kalshi&search=${encodeURIComponent(q.trim())}&limit=20`);
+      const res = await fetch(
+        `/api/polygon/markets?source=kalshi&search=${encodeURIComponent(q.trim())}&limit=20`,
+      );
       const data = res.ok ? await res.json() : {};
       setSearchResults(data.markets || []);
     } catch {
@@ -728,14 +689,21 @@ function KalshiSection() {
             href="https://kalshi.com"
             target="_blank"
             rel="noreferrer"
-            style={{ fontSize: '0.6875rem', color: '#10b981', fontWeight: 600, textDecoration: 'none' }}
+            style={{
+              fontSize: '0.6875rem',
+              color: '#10b981',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
           >
             View All ↗
           </a>
         </div>
         <div style={{ padding: '0 1.25rem 1.25rem' }}>
           {marketsLoading && (
-            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>Loading markets…</p>
+            <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
+              Loading markets…
+            </p>
           )}
           {!marketsLoading && markets.length === 0 && (
             <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.8125rem' }}>
@@ -744,7 +712,11 @@ function KalshiSection() {
           )}
           {markets.map((m, i) => {
             const prob =
-              typeof m.yes_bid === 'number' ? m.yes_bid * 100 : typeof m.probability === 'number' ? m.probability * 100 : null;
+              typeof m.yes_bid === 'number'
+                ? m.yes_bid * 100
+                : typeof m.probability === 'number'
+                  ? m.probability * 100
+                  : null;
             const vol = m.volume
               ? `$${Number(m.volume).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
               : null;
@@ -766,7 +738,13 @@ function KalshiSection() {
                     borderRadius: '2px',
                     flexShrink: 0,
                     background:
-                      prob != null ? (prob > 60 ? '#10b981' : prob > 40 ? '#f59e0b' : '#ef4444') : '#6b7280',
+                      prob != null
+                        ? prob > 60
+                          ? '#10b981'
+                          : prob > 40
+                            ? '#f59e0b'
+                            : '#ef4444'
+                        : '#6b7280',
                   }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -784,7 +762,15 @@ function KalshiSection() {
                     {m.title || m.question || m.ticker || 'Market'}
                   </p>
                   {vol && (
-                    <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.6875rem', margin: 0 }}>Vol: {vol}</p>
+                    <p
+                      style={{
+                        color: 'var(--home-muted, #6b7280)',
+                        fontSize: '0.6875rem',
+                        margin: 0,
+                      }}
+                    >
+                      Vol: {vol}
+                    </p>
                   )}
                 </div>
                 {prob != null && (
@@ -798,14 +784,28 @@ function KalshiSection() {
                     >
                       {prob.toFixed(0)}%
                     </span>
-                    <p style={{ fontSize: '0.5625rem', color: 'var(--home-muted, #6b7280)', margin: 0 }}>YES</p>
+                    <p
+                      style={{
+                        fontSize: '0.5625rem',
+                        color: 'var(--home-muted, #6b7280)',
+                        margin: 0,
+                      }}
+                    >
+                      YES
+                    </p>
                   </div>
                 )}
               </div>
             );
           })}
 
-          <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(16,185,129,0.06)' }}>
+          <div
+            style={{
+              marginTop: '1rem',
+              paddingTop: '0.75rem',
+              borderTop: '1px solid rgba(16,185,129,0.06)',
+            }}
+          >
             <p
               style={{
                 fontSize: '0.6875rem',
@@ -847,7 +847,15 @@ function KalshiSection() {
               />
             </div>
             {searching && (
-              <p style={{ color: 'var(--home-muted, #6b7280)', fontSize: '0.75rem', marginTop: '0.5rem' }}>Searching…</p>
+              <p
+                style={{
+                  color: 'var(--home-muted, #6b7280)',
+                  fontSize: '0.75rem',
+                  marginTop: '0.5rem',
+                }}
+              >
+                Searching…
+              </p>
             )}
             {!searching &&
               searchResults.length > 0 &&
@@ -862,7 +870,14 @@ function KalshiSection() {
                     borderBottom: '1px solid rgba(16,185,129,0.04)',
                   }}
                 >
-                  <p style={{ flex: 1, color: 'var(--home-heading, #111827)', fontSize: '0.8125rem', margin: 0 }}>
+                  <p
+                    style={{
+                      flex: 1,
+                      color: 'var(--home-heading, #111827)',
+                      fontSize: '0.8125rem',
+                      margin: 0,
+                    }}
+                  >
                     {mk.title || mk.ticker}
                   </p>
                 </div>
@@ -877,6 +892,8 @@ function KalshiSection() {
 export default function BettingMarketsPage() {
   const [platform, setPlatform] = useState('polymarket');
   const [sport, setSport] = useState('NBA');
+  const [liveGames, setLiveGames] = useState({});
+  const [gamesLoading, setGamesLoading] = useState(false);
   const [lbTab, setLbTab] = useState('All');
   const [evOpen, setEvOpen] = useState(null);
   const [polymarketLeaderboard, setPolymarketLeaderboard] = useState([]);
@@ -884,6 +901,82 @@ export default function BettingMarketsPage() {
   const [leaderboardPeriod, setLeaderboardPeriod] = useState('WEEK');
 
   const closeModal = useCallback(() => setEvOpen(null), []);
+
+  // Fetch today's real games for every supported league in parallel on
+  // mount. The /api/betting/live-games route normalizes provider output
+  // into { home, away, status, score, win_probability, local_start } and
+  // returns [] when no upstream key is configured — the UI gracefully
+  // renders an empty board in that case rather than stale mock data.
+  useEffect(() => {
+    let cancelled = false;
+    setGamesLoading(true);
+
+    const fetchAllLeagues = async () => {
+      const leagues = ['NBA', 'MLB', 'NHL', 'NFL', 'Soccer'];
+      const results = {};
+
+      await Promise.all(
+        leagues.map(async (league) => {
+          try {
+            const res = await fetch(`/api/betting/live-games?sport=${league}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.games && data.games.length > 0) {
+              results[league] = [
+                {
+                  league: `${league} — Today`,
+                  games: data.games
+                    .filter(
+                      (g) =>
+                        g.status === 'scheduled' ||
+                        g.status === 'inprogress' ||
+                        g.status === 'closed',
+                    )
+                    .slice(0, 8)
+                    .map((g) => ({
+                      title: `${g.away} vs ${g.home}`,
+                      time:
+                        g.local_start?.replace(/^[A-Za-z]+ [A-Za-z]+ \d+, /, '') || g.start_time,
+                      away: g.away,
+                      home: g.home,
+                      score: g.score
+                        ? `${g.away} ${g.score[g.away]} - ${g.score[g.home]} ${g.home}`
+                        : null,
+                      status: g.status,
+                      spreadAway: g.status === 'scheduled' ? 'TBD' : '',
+                      spreadHome: g.status === 'scheduled' ? 'TBD' : '',
+                      total:
+                        g.status === 'closed' && g.score
+                          ? `Final: ${g.score[g.away]}-${g.score[g.home]}`
+                          : g.status === 'inprogress'
+                            ? `Live: ${g.score?.[g.away] ?? 0}-${g.score?.[g.home] ?? 0}`
+                            : 'Upcoming',
+                      ml: g.win_probability
+                        ? `Win Prob: ${g.away} ${(g.win_probability[g.away] ?? 50).toFixed(0)}% — ${g.home} ${(g.win_probability[g.home] ?? 50).toFixed(0)}%`
+                        : g.score
+                          ? `Final Score: ${g.score[g.away]} - ${g.score[g.home]}`
+                          : '',
+                    })),
+                },
+              ];
+            }
+          } catch (err) {
+            console.warn(`[betting] Failed to fetch ${league}:`, err);
+          }
+        }),
+      );
+
+      if (!cancelled) {
+        setLiveGames(results);
+        setGamesLoading(false);
+      }
+    };
+
+    fetchAllLeagues();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -896,7 +989,9 @@ export default function BettingMarketsPage() {
       })
       .catch(() => !cancelled && setPolymarketLeaderboard([]))
       .finally(() => !cancelled && setLeaderboardLoading(false));
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [leaderboardPeriod]);
 
   const leaderboardRows = useMemo(() => {
@@ -921,7 +1016,50 @@ export default function BettingMarketsPage() {
   // NOTE: Commented out - getCoursesByTrack not available
   // const bettingCourses = useMemo(() => getCoursesByTrack('betting').slice(0, 4), []);
 
-  const oddsBlocks = ODDS_DATA[sport] || [];
+  const oddsBlocks = liveGames[sport] || ODDS_DATA_FALLBACK[sport] || [];
+
+  // Derive Live Events stat from real fetched data so the card reflects
+  // today's actual game count and which leagues currently have action.
+  const totalGames = Object.values(liveGames).reduce(
+    (sum, blocks) => sum + blocks.reduce((s, b) => s + (b.games?.length || 0), 0),
+    0,
+  );
+  const activeSports = Object.keys(liveGames)
+    .filter((k) => liveGames[k]?.length > 0)
+    .join(' ');
+
+  const dynamicStats = [
+    {
+      id: 'live',
+      icon: '🏈',
+      label: 'Live Events',
+      value: gamesLoading ? '...' : `${totalGames} today`,
+      sub: activeSports || (gamesLoading ? 'Loading...' : 'No games scheduled'),
+    },
+    {
+      id: 'vol',
+      icon: '💰',
+      label: 'Total Volume',
+      value: '$4.2M today',
+      sub: '▲ +12% vs yesterday',
+      subTone: 'up',
+    },
+    {
+      id: 'win',
+      icon: '🎯',
+      label: 'Your Win Rate',
+      value: '68% (34/50)',
+      sub: '▲ from 62%',
+      subTone: 'up',
+    },
+    {
+      id: 'ev',
+      icon: '📊',
+      label: 'EV Opportunities',
+      value: '7 found today',
+      sub: '3 high confidence',
+    },
+  ];
 
   const reverseCount = LINE_MOVES.filter((l) => l.reverse).length;
 
@@ -938,10 +1076,23 @@ export default function BettingMarketsPage() {
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--home-heading, #111827)', margin: 0 }}>
+          <h1
+            style={{
+              fontSize: '1.125rem',
+              fontWeight: 800,
+              color: 'var(--home-heading, #111827)',
+              margin: 0,
+            }}
+          >
             Betting Markets
           </h1>
-          <p style={{ fontSize: '0.75rem', color: 'var(--home-muted, #6b7280)', margin: '0.15rem 0 0' }}>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: 'var(--home-muted, #6b7280)',
+              margin: '0.15rem 0 0',
+            }}
+          >
             Prediction markets, sports odds &amp; EV analysis
           </p>
         </div>
@@ -984,7 +1135,7 @@ export default function BettingMarketsPage() {
       </div>
 
       <div className="bm-stat-row">
-        {STAT_CARDS.map((s) => (
+        {dynamicStats.map((s) => (
           <div key={s.id} className="bm-stat-card">
             <div className="bm-stat-top">
               <span className="bm-stat-label">
@@ -992,7 +1143,9 @@ export default function BettingMarketsPage() {
               </span>
             </div>
             <div className="bm-stat-value">{s.value}</div>
-            <div className={`bm-stat-sub ${s.subTone === 'up' ? 'bm-stat-delta up' : ''}`}>{s.sub}</div>
+            <div className={`bm-stat-sub ${s.subTone === 'up' ? 'bm-stat-delta up' : ''}`}>
+              {s.sub}
+            </div>
           </div>
         ))}
       </div>
@@ -1039,15 +1192,21 @@ export default function BettingMarketsPage() {
               <div key={block.league}>
                 <div className="bm-league-hdr">{block.league}</div>
                 {block.games.map((g) => (
-                  <div key={g.title} className="bm-game">
+                  <div key={`${g.away}-${g.home}-${g.time}`} className="bm-game">
                     <div className="bm-game-title">
                       <span>{g.title}</span>
-                      <span className="bm-game-time">{g.time}</span>
+                      <span
+                        className={`bm-game-time ${g.status === 'inprogress' ? 'bm-game-live' : ''}`}
+                      >
+                        {g.status === 'inprogress'
+                          ? '🔴 LIVE'
+                          : g.status === 'closed'
+                            ? 'Final'
+                            : g.time}
+                      </span>
                     </div>
-                    <div className="bm-game-lines">
-                      {g.away} {g.spreadAway} &nbsp;&nbsp; {g.home} {g.spreadHome} &nbsp;&nbsp; {g.total}
-                    </div>
-                    <div className="bm-game-ml">{g.ml}</div>
+                    <div className="bm-game-lines">{g.total}</div>
+                    {g.ml && <div className="bm-game-ml">{g.ml}</div>}
                   </div>
                 ))}
               </div>
@@ -1065,7 +1224,16 @@ export default function BettingMarketsPage() {
             </button>
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: 8,
+                marginBottom: 8,
+              }}
+            >
               <span
                 style={{
                   fontSize: '0.8125rem',
@@ -1105,7 +1273,10 @@ export default function BettingMarketsPage() {
                       fontSize: '0.65rem',
                       fontWeight: 700,
                       borderRadius: 5,
-                      border: leaderboardPeriod === p ? '1px solid #6366f1' : '1px solid rgba(0,0,0,0.08)',
+                      border:
+                        leaderboardPeriod === p
+                          ? '1px solid #6366f1'
+                          : '1px solid rgba(0,0,0,0.08)',
                       background: leaderboardPeriod === p ? 'rgba(99,102,241,0.1)' : 'transparent',
                       color: leaderboardPeriod === p ? '#6366f1' : '#6b7280',
                       cursor: 'pointer',
@@ -1121,12 +1292,26 @@ export default function BettingMarketsPage() {
             )}
             <div className="bm-leader-list">
               {leaderboardLoading && lbTab === 'All' && (
-                <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.75rem' }}>
+                <div
+                  style={{
+                    padding: '1rem',
+                    textAlign: 'center',
+                    color: '#6b7280',
+                    fontSize: '0.75rem',
+                  }}
+                >
                   Loading leaderboard…
                 </div>
               )}
               {!leaderboardLoading && leaderboardRows.length === 0 && lbTab === 'All' && (
-                <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '0.75rem' }}>
+                <div
+                  style={{
+                    padding: '1rem',
+                    textAlign: 'center',
+                    color: '#6b7280',
+                    fontSize: '0.75rem',
+                  }}
+                >
                   No leaderboard data available.
                 </div>
               )}
@@ -1134,7 +1319,9 @@ export default function BettingMarketsPage() {
                 <div key={`${r.isReal ? 'pm' : 'ez'}-${r.rank}-${r.name}`} className="bm-lb-row">
                   <span className="bm-lb-rank">{r.rank}.</span>
                   {r.isReal ? (
-                    <span className="bm-lb-name" style={{ cursor: 'default' }}>{r.name}</span>
+                    <span className="bm-lb-name" style={{ cursor: 'default' }}>
+                      {r.name}
+                    </span>
                   ) : (
                     <Link href={`/community/profile/${r.slug}`} className="bm-lb-name">
                       {r.name}
@@ -1169,7 +1356,16 @@ export default function BettingMarketsPage() {
             </button>
           </div>
           <div style={{ padding: '0 1.25rem 1.25rem' }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.75rem', color: '#6b7280', fontWeight: 600 }}>High EV Opportunities Today</p>
+            <p
+              style={{
+                margin: '0 0 0.75rem',
+                fontSize: '0.75rem',
+                color: '#6b7280',
+                fontWeight: 600,
+              }}
+            >
+              High EV Opportunities Today
+            </p>
             {EV_ITEMS.map((e) => (
               <div key={e.id} className="bm-ev-item">
                 <div className="bm-ev-title">{e.title}</div>
@@ -1200,12 +1396,16 @@ export default function BettingMarketsPage() {
               </div>
               <div className="bm-lm-stats">
                 Opened: {lm.opened} &nbsp;&nbsp; Current: {lm.current} &nbsp;&nbsp; Movement:{' '}
-                <span style={{ color: lm.move.startsWith('-') ? '#ef4444' : '#10b981' }}>{lm.move}</span>
+                <span style={{ color: lm.move.startsWith('-') ? '#ef4444' : '#10b981' }}>
+                  {lm.move}
+                </span>
               </div>
               <MiniLineChart seed={idx * 17 + lm.title.length} up={!lm.move.startsWith('-')} />
             </div>
           ))}
-          <div className="bm-lm-footer">🚨 Reverse line movements flagged: {reverseCount} today</div>
+          <div className="bm-lm-footer">
+            🚨 Reverse line movements flagged: {reverseCount} today
+          </div>
         </div>
       </div>
 
@@ -1232,7 +1432,12 @@ export default function BettingMarketsPage() {
           <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="bm-modal-hdr">
               <h2 id="bm-ev-title">Expected Value Analysis</h2>
-              <button type="button" className="bm-modal-close" onClick={closeModal} aria-label="Close">
+              <button
+                type="button"
+                className="bm-modal-close"
+                onClick={closeModal}
+                aria-label="Close"
+              >
                 <i className="bi bi-x-lg" />
               </button>
             </div>
@@ -1265,7 +1470,9 @@ export default function BettingMarketsPage() {
             </div>
             <div className="bm-modal-conf">
               Confidence: {evOpen.analysis.confidence}
-              <div style={{ color: '#9ca3af', fontWeight: 600, marginTop: 6 }}>Based on: {evOpen.analysis.basedOn}</div>
+              <div style={{ color: '#9ca3af', fontWeight: 600, marginTop: 6 }}>
+                Based on: {evOpen.analysis.basedOn}
+              </div>
             </div>
           </div>
         </div>

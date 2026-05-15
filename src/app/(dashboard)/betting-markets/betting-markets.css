@@ -28,11 +28,11 @@
 .bm-stat-card {
   background: rgba(212, 175, 55, 0.02);
   border: 1px solid rgba(212, 175, 55, 0.08);
-  border-radius: 16px;
-  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.15rem;
 }
 
 .bm-stat-top {
@@ -43,33 +43,55 @@
 }
 
 .bm-stat-label {
-  font-size: 0.8125rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #e2e8f0;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .bm-stat-value {
-  font-size: 1.35rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #f0f6fc;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .bm-stat-sub {
-  font-size: 0.6875rem;
+  font-size: 0.55rem;
   color: #6b7280;
-  line-height: 1.35;
+  line-height: 1.2;
+}
+
+/* Live game badge — used on .bm-game-time when a game is in progress. */
+.bm-game-live {
+  color: #ef4444 !important;
+  font-weight: 700;
+  animation: bm-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .bm-stat-delta {
   font-size: 0.6875rem;
   font-weight: 600;
 }
-.bm-stat-delta.up { color: #10b981; }
-.bm-stat-delta.dn { color: #ef4444; }
+.bm-stat-delta.up {
+  color: #10b981;
+}
+.bm-stat-delta.dn {
+  color: #ef4444;
+}
 
 /* Odds board */
 .bm-odds-board {
