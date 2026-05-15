@@ -1995,7 +1995,7 @@ function ForecastOutlookCard({ weatherData, region }) {
 }
 
 /* ── 7. Signal Strength Dashboard Card ─────────────────────── */
-function SignalDashboardCard({ weatherData, region }) {
+function SignalDashboardCard({ weatherData, region, owmCurrent }) {
   const signals = useMemo(() => {
     if (!weatherData?.daily) return [];
     const d = weatherData.daily;
@@ -2063,8 +2063,93 @@ function SignalDashboardCard({ weatherData, region }) {
   const severityLabels = ['Normal', 'Watch', 'Warning', 'Alert'];
   const severityColors = ['#10b981', '#f59e0b', '#f97316', '#ef4444'];
 
+  // Real-time conditions sourced from OpenWeather One Call. Open-Meteo
+  // doesn't expose pressure / UV index / wind gust on the free plan, so this
+  // panel is gated on OWM availability — when it's missing the existing
+  // severity grid below still renders.
+  const conditionTiles = owmCurrent
+    ? [
+        {
+          label: 'Temperature',
+          value: owmCurrent.temp != null ? `${owmCurrent.temp.toFixed(1)}°C` : '—',
+          icon: 'bi-thermometer-half',
+        },
+        {
+          label: 'Humidity',
+          value: owmCurrent.humidity != null ? `${owmCurrent.humidity}%` : '—',
+          icon: 'bi-droplet',
+        },
+        {
+          label: 'Wind',
+          value: owmCurrent.windSpeed != null ? `${owmCurrent.windSpeed.toFixed(1)} m/s` : '—',
+          icon: 'bi-wind',
+        },
+        {
+          label: 'Pressure',
+          value: owmCurrent.pressure != null ? `${owmCurrent.pressure} hPa` : '—',
+          icon: 'bi-speedometer2',
+        },
+        {
+          label: 'UV Index',
+          value: owmCurrent.uvi != null ? owmCurrent.uvi.toFixed(1) : '—',
+          icon: 'bi-brightness-high',
+        },
+        {
+          label: 'Cloud Cover',
+          value: owmCurrent.clouds != null ? `${owmCurrent.clouds}%` : '—',
+          icon: 'bi-cloud',
+        },
+      ]
+    : null;
+
   return (
     <KairosCard icon="bi-shield-check" title="Signal strength — live">
+      {conditionTiles && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+            gap: '0.5rem',
+            marginBottom: '0.75rem',
+          }}
+        >
+          {conditionTiles.map((item) => (
+            <div
+              key={item.label}
+              style={{
+                background: 'rgba(212,175,55,0.04)',
+                border: '1px solid rgba(212,175,55,0.08)',
+                borderRadius: 8,
+                padding: '0.4rem 0.5rem',
+                textAlign: 'center',
+              }}
+            >
+              <i
+                className={`bi ${item.icon}`}
+                style={{
+                  fontSize: '0.7rem',
+                  color: '#d4af37',
+                  display: 'block',
+                  marginBottom: '0.15rem',
+                }}
+              />
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#f0f6fc' }}>
+                {item.value}
+              </div>
+              <div
+                style={{
+                  fontSize: '0.45rem',
+                  color: '#6b7280',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {item.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div
         className="kairos-signal-overall"
         style={{ borderLeftColor: severityColors[overallSeverity] }}
@@ -2097,6 +2182,11 @@ export default function KairosSignalPage() {
   const [regionId, setRegionId] = useState('us-midwest');
   const [timeframe, setTimeframe] = useState('14d');
   const [weatherData, setWeatherData] = useState(null);
+  // OpenWeatherMap One Call payload (current conditions + govt alerts + AI
+  // overview). Kept separate from `weatherData` because it's additive —
+  // Open-Meteo remains the primary feed for the 28-day daily charts and
+  // OpenWeather only contributes data the charts don't already have.
+  const [owmData, setOwmData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const region = REGIONS.find((r) => r.id === regionId) || REGIONS[0];
@@ -2104,11 +2194,22 @@ export default function KairosSignalPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchWeatherForecast(region.lat, region.lon);
-      setWeatherData(data);
+      // Open-Meteo (primary) and OpenWeather (supplemental) fetch in parallel
+      // so the page render isn't gated on the slower of the two. The
+      // OpenWeather proxy is best-effort — a failure there should still let
+      // the chart-driving Open-Meteo data through, hence the `.catch(null)`.
+      const [openMeteoData, owmRes] = await Promise.all([
+        fetchWeatherForecast(region.lat, region.lon),
+        fetch(`/api/kairos/weather?lat=${region.lat}&lon=${region.lon}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null),
+      ]);
+      setWeatherData(openMeteoData);
+      setOwmData(owmRes);
     } catch (err) {
       console.error('[kairos] Weather fetch failed:', err);
       setWeatherData(null);
+      setOwmData(null);
     }
     setLoading(false);
   }, [region.lat, region.lon]);
@@ -2143,6 +2244,48 @@ export default function KairosSignalPage() {
             Live weather and environmental data mapped to commodity markets. Track conditions across
             key production regions and pair physical signals with market context.
           </p>
+          {/* AI-generated weather summary from OpenWeather's One Call overview
+              endpoint. Hidden when the OWM key is unset or the endpoint
+              returned no narrative — never falls back to placeholder copy so
+              the hero doesn't lie about live data. */}
+          {owmData?.overview && (
+            <div
+              style={{
+                marginTop: '0.75rem',
+                padding: '0.6rem 0.85rem',
+                background: 'rgba(212, 175, 55, 0.04)',
+                border: '1px solid rgba(212, 175, 55, 0.12)',
+                borderRadius: 10,
+                maxWidth: 700,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '0.5rem',
+                  fontWeight: 700,
+                  color: '#d4af37',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  marginBottom: '0.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
+                <i className="bi bi-robot" /> AI Weather Summary — {region.label}
+              </div>
+              <p
+                style={{
+                  fontSize: '0.65rem',
+                  color: '#c9d1d9',
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                {owmData.overview}
+              </p>
+            </div>
+          )}
         </div>
       </header>
 
@@ -2152,11 +2295,15 @@ export default function KairosSignalPage() {
       </div>
 
       <div className="kairos-grid">
-        <KairosEventsCard regionId={region.id} />
+        <KairosEventsCard regionId={region.id} owmAlerts={owmData?.alerts || []} />
         {loading && <LoadingPulse />}
         {!loading && trimmedData && (
           <>
-            <SignalDashboardCard weatherData={trimmedData} region={region} />
+            <SignalDashboardCard
+              weatherData={trimmedData}
+              region={region}
+              owmCurrent={owmData?.current || null}
+            />
             <TemperatureAnomalyCard weatherData={trimmedData} region={region} />
             <PrecipitationCard weatherData={trimmedData} region={region} />
             <GrowingDegreeDaysCard weatherData={trimmedData} />

@@ -28,7 +28,9 @@ function EventRow({ event }) {
   const scenarioMeta = SCENARIO_META[event.scenario_type] || SCENARIO_META.other;
   const statusMeta = STATUS_META[event.status] || STATUS_META.monitoring;
   const probPct =
-    event.estimated_probability != null ? Math.round(Number(event.estimated_probability) * 100) : null;
+    event.estimated_probability != null
+      ? Math.round(Number(event.estimated_probability) * 100)
+      : null;
 
   return (
     <li className={`kev-row ${expanded ? 'is-expanded' : ''}`}>
@@ -67,7 +69,10 @@ function EventRow({ event }) {
             <div className="kev-row-commodities">
               {event.affected_commodities.map((c, i) => (
                 <span key={i} className="kev-commodity-chip">
-                  {c.symbol}: <strong>+{c.impact_min_pct}% to +{c.impact_max_pct}%</strong>
+                  {c.symbol}:{' '}
+                  <strong>
+                    +{c.impact_min_pct}% to +{c.impact_max_pct}%
+                  </strong>
                   {c.time_horizon_days ? ` / ${c.time_horizon_days}d` : ''}
                 </span>
               ))}
@@ -127,8 +132,101 @@ function EventRow({ event }) {
   );
 }
 
-/** @param {{ regionId: string }} ps */
-export function KairosEventsCard({ regionId }) {
+/**
+ * A government weather alert (NOAA, EUMETNET, …) surfaced via the OpenWeather
+ * One Call 3.0 `alerts[]` array, rendered as a red-coded sibling of the
+ * existing geopolitical `EventRow`. Kept visually consistent with the
+ * `.kev-row` hierarchy so the existing CSS does most of the heavy lifting —
+ * we only override colour stops to signal "alert" semantics.
+ *
+ * @param {{ alert: { sender: string, event: string, start: number, end: number, description: string, tags: string[] } }} props
+ */
+function WeatherAlertRow({ alert }) {
+  const [expanded, setExpanded] = useState(false);
+  const ALERT_COLOR = '#ef4444';
+  // OWM timestamps are unix seconds; the chain view labels each alert as a
+  // date window (start–end) rather than a probability since it's a known
+  // realized warning, not an estimated scenario.
+  const start = new Date((alert.start || 0) * 1000);
+  const end = new Date((alert.end || 0) * 1000);
+  const dateRange = `${start.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+  return (
+    <li className={`kev-row kev-row--alert ${expanded ? 'is-expanded' : ''}`}>
+      <button
+        type="button"
+        className="kev-row-head"
+        onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
+      >
+        <div
+          className="kev-row-icon"
+          style={{ borderColor: `${ALERT_COLOR}66`, color: ALERT_COLOR }}
+        >
+          <i className="bi bi-exclamation-triangle-fill" aria-hidden />
+        </div>
+        <div className="kev-row-main">
+          <div className="kev-row-title-line">
+            <span className="kev-row-title">{alert.event}</span>
+            <span
+              className="kev-row-scenario"
+              style={{
+                color: ALERT_COLOR,
+                borderColor: `${ALERT_COLOR}55`,
+                background: `${ALERT_COLOR}1a`,
+              }}
+            >
+              GOVT ALERT
+            </span>
+          </div>
+          <div className="kev-row-meta">
+            <span className="kev-row-prob">{dateRange}</span>
+            {alert.sender && (
+              <span
+                className="kev-row-status"
+                style={{
+                  color: ALERT_COLOR,
+                  borderColor: `${ALERT_COLOR}55`,
+                  background: `${ALERT_COLOR}1a`,
+                }}
+              >
+                {alert.sender}
+              </span>
+            )}
+          </div>
+        </div>
+        <i className={`bi bi-chevron-${expanded ? 'up' : 'down'} kev-row-chevron`} aria-hidden />
+      </button>
+
+      {expanded && (
+        <div className="kev-row-detail">
+          <p className="kev-detail-desc">
+            {alert.description?.slice(0, 800)}
+            {alert.description && alert.description.length > 800 ? '…' : ''}
+          </p>
+          {alert.tags?.length > 0 && (
+            <div className="kev-detail-section">
+              <h4>Tags</h4>
+              <div className="kev-detail-regions">
+                {alert.tags.map((t, i) => (
+                  <span key={i} className="kev-region-chip">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
+
+/** @param {{ regionId: string, owmAlerts?: Array<{ sender: string, event: string, start: number, end: number, description: string, tags: string[] }> }} ps */
+export function KairosEventsCard({ regionId, owmAlerts = [] }) {
   const [events, setEvents] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -162,7 +260,9 @@ export function KairosEventsCard({ regionId }) {
     let list = events;
     if (filter !== 'all') list = list.filter((e) => e.status === filter);
     if (regionId) {
-      list = list.filter((e) => !e.affected_regions?.length || e.affected_regions.includes(regionId));
+      list = list.filter(
+        (e) => !e.affected_regions?.length || e.affected_regions.includes(regionId),
+      );
     }
     return list;
   }, [events, filter, regionId]);
@@ -185,11 +285,25 @@ export function KairosEventsCard({ regionId }) {
       </div>
       <div className="kairos-card-body">
         <p className="kairos-card-hint">
-          Scenarios that aren&apos;t predictable by weather or markets alone. Probabilities are expert-estimated;
-          impact ranges are <strong>conditional on the scenario realizing</strong>.
+          Scenarios that aren&apos;t predictable by weather or markets alone. Probabilities are
+          expert-estimated; impact ranges are <strong>conditional on the scenario realizing</strong>
+          .
         </p>
 
         <KairosEventsAdmin events={events} onChange={loadEvents} />
+
+        {/* Government weather alerts (OpenWeather One Call). Rendered above
+            the geopolitical scenario list and outside the filter tabs since
+            they're a separate data category — these are realized warnings,
+            not expert-estimated scenarios, so they shouldn't compete with the
+            "monitoring/developing/realized/resolved" filter taxonomy. */}
+        {owmAlerts.length > 0 && (
+          <ul className="kev-list kev-list--alerts">
+            {owmAlerts.map((alert, i) => (
+              <WeatherAlertRow key={`owm-${i}`} alert={alert} />
+            ))}
+          </ul>
+        )}
 
         <div className="kev-filters">
           {FILTER_TABS.map((t) => (
@@ -221,8 +335,8 @@ export function KairosEventsCard({ regionId }) {
         )}
 
         <div className="kev-disclaimer">
-          These are <strong>scenario impact estimates</strong>, not predictions. Probabilities reflect expert judgment
-          about whether each scenario will occur.
+          These are <strong>scenario impact estimates</strong>, not predictions. Probabilities
+          reflect expert judgment about whether each scenario will occur.
         </div>
       </div>
     </section>
