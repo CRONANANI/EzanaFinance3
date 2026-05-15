@@ -13,6 +13,7 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  ReferenceLine,
   RadarChart,
   Radar,
   PolarGrid,
@@ -337,9 +338,16 @@ function GrowingDegreeDaysCard({ weatherData }) {
       <div className="kairos-stat-row">
         <MiniStat label="Cumulative GDD" value={totalGDD} unit=" °C·d" />
         <MiniStat label="Base temp" value="10°C" />
+        <MiniStat
+          label="Corn pollination"
+          value={totalGDD >= 630 ? '✓ Reached' : `${Math.max(0, 630 - totalGDD)} to go`}
+        />
       </div>
       <p className="kairos-card-hint">
-        GDD accumulates heat above 10°C — critical for tracking corn, soy, and wheat growth stages.
+        GDD accumulates heat above 10°C. Corn pollination occurs at ~630 GDD (silking begins, pollen
+        shed lasts ~2 weeks). Per Iowa State research, this is the highest-risk window — drought +
+        heat here causes irreversible yield loss. No-till fields and stress-tolerant hybrids perform
+        best during this critical period.
       </p>
       <div className="kairos-chart-wrap">
         <ResponsiveContainer width="100%" height={180}>
@@ -373,6 +381,19 @@ function GrowingDegreeDaysCard({ weatherData }) {
               strokeWidth={2}
               dot={false}
               name="Cumulative GDD"
+            />
+            <ReferenceLine
+              y={630}
+              stroke="#d4af37"
+              strokeDasharray="4 4"
+              strokeWidth={1.5}
+              label={{
+                value: '🌽 Pollination (~630 GDD)',
+                position: 'right',
+                fill: '#d4af37',
+                fontSize: 9,
+                fontWeight: 600,
+              }}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -473,11 +494,12 @@ function CommoditySensitivityCard() {
       corn: {
         score: 95,
         summary:
-          'Temperature is the dominant factor for corn yields. During pollination (July), temperatures above 95°F cause pollen desiccation and irreversible kernel abortion. The 2012 US drought destroyed 27% of the corn crop when temps exceeded 100°F for 10+ consecutive days across the Corn Belt.',
+          "Temperature is the dominant factor for corn yields. Per Iowa State research, pollen viability drops to zero once temperatures reach the mid-90s°F — especially with low relative humidity. Silks grow 1–1.5 inches/day and must be fertilized by viable pollen for kernels to develop. The natural buffer: pollen shed occurs early-to-mid morning when temps are lower. But the critical insight is that high temperatures alone won't destroy pollination IF soil moisture is adequate. It's the combination of drought + heat at pollination that causes catastrophic yield loss. The 2012 US drought destroyed 27% of the corn crop when this combination persisted for 10+ days across the Corn Belt.",
         risks: [
-          'Heat stress during pollination (>95°F)',
-          'Cool spring delays planting window',
-          'Night temps affect kernel fill rate',
+          'Pollen dies at mid-90s°F+ (low humidity amplifies)',
+          'Drought desynchronizes silk emergence from pollen shed',
+          'No-till fields outperform in heat — moisture conservation is key',
+          'Early-maturing hybrids can escape peak heat windows',
         ],
       },
       coffee: {
@@ -525,11 +547,12 @@ function CommoditySensitivityCard() {
       corn: {
         score: 90,
         summary:
-          'Corn requires 20–24 inches of rainfall during the growing season. Drought during the silking stage (July–August) is the single largest yield threat. Conversely, excessive spring rainfall delays planting — every day past May 15 reduces yield potential by ~1 bushel/acre.',
+          'Corn requires 20–24 inches during the growing season, but WHEN moisture is available matters more than how much. Iowa State research shows drought stress slows silk elongation while simultaneously accelerating pollen shed — this desynchronization means pollen is gone before silks emerge, and no fertilization occurs. One corn plant produces enough pollen for 10 plants (a natural compensation buffer), but if silking is delayed 2+ weeks by drought stress, that buffer is exhausted. No-till and reduced-till practices conserve soil moisture and significantly improve pollination success during drought years.',
         risks: [
-          'Drought during silking stage',
-          'Planting delays from wet fields',
-          'Harvest-season rain damages grain quality',
+          'Drought desynchronizes pollen shed and silk emergence',
+          'Silk delay >2 weeks = total fertilization failure',
+          'No-till conserves moisture — fields outperform in drought',
+          'Every planting day past May 15 costs ~1 bushel/acre',
         ],
       },
       coffee: {
@@ -629,11 +652,12 @@ function CommoditySensitivityCard() {
       corn: {
         score: 70,
         summary:
-          'Corn is a tropical grass — it cannot survive frost. A late spring frost (after planting) kills seedlings, forcing replanting at lower yield potential. An early fall frost before maturity traps moisture in kernels, causing storage and quality issues.',
+          "Corn is a tropical grass — it cannot survive frost. A late spring frost kills seedlings, forcing replanting at lower yield potential. An early fall frost before maturity traps moisture in kernels. Iowa State research adds a subtlety: early-season hybrids that pollinate before July heat peaks can avoid the worst temperature stress entirely, but they also face higher frost risk on both ends of the season. Hybrid selection that balances frost escape with stress tolerance is the most important management decision — because it's impossible to predict when stressful conditions will occur year to year.",
         risks: [
-          'Late spring frost kills seedlings',
-          'Early fall frost before maturity',
-          'Replanting lowers yield potential',
+          'Late spring frost kills seedlings → replanting penalty',
+          'Early fall frost traps kernel moisture',
+          'Early hybrids escape heat but increase frost exposure',
+          'Stress-tolerant hybrid selection is the #1 management tool',
         ],
       },
       coffee: {
@@ -783,6 +807,13 @@ function CommoditySensitivityCard() {
   const WEATHER_NEWS = {
     Temperature: [
       {
+        date: '2026-05-15',
+        headline:
+          'Iowa State Extension: corn pollination window approaching — pollen viability drops to zero above mid-90s°F. Drought + heat combination is the critical threat, not heat alone. No-till fields and early-maturing hybrids offer best resilience.',
+        region: 'US Midwest',
+        severity: 'medium',
+      },
+      {
         date: '2026-05-14',
         headline:
           'Pacific Northwest heatwave forecast for June — NOAA warns of 100°F+ temps across Oregon and Washington',
@@ -812,6 +843,13 @@ function CommoditySensitivityCard() {
       },
     ],
     Precipitation: [
+      {
+        date: '2026-05-15',
+        headline:
+          'ISU research reminder: drought stress slows silk elongation while accelerating pollen shed — this desynchronization is the #1 mechanism for corn yield loss. Soil moisture at pollination matters more than total season rainfall.',
+        region: 'US Midwest',
+        severity: 'high',
+      },
       {
         date: '2026-05-13',
         headline:
@@ -1348,9 +1386,26 @@ function CriticalWindowsCard() {
       crop: 'Corn',
       region: 'U.S. Midwest',
       windows: [
-        { label: 'Planting', months: [3, 4], risk: 'Wet delays' },
-        { label: 'Pollination', months: [6], risk: 'Heat stress' },
-        { label: 'Harvest', months: [8, 9, 10], risk: 'Rain damage' },
+        {
+          label: 'Planting',
+          months: [3, 4],
+          risk: 'Wet delays — each day past May 15 costs ~1 bu/acre',
+        },
+        {
+          label: 'Pollination',
+          months: [6],
+          risk: 'CRITICAL: pollen dies >95°F, drought desynchronizes silk emergence from pollen shed. 2-week window determines the entire crop.',
+        },
+        {
+          label: 'Grain fill',
+          months: [7],
+          risk: 'Night temps drive kernel weight — high nights reduce starch accumulation',
+        },
+        {
+          label: 'Harvest',
+          months: [8, 9, 10],
+          risk: 'Rain damage, early frost traps moisture in kernels',
+        },
       ],
     },
     {
