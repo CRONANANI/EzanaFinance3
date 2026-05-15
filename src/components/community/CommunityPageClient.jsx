@@ -135,7 +135,15 @@ function TrendingTopicsCard({ topics, compact = false }) {
       aria-label="Trending topics"
       style={compact ? { padding: '0.75rem' } : undefined}
     >
-      <div className="comm-hero-card-head">
+      {/* In compact (sidebar) mode the header stacks vertically so the title
+          and pager never collide inside the narrow 260px column. The desktop
+          (non-compact) layout keeps the row-with-space-between treatment. */}
+      <div
+        className="comm-hero-card-head"
+        style={
+          compact ? { flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' } : undefined
+        }
+      >
         <div className="comm-card-head-left">
           <div className="comm-card-icon comm-card-icon--fire" aria-hidden>
             <i className="bi bi-fire" />
@@ -151,28 +159,44 @@ function TrendingTopicsCard({ topics, compact = false }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="comm-trending-pager-inline"
-          onClick={handlePagerClick}
-          aria-label={
-            isLastPage ? 'Back to top of trending topics' : `Show next ${PAGE_SIZE} topics`
-          }
-        >
-          <span className="comm-trending-pager-inline__count" aria-hidden>
-            {pageIndex + 1} / {totalPages}
-          </span>
-          <span className="comm-trending-pager-inline__sep" aria-hidden>
-            ·
-          </span>
-          <span className="comm-trending-pager-inline__label">
-            {isLastPage ? 'Back to top' : `Next ${PAGE_SIZE}`}
-          </span>
-          <i
-            className={`bi ${isLastPage ? 'bi-chevron-up' : 'bi-chevron-down'} comm-trending-pager-inline__icon`}
-            aria-hidden
-          />
-        </button>
+        {/* Pager is suppressed entirely when there are no topics — the empty
+            state copy below already conveys the situation, and an inert
+            pager next to "No trending hashtags" looks broken. */}
+        {topics.length > 0 && (
+          <button
+            type="button"
+            className="comm-trending-pager-inline"
+            onClick={handlePagerClick}
+            aria-label={
+              isLastPage ? 'Back to top of trending topics' : `Show next ${PAGE_SIZE} topics`
+            }
+            style={compact ? { alignSelf: 'flex-end', marginTop: '-0.3rem' } : undefined}
+          >
+            {!compact && (
+              <>
+                <span className="comm-trending-pager-inline__count" aria-hidden>
+                  {pageIndex + 1} / {totalPages}
+                </span>
+                <span className="comm-trending-pager-inline__sep" aria-hidden>
+                  ·
+                </span>
+              </>
+            )}
+            <span className="comm-trending-pager-inline__label">
+              {compact
+                ? isLastPage
+                  ? 'Back to top'
+                  : 'Next'
+                : isLastPage
+                  ? 'Back to top'
+                  : `Next ${PAGE_SIZE}`}
+            </span>
+            <i
+              className={`bi ${isLastPage ? 'bi-chevron-up' : 'bi-chevron-down'} comm-trending-pager-inline__icon`}
+              aria-hidden
+            />
+          </button>
+        )}
       </div>
 
       {topics.length === 0 ? (

@@ -378,7 +378,9 @@ body.dark-mode .comm-engage-btn:hover,
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .comm-trending-chip:hover {
@@ -778,7 +780,9 @@ a.comm-lb-row {
   border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .comm-btn-sm:hover {
@@ -829,7 +833,9 @@ a.comm-lb-row {
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .comm-legend-card:hover {
@@ -1395,18 +1401,29 @@ body.light-mode .comm-comment-thread {
    ════════════════════════════════════════════════════════════ */
 
 /* Desktop shell — show on ≥768px, hide on mobile */
-.comm-desktop-shell { display: block; }
-.comm-mobile-shell { display: none; }
-
-@media (max-width: 767px) {
-  .comm-desktop-shell { display: none; }
-  .comm-mobile-shell { display: block; }
+.comm-desktop-shell {
+  display: block;
+}
+.comm-mobile-shell {
+  display: none;
 }
 
-/* 3-column grid: LEFT 240px | CENTER 1fr | RIGHT 280px */
+@media (max-width: 767px) {
+  .comm-desktop-shell {
+    display: none;
+  }
+  .comm-mobile-shell {
+    display: block;
+  }
+}
+
+/* 3-column grid: LEFT 260px | CENTER 1fr | RIGHT 280px
+   Bumped the left column 20px wider so Trending Topics + Copy Requests have
+   breathing room for their titles and pager controls — at 240px the heading
+   row was wrapping under the inline pager button. */
 .comm-3col {
   display: grid;
-  grid-template-columns: 240px 1fr 280px;
+  grid-template-columns: 260px 1fr 280px;
   gap: 1.25rem;
   align-items: start;
 }
@@ -1436,15 +1453,21 @@ body.light-mode .comm-comment-thread {
   .comm-3col {
     grid-template-columns: 1fr 280px;
   }
-  .comm-col-left { display: none; }
+  .comm-col-left {
+    display: none;
+  }
 }
 
 @media (max-width: 900px) {
   .comm-3col {
     grid-template-columns: 1fr;
   }
-  .comm-col-left { display: none; }
-  .comm-col-right { display: none; }
+  .comm-col-left {
+    display: none;
+  }
+  .comm-col-right {
+    display: none;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1474,8 +1497,12 @@ body.light-mode .comm-comment-thread {
   cursor: pointer;
 }
 
-body.light-mode .comm-mobile-header__title { color: #111827; }
-body.light-mode .comm-mobile-header { border-bottom-color: #e5e7eb; }
+body.light-mode .comm-mobile-header__title {
+  color: #111827;
+}
+body.light-mode .comm-mobile-header {
+  border-bottom-color: #e5e7eb;
+}
 
 .comm-mobile-tabbar {
   display: flex;
@@ -1508,7 +1535,9 @@ body.light-mode .comm-mobile-tabbar {
   transition: all 0.15s;
 }
 
-.comm-mobile-tabbar__tab i { font-size: 1rem; }
+.comm-mobile-tabbar__tab i {
+  font-size: 1rem;
+}
 
 .comm-mobile-tabbar__tab.is-active {
   font-weight: 700;
@@ -1516,8 +1545,13 @@ body.light-mode .comm-mobile-tabbar {
   border-bottom-color: #10b981;
 }
 
-body.light-mode .comm-mobile-tabbar__tab { color: #6b7280; }
-body.light-mode .comm-mobile-tabbar__tab.is-active { color: #059669; border-bottom-color: #059669; }
+body.light-mode .comm-mobile-tabbar__tab {
+  color: #6b7280;
+}
+body.light-mode .comm-mobile-tabbar__tab.is-active {
+  color: #059669;
+  border-bottom-color: #059669;
+}
 
 .comm-mobile-body {
   padding: 0.75rem;
@@ -1560,7 +1594,9 @@ body.light-mode .comm-mobile-stat-card {
   margin-top: 0.1rem;
 }
 
-body.light-mode .comm-mobile-stat-value { color: #111827; }
+body.light-mode .comm-mobile-stat-value {
+  color: #111827;
+}
 
 .comm-mobile-trending-grid {
   display: grid;
@@ -1625,14 +1661,26 @@ body.light-mode .comm-mobile-bottom-nav {
   cursor: pointer;
 }
 
-.comm-bottom-icon i { font-size: 1.15rem; }
+.comm-bottom-icon i {
+  font-size: 1.15rem;
+}
 
-.comm-bottom-icon.is-active { color: #10b981; font-weight: 700; }
+.comm-bottom-icon.is-active {
+  color: #10b981;
+  font-weight: 700;
+}
 
-.comm-bottom-icon--compose i { color: #10b981; font-size: 1.4rem; }
+.comm-bottom-icon--compose i {
+  color: #10b981;
+  font-size: 1.4rem;
+}
 
-body.light-mode .comm-bottom-icon { color: #9ca3af; }
-body.light-mode .comm-bottom-icon.is-active { color: #059669; }
+body.light-mode .comm-bottom-icon {
+  color: #9ca3af;
+}
+body.light-mode .comm-bottom-icon.is-active {
+  color: #059669;
+}
 
 /* ═══ Feed post cards (db-card + emerald tokens) ═══ */
 .comm-feed-post-card {
@@ -1787,7 +1835,10 @@ body.light-mode .comm-bottom-icon.is-active { color: #059669; }
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-sans, inherit);
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .comm-lc-badges-filter-tab:hover {
@@ -1913,7 +1964,9 @@ body.light-mode .comm-greeting-section .db-greeting-date {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  transition: border-color 200ms ease, box-shadow 200ms ease;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
 }
 
 /* Explicit chrome: matches .db-card / KPI strip so load-order or other sheets
@@ -2045,7 +2098,7 @@ body.light-mode .comm-trending-card-head-meta p {
   padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid rgba(16, 185, 129, 0.28);
-  background: rgba(16, 185, 129, 0.10);
+  background: rgba(16, 185, 129, 0.1);
   font-size: 0.75rem;
   font-weight: 600;
   color: #10b981;
@@ -2055,7 +2108,9 @@ body.light-mode .comm-trending-card-head-meta p {
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .comm-trending-chip:hover {
@@ -2136,15 +2191,23 @@ body.light-mode .comm-trending-card-head-meta p {
   color: #8b949e;
 }
 
-.comm-kpi-sub.positive { color: #10b981; }
-.comm-kpi-sub.negative { color: #ef4444; }
+.comm-kpi-sub.positive {
+  color: #10b981;
+}
+.comm-kpi-sub.negative {
+  color: #ef4444;
+}
 
 @media (max-width: 1024px) {
-  .comm-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .comm-kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 520px) {
-  .comm-kpi-row { grid-template-columns: 1fr; }
+  .comm-kpi-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ═══ Page-level tab bar (Community / My Profile / Messages) ═══ */
@@ -2169,7 +2232,10 @@ body.light-mode .comm-trending-card-head-meta p {
   align-items: center;
   gap: 0.4rem;
   font-family: var(--font-sans);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .comm-page-tab:hover {
@@ -2527,7 +2593,9 @@ body.light-mode .comm-rank-pill--3 {
   cursor: pointer;
   flex-shrink: 0;
   font-family: var(--font-sans);
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
   white-space: nowrap;
 }
 
@@ -2759,7 +2827,10 @@ body.light-mode .comm-skeleton-line {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .comm-feed-nav__tab:hover {
@@ -2833,7 +2904,9 @@ body.light-mode .comm-feed-nav__tab.is-active {
   outline: none;
   font-family: var(--font-sans);
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .comm-feed-nav__sort:focus-visible {
@@ -2885,7 +2958,9 @@ body.light-mode .comm-feed-nav__sort {
   outline: none;
   font-family: var(--font-sans);
   line-height: 1.5;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   min-height: 2.75rem;
 }
 
@@ -2933,7 +3008,10 @@ body.light-mode .comm-feed-nav__sort {
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-sans);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .comm-composer-tool:hover {
@@ -3057,7 +3135,9 @@ body.light-mode .comm-composer-tool:hover {
   font-size: 0.8125rem;
   outline: none;
   font-family: var(--font-sans);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   width: 100%;
 }
 
@@ -3172,7 +3252,9 @@ body.light-mode .comm-composer-image-menu__row--danger {
   font-weight: 700;
   cursor: pointer;
   font-family: var(--font-sans);
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .comm-composer-poll-add:hover {
@@ -3363,7 +3445,9 @@ body.light-mode .comm-composer-ticker-result {
   font-size: 0.75rem;
   padding: 0.25rem 0.45rem;
   border-radius: 5px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .comm-composer-ticker-config-back:hover {
@@ -3401,7 +3485,10 @@ body.light-mode .comm-composer-ticker-result {
   background: rgba(16, 185, 129, 0.06);
   color: var(--text-muted, #8b949e);
   font-family: var(--font-sans);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .comm-composer-ticker-period-btn:hover {
@@ -4102,8 +4189,12 @@ body.light-mode .comm-trending-tile__category {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  /* nowrap + a guaranteed min-height stop the title and pager from
+     reflowing onto separate lines in the desktop layout. Sidebar
+     (compact) usage flips to a column via inline style on the JSX. */
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  min-height: 2rem;
 }
 
 .comm-hero-card-head .comm-card-head-left {
@@ -4132,6 +4223,136 @@ body.light-mode .comm-card-icon--fire {
 
 .comm-trending-card--paginated .comm-hero-card-head {
   margin-bottom: 0.65rem;
+}
+
+/* ─── Sidebar polish (Step 2C) ──────────────────────────────────
+   Trending Topics, Copy Requests, Friends Activity, Trending
+   Discussions all sit in the left/right rails and need uniform
+   padding + a subtle header separator so they read as a family. */
+.comm-col-left .db-card,
+.comm-col-right .db-card {
+  padding: 0.85rem;
+}
+
+.comm-col-left .db-card-header,
+.comm-col-right .db-card-header {
+  padding: 0 0 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+body.light-mode .comm-col-left .db-card-header,
+body.light-mode .comm-col-right .db-card-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Heading + caption sizing inside the narrow rail. Smaller than the
+   main feed cards but still legible at 0.8rem. */
+.comm-col-left .comm-card-head-meta h3,
+.comm-col-right .comm-card-head-meta h3 {
+  font-size: 0.8rem;
+}
+
+.comm-col-left .comm-card-head-meta p,
+.comm-col-right .comm-card-head-meta p {
+  font-size: 0.6rem;
+}
+
+/* Sidebar icon size — proportional to the smaller heading. */
+.comm-col-left .comm-card-icon,
+.comm-col-right .comm-card-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 0.7rem;
+}
+
+/* ─── KPI row refinement (Step 2D) ──────────────────────────────
+   The Posts in Feed / Top Performer / Sector Momentum / Suggested
+   For You row above the 3-column grid. Cards now have a subtle
+   hover lift to match the rest of the dashboard surface. */
+.comm-stat-card-grid {
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.comm-stat-card-grid > .db-card {
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.comm-stat-card-grid > .db-card:hover {
+  border-color: rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ─── Feed toolbar cohesion (Step 2E) ───────────────────────────
+   Sort dropdown + filter tabs share a single toolbar row with a
+   bottom hairline that anchors them to the post list below. */
+.comm-feed-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+body.light-mode .comm-feed-toolbar {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Card hover states (Step 2F) ───────────────────────────────
+   Subtle border + shadow lift on every sidebar card so the whole
+   rail feels interactive rather than static panels. */
+.comm-col-left .db-card,
+.comm-col-right .db-card {
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.comm-col-left .db-card:hover,
+.comm-col-right .db-card:hover {
+  border-color: rgba(16, 185, 129, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .comm-col-left .db-card:hover,
+body.light-mode .comm-col-right .db-card:hover {
+  border-color: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ─── Empty states (Step 2G) ────────────────────────────────────
+   Centered, padded copy for cards with no rows yet (e.g.
+   "No trending hashtags", "No copy requests"). */
+.comm-trending-empty,
+.comm-state-card__desc {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--db-muted, #8b949e);
+  padding: 1rem 0.5rem;
+  line-height: 1.5;
+}
+
+/* ─── View All links (Step 2H) ──────────────────────────────────
+   Right-aligned, non-wrapping accents on sidebar card headers. */
+.comm-card-view-all {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #10b981;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.comm-card-view-all:hover {
+  text-decoration: underline;
 }
 
 .comm-trending-pager-inline {
@@ -4265,8 +4486,12 @@ body.light-mode .comm-kpi-card--actionable:hover .comm-kpi-card__chevron {
 }
 
 @keyframes comm-kpi-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .comm-kpi-modal {
