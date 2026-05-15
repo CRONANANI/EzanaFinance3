@@ -5,7 +5,12 @@ export const dynamic = 'force-dynamic';
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
 const BASE = 'https://finnhub.io/api/v1';
 
-const FMP_KEY = process.env.NEXT_PUBLIC_FMP_API_KEY || process.env.FMP_API_KEY;
+// Request-time read — module-level captures freeze build-container env
+// values, so an FMP key rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 async function safeJson(res) {
@@ -96,7 +101,12 @@ function summarizeText(text) {
   // Cap at 25 words with an ellipsis.
   const finalWords = firstSentence.split(' ').filter(Boolean);
   if (finalWords.length > 25) {
-    return finalWords.slice(0, 25).join(' ').replace(/[,;:]$/, '') + '…';
+    return (
+      finalWords
+        .slice(0, 25)
+        .join(' ')
+        .replace(/[,;:]$/, '') + '…'
+    );
   }
   return firstSentence;
 }
@@ -129,27 +139,45 @@ export async function GET() {
     const today = new Date().toISOString().split('T')[0];
     const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
 
+    const FMP_KEY = getFmpKey();
     if (!FMP_KEY) {
-      console.warn('[economic-calendar] FMP_API_KEY not set — FMP news aggregation skipped, Finnhub still active.');
+      console.warn(
+        '[economic-calendar] FMP_API_KEY not set — FMP news aggregation skipped, Finnhub still active.',
+      );
     }
 
     // FMP news: 4 endpoints in parallel, each capped at 50 articles.
     // If no FMP key, substitute resolved nulls so Promise.all still completes.
+    const encKey = encodeURIComponent(FMP_KEY);
     const fmpRequests = FMP_KEY
       ? [
-          fetch(`${FMP_BASE}/news/general-latest?page=0&limit=50&apikey=${FMP_KEY}`, { cache: 'no-store' }),
-          fetch(`${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${FMP_KEY}`, { cache: 'no-store' }),
-          fetch(`${FMP_BASE}/news/crypto-latest?page=0&limit=50&apikey=${FMP_KEY}`, { cache: 'no-store' }),
-          fetch(`${FMP_BASE}/news/forex-latest?page=0&limit=50&apikey=${FMP_KEY}`, { cache: 'no-store' }),
+          fetch(`${FMP_BASE}/news/general-latest?page=0&limit=50&apikey=${encKey}`, {
+            cache: 'no-store',
+          }),
+          fetch(`${FMP_BASE}/news/stock-latest?page=0&limit=50&apikey=${encKey}`, {
+            cache: 'no-store',
+          }),
+          fetch(`${FMP_BASE}/news/crypto-latest?page=0&limit=50&apikey=${encKey}`, {
+            cache: 'no-store',
+          }),
+          fetch(`${FMP_BASE}/news/forex-latest?page=0&limit=50&apikey=${encKey}`, {
+            cache: 'no-store',
+          }),
         ]
-      : [Promise.resolve(null), Promise.resolve(null), Promise.resolve(null), Promise.resolve(null)];
+      : [
+          Promise.resolve(null),
+          Promise.resolve(null),
+          Promise.resolve(null),
+          Promise.resolve(null),
+        ];
 
     // EXISTING Finnhub calls — kept unchanged. New FMP calls added alongside.
-    const [econRes, newsRes, fmpGeneralRes, fmpStockRes, fmpCryptoRes, fmpForexRes] = await Promise.all([
-      fetch(`${BASE}/calendar/economic?from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`),
-      fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
-      ...fmpRequests,
-    ]);
+    const [econRes, newsRes, fmpGeneralRes, fmpStockRes, fmpCryptoRes, fmpForexRes] =
+      await Promise.all([
+        fetch(`${BASE}/calendar/economic?from=${weekAgo}&to=${today}&token=${FINNHUB_KEY}`),
+        fetch(`${BASE}/news?category=general&token=${FINNHUB_KEY}`),
+        ...fmpRequests,
+      ]);
 
     // EXISTING Finnhub parses — unchanged
     const econData = await econRes.json();
@@ -197,7 +225,9 @@ export async function GET() {
 
     // ── FMP news from 4 sources (NEW — added alongside Finnhub news) ───────
     const fmpNewsEvents = [
-      ...(Array.isArray(fmpGeneral) ? fmpGeneral.map((a, i) => mapFmpArticle(a, 'general', i)) : []),
+      ...(Array.isArray(fmpGeneral)
+        ? fmpGeneral.map((a, i) => mapFmpArticle(a, 'general', i))
+        : []),
       ...(Array.isArray(fmpStock) ? fmpStock.map((a, i) => mapFmpArticle(a, 'stock', i)) : []),
       ...(Array.isArray(fmpCrypto) ? fmpCrypto.map((a, i) => mapFmpArticle(a, 'crypto', i)) : []),
       ...(Array.isArray(fmpForex) ? fmpForex.map((a, i) => mapFmpArticle(a, 'forex', i)) : []),
@@ -262,7 +292,7 @@ export async function GET() {
       { events: combined.slice(0, 250) },
       {
         headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
-      }
+      },
     );
   } catch (error) {
     console.error('[economic-calendar]', error);

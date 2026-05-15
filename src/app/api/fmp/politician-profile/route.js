@@ -109,7 +109,12 @@ async function fetchQuiverTradesForPolitician(pol) {
   }
 }
 
-const FMP_KEY = process.env.FMP_API_KEY;
+// Request-time read — module-level captures freeze build-container env
+// values, so an FMP key rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const BASE = 'https://financialmodelingprep.com/stable';
 
 function fmtAmount(raw) {
@@ -130,13 +135,15 @@ function formatTradeDate(d) {
 }
 
 async function fetchTradesForMember(pol) {
+  const FMP_KEY = getFmpKey();
+  const encKey = encodeURIComponent(FMP_KEY);
   const lastLower = pol.lastName.toLowerCase();
   const endpoint =
     pol.chamber === 'Senate'
-      ? `${BASE}/senate-trades-by-name?name=${encodeURIComponent(pol.firstName)}&apikey=${FMP_KEY}`
-      : `${BASE}/house-trades-by-name?name=${encodeURIComponent(pol.firstName)}&apikey=${FMP_KEY}`;
+      ? `${BASE}/senate-trades-by-name?name=${encodeURIComponent(pol.firstName)}&apikey=${encKey}`
+      : `${BASE}/house-trades-by-name?name=${encodeURIComponent(pol.firstName)}&apikey=${encKey}`;
   try {
-    const res = await fetch(endpoint, { next: { revalidate: 300 } });
+    const res = await fetch(endpoint, { cache: 'no-store' });
     if (!res.ok) return [];
     const data = await res.json();
     if (!Array.isArray(data)) return [];
@@ -162,7 +169,9 @@ function buildHoldingsFromTrades(trades) {
     bySym[sym] = (bySym[sym] || 0) + 1;
   }
   const total = Object.values(bySym).reduce((a, b) => a + b, 0) || 1;
-  const sorted = Object.entries(bySym).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const sorted = Object.entries(bySym)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
   return sorted.map(([ticker, count]) => ({
     ticker,
     name: ticker,
@@ -188,7 +197,7 @@ function buildPerfData(trades) {
 }
 
 export async function GET(request) {
-  if (!FMP_KEY) {
+  if (!getFmpKey()) {
     return NextResponse.json({ error: 'FMP_API_KEY not configured' }, { status: 503 });
   }
 
@@ -207,7 +216,9 @@ export async function GET(request) {
         party: 'Unknown',
         chamber: null,
         state: '',
-        initials: `${guessed.firstName[0] || ''}${guessed.lastName[0] || ''}`.toUpperCase().slice(0, 3),
+        initials: `${guessed.firstName[0] || ''}${guessed.lastName[0] || ''}`
+          .toUpperCase()
+          .slice(0, 3),
         role: 'Member of Congress',
         district: null,
         yearsInOffice: '—',
@@ -239,7 +250,7 @@ export async function GET(request) {
   rawTrades.sort(
     (a, b) =>
       new Date(b.disclosureDate || b.transactionDate || 0) -
-      new Date(a.disclosureDate || a.transactionDate || 0)
+      new Date(a.disclosureDate || a.transactionDate || 0),
   );
 
   const trades = rawTrades.slice(0, 50).map((t) => ({
@@ -252,7 +263,8 @@ export async function GET(request) {
 
   const holdings = buildHoldingsFromTrades(rawTrades);
   const totalTrades = rawTrades.length;
-  const uniqueSyms = new Set(rawTrades.map((t) => (t.symbol || '').toUpperCase()).filter(Boolean)).size;
+  const uniqueSyms = new Set(rawTrades.map((t) => (t.symbol || '').toUpperCase()).filter(Boolean))
+    .size;
 
   let avgReporting = 28;
   const deltas = [];
@@ -284,7 +296,10 @@ export async function GET(request) {
   const ytdPct = Math.min(40, Math.max(-40, monthlyChange * 1.5));
   const ytdDollar = Math.round((totalValue * ytdPct) / 100);
 
-  const topIndustry = { name: holdings[0]?.ticker ? 'Mixed / Disclosed' : '—', pct: holdings[0]?.pct ?? 0 };
+  const topIndustry = {
+    name: holdings[0]?.ticker ? 'Mixed / Disclosed' : '—',
+    pct: holdings[0]?.pct ?? 0,
+  };
 
   const displayStateFull = pol.stateFull || US_STATE_FULL[pol.state] || pol.state || '';
   const stateUrlSlug = String(displayStateFull).toLowerCase().replace(/\s+/g, '-');
@@ -311,7 +326,10 @@ export async function GET(request) {
     ytdDollar,
     similarTraders: getSimilarTraders(pol.slug, pol.party, 3),
     perfData: buildPerfData(rawTrades),
-    holdings: holdings.length > 0 ? holdings : [{ ticker: '—', name: 'No symbols', value: 1, pct: 100, change: 0 }],
+    holdings:
+      holdings.length > 0
+        ? holdings
+        : [{ ticker: '—', name: 'No symbols', value: 1, pct: 100, change: 0 }],
     trades: trades.length > 0 ? trades : [],
     filingStats: {
       avgReportingTime: avgReporting,
@@ -320,7 +338,9 @@ export async function GET(request) {
     },
     _meta: {
       fmpTradeCount: totalTrades,
-      source: rawTrades.some((t) => Object.prototype.hasOwnProperty.call(t, '_isSell')) ? 'Quiver' : 'FMP',
+      source: rawTrades.some((t) => Object.prototype.hasOwnProperty.call(t, '_isSell'))
+        ? 'Quiver'
+        : 'FMP',
     },
   };
 

@@ -1,28 +1,148 @@
 import { NextResponse } from 'next/server';
 
-import { DISPLAY_TO_CANONICAL, resolveSectorQuery, CANONICAL_SECTORS } from '@/lib/fmp/sector-performance';
+import {
+  DISPLAY_TO_CANONICAL,
+  resolveSectorQuery,
+  CANONICAL_SECTORS,
+} from '@/lib/fmp/sector-performance';
 
 export const dynamic = 'force-dynamic';
 
 const FINNHUB_KEY = process.env.FINNHUB_API_KEY;
-const FMP_KEY = process.env.FMP_API_KEY;
+
+// Request-time read — module-level captures freeze build-container env
+// values, so an FMP key rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 const VALID_RANGES = new Set(['1D', '1W', '1M', 'YTD']);
 
 const SECTOR_KEYWORDS = {
-  Technology: ['technology', 'tech', 'software', 'semiconductor', 'cloud', 'ai', 'apple', 'microsoft', 'nvidia', 'meta', 'alphabet', 'google'],
-  'Financial Services': ['bank', 'banking', 'financial', 'jpmorgan', 'wells fargo', 'citigroup', 'goldman', 'morgan stanley', 'visa', 'mastercard', 'fintech'],
-  Healthcare: ['healthcare', 'pharma', 'pharmaceutical', 'biotech', 'medical', 'drug', 'fda', 'pfizer', 'merck', 'johnson', 'unitedhealth'],
-  'Consumer Cyclical': ['retail', 'consumer cyclical', 'consumer', 'amazon', 'tesla', 'home depot', 'mcdonalds', 'starbucks', 'nike', 'auto'],
-  'Consumer Defensive': ['walmart', 'costco', 'procter', 'pepsico', 'coca-cola', 'consumer staples', 'grocery'],
-  Energy: ['oil', 'gas', 'energy', 'opec', 'exxon', 'chevron', 'petroleum', 'crude', 'lng', 'renewable'],
-  Industrials: ['manufacturing', 'industrial', 'boeing', 'caterpillar', 'general electric', 'ge ', 'lockheed', 'logistics'],
-  'Communication Services': ['communication', 'telecom', 'verizon', 'at&t', 'netflix', 'disney', 'comcast', 'media'],
-  'Basic Materials': ['materials', 'mining', 'chemical', 'steel', 'gold', 'copper', 'aluminum', 'commodities'],
-  Materials: ['materials', 'mining', 'chemical', 'steel', 'gold', 'copper', 'aluminum', 'commodities'],
-  Utilities: ['utility', 'utilities', 'electric', 'power grid', 'natural gas utility', 'water utility'],
+  Technology: [
+    'technology',
+    'tech',
+    'software',
+    'semiconductor',
+    'cloud',
+    'ai',
+    'apple',
+    'microsoft',
+    'nvidia',
+    'meta',
+    'alphabet',
+    'google',
+  ],
+  'Financial Services': [
+    'bank',
+    'banking',
+    'financial',
+    'jpmorgan',
+    'wells fargo',
+    'citigroup',
+    'goldman',
+    'morgan stanley',
+    'visa',
+    'mastercard',
+    'fintech',
+  ],
+  Healthcare: [
+    'healthcare',
+    'pharma',
+    'pharmaceutical',
+    'biotech',
+    'medical',
+    'drug',
+    'fda',
+    'pfizer',
+    'merck',
+    'johnson',
+    'unitedhealth',
+  ],
+  'Consumer Cyclical': [
+    'retail',
+    'consumer cyclical',
+    'consumer',
+    'amazon',
+    'tesla',
+    'home depot',
+    'mcdonalds',
+    'starbucks',
+    'nike',
+    'auto',
+  ],
+  'Consumer Defensive': [
+    'walmart',
+    'costco',
+    'procter',
+    'pepsico',
+    'coca-cola',
+    'consumer staples',
+    'grocery',
+  ],
+  Energy: [
+    'oil',
+    'gas',
+    'energy',
+    'opec',
+    'exxon',
+    'chevron',
+    'petroleum',
+    'crude',
+    'lng',
+    'renewable',
+  ],
+  Industrials: [
+    'manufacturing',
+    'industrial',
+    'boeing',
+    'caterpillar',
+    'general electric',
+    'ge ',
+    'lockheed',
+    'logistics',
+  ],
+  'Communication Services': [
+    'communication',
+    'telecom',
+    'verizon',
+    'at&t',
+    'netflix',
+    'disney',
+    'comcast',
+    'media',
+  ],
+  'Basic Materials': [
+    'materials',
+    'mining',
+    'chemical',
+    'steel',
+    'gold',
+    'copper',
+    'aluminum',
+    'commodities',
+  ],
+  Materials: [
+    'materials',
+    'mining',
+    'chemical',
+    'steel',
+    'gold',
+    'copper',
+    'aluminum',
+    'commodities',
+  ],
+  Utilities: [
+    'utility',
+    'utilities',
+    'electric',
+    'power grid',
+    'natural gas utility',
+    'water utility',
+  ],
   'Real Estate': ['real estate', 'reit', 'property', 'realty', 'housing', 'commercial real estate'],
 };
 
@@ -36,7 +156,9 @@ function keywordsForNews(rawParam, canonicalSector) {
   const sets = [
     getSectorKeywords(canonicalSector),
     rawParam !== canonicalSector ? getSectorKeywords(rawParam) : [],
-    display && display !== rawParam && display !== canonicalSector ? getSectorKeywords(display) : [],
+    display && display !== rawParam && display !== canonicalSector
+      ? getSectorKeywords(display)
+      : [],
   ];
   const out = [];
   const seen = new Set();
@@ -88,6 +210,7 @@ function normalizeSeriesDesc(series) {
 }
 
 async function fetchSectorCandidates(canonicalSector) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
     console.warn('[sector-detail] FMP_API_KEY missing — screener skipped');
     return [];
@@ -102,7 +225,7 @@ async function fetchSectorCandidates(canonicalSector) {
       apikey: FMP_KEY,
     });
     const url = `${FMP_BASE}/company-screener?${params.toString()}`;
-    const res = await fetch(url, { next: { revalidate: 600 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[sector-detail] screener HTTP ${res.status} for sector="${canonicalSector}"`);
       return [];
@@ -128,12 +251,13 @@ async function fetchSectorCandidates(canonicalSector) {
 }
 
 async function fetch1DPerformance(candidates) {
+  const FMP_KEY = getFmpKey();
   if (candidates.length === 0 || !FMP_KEY) return [];
   const top60 = candidates.slice(0, 60);
   const symbolList = top60.map((c) => c.symbol).join(',');
   const url = `${FMP_BASE}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(FMP_KEY)}`;
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[sector-detail] quote HTTP ${res.status}`);
       return [];
@@ -156,6 +280,7 @@ async function fetch1DPerformance(candidates) {
 }
 
 async function fetchHistoricalPerformance(candidates, range) {
+  const FMP_KEY = getFmpKey();
   if (candidates.length === 0 || !FMP_KEY) return [];
   const days = tradingDaysFor(range);
   if (days < 1) return [];
@@ -165,7 +290,7 @@ async function fetchHistoricalPerformance(candidates, range) {
     top60.map(async (c) => {
       try {
         const url = `${FMP_BASE}/historical-price-eod/light?symbol=${encodeURIComponent(c.symbol)}&apikey=${encodeURIComponent(FMP_KEY)}`;
-        const res = await fetch(url, { next: { revalidate: 600 } });
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) return null;
         const data = await res.json();
         const seriesRaw = Array.isArray(data) ? data : data?.historical;
@@ -198,7 +323,9 @@ async function fetchTopPerformers(canonicalSector, range) {
   if (candidates.length === 0) return [];
 
   const performance =
-    range === '1D' ? await fetch1DPerformance(candidates) : await fetchHistoricalPerformance(candidates, range);
+    range === '1D'
+      ? await fetch1DPerformance(candidates)
+      : await fetchHistoricalPerformance(candidates, range);
 
   return performance
     .filter((p) => Number.isFinite(p.changePct))
@@ -233,7 +360,8 @@ async function fetchSectorNews(rawSectorParam, canonicalSector) {
     }
 
     const filtered = unique.filter((article) => {
-      const haystack = `${article.headline || ''} ${article.summary || ''} ${article.related || ''}`.toLowerCase();
+      const haystack =
+        `${article.headline || ''} ${article.summary || ''} ${article.related || ''}`.toLowerCase();
       return keywords.some((kw) => haystack.includes(kw));
     });
 
@@ -287,7 +415,7 @@ export async function GET(request) {
         diagnostics: {
           topPerformersCount: topPerformers.length,
           newsCount: news.length,
-          fmpAvailable: Boolean(FMP_KEY),
+          fmpAvailable: Boolean(getFmpKey()),
           finnhubAvailable: Boolean(FINNHUB_KEY),
           sectorMappedFrom: sectorParam !== canonicalSector ? sectorParam : null,
         },

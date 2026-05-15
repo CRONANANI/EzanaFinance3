@@ -15,6 +15,11 @@ import {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Request-time read — module-level captures freeze build-container env values.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 export async function GET() {
   if (!isServerSupabaseConfigured()) {
     return NextResponse.json(
@@ -25,10 +30,10 @@ export async function GET() {
         congressional_trades_count: null,
         politician_annual_performance_count: null,
         last_computed_at: null,
-        fmp_key_configured: !!process.env.FMP_API_KEY,
+        fmp_key_configured: !!getFmpKey(),
         cron_secret_configured: !!process.env.CRON_SECRET,
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 
@@ -40,12 +45,8 @@ export async function GET() {
       { count: perfCount, error: perfErr },
       { data: latestRow, error: latestErr },
     ] = await Promise.all([
-      supabase
-        .from('congressional_trades')
-        .select('*', { count: 'exact', head: true }),
-      supabase
-        .from('politician_annual_performance')
-        .select('*', { count: 'exact', head: true }),
+      supabase.from('congressional_trades').select('*', { count: 'exact', head: true }),
+      supabase.from('politician_annual_performance').select('*', { count: 'exact', head: true }),
       supabase
         .from('politician_annual_performance')
         .select('computed_at')
@@ -63,7 +64,7 @@ export async function GET() {
           error: err.message,
           code: err.code,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
     if (latestErr) {
@@ -79,7 +80,7 @@ export async function GET() {
       congressional_trades_count: tc,
       politician_annual_performance_count: pc,
       last_computed_at: latestRow?.computed_at ?? null,
-      fmp_key_configured: !!process.env.FMP_API_KEY,
+      fmp_key_configured: !!getFmpKey(),
       cron_secret_configured: !!process.env.CRON_SECRET,
     });
   } catch (e) {
@@ -89,7 +90,7 @@ export async function GET() {
         status: 'error',
         error: e instanceof Error ? e.message : String(e),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

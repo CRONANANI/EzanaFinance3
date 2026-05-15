@@ -61,9 +61,7 @@ function findEarningsRowForQuarter(earnings, year, quarter) {
  */
 function enrichTopicsWithDelta(currentTopics, priorTopics) {
   const priorMap = new Map(
-    (priorTopics || [])
-      .filter((x) => x?.topic)
-      .map((x) => [x.topic, Number(x.mentions)]),
+    (priorTopics || []).filter((x) => x?.topic).map((x) => [x.topic, Number(x.mentions)]),
   );
   return (currentTopics || [])
     .filter((t) => t?.topic)
@@ -250,10 +248,16 @@ export async function GET(_req, context) {
     return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
   }
 
-  if (!process.env.FMP_API_KEY) {
+  // Read at request time so a Vercel env-var rotation reaches running lambdas
+  // (module-level reads are baked at build).
+  const fmpKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+  if (!fmpKey) {
     console.error('[earnings/analysis] FMP_API_KEY is not set');
     return NextResponse.json(
-      { error: 'Service misconfigured — missing FMP API key.', detail: 'Set FMP_API_KEY on the server.' },
+      {
+        error: 'Service misconfigured — missing FMP API key.',
+        detail: 'Set FMP_API_KEY on the server.',
+      },
       { status: 503 },
     );
   }
@@ -311,7 +315,12 @@ export async function GET(_req, context) {
         const row = await getOrComputeAnalysis(t, symbol);
         if (row) analyses.push(row);
       } catch (err) {
-        console.error(`[earnings/analysis] ${symbol} analyze failed for period:`, t?.period, t?.year, err);
+        console.error(
+          `[earnings/analysis] ${symbol} analyze failed for period:`,
+          t?.period,
+          t?.year,
+          err,
+        );
       }
     }
 

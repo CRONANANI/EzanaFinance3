@@ -3,13 +3,19 @@ import { supabaseAdmin } from '@/lib/plaid';
 
 export const dynamic = 'force-dynamic';
 
+// Request-time read — module-level captures freeze build-container env values.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 /**
  * GET /api/health/earnings — diagnostics for the earnings call analyzer (FMP + Supabase).
  * Does not expose secrets. Safe to hit when the research card misbehaves.
  */
 export async function GET() {
+  const fmpKey = getFmpKey();
   const checks = {
-    fmp_api_key_configured: !!process.env.FMP_API_KEY,
+    fmp_api_key_configured: !!fmpKey,
     transcripts_table_exists: false,
     analysis_table_exists: false,
     transcripts_row_count: null,
@@ -20,7 +26,7 @@ export async function GET() {
 
   if (checks.fmp_api_key_configured) {
     try {
-      const url = `https://financialmodelingprep.com/stable/earning-call-transcript?symbol=AAPL&year=2024&quarter=4&apikey=${encodeURIComponent(process.env.FMP_API_KEY)}`;
+      const url = `https://financialmodelingprep.com/stable/earning-call-transcript?symbol=AAPL&year=2024&quarter=4&apikey=${encodeURIComponent(fmpKey)}`;
       const res = await fetch(url, { cache: 'no-store' });
       checks.fmp_transcript_probe_status = res.status;
       checks.fmp_transcript_probe_ok = res.ok;
@@ -72,7 +78,9 @@ export async function GET() {
     );
   }
   if (!checks.transcripts_table_exists || !checks.analysis_table_exists) {
-    degradedReasons.push('Supabase migration for earnings_transcripts / earnings_transcript_analysis not applied');
+    degradedReasons.push(
+      'Supabase migration for earnings_transcripts / earnings_transcript_analysis not applied',
+    );
   }
   if (!urlOk || !keyOk) {
     degradedReasons.push('Supabase URL or SUPABASE_SERVICE_ROLE_KEY missing');

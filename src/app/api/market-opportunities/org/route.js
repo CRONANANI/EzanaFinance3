@@ -4,20 +4,51 @@ import { createServerSupabase } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const FMP_KEY =
-  process.env.FMP_API_KEY ||
-  process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Request-time key read — module-level captures freeze build-container env
+// values, so a later FMP rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function classifyEvent(headline, summary) {
   const text = `${headline} ${summary}`.toLowerCase();
   const WINDFALL = [
-    'beats', 'revenue up', 'profit surge', 'record', 'upgrade', 'bullish', 'outperform', 'breakout',
-    'expansion', 'approval', 'growth', 'rally', 'soars', 'jumps', 'raises guidance',
+    'beats',
+    'revenue up',
+    'profit surge',
+    'record',
+    'upgrade',
+    'bullish',
+    'outperform',
+    'breakout',
+    'expansion',
+    'approval',
+    'growth',
+    'rally',
+    'soars',
+    'jumps',
+    'raises guidance',
   ];
   const BANE = [
-    'misses', 'revenue down', 'decline', 'layoffs', 'downgrade', 'bearish', 'warning', 'lowers guidance',
-    'crash', 'plunge', 'sell-off', 'drops', 'falls', 'recession', 'inflation', 'tariff', 'sanctions',
+    'misses',
+    'revenue down',
+    'decline',
+    'layoffs',
+    'downgrade',
+    'bearish',
+    'warning',
+    'lowers guidance',
+    'crash',
+    'plunge',
+    'sell-off',
+    'drops',
+    'falls',
+    'recession',
+    'inflation',
+    'tariff',
+    'sanctions',
   ];
   const w = WINDFALL.reduce((s, k) => s + (text.includes(k) ? 1 : 0), 0);
   const b = BANE.reduce((s, k) => s + (text.includes(k) ? 1 : 0), 0);
@@ -28,24 +59,66 @@ function classifyEvent(headline, summary) {
 const ROLE_THEMES = {
   executive: {
     keywords: [
-      'sector', 'market regime', 'regulatory', 'fed', 'macro', 'gdp', 'employment', 'portfolio-wide',
-      'systemic', 'index', 'benchmark', 'policy', 'trade war', 'sanctions', 'geopolitical',
-      'leadership', 'strategy shift', 'rebalance',
+      'sector',
+      'market regime',
+      'regulatory',
+      'fed',
+      'macro',
+      'gdp',
+      'employment',
+      'portfolio-wide',
+      'systemic',
+      'index',
+      'benchmark',
+      'policy',
+      'trade war',
+      'sanctions',
+      'geopolitical',
+      'leadership',
+      'strategy shift',
+      'rebalance',
     ],
     label: 'Macro & Portfolio-Level',
   },
   portfolio_manager: {
     keywords: [
-      'sector rotation', 'earnings surprise', 'position sizing', 'factor', 'momentum', 'value', 'growth',
-      'relative strength', 'correlation', 'hedge', 'allocation', 'overweight', 'underweight',
-      'technical', 'catalyst',
+      'sector rotation',
+      'earnings surprise',
+      'position sizing',
+      'factor',
+      'momentum',
+      'value',
+      'growth',
+      'relative strength',
+      'correlation',
+      'hedge',
+      'allocation',
+      'overweight',
+      'underweight',
+      'technical',
+      'catalyst',
     ],
     label: 'Strategy & Sector-Level',
   },
   analyst: {
     keywords: [
-      'earnings', 'revenue', 'eps', 'guidance', 'upgrade', 'downgrade', 'price target', 'buyback',
-      'insider', 'dcf', 'valuation', 'breakout', 'support', 'resistance', 'volume', 'ipo', 'acquisition',
+      'earnings',
+      'revenue',
+      'eps',
+      'guidance',
+      'upgrade',
+      'downgrade',
+      'price target',
+      'buyback',
+      'insider',
+      'dcf',
+      'valuation',
+      'breakout',
+      'support',
+      'resistance',
+      'volume',
+      'ipo',
+      'acquisition',
     ],
     label: 'Ticker & Catalyst-Level',
   },
@@ -103,12 +176,13 @@ export async function GET() {
 
     role = normalizeOrgRole(orgMember?.role || 'analyst');
     riskCategory =
-      profile?.risk_category
-      || profile?.investor_profile?.risk?.replace('-Oriented', '')
-      || 'Moderate';
+      profile?.risk_category ||
+      profile?.investor_profile?.risk?.replace('-Oriented', '') ||
+      'Moderate';
     mgmtProfile = profile?.investor_profile?.management || {};
   }
 
+  const FMP_KEY = getFmpKey();
   let events = [];
   if (FMP_KEY) {
     try {

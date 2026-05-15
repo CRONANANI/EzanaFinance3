@@ -2,14 +2,20 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Request-time read — module-level captures freeze build-container env
+// values, so an FMP key rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const BASE = 'https://financialmodelingprep.com/stable';
 
 async function fetchLatest(chamber) {
+  const FMP_KEY = getFmpKey();
   const endpoint = chamber === 'senate' ? 'senate-trades' : 'house-trades';
   try {
     const url = `${BASE}/${endpoint}?page=0&apikey=${encodeURIComponent(FMP_KEY)}`;
-    const res = await fetch(url, { next: { revalidate: 300 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) {
       console.warn(`[congress-latest] ${endpoint} HTTP ${res.status}`);
       return [];
@@ -57,16 +63,14 @@ function mapTradeForUi(t) {
     symbol: t.symbol,
     action: isBuy ? 'Bought' : 'Sold',
     positive: isBuy,
-    amount: amount ? (isBuy ? `+${amount}` : `-${amount}`) : (isBuy ? 'Buy' : 'Sell'),
+    amount: amount ? (isBuy ? `+${amount}` : `-${amount}`) : isBuy ? 'Buy' : 'Sell',
     disclosureDate: t.disclosureDate || t.transactionDate || null,
   };
 }
 
 /** Raw row for aggregation endpoints (party, ranges, dates). */
 function mapTradeRaw(t) {
-  const name = t.firstName
-    ? `${t.firstName} ${t.lastName}`
-    : t.representative || t.senator || '';
+  const name = t.firstName ? `${t.firstName} ${t.lastName}` : t.representative || t.senator || '';
   const partyRaw = String(t.politicalParty || t.party || '').toLowerCase();
   let party = '';
   if (partyRaw.includes('dem')) party = 'democrat';
@@ -92,7 +96,7 @@ function mapTradeRaw(t) {
 }
 
 export async function GET(request) {
-  if (!FMP_KEY) {
+  if (!getFmpKey()) {
     return NextResponse.json({ trades: [] });
   }
 
@@ -114,9 +118,7 @@ export async function GET(request) {
 
   const seen = new Set();
   const deduped = merged.filter((t) => {
-    const name = t.firstName
-      ? `${t.firstName} ${t.lastName}`
-      : t.representative || t.senator || '';
+    const name = t.firstName ? `${t.firstName} ${t.lastName}` : t.representative || t.senator || '';
     const key = `${t.symbol}-${t.transactionDate}-${name}`;
     if (seen.has(key)) return false;
     seen.add(key);

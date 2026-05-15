@@ -4,16 +4,40 @@ import { createServerSupabase } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const FMP_KEY = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Request-time key read — module-level captures freeze build-container env
+// values, so a later FMP rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 /** Match risk labels used by GET /api/market-opportunities */
 const RISK_THEMES = {
-  Conservative: ['dividend', 'bond', 'treasury', 'utility', 'healthcare', 'consumer staples', 'blue chip', 'defensive'],
+  Conservative: [
+    'dividend',
+    'bond',
+    'treasury',
+    'utility',
+    'healthcare',
+    'consumer staples',
+    'blue chip',
+    'defensive',
+  ],
   Moderate: ['earnings', 'sector rotation', 'index', 'etf', 'macro', 'fed', 'gdp', 'employment'],
   Growth: ['growth', 'tech', 'ai', 'startup', 'ipo', 'saas', 'cloud', 'semiconductor', 'ev'],
-  Aggressive: ['options', 'momentum', 'breakout', 'crypto', 'bitcoin', 'prediction market', 'meme', 'short squeeze', 'volatility'],
+  Aggressive: [
+    'options',
+    'momentum',
+    'breakout',
+    'crypto',
+    'bitcoin',
+    'prediction market',
+    'meme',
+    'short squeeze',
+    'volatility',
+  ],
 };
 
 function normalizeRiskCategory(raw) {
@@ -29,11 +53,12 @@ function normalizeRiskCategory(raw) {
 }
 
 async function fetchRelatedNews(ticker, headline) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) return [];
   try {
     const res = await fetch(
       `${FMP_BASE}/news/stock-latest?page=0&limit=10${ticker ? `&tickers=${encodeURIComponent(ticker)}` : ''}&apikey=${encodeURIComponent(FMP_KEY)}`,
-      { cache: 'no-store' }
+      { cache: 'no-store' },
     );
     if (!res.ok) return [];
     const data = await res.json();
@@ -53,11 +78,18 @@ async function fetchRelatedNews(ticker, headline) {
 }
 
 async function fetchTickerStats(ticker) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY || !ticker) return null;
   try {
     const [quoteRes, statsRes] = await Promise.all([
-      fetch(`${FMP_BASE}/quote?symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(FMP_KEY)}`, { cache: 'no-store' }),
-      fetch(`${FMP_BASE}/ratios-ttm?symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(FMP_KEY)}`, { cache: 'no-store' }),
+      fetch(
+        `${FMP_BASE}/quote?symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(FMP_KEY)}`,
+        { cache: 'no-store' },
+      ),
+      fetch(
+        `${FMP_BASE}/ratios-ttm?symbol=${encodeURIComponent(ticker)}&apikey=${encodeURIComponent(FMP_KEY)}`,
+        { cache: 'no-store' },
+      ),
     ]);
 
     const quote = quoteRes.ok ? await quoteRes.json() : [];
@@ -159,7 +191,9 @@ function buildFallbackAnalysis(event, riskProfile, tickerStats) {
     confidence: 'medium',
     factors: [
       isWindfall ? 'Positive market sentiment' : 'Elevated volatility risk',
-      tickerStats ? `${tickerStats.sector || 'Market'} sector dynamics` : 'Broad market implications',
+      tickerStats
+        ? `${tickerStats.sector || 'Market'} sector dynamics`
+        : 'Broad market implications',
       `Alignment with ${riskProfile} risk tolerance`,
     ],
   };
@@ -179,7 +213,11 @@ function buildKpis(tickerStats, event) {
       kpis.push({ label: 'Market Cap', value: mcStr, sub: tickerStats.sector || '' });
     }
     if (tickerStats.pe) {
-      kpis.push({ label: 'P/E Ratio', value: Number(tickerStats.pe).toFixed(1), sub: 'Trailing 12M' });
+      kpis.push({
+        label: 'P/E Ratio',
+        value: Number(tickerStats.pe).toFixed(1),
+        sub: 'Trailing 12M',
+      });
     }
     if (tickerStats.yearHigh && tickerStats.yearLow) {
       kpis.push({
@@ -200,7 +238,11 @@ function buildKpis(tickerStats, event) {
 
   if (kpis.length < 3) {
     const defaults = [
-      { label: 'Signal Type', value: event.type === 'windfall' ? 'Bullish' : 'Bearish', sub: 'Market sentiment' },
+      {
+        label: 'Signal Type',
+        value: event.type === 'windfall' ? 'Bullish' : 'Bearish',
+        sub: 'Market sentiment',
+      },
       { label: 'Source', value: event.source || 'Market Data', sub: 'Publisher' },
       { label: 'Relevance', value: 'Profile-matched', sub: 'Based on your risk level' },
     ];

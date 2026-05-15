@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const FMP_KEY = process.env.FMP_API_KEY;
+// Request-time read — module-level captures freeze build-container env
+// values, so an FMP key rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const BASE = 'https://financialmodelingprep.com/stable/custom-discounted-cash-flow';
 
 /**
@@ -13,7 +18,9 @@ const BASE = 'https://financialmodelingprep.com/stable/custom-discounted-cash-fl
  * The client always sends decimals; this function converts where needed.
  */
 function buildFmpQuery(symbol, assumptions) {
-  const params = new URLSearchParams({ symbol, apikey: FMP_KEY });
+  // URLSearchParams URL-encodes values automatically, so the key passed
+  // here doesn't need a manual encodeURIComponent wrap.
+  const params = new URLSearchParams({ symbol, apikey: getFmpKey() });
 
   // Decimal fields — pass through as-is
   const decimalFields = [
@@ -64,6 +71,7 @@ export async function GET(request) {
   if (!symbol) {
     return NextResponse.json({ error: 'symbol required' }, { status: 400 });
   }
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
     return NextResponse.json({ error: 'FMP_API_KEY not configured' }, { status: 503 });
   }
@@ -93,7 +101,9 @@ export async function GET(request) {
 
   const fmpParams = buildFmpQuery(symbol, assumptions);
   const url = `${BASE}?${fmpParams.toString()}`;
-  const urlForLog = url.replace(FMP_KEY, '***');
+  // Mask the encoded key when logging — URLSearchParams will percent-encode
+  // any special chars, so we strip the encoded form, not the raw key.
+  const urlForLog = url.replace(encodeURIComponent(FMP_KEY), '***');
 
   try {
     console.log('[fmp/dcf-advanced] upstream:', urlForLog);
@@ -112,7 +122,7 @@ export async function GET(request) {
           error: `FMP HTTP ${res.status}`,
           detail: body.slice(0, 200),
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -125,7 +135,10 @@ export async function GET(request) {
     }
 
     if (projections.length === 0) {
-      return NextResponse.json({ error: 'no projections returned', projections: [] }, { status: 200 });
+      return NextResponse.json(
+        { error: 'no projections returned', projections: [] },
+        { status: 200 },
+      );
     }
 
     const final = projections[projections.length - 1];

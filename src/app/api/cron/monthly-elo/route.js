@@ -38,7 +38,15 @@ import {
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-const FMP_KEY = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Read the FMP key inside helpers/handlers — never at module scope. Vercel
+// captures process.env at build, so a module-level const freezes whatever
+// value was present in the build container (often `undefined`) and never
+// picks up dashboard rotations. See src/app/api/fmp/test/route.js for the
+// diagnostic that surfaces this.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function isAuthorized(request) {
@@ -62,6 +70,7 @@ function getPriorMonthRange(now = new Date()) {
 }
 
 async function fetchSpyReturn(fromIso, toIso) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) return 0;
   try {
     const url = `${FMP_BASE}/historical-price-eod/full?symbol=SPY&from=${fromIso}&to=${toIso}&apikey=${encodeURIComponent(FMP_KEY)}`;

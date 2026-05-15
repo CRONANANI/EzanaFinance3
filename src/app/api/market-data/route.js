@@ -3,6 +3,11 @@ import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data
 
 export const dynamic = 'force-dynamic';
 
+// Request-time read — module-level captures freeze build-container env
+// values, so an FMP key rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
 
 export async function GET(request) {
   try {
@@ -10,17 +15,11 @@ export async function GET(request) {
     const ticker = searchParams.get('ticker');
 
     if (!ticker) {
-      return NextResponse.json(
-        { error: 'ticker query parameter is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ticker query parameter is required' }, { status: 400 });
     }
 
-    if (!process.env.FMP_API_KEY) {
-      return NextResponse.json(
-        { error: 'FMP_API_KEY is not configured' },
-        { status: 500 }
-      );
+    if (!getFmpKey()) {
+      return NextResponse.json({ error: 'FMP_API_KEY is not configured' }, { status: 500 });
     }
 
     const data = await fetchMarketData(ticker);
@@ -28,7 +27,7 @@ export async function GET(request) {
     if (!data?.quote) {
       return NextResponse.json(
         { error: `No data found for ticker: ${ticker.toUpperCase()}` },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -46,7 +45,7 @@ export async function GET(request) {
     console.error('Market data error:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error?.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

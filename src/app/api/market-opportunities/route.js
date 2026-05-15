@@ -4,9 +4,12 @@ import { createServerSupabase } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const FMP_KEY =
-  process.env.FMP_API_KEY ||
-  process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Request-time key read — module-level captures freeze build-container env
+// values, so a later FMP rotation never reaches running lambdas.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 /** Classify an event as windfall or bane based on sentiment keywords */
@@ -14,19 +17,68 @@ function classifyEvent(headline, summary) {
   const text = `${headline} ${summary}`.toLowerCase();
 
   const WINDFALL_SIGNALS = [
-    'beats expectations', 'revenue up', 'profit surge', 'record high', 'upgrade',
-    'bullish', 'outperform', 'breakout', 'dividend increase', 'partnership',
-    'acquisition', 'approval', 'launch', 'growth', 'expands', 'raises guidance',
-    'strong demand', 'beats estimates', 'ipo', 'merger', 'deal', 'rally',
-    'new high', 'positive', 'gains', 'soars', 'climbs', 'jumps',
+    'beats expectations',
+    'revenue up',
+    'profit surge',
+    'record high',
+    'upgrade',
+    'bullish',
+    'outperform',
+    'breakout',
+    'dividend increase',
+    'partnership',
+    'acquisition',
+    'approval',
+    'launch',
+    'growth',
+    'expands',
+    'raises guidance',
+    'strong demand',
+    'beats estimates',
+    'ipo',
+    'merger',
+    'deal',
+    'rally',
+    'new high',
+    'positive',
+    'gains',
+    'soars',
+    'climbs',
+    'jumps',
   ];
 
   const BANE_SIGNALS = [
-    'misses expectations', 'revenue down', 'profit decline', 'layoffs', 'downgrade',
-    'bearish', 'underperform', 'breakdown', 'dividend cut', 'lawsuit', 'sec probe',
-    'default', 'bankruptcy', 'recall', 'warning', 'lowers guidance', 'weak demand',
-    'misses estimates', 'crash', 'plunge', 'sell-off', 'drops', 'falls', 'tanks',
-    'risk', 'threat', 'sanctions', 'tariff', 'war', 'recession', 'inflation',
+    'misses expectations',
+    'revenue down',
+    'profit decline',
+    'layoffs',
+    'downgrade',
+    'bearish',
+    'underperform',
+    'breakdown',
+    'dividend cut',
+    'lawsuit',
+    'sec probe',
+    'default',
+    'bankruptcy',
+    'recall',
+    'warning',
+    'lowers guidance',
+    'weak demand',
+    'misses estimates',
+    'crash',
+    'plunge',
+    'sell-off',
+    'drops',
+    'falls',
+    'tanks',
+    'risk',
+    'threat',
+    'sanctions',
+    'tariff',
+    'war',
+    'recession',
+    'inflation',
   ];
 
   const windfallScore = WINDFALL_SIGNALS.reduce((s, k) => s + (text.includes(k) ? 1 : 0), 0);
@@ -39,10 +91,29 @@ function classifyEvent(headline, summary) {
 
 /** Map risk category to relevant sectors/themes */
 const RISK_THEMES = {
-  Conservative: ['dividend', 'bond', 'treasury', 'utility', 'healthcare', 'consumer staples', 'blue chip', 'defensive'],
+  Conservative: [
+    'dividend',
+    'bond',
+    'treasury',
+    'utility',
+    'healthcare',
+    'consumer staples',
+    'blue chip',
+    'defensive',
+  ],
   Moderate: ['earnings', 'sector rotation', 'index', 'etf', 'macro', 'fed', 'gdp', 'employment'],
   Growth: ['growth', 'tech', 'ai', 'startup', 'ipo', 'saas', 'cloud', 'semiconductor', 'ev'],
-  Aggressive: ['options', 'momentum', 'breakout', 'crypto', 'bitcoin', 'prediction market', 'meme', 'short squeeze', 'volatility'],
+  Aggressive: [
+    'options',
+    'momentum',
+    'breakout',
+    'crypto',
+    'bitcoin',
+    'prediction market',
+    'meme',
+    'short squeeze',
+    'volatility',
+  ],
 };
 
 function normalizeRiskCategory(raw) {
@@ -88,19 +159,17 @@ export async function GET() {
       .eq('id', user.id)
       .maybeSingle();
 
-    const fromProfile =
-      profile?.risk_category ||
-      profile?.investor_profile?.risk ||
-      null;
+    const fromProfile = profile?.risk_category || profile?.investor_profile?.risk || null;
     riskCategory = normalizeRiskCategory(fromProfile || 'Moderate');
   }
 
+  const FMP_KEY = getFmpKey();
   let events = [];
   if (FMP_KEY) {
     try {
       const res = await fetch(
         `${FMP_BASE}/news/stock-latest?page=0&limit=40&apikey=${encodeURIComponent(FMP_KEY)}`,
-        { cache: 'no-store' }
+        { cache: 'no-store' },
       );
       if (res.ok) {
         const data = await res.json();

@@ -5,27 +5,20 @@ import { fetchMarketData, formatMarketDataForPrompt } from '@/lib/ai/market-data
 
 export const dynamic = 'force-dynamic';
 
-
 const MODEL = 'claude-sonnet-4-20250514';
 
 export async function POST(request) {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return NextResponse.json(
-        { error: 'ANTHROPIC_API_KEY is not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured' }, { status: 500 });
     }
 
     const body = await request.json();
     const { ticker, model: modelId, investmentProfile } = body;
 
     if (!ticker) {
-      return NextResponse.json(
-        { error: 'ticker is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'ticker is required' }, { status: 400 });
     }
 
     if (!modelId) {
@@ -34,16 +27,13 @@ export async function POST(request) {
           error:
             'model is required (grpv, dcf, earnings, comps, threestatement, lbo, ma, risk, montecarlo)',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const modelConfig = getModelConfig(modelId);
     if (!modelConfig) {
-      return NextResponse.json(
-        { error: `Unknown model: ${modelId}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Unknown model: ${modelId}` }, { status: 400 });
     }
 
     // Fetch real market data
@@ -51,7 +41,9 @@ export async function POST(request) {
     let marketDataPrompt = 'Market data unavailable — provide analysis based on your knowledge.';
 
     try {
-      if (process.env.FMP_API_KEY) {
+      // Request-time read; module-level captures freeze build env values.
+      const fmpKey = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+      if (fmpKey) {
         marketData = await fetchMarketData(ticker);
         if (marketData?.quote) {
           marketDataPrompt = formatMarketDataForPrompt(marketData);
@@ -98,7 +90,7 @@ export async function POST(request) {
     console.error('AI Stock Analysis error:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error?.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -5,7 +5,13 @@ import { supabaseAdmin } from '@/lib/plaid';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const FMP_KEY = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Request-time read — module-level captures freeze whatever value the
+// build container had, so a later FMP key rotation never reaches running
+// lambdas. Each helper re-reads on every call.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 /* ── NY timezone helpers ── */
@@ -75,6 +81,7 @@ function parseQuotePrice(q) {
 
 /* ── Fetch current quotes from FMP ── */
 async function fetchQuotes(tickers) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY || tickers.length === 0) return {};
   try {
     const symbols = tickers.join(',');
@@ -98,6 +105,7 @@ async function fetchQuotes(tickers) {
 
 /* ── Fetch historical daily close for a specific date range from FMP ── */
 async function fetchHistoricalCloses(tickers, fromDate, toDate) {
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY || tickers.length === 0) return {};
   const result = {};
   for (const ticker of tickers) {

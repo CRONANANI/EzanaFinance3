@@ -8,7 +8,12 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 export const runtime = 'nodejs';
 
-const FMP_KEY = process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY;
+// Read the FMP key at request time — module-level captures freeze the
+// build-container value and never see post-deploy env updates.
+function getFmpKey() {
+  return process.env.FMP_API_KEY || process.env.NEXT_PUBLIC_FMP_API_KEY || '';
+}
+
 const FMP_BASE = 'https://financialmodelingprep.com/stable';
 
 function isAuthorized(request) {
@@ -23,6 +28,7 @@ export async function GET(request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const FMP_KEY = getFmpKey();
   if (!FMP_KEY) {
     return NextResponse.json({ ok: false, error: 'FMP_API_KEY not configured' }, { status: 500 });
   }
